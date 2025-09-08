@@ -1,6 +1,8 @@
-# Types of Schemas
+---
+icon: clipboard-list
+---
 
-## Schema Demo
+# Types of Schemas
 
 There are four types of Schemas:
 
@@ -17,7 +19,7 @@ To display System / Policy Schemas in the GUI, we have added a toggle in the Sch
 
 Whenever an account is created, System Schemas are generated automatically.
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: By default System Schemas cannot be edited/deleted.

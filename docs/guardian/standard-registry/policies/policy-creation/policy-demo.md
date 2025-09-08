@@ -2,7 +2,7 @@
 
 Once you login as a Standard Registry and finish the setup, click on Policies tab.
 
-![](<../../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 We have two options to create Policy :
 
@@ -21,7 +21,7 @@ We have two options to create Policy :
 
 1.3 Once the details are filled and clicked on OK. Initially, Policy is created in Draft status.
 
-![](<../../../../.gitbook/assets/image (1) (1) (2).png>)
+![](<../../../../.gitbook/assets/image (1) (1) (2) (2).png>)
 
 1.4 You can even edit the Policy by clicking Edit button.
 
@@ -43,7 +43,7 @@ Instead of creating Policy from scratch, there is an option of importing the Pol
 **Note:** Files with **.policy** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
 {% endhint %}
 
-![](<../../../../.gitbook/assets/image (11) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../../.gitbook/assets/image (11) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 2.1 Once the .zip file is selected, we get the Policy Import Review screen. Once everything looks good, click on Import Button.
 
@@ -77,7 +77,7 @@ When you click on Save to file, Policy is exported as a .zip file.
 
 **Note:** While importing tool via file, or policy via file or IPFS, you can change used tools in preview dialog, it will change tools references in schemas and config automatically.
 
-To get complete information about tools, please refer to [Tools](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/readme.md) section.
+To get complete information about tools, please refer to [Tools](../../../../../Methodology%20Library/CDM/Tools/) section.
 
 <figure><img src="../../../../.gitbook/assets/image (587).png" alt=""><figcaption></figcaption></figure>
 

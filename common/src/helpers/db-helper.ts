@@ -582,7 +582,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
      * @returns Count
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async count(filters?: FilterQuery<T> | string | ObjectId, options?: FindOptions<unknown>): Promise<number> {
+    public async count(filters?: FilterQuery<T> | string | ObjectId, options?: FindOptions<object>): Promise<number> {
         return await this._em.count(this.entityClass, filters, options);
     }
 
@@ -594,6 +594,8 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async find(filters?: FilterQuery<T> | string | ObjectId, options?: FindOptions<T>): Promise<T[]> {
+        const repository: MongoEntityRepository<T> = this._em.getRepository(this.entityClass);
+
         let query: FilterQuery<T>;
 
         if (typeof filters === 'string' || filters instanceof ObjectId) {
@@ -602,7 +604,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             query = filters || {};
         }
 
-        return await this._em.getRepository<T>(this.entityClass).find(query, options);
+        return await repository.find(query, options);
     }
 
     /**
@@ -612,7 +614,9 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async findAll(options?: FindAllOptions<T>): Promise<T[]> {
-        return await this._em.getRepository<T>(this.entityClass).findAll(options);
+        const repository: MongoEntityRepository<T> = this._em.getRepository(this.entityClass);
+
+        return await repository.findAll(options);
     }
 
     /**
@@ -623,6 +627,8 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async findOne(filters: FilterQuery<T> | string | ObjectId | null, options: FindOneOptions<object> = {}): Promise<T | null> {
+        const repository: MongoEntityRepository<T> = this._em.getRepository(this.entityClass);
+
         let query: FilterQuery<T>;
 
         if (!filters) {
@@ -635,7 +641,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             query = filters;
         }
 
-        return await this._em.getRepository<T>(this.entityClass).findOne(query, options as unknown as FindOneOptions<T>) as T | null;
+        return await repository.findOne(query, options as unknown as FindOneOptions<T>) as T | null;
     }
 
     /**

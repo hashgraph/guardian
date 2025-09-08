@@ -1,10 +1,9 @@
 import { GeoJsonContext, IOwner, IRootConfig, SchemaHelper, SchemaStatus, SentinelHubContext } from '@guardian/interfaces';
-import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
+import { DatabaseServer, INotificationStep, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { checkForCircularDependency } from '../common/load-helper.js';
 import { incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper.js';
 import { publishSchemaTags } from '../tag/tag-publish-helper.js';
 import { SchemaImportExportHelper } from './schema-import-helper.js';
-import { emptyNotifier, INotifier } from '../../notifier.js';
 
 /**
  * Check access
@@ -78,7 +77,8 @@ export async function publishSchema(
     item: SchemaCollection,
     user: IOwner,
     messageServer: MessageServer,
-    type: MessageAction
+    type: MessageAction,
+    notifier: INotificationStep
 ): Promise<SchemaCollection> {
     if (checkForCircularDependency(item)) {
         throw new Error(`There is circular dependency in schema: ${item.iri}`);
@@ -92,7 +92,13 @@ export async function publishSchema(
     message.setDocument(item);
     message.setRelationships(relationships);
     const result = await messageServer
-        .sendMessage(message, true, null, user.id);
+        .sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            userId: user.id,
+            interception: user.id,
+            notifier: notifier.minimize(true)
+        });
 
     const messageId = result.getId();
     const topicId = result.getTopicId();
@@ -122,11 +128,12 @@ export async function publishSchemas(
     schemas: Iterable<SchemaCollection>,
     owner: IOwner,
     messageServer: MessageServer,
-    type: MessageAction
+    type: MessageAction,
+    notifier: INotificationStep
 ): Promise<void> {
     const tasks = [];
     for (const schema of schemas) {
-        tasks.push(publishSchema(schema, owner, messageServer, type));
+        tasks.push(publishSchema(schema, owner, messageServer, type, notifier));
     }
     await Promise.all(tasks);
 }
@@ -157,6 +164,7 @@ export async function publishDefsSchemas(
     user: IOwner,
     root: IRootConfig,
     schemaMap: Map<string, string> | null,
+    notifier: INotificationStep,
     userId: string | null
 ) {
     if (!defs) {
@@ -169,7 +177,15 @@ export async function publishDefsSchemas(
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
             schema = await incrementSchemaVersion(schema.topicId, schema.iri, user);
-            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier(), schemaMap, userId);
+            await findAndPublishSchema(
+                schema.id,
+                schema.version,
+                user,
+                root,
+                notifier.getStepById(schema.id),
+                schemaMap,
+                userId
+            );
         }
     }
 }
@@ -187,11 +203,24 @@ export async function findAndPublishSchema(
     version: string,
     user: IOwner,
     root: IRootConfig,
-    notifier: INotifier,
+    notifier: INotificationStep,
     schemaMap: Map<string, string> | null,
     userId: string | null
 ): Promise<SchemaCollection> {
-    notifier.start('Load schema');
+    // <-- Steps
+    const STEP_RESOLVE_TOPIC = 'Resolve topic';
+    const STEP_PUBLISH_RELATED_SCHEMAS = 'Publish related schemas';
+    const STEP_PUBLISH_SCHEMA = 'Publish schema';
+    const STEP_PUBLISH_TAGS = 'Publish tags';
+    const STEP_SAVE = 'Save';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_TOPIC, 5);
+    notifier.addStep(STEP_PUBLISH_RELATED_SCHEMAS, 40);
+    notifier.addStep(STEP_PUBLISH_SCHEMA, 40);
+    notifier.addStep(STEP_PUBLISH_TAGS, 10);
+    notifier.addStep(STEP_SAVE, 5);
+    notifier.start();
 
     let item = await DatabaseServer.getSchema(id);
     await accessSchema(item, user, 'publish');
@@ -203,30 +232,49 @@ export async function findAndPublishSchema(
         throw new Error('Invalid status');
     }
 
-    notifier.completedAndStart('Publishing related schemas');
-    const oldSchemaIri = item.iri;
-    await publishDefsSchemas(item.document?.$defs, user, root, schemaMap, userId);
-    item = await DatabaseServer.getSchema(id);
-
-    notifier.completedAndStart('Resolve topic');
+    notifier.startStep(STEP_RESOLVE_TOPIC);
     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, userId);
     const messageServer = new MessageServer({
         operatorId: root.hederaAccountId,
         operatorKey: root.hederaAccountKey,
         signOptions: root.signOptions
     }).setTopicObject(topic);
-    notifier.completedAndStart('Publish schema');
+    notifier.completeStep(STEP_RESOLVE_TOPIC);
 
+    notifier.startStep(STEP_PUBLISH_RELATED_SCHEMAS);
+    const oldSchemaIri = item.iri;
+    await publishDefsSchemas(
+        item.document?.$defs,
+        user,
+        root,
+        schemaMap,
+        notifier.getStep(STEP_PUBLISH_RELATED_SCHEMAS),
+        userId
+    );
+    item = await DatabaseServer.getSchema(id);
+    notifier.completeStep(STEP_PUBLISH_RELATED_SCHEMAS);
+
+    notifier.startStep(STEP_PUBLISH_SCHEMA);
     SchemaHelper.updateVersion(item, version);
-    item = await publishSchema(item, user, messageServer, MessageAction.PublishSchema);
+    item = await publishSchema(
+        item,
+        user,
+        messageServer,
+        MessageAction.PublishSchema,
+        notifier
+    );
+    notifier.completeStep(STEP_PUBLISH_SCHEMA);
 
-    notifier.completedAndStart('Publish tags');
+    notifier.startStep(STEP_PUBLISH_TAGS);
     await publishSchemaTags(item, user, root, userId);
+    notifier.completeStep(STEP_PUBLISH_TAGS);
 
-    notifier.completedAndStart('Update in DB');
+    notifier.startStep(STEP_SAVE);
     await updateSchemaDocument(item);
     await updateSchemaDefs(item.iri, oldSchemaIri);
-    notifier.completed();
+    notifier.completeStep(STEP_SAVE);
+
+    notifier.complete();
 
     if (schemaMap) {
         const newSchemaIri = item.iri;
@@ -249,8 +297,9 @@ export async function publishSystemSchema(
     user: IOwner,
     messageServer: MessageServer,
     type: MessageAction,
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<SchemaCollection> {
+    notifier.start();
     delete item.id;
     delete item._id;
     item.readonly = true;
@@ -259,10 +308,8 @@ export async function publishSystemSchema(
     item.version = undefined;
     item.topicId = messageServer.getTopic();
     SchemaHelper.setVersion(item, undefined, undefined);
-    const result = await publishSchema(item, user, messageServer, type);
-    if (notifier) {
-        notifier.info(`Schema ${result.name || '-'} published`);
-    }
+    const result = await publishSchema(item, user, messageServer, type, notifier);
+    notifier.complete();
     return result;
 }
 
@@ -277,11 +324,15 @@ export async function publishSystemSchemas(
     systemSchemas: SchemaCollection[],
     messageServer: MessageServer,
     user: IOwner,
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<void> {
+    notifier.start();
+    notifier.setEstimate(systemSchemas.length);
     const tasks = [];
+    let index = 0;
     for (const schema of systemSchemas) {
         if (schema) {
+            const step = notifier.addStep(`${schema.name || '-'}`);
             schema.creator = user.creator;
             schema.owner = user.owner;
             tasks.push(publishSystemSchema(
@@ -289,14 +340,16 @@ export async function publishSystemSchemas(
                 user,
                 messageServer,
                 MessageAction.PublishSystemSchema,
-                notifier
+                step
             ));
+            index++;
         }
     }
     const items = await Promise.all(tasks);
     for (const schema of items) {
         await DatabaseServer.createAndSaveSchema(schema);
     }
+    notifier.complete();
 }
 
 /**

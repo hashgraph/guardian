@@ -1,35 +1,33 @@
-<div class="g-dialog-content">
-    <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onClose()">
-                <i class="pi pi-times"></i>
-            </div>
-        </div>
-        <div *ngIf="example" class="g-dialog-title">
-            Example
-        </div>
-        <div *ngIf="!example" class="g-dialog-title">
-            Preview
-        </div>
-        <div class="g-dialog-actions">
-            <div
-                *ngIf="example"
-                class="g-dialog-actions-btn"
-                (click)="onSave()">
-                Save
-            </div>
-        </div>
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{header}}</div>
     </div>
-    <div class="g-dialog-body">
-        <div class="context">
-            <app-schema-form
-                [formGroup]="dataForm"
-                [schema]="schema"
-                [private-fields]="hideFields"
-                [preset]="presetDocument"
-                [showButtons]="false"
-                [example]="example">
-            </app-schema-form>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div *ngIf="!started" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+    <div class="context">
+        <app-schema-form-root
+            [schema]="schema"
+            [preset]="presetDocument"
+            [private-fields]="hideFields"
+            [showButtons]="false"
+            [example]="example"
+            (form)="initForm($event)">
+        </app-schema-form-root>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary"
+            >Cancel</button>
         </div>
     </div>
 </div>

@@ -1,21 +1,23 @@
 # Publishes the Schema
 
-### PUBLISHES THE SCHEMA
+<mark style="color:orange;">`PUT`</mark> `/schemas/{schemaId}/active`
 
-{% swagger method="put" path="" baseUrl="/schemas/{schemaId}/active" summary="Publishes the Schema" %}
-{% swagger-description %}
 Makes the selected schema active. Other schemas of the same type become inactive. Only suers with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
-schema ID
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-parameter in="body" required="true" %}
-Object that contains Policy Version
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| schemaID<mark style="color:red;">\*</mark> | String | schema ID   |
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+#### Request Body
+
+| Name                               | Type   | Description                         |
+| ---------------------------------- | ------ | ----------------------------------- |
+| <mark style="color:red;">\*</mark> | String | Object that contains Policy Version |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     content:
@@ -26,35 +28,35 @@ Object that contains Policy Version
                   $ref: '#/components/schemas/Schema'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 Schema is not system.
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="404: Not Found" description="Not Found" %}
+{% tab title="404: Not Found Not Found" %}
 ```
 Schema not found.
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+{% tab title="422: Unprocessable Entity Unprocessable Entity" %}
 ```
 Schema is active.
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -63,5 +65,5 @@ Schema is active.
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

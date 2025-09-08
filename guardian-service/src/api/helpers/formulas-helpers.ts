@@ -1,6 +1,5 @@
-import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, MessageAction, MessageServer, TopicConfig, VcDocument, VpDocument } from '@guardian/common';
+import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, INotificationStep, MessageAction, MessageServer, TopicConfig, VcDocument, VpDocument } from '@guardian/common';
 import { EntityStatus, IOwner, IRootConfig } from '@guardian/interfaces';
-import { INotifier } from '../../helpers/notifier.js';
 
 type IDocument = VcDocument | VpDocument;
 
@@ -95,19 +94,29 @@ export async function publishFormula(
     item: Formula,
     owner: IOwner,
     root: IRootConfig,
-    notifier: INotifier
+    notifier: INotificationStep,
 ): Promise<Formula> {
     item.status = EntityStatus.PUBLISHED;
 
-    notifier.completedAndStart('Resolve topic');
+    // <-- Steps
+    const STEP_RESOLVE_TOPIC = 'Resolve topic';
+    const STEP_PUBLISH_FORMULA = 'Publish formula';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_TOPIC, 30);
+    notifier.addStep(STEP_PUBLISH_FORMULA, 70);
+    notifier.start();
+
+    notifier.startStep(STEP_RESOLVE_TOPIC);
     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.policyTopicId), true, owner.id);
     const messageServer = new MessageServer({
         operatorId: root.hederaAccountId,
         operatorKey: root.hederaAccountKey,
         signOptions: root.signOptions
     }).setTopicObject(topic);
+    notifier.completeStep(STEP_RESOLVE_TOPIC);
 
-    notifier.completedAndStart('Publish formula');
+    notifier.startStep(STEP_PUBLISH_FORMULA);
     const zip = await FormulaImportExport.generate(item);
     const buffer = await zip.generateAsync({
         type: 'arraybuffer',
@@ -120,10 +129,16 @@ export async function publishFormula(
     const publishMessage = new FormulaMessage(MessageAction.PublishFormula);
     publishMessage.setDocument(item, buffer);
     const statMessageResult = await messageServer
-        .sendMessage(publishMessage, true, null, owner.id);
+        .sendMessage(publishMessage, {
+            sendToIPFS: true,
+            memo: null,
+            userId: owner.id,
+            interception: owner.id
+        });
 
     item.messageId = statMessageResult.getId();
 
     const result = await DatabaseServer.updateFormula(item);
+    notifier.completeStep(STEP_PUBLISH_FORMULA);
     return result;
 }

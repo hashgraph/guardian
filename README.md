@@ -10,7 +10,6 @@ Guardian is a modular open-source solution that includes best-in-class identity 
 
 ## Discovering Digital Environmental Assets assets on Hedera
 
-
 As identified in Hedera Improvement Proposal 19 (HIP-19), each entity on the Hedera network may contain a specific identifier in the memo field for discoverability. Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service (HCS) Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens.
 
 In the memo field of each token mint transaction you will find a unique Hedera message timestamp. This message contains the url of the Verifiable Presentation (VP) associated with the token. The VP can serve as a starting point from which you can traverse the entire sequence of documents produced by Guardian policy workflow, which led to the creation of the token. This includes a digital Methodology (Policy) HCS Topic, an associated Registry HCS Topic for that Policy, and a Project HCS Topic.
@@ -18,6 +17,48 @@ In the memo field of each token mint transaction you will find a unique Hedera m
 Please see p.17 in the FAQ for more information. This is further defined in [Hedera Improvement Proposal 28 (HIP-28)](https://hips.hedera.com/hip/hip-28).
 
 ([back to top](#readme))
+
+## Quickstart
+
+This procedure is useful for demos, quick testing, and hackathons. It will only start the minimum required services for using the main Guardian features. It will not start features like the AI or MRV sender services, Prometheus integration, Grafana integration, etc.
+
+1. Ensure to have [Git](https://git-scm.com/downloads) and [Docker](https://www.docker.com/) installed on your machine.
+2. Clone this repository
+
+```bash
+git clone https://github.com/hashgraph/guardian.git
+cd guardian
+```
+
+3. Login or register on the [Hedera Developer Portal](https://portal.hedera.com/login).
+4. Generate an ED25519 key pair and account.
+5. Copy your AccountID (i.e, `0.0.123456...`) and the associated DER Encoded Private Key (i.e., `302e020100300506032b657004220420....`).
+6. Create a local `.env` file in the root directory of your project and update it with your AccountID and private key.
+
+```dotenv
+OPERATOR_ID=0.0.123456...
+OPERATOR_KEY=302e020100300506032b657004220420....
+```
+
+7. Start the environment with:
+
+```bash
+docker compose -f docker-compose-quickstart.yml up --pull=always -d
+```
+
+8. Navigate to <http://localhost:3000> in your web browser.
+
+9. If you want to stop the environment, preserving all the local data, use:
+
+```bash
+docker compose -f docker-compose-quickstart.yml stop
+```
+
+10. If you want to destroy the environment, loosing all the local data, use:
+
+```bash
+docker compose -f docker-compose-quickstart.yml down
+```
 
 ## Getting started
 
@@ -54,25 +95,28 @@ When building the reference implementation, you can [manually build every compon
 2. Create a Mainnet account and note the Account ID (`0.0.x`).  
 3. Export the ED25519 key pair  
    - *HashPack path*: Settings → Manage Accounts → Export Private Key (DER format).  
-4. Update your `.env`  
+4. Update your `.env`
+
    ```dotenv
    HEDERA_NET=mainnet
-   HEDERA_OPERATOR_ID=0.0.123456
-   HEDERA_OPERATOR_KEY=<Enter your Private Key Here>
+   OPERATOR_ID=0.0.123456...
+   OPERATOR_KEY=302e020100300506032b657004220420....
    ```
+
 ## 2.4. Preparing a Testnet Account & Keys
 
 1. Create a Testnet account via the [Hedera Developer Portal](https://portal.hedera.com/login).
 2. Record your Account ID (0.0.x).
 3. Download the ED25519 private key (ignore ECDSA)
-4. Select DER Encoded — do not choose HEX Encoded.
-5. Update your `.env`
+   - Select the DER Encoded Private Key — do not choose HEX Encoded.
+4. Update your `.env`
 
-```dotenv
-HEDERA_NET=testnet
-HEDERA_OPERATOR_ID=0.0.987654
-HEDERA_OPERATOR_KEY=<Enter your Private Key Here>
-```
+   ```dotenv
+   HEDERA_NET=testnet
+   OPERATOR_ID=0.0.123456...
+   OPERATOR_KEY=302e020100300506032b657004220420....
+   ```
+
 ## 2.5. Automatic installation
 
 ### Prerequisites for automatic installation
@@ -206,6 +250,30 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 ##### 3.2. Setting up JWT keys in /.env file
 
 To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using this service https://travistidwell.com/jsencrypt/demo/.
+
+##### 3.3. Setting up JWT keys for each service in the .env file
+
+To start all services, you need to create a 2048-bit RSA key pair for each service. You can generate a key pair in any convenient way—for example, using the online tool at https://mkjwk.org/ with the following settings:
+   - key size: 2048
+   - key use: signature
+   - algorithm: RS256: RSA
+   - key ID: sha256
+   - show: yes
+
+For each service, you must add its secret key `SERVICE_JWT_SECRET_KEY` and a list of all public keys from every service:
+- `SERVICE_JWT_PUBLIC_KEY_WORKER_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_TOPIC_LISTENER_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_QUEUE_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_POLICY_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_NOTIFICATION_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_LOGGER_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_GUARDIAN_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_AUTH_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_API_GATEWAY_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_AI_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_ANALYTICS_SERVICE`
+
+Alternatively, you can create a single key pair and, instead of adding the public keys for each individual service, you can add `SERVICE_JWT_SECRET_KEY_ALL` and `SERVICE_JWT_PUBLIC_KEY_ALL` to use the same keys for all services. However, it is recommended to generate a separate key pair for each service.
 
 #### 4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node 3. Filebase Bucket.
 

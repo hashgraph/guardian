@@ -1,8 +1,7 @@
 import { BlockType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, SchemaCategory, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, IToolComponents, MessageAction, MessageServer, MessageType, PolicyTool, replaceAllEntities, replaceAllVariables, SchemaFields, TagMessage, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DatabaseServer, INotificationStep, IToolComponents, MessageAction, MessageServer, MessageType, PolicyTool, replaceAllEntities, replaceAllVariables, SchemaFields, TagMessage, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { importTag } from '../tag/tag-import-helper.js';
 import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
-import { INotifier } from '../../notifier.js';
 import { ImportToolMap, ImportToolResult, ImportToolResults } from './tool-import.interface.js';
 
 /**
@@ -18,23 +17,28 @@ export async function importSubTools(
         messageId?: string
     }[],
     user: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
     userId: string | null
 ): Promise<ImportToolResults> {
+    notifier.start();
+
     if (!messages?.length) {
+        notifier.complete();
         return { tools: [], errors: [] };
     }
 
     const errors: any[] = [];
     const tools: any[] = [];
+    notifier.setEstimate(messages.length);
+    let index = 0;
     for (const message of messages) {
         try {
-            notifier.completedAndStart(`Import tool: ${message.name}`);
+            const step = notifier.addStep(`${message.name || '-'}`);
             const importResult = await importToolByMessage(
                 hederaAccount,
                 message.messageId,
                 user,
-                notifier,
+                step,
                 userId
             );
             if (importResult.tool) {
@@ -45,6 +49,7 @@ export async function importSubTools(
                     errors.push(error);
                 }
             }
+            index++;
         } catch (error) {
             errors.push({
                 type: 'tool',
@@ -55,6 +60,7 @@ export async function importSubTools(
         }
     }
 
+    notifier.complete();
     return {
         tools,
         errors
@@ -71,10 +77,23 @@ export async function importToolByMessage(
     hederaAccount: IRootConfig,
     messageId: string,
     user: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
     userId: string | null
 ): Promise<ImportToolResult> {
-    notifier.completedAndStart('Load tool file');
+    // <-- Steps
+    const STEP_LOAD_FILE = 'Load tool file';
+    const STEP_PARSE_FILE = 'Parse tool file';
+    const STEP_IMPORT_SCHEMAS = 'Import tool schemas';
+    const STEP_IMPORT_TAGS = 'Import tool tags';
+    // Steps -->
+
+    notifier.addStep(STEP_LOAD_FILE);
+    notifier.addStep(STEP_PARSE_FILE);
+    notifier.addStep(STEP_IMPORT_SCHEMAS);
+    notifier.addStep(STEP_IMPORT_TAGS);
+    notifier.start();
+
+    notifier.startStep(STEP_LOAD_FILE);
 
     const messageServer = new MessageServer({
         operatorId: hederaAccount.hederaAccountId,
@@ -86,7 +105,12 @@ export async function importToolByMessage(
     }
     messageId = messageId.trim();
     const message = await messageServer
-        .getMessage<ToolMessage>({ messageId, loadIPFS: true, userId });
+        .getMessage<ToolMessage>({
+            messageId,
+            loadIPFS: true,
+            userId,
+            interception: null
+        });
     if (!message) {
         throw new Error('Invalid Message');
     }
@@ -105,6 +129,8 @@ export async function importToolByMessage(
             oldTool.hash === message.hash &&
             oldTool.owner === message.owner
         ) {
+            notifier.completeStep(STEP_LOAD_FILE);
+            notifier.complete();
             return {
                 tool: oldTool,
                 errors: []
@@ -113,9 +139,9 @@ export async function importToolByMessage(
             throw new Error('Incorrect file hash');
         }
     }
+    notifier.completeStep(STEP_LOAD_FILE);
 
-    notifier.completedAndStart('Parse tool file');
-
+    notifier.startStep(STEP_PARSE_FILE);
     const components = await ToolImportExport.parseZipFile(message.document);
 
     // Import Tools
@@ -134,9 +160,9 @@ export async function importToolByMessage(
 
     await updateToolConfig(components.tool);
     const result = await DatabaseServer.createTool(components.tool);
+    notifier.completeStep(STEP_PARSE_FILE);
 
-    notifier.completedAndStart('Import tool schemas');
-
+    notifier.startStep(STEP_IMPORT_SCHEMAS);
     if (Array.isArray(components.schemas)) {
         const schemaObjects = []
 
@@ -182,8 +208,9 @@ export async function importToolByMessage(
             }
         }
     }
-    notifier.completedAndStart('Import tool tags');
+    notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
+    notifier.startStep(STEP_IMPORT_TAGS);
     await importTag(toolTags, result.id.toString());
 
     const errors: any[] = [];
@@ -192,7 +219,9 @@ export async function importToolByMessage(
             errors.push(error);
         }
     }
+    notifier.completeStep(STEP_IMPORT_TAGS);
 
+    notifier.complete();
     return {
         tool: result,
         errors
@@ -264,11 +293,30 @@ export function findSubTools(block: any, result: Set<string>, isRoot: boolean = 
 export async function importToolByFile(
     user: IOwner,
     components: IToolComponents,
-    notifier: INotifier,
     metadata: PolicyToolMetadata,
+    notifier: INotificationStep,
     userId: string | null
 ): Promise<ImportToolResult> {
-    notifier.start('Import tool');
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_CREATE_TOPIC = 'Create topic';
+    const STEP_CREATE_TOOL = 'Create tool in Hedera';
+    const STEP_LINK_TOPIC = 'Link topic and tool';
+    const STEP_IMPORT_SUB_SCHEMAS = 'Import sub-tools';
+    const STEP_IMPORT_SCHEMAS = 'Import schemas';
+    const STEP_SAVE = 'Save';
+    const STEP_IMPORT_TAGS = 'Import tags';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_CREATE_TOPIC);
+    notifier.addStep(STEP_CREATE_TOOL);
+    notifier.addStep(STEP_LINK_TOPIC);
+    notifier.addStep(STEP_IMPORT_SUB_SCHEMAS);
+    notifier.addStep(STEP_IMPORT_SCHEMAS);
+    notifier.addStep(STEP_SAVE);
+    notifier.addStep(STEP_IMPORT_TAGS);
+    notifier.start();
 
     const {
         tool,
@@ -277,7 +325,7 @@ export async function importToolByFile(
         schemas
     } = components;
 
-    notifier.completedAndStart('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, userId);
 
@@ -314,8 +362,9 @@ export async function importToolByFile(
     tool.status = ModuleStatus.DRAFT;
 
     await updateToolConfig(tool);
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.completedAndStart('Create topic');
+    notifier.startStep(STEP_CREATE_TOPIC);
     const parent = await TopicConfig.fromObject(
         await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, userId
     );
@@ -329,8 +378,9 @@ export async function importToolByFile(
         targetUUID: null
     }, userId, { admin: true, submit: true });
     await topic.saveKeys(userId);
+    notifier.completeStep(STEP_CREATE_TOPIC);
 
-    notifier.completedAndStart('Create tool in Hedera');
+    notifier.startStep(STEP_CREATE_TOOL);
     const messageServer = new MessageServer({
         operatorId: root.hederaAccountId,
         operatorKey: root.hederaAccountKey,
@@ -340,20 +390,32 @@ export async function importToolByFile(
     message.setDocument(tool);
     const messageStatus = await messageServer
         .setTopicObject(parent)
-        .sendMessage(message, true, null, userId);
+        .sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            userId,
+            interception: null
+        });
 
-    notifier.completedAndStart('Link topic and tool');
+    notifier.completeStep(STEP_CREATE_TOOL);
+
+    notifier.startStep(STEP_LINK_TOPIC);
     await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), userId);
 
     await DatabaseServer.saveTopic(topic.toObject());
     tool.topicId = topic.topicId;
     await DatabaseServer.updateTool(tool);
+    notifier.completeStep(STEP_LINK_TOPIC);
 
     // Import Tools
-    notifier.completedAndStart('Import sub-tools');
-    notifier.sub(true);
-    const toolsResult = await importSubTools(root, tools, user, notifier, userId);
-    notifier.sub(true);
+    notifier.startStep(STEP_IMPORT_SUB_SCHEMAS);
+    const toolsResult = await importSubTools(
+        root,
+        tools,
+        user,
+        notifier.getStep(STEP_IMPORT_SUB_SCHEMAS),
+        userId
+    );
 
     for (const toolMapping of toolsMapping) {
         const toolByMessageId = toolsResult.tools.find(
@@ -373,8 +435,10 @@ export async function importToolByFile(
             fields: ['name', 'iri'],
         }
     ));
+    notifier.completeStep(STEP_IMPORT_SUB_SCHEMAS);
 
     // Import Schemas
+    notifier.startStep(STEP_IMPORT_SCHEMAS);
     const schemasResult = await SchemaImportExportHelper.importSchemaByFiles(
         schemas,
         user,
@@ -384,12 +448,13 @@ export async function importToolByFile(
             skipGenerateId: false,
             outerSchemas: toolsSchemas as { name: string; iri: string }[]
         },
-        notifier,
+        notifier.getStep(STEP_IMPORT_SCHEMAS),
         userId
     );
     const schemasMap = schemasResult.schemasMap;
+    notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
-    notifier.completedAndStart('Saving in DB');
+    notifier.startStep(STEP_SAVE);
 
     // Replace id
     await replaceConfig(tool, schemasMap, toolsMapping);
@@ -400,7 +465,9 @@ export async function importToolByFile(
     _topicRow.targetUUID = item.uuid;
     await DatabaseServer.updateTopic(_topicRow);
 
-    notifier.completedAndStart('Import tags');
+    notifier.completeStep(STEP_SAVE);
+
+    notifier.startStep(STEP_IMPORT_TAGS);
     if (Array.isArray(tags)) {
         const toolTags = tags.filter((t: any) => t.entity === TagType.Tool);
         await importTag(toolTags, item.id.toString());
@@ -417,8 +484,8 @@ export async function importToolByFile(
             errors.push(error);
         }
     }
-
-    notifier.completed();
+    notifier.completeStep(STEP_IMPORT_TAGS);
+    notifier.complete();
 
     return {
         tool: item,
@@ -504,7 +571,12 @@ export async function previewToolByMessage(messageId: string, userId: string | n
 
     messageId = messageId.trim();
     const message = await MessageServer
-        .getMessage<ToolMessage>({ messageId, loadIPFS: true, userId });
+        .getMessage<ToolMessage>({
+            messageId,
+            loadIPFS: true,
+            userId,
+            interception: null
+        });
 
     if (!message) {
         throw new Error('Invalid Message');

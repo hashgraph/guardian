@@ -1091,4 +1091,48 @@ export class ToolsApi {
             await InternalException(error, this.logger, user.id);
         }
     }
+
+    /**
+     * Policy config menu
+     */
+    @Get('/check/:messageId')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.MODULES_MODULE_UPDATE,
+        Permissions.TOOLS_TOOL_UPDATE
+    )
+    @ApiOperation({
+        summary: 'Checks the availability of the tool.',
+        description: 'Checks the availability of the tool.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'messageId',
+        type: String,
+        description: 'Tool message ID',
+        required: true,
+        example: Examples.MESSAGE_ID
+    })
+    @ApiOkResponse({
+        description: 'Availability of the tool.',
+        type: Boolean,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
+    @UseCache()
+    @HttpCode(HttpStatus.OK)
+    async checkTool(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string
+    ): Promise<boolean> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.checkTool(messageId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
 }

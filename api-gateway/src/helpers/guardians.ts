@@ -770,9 +770,10 @@ export class Guardians extends NatsService {
         topicId: string,
         name: string,
         owner: IOwner,
-        task: NewTask
+        task: NewTask,
+        copyNested: boolean,
     ): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.COPY_SCHEMA_ASYNC, { iri, topicId, name, task, owner });
+        return await this.sendMessage(MessageAPI.COPY_SCHEMA_ASYNC, { iri, topicId, name, task, owner, copyNested });
     }
 
     /**
@@ -1298,7 +1299,7 @@ export class Guardians extends NatsService {
 
     /**
      * Create contract
-     * @param did
+     * @param owner
      * @param description
      * @param type
      * @returns Created contract
@@ -1309,6 +1310,25 @@ export class Guardians extends NatsService {
         type: ContractType
     ): Promise<IContract> {
         return await this.sendMessage(ContractAPI.CREATE_CONTRACT, {
+            owner,
+            description,
+            type,
+        });
+    }
+
+    /**
+     * Create contract V2 22.07.2025
+     * @param owner
+     * @param description
+     * @param type
+     * @returns Created contract
+     */
+    public async createContractV2(
+        owner: IOwner,
+        description: string,
+        type: ContractType
+    ): Promise<IContract> {
+        return await this.sendMessage(ContractAPI.CREATE_CONTRACT_V2, {
             owner,
             description,
             type,
@@ -2118,6 +2138,15 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Check tool
+     * @param owner
+     * @returns tools
+     */
+    public async checkTool(messageId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.CHECK_TOOL, { messageId, owner });
+    }
+
+    /**
      * Get tool export file
      * @param id
      * @param owner
@@ -2192,13 +2221,6 @@ export class Guardians extends NatsService {
      */
     public async importToolMessageAsync(messageId: string, owner: IOwner, task: NewTask) {
         return await this.sendMessage(MessageAPI.TOOL_IMPORT_MESSAGE_ASYNC, { messageId, owner, task });
-    }
-
-    /**
-     * Get map api key
-     */
-    public async getMapApiKey(user: IAuthUser): Promise<string> {
-        return await this.sendMessage<string>(MessageAPI.GET_MAP_API_KEY, { user });
     }
 
     /**
@@ -2847,8 +2869,13 @@ export class Guardians extends NatsService {
      * @param pageIndex
      * @param pageSize
      */
-    public async getAllWorkerTasks(user: IAuthUser, pageIndex: number, pageSize: number): Promise<any> {
-        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, { user, pageIndex, pageSize });
+    public async getAllWorkerTasks(
+        user: IAuthUser,
+        pageIndex: number,
+        pageSize: number,
+        status: string
+    ): Promise<any> {
+        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, { user, pageIndex, pageSize, status });
     }
 
     /**

@@ -76,11 +76,24 @@ export class ToolsService {
         });
     }
 
-    public importByMessage(messageId: string, metadata?:  { tools: { [key: string]: string }}): Observable<any[]> {
+    public importByMessage(
+        messageId: string,
+        metadata?: PolicyToolMetadata
+    ): Observable<any[]> {
         return this.http.post<any[]>(`${this.url}/import/message`, { messageId, metadata });
     }
 
-    public importByFile(file: any, metadata?: { tools: { [key: string]: string }}): Observable<any[]> {
+    public pushImportByMessage(
+        messageId: string,
+        metadata?: PolicyToolMetadata
+    ): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/message`, { messageId, metadata });
+    }
+
+    public importByFile(
+        file: any,
+        metadata?: PolicyToolMetadata
+    ): Observable<any[]> {
         const formData = new FormData();
         formData.append('file', new Blob([file], { type: "application/octet-stream" }));
         if (metadata) {
@@ -89,10 +102,6 @@ export class ToolsService {
             }));
         }
         return this.http.post<any[]>(`${this.url}/import/file-metadata`, formData);
-    }
-
-    public pushImportByMessage(messageId: string): Observable<{ taskId: string, expectation: number }> {
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/message`, { messageId });
     }
 
     public pushImportByFile(
@@ -120,5 +129,9 @@ export class ToolsService {
 
     public validate(policy: any): Observable<any> {
         return this.http.post<any>(`${this.url}/validate`, policy);
+    }
+
+    public checkMessage(messageId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/check/${messageId}`);
     }
 }

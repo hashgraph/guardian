@@ -18,9 +18,9 @@ import {
     KEY_TYPE_KEY_ENTITY,
     KeyEntity,
     Token, DatabaseServer,
+    NewNotifier,
 } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
-import { emptyNotifier } from '../helpers/notifier.js';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 
 async function getSchema(
@@ -51,7 +51,7 @@ async function getSchema(
                 owner,
                 messageServer,
                 MessageAction.PublishSystemSchema,
-                emptyNotifier()
+                NewNotifier.empty()
             );
             const result = await dataBaseServer.save(SchemaCollection, item);
             return result;
@@ -124,7 +124,12 @@ export async function serDefaultRole(user: IAuthUser, owner: IOwner): Promise<an
     const message = new UserPermissionsMessage(MessageAction.SetRole);
     message.setRole(data);
     message.setDocument(document);
-    await messageServer.sendMessage(message, true, null, owner.id);
+    await messageServer.sendMessage(message, {
+        sendToIPFS: true,
+        memo: null,
+        userId: owner.id,
+        interception: null
+    });
 
     const result = await new DatabaseServer().save(VcDocumentCollection, {
         hash: message.hash,
@@ -164,7 +169,12 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 const message = new GuardianRoleMessage(MessageAction.CreateRole);
                 message.setRole(data);
                 message.setDocument(document);
-                await messageServer.sendMessage(message, true, null, userId);
+                await messageServer.sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
                 const result = await new DatabaseServer().save(VcDocumentCollection, {
                     hash: message.hash,
                     owner: owner.owner,
@@ -201,7 +211,12 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 const message = new GuardianRoleMessage(MessageAction.UpdateRole);
                 message.setRole(data);
                 message.setDocument(document);
-                await messageServer.sendMessage(message, true, null, userId);
+                await messageServer.sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
                 const result = await new DatabaseServer().save(VcDocumentCollection, {
                     hash: message.hash,
                     owner: owner.owner,
@@ -238,7 +253,12 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 const message = new GuardianRoleMessage(MessageAction.DeleteRole);
                 message.setRole(data);
                 message.setDocument(document);
-                await messageServer.sendMessage(message, true, null, userId);
+                await messageServer.sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
                 const result = await new DatabaseServer().save(VcDocumentCollection, {
                     hash: message.hash,
                     owner: owner.owner,

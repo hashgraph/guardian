@@ -1,72 +1,95 @@
-<app-dialog-wrapper (cancel)="onNoClick()" (confirm)="onCreate()" [confirmDisabled]="loading || !this.form.valid"
-                    confirmBtnLabel="Set" [title]="'Set pool'" [loading]="loading">
-    <div class="content">
-        <div class="content__tokens tokens">
-            <div class="token-card" *ngFor="let tokenControl of tokenControls; let i=index;" [formGroup]="tokenControl">
-                <div class="token-card__token">
-                    <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token"></svg-icon>
-                    <div
-                        class="p-fluid dropdown-container"
-                        style="transform: scale(0.9) translateX(6px) translateY(5px); width: 95px;"
+<div class="sp-dialog">
+    <header class="sp-dialog__header">
+        <h3 class="sp-dialog__title">Set Pool</h3>
+        <button type="button" class="sp-dialog__close" (click)="onNoClick()" aria-label="Close">
+            <i class="pi pi-times"></i>
+        </button>
+    </header>
+
+    <form class="set-pool" [formGroup]="form">
+        <div class="set-pool__header">
+            <p-checkbox
+                [binary]="true"
+                [formControl]="immediately"
+                label="Without approval"
+            ></p-checkbox>
+        </div>
+
+        <div class="set-pool__rows" formArrayName="tokens">
+            <div class="token-row" *ngFor="let tokenControl of tokenControls; let i = index" [formGroupName]="i">
+                <div class="token-row__field token-row__field--token">
+                    <label for="token-{{ i }}">Token</label>
+                    <p-dropdown
+                        id="token-{{ i }}"
+                        formControlName="token"
+                        [options]="getTokenList(tokenControl?.value?.token?.tokenId || '')"
+                        optionLabel="tokenSymbol"
+                        placeholder="Token"
+                        [required]="true"
+                        [style]="{ width: '100%' }"
                     >
-                        <p-dropdown
-                            id="tokenDropdown"
-                            formControlName="token"
-                            [options]="getTokenList(selectedTokenId ?? '')"
-                            optionLabel="tokenSymbol"
-                            placeholder="Token"
-                            [required]="true"
-                        >
-                            <ng-template let-option pTemplate="selectedItem">
-                                {{ option.tokenSymbol }} ({{ option.tokenId }})
-                            </ng-template>
-                            <ng-template let-option pTemplate="item">
-                                {{ option.tokenSymbol }} ({{ option.tokenId }})
-                            </ng-template>
-                        </p-dropdown>
-                    </div>
+                        <ng-template let-option pTemplate="selectedItem">
+                            {{ option.tokenSymbol }} ({{ option.tokenId }})
+                        </ng-template>
+                        <ng-template let-option pTemplate="item">
+                            {{ option.tokenSymbol }} ({{ option.tokenId }})
+                        </ng-template>
+                    </p-dropdown>
                 </div>
-                <div class="token-card__count">
-                    <svg-icon src="/assets/images/icons/calculate.svg" svgClass="icon-style-calculate"></svg-icon>
-                    <div class="p-fluid" style="transform: scale(0.8) translateY(5px); width: 110px;">
-                        <p-inputNumber
-                            id="countInput"
-                            formControlName="count"
-                            [placeholder]="'Count'"
-                            mode="decimal"
-                            [min]="1"
-                            [useGrouping]="false"
-                            [showButtons]="true"
-                            [step]="1"
-                       >
-                        </p-inputNumber>
-                    </div>
+
+                <div class="token-row__field token-row__field--count">
+                    <label for="count-{{ i }}">Count</label>
+                    <p-inputNumber
+                        id="count-{{ i }}"
+                        formControlName="count"
+                        [placeholder]="'Count'"
+                        mode="decimal"
+                        [min]="1"
+                        [useGrouping]="false"
+                        [showButtons]="true"
+                        [step]="1"
+                        [style]="{ width: '100%' }"
+                    ></p-inputNumber>
                 </div>
-                <button
-                    pButton
-                    class="token-card__remove mat-flat-button"
-                    label="Remove"
-                    (click)="removeToken(i)"
-                ></button>
+
+                <button type="button"
+                        class="trash-btn"
+                        (click)="removeToken(i)"
+                        aria-label="Remove token">
+                    <i class="pi pi-trash"></i>
+                </button>
             </div>
 
-            <div class="token-add-card" (click)="addToken()" *ngIf="tokens?.controls && tokens.controls.length < 2">
-                <i class="pi pi-plus toolbar-icons"></i>
-            </div>
+            <button
+                *ngIf="tokens?.controls && tokens.controls.length < 2"
+                type="button"
+                pButton
+                icon="pi pi-plus"
+                label="Add"
+                class="add-token-custom"
+                (click)="addToken()">
+            </button>
         </div>
-        <div class="content__delimiter">
-        </div>
-        <div class="content__approval">
-            <div class="p-field-checkbox">
-                <p-checkbox
-                    [binary]="true"
-                    [formControl]="immediately"
-                    label="Without approval"
-                >
-                </p-checkbox>
-            </div>
-        </div>
+    </form>
 
-    </div>
+    <footer class="sp-dialog__footer set-pool__footer">
+        <button
+            type="button"
+            pButton
+            icon="pi pi-plus"
+            class="p-button-outlined button-cancel"
+            label="Cancel"
+            (click)="onNoClick()"
+        ></button>
 
-</app-dialog-wrapper>
+        <button
+            type="button"
+            pButton
+            icon="pi pi-check"
+            label="Set"
+            class="button-setl"
+            [disabled]="loading || !form.valid"
+            (click)="onCreate()"
+        ></button>
+    </footer>
+</div>

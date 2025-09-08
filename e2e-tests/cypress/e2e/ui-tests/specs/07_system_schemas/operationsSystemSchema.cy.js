@@ -28,7 +28,7 @@ context("System Schema Operations", { tags: ['ui'] }, () => {
     });
 
     it("activate system schema", () => {
-        schemaPage.createSchema(schemaName2);
+        schemaPage.createSystemSchema(schemaName2);
         schemaPage.activateSystemSchema(schemaName2);
     });
 });

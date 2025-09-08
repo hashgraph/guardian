@@ -3,8 +3,8 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@ang
 import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
-import { forkJoin, interval, Subscription } from 'rxjs';
-import { audit } from 'rxjs/operators';
+import { forkJoin, interval, Subject, Subscription } from 'rxjs';
+import { audit, takeUntil } from 'rxjs/operators';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -57,6 +57,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public newRequestsExist: boolean = false;
     public newActionsExist: boolean = false;
     public timer: any;
+    private destroy$: Subject<boolean> = new Subject<boolean>();
+    public activeTabIndex = 0;
 
     constructor(
         private profileService: ProfileService,
@@ -130,6 +132,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
+                if (queryParams.tab) {
+                    this.activeTabIndex = queryParams.tab;
+                }
+                
                 this.loadPolicy();
             })
         );
@@ -167,7 +173,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.subscription.unsubscribe();
-        clearInterval(this.timer)
+        clearInterval(this.timer);
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
     }
 
     loadPolicy() {
@@ -240,16 +248,18 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                 this.policyProgressService.updateData({ role: this.policyInfo.userRole });
 
-                this.policyProgressService.data$.pipe(audit(ev => interval(1000))).subscribe(() => {
-                    this.policyEngineService.getPolicyNavigation(this.policyId).subscribe((data: any) => {
-                        this.updatePolicyProgress(data);
-                        if (data && data.length > 0) {
-                            this.policyProgressService.setHasNavigation(true);
-                        } else {
-                            // this.policyProgressService.setHasNavigation(false);
-                        }
+                this.policyProgressService.data$
+                    .pipe(audit(ev => interval(1000)), takeUntil(this.destroy$))
+                    .subscribe(() => {
+                        this.policyEngineService.getPolicyNavigation(this.policyId).subscribe((data: any) => {
+                            this.updatePolicyProgress(data);
+                            if (data && data.length > 0) {
+                                this.policyProgressService.setHasNavigation(true);
+                            } else {
+                                // this.policyProgressService.setHasNavigation(false);
+                            }
+                        })
                     })
-                })
                 this.getSavepointState();
 
                 this.newRequestsExist = count.requestsCount > 0;
@@ -568,5 +578,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.newActionsExist = response.body.actionsCount > 0 || response.body.delayCount > 0;
                 }
             })
+    }
+
+    public onTabChange(index: number) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { tab: index },
+        queryParamsHandling: 'merge',
+      });
     }
 }

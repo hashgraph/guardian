@@ -38,7 +38,8 @@
                                     class="guardian-button guardian-button-secondary">Copy CID</button>
                             </div>
                         </div>
-                        <div class="form-field-img">
+
+                        <div *ngIf="item?.customType !== 'file'" class="form-field-img">
                             <img *ngIf="!item.loading; else loading" class="ipfs-image" [src]="item.imgSrc" [alt]="item.value">
                             <ng-template #loading>
                                 <div class="guardian-loading">
@@ -69,8 +70,8 @@
                     <div
                         *ngIf="isFormulas(item) as formulas"
                         class="form-field-formula">
-                        <button 
-                            class="guardian-icon-button guardian-icon-button-secondary" 
+                        <button
+                            class="guardian-icon-button guardian-icon-button-secondary"
                             (click)="showFormulas(formulas)">
                             <svg-icon
                                 src="/assets/images/icons/function.svg"
@@ -179,72 +180,93 @@
             </div>
 
             <div *ngIf="ifSubSchema(item)" class="form-field-group">
-                <div class="label-field">{{item.description}}</div>
-                <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
-                    <div class="form-field-group">
-                        <ng-container [ngSwitch]="item.customType">
-                            <app-geojson-type
-                                *ngSwitchCase="'geo'"
-                                [preset]="this.values && this.values[item.name]"
-                                [disabled]="true">
-                            </app-geojson-type>
-                            <app-sentinel-hub-type
-                                    *ngSwitchCase="'sentinel'"
-                                    [disabled]="true"
-                                    [preset]="this.values && this.values[item.name]">
-                            </app-sentinel-hub-type>
-                            <app-schema-form-view
-                                    *ngSwitchDefault
-                                    [dryRun]="dryRun"
-                                    [private-fields]="hide"
-                                    [delimiter-hide]="true"
-                                    [fields]="item.fields"
-                                    [values]="this.values && this.values[item.name]"
-                                    [rules]="rules"
-                                    [formulas]="formulas">
-                            </app-schema-form-view>
+                <p-accordion class="guardian-accordion">
+                    <p-accordionTab [(selected)]="item.open">
+                        <ng-template pTemplate="header">
+                            <div class="label-field-accordion">{{item.description}}</div>
+                        </ng-template>
+                        <ng-container *ngIf="item.open">
+                            <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
+                                <div class="form-field-group">
+                                    <ng-container [ngSwitch]="item.customType">
+                                        <app-geojson-type
+                                            *ngSwitchCase="'geo'"
+                                            [preset]="this.values && this.values[item.name]"
+                                            [disabled]="true">
+                                        </app-geojson-type>
+                                        <app-sentinel-hub-type
+                                            *ngSwitchCase="'sentinel'"
+                                            [disabled]="true"
+                                            [preset]="this.values && this.values[item.name]">
+                                        </app-sentinel-hub-type>
+                                        <app-schema-form-view
+                                            *ngSwitchDefault
+                                            [dryRun]="dryRun"
+                                            [private-fields]="hide"
+                                            [delimiter-hide]="true"
+                                            [fields]="item.fields"
+                                            [values]="this.values && this.values[item.name]"
+                                            [rules]="rules"
+                                            [formulas]="formulas">
+                                        </app-schema-form-view>
+                                    </ng-container>
+                                </div>
+                            </div>
                         </ng-container>
-                    </div>
-                </div>
+                    </p-accordionTab>
+                </p-accordion>
             </div>
 
             <div *ngIf="ifSubSchemaArray(item)" class="form-field-group schema-form-field-array-group">
-                <div class="label-field">{{item.description}}</div>
-                <div *ngFor="let listItem of getItemsPage(item)" class="form-field-array-item"
-                    [attr.index]="item.list.indexOf(listItem)">
-                    <div class="form-field-group">
-                        <ng-container [ngSwitch]="item.customType">
-                            <app-geojson-type *ngSwitchCase="'geo'" [preset]="listItem" [disabled]="true">
-                            </app-geojson-type>
-                            <app-sentinel-hub-type
-                                    *ngSwitchCase="'sentinel'"
-                                    [disabled]="true"
-                                    [preset]="listItem">
-                            </app-sentinel-hub-type>
-                            <app-schema-form-view
-                                    *ngSwitchDefault
-                                    [delimiter-hide]="true"
-                                    [private-fields]="hide"
-                                    [dryRun]="dryRun"
-                                    [fields]="item.fields"
-                                    [values]="listItem"
-                                    [rules]="rules"
-                                    [formulas]="formulas">
-                            </app-schema-form-view>
+                <p-accordion class="guardian-accordion">
+                    <p-accordionTab [(selected)]="item.open">
+                        <ng-template pTemplate="header">
+                            <div class="label-field-accordion">{{item.description}}</div>
+                        </ng-template>
+                        <ng-container *ngIf="item.open">
+                            <div 
+                                *ngFor="let listItem of getItemsPage(item)" 
+                                class="form-field-array-item short-delimiter"
+                                [attr.index]="item.list.indexOf(listItem)">
+                                <div class="form-field-group">
+                                    <ng-container [ngSwitch]="item.customType">
+                                        <app-geojson-type 
+                                            *ngSwitchCase="'geo'" 
+                                            [preset]="listItem" 
+                                            [disabled]="true">
+                                        </app-geojson-type>
+                                        <app-sentinel-hub-type
+                                            *ngSwitchCase="'sentinel'"
+                                            [disabled]="true"
+                                            [preset]="listItem">
+                                        </app-sentinel-hub-type>
+                                        <app-schema-form-view
+                                            *ngSwitchDefault
+                                            [delimiter-hide]="true"
+                                            [private-fields]="hide"
+                                            [dryRun]="dryRun"
+                                            [fields]="item.fields"
+                                            [values]="listItem"
+                                            [rules]="rules"
+                                            [formulas]="formulas">
+                                        </app-schema-form-view>
+                                    </ng-container>
+                                </div>
+                                <!-- <div class="short-delimiter-container">
+                                    <div class="delimiter"></div>
+                                </div> -->
+                            </div>
+                            <app-paginator
+                                *ngIf="item.pageSize < item.count"
+                                class="guardian-grid-paginator"
+                                [pageIndex]="item.pageIndex"
+                                [pageSize]="item.pageSize"
+                                [length]="item.count"
+                                (page)="onPage(item, $event)"
+                            ></app-paginator>
                         </ng-container>
-                    </div>
-                    <div class="short-delimiter-container">
-                        <div class="delimiter"></div>
-                    </div>
-                </div>
-                <app-paginator
-                    *ngIf="item.pageSize < item.count"
-                    class="guardian-grid-paginator"
-                    [pageIndex]="item.pageIndex"
-                    [pageSize]="item.pageSize"
-                    [length]="item.count"
-                    (page)="onPage(item, $event)"
-                ></app-paginator>
+                    </p-accordionTab>
+                </p-accordion>
             </div>
 
         </div>

@@ -3,6 +3,7 @@ import { DatabaseServer, Policy } from '@guardian/common';
 import { PolicyUser, UserCredentials } from './policy-user.js';
 import { ComponentsService } from './helpers/components-service.js';
 import { LocationType, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';
+import { IDebugContext } from './block-engine/block-result.js';
 
 /**
  * Policy roles interface
@@ -296,6 +297,18 @@ export interface IPolicyBlock {
     warn(message: string): void;
 
     /**
+     * Write debug to log
+     * @param message
+     */
+    debug(message: any): void;
+
+    /**
+     * Save and update debug context
+     * @param context
+     */
+    debugContext(context: IDebugContext): Promise<IDebugContext>;
+
+    /**
      * Trigger events
      * @param eventType
      * @param user
@@ -306,6 +319,18 @@ export interface IPolicyBlock {
         user: PolicyUser,
         data: T
     ): void;
+
+    /**
+     * Trigger event sync
+     * @param eventType
+     * @param user
+     * @param data
+     */
+    triggerEventSync<T>(
+        eventType: PolicyOutputEventType | string,
+        user: PolicyUser,
+        data: T
+    ): Promise<any>;
 
     /**
      * Trigger event
@@ -977,6 +1002,8 @@ export interface IPolicyDocument extends IPolicyDBDocument<any> {
      * sourceTag
      */
     __sourceTag__?: string;
+
+    draft?: boolean;
 }
 
 /**
@@ -1112,4 +1139,6 @@ export interface IPolicyGetData {
     readonly: boolean;
 
     [x: string]: any;
+
+    draftDocument?: any;
 }

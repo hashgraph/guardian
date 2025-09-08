@@ -9,10 +9,11 @@ import {
     MessageServer,
     MessageType,
     PolicyMessage,
-    PolicyImportExport
+    PolicyImportExport,
+    INotificationStep,
+    NewNotifier
 } from '@guardian/common';
 import { ExternalPolicyStatus, IOwner, MessageAPI, PolicyAvailability } from '@guardian/interfaces';
-import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { ImportMode, ImportPolicyOptions, PolicyImportExportHelper } from '../helpers/import-helpers/index.js'
 
@@ -26,11 +27,20 @@ import { ImportMode, ImportPolicyOptions, PolicyImportExportHelper } from '../he
 async function preparePolicyPreviewMessage(
     messageId: string,
     user: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
     logger: PinoLogger,
     userId: string | null
 ): Promise<any> {
-    notifier.start('Resolve Hedera account');
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_PARSE_FILE = 'Parse policy files';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_PARSE_FILE);
+    notifier.start();
+
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     if (!messageId) {
         throw new Error('Policy ID in body is empty');
     }
@@ -46,7 +56,7 @@ async function preparePolicyPreviewMessage(
         signOptions: root.signOptions
     });
     const message = await messageServer
-        .getMessage<PolicyMessage>({ messageId, loadIPFS: true, userId });
+        .getMessage<PolicyMessage>({ messageId, loadIPFS: true, userId, interception: userId });
     if (message.type !== MessageType.InstancePolicy) {
         throw new Error('Invalid Message Type');
     }
@@ -54,16 +64,18 @@ async function preparePolicyPreviewMessage(
     if (!message.document) {
         throw new Error('file in body is empty');
     }
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.completedAndStart('Parse policy files');
+    notifier.startStep(STEP_PARSE_FILE);
     const policyToImport: any = await PolicyImportExport.parseZipFile(message.document, true);
 
     policyToImport.topicId = message.getTopicId();
     policyToImport.availability = message.availability;
     policyToImport.restoreTopicId = message.restoreTopicId;
     policyToImport.actionsTopicId = message.actionsTopicId;
+    notifier.completeStep(STEP_PARSE_FILE);
 
-    notifier.completed();
+    notifier.complete();
     return policyToImport;
 }
 
@@ -71,33 +83,60 @@ async function addPolicy(
     messageId: string,
     owner: IOwner,
     logger: PinoLogger,
-    notifier: INotifier,
+    notifier: INotificationStep,
     userId: string | null
 ) {
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_LOAD_MESSAGE = 'Load message';
+    const STEP_IMPORT_POLICY = 'Import policy';
+    const STEP_START_POLICY = 'Parse policy files';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT, 1);
+    notifier.addStep(STEP_LOAD_MESSAGE, 5);
+    notifier.addStep(STEP_IMPORT_POLICY, 90);
+    notifier.addStep(STEP_START_POLICY, 4);
+    notifier.start();
+
     const users = new Users();
-    notifier.start('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const root = await users.getHederaAccount(owner.creator, userId);
-    notifier.completed();
-    const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(messageId, root, notifier, userId);
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
+
+    notifier.startStep(STEP_LOAD_MESSAGE);
+    const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(
+        messageId,
+        root,
+        notifier.getStep(STEP_LOAD_MESSAGE),
+        userId
+    );
+    notifier.completeStep(STEP_LOAD_MESSAGE);
+
+    notifier.startStep(STEP_IMPORT_POLICY);
     const result = await PolicyImportExportHelper.importPolicy(
         ImportMode.VIEW,
         (new ImportPolicyOptions(logger))
             .setComponents(policyToImport)
             .setUser(owner)
             .setAdditionalPolicy({ messageId }),
-        notifier,
+        notifier.getStep(STEP_IMPORT_POLICY),
         userId
     );
+    notifier.completeStep(STEP_IMPORT_POLICY);
+
     if (result?.errors?.length) {
         const message = PolicyImportExportHelper.errorsMessage(result.errors);
-        notifier.error(message);
+        notifier.fail(message);
         await logger.warn(message, ['GUARDIAN_SERVICE'], userId);
 
         return result;
     }
 
+    notifier.startStep(STEP_START_POLICY);
     const policyEngine = new PolicyEngine(logger);
     await policyEngine.startView(result.policy, owner, logger, notifier);
+    notifier.completeStep(STEP_START_POLICY);
 
     return result;
 }
@@ -211,7 +250,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
         async (msg: { messageId: string, owner: IOwner }) => {
             try {
                 const { messageId, owner } = msg;
-                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, emptyNotifier(), logger, owner?.id);
+                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -234,7 +273,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 if (item) {
                     return new MessageError(`Item is already exist.`);
                 }
-                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, emptyNotifier(), logger, owner?.id);
+                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
                 if (policyToImport.availability !== PolicyAvailability.PUBLIC) {
                     return new MessageError(`Policy is private.`);
                 }
@@ -284,7 +323,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const policy = await DatabaseServer.getPolicy({ messageId });
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
                     let errors: any[] = [];
                     if (!policy) {
@@ -300,7 +339,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     notifier.result({ id: messageId, errors });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
 
                 return new MessageResponse(task);
@@ -331,7 +370,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const policy = await DatabaseServer.getPolicy({ messageId });
-                const notifier = emptyNotifier();
+                const notifier = NewNotifier.empty();
 
                 let errors: any[] = [];
                 if (!policy) {
@@ -373,7 +412,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
                     for (const item of items) {
                         item.status = ExternalPolicyStatus.REJECTED;
@@ -383,7 +422,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     notifier.result({ id: messageId, errors: [] });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
 
                 return new MessageResponse(task);

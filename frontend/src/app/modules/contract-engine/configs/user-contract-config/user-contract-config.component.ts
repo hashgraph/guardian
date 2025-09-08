@@ -124,7 +124,7 @@ export class UserContractConfigComponent implements OnInit {
     openRetirePoolsDialog() {
         const dialogRef = this.dialog.open(UserRetirePoolsDialogComponent, {
             width: '800px',
-            styleClass: 'g-dialog',
+            styleClass: 'g-dialog pools-dialog',
             modal: true,
             closable: false,
         });

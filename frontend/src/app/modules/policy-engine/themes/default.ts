@@ -17,6 +17,8 @@ export const defaultTheme = {
             filterValue: [
                 'interfaceActionBlock',
                 'buttonBlock',
+                'transformationButtonBlock',
+                'integrationButtonBlock',
                 'interfaceContainerBlock',
                 'createTokenBlock',
                 'interfaceDocumentsSourceBlock',
@@ -85,7 +87,9 @@ export const defaultTheme = {
                 'buttonBlockAddon',
                 'dropdownBlockAddon',
                 'requestVcDocumentBlockAddon',
-                'dataTransformationAddon'
+                'dataTransformationAddon',
+                'transformationUIAddon',
+                'httpRequestUIAddon',
             ]
         }
     ],

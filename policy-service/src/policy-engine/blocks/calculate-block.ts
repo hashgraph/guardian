@@ -121,8 +121,11 @@ export class CalculateContainerBlock {
         ref: IPolicyCalculateBlock,
         userId: string | null
     ): Promise<IPolicyDocument> {
-        const isArray = Array.isArray(documents);
-        if (!documents || (isArray && !documents.length)) {
+        const context = await ref.debugContext({ documents });
+        const contextDocuments = context.documents as IPolicyDocument | IPolicyDocument[];
+
+        const isArray = Array.isArray(contextDocuments);
+        if (!contextDocuments || (isArray && !contextDocuments.length)) {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
         }
 
@@ -130,22 +133,22 @@ export class CalculateContainerBlock {
         let json: any | any[];
         if (isArray) {
             json = [];
-            for (const doc of documents) {
+            for (const doc of contextDocuments) {
                 const vc = VcDocumentDefinition.fromJsonTree(doc.document);
                 json.push(vc.getCredentialSubject(0).toJsonTree());
 
             }
         } else {
-            const vc = VcDocumentDefinition.fromJsonTree(documents.document);
+            const vc = VcDocumentDefinition.fromJsonTree(contextDocuments.document);
             json = vc.getCredentialSubject(0).toJsonTree();
         }
         // -->
 
-        const newJson = await this.calculate(json, ref, documents, userId);
+        const newJson = await this.calculate(json, ref, contextDocuments, userId);
         if (ref.options.unsigned) {
             return await this.createUnsignedDocument(newJson, ref);
         } else {
-            const metadata = await this.aggregateMetadata(documents, ref, userId);
+            const metadata = await this.aggregateMetadata(contextDocuments, ref, userId);
             return await this.createDocument(newJson, metadata, ref, userId);
         }
     }
@@ -237,6 +240,9 @@ export class CalculateContainerBlock {
         }
         vcSubject.policyId = ref.policyId;
         vcSubject.id = id;
+
+        PolicyUtils.setGuardianVersion(vcSubject, outputSchema);
+
         if (reference) {
             vcSubject.ref = reference;
         }

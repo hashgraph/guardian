@@ -5,22 +5,28 @@ export class SheetName {
     public getSheetName(name: string, size: number): string {
         const id = ((name || '')
             .replace(/[\*,\?,\:,\\,\/,\[,\]]/ig, '')
-            .slice(0, Math.min(size, 30)));
-        if (this.nameCache.has(id)) {
+            .slice(0, Math.min(size, 30)))
+            .trim();
+
+        const key = id.toLocaleLowerCase();
+
+        if (this.nameCache.has(key)) {
             const base = id.slice(0, Math.min(size - 3, 27));
 
-            let index = 0;
+            let index = 1;
             let newId = base;
+            let newKey = key;
             do {
                 index++;
                 newId = base + ' ' + index;
-            } while (this.nameCache.has(newId));
+                newKey = newId.toLocaleLowerCase().trim();
+            } while (this.nameCache.has(newKey));
 
-            this.nameCache.add(newId);
+            this.nameCache.add(newKey);
             return newId;
 
         } else {
-            this.nameCache.add(id);
+            this.nameCache.add(key);
             return id;
         }
     }

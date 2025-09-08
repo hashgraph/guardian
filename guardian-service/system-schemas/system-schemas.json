@@ -144,6 +144,98 @@
         }
     },
     {
+        "uuid": "IntegrationDataV2",
+        "name": "IntegrationDataV2",
+        "entity": "INTEGRATION_DATA_V2",
+        "document": {
+            "$id": "#IntegrationDataV2",
+            "$comment": "{ \"term\": \"IntegrationDataV2\", \"@id\": \"#IntegrationDataV2\" }",
+            "title": "IntegrationDataV2",
+            "description": "IntegrationDataV2",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [{
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [{
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "date": {
+                    "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "date",
+                    "description": "date",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "data": {
+                    "$comment": "{\"term\": \"data\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "data",
+                    "description": "data",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "userId": {
+                    "$comment": "{\"term\": \"userId\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "userId",
+                    "description": "userId",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "dataType": {
+                    "$comment": "{\"term\": \"dataType\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "dataType",
+                    "description": "dataType",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "parsedData": {
+                    "$comment": "{\"term\": \"parsedData\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "parsedData",
+                    "description": "parsedData",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "requestParams": {
+                    "$comment": "{\"term\": \"requestParams\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "requestParams",
+                    "description": "requestParams",
+                    "type": "string",
+                    "readOnly": false
+                }
+            },
+            "required": [
+                "date",
+                "amount",
+                "tokenId"
+            ],
+            "additionalProperties": false
+        }
+    },
+    {
         "uuid": "Retire",
         "name": "Retire",
         "entity": "RETIRE",

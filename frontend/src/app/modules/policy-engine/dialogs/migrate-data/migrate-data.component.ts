@@ -9,6 +9,7 @@ import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { JsonEditorDialogComponent } from '../json-editor-dialog/json-editor-dialog.component';
+import { PolicyStatus } from '@guardian/interfaces';
 
 function findAllEntities(
     obj: { [key: string]: any },
@@ -56,6 +57,7 @@ class MigrationConfig {
         '#Retire',
         '#MintNFToken',
         '#MintToken',
+        '#IntegrationDataV2',
         '#UserRole',
     ];
 
@@ -367,6 +369,8 @@ export class MigrateData {
 
     dstTokenMap: string[] = [];
 
+    showMigrateRetirePools = false;
+
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
@@ -502,11 +506,15 @@ export class MigrateData {
         this.migrationConfig.clearTokens();
         this.migrationConfig.clearGroups();
         this.migrationConfig.clearRoles();
+
+        let srcPolicy: any;
+        let dstPolicy: any;
+
         if (this.migrationConfig.dst) {
             this.pList1 = this.policies.filter(
                 (s) => s.id !== this.migrationConfig.dst
             );
-            const dstPolicy = await this._policyEngineService
+            dstPolicy = await this._policyEngineService
                 .policy(this.migrationConfig.dst)
                 .toPromise();
             this.dstRoles = dstPolicy.policyRoles || [];
@@ -535,7 +543,7 @@ export class MigrateData {
             this.loadVCs();
             this.loadVPs();
 
-            const srcPolicy =
+            srcPolicy =
                 this.migrationConfig.src === this.uploadedPolicy?.id
                     ? this.uploadedPolicy
                     : await this._policyEngineService
@@ -578,6 +586,12 @@ export class MigrateData {
             }
         } else {
             this.pList2 = this.policies;
+        }
+
+        this.showMigrateRetirePools = (srcPolicy?.status !== PolicyStatus.DRY_RUN);
+        
+        if (!this.showMigrateRetirePools){
+            this.migrationConfig.migrateRetirePools = false;
         }
 
         this.loadSchemas();

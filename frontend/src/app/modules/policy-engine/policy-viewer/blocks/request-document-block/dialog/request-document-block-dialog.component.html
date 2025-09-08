@@ -55,24 +55,28 @@
             </ng-template>
             <form (ngSubmit)="onSubmit()" [formGroup]="dataForm">
                 <div class="form-dialog" [attr.dry-run]="!!dryRun" [attr.restore]="!!restoreData">
-                    <app-schema-form
-                        (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
-                        (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
-                        [comesFromDialog]="true"
-                        [showButtons]="false"
-                        [formGroup]="dataForm"
+                    <app-schema-form-root
+                        [schema]="schema"
                         [preset]="presetDocument"
                         [private-fields]="hideFields"
                         [readonly-fields]="presetReadonlyFields"
                         [dryRun]="dryRun"
                         [policyId]="policyId"
-                        [schema]="schema"
                         [rules]="rulesResults"
+                        [isFormForRequestBlock]="true"
+                        [saveShown]="true"
+                        [comesFromDialog]="true"
+                        [showButtons]="false"
                         cancelText = "Cancel"
                         submitText = "Create"
+                        saveText = "Save"
+                        (form)="initForm($event)"
                         (buttons)="onChangeButtons($event)"
+                        (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
+                        (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
+                        (saveBtnEvent)="handleSaveBtnEvent($event, this)"
                     >
-                    </app-schema-form>
+                    </app-schema-form-root>
                 </div>
             </form>
         </div>
@@ -88,7 +92,10 @@
             <button
                 (click)="config.fn()"
                 [disabled]="ifDisabledBtn(config)"
-                class="guardian-button guardian-button-{{config.type}}">{{config.text}}</button>
+                class="guardian-button guardian-button-{{config.type}}">
+                <svg-icon *ngIf="config.iconPath" src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
+
+                {{config.text}}</button>
         </div>
     </div>
 </div>

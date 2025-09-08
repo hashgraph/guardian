@@ -12,6 +12,9 @@ import {
     ContractId,
     ContractLogInfo,
     DelegateContractId,
+    FileAppendTransaction,
+    FileContentsQuery,
+    FileCreateTransaction,
     FileId,
     Hbar,
     HbarUnit,
@@ -1065,42 +1068,64 @@ export class HederaSDKHelper {
         if (startTimestamp) {
             url += `?timestamp=gt:${startTimestamp}`;
         }
-        const result = [];
-        const p = {
+
+        const params: any = {
             params: { limit: HederaSDKHelper.REST_API_MAX_LIMIT },
             responseType: 'json'
         }
 
+        const messageMap = new Map<string, any[]>();
         while (goNext) {
-            const res = await axios.get(url, p as any);
-            delete p.params
+            const res = await axios.get(url, params);
+            delete params.params;
 
             if (!res || !res.data || !res.data.messages) {
                 throw new Error(`Invalid topicId '${topicId}'`);
             }
 
             const messages = res.data.messages;
-            if (messages.length === 0) {
-                return result;
-            }
-
-            for (const m of messages) {
-                const buffer = Buffer.from(m.message, 'base64').toString();
-                result.push({
-                    id: m.consensus_timestamp,
-                    payer_account_id: m.payer_account_id,
-                    sequence_number: m.sequence_number,
-                    topicId: m.topic_id,
-                    message: buffer
-                });
-            }
-            if (res.data.links?.next) {
-                url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
+            if (messages.length !== 0) {
+                for (const m of messages) {
+                    let messageId: string;
+                    if (m?.chunk_info?.total !== 1) {
+                        messageId = m.chunk_info?.initial_transaction_id?.transaction_valid_start || m.consensus_timestamp;
+                    } else {
+                        messageId = m.consensus_timestamp;
+                    }
+                    const items = messageMap.get(messageId) || [];
+                    items.push(m);
+                    messageMap.set(messageId, items);
+                }
+                if (res.data.links?.next) {
+                    url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
+                } else {
+                    goNext = false;
+                }
             } else {
                 goNext = false;
             }
         }
 
+        const result = [];
+        for (const items of messageMap.values()) {
+            if (items.length > 1) {
+                items.sort((a, b) => a.chunk_info.number > b.chunk_info.number ? 1 : -1);
+            }
+            const start = items[0];
+            const message = {
+                id: start.consensus_timestamp,
+                payer_account_id: start.payer_account_id,
+                sequence_number: start.sequence_number,
+                topicId: start.topic_id,
+                message: ''
+            }
+            for (const item of items) {
+                const buffer = Buffer.from(item.message, 'base64').toString();
+                message.message += buffer;
+            }
+            result.push(message);
+        }
+        result.sort((a, b) => a.sequence_number > b.sequence_number ? 1 : -1);
         return result;
     }
 
@@ -1388,6 +1413,63 @@ export class HederaSDKHelper {
     }
 
     /**
+     * Ensures the contents of a Hedera file are stored as ASCII hex.
+     *
+     * If the current file's contents are raw binary (not ASCII hex), this method:
+     *  1. Reads the binary contents.
+     *  2. Converts them into a hex string.
+     *  3. Creates a new Hedera file initialized with the first 4 KiB chunk.
+     *  4. Appends the remaining hex data in 4 KiB chunks.
+     *
+     * Returns the FileId pointing to a file containing ASCII hex data suitable
+     * for contract deployment. If the original file was already ASCII hex,
+     * the original FileId is returned.
+     *
+     * @param fileId - The FileId of the existing Hedera file.
+     * @returns The FileId of the ASCII‑hex‑encoded file (original or newly created).
+     * @private
+     */
+    private async ensureHexBytecodeFile(fileId: FileId): Promise<FileId> {
+        const client = this.client;
+
+        const bytes = await new FileContentsQuery()
+            .setFileId(fileId)
+            .execute(client);
+
+        const isAsciiHex = bytes.every(
+            (b) =>
+                (b >= 0x30 && b <= 0x39) ||
+                (b >= 0x41 && b <= 0x46) ||
+                (b >= 0x61 && b <= 0x66) ||
+                b === 0x0a || b === 0x0d
+        );
+
+        if (isAsciiHex) {
+            return fileId;
+        }
+
+        const hex = Buffer.from(bytes).toString('hex');
+        const CHUNK = 4096;
+
+        const create = await new FileCreateTransaction()
+            .setKeys([client.operatorPublicKey])
+            .setContents(hex.slice(0, CHUNK))
+            .execute(client);
+
+        const newFileId = (await create.getReceipt(client)).fileId;
+
+        for (let i = CHUNK; i < hex.length; i += CHUNK) {
+            await new FileAppendTransaction()
+                .setFileId(newFileId)
+                .setContents(hex.slice(i, i + CHUNK))
+                .setMaxChunks(Number.MAX_SAFE_INTEGER)
+                .execute(client);
+        }
+
+        return newFileId;
+    }
+
+    /**
      * Create Hedera Smart Contract
      *
      * @param {string | FileId} bytecodeFileId - Code File Id
@@ -1403,6 +1485,46 @@ export class HederaSDKHelper {
         gas: number = 1000000,
         contractMemo?: string
     ): Promise<[string, ContractLogInfo]> {
+        const client = this.client;
+        const contractInstantiateTx = new ContractCreateTransaction()
+            .setBytecodeFileId(bytecodeFileId)
+            .setGas(gas)
+            .setConstructorParameters(parameters)
+            .setContractMemo(contractMemo)
+            .setMaxTransactionFee(MAX_FEE);
+        const contractInstantiateSubmit = await contractInstantiateTx.execute(
+            client
+        );
+        const contractInstantiateRx =
+            await contractInstantiateSubmit.getReceipt(client);
+        const contractId = contractInstantiateRx.contractId;
+        const contractRecord =
+            await contractInstantiateSubmit.getRecord(client);
+
+        return [`${contractId}`, contractRecord.contractFunctionResult.logs?.[0]];
+    }
+
+    /**
+     * Create Hedera Smart Contract V2 22.07.2025
+     *
+     * @param {string | FileId} bytecodeFileId - Code File Id
+     * @param {ContractFunctionParameters} parameters - Contract Parameters
+     * @param {string} contractMemo - Memo
+     *
+     * @returns {string} - Contract Id
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract create transaction timeout exceeded')
+    public async createContractV2(
+        bytecodeFileId: string | FileId,
+        parameters: ContractFunctionParameters,
+        gas: number = 1000000,
+        contractMemo?: string
+    ): Promise<[string, ContractLogInfo]> {
+        if (typeof bytecodeFileId === 'string') {
+            bytecodeFileId = FileId.fromString(bytecodeFileId);
+        }
+        bytecodeFileId = await this.ensureHexBytecodeFile(bytecodeFileId as FileId);
+
         const client = this.client;
         const contractInstantiateTx = new ContractCreateTransaction()
             .setBytecodeFileId(bytecodeFileId)
@@ -1843,7 +1965,7 @@ export class HederaSDKHelper {
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get contract info request timeout exceeded')
     public async getContractInfoRest(contractId: string): Promise<any> {
         const res = await axios.get(
-            `${Environment.HEDERA_CONTRACT_API}/${contractId}`,
+            `${Environment.HEDERA_CONTRACT_API}${contractId}`,
             { responseType: 'json' }
         );
         if (!res || !res.data) {
@@ -1890,7 +2012,7 @@ export class HederaSDKHelper {
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
     public static async accountInfo(accountId: string): Promise<any> {
         const res = await axios.get(
-            `${Environment.HEDERA_ACCOUNT_API}/${accountId}/tokens`,
+            `${Environment.HEDERA_ACCOUNT_API}${accountId}/tokens`,
             { responseType: 'json' }
         );
         if (!res || !res.data) {

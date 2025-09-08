@@ -127,7 +127,7 @@ New color-stylization of policy syntax groups is now possible as shown below:
 
 The syntax highlighting is used in the JSON or YAML view in the policy configurator. Colors correspond to different ‘types’ of keywords in the code, the current colors-to-types mapping is displayed in the legend in the top right corner.
 
-<figure><img src="https://github.com/hashgraph/guardian/blob/main/docs/guardian/standard-registry/policies/themes/broken-reference" alt=""><figcaption></figcaption></figure>
+<figure><img src="broken-reference" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/image (36) (1).png" alt=""><figcaption></figcaption></figure>
 

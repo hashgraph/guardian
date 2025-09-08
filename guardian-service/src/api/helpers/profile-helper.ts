@@ -24,6 +24,7 @@ import {
     HederaBBSMethod,
     HederaEd25519Method,
     IAuthUser,
+    INotificationStep,
     KeyType,
     MessageAction,
     MessageError,
@@ -42,7 +43,6 @@ import {
     Wallet,
     Workers,
 } from '@guardian/common';
-import { INotifier } from '../../helpers/notifier.js';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { serDefaultRole } from '../permission.service.js';
 import { publishSystemSchema } from '../../helpers/import-helpers/index.js';
@@ -104,19 +104,27 @@ export async function getGlobalTopic(): Promise<TopicConfig | null> {
 
 /**
  * Set up user profile
+ *
  * @param username
  * @param profile
- * @param notifier
  * @param logger
+ * @param notifier
+ * @param logId
  */
-export async function setupUserProfile(
+export async function setupUserProfile({
+    username,
+    profile,
+    logger,
+    notifier,
+    logId
+}: {
     username: string,
     profile: ICredentials,
-    notifier: INotifier,
     logger: PinoLogger,
+    notifier: INotificationStep,
     logId: string | null
-): Promise<string> {
-    notifier.start('Get user');
+}): Promise<string> {
+    notifier.start();
     const users = new Users();
     const user = await users.getUser(username, logId);
     if (user.did) {
@@ -130,25 +138,131 @@ export async function setupUserProfile(
         if (!profile.hederaAccountKey) {
             throw new MessageError('Invalid Hedera Account Key', 403);
         }
-        const did = await createUserProfile(profile, notifier, user, logger, logId);
-        await saveUserProfile(username, did, profile, notifier, user, logger, logId);
+        const did = await createUserProfile({ profile, user, logger, notifier, logId });
+        await saveUserProfile({ username, did, profile, notifier, user, logger, logId });
+        notifier.complete();
         return did;
     } else if (user.role === UserRole.USER) {
         profile.entity = SchemaEntity.USER;
         if (profile.type === LocationType.REMOTE) {
-            const did = await createRemoteUserProfile(profile, notifier, user, logger);
-            await saveRemoteUserProfile(username, did, profile, notifier, user, logger, logId);
+            const did = await createRemoteUserProfile({ profile, notifier, user, logger });
+            await saveRemoteUserProfile({ username, did, profile, notifier, user, logger, logId });
+            notifier.complete();
             return did;
         } else {
             if (!profile.hederaAccountKey) {
                 throw new MessageError('Invalid Hedera Account Key', 403);
             }
-            const did = await createUserProfile(profile, notifier, user, logger, logId);
-            await saveUserProfile(username, did, profile, notifier, user, logger, logId);
+            const did = await createUserProfile({ profile, user, logger, notifier, logId });
+            await saveUserProfile({ username, did, profile, notifier, user, logger, logId });
+            notifier.complete();
             return did;
         }
     } else {
         throw new MessageError('Unknown user role.', 500);
+    }
+}
+
+export async function createSystemSchemas({
+    entity,
+    topicId,
+    user,
+    userDID,
+    messageServer,
+    logger,
+    notifier,
+    logId
+}: {
+    entity: SchemaEntity,
+    topicId: string,
+    user: IAuthUser,
+    userDID: string,
+    messageServer: MessageServer,
+    logger: PinoLogger,
+    notifier: INotificationStep,
+    logId: string | null
+}): Promise<Schema | null> {
+    try {
+        // <-- Steps
+        const STEP_STANDARD_REGISTRY = `${SchemaEntity.STANDARD_REGISTRY}`;
+        const STEP_USER = `${SchemaEntity.USER}`;
+        const STEP_RETIRE_TOKEN = `${SchemaEntity.RETIRE_TOKEN}`;
+        const STEP_ROLE = `${SchemaEntity.ROLE}`;
+        const STEP_USER_PERMISSIONS = `${SchemaEntity.USER_PERMISSIONS}`;
+        // Steps -->
+
+        notifier.addStep(STEP_STANDARD_REGISTRY);
+        notifier.addStep(STEP_USER);
+        notifier.addStep(STEP_RETIRE_TOKEN);
+        notifier.addStep(STEP_ROLE);
+        notifier.addStep(STEP_USER_PERMISSIONS);
+        notifier.start();
+
+        const parent: IOwner = EntityOwner.sr(user.id.toString(), userDID);
+        await checkAndPublishSchema({
+            entity: SchemaEntity.STANDARD_REGISTRY,
+            topicId,
+            userDID,
+            parent,
+            messageServer,
+            logger,
+            notifier: notifier.addStep(STEP_STANDARD_REGISTRY),
+            logId
+        });
+        await checkAndPublishSchema({
+            entity: SchemaEntity.USER,
+            topicId,
+            userDID,
+            parent,
+            messageServer,
+            logger,
+            notifier: notifier.addStep(STEP_USER),
+            logId
+        });
+        await checkAndPublishSchema({
+            entity: SchemaEntity.RETIRE_TOKEN,
+            topicId,
+            userDID,
+            parent,
+            messageServer,
+            logger,
+            notifier: notifier.addStep(STEP_RETIRE_TOKEN),
+            logId
+        });
+        await checkAndPublishSchema({
+            entity: SchemaEntity.ROLE,
+            topicId,
+            userDID,
+            parent,
+            messageServer,
+            logger,
+            notifier: notifier.addStep(STEP_ROLE),
+            logId
+        });
+        await checkAndPublishSchema({
+            entity: SchemaEntity.USER_PERMISSIONS,
+            topicId,
+            userDID,
+            parent,
+            messageServer,
+            logger,
+            notifier: notifier.addStep(STEP_USER_PERMISSIONS),
+            logId
+        });
+        if (entity) {
+            const schema = await (new DatabaseServer()).findOne(SchemaCollection, {
+                entity,
+                readonly: true,
+                topicId
+            });
+            if (schema) {
+                return new Schema(schema);
+            }
+        }
+        return null;
+    } catch (error) {
+        logger.error(error, ['GUARDIAN_SERVICE'], logId);
+        return null;
     }
 }
 
@@ -159,13 +273,19 @@ export async function setupUserProfile(
  * @param user
  * @param logger
  */
-export async function createUserProfile(
+export async function createUserProfile({
+    profile,
+    user,
+    logger,
+    notifier,
+    logId
+}: {
     profile: ICredentials,
-    notifier: INotifier,
     user: IAuthUser,
     logger: PinoLogger,
-    logId: string | null
-): Promise<string> {
+    notifier: INotificationStep,
+    logId: string | null,
+}): Promise<string> {
     const {
         hederaAccountId,
         hederaAccountKey,
@@ -177,6 +297,26 @@ export async function createUserProfile(
         useFireblocksSigning,
         fireblocksConfig
     } = profile;
+
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_RESOLVE_TOPIC = 'Resolve topic';
+    const STEP_PUBLISH_DID = 'Publish DID Document';
+    const STEP_PUBLISH_SCHEMAS = 'Publish schemas';
+    const STEP_PUBLISH_VC = 'Publish VC Document';
+    const STEP_CREATE_ROLES = 'Create roles';
+    const STEP_SAVE = 'Save';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_RESOLVE_TOPIC);
+    notifier.addStep(STEP_PUBLISH_DID);
+    notifier.addStep(STEP_PUBLISH_SCHEMAS);
+    notifier.addStep(STEP_PUBLISH_VC);
+    notifier.addStep(STEP_SAVE);
+    notifier.addStep(STEP_CREATE_ROLES);
+    notifier.start();
+
     let signOptions: ISignOptions = {
         signType: SignType.INTERNAL
     }
@@ -196,10 +336,12 @@ export async function createUserProfile(
         operatorKey: hederaAccountKey,
         signOptions
     });
+    const dataBaseServer = new DatabaseServer();
 
     // ------------------------
     // <-- Check hedera key
     // ------------------------
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     try {
         const workers = new Workers();
         AccountId.fromString(hederaAccountId);
@@ -207,10 +349,17 @@ export async function createUserProfile(
         await workers.addNonRetryableTask({
             type: WorkerTaskType.GET_USER_BALANCE,
             data: { hederaAccountId, hederaAccountKey }
-        }, 20, user.id.toString());
+        }, {
+            priority: 20,
+            attempts: 0,
+            registerCallback: true,
+            interception: user.id.toString(),
+            userId: user.id.toString()
+        });
     } catch (error) {
         throw new Error(`Invalid Hedera account or key.`);
     }
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
     // ------------------------
     // Check hedera key -->
     // ------------------------
@@ -218,13 +367,10 @@ export async function createUserProfile(
     // ------------------------
     // <-- Resolve topic
     // ------------------------
-    notifier.start('Resolve topic');
+    notifier.startStep(STEP_RESOLVE_TOPIC);
     let topicConfig: TopicConfig = null;
     let newTopic: Topic = null;
     const globalTopic = await getGlobalTopic();
-
-    const dataBaseServer = new DatabaseServer();
-
     if (parent) {
         topicConfig = await TopicConfig.fromObject(
             await dataBaseServer.findOne(Topic, {
@@ -233,7 +379,6 @@ export async function createUserProfile(
             }), true, logId);
     }
     if (!topicConfig) {
-        notifier.info('Create user topic');
         logger.info('Create User Topic', ['GUARDIAN_SERVICE'], logId);
         const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey, signOptions);
         topicConfig = await topicHelper.create({
@@ -248,6 +393,7 @@ export async function createUserProfile(
         newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
     }
     messageServer.setTopicObject(topicConfig);
+    notifier.completeStep(STEP_RESOLVE_TOPIC);
     // ------------------------
     // Resolve topic -->
     // ------------------------
@@ -255,7 +401,7 @@ export async function createUserProfile(
     // ------------------------
     // <-- Publish DID Document
     // ------------------------
-    notifier.completedAndStart('Publish DID Document');
+    notifier.startStep(STEP_PUBLISH_DID);
     logger.info('Create DID Document', ['GUARDIAN_SERVICE'], logId);
 
     const vcHelper = new VcHelper();
@@ -269,8 +415,15 @@ export async function createUserProfile(
 
     const existingUser = await dataBaseServer.findOne(DidDocumentCollection, { did: userDID });
     if (existingUser) {
-        notifier.completedAndStart('User restored');
-        notifier.completed();
+        notifier.skipStep(STEP_PUBLISH_DID);
+        notifier.skipStep(STEP_PUBLISH_SCHEMAS);
+        notifier.skipStep(STEP_PUBLISH_VC);
+        notifier.skipStep(STEP_CREATE_ROLES);
+        // <-- Steps
+        const STEP_RESTORE = 'User restored';
+        // Steps -->
+        notifier.addStep(STEP_RESTORE);
+        notifier.completeStep(STEP_RESTORE);
         return userDID;
     }
 
@@ -281,7 +434,12 @@ export async function createUserProfile(
         didMessage.setDocument(currentDidDocument);
         const didMessageResult = await messageServer
             .setTopicObject(topicConfig)
-            .sendMessage(didMessage, true, null, user.id.toString())
+            .sendMessage(didMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId: user.id.toString(),
+                interception: user.id.toString()
+            })
         didRow.status = DidDocumentStatus.CREATE;
         didRow.messageId = didMessageResult.getId();
         didRow.topicId = didMessageResult.getTopicId();
@@ -291,89 +449,35 @@ export async function createUserProfile(
         // didRow.status = DidDocumentStatus.FAILED;
         // await new DataBaseHelper(DidDocumentCollection).update(didRow);
     }
+    notifier.completeStep(STEP_PUBLISH_DID);
     // ------------------------
     // Publish DID Document -->
     // ------------------------
 
     // ------------------
-    // <-- Publish Schema
+    // <-- Publish Schemas
     // ------------------
-    notifier.completedAndStart('Publish Schema');
-    let schemaObject: Schema;
-    try {
-        const srUser: IOwner = EntityOwner.sr(user.id.toString(), userDID);
-        await checkAndPublishSchema(
-            SchemaEntity.STANDARD_REGISTRY,
-            topicConfig,
-            userDID,
-            srUser,
-            messageServer,
-            logger,
-            notifier,
-            logId
-        );
-        await checkAndPublishSchema(
-            SchemaEntity.USER,
-            topicConfig,
-            userDID,
-            srUser,
-            messageServer,
-            logger,
-            notifier,
-            logId
-        );
-        await checkAndPublishSchema(
-            SchemaEntity.RETIRE_TOKEN,
-            topicConfig,
-            userDID,
-            srUser,
-            messageServer,
-            logger,
-            notifier,
-            logId
-        );
-        await checkAndPublishSchema(
-            SchemaEntity.ROLE,
-            topicConfig,
-            userDID,
-            srUser,
-            messageServer,
-            logger,
-            notifier,
-            logId
-        );
-        await checkAndPublishSchema(
-            SchemaEntity.USER_PERMISSIONS,
-            topicConfig,
-            userDID,
-            srUser,
-            messageServer,
-            logger,
-            notifier,
-            logId
-        );
-        if (entity) {
-            const schema = await dataBaseServer.findOne(SchemaCollection, {
-                entity,
-                readonly: true,
-                topicId: topicConfig.topicId
-            });
-            if (schema) {
-                schemaObject = new Schema(schema);
-            }
-        }
-    } catch (error) {
-        logger.error(error, ['GUARDIAN_SERVICE'], logId);
-    }
+    notifier.startStep(STEP_PUBLISH_SCHEMAS);
+    const schemaObject = await createSystemSchemas({
+        entity,
+        topicId: topicConfig.topicId,
+        user,
+        userDID,
+        messageServer,
+        logger,
+        notifier: notifier.getStep(STEP_PUBLISH_SCHEMAS),
+        logId
+    });
+    notifier.completeStep(STEP_PUBLISH_SCHEMAS);
     // ------------------
-    // Publish Schema -->
+    // Publish Schemas -->
     // ------------------
 
     // -----------------------
     // <-- Publish VC Document
     // -----------------------
-    notifier.completedAndStart('Publish VC Document');
     if (vcDocument) {
+        notifier.startStep(STEP_PUBLISH_VC);
         logger.info('Create VC Document', ['GUARDIAN_SERVICE'], logId);
 
         let credentialSubject: any = { ...vcDocument };
@@ -395,7 +499,12 @@ export async function createUserProfile(
         try {
             const vcMessageResult = await messageServer
                 .setTopicObject(topicConfig)
-                .sendMessage(vcMessage, true, null, user.id.toString());
+                .sendMessage(vcMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: user.id.toString(),
+                    interception: user.id.toString()
+                });
             vcDoc.hederaStatus = DocumentStatus.ISSUE;
             vcDoc.messageId = vcMessageResult.getId();
             vcDoc.topicId = vcMessageResult.getTopicId();
@@ -405,12 +514,15 @@ export async function createUserProfile(
             vcDoc.hederaStatus = DocumentStatus.FAILED;
             await dataBaseServer.update(VcDocumentCollection, null, vcDoc);
         }
+        notifier.completeStep(STEP_PUBLISH_VC);
+    } else {
+        notifier.skipStep(STEP_PUBLISH_VC);
     }
     // -----------------------
     // Publish VC Document -->
     // -----------------------
 
-    notifier.completedAndStart('Save changes');
+    notifier.startStep(STEP_SAVE);
     if (newTopic) {
         newTopic.owner = userDID;
         newTopic.parent = globalTopic?.topicId;
@@ -428,18 +540,34 @@ export async function createUserProfile(
         regMessage.setDocument(userDID, topicConfig?.topicId, attributes);
         await messageServer
             .setTopicObject(globalTopic)
-            .sendMessage(regMessage, true, null, user.id.toString())
+            .sendMessage(regMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId: user.id.toString(),
+                interception: user.id.toString()
+            })
     }
+    notifier.completeStep(STEP_SAVE);
 
     // -----------------------
     // Publish Role Document -->
     // -----------------------
     if (user.role === UserRole.STANDARD_REGISTRY) {
+        notifier.startStep(STEP_CREATE_ROLES);
         messageServer.setTopicObject(topicConfig);
-        await createDefaultRoles(user.id.toString(), userDID, currentDidDocument, messageServer, notifier, logId);
+        await createDefaultRoles({
+            userId: user.id.toString(),
+            did: userDID,
+            didDocument: currentDidDocument,
+            messageServer,
+            notifier: notifier.getStep(STEP_CREATE_ROLES),
+            logId
+        });
+        notifier.completeStep(STEP_CREATE_ROLES);
+    } else {
+        notifier.skipStep(STEP_CREATE_ROLES);
     }
 
-    notifier.completed();
     return userDID;
 }
 
@@ -450,12 +578,16 @@ export async function createUserProfile(
  * @param user
  * @param logger
  */
-export async function createRemoteUserProfile(
+export async function createRemoteUserProfile({
+    profile,
+    notifier,
+    user
+}: {
     profile: ICredentials,
-    notifier: INotifier,
+    notifier: INotificationStep,
     user: IAuthUser,
     logger: PinoLogger
-): Promise<string> {
+}): Promise<string> {
     const {
         hederaAccountId,
         vcDocument,
@@ -464,19 +596,35 @@ export async function createRemoteUserProfile(
     } = profile;
     const dataBaseServer = new DatabaseServer();
 
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_SAVE = 'Save';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_SAVE);
+    notifier.start();
+
     // ------------------------
     // <-- Check hedera key
     // ------------------------
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     try {
         const workers = new Workers();
         AccountId.fromString(hederaAccountId);
         await workers.addNonRetryableTask({
             type: WorkerTaskType.GET_USER_BALANCE_REST,
             data: { hederaAccountId }
-        }, 20, user.id.toString());
+        }, {
+            priority: 20,
+            attempts: 0,
+            userId: user.id.toString(),
+            interception: null
+        });
     } catch (error) {
         throw new Error(`Invalid Hedera account or key.`);
     }
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
     // ------------------------
     // Check hedera key -->
     // ------------------------
@@ -484,13 +632,12 @@ export async function createRemoteUserProfile(
     // ------------------------
     // <-- DID Document
     // ------------------------
+    notifier.startStep(STEP_SAVE);
     const currentDidDocument = await validateDidWithoutKeys(didDocument);
     const userDID = currentDidDocument.getDid();
 
     const existingUser = await dataBaseServer.findOne(DidDocumentCollection, { did: userDID });
     if (existingUser) {
-        notifier.completedAndStart('User restored');
-        notifier.completed();
         return userDID;
     }
 
@@ -548,8 +695,6 @@ export async function createRemoteUserProfile(
     // ------------------------
     // Resolve topic -->
     // ------------------------
-
-    notifier.completed();
     return userDID;
 }
 
@@ -560,17 +705,28 @@ export async function createRemoteUserProfile(
  * @param user
  * @param logger
  */
-export async function saveUserProfile(
+export async function saveUserProfile({
+    username,
+    did,
+    profile,
+    notifier,
+    user,
+    logId
+}: {
     username: string,
     did: string,
     profile: ICredentials,
-    notifier: INotifier,
+    notifier: INotificationStep,
     user: IAuthUser,
     logger: PinoLogger,
     logId: string | null
-) {
+}) {
+    // <-- Steps
+    const STEP_SAVE = 'Save'; // Init is create function
+    // Steps -->
+
+    notifier.startStep(STEP_SAVE);
     const users = new Users();
-    notifier.completedAndStart('Update user');
     await users.updateCurrentUser(username, {
         did,
         parent: profile.parent,
@@ -579,19 +735,18 @@ export async function saveUserProfile(
         location: LocationType.LOCAL
     }, logId);
 
-    notifier.completedAndStart('Update permissions');
     if (user.role === UserRole.USER) {
         const changeRole = await users.setDefaultUserRole(username, profile.parent, logId);
         await serDefaultRole(changeRole, EntityOwner.sr(null, profile.parent))
     }
 
-    notifier.completedAndStart('Set up wallet');
     const wallet = new Wallet();
     await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
     if (profile.useFireblocksSigning) {
         await wallet.setKey(user.walletToken, KeyType.FIREBLOCKS_KEY, did, JSON.stringify(profile.fireblocksConfig));
     }
-    notifier.completed();
+    notifier.completeStep(STEP_SAVE);
+    notifier.complete();
 }
 
 /**
@@ -601,17 +756,28 @@ export async function saveUserProfile(
  * @param user
  * @param logger
  */
-export async function saveRemoteUserProfile(
+export async function saveRemoteUserProfile({
+    username,
+    did,
+    profile,
+    notifier,
+    user,
+    logId
+}: {
     username: string,
     did: string,
     profile: ICredentials,
-    notifier: INotifier,
+    notifier: INotificationStep,
     user: IAuthUser,
     logger: PinoLogger,
     logId: string | null
-) {
+}) {
+    // <-- Steps
+    const STEP_SAVE = 'Save'; // Init is create function
+    // Steps -->
+
+    notifier.startStep(STEP_SAVE);
     const users = new Users();
-    notifier.completedAndStart('Update user');
     await users.updateCurrentUser(username, {
         did,
         parent: profile.parent,
@@ -619,13 +785,13 @@ export async function saveRemoteUserProfile(
         location: LocationType.REMOTE
     }, logId);
 
-    notifier.completedAndStart('Update permissions');
     if (user.role === UserRole.USER) {
         const changeRole = await users.setDefaultUserRole(username, profile.parent, logId);
         await serDefaultRole(changeRole, EntityOwner.sr(null, profile.parent))
     }
 
-    notifier.completed();
+    notifier.completeStep(STEP_SAVE);
+    notifier.complete();
 }
 
 /**
@@ -635,15 +801,22 @@ export async function saveRemoteUserProfile(
  * @param messageServer
  * @param notifier
  */
-export async function createDefaultRoles(
+export async function createDefaultRoles({
+    userId,
+    did,
+    didDocument,
+    messageServer,
+    notifier,
+    logId
+}: {
     userId: string,
     did: string,
     didDocument: CommonDidDocument,
     messageServer: MessageServer,
-    notifier: INotifier,
+    notifier: INotificationStep,
     logId: string | null
-): Promise<void> {
-    notifier.completedAndStart('Create roles');
+}): Promise<void> {
+    notifier.start();
     const owner = EntityOwner.sr(userId, did);
     const users = new Users();
     const vcHelper = new VcHelper();
@@ -697,10 +870,14 @@ export async function createDefaultRoles(
     const ids: string[] = [];
     const dataBaseServer = new DatabaseServer();
 
-    const vcDocumentCollectionObjects = []
+    const vcDocumentCollectionObjects = [];
 
+    let index = 0;
+    notifier.setEstimate(roles.length);
     for (const config of roles) {
-        notifier.info(`Create role (${config.name})`);
+        const step = notifier.addStep(`${config.name}`);
+        step.start();
+
         const role = await users.createRole(config, owner);
         let credentialSubject: any = {
             id: GenerateUUIDv4(),
@@ -726,7 +903,12 @@ export async function createDefaultRoles(
         const message = new GuardianRoleMessage(MessageAction.CreateRole);
         message.setRole(credentialSubject);
         message.setDocument(document);
-        await messageServer.sendMessage(message, true, null, logId);
+        await messageServer.sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            interception: userId,
+            userId: logId
+        });
 
         vcDocumentCollectionObjects.push({
             hash: message.hash,
@@ -742,6 +924,9 @@ export async function createDefaultRoles(
         })
 
         ids.push(role.id);
+
+        step.complete();
+        index++;
     }
     await dataBaseServer.saveMany(VcDocumentCollection, vcDocumentCollectionObjects);
 
@@ -806,38 +991,53 @@ export async function validateVc(json: string | any): Promise<VcDocumentDefiniti
     }
 }
 
-export async function checkAndPublishSchema(
+export async function checkAndPublishSchema({
+    entity,
+    topicId,
+    userDID,
+    parent,
+    messageServer,
+    logger,
+    notifier,
+    logId
+}: {
     entity: SchemaEntity,
-    topicConfig: TopicConfig,
+    topicId: string,
     userDID: string,
-    srUser: IOwner,
+    parent: IOwner,
     messageServer: MessageServer,
     logger: PinoLogger,
-    notifier: INotifier,
+    notifier: INotificationStep,
     logId: string | null
-): Promise<void> {
+}): Promise<void> {
     const dataBaseServer = new DatabaseServer();
-
     let schema = await dataBaseServer.findOne(SchemaCollection, {
         entity,
         readonly: true,
-        topicId: topicConfig.topicId
+        topicId
     });
     if (!schema) {
+        notifier.start();
         schema = await dataBaseServer.findOne(SchemaCollection, {
             entity,
             system: true,
             active: true
         });
         if (schema) {
-            notifier.info(`Publish System Schema (${entity})`);
             logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE'], logId);
             schema.creator = userDID;
             schema.owner = userDID;
             const item = await publishSystemSchema(
-                schema, srUser, messageServer, MessageAction.PublishSystemSchema, notifier
+                schema,
+                parent,
+                messageServer,
+                MessageAction.PublishSystemSchema,
+                notifier
             );
             await dataBaseServer.save(SchemaCollection, item);
         }
+        notifier.complete();
+    } else {
+        notifier.skip();
     }
 }

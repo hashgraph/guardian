@@ -17,6 +17,9 @@ export class SelectSchema {
     @Output('valueChange') valueChange = new EventEmitter<any>();
     @Output('change') change = new EventEmitter<any>();
 
+    @Input('bodyStyleClass') bodyStyleClass: string | undefined;
+    @Input('panelStyleClass') panelStyleClass: string | undefined;
+
     constructor() {
     }
 

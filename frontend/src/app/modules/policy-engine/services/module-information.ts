@@ -11,6 +11,7 @@ const Module: IBlockSetting = {
     header: BlockHeaders.Module,
     factory: ContainerBlockComponent,
     property: ModuleComponent,
+    code: null,
     allowedChildren: [
         { type: BlockType.Information },
         { type: BlockType.PolicyRoles },
@@ -37,6 +38,8 @@ const Module: IBlockSetting = {
         { type: BlockType.RevocationBlock },
         { type: BlockType.SetRelationshipsBlock },
         { type: BlockType.ButtonBlock },
+        { type: BlockType.TransformationButtonBlock },
+        { type: BlockType.IntegrationButtonBlock },
         { type: BlockType.TokenActionBlock },
         { type: BlockType.TokenConfirmationBlock },
         { type: BlockType.DocumentValidatorBlock },

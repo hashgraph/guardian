@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Schema, UserPermissions } from '@guardian/interfaces';
+import { Schema, UserPermissions, IntegrationDataTypes } from '@guardian/interfaces';
 import { SchemaService } from '../../../services/schema.service';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 /**
  * Dialog for display json
@@ -14,12 +15,13 @@ import { ProfileService } from 'src/app/services/profile.service';
     styleUrls: ['./vc-dialog.component.scss']
 })
 export class VCViewerDialog {
+    public IntegrationDataTypes = IntegrationDataTypes;
     public loading: boolean = true;
     public id: string = '';
     public title: string = '';
     public json: string = '';
     public text: string = '';
-    public viewDocument!: boolean;
+    public viewDocument!: boolean | string | number;
     public isVcDocument!: boolean;
     public document: any;
     public type: any;
@@ -37,13 +39,21 @@ export class VCViewerDialog {
     public policyId?: string;
     public documentId?: string;
     public schemaId?: string;
+    public messageId?: string;
     public user: UserPermissions = new UserPermissions();
+    public additionalOptionsData?: {
+        type: string;
+        data: Record<string, string | number>;
+        optionValue: string | number | boolean;
+    }[];
 
     constructor(
         public dialogRef: DynamicDialogRef,
         public dialogConfig: DynamicDialogConfig,
         private schemaService: SchemaService,
         private profileService: ProfileService,
+        private route: ActivatedRoute,
+        private router: Router
     ) {
     }
 
@@ -70,12 +80,15 @@ export class VCViewerDialog {
             schemaId,
             topicId,
             category,
-            getByUser
+            getByUser,
+            additionalOptions = [],
+            additionalOptionsData,
         } = this.dialogConfig.data;
 
         this.policyId = row?.policyId;
         this.documentId = row?.id;
         this.schemaId = row?.schema;
+        this.messageId = row?.messageId;
 
         this.getByUser = getByUser;
         this.id = id;
@@ -103,6 +116,8 @@ export class VCViewerDialog {
         }
         this.viewDocument = (viewDocument || false) && (this.isVcDocument || this.isVpDocument);
         this.schema = schema;
+        this.viewDocumentOptions = [...this.viewDocumentOptions, ...additionalOptions];
+        this.additionalOptionsData = additionalOptionsData;
 
         this.getSubSchemes(schemaId, topicId, category);
     }
@@ -130,6 +145,22 @@ export class VCViewerDialog {
         }, (error) => {
             this.loading = false;
             console.error(error);
+        });
+    }
+
+    public onFindInExport(): void {
+        this.dialogRef.close(null);
+
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {
+                tab: 1,
+                schemas: null,
+                owners: null,
+                tokens: null,
+                related: this.messageId
+            },
+            queryParamsHandling: 'merge',
         });
     }
 }

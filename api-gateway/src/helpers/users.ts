@@ -191,11 +191,13 @@ export class Users extends NatsService {
      * @param newPassword
      */
     public async changeUserPassword(
+        user: IAuthUser,
         username: string,
         oldPassword: string,
         newPassword: string
     ): Promise<AccountsSessionResponseDTO> {
-        return await this.sendMessage(AuthEvents.CHANGE_USER_PASSWORD, { username, oldPassword, newPassword });
+        const userId = user.id;
+        return await this.sendMessage(AuthEvents.CHANGE_USER_PASSWORD, { username, oldPassword, newPassword, userId });
     }
 
     /**

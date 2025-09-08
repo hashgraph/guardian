@@ -181,12 +181,15 @@ form {
                 input {
                     border-color: var(--guardian-warning-color, #DA9B22);
                 }
+
                 p-calendar::ng-deep {
+
                     button,
                     input {
                         border-color: var(--guardian-warning-color, #DA9B22);
                     }
                 }
+
                 p-dropdown::ng-deep {
                     .p-dropdown {
                         border-color: var(--guardian-warning-color, #DA9B22);
@@ -198,12 +201,15 @@ form {
                 input {
                     border-color: var(--guardian-success-color, #19BE47);
                 }
+
                 p-calendar::ng-deep {
+
                     button,
                     input {
                         border-color: var(--guardian-success-color, #19BE47);
                     }
                 }
+
                 p-dropdown::ng-deep {
                     .p-dropdown {
                         border-color: var(--guardian-warning-color, #19BE47);
@@ -403,4 +409,25 @@ form {
     margin: 4px;
     height: 34px;
     cursor: pointer;
+}
+
+.save-icon-color {
+    fill: var(--color-primary);
+    color: var(--color-primary);
+}
+
+form::ng-deep {
+    .guardian-accordion-error>.p-accordion>p-accordiontab>.p-accordion-tab {
+        &>.p-accordion-header {
+            &>.p-accordion-header-link {
+                border-color: #f44336;
+            }
+        }
+
+        &>.p-toggleable-content {
+            &>.p-accordion-content {
+                border-color: #f44336;
+            }
+        }
+    }
 }

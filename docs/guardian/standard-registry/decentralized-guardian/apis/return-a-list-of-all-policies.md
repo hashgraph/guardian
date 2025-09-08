@@ -17,13 +17,9 @@ Returns all policies.
 
 **Body**
 
-| Name      | Type   | Description                                                                                                                                   |
-| --------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| pageIndex | number | <p></p><pre class="language-yaml"><code class="lang-yaml">The number of pages to skip before starting to collect the result set
-</code></pre> |
-| pageSize  | number | <p></p><pre class="language-yaml"><code class="lang-yaml">The numbers of items to return
-</code></pre>                                        |
-| policyId  | String | Policy ID                                                                                                                                     |
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>pageIndex</td><td>number</td><td><p></p><pre class="language-yaml"><code class="lang-yaml">The number of pages to skip before starting to collect the result set
+</code></pre></td></tr><tr><td>pageSize</td><td>number</td><td><p></p><pre class="language-yaml"><code class="lang-yaml">The numbers of items to return
+</code></pre></td></tr><tr><td>policyId</td><td>String</td><td>Policy ID</td></tr></tbody></table>
 
 **Response**
 

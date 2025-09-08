@@ -19,7 +19,6 @@ import { SchemaService } from '../../services/schema.service';
 import { PolicyEngineService } from '../../services/policy-engine.service';
 import { TagsService } from '../../services/tag.service';
 //modules
-import { ConfirmationDialogComponent } from '../../modules/common/confirmation-dialog/confirmation-dialog.component';
 import { SchemaDialog } from '../../modules/schema-engine/schema-dialog/schema-dialog.component';
 import { ImportSchemaDialog } from '../../modules/schema-engine/import-schema/import-schema-dialog.component';
 import { ExportSchemaDialog } from '../../modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
@@ -35,6 +34,7 @@ import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog
 import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 enum SchemaType {
     System = 'system',
@@ -126,11 +126,12 @@ export class SchemaConfigComponent implements OnInit {
     public properties: any[] = [];
     public schemasTypes: { label: string; value: SchemaType }[] = [
         { label: 'Policy Schemas', value: SchemaType.Policy },
+        { label: 'Tool Schemas', value: SchemaType.Tool },
         { label: 'Module Schemas', value: SchemaType.Module },
         { label: 'Tag Schemas', value: SchemaType.Tag },
-        { label: 'System Schemas', value: SchemaType.System },
-        { label: 'Tool Schemas', value: SchemaType.Tool },
+        { label: 'System Schemas', value: SchemaType.System }
     ];
+    public textSearch: any;
 
     public element: any = {};
 
@@ -574,11 +575,17 @@ export class SchemaConfigComponent implements OnInit {
         let loader: Observable<HttpResponse<ISchema[]>>;
         switch (this.type) {
             case SchemaType.System: {
-                loader = this.schemaService.getSystemSchemas(this.pageIndex, this.pageSize);
+                loader = this.schemaService.getSystemSchemas({
+                    pageIndex: this.pageIndex,
+                    pageSize: this.pageSize
+                });
                 break;
             }
             case SchemaType.Tag: {
-                loader = this.tagsService.getSchemas(this.pageIndex, this.pageSize);
+                loader = this.tagsService.getSchemas({
+                    pageIndex: this.pageIndex,
+                    pageSize: this.pageSize
+                });
                 break;
             }
             case SchemaType.Policy:
@@ -586,7 +593,13 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Tool:
             default: {
                 const category = this.getCategory();
-                loader = this.schemaService.getSchemasByPage(category, this.currentTopic ?? '', this.pageIndex, this.pageSize);
+                loader = this.schemaService.getSchemasByPage({
+                    category: category,
+                    topicId: this.currentTopic || '',
+                    search: this.textSearch,
+                    pageIndex: this.pageIndex,
+                    pageSize: this.pageSize
+                });
                 break;
             }
         }
@@ -625,8 +638,8 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    public onFilter(event: any) {
-        if (event.value === null) {
+    public onFilter(event?: any) {
+        if (event && event.value === null) {
             this.currentTopic = '';
         }
         this.pageIndex = 0;
@@ -966,9 +979,10 @@ export class SchemaConfigComponent implements OnInit {
         }
 
         const dialogRef = this.dialogService.open(SchemaDialog, {
+            showHeader: false,
             header: 'New Schema',
             width: '950px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'new',
                 schemaType: this.type,
@@ -990,21 +1004,16 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onOpenForm(schema: Schema, example: boolean): void {
-        const dialogRef = this.dialog.open(SchemaFormDialog, {
+        this.dialog.open(SchemaFormDialog, {
+            showHeader: false,
+            header: 'Example',
             width: '950px',
-            data: { schema, example, category: this.getCategory() },
-            styleClass: 'g-dialog',
-            modal: true,
-            closable: false,
-        });
-        dialogRef.onClose.subscribe(async ({ exampleDate, currentSchema }: {
-            exampleDate: any,
-            currentSchema: Schema
-        }) => {
-            if (exampleDate && currentSchema) {
-                schema.setExample(exampleDate);
-                this.updateSchema(currentSchema.id, currentSchema);
-            }
+            styleClass: 'guardian-dialog',
+            data: {
+                schema,
+                example,
+                category: this.getCategory()
+            },
         });
     }
 
@@ -1047,9 +1056,10 @@ export class SchemaConfigComponent implements OnInit {
 
     private onEditDocument(element: ISchema): void {
         const dialogRef = this.dialogService.open(SchemaDialog, {
+            showHeader: false,
             header: 'Edit Schema',
             width: '950px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'edit',
                 schemaType: this.type,
@@ -1084,19 +1094,26 @@ export class SchemaConfigComponent implements OnInit {
 
     private onDeleteSchema(element: Schema, parents?: ISchema[]): void {
         if (!Array.isArray(parents) || !parents.length) {
-            const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'guardian-dialog',
                 data: {
-                    dialogTitle: 'Delete schema',
-                    dialogText: 'Are you sure to delete schema?'
+                    header: 'Delete Schema',
+                    text: `Are you sure want to delete schema (${element.name})?`,
+                    buttons: [{
+                        name: 'Close',
+                        class: 'secondary'
+                    }, {
+                        name: 'Delete',
+                        class: 'delete'
+                    }]
                 },
-                modal: true,
-                closable: false,
             });
-            dialogRef.onClose.subscribe((result) => {
-                if (!result) {
-                    return;
+            dialogRef.onClose.subscribe((result: string) => {
+                if (result === 'Delete') {
+                    this.deleteSchema(element.id);
                 }
-                this.deleteSchema(element.id);
             });
         } else {
             this.dialog.open(AlertComponent, {
@@ -1116,9 +1133,10 @@ export class SchemaConfigComponent implements OnInit {
 
     private onNewVersion(element: Schema): void {
         const dialogRef = this.dialogService.open(SchemaDialog, {
+            showHeader: false,
             header: 'New Version',
             width: '950px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'version',
                 topicId: this.currentTopic,
@@ -1146,9 +1164,10 @@ export class SchemaConfigComponent implements OnInit {
         delete newDocument.version;
         delete newDocument.previousVersion;
         const dialogRef = this.dialogService.open(SchemaDialog, {
+            showHeader: false,
             header: 'New Version',
             width: '950px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'version',
                 topicId: this.currentTopic,
@@ -1176,8 +1195,9 @@ export class SchemaConfigComponent implements OnInit {
         delete newDocument.version;
         delete newDocument.previousVersion;
         const dialogRef = this.dialog.open(CopySchemaDialog, {
-            width: '950px',
-            styleClass: 'g-dialog',
+            width: '860px',
+            showHeader: false,
+            styleClass: 'guardian-dialog',
             modal: true,
             closable: false,
             data: {
@@ -1336,6 +1356,10 @@ export class SchemaConfigComponent implements OnInit {
 
     public onViewSchemaTree(element: Schema): void {
         this.dialog.open(SchemaTreeComponent, {
+            showHeader: false,
+            header: 'Tree',
+            width: '650px',
+            styleClass: 'guardian-dialog',
             data: element,
             // autoFocus: false
         })

@@ -31,7 +31,9 @@ import {
     ValidateConfiguration,
     Wallet,
     Workers,
-    entities
+    entities,
+    JwtServicesValidator,
+    NotificationEvents
 } from '@guardian/common';
 import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
@@ -119,20 +121,12 @@ Promise.all([
 
     DatabaseServer.connectGridFS();
 
-    new PolicyServiceChannelsContainer().setConnection(cn);
-    new TransactionLogger().initialization(
-        cn,
-        process.env.TRANSACTION_LOG_LEVEL as TransactionLogLvl
-    );
-    new GuardiansService().setConnection(cn).init();
-    const channel = new MessageBrokerChannel(cn, 'guardians');
-
-    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
-
-    const state = new ApplicationState();
-    await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();
-    const secretManager = SecretManager.New();
     await new OldSecretManager().setConnection(cn).init();
+    const secretManager = SecretManager.New();
+    const jwtServiceName = 'GUARDIAN_SERVICE';
+
+    JwtServicesValidator.setServiceName(jwtServiceName);
+
     let { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
     if (!OPERATOR_ID) {
         OPERATOR_ID = process.env.OPERATOR_ID;
@@ -143,6 +137,21 @@ Promise.all([
         })
 
     }
+
+    new PolicyServiceChannelsContainer().setConnection(cn);
+    new TransactionLogger().initialization(
+        cn,
+        process.env.TRANSACTION_LOG_LEVEL as TransactionLogLvl,
+    );
+    new GuardiansService().setConnection(cn).init();
+    const channel = new MessageBrokerChannel(cn, 'guardians');
+
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+    NotificationEvents.init(new GuardiansService());
+
+    const state = new ApplicationState();
+    await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();
+
     await new AISuggestionsService().setConnection(cn).init();
 
     await state.updateState(ApplicationStates.STARTED);
@@ -283,7 +292,7 @@ Promise.all([
                     topicMemo: TopicMemo.getGlobalTopicMemo(),
                     payload: { userId: null }
                 }
-            }, 10);
+            }, { priority: 10 });
         }
 
         state.updateState(ApplicationStates.INITIALIZING);

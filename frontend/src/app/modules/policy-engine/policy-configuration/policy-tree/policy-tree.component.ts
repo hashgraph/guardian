@@ -16,6 +16,11 @@ enum BlockStyle {
     RootTool = 'RootTool'
 }
 
+const debugMode: string[] = [
+    'customLogicBlock',
+    'calculateContainerBlock'
+];
+
 /**
  * Settings for all blocks.
  */
@@ -45,6 +50,7 @@ export class PolicyTreeComponent implements OnInit {
     @Output('nested') nested = new EventEmitter();
     @Output('currentBlockChange') currentBlockChange = new EventEmitter();
     @Output('search') search = new EventEmitter();
+    @Output('test') test = new EventEmitter();
 
     @ViewChild('parent') parentRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -142,6 +148,28 @@ export class PolicyTreeComponent implements OnInit {
 
     ngOnInit(): void {
         this.init.emit(this);
+    }
+
+    ngOnDestroy(): void {
+        this.canvas?.destroy();
+        this.canvas = undefined as any;
+
+        this.tooltipRef?.nativeElement.remove();
+        clearTimeout(this.tooltipTimeout);
+
+        clearTimeout(this._resizeTimer);
+
+        this.data = [];
+        this.selectedNode = undefined;
+        this.collapsedMap.clear();
+
+        if (this.dropListConnector) {
+            this.dropListConnector.body = undefined;
+            this.dropListConnector.menu = undefined;
+            this.dropListConnector = null as any;
+        }
+
+        this.init.complete();
     }
 
     ngAfterViewInit(): void {
@@ -453,6 +481,10 @@ export class PolicyTreeComponent implements OnInit {
         return node.style === BlockStyle.Block;
     }
 
+    public isTest(node: FlatBlockNode): boolean {
+        return this.module?.isTest && debugMode.includes(node.node?.blockType);
+    }
+
     public isSelect(node: FlatBlockNode) {
         return this.currentBlock === node?.node;
     }
@@ -470,6 +502,27 @@ export class PolicyTreeComponent implements OnInit {
 
     public blockStyle(node: FlatBlockNode): any {
         return this.themeService.getStyle(node.node);
+    }
+
+    public getMenu(node: FlatBlockNode): string {
+        let style = 'block-menu';
+        if (this.readonly) {
+            if (this.isTest(node)) {
+                style += '-1';
+            } else {
+                style += '-0';
+            }
+        } else {
+            if (this.isTest(node)) {
+                style += '-4';
+            } else {
+                style += '-3';
+            }
+            if (this.visibleMoveActions === '1') {
+                style += '-full';
+            }
+        }
+        return style;
     }
 
     public onSelect(event: MouseEvent, node: FlatBlockNode) {
@@ -709,6 +762,13 @@ export class PolicyTreeComponent implements OnInit {
 
     public onDropRight(event: any) {
         this.onMoveBlockRight()
+    }
+
+    public onTest(event: any) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.test.emit(this.currentBlock);
+        return false;
     }
 
     private moveBlockUpDown(position: number) {

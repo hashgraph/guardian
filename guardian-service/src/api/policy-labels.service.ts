@@ -15,23 +15,39 @@ import {
     Users,
     Schema as SchemaCollection,
     RunFunctionAsync,
+    INotificationStep,
+    NewNotifier,
 } from '@guardian/common';
 import { EntityStatus, IOwner, LabelValidators, MessageAPI, PolicyStatus, Schema, SchemaStatus } from '@guardian/interfaces';
 import { findRelationships, generateSchema, generateVpDocument, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
-import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { publishSchemas, saveSchemas } from '../helpers/import-helpers/index.js';
 
 async function publishPolicyLabel(
     item: PolicyLabel,
     owner: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
     logger: PinoLogger
 ): Promise<PolicyLabel> {
+    // <-- Steps
+    const STEP_CREATE_TOPIC = 'Create topic';
+    const STEP_GENERATE_SCHEMAS = 'Generate schemas';
+    const STEP_PUBLISH_SCHEMAS = 'Publish schemas';
+    const STEP_PUBLISH_LABEL = 'Publish label';
+    const STEP_SAVE = 'Save';
+    // Steps -->
+
+    notifier.addStep(STEP_CREATE_TOPIC);
+    notifier.addStep(STEP_GENERATE_SCHEMAS);
+    notifier.addStep(STEP_PUBLISH_SCHEMAS);
+    notifier.addStep(STEP_PUBLISH_LABEL);
+    notifier.addStep(STEP_SAVE);
+    notifier.start();
+
     item.status = EntityStatus.PUBLISHED;
     item.config = PolicyLabelImportExport.validateConfig(item.config);
     item.config = publishLabelConfig(item.config);
 
-    notifier.start('Create topic');
+    notifier.startStep(STEP_CREATE_TOPIC);
     const topic = await getOrCreateTopic(item, owner.id);
     const user = await (new Users()).getHederaAccount(owner.creator, owner.id);
     const messageServer = new MessageServer({
@@ -40,22 +56,31 @@ async function publishPolicyLabel(
         signOptions: user.signOptions
     });
     messageServer.setTopicObject(topic);
+    notifier.completeStep(STEP_CREATE_TOPIC);
 
-    notifier.completedAndStart('Generate schemas');
+    notifier.startStep(STEP_GENERATE_SCHEMAS);
     const schemas = await generateSchema(topic.topicId, item.config, owner);
     const schemaList = new Set<SchemaCollection>();
     for (const { schema } of schemas) {
         schemaList.add(schema);
     }
+    notifier.completeStep(STEP_GENERATE_SCHEMAS);
 
-    notifier.completedAndStart('Publish schemas');
-    await publishSchemas(schemaList, owner, messageServer, MessageAction.PublishSchema);
+    notifier.startStep(STEP_PUBLISH_SCHEMAS);
+    await publishSchemas(
+        schemaList,
+        owner,
+        messageServer,
+        MessageAction.PublishSchema,
+        notifier.getStep(STEP_PUBLISH_SCHEMAS),
+    );
     await saveSchemas(schemaList);
     for (const { node, schema } of schemas) {
         node.schemaId = schema.iri;
     }
+    notifier.completeStep(STEP_PUBLISH_SCHEMAS);
 
-    notifier.completedAndStart('Publish label');
+    notifier.startStep(STEP_PUBLISH_LABEL);
     const zip = await PolicyLabelImportExport.generate(item);
     const buffer = await zip.generateAsync({
         type: 'arraybuffer',
@@ -68,12 +93,21 @@ async function publishPolicyLabel(
     const statMessage = new LabelMessage(MessageAction.PublishPolicyLabel);
     statMessage.setDocument(item, buffer);
     const statMessageResult = await messageServer
-        .sendMessage(statMessage, true, null, owner.id);
+        .sendMessage(statMessage, {
+            sendToIPFS: true,
+            memo: null,
+            userId: owner.id,
+            interception: null
+        });
 
     item.topicId = topic.topicId;
     item.messageId = statMessageResult.getId();
+    notifier.completeStep(STEP_PUBLISH_LABEL);
 
+    notifier.startStep(STEP_SAVE);
     const result = await DatabaseServer.updatePolicyLabel(item);
+    notifier.completeStep(STEP_SAVE);
+    notifier.complete();
     return result;
 }
 
@@ -341,7 +375,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError(`Item is already published.`);
                 }
 
-                const result = await publishPolicyLabel(item, owner, emptyNotifier(), logger);
+                const result = await publishPolicyLabel(item, owner, NewNotifier.empty(), logger);
                 return new MessageResponse(result);
 
             } catch (error) {
@@ -374,13 +408,13 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError(`Item is already published.`);
                 }
 
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
                     const result = await publishPolicyLabel(item, owner, notifier, logger);
                     notifier.result(result);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], userId);
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
 
                 return new MessageResponse(task);
@@ -758,7 +792,12 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 vpMessage.setRelationships(ids);
                 const vpMessageResult = await messageServer
                     .setTopicObject(topic)
-                    .sendMessage(vpMessage, true, null, userId);
+                    .sendMessage(vpMessage, {
+                        sendToIPFS: true,
+                        memo: null,
+                        userId,
+                        interception: null
+                    });
 
                 const row = await DatabaseServer.createLabelDocument({
                     definitionId: item.id,

@@ -2,7 +2,7 @@
 
 ## **1. Introduction**
 
-The Guardian is an innovative open-source platform that streamlines the creation, management, and verification of digital environmental assets. It leverages a customizable Policy Workflow Engine and Web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices and carbon markets.
+The Guardian is an innovative open-source platform that streamlines the creation, management, and verification of digital environmental assets. It leverages a customizable Policy Workflow Engine and Web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices & carbon markets.
 
 Below are the universal software prerequisites, followed by network-specific items.
 
@@ -11,10 +11,10 @@ Below are the universal software prerequisites, followed by network-specific ite
 ### 2.1 Universal software
 
 1. [Git](https://git-scm.com/downloads) – source-control tooling
-2. [Docker](https://www.docker.com/) – one-command build & run&#x20;
+2. [Docker](https://www.docker.com/) – one-command build & run
 3. [MongoDB v6](https://www.mongodb.com/), [Node.js v16](https://nodejs.org/en), and [NATS 1.12.2](https://nats.io/) – auto-installed when using Docker-Compose
 4. [Web3.Storage account](https://web3.storage/) – IPFS pinning service
-5. [Filebase account](https://filebase.com/) – S3-compatible IPFS pinning&#x20;
+5. [Filebase account](https://filebase.com/) – S3-compatible IPFS pinning
 6. [Redis 7.3.0](https://redict.io/) – in-memory cache & message broker (auto-provisioned by the Docker stack)
 
 ### 2.2 Hedera network
@@ -52,7 +52,7 @@ Below are the universal software prerequisites, followed by network-specific ite
 4.  Update your `.env`
 
     ```dotenv
-    dotenvCopyEditHEDERA_NET=testnet
+    HEDERA_NET=testnet
     HEDERA_OPERATOR_ID=0.0.987654
     HEDERA_OPERATOR_KEY=-----BEGIN PRIVATE KEY----- … -----END PRIVATE KEY-----
     ```
@@ -62,7 +62,7 @@ Below are the universal software prerequisites, followed by network-specific ite
 1.  **Docker-Compose**
 
     ```bash
-    bashCopyEditdocker compose -f ./deploy/docker-compose.yml --profile all up -d
+    docker compose -f ./deploy/docker-compose.yml --profile all up -d
     ```
 
     _(Detects Testnet/Mainnet from `.env`)_
@@ -91,4 +91,4 @@ Below are the universal software prerequisites, followed by network-specific ite
 
 ## **9. Legal and Licensing**
 
-* Hedera Guardian is open-source and licensed under the Apache 2.0 License. Please review the [LICENSE](https://github.com/hashgraph/guardian/blob/main/LICENSE) file for more details.
+* Hedera Guardian is open-source and licensed under the Apache 2.0 License. Please review the [LICENSE](../LICENSE/) file for more details.

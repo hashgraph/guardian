@@ -177,6 +177,35 @@ export class XlsxResult {
         }
     }
 
+    public updateRefs(schema: Schema, cache: Schema[] = [], path: string[] = []) {
+        if (cache.includes(schema)) {
+            return;
+        }
+        for (const field of schema.fields) {
+            if (field.isRef && field.type) {
+                if (path.includes(field.type)) {
+                    const schemaCache = this._schemaCache.find(c => c.iri === field.type);
+                    this.addError({
+                        type: 'error',
+                        text: `Circular dependency.`,
+                        message: `Circular dependency.`,
+                        worksheet: schemaCache?.worksheet,
+                        row: field.order
+                    }, field);
+                    field.type = null;
+                } else {
+                    const subSchema = this.schemas.find(c => c.iri === field.type);
+                    if (subSchema) {
+                        this.updateRefs(subSchema, cache, [...path, field.type]);
+                    }
+                }
+            }
+        }
+        schema.updateDocument();
+        schema.updateRefs(this.schemas);
+        cache.push(schema);
+    }
+
     public updateSchemas(skipTools: boolean = false): void {
         try {
             const schemaNames = new Set<string>();
@@ -191,10 +220,7 @@ export class XlsxResult {
                 }
                 schemaNames.add(cache.name);
             }
-            const schemas = this.schemas;
-            const toolSchemas = this.toolSchemas;
-            const allSchemas = [...schemas, ...toolSchemas];
-            for (const schema of schemas) {
+            for (const schema of this.schemas) {
                 const schemaCache = this._schemaCache.find(c => c.iri === schema.iri);
                 for (const field of schema.fields) {
                     if (field.isRef) {
@@ -239,9 +265,11 @@ export class XlsxResult {
                         }
                     }
                 }
-                schema.updateDocument();
-                schema.updateRefs(schemas);
             }
+            for (const schema of this.schemas) {
+                this.updateRefs(schema);
+            }
+            const allSchemas = [...this.schemas, ...this.toolSchemas];
             for (const schema of this._schemas) {
                 try {
                     schema.updateExpressions(allSchemas);
@@ -267,12 +295,12 @@ export class XlsxResult {
         this._enums.push(item);
     }
 
-    public getEnum(worksheet: string): string[] {
+    public getEnum(worksheet: string): XlsxEnum | null {
         for (const item of this._enums) {
             if (item.worksheet.name === worksheet) {
-                return item.data;
+                return item;
             }
         }
-
+        return null;
     }
 }

@@ -584,7 +584,7 @@ export class PolicyComponentsUtils {
      * @param allInstances
      */
     public static async BuildInstance(
-        policy: Policy,
+        policy: Policy | PolicyTool,
         policyId: string,
         block: ISerializedBlock,
         parent: IPolicyBlock,
@@ -688,7 +688,7 @@ export class PolicyComponentsUtils {
      * @param allInstances
      */
     public static async RegeneratePolicy(
-        policy: Policy
+        policy: Policy | PolicyTool
     ) {
         const configObject = policy.config as ISerializedBlock;
         const tools: PolicyTool[] = [];

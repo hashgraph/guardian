@@ -24,6 +24,7 @@ export class ModuleTemplate {
     public readonly isPublished: boolean = false;
     public readonly isPublishError: boolean = false;
     public readonly readonly: boolean = false;
+    public readonly isTest: boolean = false;
 
     private _config!: PolicyModule;
     private _changed: boolean;
@@ -56,6 +57,7 @@ export class ModuleTemplate {
         this.isPublished = (this.status === PolicyStatus.PUBLISH) || (this.status === ModuleStatus.PUBLISHED);
         this.isPublishError = this.status === PolicyStatus.PUBLISH_ERROR;
         this.readonly = this.isPublished || this.isPublishError;
+        this.isTest = this.isDraft;
     }
 
     public get name(): string {
@@ -112,6 +114,10 @@ export class ModuleTemplate {
         return true;
     }
 
+    public get policyId(): string | undefined {
+        return this.id;
+    }
+
     private buildBlock(config: IBlockConfig) {
         if (!config) {
             config = { blockType: 'module' };
@@ -152,7 +158,7 @@ export class ModuleTemplate {
         return json;
     }
 
-    public getConfig():any {
+    public getConfig(): any {
         return this._config.getJSON();
     }
 

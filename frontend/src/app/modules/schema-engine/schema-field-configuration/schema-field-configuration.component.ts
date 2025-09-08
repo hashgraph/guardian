@@ -8,17 +8,17 @@ import {
     Output,
     SimpleChanges
 } from '@angular/core';
-import {AbstractControl, UntypedFormControl, UntypedFormGroup, Validators,} from '@angular/forms';
-import {SchemaField, UnitSystem} from '@guardian/interfaces';
-import {ToastrService} from 'ngx-toastr';
-import {IPFS_SCHEMA} from 'src/app/services/api';
-import {IPFSService} from 'src/app/services/ipfs.service';
-import {EnumEditorDialog} from '../enum-editor-dialog/enum-editor-dialog.component';
-import {FieldControl} from '../field-control';
-import {DialogService} from 'primeng/dynamicdialog';
-import {Subject, Subscription} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
-import {CodeEditorDialogComponent} from '../../policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
+import { SchemaField, UnitSystem } from '@guardian/interfaces';
+import { ToastrService } from 'ngx-toastr';
+import { IPFS_SCHEMA } from 'src/app/services/api';
+import { IPFSService } from 'src/app/services/ipfs.service';
+import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
+import { FieldControl } from '../field-control';
+import { DialogService } from 'primeng/dynamicdialog';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { CodeEditorDialogComponent } from '../../policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
 
 /**
  * Schemas constructor
@@ -42,7 +42,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('private') canBePrivate!: boolean;
     @Input('properties') properties: { title: string; _id: string; value: string }[];
     @Input('errors') errors!: any[];
-    @Input() buildField: (fieldConfig: FieldControl, data: any) => SchemaField;
+    @Input() buildField: (fieldConfig: FieldControl, data: any) => SchemaField | null;
 
     @Output('remove') remove = new EventEmitter<any>();
 
@@ -56,26 +56,12 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public isString: boolean = false;
     public fieldType: UntypedFormControl;
     public property: UntypedFormControl;
-    public groupedFieldTypes: any = [
-        {
-            label: 'Units of measure',
-            value: 'uom',
-            items: [
-                {label: 'Prefix', value: 'prefix'},
-                {label: 'Postfix', value: 'postfix'},
-            ],
-        },
-        {
-            label: 'Hedera',
-            value: 'h',
-            items: [{label: 'Account', value: 'hederaAccount'}],
-        },
-    ];
+    public groupedFieldTypes: any[] = this.createFieldTypes();
     public fieldTypes: any = [
-        {label: 'None', value: 'none'},
-        {label: 'Hidden', value: 'hidden'},
-        {label: 'Required', value: 'required'},
-        {label: 'Auto Calculate', value: 'autocalculate'},
+        { label: 'None', value: 'none' },
+        { label: 'Hidden', value: 'hidden' },
+        { label: 'Required', value: 'required' },
+        { label: 'Auto Calculate', value: 'autocalculate' },
 
     ];
     public error: any;
@@ -101,61 +87,87 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         this.property = new UntypedFormControl();
     }
 
+    private createFieldTypes() {
+        return [
+            {
+                label: 'Simple Types',
+                value: 'st',
+                items: [],
+            },
+            {
+                label: 'Units of measure',
+                value: 'uom',
+                items: [
+                    { label: 'Prefix', value: UnitSystem.Prefix },
+                    { label: 'Postfix', value: UnitSystem.Postfix },
+                ],
+            },
+            {
+                label: 'Hedera',
+                value: 'h',
+                items: [{ label: 'Account', value: 'hederaAccount' }],
+            },
+            {
+                label: 'Schema defined',
+                value: 'sd',
+                items: [],
+            }
+        ];
+    }
+
+    public initDefaultForm($event: any) {
+        this.defaultValuesSubscription?.unsubscribe();
+        this.defaultValues = $event;
+        this.defaultValuesSubscription = $event.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((value: any) => {
+                const control = this.fieldsForm?.get(this.field.name);
+                control?.patchValue({
+                    default: null,
+                    suggest: null,
+                    example: null,
+                    ...value,
+                });
+            });
+    }
+
     ngOnInit(): void {
         if (this.fieldsForm && this.buildField) {
             const onFieldChange = (value: any) => {
-                this.defaultValuesSubscription?.unsubscribe();
-                this.defaultValues = new UntypedFormGroup({});
-                this.defaultValuesSubscription =
-                    this.defaultValues.valueChanges
-                        .pipe(takeUntil(this.destroy$))
-                        // tslint:disable-next-line:no-shadowed-variable
-                        .subscribe((value) => {
-                            const control = this.fieldsForm?.get(
-                                this.field.name
-                            );
-                            control?.patchValue({
-                                default: null,
-                                suggest: null,
-                                example: null,
-                                ...value,
-                            });
-                        });
                 this.fieldsFormValue = value;
                 try {
-                    this.parsedField = this.buildField(
-                        this.field,
-                        this.fieldsFormValue
-                    );
-                    this.presetFormFields = [
-                        Object.assign({}, this.parsedField, {
-                            name: 'default',
-                            description: 'Default Value',
-                            required: false,
-                            hidden: false,
-                            default: null,
-                            suggest: null,
-                            examples: null,
-                        }),
-                        Object.assign({}, this.parsedField, {
-                            name: 'suggest',
-                            description: 'Suggested Value',
-                            required: false,
-                            hidden: false,
-                            default: null,
-                            suggest: null,
-                            examples: null,
-                        }),
-                        Object.assign({}, this.parsedField, {
-                            name: 'example',
-                            description: 'Test Value',
-                            required: false,
-                            hidden: false,
-                            default: null,
-                            suggest: null,
-                            examples: null,
-                        }),
-                    ];
+                    this.parsedField = this.buildField(this.field, this.fieldsFormValue);
+                    if (this.parsedField) {
+                        this.presetFormFields = [
+                            Object.assign({}, this.parsedField, {
+                                name: 'default',
+                                description: 'Default Value',
+                                required: false,
+                                hidden: false,
+                                default: null,
+                                suggest: null,
+                                examples: null,
+                            }),
+                            Object.assign({}, this.parsedField, {
+                                name: 'suggest',
+                                description: 'Suggested Value',
+                                required: false,
+                                hidden: false,
+                                default: null,
+                                suggest: null,
+                                examples: null,
+                            }),
+                            Object.assign({}, this.parsedField, {
+                                name: 'example',
+                                description: 'Test Value',
+                                required: false,
+                                hidden: false,
+                                default: null,
+                                suggest: null,
+                                examples: null,
+                            }),
+                        ];
+                    }
                 } catch (error) {
                     console.warn(error)
                 }
@@ -173,7 +185,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 ) {
                     this.presetValues =
                         JSON.stringify(newField?.controlEnum) !==
-                        JSON.stringify(oldField?.controlEnum)
+                            JSON.stringify(oldField?.controlEnum)
                             ? (this.defaultValues?.value || {})
                             : {};
 
@@ -195,6 +207,8 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             }
             if (this.field.autocalculated.value === true) {
                 this.fieldType.setValue('autocalculate')
+                this.field.expression.setValidators([Validators.required]);
+                this.field.expression.updateValueAndValidity();
             } else if (this.field.controlRequired.value === true) {
                 this.fieldType.setValue('required')
             } else if (this.field.hidden.value === true) {
@@ -210,38 +224,42 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             );
         }
         this.fieldTypeSub = this.fieldType.valueChanges.subscribe(value => {
+
+            this.field.expression.clearValidators();
             switch (value) {
                 case 'autocalculate':
                     this.autocalculated = true;
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(false);
-                    this.field.autocalculated.setValue(true)
+                    this.field.autocalculated.setValue(true);
+                    this.field.expression.setValidators([Validators.required]);
                     break;
                 case 'required':
                     this.autocalculated = false;
                     this.field.controlRequired.setValue(true);
                     this.field.hidden.setValue(false);
-                    this.field.autocalculated.setValue(false)
+                    this.field.autocalculated.setValue(false);
                     break;
                 case 'hidden':
                     this.autocalculated = false;
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(true);
-                    this.field.autocalculated.setValue(false)
+                    this.field.autocalculated.setValue(false);
                     break;
                 case 'none':
                     this.autocalculated = false;
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(false);
-                    this.field.autocalculated.setValue(false)
+                    this.field.autocalculated.setValue(false);
                     break;
                 default:
                     this.autocalculated = false;
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(false);
-                    this.field.autocalculated.setValue(false)
+                    this.field.autocalculated.setValue(false);
                     break;
             }
+            this.field.expression.updateValueAndValidity();
         });
         this.fieldPropertySub = this.property.valueChanges.subscribe(val => {
             this.field.property.setValue(val);
@@ -249,43 +267,22 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes?.types?.firstChange && this.types) {
-            const newSimpleTypes = this.types.map((type: any) => {
-                return {label: type.name, value: type.value};
-            });
-            this.groupedFieldTypes.unshift({
-                label: 'Simple Types',
-                value: 'st',
-                items: newSimpleTypes,
+        this.groupedFieldTypes = this.createFieldTypes();
+        if (this.types) {
+            this.groupedFieldTypes[0].items = this.types.map((type: any) => {
+                return { label: type.name, value: type.value };
             });
         }
         if (this.schemaTypes) {
-            if (changes?.schemaTypes?.firstChange) {
-                const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                    return {
-                        ...schemaType,
-                        label: schemaType.name,
-                        value: schemaType.value
-                    };
-                });
-                this._sd = {
-                    label: 'Schema defined',
-                    value: 'sd',
-                    items: newSchemasTypes,
+            this.groupedFieldTypes[3].items = this.schemaTypes.map((schemaType: any) => {
+                return {
+                    ...schemaType,
+                    label: schemaType.name,
+                    value: schemaType.value
                 };
-                this.groupedFieldTypes.push(this._sd);
-            } else if (changes?.schemaTypes?.firstChange === false) {
-                const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                    return {
-                        ...schemaType,
-                        label: schemaType.name,
-                        value: schemaType.value
-                    };
-                });
-                this._sd.items = newSchemasTypes;
-                this.cdr.detectChanges();
-            }
+            });
         }
+        // this.cdr.detectChanges();
         if (changes.extended && Object.keys(changes).length === 1) {
             return;
         }
@@ -343,100 +340,65 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     onTypeChange(event: any) {
-        const item = this.types.find((e) => e.value == event.value);
-        if (item && item.name == 'Boolean') {
-            this.field.controlArray.setValue(false);
-            this.field.controlArray.disable();
-        } else {
-            this.field.controlArray.enable();
-        }
-
-        this.unit =
-            event.value == UnitSystem.Prefix ||
-            event.value == UnitSystem.Postfix;
-
+        const typeName = event.value;
+        const item = this.types.find((e) => e.value == typeName);
+        this.field.setType(((item && item.name) || typeName));
+        this.unit = typeName == UnitSystem.Prefix || typeName == UnitSystem.Postfix;
         this.isString = (item && item.name === 'String') || false;
-        if (!this.isString) {
-            this.field.controlPattern.disable();
-        } else {
-            this.field.controlPattern.enable();
-        }
-
         this.helpText = (item && item.name === 'Help Text') || false;
-        if (!this.helpText) {
-            this.field.controlColor.disable();
-            this.field.controlSize.disable();
-            this.field.controlBold.disable();
-        } else {
-            this.field.controlColor.enable();
-            this.field.controlSize.enable();
-            this.field.controlBold.enable();
-        }
-
-        this.enum = ((item && item.name) || event.value) === 'Enum';
-        if (this.enum) {
-            this.field.controlEnum.setValidators([Validators.required]);
-        } else {
-            this.field.controlEnum.clearValidators();
-        }
-        this.field.controlEnum.updateValueAndValidity();
+        this.enum = ((item && item.name) || typeName) === 'Enum';
     }
 
     onEditEnum() {
         const dialogRef = this.dialogService.open(EnumEditorDialog, {
             header: 'Enum data',
             width: '700px',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            styleClass: 'guardian-dialog',
             data: {
                 enumValue: this.field.controlEnum.value,
                 errorHandler: this.errorHandler.bind(this),
             },
         });
-        dialogRef
-            .onClose
-            .subscribe((res: { enumValue: string; loadToIpfs: boolean }) => {
-                if (!res) {
-                    return;
-                }
-                this.field.controlRemoteLink.patchValue('');
+        dialogRef.onClose.subscribe((res: { enumValue: string; loadToIpfs: boolean }) => {
+            if (!res) {
+                return;
+            }
 
-                const uniqueTrimmedEnumValues: string[] = [
-                    ...new Set(
-                        res.enumValue.split('\n').map((item) => item.trim())
-                    ),
-                ] as string[];
+            this.field.controlRemoteLink.patchValue('');
 
-                if (res.loadToIpfs && uniqueTrimmedEnumValues.length > 5) {
-                    this.field.controlEnum.clear();
-                    this.loading = true;
-                    this.ipfs
-                        .addFile(
-                            new Blob([
-                                JSON.stringify({
-                                    enum: uniqueTrimmedEnumValues,
-                                }),
-                            ])
-                        )
-                        .subscribe(
-                            (cid) => {
-                                this.loading = false;
-                                const link = IPFS_SCHEMA + cid;
-                                this.field.controlRemoteLink.patchValue(link);
-                                this.loadRemoteEnumData(link);
-                            },
-                            (err) => {
-                                this.loading = false;
-                                this.errorHandler(
-                                    err.message,
-                                    'Enum data can not be loaded to IPFS'
-                                );
-                                this.updateControlEnum(uniqueTrimmedEnumValues);
-                            }
+            const uniqueTrimmedEnumValues: string[] = [
+                ...new Set(res.enumValue.split('\n').map((item) => item.trim())),
+            ] as string[];
+
+            if (res.loadToIpfs && uniqueTrimmedEnumValues.length > 5) {
+                this.field.controlEnum.clear();
+                this.loading = true;
+                this.ipfs
+                    .addFile(
+                        new Blob([
+                            JSON.stringify({
+                                enum: uniqueTrimmedEnumValues,
+                            }),
+                        ])
+                    )
+                    .subscribe((cid) => {
+                        this.loading = false;
+                        const link = IPFS_SCHEMA + cid;
+                        this.field.controlRemoteLink.patchValue(link);
+                        this.loadRemoteEnumData(link);
+                    }, (err) => {
+                        this.loading = false;
+                        this.errorHandler(
+                            err.message,
+                            'Enum data can not be loaded to IPFS'
                         );
-                } else {
-                    this.updateControlEnum(uniqueTrimmedEnumValues);
-                }
-            });
+                        this.updateControlEnum(uniqueTrimmedEnumValues);
+                    });
+            } else {
+                this.updateControlEnum(uniqueTrimmedEnumValues);
+            }
+        });
     }
 
     onHepTextReset() {
@@ -467,7 +429,9 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         })
         dialogRef.onClose.subscribe(result => {
             if (result) {
+                this.field.expression.setValidators([Validators.required]);
                 this.field.expression.patchValue(result.expression);
+                this.field.expression.updateValueAndValidity();
             }
         })
     }

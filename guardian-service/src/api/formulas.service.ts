@@ -8,11 +8,11 @@ import {
     Formula,
     FormulaImportExport,
     PolicyImportExport,
-    Users
+    Users,
+    NewNotifier
 } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyStatus, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
 import { getFormulasData, publishFormula } from './helpers/formulas-helpers.js';
-import { emptyNotifier } from '../helpers/notifier.js';
 
 /**
  * Connect to the message broker methods of working with formula.
@@ -271,8 +271,9 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const preview = await FormulaImportExport.parseZipFile(Buffer.from(zip.data));
-                const { formula } = preview;
+                let components = await FormulaImportExport.parseZipFile(Buffer.from(zip.data));
+                components = await FormulaImportExport.updateUUID(components, policy);
+                const { formula } = components;
 
                 delete formula._id;
                 delete formula.id;
@@ -342,7 +343,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const { schemas, toolSchemas } = await PolicyImportExport.fastLoadSchemas(policy);
-                const all = [].concat(schemas, toolSchemas).filter((s)=>s.entity !== SchemaEntity.NONE);
+                const all = [].concat(schemas, toolSchemas).filter((s) => s.entity !== SchemaEntity.NONE);
 
                 const formulas = await DatabaseServer.getFormulas({
                     id: { $ne: formulaId },
@@ -443,7 +444,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const root = await (new Users()).getHederaAccount(owner.creator, userId);
-                const result = await publishFormula(item, owner, root, emptyNotifier());
+                const result = await publishFormula(item, owner, root, NewNotifier.empty());
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);

@@ -369,6 +369,13 @@ export class SchemaApi {
         required: false,
         example: Examples.ACCOUNT_ID
     })
+    @ApiQuery({
+        name: 'search',
+        type: String,
+        description: 'Search',
+        required: false,
+        example: 'text'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -391,6 +398,7 @@ export class SchemaApi {
         @Query('moduleId') moduleId: string,
         @Query('toolId') toolId: string,
         @Query('topicId') topicId: string,
+        @Query('search') search: string,
         @Response() res: any
     ): Promise<SchemaDTO[]> {
         try {
@@ -416,7 +424,9 @@ export class SchemaApi {
             if (toolId) {
                 options.toolId = toolId;
             }
-
+            if (search) {
+                options.search = search;
+            }
             options.fields = Object.values(SCHEMA_REQUIRED_PROPS)
 
             const { items, count } = await guardians.getSchemasByOwnerV2(options, owner);
@@ -898,9 +908,9 @@ export class SchemaApi {
         const owner = new EntityOwner(user);
         const task = taskManager.start(TaskAction.CREATE_SCHEMA, user.id);
         RunFunctionAsync<ServiceError>(async () => {
-            const { iri, topicId, name } = body;
+            const { iri, topicId, name, copyNested } = body;
             taskManager.addStatus(task.taskId, 'Check schema version', StatusType.PROCESSING);
-            await guardians.copySchemaAsync(iri, topicId, name, owner, task);
+            await guardians.copySchemaAsync(iri, topicId, name, owner, task, copyNested);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -2015,7 +2025,7 @@ export class SchemaApi {
         @Response() res: any,
         @Param('username') username: string,
         @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number
+        @Query('pageSize') pageSize?: number,
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
@@ -2227,7 +2237,7 @@ export class SchemaApi {
     })
     @ApiParam({
         name: 'schemaEntity',
-        enum: ['STANDARD_REGISTRY', 'USER', 'POLICY', 'MINT_TOKEN', 'WIPE_TOKEN', 'MINT_NFTOKEN'],
+        enum: ['STANDARD_REGISTRY', 'USER', 'POLICY', 'MINT_TOKEN', 'INTEGRATION_DATA_V2', 'WIPE_TOKEN', 'MINT_NFTOKEN'],
         description: 'Entity name',
         required: true,
         example: 'STANDARD_REGISTRY'
@@ -2309,7 +2319,8 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file: any = await guardians.exportSchemasXlsx(owner, [schemaId]);
             const schema: any = await guardians.getSchemaById(user, schemaId);
-            res.header('Content-disposition', `attachment; filename=${schema.name}`);
+            const filename = (schema.name || '').replace(/[/\\?%*:|"<>,.]/g, '_');
+            res.header('Content-disposition', `attachment; filename=${filename}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {

@@ -43,6 +43,8 @@ BlockIcons[BlockType.ImpactAddon] = 'file';
 BlockIcons[BlockType.Calculate] = 'chart-bar';
 BlockIcons[BlockType.CustomLogicBlock] = 'chart-bar';
 BlockIcons[BlockType.DataTransformationAddon] = 'chart-bar';
+BlockIcons[BlockType.TransformationButtonBlock] = 'circle-on';
+BlockIcons[BlockType.IntegrationButtonBlock] = 'circle-on';
 BlockIcons[BlockType.CalculateMathAddon] = 'calculator';
 BlockIcons[BlockType.CalculateMathVariables] = 'calculator';
 BlockIcons[BlockType.MessagesReportBlock] = 'chart-line';
@@ -53,5 +55,7 @@ BlockIcons[BlockType.NotificationBlock] = 'bell';
 BlockIcons[BlockType.ExtractDataBlock] = 'search';
 BlockIcons[BlockType.Tool] = 'wrench';
 BlockIcons[BlockType.Module] = 'folder';
+BlockIcons[BlockType.HttpRequestUIAddon] = 'globe';
+BlockIcons[BlockType.TransformationUIAddon] = 'chart-bar';
 
 export default BlockIcons;

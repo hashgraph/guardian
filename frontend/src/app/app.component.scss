@@ -263,8 +263,11 @@ body {
     border-color: rgb(0 0 0 / 40%);
 }
 
+::ng-deep ngx-codemirror {
+    width: 100%;
+}
 ::ng-deep .CodeMirror {
-    height: auto !important;
+    height: 100% !important;
 }
 
 ::ng-deep body .mat-input-element:disabled {
@@ -455,7 +458,7 @@ body {
 }
 
 ::ng-deep .grid-setting td.propRowCell {
-    height: 38px !important;
+    height: 39px !important;
 }
 
 ::ng-deep .propRowCell .pi-trash {
@@ -470,10 +473,6 @@ body {
 ::ng-deep td.propRowCell.cellName,
 ::ng-deep .propRow .propRowCell{
     align-content: center;
-}
-
-::ng-deep .propRow .propRowCell .remove-prop {
-    top: 10px !important;
 }
 
 ::ng-deep p-progressspinner svg circle {

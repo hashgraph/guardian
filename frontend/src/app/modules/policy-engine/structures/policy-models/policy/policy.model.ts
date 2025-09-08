@@ -74,6 +74,7 @@ export class PolicyTemplate {
     public readonly isDemo: boolean = false;
     public readonly isRun: boolean = false;
     public readonly isView: boolean = false;
+    public readonly isTest: boolean = false;
 
     constructor(policy?: any) {
         this._changed = false;
@@ -115,7 +116,8 @@ export class PolicyTemplate {
             this.isDemo ||
             this.isView
         );
-        this.isRun = this.isDryRun || this.isPublished || this.isDemo
+        this.isRun = this.isDryRun || this.isPublished || this.isDemo;
+        this.isTest = this.isDraft || this.isDryRun;
     }
 
     public get policyTag(): string {
@@ -236,6 +238,10 @@ export class PolicyTemplate {
 
     public get canAddTools(): boolean {
         return true;
+    }
+
+    public get policyId(): string | undefined {
+        return this.id;
     }
 
     public getBlock(block: any): PolicyItem | undefined {

@@ -5,12 +5,14 @@ import {
     Log,
     DatabaseServer,
     MAP_ATTRIBUTES_AGGREGATION_FILTERS,
+    JwtServiceAuthGuard,
 } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { FilterObject } from '@mikro-orm/core';
+import { APP_GUARD } from '@nestjs/core';
 
 @Controller()
 export class LoggerService {
@@ -134,6 +136,12 @@ export class LoggerService {
     ],
     controllers: [
         LoggerService
-    ]
+    ],
+    providers: [
+        {
+          provide: APP_GUARD,
+          useFactory: () => new JwtServiceAuthGuard(Object.values(MessageAPI)),
+        },
+      ],
 })
 export class LoggerModule {}

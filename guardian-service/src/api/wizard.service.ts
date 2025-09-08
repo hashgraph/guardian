@@ -1,7 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, MessageError, MessageResponse, PinoLogger, Policy, RunFunctionAsync } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, NewNotifier, PinoLogger, Policy, RunFunctionAsync } from '@guardian/common';
 import { IOwner, IWizardConfig, MessageAPI, SchemaCategory } from '@guardian/interfaces';
-import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { PolicyWizardHelper } from './helpers/policy-wizard-helper.js';
 import { FilterObject } from '@mikro-orm/core';
@@ -35,9 +34,9 @@ async function createExistingPolicySchemas(
         user,
         {
             category: SchemaCategory.POLICY,
-            topicId: policyTopicId
+            topicId: policyTopicId || 'draft'
         },
-        emptyNotifier(),
+        NewNotifier.empty(),
         userId
     );
     const schemasMap = importResult.schemasMap;
@@ -85,7 +84,7 @@ export async function wizardAPI(logger: PinoLogger): Promise<void> {
         }) => {
             // tslint:disable-next-line:prefer-const
             let { config, owner, task, saveState } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(
                 async () => {
                     const policyEngine = new PolicyEngine(logger);
@@ -132,7 +131,7 @@ export async function wizardAPI(logger: PinoLogger): Promise<void> {
                     });
                 },
                 async (error) => {
-                    notifier.error(error);
+                    notifier.fail(error);
                 }
             );
             return new MessageResponse(task);
@@ -158,7 +157,7 @@ export async function wizardAPI(logger: PinoLogger): Promise<void> {
                         ),
                     }),
                     owner,
-                    emptyNotifier(),
+                    NewNotifier.empty(),
                     logger
                 );
                 await policyEngine.setupPolicySchemas(

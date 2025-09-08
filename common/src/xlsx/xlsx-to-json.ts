@@ -1,6 +1,6 @@
 import { Workbook, Worksheet } from './models/workbook.js';
 import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
-import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit } from './models/value-converters.js';
+import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit, xlsxToVisibility } from './models/value-converters.js';
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
@@ -10,9 +10,19 @@ import { XlsxEnum } from './models/xlsx-enum.js';
 import { EnumTable } from './models/enum-table.js';
 import { XlsxSchema, XlsxTool } from './models/xlsx-schema.js';
 import { XlsxExpressions } from './models/xlsx-expressions.js';
+import { IFieldKey } from './interfaces/field-key.interface.js';
+import { IOption } from './interfaces/option.interface.js';
+
+interface ICondition {
+    type: 'const' | 'formulae',
+    fieldPath?: string,
+    value?: any,
+    invert?: boolean,
+}
 
 export class XlsxToJson {
-    public static async parse(buffer: Buffer): Promise<XlsxResult> {
+    public static async parse(buffer: Buffer, options?: IOption): Promise<XlsxResult> {
+        const preview = options?.preview === true;
         const xlsxResult = new XlsxResult();
         try {
             const workbook = new Workbook();
@@ -24,6 +34,15 @@ export class XlsxToJson {
                     const item = await XlsxToJson.readEnumSheet(worksheet, xlsxResult);
                     if (item) {
                         xlsxResult.addEnum(item);
+                    }
+                    const loaded = await item.upload(preview);
+                    if (!loaded) {
+                        xlsxResult.addError({
+                            type: 'error',
+                            text: `Failed to upload enum "${worksheet.name}".`,
+                            message: `Failed to upload enum "${worksheet.name}".`,
+                            worksheet: worksheet.name
+                        }, null);
                     }
                 }
             }
@@ -102,6 +121,9 @@ export class XlsxToJson {
         }
         if (table.getRow(Dictionary.ENUM_FIELD_NAME) !== -1) {
             _enum.setFieldName(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_FIELD_NAME)));
+        }
+        if (table.getRow(Dictionary.ENUM_IPFS) !== -1) {
+            _enum.setIPFS(xlsxToBoolean(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_IPFS))));
         }
 
         row = table.end.r;
@@ -198,7 +220,7 @@ export class XlsxToJson {
 
             row = table.end.r + 1;
             const fields: SchemaField[] = [];
-            const fieldCache = new Map<string, SchemaField>();
+            const allFields = new Map<string, SchemaField>();
 
             let parents: SchemaField[] = [];
             for (; row < range.e.r; row++) {
@@ -210,19 +232,18 @@ export class XlsxToJson {
                     xlsxResult
                 );
                 if (field) {
-                    fieldCache.set(field.name, field);
+                    allFields.set(field.title, field);
                     parents = parents.slice(0, groupIndex);
                     parents[groupIndex] = field;
                     if (groupIndex === 0) {
-                        fields.push(field);
+                        XlsxToJson.addFieldByName(worksheet, table, row, xlsxResult, fields, field);
                     } else {
                         const parent = parents[groupIndex - 1];
                         if (parent) {
-                            if (parent.fields) {
-                                parent.fields.push(field);
-                            } else {
-                                parent.fields = [field];
+                            if (!parent.fields) {
+                                parent.fields = [];
                             }
+                            XlsxToJson.addFieldByName(worksheet, table, row, xlsxResult, parent.fields, field);
                         }
                     }
                 }
@@ -234,7 +255,7 @@ export class XlsxToJson {
                 const condition = XlsxToJson.readCondition(
                     worksheet,
                     table,
-                    fieldCache,
+                    fields,
                     conditionCache,
                     row,
                     xlsxResult
@@ -250,7 +271,7 @@ export class XlsxToJson {
                 XlsxToJson.readExpression(
                     worksheet,
                     table,
-                    fieldCache,
+                    allFields,
                     expressions,
                     row,
                     xlsxResult
@@ -280,6 +301,23 @@ export class XlsxToJson {
                     title: 'Relationships',
                     description: 'Relationships',
                     required: false,
+                    isArray: false,
+                    isRef: false,
+                    type: 'string',
+                    format: undefined,
+                    pattern: undefined,
+                    unit: undefined,
+                    unitSystem: undefined,
+                    customType: undefined,
+                    readOnly: true,
+                    isPrivate: undefined,
+                    property: undefined,
+                });
+                fields.push({
+                    name: 'guardianVersion',
+                    title: 'Guardian Version',
+                    description: 'Guardian Version',
+                    required: true,
                     isArray: false,
                     isRef: false,
                     type: 'string',
@@ -334,19 +372,20 @@ export class XlsxToJson {
             order: row
         };
         try {
-            const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
-            // const path = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);
+            const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
             const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
             const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
             const required = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.REQUIRED_FIELD), row));
             const isArray = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.ALLOW_MULTIPLE_ANSWERS), row));
-            const visibility = worksheet.getValue<string>(table.getCol(Dictionary.VISIBILITY), row);
+            const visibility = xlsxToVisibility(worksheet.getValue<string>(table.getCol(Dictionary.VISIBILITY), row));
 
-            field.name = name;
+            field.name = key.name;
+            field.title = key.path;
             field.description = description;
             field.required = required;
             field.isArray = isArray;
             field.hidden = visibility === 'Hidden';
+            field.autocalculate = visibility === 'Auto';
 
             let typeError = false;
             const fieldType = FieldTypes.findByName(type);
@@ -387,7 +426,7 @@ export class XlsxToJson {
             }
 
             if (!typeError && !XlsxToJson.isAutoCalculate(type, field)) {
-                let parseType = (val) => val;
+                let parseType = (val: any) => val;
                 if (fieldType) {
                     parseType = fieldType.pars.bind(fieldType);
                 }
@@ -463,13 +502,39 @@ export class XlsxToJson {
                     .getCell(table.getCol(Dictionary.PARAMETER), row)
                     .getLink();
                 const enumName = hyperlink?.worksheet || param;
-                field.enum = xlsxResult.getEnum(enumName);
-                if (!field.enum) {
+                const enumObject = xlsxResult.getEnum(enumName);
+
+                if (enumObject) {
+                    if (enumObject.loaded) {
+                        field.enum = enumObject?.getEnum();
+                        field.remoteLink = enumObject?.getLink();
+                    } else {
+                        field.enum = [];
+                        field.remoteLink = null;
+                        xlsxResult.addError({
+                            type: 'error',
+                            text: `Enum named "${enumName}" not loaded.`,
+                            message: `Enum named "${enumName}" not loaded.`,
+                            worksheet: worksheet.name,
+                            row
+                        }, field);
+                    }
+                } else {
                     field.enum = [];
+                    field.remoteLink = null;
                     xlsxResult.addError({
                         type: 'error',
                         text: `Enum named "${enumName}" not found.`,
                         message: `Enum named "${enumName}" not found.`,
+                        worksheet: worksheet.name,
+                        row
+                    }, field);
+                }
+                if (!(field.enum || field.remoteLink)) {
+                    xlsxResult.addError({
+                        type: 'error',
+                        text: `Enum named "${enumName}" is empty.`,
+                        message: `Enum named "${enumName}" is empty.`,
                         worksheet: worksheet.name,
                         row
                     }, field);
@@ -485,6 +550,17 @@ export class XlsxToJson {
                 field.textBold = font.bold;
                 field.textColor = font.color;
                 field.textSize = font.size;
+            }
+
+            if (field.autocalculate && !param) {
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Auto-calculate field is empty.`,
+                    message: `Auto-calculate field is empty.`,
+                    worksheet: worksheet.name,
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), row),
+                    row
+                }, field);
             }
 
             if (param) {
@@ -504,6 +580,9 @@ export class XlsxToJson {
                 if (fieldType.name === 'Pattern') {
                     field.pattern = param;
                 }
+                if (field.autocalculate) {
+                    field.expression = param;
+                }
             }
         } catch (error) {
             xlsxResult.addError({
@@ -519,7 +598,7 @@ export class XlsxToJson {
     private static readCondition(
         worksheet: Worksheet,
         table: Table,
-        fieldCache: Map<string, SchemaField>,
+        fields: SchemaField[],
         conditionCache: XlsxSchemaConditions[],
         row: number,
         xlsxResult: XlsxResult
@@ -531,8 +610,8 @@ export class XlsxToJson {
             return null;
         }
 
-        const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
-        const field = fieldCache.get(name);
+        const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
+        const field = fields.find((f) => f.title === key.path);
 
         try {
             //visibility
@@ -540,13 +619,13 @@ export class XlsxToJson {
                 return;
             }
             const cell = worksheet.getCell(table.getCol(Dictionary.VISIBILITY), row);
-            let result: any;
+            let result: ICondition | null = null;
 
             try {
                 if (cell.isFormulae()) {
                     result = XlsxToJson.parseCondition(cell.getFormulae());
                 } else if (cell.isValue()) {
-                    result = XlsxToJson.parseCondition(xlsxToBoolean(cell.getValue<string>()));
+                    result = XlsxToJson.parseCondition(xlsxToVisibility(cell.getValue<string>()));
                 }
             } catch (error) {
                 xlsxResult.addError({
@@ -567,12 +646,15 @@ export class XlsxToJson {
             if (result.type === 'const') {
                 field.hidden = field.hidden || !result.value;
             } else {
-                const condition = conditionCache.find(c => c.equal(result.field, result.value));
+                const target = fields.find((f) => f.title === result.fieldPath);
+                if (!target) {
+                    throw new Error('Invalid target');
+                }
+                const condition = conditionCache.find(c => c.equal(target, result.value));
                 if (condition) {
                     condition.addField(field, result.invert);
                     return null;
                 } else {
-                    const target = fieldCache.get(result.field);
                     const newCondition = new XlsxSchemaConditions(target, result.value);
                     newCondition.addField(field, result.invert);
                     return newCondition;
@@ -595,8 +677,8 @@ export class XlsxToJson {
     private static readExpression(
         worksheet: Worksheet,
         table: Table,
-        fieldCache: Map<string, SchemaField>,
-        expressionCache: XlsxExpressions,
+        allFields: Map<string, SchemaField>,
+        expressions: XlsxExpressions,
         row: number,
         xlsxResult: XlsxResult
     ): XlsxSchemaConditions | undefined {
@@ -604,14 +686,14 @@ export class XlsxToJson {
             return null;
         }
 
-        const path = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
+        const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
         const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
-        const lvl = worksheet.getRow(row).getOutline();
+        const groupIndex = worksheet.getRow(row).getOutline();
         const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
 
-        expressionCache.addVariable(path, description, lvl);
+        expressions.addVariable(key, description, groupIndex);
 
-        const field = fieldCache.get(path);
+        const field = allFields.get(key.path);
         try {
             if (field && !field.isRef) {
                 if (XlsxToJson.isAutoCalculate(type, field)) {
@@ -635,53 +717,64 @@ export class XlsxToJson {
         }
     }
 
-    private static parseCondition(formulae: string | boolean): {
-        type: 'const' | 'formulae',
-        value?: any,
-        field?: string,
-        invert?: boolean,
-    } {
+    private static parseCondition(formulae: string): ICondition {
         if (formulae === '') {
             return null;
         }
         //'TRUE'
         //'FALSE'
-        if (formulae === 'TRUE' || formulae === true) {
+        if (formulae === 'TRUE') {
             return { type: 'const', value: true }
         }
-        if (formulae === 'FALSE' || formulae === false) {
+        if (formulae === 'FALSE') {
             return { type: 'const', value: false }
         }
+        if (formulae === 'Hidden') {
+            return { type: 'const', value: false }
+        }
+        if (formulae === 'Auto') {
+            return { type: 'const', value: true }
+        }
+
         //'EXACT(G11,10)'
         //'NOT(EXACT(G11,10))'
         //'EXACT(G11,"10")'
         //'NOT(EXACT(G11,"10"))'
-        const parsFn = (tree: mathjs.MathNode, invert: boolean) => {
+        const parsFn = (tree: mathjs.MathNode, invert: boolean): {
+            fieldPath: string,
+            value: any,
+            invert: boolean
+        } => {
+            const fnNode = tree as mathjs.FunctionNode;
+
             if (tree.type === 'FunctionNode') {
-                if (tree.fn.name === 'EXACT' && tree.args.length === 2) {
+                if (fnNode.fn.name === 'EXACT' && fnNode.args.length === 2) {
+                    const firstNode = fnNode.args[0] as mathjs.SymbolNode | mathjs.ConstantNode;
+                    const secondNode = fnNode.args[1] as mathjs.SymbolNode | mathjs.ConstantNode;
+
                     if (
-                        tree.args[0].type === 'SymbolNode' &&
-                        tree.args[1].type === 'ConstantNode'
+                        firstNode.type === 'SymbolNode' &&
+                        secondNode.type === 'ConstantNode'
                     ) {
                         return {
-                            field: tree.args[0].name,
-                            value: tree.args[1].value,
+                            fieldPath: firstNode.name,
+                            value: secondNode.value,
                             invert
                         };
                     }
                     if (
-                        tree.args[0].type === 'ConstantNode' &&
-                        tree.args[1].type === 'SymbolNode'
+                        firstNode.type === 'ConstantNode' &&
+                        secondNode.type === 'SymbolNode'
                     ) {
                         return {
-                            field: tree.args[0].value,
-                            value: tree.args[1].name,
+                            value: firstNode.value,
+                            fieldPath: secondNode.name,
                             invert
                         };
                     }
                 }
-                if (tree.fn.name === 'NOT' && tree.args.length === 1) {
-                    return parsFn(tree.args[0], true);
+                if (fnNode.fn.name === 'NOT' && fnNode.args.length === 1) {
+                    return parsFn(fnNode.args[0], true);
                 }
             }
             return null;
@@ -691,7 +784,7 @@ export class XlsxToJson {
         if (node) {
             return {
                 type: 'formulae',
-                field: node.field,
+                fieldPath: node.fieldPath,
                 value: node.value,
                 invert: node.invert,
             }
@@ -702,5 +795,59 @@ export class XlsxToJson {
 
     private static isAutoCalculate(type: string, field: SchemaField): boolean {
         return field.hidden || type === 'Auto-Calculate';
+    }
+
+    private static getFieldKey(
+        worksheet: Worksheet,
+        table: Table,
+        row: number,
+        xlsxResult: XlsxResult,
+    ): IFieldKey {
+        const path = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
+        const fullPath = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);
+        let name: string;
+        if (table.getCol(Dictionary.KEY) !== -1) {
+            name = worksheet.getValue<string>(table.getCol(Dictionary.KEY), row) || path;
+        } else {
+            name = path;
+        }
+        if (name) {
+            name = name.trim();
+        }
+        if (name && name.includes('.')) {
+            xlsxResult.addError({
+                type: 'warning',
+                text: `Invalid character.`,
+                message: `Dots are not allowed in the Keys (${name})`,
+                worksheet: worksheet.name,
+                cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
+                row,
+                col: table.getCol(Dictionary.KEY),
+            }, null);
+            name = name.replaceAll('.', '');
+        }
+        return { name, path, fullPath }
+    }
+
+    private static addFieldByName(
+        worksheet: Worksheet,
+        table: Table,
+        row: number,
+        xlsxResult: XlsxResult,
+        fields: SchemaField[],
+        field: SchemaField
+    ) {
+        if (fields.find((item) => item.name === field.name)) {
+            xlsxResult.addError({
+                type: 'error',
+                text: `Failed to parse field.`,
+                message: `Key ${field.name} already exists`,
+                worksheet: worksheet.name,
+                cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
+                row,
+                col: table.getCol(Dictionary.KEY),
+            }, field);
+        }
+        fields.push(field);
     }
 }

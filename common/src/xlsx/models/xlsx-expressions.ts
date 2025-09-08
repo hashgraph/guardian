@@ -1,8 +1,10 @@
 import { Schema, SchemaField } from '@guardian/interfaces';
+import { IFieldKey } from '../interfaces/field-key.interface';
 
 export class XlsxVariable {
-    public readonly name: string;
-    public readonly description: string;
+    public readonly fieldName: string;
+    public readonly fieldDescription: string;
+    public readonly fieldPath: string;
     public readonly lvl: number;
 
     private schema: Schema;
@@ -12,21 +14,23 @@ export class XlsxVariable {
 
     constructor(
         name: string,
+        path: string,
         description: string,
         lvl: number
     ) {
-        this.name = name;
-        this.description = description;
+        this.fieldName = name;
+        this.fieldPath = path;
+        this.fieldDescription = description;
         this.lvl = Math.max(lvl || 0, 0);
         this.children = [];
     }
 
-    public get path(): string {
+    public get fullPath(): string {
         if (!this.field) {
             return null;
         }
         if (this.parent) {
-            return `${this.parent.path}.${this.field.name}`;
+            return `${this.parent.fullPath}.${this.field.name}`;
         } else {
             return `${this.field.name}`;
         }
@@ -47,20 +51,20 @@ export class XlsxVariable {
 
     public update(schemas: Schema[]) {
         if (!this.schema) {
-            throw new Error(`${this.name}: Schema not found.`);
+            throw new Error(`${this.fieldPath}: Schema not found.`);
         }
         if (this.lvl) {
-            this.field = this.schema.fields.find((f) => f.description === this.description);
+            this.field = this.schema.fields.find((f) => f.description === this.fieldDescription);
         } else {
-            this.field = this.schema.fields.find((f) => f.name === this.name);
+            this.field = this.schema.fields.find((f) => f.title === this.fieldPath);
         }
         if (!this.field) {
-            throw new Error(`${this.name}: Fields not found.`);
+            throw new Error(`${this.fieldPath}: Fields not found.`);
         }
         if (this.children.length) {
             const subSchema = schemas.find((s) => s.iri === this.field.type);
             if (!subSchema) {
-                throw new Error(`${this.name}: Type not found.`);
+                throw new Error(`${this.fieldPath}: Type not found.`);
             }
             for (const child of this.children) {
                 child.setSchema(subSchema);
@@ -78,8 +82,8 @@ export class XlsxExpressions {
         this.list = [];
     }
 
-    public addVariable(name: string, description: string, lvl: number) {
-        const variable = new XlsxVariable(name, description, lvl);
+    public addVariable(key: IFieldKey, description: string, lvl: number) {
+        const variable = new XlsxVariable(key.name, key.path, description, lvl);
         this.list.push(variable);
     }
 
@@ -102,7 +106,7 @@ export class XlsxExpressions {
                     throw new Error('Parent not found.');
                 }
             } else {
-                throw new Error(`Invalid group level (${variable.name}).`);
+                throw new Error(`Invalid group level (${variable.fieldPath}).`);
             }
             last = variable;
             parents.set(variable.lvl, variable);
@@ -116,7 +120,7 @@ export class XlsxExpressions {
     public getVariables(): Map<string, string> {
         const variables = new Map<string, string>();
         for (const row of this.list) {
-            variables.set(row.name, row.path);
+            variables.set(row.fieldPath, row.fullPath);
         }
         return variables;
     }

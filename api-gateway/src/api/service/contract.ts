@@ -1,6 +1,21 @@
 import { ContractType, Permissions } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Req, Response } from '@nestjs/common';
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Post,
+    Query,
+    Req,
+    Response,
+    Version,
+    ValidationPipe
+} from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, } from '@nestjs/swagger';
 import { ContractConfigDTO, ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
@@ -122,6 +137,50 @@ export class ContractsApi {
             await this.cacheService.invalidate(getCacheKey([req.url], user))
 
             return await guardians.createContract(owner, description, type);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Create new smart-contract V2 22.07.2025
+     */
+    @Post('/')
+    @Auth(
+        Permissions.CONTRACTS_CONTRACT_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Create contract.',
+        description: 'Create smart-contract. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiBody({
+        type: ContractConfigDTO,
+    })
+    @ApiCreatedResponse({
+        description: 'Created contract.',
+        type: ContractDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    @Version('2')
+    async createContractV2(
+        @AuthUser() user: IAuthUser,
+        @Body() body: ContractConfigDTO,
+        @Req() req: any
+    ): Promise<ContractDTO> {
+        try {
+            const owner = new EntityOwner(user);
+            const { description, type } = body;
+            const guardians = new Guardians();
+
+            await this.cacheService.invalidate(getCacheKey([req.url], user))
+
+            return await guardians.createContractV2(owner, description, type);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -1438,7 +1497,7 @@ export class ContractsApi {
         description: 'Retire tokens.',
     })
     @ApiBody({
-        type: RetireRequestTokenDTO,
+        type:[RetireRequestTokenDTO],
     })
     @ApiParam({
         name: 'poolId',
@@ -1460,9 +1519,14 @@ export class ContractsApi {
     async retire(
         @AuthUser() user: IAuthUser,
         @Param('poolId') poolId: string,
-        @Body() body: any
+        @Body(new ValidationPipe({ transform: true, whitelist: true }))
+        body: RetireRequestTokenDTO[]
     ): Promise<boolean> {
         try {
+            if (!Array.isArray(body)) {
+                throw new BadRequestException('Request body must be an array');
+            }
+
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
 

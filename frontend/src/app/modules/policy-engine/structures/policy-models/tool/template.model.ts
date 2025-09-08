@@ -23,6 +23,7 @@ export class ToolTemplate {
     public readonly isPublished: boolean = false;
     public readonly isPublishError: boolean = false;
     public readonly readonly: boolean = false;
+    public readonly isTest: boolean = false;
 
     private _config!: PolicyTool;
     private _changed: boolean;
@@ -55,6 +56,7 @@ export class ToolTemplate {
         this.isPublished = (this.status === PolicyStatus.PUBLISH) || (this.status === ModuleStatus.PUBLISHED);
         this.isPublishError = this.status === PolicyStatus.PUBLISH_ERROR;
         this.readonly = this.isPublished || this.isPublishError;
+        this.isTest = this.isDraft;
     }
 
     public get name(): string {
@@ -111,6 +113,10 @@ export class ToolTemplate {
         return true;
     }
 
+    public get policyId(): string | undefined {
+        return this.id;
+    }
+
     private buildBlock(config: IBlockConfig) {
         if (!config) {
             config = { blockType: 'tool' };
@@ -151,7 +157,7 @@ export class ToolTemplate {
         return json;
     }
 
-    public getConfig():any {
+    public getConfig(): any {
         return this._config.getJSON();
     }
 
@@ -224,7 +230,7 @@ export class ToolTemplate {
 
     public setTools(tools: any[]): void {
         this._config.setTools(tools);
-    }   
+    }
 
     public setTokens(tokens: Token[]): void {
         this._config.setTokens(tokens);

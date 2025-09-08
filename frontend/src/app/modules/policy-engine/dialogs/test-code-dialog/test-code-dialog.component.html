@@ -1,0 +1,381 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+        <div *ngIf="tag" class="header-item">{{tag}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+
+    <div class="left-menu">
+        <div class="guardian-step-container">
+            <div class="guardian-stepper vertical-stepper">
+                <div class="guardian-step" [attr.action]="step === 'prop'" [attr.highlighted]="step === 'prop'" (click)="onStep('prop')">
+                    <div class="guardian-step-marker">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/right-arrow.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Properties</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="step === 'data'" [attr.highlighted]="step === 'data'" (click)="onStep('data')">
+                    <div class="guardian-step-marker">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/right-arrow.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Input Data</div>
+                </div>
+                <ng-container *ngIf="blockType === 'customLogicBlock'">
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="step === 'code'" [attr.highlighted]="step === 'code'" (click)="onStep('code')">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Code</div>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="result">
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="step === 'result'" [attr.highlighted]="step === 'result'" (click)="onStep('result')">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Result</div>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+    </div>
+    <div class="right-container policy-configuration">
+        <div class="step-header">
+            {{getHeader()}}
+        </div>
+
+        <div *ngIf="step === 'prop'" class="step-container">
+            <div class="properties-body">
+                <common-properties
+                    *ngIf="initDialog" 
+                    [block]="block" 
+                    [module]="folder" 
+                    [readonly]="readonly" 
+                    class="readonly-status"
+                    type="Common"></common-properties>
+            </div>
+        </div>
+        <div *ngIf="step === 'data'" class="step-container">
+
+            <div class="data-type-values">
+                <div class="data-type-value">
+                    <div class="data-type-value-select">
+                        <p-radioButton
+                            class="guardian-radio-button radio-button-24"
+                            name="types"
+                            value="schema"
+                            [(ngModel)]="dataType"
+                            inputId="type_1"></p-radioButton>
+                    </div>
+                    <label class="data-type-value-name" for="type_1">
+                        Schema
+                    </label>
+                </div>
+                <div class="data-type-value">
+                    <div class="data-type-value-select">
+                        <p-radioButton
+                            class="guardian-radio-button radio-button-24"
+                            name="types"
+                            value="json"
+                            [(ngModel)]="dataType"
+                            inputId="type_2"></p-radioButton>
+                    </div>
+                    <label class="data-type-value-name" for="type_2">
+                        JSON
+                    </label>
+                </div>
+                <div class="data-type-value">
+                    <div class="data-type-value-select">
+                        <p-radioButton
+                            class="guardian-radio-button radio-button-24"
+                            name="types"
+                            value="file"
+                            [(ngModel)]="dataType"
+                            inputId="type_3"></p-radioButton>
+                    </div>
+                    <label class="data-type-value-name" for="type_3">
+                        File
+                    </label>
+                </div>
+                <div class="data-type-value" *ngIf="isPolicy">
+                    <div class="data-type-value-select">
+                        <p-radioButton
+                            class="guardian-radio-button radio-button-24"
+                            name="types"
+                            value="history"
+                            [(ngModel)]="dataType"
+                            inputId="type_4"></p-radioButton>
+                    </div>
+                    <label class="data-type-value-name" for="type_4">
+                        History
+                    </label>
+                </div>
+            </div>
+
+            <div class="type-container">
+                <div *ngIf="error" class="error-message">{{error}}</div>
+                <ng-container *ngIf="dataType==='schema'">
+                    <div class="select-schema">
+                        <select-schema
+                            [schemas]="schemas"
+                            [(value)]="schemaId"
+                            [bodyStyleClass]="'guardian-dropdown'"
+                            [panelStyleClass]="'guardian-dropdown-panel'"
+                            (change)="onChangeSchema()"
+                        ></select-schema>
+                    </div>
+                    <div *ngIf="schema" class="schema-body">
+                        <form [formGroup]="schemaValue" class="schema-form">
+                            <app-schema-form-root
+                                [schema]="schema"
+                                [preset]="_value"
+                                [policyId]="policyId"
+                                [comesFromDialog]="true"
+                                [showButtons]="false"
+                                [dryRun]="true"
+                                (form)="initForm($event)"
+                            >
+                            </app-schema-form-root>
+                        </form>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="dataType==='json'">
+                    <div class="guardian-textarea-container">
+                        <textarea pTextarea [(ngModel)]="jsonValue"></textarea>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="dataType==='file'">
+                    <app-file-drag-n-drop 
+                        class="drag-n-drop"
+                        [multiple]="false"
+                        [fileExtension]="fileExtension" 
+                        (onFileLoaded)="importFromFile($event)"
+                        [dropZoneLabel]="fileLabel"></app-file-drag-n-drop>
+                    <div *ngIf="fileBuffer" class="guardian-textarea-container textarea-preview">
+                        <textarea pTextarea [ngModel]="fileBuffer"></textarea>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="dataType==='history'">
+
+                    <div class="history-body history-body-no-data">
+                        <div class="dialog-grid-container">
+                            <div *ngIf="history?.length" class="dialog-grid-header">
+                                <div class="col-44"></div>
+                                <div class="col-auto">Creation date</div>
+                                <div class="col-200">Document</div>
+                            </div>
+                            <div *ngIf="history?.length" class="dialog-grid-body">
+                                <ng-container *ngFor="let item of history" >
+                                    <div class="dialog-grid-row row-52" (click)="onSelectHistory(item)">
+                                        <div class="col-44 col-button">
+                                            <div>
+                                                <p-radioButton
+                                                    class="guardian-radio-button radio-button-24 history-select"
+                                                    name="history"
+                                                    [value]="true"
+                                                    [ngModel]="item.selected"></p-radioButton>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            {{item.createDate}}
+                                        </div>
+                                        <div class="col-200">
+                                            <button
+                                                (click)="viewDocument($event, item)"
+                                                class="view-document guardian-button guardian-button-secondary">
+                                                <div class="guardian-button-label">View Document</div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                            </div>
+                            <div *ngIf="!history?.length" class="dialog-grid-empty">
+                                <div>
+                                    <svg-icon
+                                        class="icon-btn"
+                                        src="/assets/images/icons/list.svg"
+                                        svgClass="icon-color-disabled">
+                                    </svg-icon>
+                                </div>
+                                <div>There are no data</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </ng-container>
+            </div>
+        </div>
+        <div *ngIf="step === 'code'" class="step-container code">
+            <div *ngIf="!folder?.isDraft" class="code-warning">
+                <div class="code-warning-body">
+                    <svg-icon
+                        class="svg-icon-16 icon-btn"
+                        src="/assets/images/icons/16/info.svg">
+                    </svg-icon>
+                    <span class="code-warning-header">This is a Dry-Run mode.</span>
+                    <span>Code or policy changes made in this dialogue are not saved automatically. Please make sure to manually save your policy before closing or navigating away.</span>
+                </div>
+            </div>
+            <div class="code-help">
+                <div class="code-help-header">
+                    <svg-icon
+                        class="svg-icon-16 icon-btn"
+                        src="/assets/images/icons/16/info.svg">
+                    </svg-icon>
+                    Imports
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">Function(result, final)</span>
+                    <span class="code-variable-name">done</span>
+                    <span class="code-variable-description">- Code execution closing function, takes final VC as a parameter and passes control to the next block.</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">PolicyUser</span>
+                    <span class="code-variable-name">user</span>
+                    <span class="code-variable-description">- Active user object, determines code execution context.</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">PolicyDocument[]</span>
+                    <span class="code-variable-name">documents</span>
+                    <span class="code-variable-description">- Ingress VC documents array (i.e. code 'input' data).</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">mathjs</span>
+                    <span class="code-variable-name">mathjs</span>
+                    <span class="code-variable-description">- Imported mathjs library object, provides math functions.</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">Object[]</span>
+                    <span class="code-variable-name">artifacts</span>
+                    <span class="code-variable-description">- Attached block artifacts array.</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">formulajs</span>
+                    <span class="code-variable-name">formulajs</span>
+                    <span class="code-variable-description">- Imported formulajs library object, provides Excel functions.</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">PolicyDocument[]</span>
+                    <span class="code-variable-name">sources</span>
+                    <span class="code-variable-description">- Additional VC documents array (sourced by the 'child' add-on blocks).</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">Function(message)</span>
+                    <span class="code-variable-name">debug</span>
+                    <span class="code-variable-description">- Debug logging function.</span>
+                </div>
+            </div>
+            <div class="code-body">
+                <ngx-codemirror 
+                    *ngIf="initDialog" 
+                    [(ngModel)]="expression" 
+                    [options]="codeMirrorOptions"
+                    (ngModelChange)="onChangeCode()"></ngx-codemirror>
+            </div>
+        </div>
+        <div *ngIf="step === 'result'" class="step-container">
+
+
+            <div class="guardian-step-container">
+                <div class="guardian-stepper horizontal-stepper">
+                    <div class="guardian-step" [attr.action]="resultStep === 'input'"
+                        (click)="onResultStep('input')">
+                        <div class="guardian-step-icon">
+                            <svg-icon class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/file-fill.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Input</div>
+                    </div>
+                    <div class="guardian-step" [attr.action]="resultStep === 'logs'"
+                        (click)="onResultStep('logs')">
+                        <div class="guardian-step-icon">
+                            <svg-icon class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/table.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Logs</div>
+                    </div>
+                    <div class="guardian-step" [attr.action]="resultStep === 'output'"
+                        (click)="onResultStep('output')">
+                        <div class="guardian-step-icon">
+                            <svg-icon class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/file-fill.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Output</div>
+                    </div>
+                    <div class="guardian-step" [attr.action]="resultStep === 'errors'"
+                        (click)="onResultStep('errors')">
+                        <div class="guardian-step-icon">
+                            <svg-icon class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/table.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Errors</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="output-containers">
+                <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'input'">
+                    <ngx-codemirror 
+                        [(ngModel)]="result.input" 
+                        [options]="codeMirrorOptions2"></ngx-codemirror>
+                </div>
+                <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'logs'">
+                    <ngx-codemirror 
+                        [(ngModel)]="result.logs" 
+                        [options]="codeMirrorOptions2"></ngx-codemirror>
+                </div>
+                <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'output'">
+                    <ngx-codemirror 
+                        [(ngModel)]="result.output" 
+                        [options]="codeMirrorOptions2"></ngx-codemirror>
+                </div>
+                <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'errors'">
+                    <ngx-codemirror 
+                        [(ngModel)]="result.errors" 
+                        [options]="codeMirrorOptions2"></ngx-codemirror>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div *ngIf="step === 'code' && blockType === 'customLogicBlock'" class="dialog-button">
+            <button (click)="onTest()" class="guardian-button guardian-button-primary">Test</button>
+        </div>
+        <div *ngIf="step === 'data' && blockType !== 'customLogicBlock'" class="dialog-button">
+            <button (click)="onTest()" class="guardian-button guardian-button-primary">Test</button>
+        </div>
+    </div>
+</div>

@@ -19,6 +19,41 @@ export const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
     }
 }
 
+export const whileRequestAppear = (authorization) => {
+    if (attempts < 100) {
+        attempts++
+        cy.wait(3000)
+        cy.request({
+            method: METHOD.GET,
+            url: API.ApiServer + API.ExternalPolicyRequests,
+            qs: {
+                status: "NEW",
+                type: "REQUEST"
+            },
+            headers: {
+                "content-type": "binary/octet-stream",
+                authorization,
+            },
+            timeout: 180000,
+        }).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.OK);
+            if (response.body.length != 0)
+                cy.request({
+                    method: METHOD.PUT,
+                    url: API.ApiServer + API.ExternalPolicyRequests + response.body[0].id + '/' + API.Approve,
+                    headers: {
+                        "content-type": "binary/octet-stream",
+                        authorization,
+                    },
+                    timeout: 180000,
+                }).then((response) => {
+                    expect(response.status).to.eq(STATUS_CODE.OK);
+                })
+            else whileRequestAppear(authorization)
+        })
+    }
+}
+
 export const whileRetireRequestCreating = (dataToCompare, authorization, attempts) => {
     let request = {
         method: METHOD.GET,
@@ -230,7 +265,7 @@ export const waitForElement = (element, maxAttempts = 200, interval = 2000) => {
         cy.get('body').then((body) => {
             cy.log(body.find(element));
             if (body.find(element).length == 0) {
-                cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
+                cy.log(`Waiting for ${element} to complete after ${interval / 1000} seconds...`);
                 cy.wait(interval, { log: false });
                 waitForElement(element, maxAttempts, interval);
             }
@@ -248,7 +283,7 @@ export const waitForTaskComplete = (maxAttempts = 200, interval = 2000) => {
             cy.log(body.find("div.task-viewer"));
             if (body.find("div.task-viewer").length != 0) {
                 cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
-                cy.wait(interval-1000);
+                cy.wait(interval - 1000);
                 waitForTaskComplete(maxAttempts, interval);
             }
         })

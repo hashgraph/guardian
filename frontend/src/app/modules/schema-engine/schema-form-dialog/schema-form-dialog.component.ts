@@ -1,8 +1,8 @@
-import { Component, Inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { DocumentGenerator, Schema } from '@guardian/interfaces';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { SchemaService } from '../../../services/schema.service';
-import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 
 /**
@@ -14,13 +14,13 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
     styleUrls: ['./schema-form-dialog.component.scss']
 })
 export class SchemaFormDialog {
+    public header: string;
     public schema: Schema;
     public started: boolean = false;
     public dataForm: UntypedFormGroup;
     public presetDocument: any;
     public hideFields: any;
     public example: boolean = false;
-
     public category: string;
 
     constructor(
@@ -30,10 +30,10 @@ export class SchemaFormDialog {
         private schemaService: SchemaService,
     ) {
         const data = this.config.data
-
+        this.header = this.config.header || '';
         this.schema = data.schema || null;
         this.example = data.example || false;
-        this.dataForm = fb.group({});
+        this.dataForm = this.fb.group({});
         this.hideFields = {};
         this.category = data.category
     }
@@ -46,15 +46,15 @@ export class SchemaFormDialog {
         this.dialogRef.close(null);
     }
 
-    onSave() {
-        this.dialogRef.close({exampleDate: this.dataForm?.value, currentSchema: this.schema});
+    public initForm($event: any) {
+        this.dataForm = $event;
     }
 
     getSubSchemes() {
-        const { topicId, id} = this.schema ?? {};
+        const { topicId, id } = this.schema ?? {};
 
         this.schemaService.getSchemaWithSubSchemas(this.category, id, topicId).subscribe((data) => {
-            if(this.schema && data.schema) {
+            if (this.schema && data.schema) {
                 this.schema = new Schema(data.schema)
             }
 

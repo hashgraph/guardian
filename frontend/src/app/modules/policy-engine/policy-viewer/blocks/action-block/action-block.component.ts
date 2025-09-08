@@ -1,8 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
+import { ToastrService } from 'ngx-toastr';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { RegisteredService } from '../../../services/registered.service';
 
 /**
  * Component for display block of 'requestVcDocument' type.
@@ -30,11 +32,16 @@ export class ActionBlockComponent implements OnInit {
     target: any;
     currentValue: any;
     readonly: boolean = false;
+    title: any;
+    children: any[];
+    buttonLoading: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
+        private registeredService: RegisteredService,
         private wsService: WebSocketService,
-        private policyHelper: PolicyHelper
+        private policyHelper: PolicyHelper,
+        private toastr: ToastrService
     ) {
     }
 
@@ -95,6 +102,7 @@ export class ActionBlockComponent implements OnInit {
             this.data = data.data;
             this.type = data.type;
             this.uiMetaData = data.uiMetaData;
+
             if (this.type == 'selector') {
                 this.field = data.field;
                 this.options = this.uiMetaData.options || [];
@@ -108,12 +116,33 @@ export class ActionBlockComponent implements OnInit {
                 this.field = data.field;
                 this.options = data.options || [];
                 const currentValue = this.getObjectValue(this.data, this.field);
-                this.currentValue = this.options.find((option: {name: string, value: string}) =>
+                this.currentValue = this.options.find((option: { name: string, value: string }) =>
                     option.value === currentValue);
+            }
+            if (this.type == 'transformation') {
+                this.title = this.uiMetaData.title;
+                this.children = [];
+                if (Array.isArray(data.children)) {
+                    for (const child of data.children) {
+                        const instance = this.createInstance(child);
+                        if (instance) {
+                            this.children.push(instance);
+                        }
+                    }
+                }
+
             }
         } else {
             this.data = null;
         }
+    }
+
+    private createInstance(config: any) {
+        const code: any = this.registeredService.getCode(config.blockType);
+        if (code) {
+            return new code(config, this.policyEngineService);
+        }
+        return null;
     }
 
     getObjectValue(data: any, value: any) {
@@ -217,5 +246,46 @@ export class ActionBlockComponent implements OnInit {
                 console.error(e.error);
                 this.loading = false;
             });
+    }
+
+    async onTransformation() {
+        this.buttonLoading = true;
+        try {
+            let data = {
+                document: this.data,
+                history: [],
+                params: {}
+            }
+            const children = this.children || [];
+            for (const child of children) {
+                data = await child.run(data);
+                if (!data) {
+                    throw new Error(`An error occurred while sending the data`);
+                }
+            }
+            if (data?.document) {
+                this.policyEngineService
+                    .setBlockData(this.id, this.policyId, data?.document)
+                    .subscribe(() => {
+                        this.buttonLoading = false;
+                    }, (e) => {
+                        console.error(e.error);
+                        this.buttonLoading = false;
+                    });
+            } else {
+                this.buttonLoading = false;
+            }
+        } catch (error) {
+            this.buttonLoading = false;
+            console.log(error);
+            this.toastr.error(error?.toString(), '', {
+                timeOut: 3000,
+                closeButton: true,
+                positionClass: 'toast-bottom-right',
+                enableHtml: true,
+            });
+        }
+
+
     }
 }

@@ -36,7 +36,7 @@
         </div>
 
         <div [attr.extended]="extended" class="extended-config">
-            <div *ngIf="extended" class="input-field-container">
+            <div *ngIf="extended" class="input-field-container guardian-input-container">
                 <label class="form-label">Key</label>
                 <input
                     [formControl]="field.controlKey"
@@ -46,7 +46,7 @@
                 />
             </div>
 
-            <div *ngIf="extended" class="input-field-container">
+            <div *ngIf="extended" class="input-field-container guardian-input-container">
                 <label class="form-label">Title</label>
                 <input
                     [formControl]="field.controlTitle"
@@ -55,10 +55,21 @@
                     type="text"
                 />
             </div>
+
+            <div
+                *ngIf="extended"
+                class="guardian-icon-button custom-fields-remove"
+                (click)="onRemove(field)">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/delete.svg"
+                    svgClass="icon-color-delete">
+                </svg-icon>
+            </div>
         </div>
 
         <div class="extended-config">
-            <div *ngIf="!helpText" class="input-field-container">
+            <div *ngIf="!helpText" class="input-field-container guardian-input-container">
                 <label class="form-label">* Description</label>
                 <input
                     [formControl]="field.controlDescription"
@@ -67,15 +78,57 @@
                     type="text"
                 />
             </div>
-            <div (click)="onRemove(field)" *ngIf="!helpText" class="custom-fields-remove">
-                <svg-icon src="/assets/images/icons/delete.svg" svgClass="color-accent-red"></svg-icon>
+            <div
+                *ngIf="!helpText && !extended"
+                class="guardian-icon-button custom-fields-remove"
+                (click)="onRemove(field)">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/delete.svg"
+                    svgClass="icon-color-delete">
+                </svg-icon>
             </div>
         </div>
 
         <div class="extended-config">
-            <div class="dropdown-field">
+            <div *ngIf="helpText" class="input-field-container guardian-input-container">
+                <label class="form-label">Help Text</label>
+                <input
+                    [formControl]="field.controlDescription"
+                    pInputText
+                    placeholder="Field description"
+                    type="text"
+                />
+            </div>
+
+            <div *ngIf="isString" class="input-field-container guardian-input-container">
+                <label class="form-label">Pattern</label>
+                <input
+                    [formControl]="field.controlPattern"
+                    pInputText
+                    placeholder="[0-9]"
+                    type="text"
+                />
+            </div>
+
+            <div
+                *ngIf="helpText && !extended"
+                class="guardian-icon-button custom-fields-remove"
+                (click)="onRemove(field)">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/delete.svg"
+                    svgClass="icon-color-delete">
+                </svg-icon>
+            </div>
+        </div>
+
+        <div class="extended-config">
+            <div class="dropdown-field guardian-input-container">
                 <label class="form-label">Property</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel width-825"
                     [filterBy]="'title'"
                     [filter]="true"
                     [formControl]="property"
@@ -89,40 +142,12 @@
             </div>
         </div>
 
-        <div class="extended-config">
-            <div *ngIf="helpText" class="input-field-container">
-                <label class="form-label">Help Text</label>
-                <input
-                    [formControl]="field.controlDescription"
-                    pInputText
-                    placeholder="Field description"
-                    type="text"
-                />
-            </div>
-
-            <div *ngIf="isString" class="input-field-container">
-                <label class="form-label">Pattern</label>
-                <input
-                    [formControl]="field.controlPattern"
-                    pInputText
-                    placeholder="[0-9]"
-                    type="text"
-                />
-            </div>
-
-            <div
-                (click)="onRemove(field)"
-                *ngIf="helpText && !extended"
-                class="custom-fields-remove"
-            >
-                <img alt="" src="assets/images/icons/delete.svg"/>
-            </div>
-        </div>
-
         <div class="custom-fields-main-container">
-            <div class="dropdown-field max-width-50">
+            <div class="dropdown-field max-width-50 guardian-input-container">
                 <label class="form-label">Field type</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel width-825"
                     (onChange)="onTypeChange($event)"
                     [formControl]="field.controlType"
                     [group]="true"
@@ -133,7 +158,7 @@
                     placeholder="Type"
                 >
                     <ng-template let-item pTemplate="item">
-                        <div class="flex align-items-center gap-2">
+                        <div class="align-items-center">
                             <span *ngIf="item.component" class="sub-schema-component">{{ item.component }}:</span>
                             <span class="sub-schema-name">{{ item.label }}</span>
                             <span *ngIf="item.version" class="sub-schema-version">{{ item.version }}</span>
@@ -142,7 +167,7 @@
                 </p-dropdown>
             </div>
 
-            <div *ngIf="unit" class="input-field-container">
+            <div *ngIf="unit" class="input-field-container guardian-input-container">
                 <label class="form-label">Unit</label>
                 <input
                     [formControl]="field.controlUnit"
@@ -154,11 +179,14 @@
 
             <ng-container *ngIf="helpText; else notHelpText">
                 <div class="checkbox-field-container">
-                    <p-checkbox binary="true" [formControl]="field.controlBold"></p-checkbox>
-                    <label class="checkbox-label">Bold</label>
+                    <p-checkbox 
+                        class="guardian-checkbox-secondary checkbox-24" 
+                        binary="true" 
+                        [formControl]="field.controlBold"
+                        label="Bold"></p-checkbox>
                 </div>
 
-                <div class="input-field-container">
+                <div class="input-field-container guardian-input-container">
                     <label class="form-label">Color</label>
                     <input
                         [formControl]="field.controlColor"
@@ -168,7 +196,7 @@
                     />
                 </div>
 
-                <div class="input-field-container">
+                <div class="input-field-container guardian-input-container" style="width: 175px">
                     <label class="form-label">Font</label>
                     <input
                         [formControl]="field.controlSize"
@@ -177,16 +205,27 @@
                         type="text"
                     />
                 </div>
-                <div (click)="onHepTextReset()" class="reset-btn">
-                    <svg-icon src="/assets/images/icons/restart_alt.svg" svgClass="icon-style-restart_alt"></svg-icon>
-                    <span class="reset-btn-label">Reset</span>
-                </div>
+
+                <button 
+                    (click)="onHepTextReset()" 
+                    class="guardian-button guardian-button-secondary reset-btn">
+                    <div class="guardian-button-icon">
+                        <svg-icon 
+                            class="icon-btn svg-icon" 
+                            src="/assets/images/icons/restart_alt.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Reset</div>
+                </button>
             </ng-container>
 
             <ng-template #notHelpText>
-                <div class="dropdown-field">
+                <div class="dropdown-field guardian-input-container">
                     <label class="form-label">Required</label>
                     <p-dropdown
+                        class="guardian-dropdown"
+                        panelStyleClass="guardian-dropdown-panel"
                         [formControl]="fieldType"
                         [options]="fieldTypes"
                         appendTo="body"
@@ -197,22 +236,30 @@
                 </div>
 
                 <div *ngIf="!field.autocalculated.value" class="checkbox-field-container">
-                    <p-checkbox [formControl]="field.controlArray" [binary]="true"></p-checkbox>
-                    <label class="checkbox-label">Allow multiple answers</label>
+                    <p-checkbox 
+                        class="guardian-checkbox-secondary checkbox-24"
+                        [formControl]="field.controlArray" 
+                        [binary]="true"
+                        label="Allow multiple answers"></p-checkbox>
                 </div>
 
-                <div *ngIf="field.autocalculated.value" class="checkbox-field-container">
+                <div *ngIf="field.autocalculated.value" class="checkbox-field-container auto-calculate">
+                    <label class="form-label">Required</label>
                     <button
                         (click)="onEditExpression()"
-                        class=".edit-button button secondary"
+                        class="edit-button secondary"
+                        [ngClass]="{'danger': !this.field.expression.value}"
                         label="Edit expression"
                         pButton>
                     </button>
                 </div>
 
                 <div *ngIf="canBePrivate" class="checkbox-field-container private">
-                    <p-checkbox [formControl]="field.controlPrivate" [binary]="true"></p-checkbox>
-                    <label class="checkbox-label">Private</label>
+                    <p-checkbox 
+                        class="guardian-checkbox-secondary checkbox-24"
+                        [formControl]="field.controlPrivate" 
+                        [binary]="true"
+                        label="Private"></p-checkbox>
                 </div>
             </ng-template>
         </div>
@@ -221,6 +268,7 @@
                 <label [htmlFor]="'enumValues'" class="form-label">Enum data</label>
                 <div class="p-chips" aria-label="Enum values">
                     <div class="p-chips-container">
+                        
                         <div
                             class="p-chips-token"
                             *ngFor="let keyword of keywords">
@@ -229,52 +277,56 @@
                         <div class="p-chips-token" *ngIf="keywords.length < field.enum.length">
                             <span class="p-chips-token-label">...</span>
                         </div>
+                        
                     </div>
                 </div>
             </div>
-            <div
-                (click)="onEditEnum()"
-                [ngClass]="{ 'enum-edit-button-only': !field.enum.length }"
-                class="enum-edit-button"
-            >
-                <i class="pi pi-pencil"></i>
-                <span class="enum-edit-button-label">Edit values</span>
-            </div>
+
+            <button 
+                (click)="onEditEnum()" 
+                class="guardian-button guardian-button-secondary enum-edit-button"
+                [ngClass]="{ 'enum-edit-button-only': !field.enum.length }">
+                <div class="guardian-button-icon">
+                    <svg-icon 
+                        class="icon-btn svg-icon" 
+                        src="/assets/images/icons/edit.svg"
+                        svgClass="icon-color-primary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Edit values</div>
+            </button>
         </div>
-        <div *ngIf="!helpText && presetFormFields && defaultValues" class="selected-values">
+        <div *ngIf="!helpText && presetFormFields" class="selected-values">
             <div>
                 <span class="selected-values__title">Selected values</span>
             </div>
             <div class="selected-values__action">
                 <button
-                    [label]="isShowMore ? 'Show Less' : 'Show More'"
-                    pButton
-                    class="selected-values__show-button button secondary"
+                    class="guardian-button guardian-button-secondary selected-values__show-button"
                     (click)="isShowMore=!isShowMore">
+                    {{ isShowMore ? 'Show Less' : 'Show More' }}
                 </button>
             </div>
             <div class="default-values" [attr.hide]="!isShowMore">
                 <div class="default-values__content">
-                    <app-schema-form
+                    <app-schema-form-root
                         [fields]="presetFormFields"
-                        [formGroup]="defaultValues"
                         [preset]="presetValues"
                         [showButtons]="false"
-                    ></app-schema-form>
+                        (form)="initDefaultForm($event)"
+                    ></app-schema-form-root>
                 </div>
             </div>
         </div>
     </div>
     <div *ngIf="loading" class="loading">
-        <p-progressSpinner
-            [style]="{ width: '65px', height: '65px' }">
-        </p-progressSpinner>
+        <p-progressSpinner [style]="{ width: '65px', height: '65px' }"></p-progressSpinner>
     </div>
 </div>
 
 <div *ngIf="readonly" class="readonly-custom-field">
     <div class="readonly-extended-config" [attr.extended]="extended">
-        <div *ngIf="extended" class="input-field-container">
+        <div *ngIf="extended" class="input-field-container guardian-input-container">
             <label class="form-label" htmlFor="key">Key</label>
             <input
                 [disabled]="true"
@@ -286,7 +338,7 @@
             />
         </div>
 
-        <div *ngIf="extended" class="input-field-container">
+        <div *ngIf="extended" class="input-field-container guardian-input-container">
             <label class="form-label" htmlFor="title">Title</label>
             <input
                 [disabled]="true"
@@ -300,7 +352,7 @@
     </div>
 
     <div class="custom-fields-main-container">
-        <div class="input-field-container">
+        <div class="input-field-container guardian-input-container">
             <label class="form-label" htmlFor="description">* Description</label>
             <input
                 [disabled]="true"
@@ -314,7 +366,7 @@
     </div>
 
     <div class="custom-fields-main-container">
-        <div class="input-field-container">
+        <div class="input-field-container guardian-input-container">
             <label class="form-label" htmlFor="fieldType">Field type</label>
             <input
                 [disabled]="true"
@@ -327,28 +379,25 @@
         </div>
         <div class="checkbox-field-container">
             <p-checkbox
+                class="guardian-checkbox-secondary checkbox-24"
                 [ngModel]="value?.required"
                 [disabled]="readonly"
                 [binary]="true"
                 [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
+                label="Required Field"
             >
             </p-checkbox>
-
-            <label class="checkbox-label" htmlFor="requiredField">
-                Required Field
-            </label>
         </div>
         <div class="checkbox-field-container">
             <p-checkbox
+                class="guardian-checkbox-secondary checkbox-24"
                 [ngModel]="value?.required"
                 [disabled]="readonly"
                 [binary]="false"
                 [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
+                label="Allow multiple answers"
             >
             </p-checkbox>
-            <label class="checkbox-label" htmlFor="isArray">
-                Allow multiple answers
-            </label>
         </div>
     </div>
 </div>

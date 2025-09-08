@@ -1,8 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { GenerateUUIDv4, IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
-import { forkJoin } from 'rxjs';
-import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { InformService } from 'src/app/services/inform.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TagsService } from 'src/app/services/tag.service';
@@ -13,6 +12,7 @@ import { NewModuleDialog } from '../dialogs/new-module-dialog/new-module-dialog.
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
+import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 enum OperationMode {
     None,
@@ -57,6 +57,8 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     public tagSchemas: any[] = [];
     public canPublishAnyTool: boolean = false;
 
+    private _destroy$ = new Subject<void>();
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
@@ -78,7 +80,8 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-
+        this._destroy$.next();
+        this._destroy$.complete();
     }
 
     private loadTools() {
@@ -172,24 +175,44 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             if (result) {
                 if (type === 'message') {
                     this.loading = true;
-                    this.toolsService.importByMessage(data, {
-                        tools: result.tools
-                    }).subscribe(
-                        (result) => {
-                            this.loadAllTools();
-                        }, (e) => {
-                            this.loading = false;
-                        });
+                    this.toolsService
+                        .pushImportByMessage(data, {
+                            tools: result.tools
+                        })
+                        .pipe(takeUntil(this._destroy$))
+                        .subscribe(
+                            (result) => {
+                                // this.loadAllTools();
+                                const { taskId, expectation } = result;
+                                this.router.navigate(['task', taskId], {
+                                    queryParams: {
+                                        last: btoa(location.href),
+                                        redir: String(true)
+                                    },
+                                });
+                            }, (e) => {
+                                this.loading = false;
+                            });
                 } else if (type === 'file') {
                     this.loading = true;
-                    this.toolsService.importByFile(data, {
-                        tools: result.tools
-                    }).subscribe(
-                        (result) => {
-                            this.loadAllTools();
-                        }, (e) => {
-                            this.loading = false;
-                        });
+                    this.toolsService
+                        .pushImportByFile(data, {
+                            tools: result.tools
+                        })
+                        .pipe(takeUntil(this._destroy$))
+                        .subscribe(
+                            (result) => {
+                                // this.loadAllTools();
+                                const { taskId, expectation } = result;
+                                this.router.navigate(['task', taskId], {
+                                    queryParams: {
+                                        last: btoa(location.href),
+                                        redir: String(true)
+                                    },
+                                });
+                            }, (e) => {
+                                this.loading = false;
+                            });
                 }
             }
         });
@@ -219,8 +242,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             styleClass: 'custom-dialog',
             closable: true,
             data: {
-                type: 'Tool',
-                tools: this.tools,
+                type: 'Tool'
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
@@ -297,24 +319,31 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     }
 
     public deleteTool(element: any) {
-        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        const dialogRef = this.dialog.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
             data: {
-                dialogTitle: 'Delete tool',
-                dialogText: 'Are you sure to delete tool?'
+                header: 'Delete Tool',
+                text: `Are you sure want to delete tool (${element.name})?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
             },
-            modal: true,
-            closable: false,
         });
-        dialogRef.onClose.subscribe((result) => {
-            if (!result) {
-                return;
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.loading = true;
+                this.toolsService.delete(element.id).subscribe((result) => {
+                    this.loadAllTools();
+                }, (e) => {
+                    this.loading = false;
+                });
             }
-            this.loading = true;
-            this.toolsService.delete(element.id).subscribe((result) => {
-                this.loadAllTools();
-            }, (e) => {
-                this.loading = false;
-            });
         });
     }
 

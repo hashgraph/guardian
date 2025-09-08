@@ -78,7 +78,7 @@ Groups are components which define the general structure of Labels. Each group h
 
 **2.3.3.2 Components: Rules**
 
-Rules are defined in terms of variables, scores, formulas and conditions.&#x20;
+Rules are defined in terms of variables, scores, formulas and conditions.
 
 A Rule is considered ‘valid’ if all its conditions successfully verify for the set of provided data.
 
@@ -89,8 +89,7 @@ A Rule is considered ‘valid’ if all its conditions successfully verify for t
 * **Tag** – name of the namespace
 * **Title** – title in the navigation panel
 
-For components which are members of the same group, each component that is positioned below another component (i.e. ‘follows’ the prior component) has access to the variables of the previous component via its Tag.\
-
+For components which are members of the same group, each component that is positioned below another component (i.e. ‘follows’ the prior component) has access to the variables of the previous component via its Tag.\\
 
 **2.3.3.2.1 Editing Rules**
 
@@ -138,19 +137,19 @@ Existing labels can be used as components of other (higher order) labels. The in
 
 It is recommended to frequently use ‘Save’ button to preserve the current state of the Label being edited.
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **2.3.5 Preview**
 
 Label authors can preview (i.e. ‘dry run’ test) their Label functioning once its definition is complete by clicking the ‘Preview’ button in the configurator UI. Such test evaluations require manual input of the test data.
 
-<figure><img src="../../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5) (1) (1) (5).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 Components which were successfully validated on the provided test data would be marked in green, the unsuccessful results are marked in red.
 
@@ -162,47 +161,45 @@ Components which were successfully validated on the provided test data would be 
 
 To enable other users to find and use the Label it must be published.
 
-<figure><img src="../../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (7) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 ### **2.4 Document Creation**
 
 Once the Label has been published it can be used to create Label documents on specific token data.
 
-<figure><img src="../../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (8) (1).png" alt=""><figcaption></figcaption></figure>
 
 **2.4.1 Targets**
 
 The first step in the creation of a Label document is to select the target token (i.e. a VP document linked to the token).
 
-<figure><img src="../../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (9) (1).png" alt=""><figcaption></figcaption></figure>
 
 **2.4.2 Label evaluation**
 
 All steps defined in the Label evaluation flow must be followed.
 
-<figure><img src="../../../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (10) (1).png" alt=""><figcaption></figcaption></figure>
 
 **2.4.3 Results**
 
 If a Label is evaluated as valid a corresponding document is created containing all Label information. This document can be published to make it accessible externally.
 
-<figure><img src="../../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (12) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-### **2.5  Viewing Label documents**
+### **2.5 Viewing Label documents**
 
 Existing Label documents can be accessed from the corresponding grid.
 
-<figure><img src="../../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (13) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (14) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
-
-
+<figure><img src="../../../../.gitbook/assets/image (15) (5).png" alt=""><figcaption></figcaption></figure>
 
 ## **3. Labels Import\Export**
 
-<figure><img src="../../../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (16) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
 

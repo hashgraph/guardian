@@ -1,14 +1,13 @@
 # Indexer User Guide
 
-[Step By Step Process](indexer-user-guide.md#id-1.-step-by-step-process)
-
-1. [Demo Video](indexer-user-guide.md#id-2.-demo-video)
+1. [Step By Step Process](indexer-user-guide.md#id-1.-step-by-step-process)
+2. [Demo Video](indexer-user-guide.md#id-2.-demo-video)
 
 ## 1. Step By Step Process
 
-Indexer provides a global search facility on the landing page, and other pages’ headers. It allows users to find information by matching string values.&#x20;
+Indexer provides a global search facility on the landing page, and other pages’ headers. It allows users to find information by matching string values.
 
-For example ‘Project Description’ will find all entities which include ‘Project’ word or ‘Description’ word.&#x20;
+For example ‘Project Description’ will find all entities which include ‘Project’ word or ‘Description’ word.
 
 To find an exact phrase you need to use double quotes, e.g. type something like ‘“Project Description”’. Words can be excluded by typing ‘-’ symbol in the request. All searched entities have metadata in Hedera messages, search looks at policy message IDs, schema names, schema message IDs, VC/VP document content/values, schema properties, schema field names, etc…
 
@@ -35,35 +34,26 @@ Please note that it would take minimum 6 hours to load complete Indexer data.
 
 ![](<../../.gitbook/assets/1 (16).png>)
 
-### Indexer UI sections:&#x20;
+### Indexer UI sections:
 
-Accounts, Methodologies, Documents, Others.&#x20;
+Accounts, Methodologies, Documents, Others.
 
 Sections have specific grids for displaying data and filters:
 
-*   Accounts:
-
-    * Standard Registries
-    * Registry Users
-
-
-*   Methodologies:
-
-    * Policies
-    * Tools
-    * Modules
-    * Schemas
-    * Tokens
-    * Roles
-
-
-*   Documents:
-
-    * DIDs
-    * VCs
-    * VPs
-
-
+* Accounts:
+  * Standard Registries
+  * Registry Users
+* Methodologies:
+  * Policies
+  * Tools
+  * Modules
+  * Schemas
+  * Tokens
+  * Roles
+* Documents:
+  * DIDs
+  * VCs
+  * VPs
 * Others:
   * NFTs
   * Topics
@@ -73,7 +63,7 @@ Example of the grid displaying data is seen on the screenshot below:
 
 ![](<../../.gitbook/assets/2 (18).png>)
 
-Majority of the grids provide capability to search by keyword filter, which has some differences in comparison to global search. In the search failed it uses ‘chips’, i.e. type and press ENTER to add values, to search for specified items based on an AND condition.&#x20;
+Majority of the grids provide capability to search by keyword filter, which has some differences in comparison to global search. In the search failed it uses ‘chips’, i.e. type and press ENTER to add values, to search for specified items based on an AND condition.
 
 For example, searching for. schema by typing ‘Project’ and ‘Description’ will find all schemas which contain ‘Project’ and ‘Description’ strings.
 
@@ -152,7 +142,7 @@ VC details has the following tabs:
 * History - document history since it was created.
 * Relationships - document relationships with links to policy, roles, schemas, standard registry, other documents.
 
-<figure><img src="../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 * Raw Data - raw message data.
 
@@ -186,7 +176,7 @@ Synchronization of all entity data starts one time per hour, but it can be chang
 
 For documents (VC, VP, DID, Schema) with local CIDs (i.e. Such documents were uploaded onto local IPFS nodes) Guardian attempts to automatically download the file when user attempts to open in in the Indexer UI. This may not be possible if the local node is ‘closed’ for outside requests. For such cases there is also an option for the user to manually attempt to download from the local IPFS node. This can be retried unlimited number of times, for situations when local node administrators open access to the node\[s] at a later date.
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:** This functionality requires the correct setting for the IPFS\_GATEWAY configuration option in the `indexer-service .env` file:

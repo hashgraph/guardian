@@ -1,10 +1,8 @@
-import { DocumentSignature, DocumentStatus, GenerateUUIDv4, IVP, IVPDocument } from '@guardian/interfaces';
+import { DocumentSignature, DocumentStatus, IVP, IVPDocument } from '@guardian/interfaces';
 import { Entity, Property, Enum, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete, AfterUpdate, AfterCreate } from '@mikro-orm/core';
 import { RestoreEntity } from '../models/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
-import ObjGet from 'lodash.get';
-import ObjSet from 'lodash.set';
 import { DeleteCache } from './delete-cache.js';
 
 /**
@@ -142,57 +140,23 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
     tokenId?: any;
 
     /**
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _documentFileId?: ObjectId;
+
+    /**
      * Document defaults
      */
     @BeforeCreate()
-    setDefaults() {
+    async setDefaults() {
         this.status = this.status || DocumentStatus.NEW;
         this.signature = this.signature || DocumentSignature.NEW;
-    }
 
-    private _createDocument(document: string): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            try {
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(GenerateUUIDv4());
-                this.documentFileId = fileStream.id;
-                fileStream.write(document);
-                fileStream.end(() => resolve());
-            } catch (error) {
-                reject(error)
-            }
-        });
-    }
-
-    private _createFieldCache(fields?: string[]): any {
-        if (fields) {
-            const newDocument: any = {};
-            for (const field of fields) {
-                const fieldValue = ObjGet(this.document, field)
-                if (
-                    typeof fieldValue === 'number' ||
-                    (
-                        typeof fieldValue === 'string' &&
-                        fieldValue.length < (+process.env.DOCUMENT_CACHE_FIELD_LIMIT || 100)
-                    )
-                ) {
-                    ObjSet(newDocument, field, fieldValue);
-                }
-            }
-            return newDocument;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Create document
-     */
-    @BeforeCreate()
-    async createDocument() {
         if (this.document) {
             const document = JSON.stringify(this.document);
-            await this._createDocument(document);
-            this.document = this._createFieldCache(this.documentFields);
+            this.documentFileId = await this._createFile(document, 'VpDocument');
+            this.document = this._createFieldCache(this.document, this.documentFields);
             if (!this.document) {
                 delete this.document;
             }
@@ -200,6 +164,10 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
         } else {
             this._updateDocHash('');
         }
+        this._updatePropHash(this.createProp());
+    }
+
+    private createProp(): any {
         const prop: any = {};
         prop.owner = this.owner;
         prop.hash = this.hash;
@@ -218,23 +186,7 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
         prop.relationships = this.relationships;
         prop.topicId = this.topicId;
         prop.policyId = this.policyId;
-        this._updatePropHash(prop);
-    }
-
-    /**
-     * Update document
-     */
-    @BeforeUpdate()
-    async updateDocument() {
-        if (this.document && this.documentFileId) {
-            DataBaseHelper.gridFS
-                .delete(this.documentFileId)
-                .catch((reason) => {
-                    console.error(`BeforeUpdate: VpDocument, ${this._id}, documentFileId`)
-                    console.error(reason)
-                });
-        }
-        await this.createDocument();
+        return prop;
     }
 
     /**
@@ -243,17 +195,47 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
     @OnLoad()
     @AfterUpdate()
     @AfterCreate()
-    async loadDocument() {
+    async loadFiles() {
         if (this.documentFileId) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.documentFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
+            const buffer = await this._loadFile(this.documentFileId)
             this.document = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Update document
+     */
+    @BeforeUpdate()
+    async updateFiles() {
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            const documentFileId = await this._createFile(document, 'VpDocument');
+            if (documentFileId) {
+                this._documentFileId = this.documentFileId;
+                this.documentFileId = documentFileId;
+            }
+            this.document = this._createFieldCache(this.document, this.documentFields);
+            if (!this.document) {
+                delete this.document;
+            }
+            this._updateDocHash(document);
+        }
+        this._updatePropHash(this.createProp());
+    }
+
+    /**
+     * Delete File
+     */
+    @AfterUpdate()
+    postUpdateFiles() {
+        if (this._documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._documentFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: VpDocument, ${this._id}, _documentFileId`)
+                    console.error(reason)
+                });
+            delete this._documentFileId;
         }
     }
 
@@ -261,7 +243,7 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
      * Delete document
      */
     @AfterDelete()
-    deleteDocument() {
+    deleteFiles() {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)

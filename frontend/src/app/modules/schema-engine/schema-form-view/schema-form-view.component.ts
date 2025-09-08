@@ -16,6 +16,7 @@ interface IFieldControl extends SchemaField {
     pageIndex: number;
     pageSize: number;
     notCorrespondCondition?: boolean;
+    open: boolean;
 }
 
 interface IFieldIndexControl {
@@ -148,7 +149,8 @@ export class SchemaFormViewComponent implements OnInit {
                 pageIndex: 0,
                 pageSize: 0,
                 count: 0,
-                imgSrc: ''
+                imgSrc: '',
+                open: false
             }
             if (!field.isArray && !field.isRef) {
                 item.value = !this.values
@@ -156,7 +158,7 @@ export class SchemaFormViewComponent implements OnInit {
                     || this.values[item.name] === undefined
                     ? ""
                     : this.values[item.name];
-                if (this.isIPFS(field)) {
+                if (this.isIPFS(field) && field.customType !== 'file') {
                     this.loadImg(item)
                 }
             }
@@ -188,7 +190,7 @@ export class SchemaFormViewComponent implements OnInit {
                         }]
                         item.isInvalidType = true;
                     }
-                    if (this.isIPFS(field)) {
+                    if (this.isIPFS(field) && field.customType !== 'file') {
                         this.loadImgs(value);
                     }
                 }

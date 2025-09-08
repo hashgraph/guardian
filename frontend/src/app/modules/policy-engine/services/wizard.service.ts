@@ -1,12 +1,12 @@
-import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {API_BASE_URL} from '../../../services/api';
-import {IWizardConfig, Schema, Token} from '@guardian/interfaces';
-import {SelectorDialogComponent} from '../../common/selector-dialog/selector-dialog.component';
-import {ConfirmationDialogComponent} from '../../common/confirmation-dialog/confirmation-dialog.component';
-import {PolicyWizardDialogComponent} from '../dialogs/policy-wizard-dialog/policy-wizard-dialog.component';
-import {DialogService} from 'primeng/dynamicdialog';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../../../services/api';
+import { IWizardConfig, Schema, Token } from '@guardian/interfaces';
+import { SelectorDialogComponent } from '../../common/selector-dialog/selector-dialog.component';
+import { PolicyWizardDialogComponent } from '../dialogs/policy-wizard-dialog/policy-wizard-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
+import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 export enum WizardMode {
     CREATE = 'CREATE',
@@ -87,16 +87,28 @@ export class WizardService {
             currentNode: any;
         }
     ) {
-        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
             data: {
-                dialogTitle: 'Save progress',
-                dialogText: 'Do you want to save progress?',
+                header: 'Save progress',
+                text: `Do you want to save progress?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Confirm',
+                    class: 'primary'
+                }]
             },
-            modal: true,
-            closable: false,
         });
-        dialogRef.onClose.subscribe((saveState) => {
-            callback(Object.assign(value, {saveState}));
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Confirm') {
+                callback(Object.assign(value, { saveState: true }));
+            } else {
+                callback(Object.assign(value, { saveState: false }));
+            }
         });
     }
 
@@ -115,16 +127,17 @@ export class WizardService {
         preset?: any
     ) {
         const dialogRef = this.dialogService.open(PolicyWizardDialogComponent, {
-            header: 'Policy Wizard',
-            styleClass: 'custom-dialog',
+            showHeader: false,
             width: '1100px',
+            styleClass: 'guardian-dialog',
+            header: 'Policy Wizard',
             data: {
                 policy,
                 policies,
                 schemas,
                 tokens,
-                state: preset,
-            },
+                state: preset
+            }
         });
         dialogRef
             .onClose
@@ -192,19 +205,17 @@ export class WizardService {
                 return;
             }
             const selectorDialog = this.dialog.open(SelectorDialogComponent, {
+                showHeader: false,
                 width: '400px',
+                styleClass: 'guardian-dialog',
                 data: {
                     title: 'Restore progress',
                     description: 'Choose policy',
                     label: 'New policy',
-                    options: [
-                        {
-                            name: 'New policy',
-                        },
-                    ].concat(options),
-                },
-                modal: true,
-                closable: false,
+                    options: [{
+                        name: 'New policy',
+                    }].concat(options),
+                }
             });
             selectorDialog.onClose.subscribe((value) => {
                 if (!value?.ok) {

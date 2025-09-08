@@ -69,6 +69,7 @@ export class RequestDocumentBlockAddonComponent
     public rules: any;
     public hideFields: any;
     public readonly: boolean = false;
+    public dialog: RequestDocumentBlockDialog;
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -190,6 +191,9 @@ export class RequestDocumentBlockAddonComponent
     public preset(document: any) {
         this.presetDocument = document;
         this.changeDetectorRef.detectChanges();
+        if (this.dialog) {
+            this.dialog.detectChanges();
+        }
     }
 
     public onCancel(): void {
@@ -222,7 +226,7 @@ export class RequestDocumentBlockAddonComponent
 
     public onDryRun() {
         if (this.schema) {
-            const presetDocument = DocumentGenerator.generateDocument(this.schema);
+            const presetDocument = DocumentGenerator.generateDocument(this.schema, undefined, this.rowDocument);
             this.preset(presetDocument);
         }
     }
