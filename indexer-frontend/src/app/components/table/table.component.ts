@@ -56,6 +56,7 @@ export interface HederaTimestampColumn extends BaseColumn {
     type: ColumnType.HEDERA;
     field: string;
     hederaType: HederaType;
+    formatValue?: (value: any) => string;
 }
 
 export interface CheckBoxColumn extends BaseColumn {
@@ -172,10 +173,10 @@ export class TableComponent {
         if (column.link?.filters) {
             const queryParams: any = {};
             for (const [key, path] of Object.entries(column.link.filters)) {
-              const value = this.getFieldValue(path as string, obj);
-              if (value !== null && value !== undefined) {
-                queryParams[key] = value;
-              }
+                const value = this.getFieldValue(path as string, obj);
+                if (value !== null && value !== undefined) {
+                    queryParams[key] = value;
+                }
             }
             return queryParams;
         }

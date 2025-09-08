@@ -30,11 +30,12 @@ import { PolicyDiffMessage } from './policy-diff-message.js';
 import { PolicyActionMessage } from './policy-action-message.js';
 import { ContractMessage } from './contract-message.js';
 import { INotificationStep, NewNotifier } from '../../notification/index.js';
+import { SchemaPackageMessage } from './schema-package-message.js';
 
 interface LoadMessageOptions {
     messageId: string,
     loadIPFS?: boolean,
-    type?: MessageType | null,
+    type?: MessageType | MessageType[] | null,
     userId?: string | null,
     dryRun?: string,
     encryptKey?: string,
@@ -45,7 +46,7 @@ interface LoadMessagesOptions {
     topicId: string | TopicId,
     dryRun?: string,
     userId?: string | null,
-    type?: MessageType,
+    type?: MessageType | MessageType[] | null,
     action?: MessageAction,
     timeStamp?: string
 }
@@ -363,7 +364,11 @@ export class MessageServer {
      * @param userId
      * @param type
      */
-    public static fromMessage<T extends Message>(message: string, userId: string | null, type?: MessageType): T {
+    public static fromMessage<T extends Message>(
+        message: string,
+        userId: string | null,
+        type?: MessageType | MessageType[] | null
+    ): T {
         const json = JSON.parse(message);
         return MessageServer.fromMessageObject(json, userId, type);
     }
@@ -374,9 +379,23 @@ export class MessageServer {
      * @param userId
      * @param type
      */
-    public static fromMessageObject<T extends Message>(json: any, userId: string | null, type?: MessageType): T {
+    public static fromMessageObject<T extends Message>(
+        json: any,
+        userId: string | null,
+        type?: MessageType | MessageType[] | null
+    ): T {
         let message: Message;
-        json.type = json.type || type;
+        if (Array.isArray(type)) {
+            if (!type.includes(json.type)) {
+                new PinoLogger().error(`Invalid message type: ${json.type || 'UNKNOWN TYPE'}`, ['GUARDIAN_SERVICE'], userId);
+                throw new Error(`Invalid message type: ${json.type}`);
+            }
+        } else if (type) {
+            if (type !== json.type) {
+                new PinoLogger().error(`Invalid message type: ${json.type || 'UNKNOWN TYPE'}`, ['GUARDIAN_SERVICE'], userId);
+                throw new Error(`Invalid message type: ${json.type}`);
+            }
+        }
         switch (json.type) {
             case MessageType.EVCDocument:
             case MessageType.VCDocument:
@@ -387,6 +406,9 @@ export class MessageServer {
                 break;
             case MessageType.Schema:
                 message = SchemaMessage.fromMessageObject(json);
+                break;
+            case MessageType.SchemaPackage:
+                message = SchemaPackageMessage.fromMessageObject(json);
                 break;
             case MessageType.Policy:
                 message = PolicyMessage.fromMessageObject(json);
@@ -461,7 +483,6 @@ export class MessageServer {
      */
     public static fromJson<T extends Message>(json: any): T {
         let message: Message;
-        json.type = json.type;
         switch (json.type) {
             case MessageType.Contract:
                 message = ContractMessage.fromJson(json);
@@ -475,6 +496,9 @@ export class MessageServer {
                 break;
             case MessageType.Schema:
                 message = SchemaMessage.fromJson(json);
+                break;
+            case MessageType.SchemaPackage:
+                message = SchemaPackageMessage.fromJson(json);
                 break;
             case MessageType.Policy:
             case MessageType.InstancePolicy:
@@ -795,7 +819,7 @@ export class MessageServer {
      */
     private async getTopicMessage<T extends Message>(
         timeStamp: string,
-        type: MessageType | null,
+        type: MessageType | MessageType[] | null,
         options: LoadMessageOptions
     ): Promise<T> {
         const workers = new Workers();
@@ -842,7 +866,7 @@ export class MessageServer {
      */
     private static async getTopicMessage<T extends Message>(
         timeStamp: string,
-        type: MessageType | null,
+        type: MessageType | MessageType[] | null,
         options: LoadMessageOptions
     ): Promise<T> {
         const workers = new Workers();
@@ -884,7 +908,7 @@ export class MessageServer {
      */
     private async getDryRunTopicMessage<T extends Message>(
         timeStamp: string,
-        type: MessageType | null,
+        type: MessageType | MessageType[] | null,
         userId: string | null
     ): Promise<T> {
         const message = await DatabaseServer.getVirtualMessage(this.dryRun, timeStamp);
@@ -907,7 +931,7 @@ export class MessageServer {
     private static async getDryRunTopicMessage<T extends Message>(
         dryRun: string,
         timeStamp: string,
-        type: MessageType | null,
+        type: MessageType | MessageType[] | null,
         userId: string | null
     ): Promise<T> {
         const message = await DatabaseServer.getVirtualMessage(dryRun, timeStamp);
@@ -953,7 +977,9 @@ export class MessageServer {
             try {
                 const item = MessageServer.fromMessage<T>(message.document, userId);
                 let filter = true;
-                if (type) {
+                if (Array.isArray(type)) {
+                    filter = filter && type.includes(item.type);
+                } else if (type) {
                     filter = filter && item.type === type;
                 }
                 if (action) {
@@ -1009,7 +1035,9 @@ export class MessageServer {
             try {
                 const item = MessageServer.fromMessage(message.message, userId);
                 let filter = true;
-                if (type) {
+                if (Array.isArray(type)) {
+                    filter = filter && type.includes(item.type);
+                } else if (type) {
                     filter = filter && item.type === type;
                 }
                 if (action) {
@@ -1040,7 +1068,7 @@ export class MessageServer {
     public async getMessages<T extends Message>(
         topicId: string | TopicId,
         userId: string | null,
-        type?: MessageType,
+        type?: MessageType | MessageType[],
         action?: MessageAction
     ): Promise<T[]> {
         if (this.dryRun) {
@@ -1064,7 +1092,7 @@ export class MessageServer {
         dryRun: string,
         topicId: string | TopicId,
         userId: string | null,
-        type?: MessageType,
+        type?: MessageType | MessageType[],
         action?: MessageAction,
         timeStamp?: string
     ): Promise<Message[]> {
@@ -1074,7 +1102,9 @@ export class MessageServer {
             try {
                 const item = MessageServer.fromMessage<T>(message.document, userId);
                 let filter = true;
-                if (type) {
+                if (Array.isArray(type)) {
+                    filter = filter && type.includes(item.type);
+                } else if (type) {
                     filter = filter && item.type === type;
                 }
                 if (action) {
@@ -1104,7 +1134,7 @@ export class MessageServer {
     public async getTopicMessages(
         topicId: string | TopicId,
         userId: string | null,
-        type?: MessageType,
+        type?: MessageType | MessageType[],
         action?: MessageAction,
         timeStamp?: string
     ): Promise<Message[]> {
@@ -1136,7 +1166,9 @@ export class MessageServer {
             try {
                 const item = MessageServer.fromMessage(message.message, userId);
                 let filter = true;
-                if (type) {
+                if (Array.isArray(type)) {
+                    filter = filter && type.includes(item.type);
+                } else if (type) {
                     filter = filter && item.type === type;
                 }
                 if (action) {

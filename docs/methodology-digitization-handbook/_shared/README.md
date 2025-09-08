@@ -1,4 +1,4 @@
-# 🔧 Shared Resources
+# рџ”§ Shared Resources
 
 > Common templates, frameworks, and systems used across all parts of the Methodology Digitization Handbook
 

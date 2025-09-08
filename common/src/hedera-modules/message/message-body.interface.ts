@@ -855,3 +855,61 @@ export interface PolicyActionMessageBody extends MessageBody {
      */
     uri: string;
 }
+
+/**
+ * Schema message body
+ */
+export interface SchemaPackageMessageBody extends MessageBody {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * Version
+     */
+    version: string;
+    /**
+     * Schemas counts
+     */
+    schemas: number;
+    /**
+     * Document CID
+     */
+    document_cid: string;
+    /**
+     * Document URL
+     */
+    document_url?: string;
+    /**
+     * Document URI
+     */
+    document_uri?: string;
+    /**
+     * Context CID
+     */
+    context_cid: string;
+    /**
+     * Context URL
+     */
+    context_url?: string;
+    /**
+     * Context URI
+     */
+    context_uri?: string;
+    /**
+     * Metadata CID
+     */
+    metadata_cid: string;
+    /**
+     * Metadata URL
+     */
+    metadata_url?: string;
+    /**
+     * Metadata URI
+     */
+    metadata_uri?: string;
+}

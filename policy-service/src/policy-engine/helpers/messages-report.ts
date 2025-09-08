@@ -201,8 +201,8 @@ export class MessagesReport {
                 topicId: message.getTopicId(),
                 userId
             });
-            const schemas: SchemaMessage[] = messages.filter((m: SchemaMessage) => m.action === MessageAction.PublishSchema ||
-                m.action === MessageAction.PublishSystemSchema);
+            const schemas: SchemaMessage[] = messages
+                .filter((m: SchemaMessage) => m.action === MessageAction.PublishSchema || m.action === MessageAction.PublishSystemSchema);
             for (const schema of schemas) {
                 const id = schema.getContextUrl(UrlType.url);
                 if (!this.schemas.has(id)) {

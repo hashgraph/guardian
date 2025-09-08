@@ -1,5 +1,24 @@
 # Policies
 
-The process to create credit or offset claims can be validated and verified to be turned into a product that is called measurement, reporting, and verification data, also known as MRV data. Today, this process of collecting the supporting data for these carbon credits or offsets is heavily manual and prone to errors due to poor data quality, a lack of assurance, potential double counting, greenwashing, and an overall lack of trust. This is where Guardian, which leverages a Policy Workflow Engine, ameliorates the issue with the current processes. The dynamic Policy Workflow Engine can mirror the standards and business requirements of regulatory bodies.
+A policy is a set of rules, roles, workflows, and data-handling logic that governs how credentials (VCs), attestations, and reports are issued, verified, and used within a sustainability methodology or project.\
+It acts like a smart contract template for dMRV, but instead of code on-chain, it’s orchestrated off-chain through the Guardian framework, with critical checkpoints anchored to Hedera.
 
-A Policy Workflow Engine is a software application that manages business processes based on business rules and business data which are defined within the context of a specific policy. A policy workflow engine, therefore, manages and monitors the state of required policy actions and the required information flow in a policy grouped into a policy workflow, and determines which are the next policy actions based on the state of a policy workflow. The policy actions may be anything from saving an application form in a document management system to sending a reminder e-mail to users or escalating overdue items to management. Policy Workflow Blocks enable different business logic to exist within the Guardian’s policy workflow engine.
+#### **Key Components of a Policy**
+
+1. **Roles & Permissions**
+   * Defines which actors (e.g., Project Developer, Verifier, Standard Body, Registry) can perform specific actions.
+   * Example: Only a Verifier role can issue verification credentials.
+2. **Schemas**
+   * Policies use schemas to structure the data being collected or issued as credentials.
+   * Example: A "Project Description VC" schema or "Monitoring Report VC" schema.
+3. **Workflows**
+   * Step-by-step processes for participants.
+   * Example: A Project Developer submits project details → Verifier reviews → Standard Body approves.
+4. **Rules & Conditions**
+   * Validation checks on data, sequencing of steps, and compliance enforcement.
+   * Example: A monitoring report VC must match the schema and include forest carbon flux data before approval.
+5. **Credential Lifecycle**
+   * Policies define when and how Verifiable Credentials (VCs) and Verifiable Presentations (VPs) are created, validated, mapped, or revoked.
+6. **Automation & Anchoring**
+   * Automates issuance, verification, and tracking of digital assets (tokens, credits).
+   * Anchors hashes of VCs/VPs to the Hedera Consensus Service (HCS) or Hedera Token Service (HTS) for transparency and immutability.

@@ -29,6 +29,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
+    @Input('savepointIds') savepointIds?: string[] | null = null;
 
     isActive = false;
     loading: boolean = true;
@@ -96,7 +97,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }, 500);
         } else {
             this.policyEngineService
-                .getBlockData(this.id, this.policyId)
+                .getBlockData(this.id, this.policyId, this.savepointIds)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }
@@ -208,7 +209,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     async getBindBlock(blockTag: any) {
         return new Promise<any>(async (resolve, reject) => {
-            this.policyEngineService.getBlockDataByName(blockTag, this.policyId).subscribe((data: any) => {
+            this.policyEngineService.getBlockDataByName(blockTag, this.policyId, this.savepointIds).subscribe((data: any) => {
                 resolve(data);
             }, (e) => {
                 resolve(null);

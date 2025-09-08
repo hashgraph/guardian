@@ -137,6 +137,11 @@ export class PolicyActivityDTO implements PolicyActivity {
     })
     schemas: number;
     @ApiProperty({
+        description: 'Schemas Packages',
+        example: 10,
+    })
+    schemaPackages: number;
+    @ApiProperty({
         description: 'VCs',
         example: 10,
     })

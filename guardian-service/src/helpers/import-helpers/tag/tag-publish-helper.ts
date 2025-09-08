@@ -13,6 +13,46 @@ import {
     UrlType
 } from '@guardian/common';
 import { IOwner, IRootConfig, TagType } from '@guardian/interfaces';
+
+// /**
+//  * Publish schema tags
+//  * @param schema
+//  * @param owner
+//  * @param root
+//  */
+// export async function publishSchemaTags(
+//     schema: SchemaCollection,
+//     owner: IOwner,
+//     root: IRootConfig,
+//     userId: string | null
+// ): Promise<void> {
+//     const filter: any = {
+//         localTarget: schema.id,
+//         entity: TagType.Schema,
+//         status: 'Draft'
+//     }
+//     const tags = await DatabaseServer.getTags(filter);
+
+//     const topic = await DatabaseServer.getTopicById(schema.topicId);
+//     const topicConfig = await TopicConfig.fromObject(topic, true, userId);
+//     const messageServer = new MessageServer({
+//         operatorId: root.hederaAccountId,
+//         operatorKey: root.hederaAccountKey,
+//         signOptions: root.signOptions
+//     }).setTopicObject(topicConfig);
+
+//     const tagObjects = []
+
+//     for (const tag of tags) {
+//         tag.target = schema.messageId;
+//         await publishTag(tag, messageServer, owner);
+
+//         tagObjects.push(tag);
+//     }
+
+//     await new DatabaseServer().updateTags(tagObjects);
+// }
+
 /**
  * Publish schema tags
  * @param schema
@@ -22,8 +62,7 @@ import { IOwner, IRootConfig, TagType } from '@guardian/interfaces';
 export async function publishSchemaTags(
     schema: SchemaCollection,
     owner: IOwner,
-    root: IRootConfig,
-    userId: string | null
+    messageServer: MessageServer
 ): Promise<void> {
     const filter: any = {
         localTarget: schema.id,
@@ -31,24 +70,12 @@ export async function publishSchemaTags(
         status: 'Draft'
     }
     const tags = await DatabaseServer.getTags(filter);
-
-    const topic = await DatabaseServer.getTopicById(schema.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true, userId);
-    const messageServer = new MessageServer({
-        operatorId: root.hederaAccountId,
-        operatorKey: root.hederaAccountKey,
-        signOptions: root.signOptions
-    }).setTopicObject(topicConfig);
-
-    const tagObjects = []
-
+    const tagObjects = [];
     for (const tag of tags) {
         tag.target = schema.messageId;
         await publishTag(tag, messageServer, owner);
-
         tagObjects.push(tag);
     }
-
     await new DatabaseServer().updateTags(tagObjects);
 }
 

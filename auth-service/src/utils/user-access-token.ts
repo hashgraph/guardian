@@ -1,5 +1,6 @@
 import { SecretManager } from '@guardian/common';
 import { GenerateUUIDv4, IUser } from '@guardian/interfaces';
+import { InternalServerErrorException } from '@nestjs/common';
 import pkg from 'jsonwebtoken';
 import * as util from 'util';
 
@@ -32,21 +33,27 @@ export class UserAccessTokenService {
     }
 
     public generateRefreshToken(user: IUser): IToken {
-        const REFRESH_TOKEN_UPDATE_INTERVAL =
-            process.env.REFRESH_TOKEN_UPDATE_INTERVAL ||
-            UserAccessTokenService.REFRESH_TOKEN_UPDATE_INTERVAL;
-        const tokenId = GenerateUUIDv4();
-        const refreshToken = sign({
-            id: tokenId,
-            name: user.username,
-            expireAt: Date.now() + parseInt(REFRESH_TOKEN_UPDATE_INTERVAL, 10)
-        }, this.JWT_PRIVATE_KEY, {
-            algorithm: 'RS256'
-        });
-        return {
-            id: tokenId,
-            token: refreshToken
-        };
+        try {
+            const REFRESH_TOKEN_UPDATE_INTERVAL =
+                process.env.REFRESH_TOKEN_UPDATE_INTERVAL ||
+                UserAccessTokenService.REFRESH_TOKEN_UPDATE_INTERVAL;
+            const tokenId = GenerateUUIDv4();
+            const refreshToken = sign({
+                id: tokenId,
+                name: user.username,
+                expireAt: Date.now() + parseInt(REFRESH_TOKEN_UPDATE_INTERVAL, 10)
+            }, this.JWT_PRIVATE_KEY, {
+                algorithm: 'RS256'
+            });
+            return {
+                id: tokenId,
+                token: refreshToken
+            };
+        } catch (err) {
+            console.error(err);
+            throw new InternalServerErrorException('JWT keys are invalid or misconfigured');
+        }
+
     }
 
     public async verifyRefreshToken(refreshToken: string): Promise<{
@@ -54,34 +61,44 @@ export class UserAccessTokenService {
         name: string,
         expireAt: number
     }> {
-        return await util.promisify<string, any, Object, any>(verify)(refreshToken, this.JWT_PUBLIC_KEY, {
-            algorithms: ['RS256']
-        });
+        try {
+            return await util.promisify<string, any, Object, any>(verify)(refreshToken, this.JWT_PUBLIC_KEY, {
+                algorithms: ['RS256']
+            });
+        } catch (err) {
+            console.error(err);
+            throw new InternalServerErrorException('JWT keys are invalid or misconfigured');
+        }
     }
 
     public generateAccessToken(user: IUser, expire: boolean): string {
-        if (expire) {
-            const ACCESS_TOKEN_UPDATE_INTERVAL =
-                process.env.ACCESS_TOKEN_UPDATE_INTERVAL ||
-                UserAccessTokenService.ACCESS_TOKEN_UPDATE_INTERVAL;
-            const accessToken = sign({
-                username: user.username,
-                did: user.did,
-                role: user.role,
-                expireAt: Date.now() + parseInt(ACCESS_TOKEN_UPDATE_INTERVAL, 10)
-            }, this.JWT_PRIVATE_KEY, {
-                algorithm: 'RS256'
-            });
-            return accessToken;
-        } else {
-            const accessToken = sign({
-                username: user.username,
-                did: user.did,
-                role: user.role
-            }, this.JWT_PRIVATE_KEY, {
-                algorithm: 'RS256'
-            });
-            return accessToken;
+        try {
+            if (expire) {
+                const ACCESS_TOKEN_UPDATE_INTERVAL =
+                    process.env.ACCESS_TOKEN_UPDATE_INTERVAL ||
+                    UserAccessTokenService.ACCESS_TOKEN_UPDATE_INTERVAL;
+                const accessToken = sign({
+                    username: user.username,
+                    did: user.did,
+                    role: user.role,
+                    expireAt: Date.now() + parseInt(ACCESS_TOKEN_UPDATE_INTERVAL, 10)
+                }, this.JWT_PRIVATE_KEY, {
+                    algorithm: 'RS256'
+                });
+                return accessToken;
+            } else {
+                const accessToken = sign({
+                    username: user.username,
+                    did: user.did,
+                    role: user.role
+                }, this.JWT_PRIVATE_KEY, {
+                    algorithm: 'RS256'
+                });
+                return accessToken;
+            }
+        } catch (err) {
+            console.error(err);
+            throw new InternalServerErrorException('JWT keys are invalid or misconfigured');
         }
     }
 
@@ -91,8 +108,13 @@ export class UserAccessTokenService {
         role: string,
         expireAt?: number
     }> {
-        return await util.promisify<string, any, Object, any>(verify)(accessToken, this.JWT_PUBLIC_KEY, {
-            algorithms: ['RS256']
-        });
+        try {
+            return await util.promisify<string, any, Object, any>(verify)(accessToken, this.JWT_PUBLIC_KEY, {
+                algorithms: ['RS256']
+            });
+        } catch (err) {
+            console.error(err);
+            throw new InternalServerErrorException('JWT keys are invalid or misconfigured');
+        }
     }
 }
