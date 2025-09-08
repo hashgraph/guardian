@@ -9,6 +9,7 @@ import { SynchronizationPolicy } from './synchronize-policy.js';
 import { SynchronizationProjects } from './synchronize-projects.js';
 import { SynchronizationRegistries } from './synchronize-registry.js';
 import { SynchronizationRoles } from './synchronize-role.js';
+import { SynchronizationSchemaPackage } from './synchronize-schema-package.js';
 import { SynchronizationSchemas } from './synchronize-schema.js';
 import { SynchronizationTools } from './synchronize-tool.js';
 import { SynchronizationTopics } from './synchronize-topic.js';
@@ -34,6 +35,7 @@ export class SynchronizationAll extends SynchronizationTask {
     private readonly synchronizationTools: SynchronizationTools;
     private readonly synchronizationTopics: SynchronizationTopics;
     private readonly synchronizationSchemas: SynchronizationSchemas;
+    private readonly synchronizationSchemaPackage: SynchronizationSchemaPackage;
     private readonly synchronizationDid: SynchronizationDid;
     private readonly synchronizationVCs: SynchronizationVCs;
     private readonly synchronizationVPs: SynchronizationVPs;
@@ -45,6 +47,7 @@ export class SynchronizationAll extends SynchronizationTask {
     constructor(mask: string) {
         super('all', mask);
 
+        this.synchronizationSchemaPackage = (new SynchronizationSchemaPackage(this.getMask(process.env.SYNC_ANALYTICS_MASK)));
         this.synchronizationAnalytics = (new SynchronizationAnalytics(this.getMask(process.env.SYNC_ANALYTICS_MASK)));
         this.synchronizationProjects = (new SynchronizationProjects(this.getMask(process.env.SYNC_ANALYTICS_MASK)));
         this.synchronizationModules = (new SynchronizationModules(this.getMask(process.env.SYNC_MODULES_MASK)));
@@ -63,6 +66,7 @@ export class SynchronizationAll extends SynchronizationTask {
     }
 
     public override async sync(): Promise<void> {
+        await this.runTask(this.synchronizationSchemaPackage);
         await this.runTask(this.synchronizationAnalytics);
         await this.runTask(this.synchronizationProjects);
         await this.runTask(this.synchronizationModules);
@@ -110,6 +114,9 @@ export class SynchronizationAll extends SynchronizationTask {
     }
 
     public static createAsyncTasks() {
+        (new SynchronizationSchemaPackage(getMask(process.env.SYNC_SCHEMAS_MASK)))
+            .start(getBoolean(process.env.START_SYNC_SCHEMAS));
+
         (new SynchronizationAnalytics(getMask(process.env.SYNC_ANALYTICS_MASK)))
             .start(getBoolean(process.env.START_SYNC_ANALYTICS));
 

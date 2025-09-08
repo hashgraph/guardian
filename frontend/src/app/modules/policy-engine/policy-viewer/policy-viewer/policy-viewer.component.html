@@ -48,7 +48,7 @@
                 class="dry-run-action-btn"
                 title="Save Policy"
             >
-                <svg-icon 
+                <svg-icon
                     class="icon-style-restart_alt"
                     src="/assets/images/icons/restart_alt.svg"
                     svgClass="icon-style-restart_alt"></svg-icon>
@@ -57,17 +57,28 @@
 
             <div class="delimiter"></div>
 
-            <div (click)="createSavepoint()" class="dry-run-action-btn">
-                <i class="pi pi-flag"></i>
-                <span>Savepoint</span>
+            <div
+                class="dry-run-action-btn"
+                (click)="canCreateSavepoint && openAddSavepointDialog()"
+                [attr.aria-disabled]="!canCreateSavepoint"
+                pTooltip="{{ savepointLimitTooltip }}"
+                [tooltipDisabled]="canCreateSavepoint"
+                tooltipPosition="top"
+                tooltipStyleClass="guardian-tooltip"
+            >
+                    <i class="pi pi-flag"></i>
+                    <span>Savepoint</span>
             </div>
 
-            <!--            <div (click)="deleteSavepoint()" class="dry-run-action-btn">-->
-            <!--              <i class="pi pi-times"></i>-->
-            <!--              <span>Delete Savepoint</span>-->
-            <!--            </div>-->
-
-            <div (click)="restoreSavepoint()" [attr.disabled]="!savePointState" class="dry-run-action-btn">
+            <div
+                class="dry-run-action-btn"
+                (click)="canRestoreSavepoint && openClickRestoreSavepointDialog()"
+                [attr.aria-disabled]="!canRestoreSavepoint"
+                pTooltip="{{ canRestoreSavepoint ? 'Restore or manage savepoints' : 'No savepoint to restore yet' }}"
+                [tooltipDisabled]="canRestoreSavepoint"
+                tooltipPosition="top"
+                tooltipStyleClass="guardian-tooltip"
+            >
                 <i class="pi pi-undo"></i>
                 <span>Restore</span>
             </div>
@@ -114,7 +125,7 @@
                 [attr.action]="view === 'policy'"
                 class="dry-run-btn"
             >Policy View</div>
-            
+
             <div
                 (click)="onView('transactions')"
                 [attr.action]="view === 'transactions'"
@@ -136,8 +147,8 @@
             <div class="delimiter"></div>
         </div>
 
-        <div 
-            [attr.expired]="!!policyInfo.discontinuedDate" 
+        <div
+            [attr.expired]="!!policyInfo.discontinuedDate"
             [attr.policy-status]="policyInfo.status"
             class="policy-header">
             <div *ngIf="!isDryRun && !policyInfo.discontinuedDate">
@@ -218,22 +229,23 @@
                                     [dryRun]="isDryRun"
                                     [policyId]="policyId"
                                     style="width: 100%;"
+                                    [savepointIds]="savepointIds"
                                 ></render-block>
-                
+
                                 <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
                                     <div class="progress-footer">
-                                        <button 
-                                            (click)="onNavigationPrevButton()" 
-                                            [disabled]="prevButtonDisabled" 
+                                        <button
+                                            (click)="onNavigationPrevButton()"
+                                            [disabled]="prevButtonDisabled"
                                             class="button"
-                                            label="Previous" 
+                                            label="Previous"
                                             pButton
                                             type="button"></button>
                                         <div *ngIf="!nextButtonDisabled">
-                                            <button 
+                                            <button
                                                 (click)="onNavigationNextButton()"
-                                                class="p-button" 
-                                                label="Next" 
+                                                class="p-button"
+                                                label="Next"
                                                 pButton
                                                 type="button"></button>
                                         </div>
@@ -259,22 +271,23 @@
                             [dryRun]="isDryRun"
                             [policyId]="policyId"
                             style="width: 100%;"
+                            [savepointIds]="savepointIds"
                         ></render-block>
-        
+
                         <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
                             <div class="progress-footer">
-                                <button 
-                                    (click)="onNavigationPrevButton()" 
-                                    [disabled]="prevButtonDisabled" 
+                                <button
+                                    (click)="onNavigationPrevButton()"
+                                    [disabled]="prevButtonDisabled"
                                     class="button"
-                                    label="Previous" 
+                                    label="Previous"
                                     pButton
                                     type="button"></button>
                                 <div *ngIf="!nextButtonDisabled">
-                                    <button 
+                                    <button
                                         (click)="onNavigationNextButton()"
-                                        class="p-button" 
-                                        label="Next" 
+                                        class="p-button"
+                                        label="Next"
                                         pButton
                                         type="button"></button>
                                 </div>

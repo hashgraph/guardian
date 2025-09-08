@@ -171,8 +171,13 @@ export class NewNotifier implements INotificationStep {
         return this;
     }
 
-    public addStep(name: string, size: number = 1): NotificationStep {
+    public addStep(
+        name: string,
+        size: number = 1,
+        minimized: boolean = false
+    ): NotificationStep {
         const step = new NotificationStep(name, size);
+        step.minimize(minimized);
         step.setParent(this);
         this.steps.push(step);
         return step;

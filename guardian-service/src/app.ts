@@ -1,6 +1,5 @@
 import { configAPI } from './api/config.service.js';
 import { documentsAPI } from './api/documents.service.js';
-import { loaderAPI } from './api/loader.service.js';
 import { profileAPI } from './api/profile.service.js';
 import { schemaAPI } from './api/schema.service.js';
 import { tokenAPI } from './api/token.service.js';
@@ -127,15 +126,19 @@ Promise.all([
 
     JwtServicesValidator.setServiceName(jwtServiceName);
 
-    let { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
-    if (!OPERATOR_ID) {
-        OPERATOR_ID = process.env.OPERATOR_ID;
-        OPERATOR_KEY = process.env.OPERATOR_KEY;
+    let OPERATOR_ID = process.env.OPERATOR_ID;
+    let OPERATOR_KEY = process.env.OPERATOR_KEY;
+
+    if (OPERATOR_ID?.length > 4 && OPERATOR_KEY?.length > 4) {
         await secretManager.setSecrets('keys/operator', {
             OPERATOR_ID,
             OPERATOR_KEY
         })
+    } else {
+        const { OPERATOR_ID: operatorId, OPERATOR_KEY: operatorKey } = await secretManager.getSecrets('keys/operator');
 
+        OPERATOR_ID = operatorId;
+        OPERATOR_KEY = operatorKey;
     }
 
     new PolicyServiceChannelsContainer().setConnection(cn);
@@ -162,7 +165,6 @@ Promise.all([
         await configAPI(logger);
         await schemaAPI(logger);
         await tokenAPI(dataBaseServer, logger);
-        await loaderAPI(dataBaseServer, logger);
         await profileAPI(logger);
         await documentsAPI(dataBaseServer);
         await demoAPI(dataBaseServer, logger);

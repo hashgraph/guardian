@@ -1,0 +1,44 @@
+<div class="dlg">
+    <div class="dlg__header">
+        <div class="dlg__title">Restore Savepoint</div>
+        <button class="icon-btn" type="button" (click)="onCancel()" aria-label="Close">
+            <i class="pi pi-times"></i>
+        </button>
+    </div>
+
+    <div class="list-header">
+        <div class="col name">Name</div>
+        <div class="col date">Date &amp; Time</div>
+    </div>
+
+    <div class="list" *ngIf="items?.length; else empty">
+        <div
+            class="row"
+            *ngFor="let item of items; trackBy: trackById"
+            (click)="selectRow(item)"
+            (keydown.enter)="selectRow(item)"
+            (keydown.space)="selectRow(item)"
+            tabindex="0"
+            [attr.active]="item.id === selectedId ? true : null"
+            role="button"
+        >
+            <div class="col radio">
+                <span class="radio-btn" [attr.checked]="item.id === selectedId ? true : null"></span>
+            </div>
+            <div class="col name" [title]="item.name">{{ item.name }}</div>
+            <div class="col date">{{ item.createDate | date: 'dd MMM, HH:mm' }}</div>
+        </div>
+    </div>
+
+    <ng-template #empty>
+        <div class="empty">No savepoints yet.</div>
+    </ng-template>
+
+    <div class="dlg__footer action-buttons">
+        <button class="guardian-button ghost" type="button" (click)="onCancel()">Cancel</button>
+        <button class="guardian-button primary" type="button" (click)="onRestore()"
+                [disabled]="!selectedId || applying">
+            Restore
+        </button>
+    </div>
+</div>

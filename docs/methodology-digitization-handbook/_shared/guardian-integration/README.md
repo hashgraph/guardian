@@ -1,4 +1,4 @@
-# ⚙️ Guardian Integration
+# вљ™пёЏ Guardian Integration
 
 > Integration system for linking handbook content with existing Guardian documentation
 

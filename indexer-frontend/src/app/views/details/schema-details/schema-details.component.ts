@@ -18,6 +18,7 @@ import {
 import { ActivityComponent } from '@components/activity/activity.component';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { OrganizationChartModule } from 'primeng/organizationchart';
+import CID from 'cids';
 
 @Component({
     selector: 'schema-details',
@@ -44,6 +45,9 @@ import { OrganizationChartModule } from 'primeng/organizationchart';
     ],
 })
 export class SchemaDetailsComponent extends BaseDetailsComponent {
+    public title!: string;
+    public itemNumber?: string;
+
     tabs: any[] = ['overview', 'document', 'tree', 'activity', 'raw'];
     overviewFields: OverviewFormField[] = [
         {
@@ -85,6 +89,15 @@ export class SchemaDetailsComponent extends BaseDetailsComponent {
 
     protected override loadData(): void {
         if (this.id) {
+            const items = this.id.split('_');
+            if (items.length > 1) {
+                this.title = items[0];
+                this.itemNumber = items[1];
+            } else {
+                this.title = items[0];
+                this.itemNumber = '';
+            }
+
             this.loading = true;
             this.entitiesService.getSchema(this.id).subscribe({
                 next: (result) => {
@@ -99,6 +112,7 @@ export class SchemaDetailsComponent extends BaseDetailsComponent {
                 },
             });
         } else {
+            this.title = this.id;
             this.setResult();
         }
     }
@@ -151,5 +165,55 @@ export class SchemaDetailsComponent extends BaseDetailsComponent {
                 'analytics.schemaIds': this.id,
             },
         });
+    }
+
+    protected override setFiles(item: any) {
+        if (item) {
+            if (Array.isArray(item.files)) {
+                item._ipfs = [];
+                item._ipfsStatus = true;
+                for (let i = 0; i < item.files.length; i++) {
+                    const fullUrl = item.files[i];
+                    const { url, uuid } = this.parsUrl(fullUrl);
+
+                    const document = item.documents?.[i];
+                    const json = this.getDocument(document);
+                    const documentObject = this.getDocumentObject(document);
+                    const credentialSubject = this.getCredentialSubject(documentObject);
+                    const verifiableCredential = this.getVerifiableCredential(documentObject);
+                    const cid = new CID(url);
+                    const ipfs = {
+                        version: cid.version,
+                        cid: url,
+                        uuid: uuid,
+                        global: cid.toV1().toString('base32'),
+                        document,
+                        json,
+                        documentObject,
+                        credentialSubject,
+                        verifiableCredential
+                    }
+                    if (!document) {
+                        item._ipfsStatus = false;
+                    }
+                    item._ipfs.push(ipfs);
+                }
+            }
+        }
+    }
+
+    private parsUrl(url: string) {
+        if (url && url.indexOf('#')) {
+            const items = url.split('#');
+            return {
+                url: items[0],
+                uuid: items[1],
+            }
+        } else {
+            return {
+                url,
+                uuid: null,
+            }
+        }
     }
 }

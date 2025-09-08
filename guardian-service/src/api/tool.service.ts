@@ -6,7 +6,7 @@ import { ToolValidator } from '../policy-engine/block-validators/tool-validator.
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import * as crypto from 'crypto';
 import { FilterObject } from '@mikro-orm/core';
-import { deleteSchema, findAndPublishSchema, importToolByFile, importToolByMessage, importToolErrors, incrementSchemaVersion, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
+import { deleteSchema, importToolByFile, importToolByMessage, importToolErrors, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
 
 /**
  * Sha256
@@ -220,6 +220,7 @@ export async function publishTool(
             tool,
             user,
             root,
+            messageServer,
             notifier.getStep(STEP_PUBLISH_SCHEMAS)
         );
         notifier.completeStep(STEP_PUBLISH_SCHEMAS);
@@ -302,50 +303,62 @@ export async function publishSchemas(
     tool: PolicyTool,
     owner: IOwner,
     root: IRootConfig,
+    server: MessageServer,
     notifier: INotificationStep,
     userId?: string
 ): Promise<PolicyTool> {
-    const schemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
-
-    notifier.setEstimate(schemas.length);
-
-    let num: number = 0;
-    for (const row of schemas) {
-        const step = notifier.addStep(`${row.name || '-'}`);
-        step.setId(row.id);
-        step.minimize(true);
-        num++;
-    }
-
     const schemaMap = new Map<string, string>();
-    for (const row of schemas) {
-        const step = notifier.getStepById(row.id);
+    const schemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
+    await publishSchemasPackage({
+        name: tool.name,
+        version: '1.0.0',
+        type: MessageAction.PublishSchemas,
+        schemas,
+        owner,
+        server,
+        schemaMap,
+        notifier
+    })
 
-        const schema = await incrementSchemaVersion(row.topicId, row.iri, owner);
-        if (!schema || schema.status === SchemaStatus.PUBLISHED) {
-            step.skip();
-            continue;
-        }
+    // notifier.setEstimate(schemas.length);
 
-        step.start();
-        const newSchema = await findAndPublishSchema(
-            schema.id,
-            schema.version,
-            owner,
-            root,
-            step,
-            schemaMap,
-            userId
-        );
-        if (Array.isArray(tool.config?.variables)) {
-            for (const variable of tool.config?.variables) {
-                if (variable.baseSchema === row.iri) {
-                    variable.baseSchema = newSchema.iri;
-                }
-            }
-        }
-        step.complete();
-    }
+    // let num: number = 0;
+    // for (const row of schemas) {
+    //     const step = notifier.addStep(`${row.name || '-'}`);
+    //     step.setId(row.id);
+    //     step.minimize(true);
+    //     num++;
+    // }
+
+    // const schemaMap = new Map<string, string>();
+    // for (const row of schemas) {
+    //     const step = notifier.getStepById(row.id);
+
+    //     const schema = await incrementSchemaVersion(row.topicId, row.iri, owner);
+    //     if (!schema || schema.status === SchemaStatus.PUBLISHED) {
+    //         step.skip();
+    //         continue;
+    //     }
+
+    //     step.start();
+    //     const newSchema = await findAndPublishSchema(
+    //         schema.id,
+    //         schema.version,
+    //         owner,
+    //         root,
+    //         step,
+    //         schemaMap,
+    //         userId
+    //     );
+    //     if (Array.isArray(tool.config?.variables)) {
+    //         for (const variable of tool.config?.variables) {
+    //             if (variable.baseSchema === row.iri) {
+    //                 variable.baseSchema = newSchema.iri;
+    //             }
+    //         }
+    //     }
+    //     step.complete();
+    // }
 
     for (const [oldId, newId] of schemaMap.entries()) {
         replaceAllEntities(tool.config, SchemaFields, oldId, newId);
