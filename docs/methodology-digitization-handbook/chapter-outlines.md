@@ -188,65 +188,65 @@
 
 ## Part IV: Policy Workflow Design
 
-### Chapter 13: Stakeholder Analysis and Role Definition
+### Chapter 13: Policy Workflow Architecture and Design Principles
 
-**Purpose**: Design appropriate roles and permissions for methodology stakeholders.
-
-**Key Topics**:
-
-* Stakeholder mapping and responsibility analysis
-* Guardian role system and permission models
-* Role-based access control implementation
-* Workflow permissions and document visibility
-* Multi-organization coordination
-* Conflict resolution and escalation procedures
-
-**VM0033 Context**: VM0033 stakeholder ecosystem including Verra as registry, VVBs, project developers, and community stakeholders.
-
-### Chapter 14: Carbon Credit Certification Workflow Design
-
-**Purpose**: Design the complete certification process from registration to credit issuance.
+**Purpose**: Establish foundational understanding of Guardian policy architecture and design patterns for environmental methodology implementation.
 
 **Key Topics**:
 
-* Project registration and listing workflows
-* Validation process design and VVB assignment
-* Verification workflows and evidence collection
-* Registry review and approval processes
-* Credit issuance and token minting
-* Appeals and dispute resolution mechanisms
+* Guardian policy architecture fundamentals and component overview
+* Event-driven workflow block communication system
+* Policy lifecycle management and versioning strategies
+* Hedera blockchain integration for immutable audit trails
+* Document flow design patterns and state management
+* Security considerations and access control architecture
 
-**VM0033 Context**: Complete VM0033 certification workflow following Verra's VCS program requirements and procedures.
+**VM0033 Context**: Guardian policy architecture analysis using VM0033 production implementation as reference for tidal wetland restoration methodology digitization.
 
-### Chapter 15: Policy Workflow Block Configuration
+### Chapter 14: Guardian Workflow Blocks and Configuration
 
-**Purpose**: Master the configuration of Guardian's policy workflow blocks.
-
-**Key Topics**:
-
-* Request blocks for data collection
-* Send blocks for data storage and transmission
-* Interface container blocks for user experience
-* Role blocks and permission management
-* Calculate blocks for data processing
-* Mint blocks for token issuance
-
-**VM0033 Context**: Detailed configuration of all blocks needed for VM0033 workflow, with specific examples and parameter settings.
-
-### Chapter 16: Document Flow and State Management
-
-**Purpose**: Manage complex document states and transitions throughout the workflow.
+**Purpose**: Master Guardian's workflow block system for building environmental certification workflows.
 
 **Key Topics**:
 
-* Document state modeling and transitions
-* Status tracking and progress indicators
-* Approval workflows and multi-party sign-offs
-* Document versioning and change management
-* Audit trails and immutable records
-* Error handling and recovery procedures
+* interfaceDocumentsSourceBlock for document management and filtering
+* buttonBlock configurations for user interactions and workflow transitions
+* requestVcDocumentBlock for data collection and schema integration
+* sendToGuardianBlock for data persistence and blockchain storage
+* Role-based permissions and access control implementation
+* Event-driven communication between workflow blocks
 
-**VM0033 Context**: VM0033 document flow from PDD submission through credit issuance, including all intermediate states and approval gates.
+**VM0033 Context**: Complete workflow block configuration using VM0033 production policy JSON, covering project submission, VVB approval, and document management workflows.
+
+### Chapter 15: VM0033 Implementation Deep Dive
+
+**Purpose**: Deep technical analysis of VM0033 policy implementation using actual Guardian production configurations.
+
+**Key Topics**:
+
+* VVB document approval workflow with real JSON configurations
+* Project submission and review processes using Guardian blocks
+* Role-based workflow analysis (Project_Proponent, VVB, Owner)
+* Document filtering and status management implementations
+* Button configuration patterns for workflow transitions
+* End-to-end integration patterns and event routing
+
+**VM0033 Context**: Complete analysis of VM0033 production policy JSON with extracted block configurations, focusing on real-world implementation patterns for tidal wetland restoration certification.
+
+### Chapter 16: Advanced Policy Patterns
+
+**Purpose**: Advanced Guardian policy implementation patterns using production VM0033 configurations.
+
+**Key Topics**:
+
+* Transformation blocks for external API integration (Verra project hub)
+* Document validation blocks for data integrity and business rule enforcement
+* External data integration patterns (Kanop satellite monitoring, IoT devices)
+* Policy testing frameworks including dry-run mode and programmatic testing
+* Demo mode configuration for training and development environments
+* Production deployment patterns and error handling strategies
+
+**VM0033 Context**: Real implementation examples from VM0033 production policy including dataTransformationAddon for Verra API integration, documentValidatorBlock configurations, and comprehensive testing approaches.
 
 ## Part V: Calculation Logic Implementation
 

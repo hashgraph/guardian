@@ -122,8 +122,10 @@ export class SchemaMessage extends Message {
      * To documents
      */
     public async toDocuments(): Promise<ArrayBuffer[]> {
-        if (this.action === MessageAction.PublishSchema ||
-            this.action === MessageAction.PublishSystemSchema) {
+        if (
+            this.action === MessageAction.PublishSchema ||
+            this.action === MessageAction.PublishSystemSchema
+        ) {
             const result = new Array(this.documents.length);
             for (let i = 0; i < this.documents.length; i++) {
                 const json = JSON.stringify(this.documents[i]);

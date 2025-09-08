@@ -3,6 +3,7 @@ import { MessageType, MessageAction, IPFS_CID_PATTERN } from '@indexer/interface
 import { textSearch } from '../text-search-options.js';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';
+import { SchemaFileHelper } from '../../helpers/schema-file-helper.js';
 
 export class SynchronizationVCs extends SynchronizationTask {
     public readonly name: string = 'vcs';
@@ -59,16 +60,15 @@ export class SynchronizationVCs extends SynchronizationTask {
         const schemas = collection.find({ type: MessageType.SCHEMA });
         while (await schemas.hasNext()) {
             const schema = await schemas.next();
-            if (schema.files) {
-                if (schema.files[0]) {
-                    fileIds.add(schema.files[0]);
-                }
-                if (schema.files[0]) {
-                    schemaMap.set(schema.files[0], schema);
-                }
-                if (schema.files[1]) {
-                    schemaMap.set(schema.files[1], schema);
-                }
+            const documentCID = SchemaFileHelper.getDocumentFile(schema);
+            if (documentCID) {
+                fileIds.add(documentCID);
+            }
+            if (schema.files && schema.files[0]) {
+                schemaMap.set(schema.files[0], schema);
+            }
+            if (schema.files && schema.files[1]) {
+                schemaMap.set(schema.files[1], schema);
             }
         }
 
@@ -121,12 +121,13 @@ export class SynchronizationVCs extends SynchronizationTask {
                 documentAnalytics.textSearch += `|${[...documentFields].join('|')}`;
             }
 
-            const schemaContextCID = this.getContext(documentFile);
-            if (schemaContextCID) {
-                const schemaMessage = schemaMap.get(schemaContextCID);
+            const schemaContext = SchemaFileHelper.getDocumentContext(documentFile);
+            if (schemaContext) {
+                const schemaMessage = SchemaFileHelper.findInMap(schemaMap, schemaContext);
                 if (schemaMessage) {
                     documentAnalytics.schemaId = schemaMessage.consensusTimestamp;
-                    const schemaDocumentFileString = fileMap.get(schemaMessage.files?.[0]);
+                    const schemaDocumentCID = SchemaFileHelper.getDocumentFile(schemaMessage);
+                    const schemaDocumentFileString = fileMap.get(schemaDocumentCID);
                     const schemaDocumentFile = this.parseFile(schemaDocumentFileString);
                     if (schemaDocumentFile?.title) {
                         documentAnalytics.schemaName = schemaDocumentFile.title;
@@ -153,21 +154,6 @@ export class SynchronizationVCs extends SynchronizationTask {
     private getSubject(documentFile: any): any {
         if (documentFile && documentFile.credentialSubject) {
             return documentFile.credentialSubject[0] || documentFile.credentialSubject
-        }
-        return null;
-    }
-
-    private getContext(documentFile: any): any {
-        let contexts = documentFile['@context'];
-        contexts = Array.isArray(contexts) ? contexts : [contexts];
-        for (const context of contexts) {
-            if (typeof context === 'string') {
-                const matches = context?.match(IPFS_CID_PATTERN);
-                const contextCID = matches && matches[0];
-                if (contextCID) {
-                    return contextCID;
-                }
-            }
         }
         return null;
     }

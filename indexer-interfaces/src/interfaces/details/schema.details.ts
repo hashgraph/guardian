@@ -98,3 +98,15 @@ export type ISchema = Message<SchemaOptions, SchemaAnalytics>;
  * Schema details
  */
 export type SchemaDetails = DetailsActivity<ISchema, SchemaActivity>;
+
+/**
+ * Schemas Package activity
+ */
+export interface SchemasPackageActivity {
+    /**
+     * Schema
+     */
+    schemas: number;
+}
+
+export type SchemasPackageDetails = DetailsActivity<ISchema, SchemasPackageActivity>;

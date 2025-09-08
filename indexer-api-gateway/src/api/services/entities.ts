@@ -61,7 +61,8 @@ import {
     LabelDocumentDetailsDTO,
     FormulaDetailsDTO,
     FormulaDTO,
-    FormulaRelationshipsDTO
+    FormulaRelationshipsDTO,
+    SchemasPackageDetailsDTO
 } from '#dto';
 
 @Controller('entities')
@@ -657,6 +658,88 @@ export class EntityApi extends ApiClient {
     @HttpCode(HttpStatus.OK)
     async getSchemaTree(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_SCHEMA_TREE, {
+            messageId,
+        });
+    }
+
+    @ApiOperation({
+        summary: 'Get schemas packages',
+        description: 'Returns schemas packages',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedResponse('Schemas', SchemaGridDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/schemas-packages')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search schemas packages, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+        required: false,
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Policy topic identifier',
+        example: '0.0.1960',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'options.owner',
+        description: 'Schema owner',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getSchemasPackages(
+        @Query('pageIndex') pageIndex?: string,
+        @Query('pageSize') pageSize?: string,
+        @Query('orderField') orderField?: string,
+        @Query('orderDir') orderDir?: string,
+        @Query('keywords') keywords?: string,
+        @Query('topicId') topicId?: string,
+        @Query('options.owner') owner?: string
+    ) {
+        return await this.send(IndexerMessageAPI.GET_SCHEMAS_PACKAGES, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+            keywords,
+            topicId,
+            'options.owner': owner,
+        });
+    }
+
+    @ApiOperation({
+        summary: 'Get schemas package',
+        description: 'Returns schemas package',
+    })
+    @ApiOkResponse({
+        description: 'Schemas package details',
+        type: SchemasPackageDetailsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/schemas-packages/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @HttpCode(HttpStatus.OK)
+    async getSchemasPackage(@Param('messageId') messageId: string) {
+        return await this.send(IndexerMessageAPI.GET_SCHEMAS_PACKAGE, {
             messageId,
         });
     }
@@ -1900,7 +1983,7 @@ export class EntityApi extends ApiClient {
     //#region FILES
     @Post('/update-files')
     @ApiOperation({
-        summary: 'Try load ipfs files',
+        summary: 'Try to load ipfs files',
         description: 'Returns ipfs files',
     })
     @ApiBody({
@@ -1919,6 +2002,31 @@ export class EntityApi extends ApiClient {
     async search(@Body() body: UpdateFileDTO) {
         return await this.send(
             IndexerMessageAPI.UPDATE_FILES,
+            body
+        );
+    }
+
+    @Post('/unpack-schemas')
+    @ApiOperation({
+        summary: 'Try to unpack schemas',
+        description: 'Returns schemas',
+    })
+    @ApiBody({
+        description: 'Entity Timestamp',
+        type: UpdateFileDTO,
+    })
+    @ApiOkResponse({
+        description: 'Try to unpack schemas',
+        type: DetailsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async unpackSchemas(@Body() body: UpdateFileDTO) {
+        return await this.send(
+            IndexerMessageAPI.UNPACK_SCHEMAS,
             body
         );
     }

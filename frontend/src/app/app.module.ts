@@ -131,6 +131,7 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
 import { ExternalPoliciesService } from './services/external-policy.service';
 import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.component';
+import { GeoJsonService } from './services/geo-json.service';
 
 @NgModule({
     declarations: [
@@ -253,6 +254,7 @@ import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.c
         AISearchService,
         RecordService,
         CompareStorage,
+        GeoJsonService,
         ProjectComparisonService,
         FormulasService,
         ExternalPoliciesService,

@@ -39,6 +39,7 @@ export interface IFieldJson {
     private?: boolean;
 
     enum?: string[] | string;
+    availableOptions?: string[] | string;
 
     textSize?: string;
     textColor?: string;
@@ -220,6 +221,13 @@ export class SchemaToJson {
         return null;
     }
 
+    private static getAvailableOptions(field: SchemaField): string | string[] | null {
+        if (field.availableOptions) {
+            return field.availableOptions;
+        }
+        return null;
+    }
+
     private static getFront(field: SchemaField): {
         size: string;
         color: string;
@@ -289,6 +297,11 @@ export class SchemaToJson {
         const enumValue = SchemaToJson.getEnum(field);
         if (enumValue) {
             fieldJson.enum = enumValue;
+        }
+
+        const availableOptionsValue = SchemaToJson.getAvailableOptions(field);
+        if (availableOptionsValue) {
+            fieldJson.availableOptions = availableOptionsValue;
         }
 
         const font = SchemaToJson.getFront(field);
@@ -815,6 +828,29 @@ export class JsonToSchema {
         }
     }
 
+
+    private static fromavailableOptions(
+        value: IFieldJson,
+        context: ErrorContext
+    ): {
+        availableOptions: string[] | undefined,
+    } {
+        context = context.add('availableOptions');
+
+        if (Array.isArray(value.availableOptions)) {
+            const availableOptionsValue: string[] = [];
+            for (let i = 0; i < value.availableOptions.length; i++) {
+                availableOptionsValue.push(
+                    JsonToSchema.fromRequiredString(value.availableOptions[i], context.add(`[${i}]`))
+                )
+            }
+
+            return {
+                availableOptions: availableOptionsValue,
+            }
+        }
+    }
+
     private static fromExpression(
         value: IFieldJson,
         context: ErrorContext
@@ -963,6 +999,7 @@ export class JsonToSchema {
             textBold: JsonToSchema.fromFont(value, context).bold,
 
             enum: JsonToSchema.fromEnum(value, context).enum,
+            availableOptions: JsonToSchema.fromavailableOptions(value, context).availableOptions,
             remoteLink: JsonToSchema.fromEnum(value, context).link,
 
             expression: JsonToSchema.fromExpression(value, context),

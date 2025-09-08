@@ -86,6 +86,7 @@ export class SchemaHelper {
             textSize,
             textBold,
             orderPosition,
+            availableOptions,
             isPrivate,
             hidden,
             suggest,
@@ -124,6 +125,7 @@ export class SchemaHelper {
                 field.font.bold = textBold;
             }
         }
+        field.availableOptions = availableOptions;
         field.property = property ? String(property) : null;
         field.customType = customType ? String(customType) : null;
         field.isPrivate = isPrivate;
@@ -539,6 +541,9 @@ export class SchemaHelper {
         }
         if (field.textBold) {
             comment.textBold = field.textBold;
+        }
+        if (field.availableOptions) {
+            comment.availableOptions = field.availableOptions;
         }
         if (Number.isInteger(orderPosition) && orderPosition >= 0) {
             comment.orderPosition = orderPosition;

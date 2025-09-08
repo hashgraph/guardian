@@ -18,7 +18,6 @@ import {
     MessageType,
     replaceValueRecursive,
     SchemaConverterUtils,
-    SchemaMessage,
     TagMessage,
     TopicConfig,
     TopicHelper,
@@ -44,7 +43,7 @@ export class SchemaImport {
 
     private root: IRootConfig;
     private topicHelper: TopicHelper;
-    private messageServer: MessageServer;
+    // private messageServer: MessageServer;
     private owner: IOwner;
     private topicRow: TopicConfig;
     private topicId: string;
@@ -82,11 +81,11 @@ export class SchemaImport {
             this.root.hederaAccountKey,
             this.root.signOptions
         );
-        this.messageServer = new MessageServer({
-            operatorId: this.root.hederaAccountId,
-            operatorKey: this.root.hederaAccountKey,
-            signOptions: this.root.signOptions
-        });
+        // this.messageServer = new MessageServer({
+        //     operatorId: this.root.hederaAccountId,
+        //     operatorKey: this.root.hederaAccountKey,
+        //     signOptions: this.root.signOptions
+        // });
         this.owner = user;
         step.complete();
         return this.root;
@@ -142,11 +141,18 @@ export class SchemaImport {
     ): Promise<ISchema[]> {
         step.start();
         const schemas: ISchema[] = [];
-
         const relationships = new Set<string>();
         for (const messageId of messageIds) {
             const newSchema = await loadSchema(messageId, logger, userId);
-            schemas.push(newSchema);
+            if (Array.isArray(newSchema)) {
+                for (const s of newSchema) {
+                    schemas.push(s);
+                }
+            } else if (newSchema) {
+                schemas.push(newSchema);
+            }
+        }
+        for (const newSchema of schemas) {
             for (const id of newSchema.relationships) {
                 relationships.add(id);
             }
@@ -156,7 +162,13 @@ export class SchemaImport {
         }
         for (const messageId of relationships) {
             const newSchema = await loadSchema(messageId, logger, userId);
-            schemas.push(newSchema);
+            if (Array.isArray(newSchema)) {
+                for (const s of newSchema) {
+                    schemas.push(s);
+                }
+            } else if (newSchema) {
+                schemas.push(newSchema);
+            }
         }
 
         step.complete();
@@ -312,6 +324,7 @@ export class SchemaImport {
         step: INotificationStep,
         userId: string | null
     ): Promise<void> {
+        step.start();
         let index = 0;
         for (const file of schemas) {
             const _step = step.addStep(`${file.name || '-'}`);
@@ -333,42 +346,13 @@ export class SchemaImport {
                 schemaObject.status = SchemaStatus.ERROR;
             }
 
-            // const errorsCount = await DatabaseServer.getSchemasCount({
-            //     iri: {
-            //         $eq: schemaObject.iri
-            //     },
-            //     $or: [{
-            //         topicId: { $ne: schemaObject.topicId }
-            //     }, {
-            //         uuid: { $ne: schemaObject.uuid }
-            //     }]
-            // } as FilterObject<SchemaCollection>);
-            // if (errorsCount > 0) {
-            //     throw new Error('Schema identifier already exist');
-            // }
-
-            if (this.mode === ImportMode.COMMON) {
-                if (this.topicRow) {
-                    const message = new SchemaMessage(MessageAction.CreateSchema);
-                    message.setDocument(schemaObject);
-                    await this.messageServer
-                        .setTopicObject(this.topicRow)
-                        .sendMessage(message, {
-                            sendToIPFS: true,
-                            memo: null,
-                            userId: this.owner.id,
-                            interception: this.owner.id,
-                            notifier: _step.minimize(true)
-                        });
-                }
-            }
-
             const row = await DatabaseServer.saveSchema(schemaObject);
 
             this.schemasMapping[index].newID = row.id.toString();
             _step.complete();
             index++;
         }
+        step.complete();
     }
 
     /**
@@ -430,12 +414,13 @@ export class SchemaImport {
         const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
         const STEP_RESOLVE_TOPIC = 'Resolve topic';
         const STEP_UPDATE_UUID = 'Update UUID';
+        const STEP_SAVE = 'Save';
         // Steps -->
 
         this.notifier.addStep(STEP_RESOLVE_ACCOUNT, 1);
         this.notifier.addStep(STEP_RESOLVE_TOPIC, 1);
         this.notifier.addStep(STEP_UPDATE_UUID, 1);
-        this.notifier.addEstimate(components.length);
+        this.notifier.addStep(STEP_SAVE, 1, true);
         this.notifier.start();
 
         await this.resolveAccount(
@@ -455,7 +440,7 @@ export class SchemaImport {
             components,
             user,
             false,
-            this.notifier,
+            this.notifier.getStep(STEP_SAVE),
             userId
         );
 
@@ -464,7 +449,11 @@ export class SchemaImport {
         await this.validateDefs(components);
         this.notifier.completeStep(STEP_UPDATE_UUID);
 
-        await this.saveSchemas(components, this.notifier, userId);
+        await this.saveSchemas(
+            components,
+            this.notifier.getStep(STEP_SAVE),
+            userId
+        );
 
         this.notifier.complete();
 

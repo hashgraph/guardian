@@ -59,12 +59,15 @@ import {
     Formula,
     FormulaDetails,
     FormulaRelationships,
-    PolicyActivity
+    PolicyActivity,
+    SchemasPackageDetails
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
 import { SchemaTreeNode } from '../utils/schema-tree.js';
 import { IPFSService } from '../helpers/ipfs-service.js';
+import { SchemaFileHelper } from '../helpers/schema-file-helper.js';
+import { textSearch } from '../helpers/text-search-options.js';
 
 //#region UTILS
 const pageOptions = new Set([
@@ -74,6 +77,18 @@ const pageOptions = new Set([
     'orderDir',
     'keywords',
 ]);
+
+function getErrorCode(error: any): number {
+    if (error && error.code) {
+        if (error.code < 100 || error.code > 999) {
+            return 500;
+        } else {
+            return error.code;
+        }
+    } else {
+        return 500;
+    }
+}
 
 function createRegex(text: string) {
     return {
@@ -125,6 +140,20 @@ async function getPolicy(row: Message): Promise<Message> {
     return policyMessage;
 }
 
+function getFileNames(row: Message): string[] {
+    if (Array.isArray(row.files)) {
+        if (row.type === MessageType.SCHEMA) {
+            return [
+                SchemaFileHelper.getDocumentFile(row),
+                SchemaFileHelper.getContextFile(row)
+            ]
+        } else {
+            return row.files;
+        }
+    }
+    return [];
+}
+
 async function loadDocuments(
     row: Message,
     tryLoad: boolean,
@@ -136,13 +165,13 @@ async function loadDocuments(
             return result;
         }
 
-        if (tryLoad) {
+        if (!result.virtual && tryLoad) {
             await checkDocuments(result, 20 * 1000);
             await saveDocuments(result);
         }
 
         result.documents = [];
-        for (const fileName of result.files) {
+        for (const fileName of getFileNames(result)) {
             const file = await DataBaseHelper.loadFile(fileName);
             if (prepare) {
                 result.documents.push(prepare(file));
@@ -156,13 +185,33 @@ async function loadDocuments(
     }
 }
 
+async function checkDocuments(row: Message, timeout: number): Promise<Message> {
+    if (row?.files?.length) {
+        const fns: Promise<string | null>[] = [];
+        for (const fileName of row.files) {
+            fns.push(loadFiles(fileName, timeout));
+        }
+        const files = await Promise.all(fns);
+        for (const fileId of files) {
+            if (fileId === null) {
+                throw Error('Failed to upload files');
+            }
+        }
+        row.documents = files;
+        return row;
+    } else {
+        throw Error('Files not found');
+    }
+}
+
 async function loadSchemaDocument(row: Message): Promise<Message> {
     try {
         const result = { ...row };
-        if (!result?.files?.length) {
+        const schemaDocumentCID = SchemaFileHelper.getDocumentFile(result);
+        if (!schemaDocumentCID) {
             return result;
         }
-        const file = await DataBaseHelper.loadFile(result.files[0]);
+        const file = await DataBaseHelper.loadFile(schemaDocumentCID);
         result.documents = [file];
         return result;
     } catch (error) {
@@ -181,22 +230,19 @@ async function loadSchema(
             return null;
         }
 
-        const schemaContextCID = getContext(document);
-        if (!schemaContextCID) {
+        const schemaContext = SchemaFileHelper.getDocumentContext(document);
+        if (!schemaContext) {
             return null;
         }
 
         const em = DataBaseHelper.getEntityManager();
-        const schemaMessage = await em.findOne(Message, {
-            type: MessageType.SCHEMA,
-            'files.1': schemaContextCID,
-        } as any);
+        const schemaMessage = await em.findOne(Message, SchemaFileHelper.getSchemaFilter(schemaContext));
 
         if (!schemaMessage) {
             return null;
         }
 
-        const schemaDocumentCID = schemaMessage.files?.[0];
+        const schemaDocumentCID = SchemaFileHelper.getDocumentFile(schemaMessage);
 
         if (!schemaDocumentCID) {
             return null;
@@ -241,7 +287,7 @@ async function loadFormulas(
     }
 }
 
-async function loadSchemas(topicId: string,): Promise<IMessage[]> {
+async function loadSchemas(topicId: string): Promise<IMessage[]> {
     try {
         const em = DataBaseHelper.getEntityManager();
         const schemas = await em.find(Message, {
@@ -261,25 +307,6 @@ async function loadSchemas(topicId: string,): Promise<IMessage[]> {
         return schemas;
     } catch (error) {
         return [];
-    }
-}
-
-async function checkDocuments(row: Message, timeout: number): Promise<Message> {
-    if (row?.files?.length) {
-        const fns: Promise<string | null>[] = [];
-        for (const fileName of row.files) {
-            fns.push(loadFiles(fileName, timeout));
-        }
-        const files = await Promise.all(fns);
-        for (const fileId of files) {
-            if (fileId === null) {
-                throw Error('Failed to upload files');
-            }
-        }
-        row.documents = files;
-        return row;
-    } else {
-        throw Error('Files not found');
     }
 }
 
@@ -326,26 +353,6 @@ async function saveDocuments(row: Message): Promise<Message> {
         }
     );
     return row;
-}
-
-function getContext(file: string): any {
-    try {
-        const document = JSON.parse(file);
-        let contexts = document['@context'];
-        contexts = Array.isArray(contexts) ? contexts : [contexts];
-        for (const context of contexts) {
-            if (typeof context === 'string') {
-                const matches = context?.match(IPFS_CID_PATTERN);
-                const contextCID = matches && matches[0];
-                if (contextCID) {
-                    return contextCID;
-                }
-            }
-        }
-        return null;
-    } catch (error) {
-        return null;
-    }
 }
 
 async function findRelationships(target: Message): Promise<Message[]> {
@@ -432,7 +439,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Registry>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -525,7 +532,7 @@ export class EntityService {
                 },
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -560,7 +567,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -622,7 +629,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<RegistryUser>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -694,7 +701,7 @@ export class EntityService {
                 },
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -731,7 +738,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Policy>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -760,6 +767,16 @@ export class EntityService {
                 },
                 topicId: row.topicId,
             } as any);
+            const schemaPackages = await em.count(Message, {
+                type: MessageType.SCHEMA_PACKAGE,
+                action: {
+                    $in: [
+                        MessageAction.PublishSchemas,
+                        MessageAction.PublishSystemSchemas,
+                    ],
+                },
+                topicId: row.topicId,
+            } as any);
             const vcs = await em.count(Message, {
                 type: MessageType.VC_DOCUMENT,
                 'analytics.policyId': row.consensusTimestamp,
@@ -779,6 +796,7 @@ export class EntityService {
 
             const activity: PolicyActivity = {
                 schemas,
+                schemaPackages,
                 vcs,
                 vps,
                 roles,
@@ -800,7 +818,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -836,7 +854,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -865,7 +883,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Tool>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -921,7 +939,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -950,7 +968,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Module>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -984,7 +1002,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1016,7 +1034,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<ISchema>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1038,7 +1056,7 @@ export class EntityService {
                 },
             });
             const row = await em.findOne(MessageCache, {
-                consensusTimestamp: messageId,
+                consensusTimestamp: item?.options?.packageMessageId || messageId,
             });
 
             const vcs = await em.count(Message, {
@@ -1074,9 +1092,10 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
+
     @MessagePattern(IndexerMessageAPI.GET_SCHEMA_TREE)
     async getSchemaTree(
         @Payload() msg: { messageId: string }
@@ -1112,7 +1131,97 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_SCHEMAS_PACKAGES)
+    async getSchemasPackages(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<ISchema>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.SCHEMA_PACKAGE;
+            filters.action = {
+                $in: [
+                    MessageAction.PublishSchemas,
+                    MessageAction.PublishSystemSchemas
+                ]
+            };
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [ISchema[], number];
+            const result = {
+                items: rows.map((item) => {
+                    delete item.analytics;
+                    return item;
+                }),
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<ISchema>>(result);
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+
+
+    @MessagePattern(IndexerMessageAPI.GET_SCHEMAS_PACKAGE)
+    async getSchemasPackage(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<SchemasPackageDetails>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            let item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.SCHEMA_PACKAGE,
+                action: {
+                    $in: [
+                        MessageAction.PublishSchemas,
+                        MessageAction.PublishSystemSchemas,
+                    ],
+                },
+            });
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+
+            const schemas = await em.count(Message, {
+                type: MessageType.SCHEMA,
+                'options.packageMessageId': row.consensusTimestamp,
+            } as any);
+
+
+            const activity: any = {
+                schemas,
+            };
+
+            if (!item) {
+                return new MessageResponse<SchemasPackageDetails>({
+                    id: messageId,
+                    row,
+                    activity,
+                });
+            }
+
+            item = await loadDocuments(item, true);
+
+            return new MessageResponse<SchemasPackageDetails>({
+                id: messageId,
+                uuid: item.uuid,
+                item,
+                row,
+                activity,
+            });
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1161,7 +1270,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Token>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1188,7 +1297,7 @@ export class EntityService {
                 labels
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1216,7 +1325,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Role>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1262,7 +1371,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1291,7 +1400,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Statistic>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1343,7 +1452,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_STATISTIC_DOCUMENTS)
@@ -1377,7 +1486,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<VC>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1407,7 +1516,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Statistic>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1459,7 +1568,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1491,7 +1600,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Formula>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1529,7 +1638,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1586,7 +1695,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1617,7 +1726,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<DID>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_DID_DOCUMENT)
@@ -1666,7 +1775,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_DID_RELATIONSHIPS)
@@ -1698,7 +1807,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1726,7 +1835,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<VP>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1784,7 +1893,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1819,7 +1928,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1854,7 +1963,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<VC>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_VC_DOCUMENT)
@@ -1899,9 +2008,9 @@ export class EntityService {
             }
 
             //formulas
-            let formulasData:any = null;
+            let formulasData: any = null;
             const formulas = await loadFormulas(item);
-            if(formulas && formulas.length) {
+            if (formulas && formulas.length) {
                 const policy = await getPolicy(item);
                 const relationships = await findRelationships(item);
                 const schemas = await loadSchemas(policy?.topicId);
@@ -1925,7 +2034,7 @@ export class EntityService {
                 formulasData
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_VC_RELATIONSHIPS)
@@ -1959,7 +2068,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1988,7 +2097,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<VP>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -2046,7 +2155,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -2102,7 +2211,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<NFT>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -2136,7 +2245,7 @@ export class EntityService {
                 sr: message.analytics.issuer,
             }
 
-            var newRow = {...row, analytics};
+            var newRow = { ...row, analytics };
 
             return new MessageResponse<NFTDetails>({
                 id: tokenId,
@@ -2145,7 +2254,7 @@ export class EntityService {
                 history: nftHistory.data?.transactions || [],
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -2175,7 +2284,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Topic>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_TOPIC)
@@ -2284,7 +2393,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -2313,7 +2422,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Contract>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_CONTRACT)
@@ -2344,7 +2453,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -2356,9 +2465,16 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
             });
+            if (!item) {
+                throw Error('Message not found');
+            }
+            if (item.virtual) {
+                item = await loadDocuments(item, false);
+                return new MessageResponse<any>(item);
+            }
             await checkDocuments(item, 2 * 60 * 1000);
             await saveDocuments(item);
             await loadDocuments(item, false);
@@ -2369,9 +2485,58 @@ export class EntityService {
                 return new MessageResponse<any>(item);
             }
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
-    //#endregion
+
+    @MessagePattern(IndexerMessageAPI.UNPACK_SCHEMAS)
+    async unpackSchemas(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<any>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            let item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.SCHEMA_PACKAGE
+            });
+            if (!item) {
+                throw Error('Message not found');
+            }
+            if (item.virtual) {
+                item = await loadDocuments(item, false);
+                return new MessageResponse<any>(item);
+            }
+            if (item.analytics?.unpacked) {
+                item = await loadDocuments(item, false);
+                return new MessageResponse<any>(item);
+            }
+
+            await checkDocuments(item, 2 * 60 * 1000);
+            await saveDocuments(item);
+            item = await loadDocuments(item, false);
+
+            const fileMap = new Map<string, string>();
+            for (let i = 0; i < item.files.length; i++) {
+                const name = item.files[i];
+                fileMap.set(name, item.documents[i])
+            }
+
+            const row = em.getReference(Message, item._id);
+            await SchemaFileHelper.unpack(em, item, [], fileMap);
+            row.analytics = {
+                textSearch: textSearch(row),
+                unpacked: true
+            };
+            em.persist(row);
+            await em.flush();
+
+            item.analytics = row.analytics;
+
+            return new MessageResponse<any>(item);
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
     //#endregion
 }
