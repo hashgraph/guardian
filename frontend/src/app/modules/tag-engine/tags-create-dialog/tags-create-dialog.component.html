@@ -11,7 +11,13 @@
     </form>
 
     <div *ngIf="schemas && schemas.length" class="artifact-container">
-        <p-dropdown *ngIf="canAddDocument" [appendTo]="'body'" [(ngModel)]="schema" [options]="schemas" optionLabel="name">
+        <p-dropdown 
+            *ngIf="canAddDocument" 
+            [appendTo]="'body'" 
+            [(ngModel)]="schema" 
+            [options]="schemas" 
+            optionLabel="name"
+        >
             <ng-template pTemplate="selectedItem">
                 <div *ngIf="schema" class="country-item country-item-value">
                     <div>{{ schema.name }}</div>
@@ -32,7 +38,11 @@
                 <i class="pi pi-trash"></i>
             </div>
             <form [formGroup]="schemaForm">
-                <app-schema-form [formGroup]="schemaForm" [schema]="schema" [showButtons]="false"></app-schema-form>
+                <app-schema-form-root
+                    [schema]="schema" 
+                    [showButtons]="false"
+                    (form)="initForm($event)">
+                </app-schema-form-root>
             </form>
         </div>
     </div>
@@ -111,8 +121,12 @@
                         <i class="pi pi-times"></i>
                     </div>
                     <form [formGroup]="schemaForm">
-                        <app-schema-form [formGroup]="schemaForm" [schema]="schema"
-                                         [showButtons]="false"></app-schema-form>
+                        <app-schema-form-root 
+                            [formGroup]="schemaForm" 
+                            [schema]="schema"
+                            [showButtons]="false"
+                            (form)="initForm($event)">
+                        </app-schema-form-root>
                     </form>
                 </div>
             </div>

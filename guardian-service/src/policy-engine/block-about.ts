@@ -277,7 +277,9 @@ export const BlockAbout = {
             'RunEvent',
             'RefreshEvent'
         ],
-        'output': null,
+        'output': [
+            'RunEvent'
+        ],
         'defaultEvent': false
     },
     'interfaceDocumentsSourceBlock': {
@@ -1389,6 +1391,108 @@ export const BlockAbout = {
                 'label': 'Schema',
                 'title': 'Schema',
                 'type': 'Schemas'
+            }
+        ]
+    },
+    'httpRequestUIAddon': {
+        'label': 'Http Request UI Addon',
+        'title': `Add 'Http Request UI Addon' Block`,
+        'post': false,
+        'get': true,
+        'children': 'None',
+        'control': 'Special',
+        'input': null,
+        'output': null,
+        'defaultEvent': false,
+        'properties': [
+            {
+                'name': 'method',
+                'label': 'Method',
+                'title': 'Method',
+                'type': 'Select',
+                'items': [
+                    {
+                        'label': 'Get',
+                        'value': 'get'
+                    },
+                    {
+                        'label': 'Post',
+                        'value': 'post'
+                    },
+                    {
+                        'label': 'Put',
+                        'value': 'put'
+                    }
+                ],
+                'default': 'get',
+                'required': true
+            },
+            {
+                'name': 'url',
+                'label': 'URL',
+                'title': 'URL',
+                'type': 'Input',
+                'required': true
+            },
+            {
+                'name': 'authentication',
+                'label': 'Authentication',
+                'title': 'Authentication',
+                'type': 'Select',
+                'items': [
+                    {
+                        'label': 'No Auth',
+                        'value': ''
+                    },
+                    {
+                        'label': 'Bearer Token',
+                        'value': 'bearerToken'
+                    },
+                ],
+                'default': ''
+            },
+            {
+                'name': 'headers',
+                'label': 'Headers',
+                'title': 'Headers',
+                'type': 'Array',
+                'items': {
+                    'label': 'Header',
+                    'value': '',
+                    'properties': [
+                        {
+                            'name': 'name',
+                            'label': 'Header name',
+                            'title': 'Header name',
+                            'type': 'Input'
+                        },
+                        {
+                            'name': 'value',
+                            'label': 'Header value',
+                            'title': 'Header value',
+                            'type': 'Input'
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    'transformationUIAddon': {
+        'label': 'Transformation UI Addon',
+        'title': `Add 'Transformation UI Addon' Block`,
+        'post': false,
+        'get': true,
+        'children': 'None',
+        'control': 'Special',
+        'input': null,
+        'output': null,
+        'defaultEvent': false,
+        'properties': [
+            {
+                'name': 'expression',
+                'label': 'Expression',
+                'title': 'Expression',
+                'type': 'Code'
             }
         ]
     },

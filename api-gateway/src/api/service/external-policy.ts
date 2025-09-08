@@ -701,4 +701,52 @@ export class ExternalPoliciesApi {
             await InternalException(error, this.logger);
         }
     }
+
+    /**
+     * Return a request document
+     */
+    @Get('/requests/document')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Returns the request document by startMessageId.',
+        description: 'Returns the request document by startMessageId.',
+    })
+    @ApiQuery({
+        name: 'startMessageId',
+        type: String,
+        description: 'Start Message Id',
+        required: true,
+        example: Examples.MESSAGE_ID,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyRequestCountDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getRequestDocument(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('startMessageId') startMessageId?: string,
+    ): Promise<PolicyRequestCountDTO> {
+        try {
+            const options: any = {
+                filters: {},
+                startMessageId
+            };
+            const engineService = new PolicyEngine();
+            const result = await engineService.getRequestDocument(options, user);
+            return res.send(result);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
 }

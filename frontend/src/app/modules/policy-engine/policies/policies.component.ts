@@ -1018,7 +1018,8 @@ export class PoliciesComponent implements OnInit {
                 if (type == 'message') {
                     this.policyEngineService
                         .pushImportByMessage(data, versionOfTopicId, { tools }, demo)
-                        .pipe(takeUntil(this._destroy$)).subscribe((result) => {
+                        .pipe(takeUntil(this._destroy$))
+                        .subscribe((result) => {
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
                                 queryParams: {

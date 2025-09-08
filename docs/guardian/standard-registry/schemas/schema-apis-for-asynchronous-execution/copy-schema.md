@@ -1,6 +1,6 @@
 # Copy Schema
 
-Post /schemas/push/copy
+<mark style="color:green;">`POST`</mark> `/schemas/push/copy`
 
 Copy schema. Only users with the Standard Registry role are allowed to\
 make the request.

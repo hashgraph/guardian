@@ -29,4 +29,4 @@ This block is responsible in performing automatic actions on the token.
 | Grant KYC   | This action is mandatory if the token is configured to require KYC. The owner of the token is required to ‘grant KYC’ to enable transactions with the account. |
 | Revoke KYC  | This revokes the account’s permission to participate in transactions with the token.                                                                           |
 
-![](<../../../../../.gitbook/assets/image (15) (3).png>)
+![](<../../../../../.gitbook/assets/image (15) (3) (1).png>)

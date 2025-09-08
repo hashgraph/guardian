@@ -1,5 +1,6 @@
 ---
 description: This policy comes into effect beginning with Guardian 1.3.0
+icon: braille
 ---
 
 # Schema Versioning & Deprecation Policy

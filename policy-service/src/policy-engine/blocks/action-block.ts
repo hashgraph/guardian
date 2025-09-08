@@ -1,4 +1,4 @@
-import { EventBlock } from '../helpers/decorators/index.js';
+import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { UserType, Schema, LocationType } from '@guardian/interfaces';
 import { findOptions } from '../helpers/find-options.js';
 import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyGetData, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
@@ -29,7 +29,9 @@ import { PolicyActionsUtils } from '../policy-actions/utils.js';
             PolicyInputEventType.RunEvent,
             PolicyInputEventType.RefreshEvent,
         ],
-        output: null,
+        output: [
+            PolicyOutputEventType.RunEvent,
+        ],
         defaultEvent: false
     },
     variables: [
@@ -73,6 +75,20 @@ export class InterfaceDocumentActionBlock {
                 }
             });
         }
+
+        if (ref.options.type === 'transformation') {
+            const children = [];
+            for (const child of (ref.children as any[])) {
+                if (child.blockClassName === 'UIAddon') {
+                    if (typeof child.getData === 'function') {
+                        const config = await child.getData(user);
+                        children.push(config);
+                    }
+                }
+            }
+            data.children = children;
+        }
+
         return data;
     }
 
@@ -81,6 +97,9 @@ export class InterfaceDocumentActionBlock {
      * @param user
      * @param document
      */
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent]
+    })
     async setData(user: PolicyUser, document: IPolicyDocument): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
@@ -133,6 +152,10 @@ export class InterfaceDocumentActionBlock {
                     'ref': sensorDid
                 }
             }
+        }
+
+        if (ref.options.type === 'transformation') {
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
         }
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {

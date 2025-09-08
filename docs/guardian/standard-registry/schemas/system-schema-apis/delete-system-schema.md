@@ -1,17 +1,17 @@
 # Delete System Schema
 
-### DELETE THE SYSTEM SCHEMA WITH THE PROVIDED SCHEMA ID
+<mark style="color:red;">`DELETE`</mark> `/schemas/system/{schemaId}`
 
-{% swagger method="delete" path="" baseUrl="/schemas/system/{schemaId}" summary="Deletes the Schema" %}
-{% swagger-description %}
 Deletes the system schema with the provided Schema ID. Only users with the Standard Registry role are allowed to make a request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaId" type="String" required="true" %}
-SchemaID
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-response status="204: No Content" description="No Content" %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| schemaId<mark style="color:red;">\*</mark> | String | SchemaID    |
+
+{% tabs %}
+{% tab title="204: No Content No Content" %}
 ```javascript
 {
     content:
@@ -22,25 +22,25 @@ SchemaID
                   $ref: '#/components/schemas/Schema'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
    content:
@@ -49,5 +49,5 @@ SchemaID
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

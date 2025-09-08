@@ -33,15 +33,20 @@
         overflow: visible;
     }
 
-    .p-button {
+    .p-selectbutton {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 12px;
+    }
+
+    .p-selectbutton .p-button {
         border-radius: 8px;
         padding: 0.5rem 0.7rem;
     }
 
-    .p-selectbutton {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-gap: 5px;
+    .p-selectbutton .p-highlight {
+        background-color: var(--color-primary);
+        color: white;
     }
 }
 

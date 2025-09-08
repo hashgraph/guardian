@@ -1,24 +1,23 @@
-import { DatabaseServer, Token } from '@guardian/common';
+import { DatabaseServer, INotificationStep, Token } from '@guardian/common';
 import { GenerateUUIDv4, IOwner } from '@guardian/interfaces';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { ImportMode } from '../common/import.interface.js';
-import { INotifier } from '../../notifier.js';
 import { ImportTokenMap, ImportTokenResult } from './token-import.interface.js';
 
 export class TokenImport {
     private readonly mode: ImportMode;
-    private readonly notifier: INotifier;
+    private readonly notifier: INotificationStep;
 
-    constructor(mode: ImportMode, notifier: INotifier) {
+    constructor(mode: ImportMode, notifier: INotificationStep) {
         this.mode = mode;
         this.notifier = notifier;
     }
 
     public async import(tokens: Token[], user: IOwner): Promise<ImportTokenResult> {
-        this.notifier.start('Import tokens');
+        this.notifier.start();
         const { tokenMap, tokensObject, errors } = this.importTokensByFiles(tokens, user);
         await this.saveTokens(tokensObject);
-        this.notifier.completed();
+        this.notifier.complete();
         return { tokenMap, errors };
     }
 

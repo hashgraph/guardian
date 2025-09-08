@@ -1,47 +1,51 @@
 # Creation of Schema related to the topic
 
-{% swagger method="post" path="" baseUrl="/schemas/{topicId}" summary="Creates a schema related to the topic (policy)" %}
-{% swagger-description %}
+<mark style="color:green;">`POST`</mark> `/schemas/{topicId}`
+
 Creates new schema. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="topicId" type="String" required="true" %}
-Topic ID
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-parameter in="body" required="true" type="Object" %}
-Object that contains a valid schema
-{% endswagger-parameter %}
+| Name                                      | Type   | Description |
+| ----------------------------------------- | ------ | ----------- |
+| topicId<mark style="color:red;">\*</mark> | String | Topic ID    |
 
-{% swagger-response status="201: Created" description="Successful Operation" %}
+#### Request Body
+
+| Name                               | Type   | Description                         |
+| ---------------------------------- | ------ | ----------------------------------- |
+| <mark style="color:red;">\*</mark> | Object | Object that contains a valid schema |
+
+{% tabs %}
+{% tab title="201: Created Successful Operation" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+{% tab title="422: Unprocessable Entity Unprocessable Entity" %}
 
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -50,5 +54,5 @@ Object that contains a valid schema
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

@@ -183,6 +183,7 @@ export class ApprovalDocument extends RestoreEntity implements IApprovalDocument
             }
             this._updateDocHash(document);
         }
+        this._updatePropHash(this.createProp());
     }
 
     /**

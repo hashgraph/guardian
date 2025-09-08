@@ -74,7 +74,7 @@ After successfully assigning the VVB to the project, the next step is to access 
 
 To proceed with the workflow, the Standard Registry will validate the project details and schemas. Access the Standard Registry profile and go to the "Project Pipeline" tab. Here, select "Approve" to continue.
 
-<figure><img src="../../../.gitbook/assets/image (16) (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (16) (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 If you access the Technical Advisory Committee profile, you will find a "Comment" button. You can utilize this button to provide any feedback or comments regarding the project details and schemas.
 
@@ -90,7 +90,7 @@ Navigate back to the Project Proponent profile to complete the monitoring report
 
 Upon selecting "Add Report", a file will open containing the project details and schemas previously filled out. Here, you can update the information based on the relevant monitoring plan provided by the methodology. After updating the information and including a project area map, you may click on "Ok" to proceed. (For this demo, we utilized the same values from the provided Excel file.)
 
-<figure><img src="../../../.gitbook/assets/image (14) (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (14) (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once you have completed the monitoring report, please access the VVB profile and go to the monitoring reports tab. Here, you will find a "Verify" button - select that to proceed.
 

@@ -30,7 +30,8 @@ export enum PropertyType {
     Group = 'Group',
     Array = 'Array',
     Schemas = 'Schemas',
-    Path = 'Path'
+    Path = 'Path',
+    Code = 'Code'
 }
 
 /**
@@ -70,7 +71,7 @@ export interface BlockProperties {
     /**
      * Required fields
      */
-    required?:boolean;
+    required?: boolean;
 
     /**
      * Visible expression
@@ -86,6 +87,16 @@ export interface InputProperties extends BlockProperties {
      * Property type
      */
     type: PropertyType.Input;
+}
+
+/**
+ * Input Properties
+ */
+export interface CodeProperties extends BlockProperties {
+    /**
+     * Property type
+     */
+    type: PropertyType.Code;
 }
 
 /**
@@ -216,7 +227,8 @@ export type AnyBlockProperties =
     GroupProperties |
     ArrayProperties |
     SchemasProperties |
-    PathProperties;
+    PathProperties |
+    CodeProperties;
 
 /**
  * Block about

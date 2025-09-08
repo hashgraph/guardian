@@ -1,19 +1,23 @@
 # Importing Schema from IPFS
 
-{% swagger method="post" path="" baseUrl="/schemas/{topicId}/import/message" summary="Imports schemas from a message for the selected topic (policy)" %}
-{% swagger-description %}
+<mark style="color:green;">`POST`</mark> `/schemas/{topicId}/import/message`
+
 Imports new schema from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="topicID" type="String" required="true" %}
-Topic ID
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-parameter in="body" type="Object" required="true" %}
-Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
-{% endswagger-parameter %}
+| Name                                      | Type   | Description |
+| ----------------------------------------- | ------ | ----------- |
+| topicID<mark style="color:red;">\*</mark> | String | Topic ID    |
 
-{% swagger-response status="201: Created" description="Successful Operation" %}
+#### Request Body
+
+| Name                               | Type   | Description                                                                                          |
+| ---------------------------------- | ------ | ---------------------------------------------------------------------------------------------------- |
+| <mark style="color:red;">\*</mark> | Object | Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema. |
+
+{% tabs %}
+{% tab title="201: Created Successful Operation" %}
 ```javascript
 {
     content:
@@ -24,29 +28,29 @@ Object that contains the identifier of the Hedera message which contains the IPF
                   $ref: '#/components/schemas/Schema'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+{% tab title="422: Unprocessable Entity Unprocessable Entity" %}
 
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -55,5 +59,5 @@ Object that contains the identifier of the Hedera message which contains the IPF
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

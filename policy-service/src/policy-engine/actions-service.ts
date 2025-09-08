@@ -780,8 +780,7 @@ export class PolicyActionsService {
         const collection = new DataBaseHelper(PolicyAction);
         const row = await collection.findOne({
             messageId,
-            accountId: user.hederaAccountId,
-            type: PolicyActionType.ACTION
+            accountId: user.hederaAccountId
         });
         if (!row) {
             throw Error('Action not found');

@@ -33,6 +33,7 @@ import {
     Wallet,
     Workers,
     findAllEntities, PolicyCache,
+    INotificationStep,
 } from '@guardian/common';
 import {
     ContractAPI,
@@ -47,7 +48,6 @@ import {
     PolicyHelper,
     BlockType,
 } from '@guardian/interfaces';
-import { INotifier } from '../../helpers/notifier.js';
 import {
     BlockStateLoader,
     RolesLoader,
@@ -135,8 +135,8 @@ export class PolicyDataMigrator {
         private readonly _tokensMap: any,
         private readonly _editedVCs: any,
         private readonly _dids: DidDocument[],
-        private readonly _dryRunId?: string,
-        private readonly _notifier?: INotifier
+        private readonly _dryRunId: string,
+        private readonly _notifier: INotificationStep
     ) {
         this._db = new DatabaseServer(_dryRunId);
         this._ms = new MessageServer({
@@ -164,7 +164,7 @@ export class PolicyDataMigrator {
         owner: string,
         migrationConfig: MigrationConfig,
         userId: string | null,
-        notifier?: INotifier
+        notifier: INotificationStep
     ) {
         try {
             const {
@@ -541,8 +541,21 @@ export class PolicyDataMigrator {
         srcPolicyId: string,
         retireContractId?: string
     ) {
+        // <-- Steps
+        const STEP_MIGRATE_POLICY = 'Migrate policy state';
+        const STEP_MIGRATE_VC = 'Migrate VC documents';
+        const STEP_MIGRATE_VP = 'Migrate VP documents';
+        const STEP_MIGRATE_TOKENS = 'Migrate Tokens';
+        // Steps -->
+
+        this._notifier.addStep(STEP_MIGRATE_POLICY);
+        this._notifier.addStep(STEP_MIGRATE_VC);
+        this._notifier.addStep(STEP_MIGRATE_VP);
+        this._notifier.addStep(STEP_MIGRATE_TOKENS);
+        this._notifier.start();
+
         const errors = new Array<DocumentError>();
-        this._notifier?.start(`Migrate policy state`);
+        this._notifier.startStep(STEP_MIGRATE_POLICY);
         if (migrateState) {
             if (this._dryRunId) {
                 await this._createVirtualUsers(users);
@@ -599,10 +612,12 @@ export class PolicyDataMigrator {
             }
 
             await this._migratePolicyStates(states);
+            this._notifier.completeStep(STEP_MIGRATE_POLICY);
         } else {
-            this._notifier?.info('Migrate policy state skipped');
+            this._notifier.skipStep(STEP_MIGRATE_POLICY);
         }
-        this._notifier?.completedAndStart(`Migrate ${vcs.length} VC documents`);
+
+        this._notifier.startStep(STEP_MIGRATE_VC);
         await this._migrateDocument(
             vcs,
             (vc: VcDocument) =>
@@ -648,7 +663,9 @@ export class PolicyDataMigrator {
                 userId
             );
         }
-        this._notifier?.completedAndStart(`Migrate ${vps.length} VP documents`);
+        this._notifier.completeStep(STEP_MIGRATE_VC);
+
+        this._notifier.startStep(STEP_MIGRATE_VP);
         await this._migrateDocument(
             vps,
             this._migrateVpDocument.bind(this),
@@ -657,10 +674,13 @@ export class PolicyDataMigrator {
             userId
         );
         await this._migrateMintRequests(mintRequests, mintTransactions);
+        this._notifier.completeStep(STEP_MIGRATE_VP);
 
+        this._notifier.startStep(STEP_MIGRATE_TOKENS);
         if (migrateRetirePools && migrateState) {
             await this.migrateTokenPools(retireContractId, retirePools, errors, userId);
         }
+        this._notifier.completeStep(STEP_MIGRATE_TOKENS);
         return errors;
     }
 
@@ -1021,7 +1041,7 @@ export class PolicyDataMigrator {
         if (existingDid) {
             return did;
         }
-        this._notifier?.info(`Migrating DID ${did}`);
+        // this._notifier?.info(`Migrating DID ${did}`);
         await this._db.saveDid(didObj);
         return did;
     }
@@ -1127,7 +1147,7 @@ export class PolicyDataMigrator {
             doc.schema !== schema.iri ||
             this._policyTopicId !== this._oldPolicyTopicId
         ) {
-            this._notifier?.info(`Resigning VC ${doc.id}`);
+            // this._notifier?.info(`Resigning VC ${doc.id}`);
             const _vcHelper = new VcHelper();
             const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
             const credentialSubject = SchemaHelper.updateObjectContext(
@@ -1153,7 +1173,7 @@ export class PolicyDataMigrator {
         doc.policyId = this._policyId;
 
         if (doc.messageId) {
-            this._notifier?.info(`Publishing VC ${doc.id}`);
+            // this._notifier?.info(`Publishing VC ${doc.id}`);
 
             const vcMessage = new RoleMessage(MessageAction.MigrateVC);
             vcMessage.setDocument(vc);
@@ -1330,7 +1350,7 @@ export class PolicyDataMigrator {
 
         let vp;
         if (vpChanged || this._oldPolicyOwner !== this._owner) {
-            this._notifier?.info(`Resigning VP ${doc.id}`);
+            // this._notifier?.info(`Resigning VP ${doc.id}`);
             const _vcHelper = new VcHelper();
             const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
             vp = await _vcHelper.createVerifiablePresentation(
@@ -1347,7 +1367,7 @@ export class PolicyDataMigrator {
 
         doc.policyId = this._policyId;
         if (doc.messageId) {
-            this._notifier?.info(`Publishing VP ${doc.id}`);
+            // this._notifier?.info(`Publishing VP ${doc.id}`);
             const vpMessage = new VPMessage(MessageAction.MigrateVP);
             vpMessage.setDocument(vp);
             vpMessage.setUser(null);
@@ -1511,7 +1531,7 @@ export class PolicyDataMigrator {
             doc.schema !== schema.iri ||
             this._policyTopicId !== this._oldPolicyTopicId
         ) {
-            this._notifier?.info(`Resigning VC ${doc.id}`);
+            // this._notifier?.info(`Resigning VC ${doc.id}`);
 
             const _vcHelper = new VcHelper();
             const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
@@ -1540,7 +1560,7 @@ export class PolicyDataMigrator {
         doc.policyId = this._policyId;
 
         if (doc.messageId) {
-            this._notifier?.info(`Publishing VC ${doc.id}`);
+            // this._notifier?.info(`Publishing VC ${doc.id}`);
 
             const vcMessage = new VCMessage(MessageAction.MigrateVC);
             vcMessage.setDocument(vc);

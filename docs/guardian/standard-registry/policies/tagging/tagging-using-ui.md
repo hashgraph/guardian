@@ -82,7 +82,7 @@ Users can click on the tag icon to show the detailed information about all tag a
 
 Tags are grounded by labels. When a label is selected then a detailed information about all tags with this label is displayed below.
 
-![detailed information about the tags](<../../../../.gitbook/assets/6 (2) (2).png>)
+![detailed information about the tags](<../../../../.gitbook/assets/6 (2) (2) (1).png>)
 
 #### **2.4 History**
 

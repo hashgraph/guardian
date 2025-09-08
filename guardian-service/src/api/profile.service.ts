@@ -11,6 +11,7 @@ import {
     KeyType,
     MessageError,
     MessageResponse,
+    NewNotifier,
     PinoLogger,
     RunFunctionAsync,
     Users,
@@ -18,7 +19,6 @@ import {
     Wallet,
     Workers,
 } from '@guardian/common';
-import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
@@ -126,7 +126,13 @@ export function profileAPI(logger: PinoLogger) {
         }) => {
             try {
                 const { username, profile, user } = msg;
-                const did = await setupUserProfile(username, profile, emptyNotifier(), logger, user.id);
+                const did = await setupUserProfile({
+                    username,
+                    profile,
+                    logger,
+                    notifier: NewNotifier.empty(),
+                    logId: user.id
+                });
                 return new MessageResponse(did);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
@@ -143,14 +149,20 @@ export function profileAPI(logger: PinoLogger) {
             task: any
         }) => {
             const { user, username, profile, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
-                const did = await setupUserProfile(username, profile, notifier, logger, user.id);
+                const did = await setupUserProfile({
+                    username,
+                    profile,
+                    logger,
+                    notifier,
+                    logId: user.id
+                });
                 notifier.result(did);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], user.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);
@@ -164,11 +176,19 @@ export function profileAPI(logger: PinoLogger) {
             task: any
         }) => {
             const { user, username, profile, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
+                // <-- Steps
+                const STEP_RESTORE = 'Restore user profile';
+                // Steps -->
+
+                notifier.addStep(STEP_RESTORE);
+                notifier.start();
+
+                notifier.startStep(STEP_RESTORE);
                 if (!profile) {
-                    notifier.error('Invalid profile');
+                    notifier.fail('Invalid profile');
                     return;
                 }
                 const {
@@ -205,7 +225,6 @@ export function profileAPI(logger: PinoLogger) {
                     oldDidDocument = await vcHelper.generateNewDid(topicId, hederaAccountKey);
                 }
 
-                notifier.start('Restore user profile');
                 const restore = new RestoreDataFromHedera();
                 await restore.restoreRootAuthority(
                     username,
@@ -216,11 +235,13 @@ export function profileAPI(logger: PinoLogger) {
                     logger,
                     user.id
                 )
-                notifier.completed();
+                notifier.completeStep(STEP_RESTORE);
+
+                notifier.complete();
                 notifier.result(oldDidDocument?.getDid());
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], user.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);
@@ -234,9 +255,17 @@ export function profileAPI(logger: PinoLogger) {
             task: any
         }) => {
             const { user, username, profile, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
+                // <-- Steps
+                const STEP_FIND_TOPICS = 'Finding all user topics';
+                // Steps -->
+
+                notifier.addStep(STEP_FIND_TOPICS);
+                notifier.start();
+
+                notifier.startStep(STEP_FIND_TOPICS);
                 const {
                     hederaAccountId,
                     hederaAccountKey,
@@ -244,11 +273,11 @@ export function profileAPI(logger: PinoLogger) {
                 } = profile;
 
                 if (!hederaAccountId) {
-                    notifier.error('Invalid Hedera Account Id');
+                    notifier.fail('Invalid Hedera Account Id');
                     return;
                 }
                 if (!hederaAccountKey) {
-                    notifier.error('Invalid Hedera Account Key');
+                    notifier.fail('Invalid Hedera Account Key');
                     return;
                 }
 
@@ -263,7 +292,6 @@ export function profileAPI(logger: PinoLogger) {
                     throw new Error('Invalid DID Document.')
                 }
 
-                notifier.start('Finding all user topics');
                 const restore = new RestoreDataFromHedera();
                 const result = await restore.findAllUserTopics(
                     username,
@@ -272,11 +300,13 @@ export function profileAPI(logger: PinoLogger) {
                     did,
                     user.id
                 )
-                notifier.completed();
+                notifier.completeStep(STEP_FIND_TOPICS);
+
+                notifier.complete();
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);

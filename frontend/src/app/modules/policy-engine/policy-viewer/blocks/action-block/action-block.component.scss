@@ -14,8 +14,8 @@
 }
 
 .loading-progress {
-  width: 80%;
-  height: 80%;
+    width: 80%;
+    height: 80%;
 }
 
 .btn-approve {
@@ -43,9 +43,11 @@
 .status-NEW {
     color: #0000ee;
 }
+
 .status-APPROVED {
     color: #4caf50;
 }
+
 .status-REJECTED {
     color: #f44336;
 }
@@ -92,4 +94,12 @@
 *[readonly-block="true"] {
     pointer-events: none !important;
     filter: grayscale(1);
+}
+
+.transformation-button ::ng-deep .p-button {
+    border-radius: 8px;
+    background: var(--primary-color);
+    height: 34px;
+    font-size: 16px;
+    line-height: 16px;
 }
