@@ -603,12 +603,11 @@ export class PolicyEngineService {
             sender?: string,
             senderRole?: string;
             private?: boolean,
+            last?: string,
         },
-        pageIndex?: number,
-        pageSize?: number,
     ): Observable<HttpResponse<any[]>> {
         const header: any = { observe: 'response' };
-        header.params = PolicyEngineService.getOptions(filters, pageIndex, pageSize);
+        header.params = PolicyEngineService.getOptions(filters);
         return this.http.get<any[]>(`${this.url}/${policyId}/comments/${documentId}`, header) as any;
     }
 

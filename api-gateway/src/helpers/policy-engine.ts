@@ -1326,7 +1326,7 @@ export class PolicyEngine extends NatsService {
             recipientRole?: string;
             //document
             text?: string;
-            attachedFiles?: string[];
+            files?: string[];
         }
     ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_COMMENT, { user, documentId, policyId, data });
@@ -1344,13 +1344,12 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         documentId: string,
         params: {
-            pageIndex?: string | number,
-            pageSize?: string | number
             anchor?: string,
-
             sender?: string,
-            senderRole?: string;
+            senderRole?: string,
             private?: boolean,
+            lt?: string,
+            gt?: string
         }
     ): Promise<{ comments: any[], count: number }> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENTS, { user, documentId, policyId, params });

@@ -44,6 +44,7 @@ import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
 import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 /**
  * PolicyEngineChannel
@@ -3386,7 +3387,7 @@ export class PolicyEngineService {
                     recipientRole?: string;
                     //document
                     text?: string;
-                    attachedFiles?: string[];
+                    files?: string[];
                 },
             }): Promise<IMessageResponse<Policy>> => {
                 try {
@@ -3395,18 +3396,19 @@ export class PolicyEngineService {
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
 
                     const vc = await DatabaseServer.getVCById(documentId);
-                    if (vc) {
+                    if (!vc) {
                         throw new Error('Document not found.');
                     }
 
                     const isDocumentOwner = user.did === vc.owner;
-                    const userRole = '';
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
                     const document: any = {
                         text: data.text,
-                        attachedFiles: data.attachedFiles
+                        files: data.files
                     }
 
                     const comment = {
+                        timestamp: Date.now(),
                         uuid: GenerateUUIDv4(),
                         owner: user.did,
                         creator: user.did,
@@ -3416,6 +3418,7 @@ export class PolicyEngineService {
                         policyInstanceTopicId: policy.instanceTopicId,
                         sender: user.did,
                         senderRole: userRole,
+                        senderName: user.username,
                         recipient: data.recipient,
                         recipientRole: data.recipientRole,
                         anchor: data.anchor,
@@ -3437,13 +3440,12 @@ export class PolicyEngineService {
                 policyId: string,
                 documentId: string,
                 params: {
-                    pageIndex?: string | number,
-                    pageSize?: string | number
                     anchor?: string,
-
                     sender?: string,
-                    senderRole?: string;
+                    senderRole?: string,
                     private?: boolean,
+                    lt?: string,
+                    gt?: string
                 }
             }): Promise<IMessageResponse<any>> => {
                 try {
@@ -3452,12 +3454,12 @@ export class PolicyEngineService {
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
 
                     const vc = await DatabaseServer.getVCById(documentId);
-                    if (vc) {
+                    if (!vc) {
                         throw new Error('Document not found.');
                     }
 
-                    const isDocumentOwner = user.did === vc.owner;
-                    const userRole = '';
+                    // const isDocumentOwner = user.did === vc.owner;
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
 
                     const filters: any = {
                         policyId: policyId,
@@ -3507,19 +3509,24 @@ export class PolicyEngineService {
                         }
                     }
 
-                    const otherOptions: any = {};
-                    const _pageSize = parseInt(String(params.pageSize), 10);
-                    const _pageIndex = parseInt(String(params.pageIndex), 10);
-                    if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                        otherOptions.orderBy = { startMessageId: -1 };
-                        otherOptions.limit = _pageSize;
-                        otherOptions.offset = _pageIndex * _pageSize;
-                    } else {
-                        otherOptions.orderBy = { startMessageId: -1 };
-                        otherOptions.limit = 100;
-                    }
+                    const otherOptions: any = {
+                        orderBy: { _id: -1 },
+                        limit: 10
+                    };
 
-                    const [comments, count] = await DatabaseServer.getPolicyCommentsAndCount(filters, otherOptions);
+
+                    const count = await DatabaseServer.getPolicyCommentsCount(filters, otherOptions);
+                    if (params.lt) {
+                        filters._id = { $lt: new ObjectId(params.lt) }
+                    }
+                    if (params.gt) {
+                        filters._id = { $lt: new ObjectId(params.gt) }
+                    }
+                    const comments = await DatabaseServer.getPolicyComments(filters, otherOptions);
+
+                    for (const comment of comments) {
+                        (comment as any).isOwner = comment.sender === user.did;
+                    }
 
                     return new MessageResponse({ comments, count });
                 } catch (error) {

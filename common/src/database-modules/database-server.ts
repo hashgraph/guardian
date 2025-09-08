@@ -1071,24 +1071,39 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Get Policy Comment
+     * Get Policy Comments
      * @param filters
+     * @param options
      */
-    public static async getPolicyComment(
-        filters: FilterQuery<PolicyComment>
-    ): Promise<PolicyComment | null> {
-        return await new DataBaseHelper(PolicyComment).findOne(filters);
+    public static async getPolicyCommentsCount(
+        filters?: FilterObject<PolicyComment>,
+        options?: FindOptions<object>
+    ): Promise<number> {
+        return await new DataBaseHelper(PolicyComment).count(filters, options);
     }
 
+    /**
+     * Get Policy Comment
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyComment(
+        filters: FilterQuery<PolicyComment>,
+        options?: FindOptions<object>
+    ): Promise<PolicyComment | null> {
+        return await new DataBaseHelper(PolicyComment).findOne(filters, options);
+    }
 
     /**
      * Get Policy Comments
      * @param filters
+     * @param options
      */
     public static async getPolicyComments(
-        filters: FilterQuery<PolicyComment>
+        filters: FilterQuery<PolicyComment>,
+        options?: FindOptions<object, never, PopulatePath.ALL, never>
     ): Promise<PolicyComment[]> {
-        return await new DataBaseHelper(PolicyComment).find(filters);
+        return await new DataBaseHelper(PolicyComment).find(filters, options as any);
     }
 
     /**

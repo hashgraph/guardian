@@ -17,6 +17,12 @@ export class PolicyComment extends BaseEntity {
     uuid?: string;
 
     /**
+     * Timestamp
+     */
+    @Property({ nullable: true })
+    timestamp?: number;
+
+    /**
      * Owner
      */
     @Property({
@@ -87,6 +93,12 @@ export class PolicyComment extends BaseEntity {
         index: true
     })
     senderRole?: string;
+
+    /**
+     * Sender (user name)
+     */
+    @Property({ nullable: true })
+    senderName?: string;
 
     /**
      * Target (user)

@@ -42,6 +42,7 @@ import { MathLiveComponent } from './mathlive/mathlive.component';
 import { MenuButton } from './menu-button/menu-button.component';
 import { CheckboxButton } from './checkbox-button/checkbox-button.component';
 import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
+import { PolicyComments } from './policy-comments/policy-comments.component';
 
 @NgModule({
     declarations: [
@@ -72,7 +73,8 @@ import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
         MathLiveComponent,
         MenuButton,
         CheckboxButton,
-        IPFSLinkComponent
+        IPFSLinkComponent,
+        PolicyComments
     ],
     imports: [
         CommonModule,
@@ -123,7 +125,8 @@ import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
         MathLiveComponent,
         MenuButton,
         CheckboxButton,
-        IPFSLinkComponent
+        IPFSLinkComponent,
+        PolicyComments
     ]
 })
 export class CommonComponentsModule {

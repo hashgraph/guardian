@@ -4406,20 +4406,6 @@ export class PolicyApi {
         example: Examples.DB_ID
     })
     @ApiQuery({
-        name: 'pageIndex',
-        type: Number,
-        description: 'The number of pages to skip before starting to collect the result set',
-        required: false,
-        example: 0
-    })
-    @ApiQuery({
-        name: 'pageSize',
-        type: Number,
-        description: 'The numbers of items to return',
-        required: false,
-        example: 20
-    })
-    @ApiQuery({
         name: 'anchor',
         type: String,
         description: '',
@@ -4447,6 +4433,20 @@ export class PolicyApi {
         required: false,
         example: false
     })
+    @ApiQuery({
+        name: 'lt',
+        type: String,
+        description: '',
+        required: false,
+        example: false
+    })
+    @ApiQuery({
+        name: 'gt',
+        type: String,
+        description: '',
+        required: false,
+        example: false
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -4464,21 +4464,21 @@ export class PolicyApi {
         @Response() res: any,
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
-        @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number,
-        @Param('anchor') anchor?: string,
-        @Param('sender') sender?: string,
-        @Param('senderRole') senderRole?: string,
-        @Param('private') privateMessages?: boolean,
+        @Query('anchor') anchor?: string,
+        @Query('sender') sender?: string,
+        @Query('senderRole') senderRole?: string,
+        @Query('private') privateMessages?: boolean,
+        @Query('lt') lt?: string,
+        @Query('gt') gt?: string,
     ): Promise<any> {
         try {
             const params = {
-                pageIndex,
-                pageSize,
                 anchor,
                 sender,
                 senderRole,
                 private: privateMessages,
+                lt,
+                gt
             };
             const engineService = new PolicyEngine();
             const { comments, count } = await engineService.getPolicyComments(user, policyId, documentId, params);

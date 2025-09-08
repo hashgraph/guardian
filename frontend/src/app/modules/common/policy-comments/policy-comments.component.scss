@@ -1,0 +1,268 @@
+.container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .messages-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+
+        .messages {
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            top: 0px;
+            bottom: 0px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column-reverse;
+            background: #F9FAFC;
+            padding: 24px;
+        }
+    }
+
+    .toolbar {
+        width: 100%;
+        border-top: 1px solid #E1E7EF;
+        padding-top: 8px;
+
+        .toolbar-textarea {
+            margin-bottom: 8px;
+        }
+
+        .toolbar-files {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+
+            .toolbar-file {
+                width: 180px;
+                height: 40px;
+                display: flex;
+                flex-direction: row;
+                border: 1px solid #E1E7EF;
+                background: #EFF3F7;
+                border-radius: 6px;
+                margin-right: 8px;
+                margin-bottom: 8px;
+
+                .toolbar-file-icon {
+                    height: 38px;
+                    width: 38px;
+                    min-width: 38px;
+                    padding: 7px;
+                }
+
+                .guardian-loading {
+                    position: relative !important;
+                    width: 38px !important;
+                    height: 38px !important;
+                    padding: 6px !important;
+                    background: transparent !important;
+
+                    .guardian-loading-image {
+                        width: 24px !important;
+                        height: 24px !important;
+                    }
+                }
+
+                .toolbar-file-metadata {
+                    width: 100%;
+                    max-width: 100px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+
+                    .file-name {
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        height: 38px;
+                        line-height: 38px;
+                    }
+                }
+
+                .toolbar-file-action {
+                    height: 38px;
+                    width: 38px;
+                    min-width: 38px;
+                    padding: 7px;
+                }
+            }
+        }
+
+        .toolbar-actions {
+            width: 100%;
+            height: 40px;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+
+            .left-actions {
+                width: 100%;
+                height: 40px;
+                margin-right: 16px;
+            }
+
+            .send-btn {
+                min-width: 100px;
+                width: 100px;
+                height: 38px;
+            }
+        }
+    }
+}
+
+.message {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+
+    &[owner="true"] {
+        align-items: flex-end;
+
+        .message-body {
+            background: #EFF3F7;
+        }
+    }
+
+    &[owner="false"] {
+        align-items: flex-start;
+
+        .message-body {
+            background: #FFFFFF;
+        }
+    }
+
+    .message-time {
+        font-family: Inter;
+        font-weight: 500;
+        font-style: Medium;
+        font-size: 12px;
+        line-height: 14px;
+        letter-spacing: 0%;
+        vertical-align: middle;
+        color: #6C7791;
+        margin-bottom: 4px;
+    }
+
+    .message-body {
+        padding: 16px;
+        border-radius: 8px;
+        max-width: 80%;
+        text-wrap: wrap;
+        word-break: break-all;
+        border: 1px solid #E1E7EF;
+
+        .message-header {
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 8px;
+
+            .message-name {
+                font-family: Inter;
+                font-weight: 700;
+                font-size: 14px;
+                vertical-align: middle;
+                color: #181818;
+                line-height: 24px;
+            }
+
+            .message-role {
+                border: 1px solid #6000C4;
+                background: #FFFFFF;
+                height: 24px;
+                border-radius: 4px;
+                padding-top: 4px;
+                padding-right: 8px;
+                padding-bottom: 4px;
+                padding-left: 8px;
+                margin-left: 8px;
+                font-family: Inter;
+                font-weight: 500;
+                font-size: 12px;
+                line-height: 16px;
+                vertical-align: middle;
+                color: #6000C4;
+            }
+        }
+
+        .message-text {
+            margin-bottom: 8px;
+        }
+
+        .message-files {
+            .message-file {
+                width: 100%;
+                height: 48px;
+                display: flex;
+                flex-direction: row;
+                padding-top: 3px;
+                margin-top: 8px;
+
+                .file-icon {
+                    width: 48px;
+                    height: 48px;
+                    min-width: 48px;
+                    min-height: 48px;
+                    margin-right: 16px;
+                    background: #E1E7EF;
+                    border: 1px solid #AAB7C4;
+                    border-radius: 4px;
+                    padding: 11px 11px;
+                }
+
+                .file-metadata {
+                    width: 100%;
+                    height: 48px;
+
+                    .file-name {
+                        width: 100%;
+                        height: 18px;
+                        font-family: Inter;
+                        font-weight: 700;
+                        font-size: 14px;
+                        line-height: 18px;
+                        vertical-align: middle;
+                        color: #181818;
+                        margin-bottom: 4px;
+                        position: relative;
+
+                        span {
+                            position: absolute;
+                            left: 0;
+                            right: 0;
+                            top: 0;
+                            bottom: 0;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+                    }
+
+                    .file-size {
+                        font-family: Roboto;
+                        font-weight: 400;
+                        font-size: 14px;
+                        line-height: 20px;
+                        vertical-align: middle;
+                        color: #6C7791;
+                    }
+                }
+            }
+        }
+    }
+}
+
+textarea {
+    resize: none;
+}
+
+.guardian-dropdown-label {
+    color: #848FA9;
+}

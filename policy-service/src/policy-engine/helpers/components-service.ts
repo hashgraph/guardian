@@ -1,6 +1,7 @@
 import {
     DatabaseServer,
     HederaDidDocument,
+    IAuthUser,
     PinoLogger,
     Policy as PolicyCollection,
     PolicyTool as PolicyToolCollection,
@@ -458,5 +459,13 @@ export class ComponentsService {
      */
     public debugError(tag: string, error: any): void {
         return;
+    }
+
+    /**
+     * Get Virtual User
+     * @param did
+     */
+    public getVirtualUser(did: string): Promise<IAuthUser> {
+        return this.databaseServer.getVirtualUser(did);
     }
 }

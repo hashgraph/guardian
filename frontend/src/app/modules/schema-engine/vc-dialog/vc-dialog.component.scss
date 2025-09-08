@@ -32,9 +32,19 @@
     }
 
     .view-dialog-content {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .comments-content {
+        min-width: 500px;
+    }
+
+    .document-content {
         max-height: calc(100vh - 415px);
         overflow-y: auto;
         padding-right: 8px;
+        width: 100%;
 
         .json {
             word-break: keep-all;
@@ -70,7 +80,7 @@
 }
 
 @media (max-width: 810px) {
-    .view-dialog-content {
+    .document-content {
         max-height: calc(100vh - 255px);
 
         .json {

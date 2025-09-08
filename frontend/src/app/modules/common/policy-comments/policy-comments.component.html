@@ -1,0 +1,126 @@
+<div class="container">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+    <div class="messages-container">
+        <div *ngIf="!data.data.length" class="messages">
+            
+        </div>
+        <div *ngIf="data.data.length" class="messages">
+            <div *ngFor="let item of data.data" class="message" [attr.owner]="item.isOwner">
+                <div class="message-time">
+                    {{getDate(item.timestamp)}}
+                </div>
+                <div class="message-body">
+                    <div class="message-header">
+                        <div class="message-name">
+                            {{item.senderName}}
+                        </div>
+                        <div *ngIf="item.senderRole" class="message-role">
+                            {{item.senderRole}}
+                        </div>
+                    </div>
+                    <div *ngIf="item.document.text" class="message-text">
+                        {{item.document.text}}
+                    </div>
+                    <div *ngIf="item.document.files?.length" class="message-files">
+                        <div *ngFor="let file of item.document.files" class="message-file">
+                            <div class="file-icon">
+                                <svg-icon src="/assets/images/icons/file.svg" svgClass="icon-color-close"></svg-icon>
+                            </div>
+                            <div class="file-metadata">
+                                <div class="file-name">
+                                    <span>{{file.name}}</span>
+                                </div>
+                                <div class="file-size">{{getSize(file.size)}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button
+                *ngIf="!data.full"
+                (click)="onMore()"
+                class="guardian-button guardian-button-secondery"
+                style="min-height: 30px; margin-bottom: 16px;"
+            >
+                <div class="guardian-button-label">More</div>
+            </button> 
+        </div>
+    </div>
+    <div class="toolbar">
+        <div class="guardian-textarea-container toolbar-textarea">
+            <textarea 
+                [(ngModel)]="textMessage" 
+                pTextarea rows="4" 
+                (input)="onText()"
+                (drop)="onDrop($event)"
+            ></textarea>
+        </div>
+        <div *ngIf="files.length" class="toolbar-files">
+            <div *ngFor="let file of files" class="toolbar-file">
+                <div *ngIf="file.loaded" class="toolbar-file-icon">
+                    <svg-icon src="/assets/images/icons/file.svg" svgClass="icon-color-close"></svg-icon>
+                </div>
+                <div *ngIf="!file.loaded" class="toolbar-file-loading guardian-loading">
+                    <div class="guardian-loading-image"></div>
+                </div>
+                <div class="toolbar-file-metadata">
+                    <div class="file-name">{{file.name}}</div>
+                    <!-- <div>{{file.loaded}}</div> -->
+                </div>
+                <div class="toolbar-file-action" (click)="onDeleteFile(file)">
+                    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                </div>
+            </div>
+        </div>
+        <div class="toolbar-actions">
+            <div class="left-actions">
+                <p-dropdown
+                    [(ngModel)]="currentVisibility"
+                    [options]="visibility"
+                    (onChange)="onChangeVisibility($event)"
+                    [showClear]="false"
+                    appendTo="body"
+                    [group]="true"
+                    class="guardian-dropdown"
+                    placeholder="Select visibility"
+                    panelStyleClass="guardian-dropdown-panel"
+                    optionLabel="label"
+                    optionValue="value">
+                    <ng-template pTemplate="selectedItem">
+                        <div class="guardian-dropdown-selected">
+                            <span class="guardian-dropdown-label">Visible for</span>
+                            <span class="guardian-dropdown-item">{{ currentVisibility }}</span>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
+                <!-- <button
+                    (click)="onSend()"
+                    class="guardian-button guardian-button-primary send-btn">
+                    <div class="guardian-button-icon">
+                        <svg-icon
+                            class="icon-btn"
+                            src="/assets/images/icons/add.svg"
+                            svgClass="icon-color-secondary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Send</div>
+                </button>  -->
+            </div>
+            <button
+                (click)="onSend()"
+                class="guardian-button guardian-button-primary send-btn"
+                [disabled]="sendDisabled">
+                <div class="guardian-button-icon">
+                    <svg-icon
+                        class="icon-btn"
+                        src="/assets/images/icons/add.svg"
+                        [svgClass]="sendDisabled ? 'icon-color-disabled' : 'icon-color-secondary'">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Send</div>
+            </button> 
+        </div>
+    </div>
+</div>

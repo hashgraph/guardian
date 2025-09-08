@@ -47,48 +47,56 @@
             </div>
         </div>
         <div class="view-dialog-content">
-            <ng-container *ngIf="viewDocument === true">
-                <app-document-view 
-                    [policyId]="policyId"
-                    [documentId]="documentId"
-                    [schemaId]="schemaId"
-                    [document]="document" 
-                    [dryRun]="dryRun" 
-                    [getByUser]="getByUser" 
-                    [schema]="schema"
-                    [type]="type"></app-document-view>
-            </ng-container>
-            <ng-container *ngIf="viewDocument === false">
-                <ng-container *ngIf="fileSize <= 1; else fileIsTooBigTemplate">
-                    <div *ngIf="type !== 'TEXT'" class="json">
-                        {{ json }}
-                    </div>
-                    <div *ngIf="type === 'TEXT'" class="text">
-                        {{ text }}
-                    </div>
+            <div class="document-content">
+                <ng-container *ngIf="viewDocument === true">
+                    <app-document-view 
+                        [policyId]="policyId"
+                        [documentId]="documentId"
+                        [schemaId]="schemaId"
+                        [document]="document" 
+                        [dryRun]="dryRun" 
+                        [getByUser]="getByUser" 
+                        [schema]="schema"
+                        [type]="type"></app-document-view>
                 </ng-container>
-                <ng-template #fileIsTooBigTemplate>
-                    <b class="form-label">This file is too large to view. ({{ fileSize }} MB)</b>
-                    <p class="form-label ">File exceeds in-browser preview limits. To view it, please download the file and open it locally.</p>
-                </ng-template>
-            </ng-container>
-            <ng-container *ngIf="additionalOptionsData">
-                <ng-container *ngFor="let option of additionalOptionsData">
-                    <ng-container *ngIf="option.optionValue === viewDocument">
-                        <div *ngIf="option.type === IntegrationDataTypes.JSON || option.type === IntegrationDataTypes.CSV" class="json">
-                            {{ option.data }}
+                <ng-container *ngIf="viewDocument === false">
+                    <ng-container *ngIf="fileSize <= 1; else fileIsTooBigTemplate">
+                        <div *ngIf="type !== 'TEXT'" class="json">
+                            {{ json }}
                         </div>
-
-                        <ng-container *ngIf="option.type === IntegrationDataTypes.GEOTIFF || option.type === IntegrationDataTypes.GEOJSON">
-                            <app-geo-image [data]="option.data" />
-                        </ng-container>
-
-                        <div *ngIf="option.type === IntegrationDataTypes.TEXT" class="text">
-                            {{ option.data }}
+                        <div *ngIf="type === 'TEXT'" class="text">
+                            {{ text }}
                         </div>
                     </ng-container>
+                    <ng-template #fileIsTooBigTemplate>
+                        <b class="form-label">This file is too large to view. ({{ fileSize }} MB)</b>
+                        <p class="form-label ">File exceeds in-browser preview limits. To view it, please download the file and open it locally.</p>
+                    </ng-template>
                 </ng-container>
-            </ng-container>
+                <ng-container *ngIf="additionalOptionsData">
+                    <ng-container *ngFor="let option of additionalOptionsData">
+                        <ng-container *ngIf="option.optionValue === viewDocument">
+                            <div *ngIf="option.type === IntegrationDataTypes.JSON || option.type === IntegrationDataTypes.CSV" class="json">
+                                {{ option.data }}
+                            </div>
+
+                            <ng-container *ngIf="option.type === IntegrationDataTypes.GEOTIFF || option.type === IntegrationDataTypes.GEOJSON">
+                                <app-geo-image [data]="option.data" />
+                            </ng-container>
+
+                            <div *ngIf="option.type === IntegrationDataTypes.TEXT" class="text">
+                                {{ option.data }}
+                            </div>
+                        </ng-container>
+                    </ng-container>
+                </ng-container>
+            </div>
+            <div class="comments-content">
+                <policy-comments
+                    [policy-id]="policyId"
+                    [document-id]="id"
+                ></policy-comments>
+            </div>
         </div>
     </div>
 </div>
