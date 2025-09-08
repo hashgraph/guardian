@@ -65,9 +65,12 @@ export class FieldForm {
     private readonly conditionFields: Set<string>;
     private readonly destroy$: Subject<boolean>;
 
-    constructor(form: UntypedFormGroup, lvl: number = 0) {
+    private readonly isDryRun?: boolean;
+
+    constructor(form: UntypedFormGroup, lvl: number = 0, isDryRun = false) {
         this.form = form;
         this.lvl = lvl;
+        this.isDryRun = isDryRun;
         this.privateFields = {};
         this.conditionFields = new Set<string>();
         this.destroy$ = new Subject<boolean>();
@@ -317,7 +320,7 @@ export class FieldForm {
             form.build();
             return form;
         } else {
-            const form = new FieldForm(control, this.lvl + 1);
+            const form = new FieldForm(control, this.lvl + 1, this.isDryRun);
             form.setData({
                 fields,
                 conditions,
@@ -378,17 +381,20 @@ export class FieldForm {
 
         if (item.required) {
             validators.push(Validators.required);
-            validators.push(({ value }: any) => {
-                const errors = this.validateMaybeIpfs(`${value}`, this.isIPFS(item.pattern));
-                if (errors) {
-                    return {
-                        [item.id]: errors,
-                    }
-                }
-
-                return null;
-            })
         }
+
+        // dryRun
+        validators.push(({ value }: any) => {
+            const errors = this.validateMaybeIpfs(`${value}`, this.isIPFS(item.pattern));
+
+            if (errors) {
+                return {
+                    [item.id]: errors,
+                }
+            }
+
+            return null;
+        })
 
         if (item.pattern) {
             validators.push(Validators.pattern(new RegExp(item.pattern)));
@@ -446,7 +452,7 @@ export class FieldForm {
             return 'Invalid IPFS link: CID not found';
         }
 
-        if (!this.isLikelyCid(cid)) {
+        if (!this.isDryRun && !this.isLikelyCid(cid)) {
             return 'Invalid IPFS CID/URL';
         }
 

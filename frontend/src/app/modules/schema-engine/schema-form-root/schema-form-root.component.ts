@@ -93,7 +93,7 @@ export class SchemaFormRootComponent implements OnInit {
             this.model = null;
         }
         this.group = this.fb.group({});
-        this.model = new FieldForm(this.group);
+        this.model = new FieldForm(this.group, 0, this.dryRun);
         this.model.setData({
             preset: this.presetDocument,
             privateFields: this.hide,
