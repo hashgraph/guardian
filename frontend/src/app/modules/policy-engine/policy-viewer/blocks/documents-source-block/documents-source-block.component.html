@@ -1,7 +1,7 @@
 <div class="content" [hidden]="!isActive" [attr.readonly-block]="readonly">
     <div *ngIf="addons && addons.length" class="grid-filters">
         <div *ngFor="let block of addons" class="grid-filter">
-            <render-block [block]="block" [policyId]="policyId" [dryRun]="dryRun"></render-block>
+            <render-block [block]="block" [policyId]="policyId" [dryRun]="dryRun" [savepointIds]="savepointIds"></render-block>
         </div>
     </div>
     <div *ngIf="fields && documents" style="background: var(--grey-grey-1, #F9FAFC);">
@@ -79,7 +79,7 @@
                                         </span>
                                         <span *ngIf="option.type == 'button'" class="col-btn"
                                               (click)="$event.stopImmediatePropagation()">
-                                            <div 
+                                            <div
                                                 (click)="onButton($event, element, option)"
                                                 class="btn-field {{ option.uiClass }}">
                                                 {{ getText(element, option) }}
@@ -92,6 +92,7 @@
                                                 [dryRun]="dryRun"
                                                 [policyId]="policyId"
                                                 [static]="getConfig(element, option, option._block)"
+                                                [savepointIds]="savepointIds"
                                             >
                                             </render-block>
                                         </div>
@@ -103,6 +104,7 @@
                                                 [dryRun]="dryRun"
                                                 [policyId]="policyId"
                                                 [static]="getConfig(element, option, block)"
+                                                [savepointIds]="savepointIds"
                                             >
                                             </render-block>
                                         </div>
@@ -128,13 +130,13 @@
 
         </div>
         <div *ngIf="paginationAddon" class="pagination">
-            <render-block [block]="paginationAddon" [policyId]="policyId" [dryRun]="dryRun"></render-block>
+            <render-block [block]="paginationAddon" [policyId]="policyId" [dryRun]="dryRun" [savepointIds]="savepointIds"></render-block>
         </div>
     </div>
 
     <div *ngIf="children" class="grid-children">
         <div *ngFor="let child of children" class="grid-child">
-            <render-block [block]="child" [policyId]="policyId" [dryRun]="dryRun"></render-block>
+            <render-block [block]="child" [policyId]="policyId" [dryRun]="dryRun" [savepointIds]="savepointIds"></render-block>
         </div>
     </div>
 </div>

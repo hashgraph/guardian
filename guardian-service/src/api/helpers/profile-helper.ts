@@ -202,7 +202,6 @@ export async function createSystemSchemas({
         await checkAndPublishSchema({
             entity: SchemaEntity.STANDARD_REGISTRY,
             topicId,
-            userDID,
             parent,
             messageServer,
             logger,
@@ -212,7 +211,6 @@ export async function createSystemSchemas({
         await checkAndPublishSchema({
             entity: SchemaEntity.USER,
             topicId,
-            userDID,
             parent,
             messageServer,
             logger,
@@ -222,7 +220,6 @@ export async function createSystemSchemas({
         await checkAndPublishSchema({
             entity: SchemaEntity.RETIRE_TOKEN,
             topicId,
-            userDID,
             parent,
             messageServer,
             logger,
@@ -232,7 +229,6 @@ export async function createSystemSchemas({
         await checkAndPublishSchema({
             entity: SchemaEntity.ROLE,
             topicId,
-            userDID,
             parent,
             messageServer,
             logger,
@@ -242,7 +238,6 @@ export async function createSystemSchemas({
         await checkAndPublishSchema({
             entity: SchemaEntity.USER_PERMISSIONS,
             topicId,
-            userDID,
             parent,
             messageServer,
             logger,
@@ -994,7 +989,6 @@ export async function validateVc(json: string | any): Promise<VcDocumentDefiniti
 export async function checkAndPublishSchema({
     entity,
     topicId,
-    userDID,
     parent,
     messageServer,
     logger,
@@ -1003,7 +997,6 @@ export async function checkAndPublishSchema({
 }: {
     entity: SchemaEntity,
     topicId: string,
-    userDID: string,
     parent: IOwner,
     messageServer: MessageServer,
     logger: PinoLogger,
@@ -1025,13 +1018,10 @@ export async function checkAndPublishSchema({
         });
         if (schema) {
             logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE'], logId);
-            schema.creator = userDID;
-            schema.owner = userDID;
             const item = await publishSystemSchema(
                 schema,
                 parent,
                 messageServer,
-                MessageAction.PublishSystemSchema,
                 notifier
             );
             await dataBaseServer.save(SchemaCollection, item);

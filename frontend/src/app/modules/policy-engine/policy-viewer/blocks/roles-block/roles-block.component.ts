@@ -18,6 +18,7 @@ export class RolesBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('savepointIds') savepointIds?: string[] | null = null;
 
     isActive = false;
     loading: boolean = true;
@@ -91,7 +92,7 @@ export class RolesBlockComponent implements OnInit {
         } else {
             this.loading = true;
             this.policyEngineService
-                .getBlockData(this.id, this.policyId)
+                .getBlockData(this.id, this.policyId, this.savepointIds)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }

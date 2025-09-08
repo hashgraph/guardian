@@ -150,6 +150,7 @@
             "roles": "Roles",
             "dids": "Decentralized Identifiers",
             "schemas": "Schemas",
+            "schemaPackages": "Schema Packages",
             "tokens": "Tokens",
             "contracts": "Contracts",
             "users": "Users",
@@ -321,6 +322,7 @@
                 "description": "Description",
                 "owner": "Owner",
                 "version": "Version",
+                "schemas": "Schemas",
                 "policy": "Policy"
             }
         },
@@ -409,6 +411,8 @@
         "document_not_loaded_header": "The document has not loaded yet.",
         "documents_not_loaded_header": "The documents have not loaded yet.",
         "document_not_loaded_message": "The file is stored in the local repository, and if the repository is closed, upload will not be possible.",
-        "documents_not_loaded_message": "The files are stored in the local repository, and if the repository is closed, upload will not be possible."
+        "documents_not_loaded_message": "The files are stored in the local repository, and if the repository is closed, upload will not be possible.",
+        "schemas_not_unpacked": "The schemas has not unpacked yet.",
+        "try_unpacked": "Unpack"
     }
 }

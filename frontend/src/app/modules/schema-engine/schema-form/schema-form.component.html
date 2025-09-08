@@ -409,6 +409,7 @@
                                         <app-geojson-type
                                             *ngSwitchCase="'geo'"
                                             [form-model]="item.model"
+                                            [available-options]="item.availableOptions"
                                             [disabled]="item.control?.disabled">
                                         </app-geojson-type>
                                         <app-sentinel-hub-type
@@ -517,6 +518,7 @@
                                                         <app-geojson-type
                                                             *ngSwitchCase="'geo'"
                                                             [form-model]="listItem.model"
+                                                            [available-options]="item.availableOptions"
                                                             [disabled]="item.control?.disabled">
                                                         </app-geojson-type>
                                                         <app-sentinel-hub-type

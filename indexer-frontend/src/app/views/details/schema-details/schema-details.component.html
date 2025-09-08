@@ -1,12 +1,16 @@
 <div class="page-content">
     <div class="content">
         <div class="header">
-            <h1>{{ 'details.schema.header' | transloco }} {{id}}</h1>
+            @if (itemNumber) {
+                <h1>{{ 'details.schema.header' | transloco }} {{title}} <span>#{{itemNumber}}</span></h1>
+            } @else {
+                <h1>{{ 'details.schema.header' | transloco }} {{title}}</h1>
+            }
         </div>
         @if (loading) {
-        <div class="loading">
-            <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
-        </div>
+            <div class="loading">
+                <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
+            </div>
         } @else {
         @if (row) {
         <p-tabView [activeIndex]="tabIndex" (activeIndexChange)="onTab($event)">
