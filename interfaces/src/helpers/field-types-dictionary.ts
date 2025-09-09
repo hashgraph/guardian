@@ -135,12 +135,12 @@ export class FieldTypesDictionary {
             customType: 'sentinel'
         },
         {
-            name: 'CSV Table',
+            name: 'Table',
             type: 'string',
             format: undefined,
             pattern: undefined,
             isRef: false,
-            customType: 'csv-table'
+            customType: 'table'
         },
     ];
 

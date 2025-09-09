@@ -47,8 +47,7 @@ import { FormulasModule } from '../formulas/formulas.module';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.component';
 import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-dialog.component';
-import {CsvTableModalComponent} from './csv-table-modal/csv-table-modal.component';
-import {CsvTableComponent} from './csv-table/csv-table.component';
+import {TableFieldComponent} from './table-field/table-field.component';
 
 @NgModule({
     declarations: [
@@ -75,8 +74,7 @@ import {CsvTableComponent} from './csv-table/csv-table.component';
         SchemaFormDialog,
         DateTimeComponent,
         SchemaFormRootComponent,
-        CsvTableComponent,
-        CsvTableModalComponent
+        TableFieldComponent
     ],
     imports: [
         CommonModule,
@@ -100,7 +98,6 @@ import {CsvTableComponent} from './csv-table/csv-table.component';
         FormulasModule,
         AngularSvgIconModule.forRoot(),
         DynamicDialogModule,
-        AgGridModule
     ],
     exports: [
         SchemaDialog,
@@ -115,8 +112,7 @@ import {CsvTableComponent} from './csv-table/csv-table.component';
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
         SchemaFormDialog,
-        SchemaFormRootComponent,
-        CsvTableComponent
+        SchemaFormRootComponent
     ],
     providers: [
         DialogService

@@ -45,12 +45,12 @@
                 >
                     <div *ngIf="isPrefix(item)" class="form-field-prefix">{{ item.unit }}</div>
 
-                    <div *ngIf="item.customType === 'csv-table'" class="form-field-input">
-                        <csv-table
+                    <ng-container *ngIf="item.customType === 'table-field'" class="table-field-container">
+                        <table-field
                                 [item]="item"
-                                [readonly]="item.control?.disabled">
-                        </csv-table>
-                    </div>
+                                [readonly]="readonly?.[item.fullPath]"
+                        ></table-field>
+                    </ng-container>
 
                     <div
                         *ngIf="isInput(item)"
