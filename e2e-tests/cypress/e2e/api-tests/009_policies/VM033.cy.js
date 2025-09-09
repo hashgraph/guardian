@@ -79,7 +79,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.PolicisImportMsg,
-                body: { messageId: "1755251578.897435000" }, //iRec2
+                body: { messageId: "1755735271.024933000" }, //VM0033
                 headers: {
                     authorization,
                 },
@@ -197,29 +197,6 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                     }
                 }
                 Checks.whileRequestProccessing(waitCreateProjectButton, "New project", "uiMetaData.content")
-                cy.fixture("ABC-Mangrove-Payload-17-07.json").then((payload) => {
-                    cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectBtn,
-                        headers: {
-                            authorization
-                        },
-                        body: {
-                            document: payload.document,
-                            ref: null
-                        },
-                        timeout: 600000
-                    }).then(() => {
-                        const waitProjectAddStatus = {
-                            method: METHOD.GET,
-                            url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectGridPP2,
-                            headers: {
-                                authorization
-                            }
-                        }
-                        Checks.whileRequestProccessing(waitProjectAddStatus, "Waiting to be Added", "data.0.option.status")
-                    })
-                })
             })
         })
     })
@@ -270,7 +247,36 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         })
     })
 
-    it("Approve VVB and add project", () => {
+    it("Create application", () => {
+        //Choose role
+        Authorization.getAccessToken(PPUser).then((authorization) => {
+            cy.fixture("payload.json").then((payload) => {
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectBtn,
+                    headers: {
+                        authorization
+                    },
+                    body: {
+                        document: payload.document,
+                        ref: null
+                    },
+                    timeout: 600000
+                }).then(() => {
+                    const waitProjectAddStatus = {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectGridPP2,
+                        headers: {
+                            authorization
+                        }
+                    }
+                    Checks.whileRequestProccessing(waitProjectAddStatus, "Waiting to be Added", "data.0.option.status")
+                })
+            })
+        })
+    })
+
+    it("Approve VVB", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -303,7 +309,9 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 })
             })
         })
+    })
 
+    it("Add project", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -338,7 +346,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         })
     })
 
-    it("Assign VVB", () => {
+    it("Assign project", () => {
         Authorization.getAccessToken(PPUser).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -361,7 +369,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         })
     })
 
-    it("Project approve", () => {
+    it("Approve project", () => {
         Authorization.getAccessToken(VVBUser).then((authorization) => {
             const waitProjectValidateStatus = {
                 method: METHOD.GET,
@@ -413,7 +421,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 }
             }).then((response) => {
                 let projectDataRef = response.body.data[0];
-                cy.fixture("ABC-Mangrove-Payload-17-07.json").then((payload) => {
+                cy.fixture("payload.json").then((payload) => {
                     cy.request({
                         method: METHOD.POST,
                         url: API.ApiServer + API.Policies + policyId + "/" + API.AddReportBtn,
@@ -440,8 +448,40 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         })
     })
 
+    it("Assign report", () => {
+        Authorization.getAccessToken(PPUser).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridPP,
+                headers: {
+                    authorization
+                }
+            }).then((response) => {
+                let reportAssignData = response.body.data[0];
+                reportAssignData.assignedTo = VVBDid;
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.AssignVVBMR,
+                    headers: {
+                        authorization
+                    },
+                    body: reportAssignData,
+                    timeout: 60000
+                })
+            })
+        })
+    })
+
     it("Verify report", () => {
         Authorization.getAccessToken(VVBUser).then((authorization) => {
+            const waitProjectValidateStatus = {
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridVVB,
+                headers: {
+                    authorization
+                }
+            }
+            Checks.whileRequestProccessing(waitProjectValidateStatus, "Waiting for Verification", "data.0.option.status")
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridVVB,
@@ -450,7 +490,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 }
             }).then((response) => {
                 let reportVerifyData = response.body.data[0];
-                reportVerifyData.option.status = "Verified"
+                reportVerifyData.option.status = "Verified";
                 cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveReportBtn,
@@ -463,58 +503,142 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                     },
                     timeout: 60000
                 }).then(() => {
-                    const waitReportCreating = {
+                    const waitReportIsVerifying = {
                         method: METHOD.GET,
                         url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridVVB,
                         headers: {
                             authorization
                         }
                     }
-                    Checks.whileRequestProccessing(waitReportCreating, "Verified", "data.0.option.status")
+                    Checks.whileRequestProccessing(waitReportIsVerifying, "Verified", "data.0.option.status")
                 })
             })
         })
     })
 
-    it("Approve report", () => {
+    it("Create validation report", () => {
+        Authorization.getAccessToken(VVBUser).then((authorization) => {
+            cy.fixture("valrep.json").then((payload) => {
+                cy.request({
+                    method: METHOD.GET,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.ProjGridVVB2,
+                    headers: {
+                        authorization
+                    }
+                }).then((response) => {
+                    let referenceValidationReport = response.body.data[0];
+                    referenceValidationReport.option.status = "Verified";
+                    cy.request({
+                        method: METHOD.POST,
+                        url: API.ApiServer + API.Policies + policyId + "/" + API.AddValidationReport,
+                        headers: {
+                            authorization
+                        },
+                        body: {
+                            document: payload,
+                            ref: referenceValidationReport
+                        },
+                        timeout: 60000
+                    })
+                })
+            })
+        })
+    })
+
+    it("Approve validation report", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            const waitReportCreating = {
+            const waitValidationReportIsCreating = {
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridVerra,
+                url: API.ApiServer + API.Policies + policyId + "/" + API.ValidationReportsVerra,
                 headers: {
                     authorization
                 }
             }
-            Checks.whileRequestProccessing(waitReportCreating, "save_reassign_report", "data.0.tag")
+            Checks.whileRequestProccessing(waitValidationReportIsCreating, "Submitted", "data.0.option.status")
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridVerra,
+                url: API.ApiServer + API.Policies + policyId + "/" + API.ValidationReportsVerra,
                 headers: {
                     authorization
                 }
             }).then((response) => {
-                let reportApproveData = response.body.data[0];
-                reportApproveData.option.status = "Minting"
+                let reportVerifyData = response.body.data[0];
+                reportVerifyData.option.status = "APPROVED";
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.MintTokenVerra,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveValidationReportBtn,
                     headers: {
                         authorization
                     },
                     body: {
-                        document: reportApproveData,
-                        tag: "Option_0"
+                        document: reportVerifyData,
+                        tag: "Approve_Button_Validation"
                     },
                     timeout: 60000
-                }).then(() => {
-                    const waitReportCreating = {
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridVerra,
+                })
+            })
+        })
+    })
+
+    it("Create verification report", () => {
+        Authorization.getAccessToken(VVBUser).then((authorization) => {
+            cy.fixture("verrep.json").then((payload) => {
+                cy.request({
+                    method: METHOD.GET,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridVVB,
+                    headers: {
+                        authorization
+                    }
+                }).then((response) => {
+                    let referenceValidationReport = response.body.data[0];
+                    referenceValidationReport.option.status = "Verified";
+                    cy.request({
+                        method: METHOD.POST,
+                        url: API.ApiServer + API.Policies + policyId + "/" + API.AddVerificationReport,
                         headers: {
                             authorization
-                        }
-                    }
-                    Checks.whileRequestProccessing(waitReportCreating, "Minted", "data.0.option.status")
+                        },
+                        body: {
+                            document: payload,
+                            ref: referenceValidationReport
+                        },
+                        timeout: 60000
+                    })
+                })
+            })
+        })
+    })
+
+    it("Approve verification report", () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            const waitValidationReportIsCreating = {
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies + policyId + "/" + API.VerificationReportsVerra,
+                headers: {
+                    authorization
+                }
+            }
+            Checks.whileRequestProccessing(waitValidationReportIsCreating, "Submitted", "data.0.option.status")
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies + policyId + "/" + API.VerificationReportsVerra,
+                headers: {
+                    authorization
+                }
+            }).then((response) => {
+                let reportVerifyData = response.body.data[0];
+                reportVerifyData.option.status = "APPROVED";
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveValidationReportBtn,
+                    headers: {
+                        authorization
+                    },
+                    body: {
+                        document: reportVerifyData,
+                        tag: "Approve_Button_Validation"
+                    },
+                    timeout: 60000
                 })
             })
         })

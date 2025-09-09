@@ -139,8 +139,14 @@ const API = {
     ReportGridVVB: "tag/report_grid_vvb/blocks",
     ApproveReportBtn: "tag/approve_report_btn/blocks",
     ReportGridVerra: "tag/report_grid_verra/blocks",
+    AssignVVBMR: "tag/assign_vvb_mr/blocks",
     MintTokenVerra: "tag/mint_token_verra/blocks",
     Categories: "methodologies/categories/",
+    AddValidationReport: "tag/add_new_validation_report/blocks",
+    AddVerificationReport: "tag/add_verification_report/blocks",
+    ValidationReportsVerra: "tag/validation_reports_verra/blocks",
+    VerificationReportsVerra: "tag/verification_reports_verra/blocks",
+    ApproveValidationReportBtn: "tag/approve_validation_report_btn/blocks",
 
     //Records
     Record: "record/",
@@ -259,6 +265,7 @@ const API = {
     //MGS
     //Tenants
     TenantsUser: "tenants/user",
+    TenantsDelete: "tenants/delete",
     TenantsInvite: "tenants/invite",
     TermsAgree: "accounts/terms/agree"
     
