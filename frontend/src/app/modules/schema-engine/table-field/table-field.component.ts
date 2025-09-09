@@ -1,9 +1,16 @@
-import { Component, Input } from '@angular/core';
+import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
 import { IFieldControl } from '../schema-form-model/field-form';
 import { CsvService } from '../../../services/csv.service';
 import {TableDialogComponent} from '../../common/table-dialog/table-dialog.component';
+
+type TableValue = {
+    type: string;
+    columnKeys: string[];
+    rows: Record<string, string>[];
+    fileId?: string;
+};
 
 @Component({
     selector: 'table-field',
@@ -11,23 +18,58 @@ import {TableDialogComponent} from '../../common/table-dialog/table-dialog.compo
     styleUrls: ['./table-field.component.scss'],
     providers: [DialogService],
 })
-export class TableFieldComponent {
+export class TableFieldComponent implements OnInit, OnChanges {
     @Input() item!: IFieldControl<any>;
     @Input() readonly: boolean = false;
-
-    rowData: Record<string, string>[] = [];
-    columnDefs: ColDef[] = [];
-
-    private fileId: string | null = null;
 
     constructor(
         private dialog: DialogService,
         private csvService: CsvService
     ) {}
 
-    // ngOnInit(): void {
-    //     console.log('init')
-    // }
+    private getDefaultTable(): TableValue {
+        return { type: 'table', columnKeys: [], rows: [] };
+    }
+
+    private readTable(): TableValue {
+        const rawValue = this.item?.control?.value;
+        if (typeof rawValue === 'string' && rawValue) {
+            try {
+                return JSON.parse(rawValue);
+            } catch {
+                return this.getDefaultTable();
+            }
+        }
+        return this.getDefaultTable();
+    }
+
+    private writeTable(next: Partial<TableValue>): void {
+        const current = this.readTable();
+        const merged: TableValue = {
+            type: 'table',
+            columnKeys: next.columnKeys ?? current.columnKeys,
+            rows: next.rows ?? current.rows,
+            fileId: next.fileId ?? current.fileId,
+        };
+
+        this.item?.control?.patchValue(JSON.stringify(merged), { emitEvent: true });
+        this.item?.control?.markAsDirty();
+    }
+
+    get columnDefs(): ColDef[] {
+        const table = this.readTable();
+        return table.columnKeys.map((key, index) => ({
+            field: key,
+            headerName: this.buildColumnHeader(index),
+            editable: !this.readonly,
+            minWidth: 100,
+            resizable: true,
+        }));
+    }
+
+    get rowData(): Record<string, string>[] {
+        return this.readTable().rows;
+    }
 
     get options(): any {
         try {
@@ -37,18 +79,12 @@ export class TableFieldComponent {
         }
     }
 
-    onFileChange(event: Event): void {
-        const input = event.target as HTMLInputElement | null;
-        const file = input?.files && input.files.length > 0 ? input.files[0] : undefined;
-
-        if (!file) {
-            return;
-        }
-
-        file.text().then((csvText: string) => {
-            this.applyCsvText(csvText);
-        });
+    ngOnInit(): void {
+        const tableValue = this.readTable();
+        this.item?.control?.patchValue(JSON.stringify(tableValue), { emitEvent: false });
     }
+
+    ngOnChanges(_changes: SimpleChanges): void {}
 
     openModal(): void {
         const ref = this.dialog.open(TableDialogComponent, {
@@ -65,29 +101,27 @@ export class TableFieldComponent {
                 return;
             }
 
-            this.columnDefs = result.columnDefs || this.columnDefs;
-            this.rowData = result.rowData || this.rowData;
+            const columnKeys: string[] =
+                (result.columnDefs || this.columnDefs)
+                    .map((d: ColDef) => String(d.field || '').trim())
+                    .filter(Boolean);
+
+            const rowData: Record<string, string>[] = result.rowData || this.rowData;
+
+            this.writeTable({ columnKeys, rows: rowData });
         });
     }
 
-    toCsvBlob(): Blob {
-        const columnKeys: string[] = (this.columnDefs || []).map((def: ColDef) => def.field as string);
+    onFileChange(event: Event): void {
+        const input = event.target as HTMLInputElement | null;
+        const file = input?.files?.[0];
+        if (!file) {
+            return;
+        }
 
-        const csvText: string = this.csvService.buildCsvFromTable(
-            columnKeys,
-            this.rowData,
-            this.options.delimiter || ','
-        );
-
-        return new Blob([csvText], { type: 'text/csv;charset=utf-8' });
-    }
-
-    getFileId(): string | null {
-        return this.fileId;
-    }
-
-    setFileId(id?: string | null): void {
-        this.fileId = id ?? null;
+        file.text().then((csvText: string) => {
+            this.applyCsvText(csvText);
+        });
     }
 
     private applyCsvText(csvText: string): void {
@@ -95,18 +129,7 @@ export class TableFieldComponent {
             csvText,
             this.options.delimiter || ','
         );
-
-        this.columnDefs = columnKeys.map((key: string, index: number) => {
-            return {
-                field: key,
-                headerName: this.buildColumnHeader(index),
-                editable: !this.readonly,
-                minWidth: 100,
-                resizable: true,
-            } as ColDef;
-        });
-
-        this.rowData = rows;
+        this.writeTable({ columnKeys, rows });
     }
 
     private buildColumnHeader(index: number): string {
@@ -116,7 +139,6 @@ export class TableFieldComponent {
         for (;;) {
             label = String.fromCharCode((numberIndex % 26) + 65) + label;
             numberIndex = Math.floor(numberIndex / 26) - 1;
-
             if (numberIndex < 0) {
                 break;
             }

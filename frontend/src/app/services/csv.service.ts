@@ -6,6 +6,12 @@ export interface TableData {
     rows: Record<string, string>[];
 }
 
+export interface CsvBuildOptions {
+    delimiter?: string;
+    bom?: boolean;
+    mime?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CsvService {
     parseCsvToTable(csvText: string, delimiter: string = ','): TableData {
@@ -62,5 +68,27 @@ export class CsvService {
             header: false,
             columns: columnKeys as any,
         });
+    }
+
+    toCsvBlob(
+        columnKeys: string[],
+        rows: Record<string, unknown>[],
+        opts: CsvBuildOptions = {}
+    ): Blob {
+        const delimiter = opts.delimiter ?? ',';
+        const mime = opts.mime ?? 'text/csv;charset=utf-8';
+        const csv = this.buildCsvFromTable(columnKeys, rows, delimiter);
+        const payload = opts.bom ? ['\uFEFF', csv] : [csv];
+        return new Blob(payload, { type: mime });
+    }
+
+    toCsvFile(
+        columnKeys: string[],
+        rows: Record<string, unknown>[],
+        filename: string = 'table.csv',
+        opts: CsvBuildOptions = {}
+    ): File {
+        const blob = this.toCsvBlob(columnKeys, rows, opts);
+        return new File([blob], filename, { type: blob.type });
     }
 }
