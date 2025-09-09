@@ -12,8 +12,6 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
     const tenantName = "testTenantFromOS";
 
     let policyId, remoteMessageId, tokenId, tenantId;
-    remoteMessageId = "1757056541.469374591"
-    policyId = "68ba8de170d44e59de9c206a"
 
     it("Get tenant id", () => {
         Authorization.getAccessTokenMGS(MGSAdminUsername, null).then((authorization) => {
