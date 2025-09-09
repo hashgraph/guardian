@@ -65,12 +65,12 @@ export class FieldForm {
     private readonly conditionFields: Set<string>;
     private readonly destroy$: Subject<boolean>;
 
-    private readonly isDryRun?: boolean;
+    private readonly validateLikeDryRun?: boolean;
 
-    constructor(form: UntypedFormGroup, lvl: number = 0, isDryRun = false) {
+    constructor(form: UntypedFormGroup, lvl: number = 0, validateLikeDryRun = false) {
         this.form = form;
         this.lvl = lvl;
-        this.isDryRun = isDryRun;
+        this.validateLikeDryRun = validateLikeDryRun;
         this.privateFields = {};
         this.conditionFields = new Set<string>();
         this.destroy$ = new Subject<boolean>();
@@ -320,7 +320,7 @@ export class FieldForm {
             form.build();
             return form;
         } else {
-            const form = new FieldForm(control, this.lvl + 1, this.isDryRun);
+            const form = new FieldForm(control, this.lvl + 1, this.validateLikeDryRun);
             form.setData({
                 fields,
                 conditions,
@@ -452,7 +452,7 @@ export class FieldForm {
             return 'Invalid IPFS link: CID not found';
         }
 
-        if (!this.isDryRun && !this.isLikelyCid(cid)) {
+        if (!this.validateLikeDryRun && !this.isLikelyCid(cid)) {
             return 'Invalid IPFS CID/URL';
         }
 
@@ -806,6 +806,10 @@ export class FieldForm {
             if (this.fieldControls) {
                 this.fieldControls = this.fieldControls.map(field => field === item ? newItem : field);
             }
+
+            this.controls = this.rebuildControls();
+            this.form.updateValueAndValidity({ emitEvent: true });
+
             newItem.control?.markAsDirty();
             return;
         }
@@ -823,8 +827,4 @@ export class FieldForm {
         item.control?.markAsDirty();
         item.subject.next();
     }
-
-    // public getErrors(): Record<string | number, string[]> {
-    //     return this.form.errors?.[this.errorsFieldName] || {};
-    // }
 }

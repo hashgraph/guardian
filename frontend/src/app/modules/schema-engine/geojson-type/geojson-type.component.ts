@@ -267,12 +267,12 @@ export class GeojsonTypeComponent implements OnChanges {
     jsonInput: string = '';
 
     typeOptions = [
-        { label: 'Point', value: 'Point' },
-        { label: 'Polygon', value: 'Polygon' },
-        { label: 'LineString', value: 'LineString' },
-        { label: 'MultiPoint', value: 'MultiPoint' },
-        { label: 'MultiPolygon', value: 'MultiPolygon' },
-        { label: 'MultiLineString', value: 'MultiLineString' }
+        { label: 'Point', value: GeoJsonType.POINT },
+        { label: 'Polygon', value: GeoJsonType.POLYGON },
+        { label: 'LineString', value: GeoJsonType.LINE_STRING },
+        { label: 'MultiPoint', value: GeoJsonType.MULTI_POINT },
+        { label: 'MultiPolygon', value: GeoJsonType.MULTI_POLYGON },
+        { label: 'MultiLineString', value: GeoJsonType.MULTI_LINE_STRING }
     ];
 
     public map!: Map | null;
@@ -453,6 +453,12 @@ export class GeojsonTypeComponent implements OnChanges {
             return false;
         }
 
+        const value = this.formModel?.getValue?.();
+
+        if (!value?.features?.length) {
+            return false;
+        }
+
         return true;
     }
 
@@ -512,8 +518,22 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     private applyAvailableOptionsFilter(): void {
-        if (!this.availableOptions || this.availableOptions.length === 0) return;
+        if (!this.availableOptions || this.availableOptions.length === 0) {
+            return;
+        }
+
         this.typeOptions = this.typeOptions.filter(o => this.availableOptions!.includes(o.value));
+
+        const first = this.getFirstAvailableType();
+        this.type = first;
+    }
+
+    private getFirstAvailableType(): GeoJsonType {
+        if (this.typeOptions.length) {
+            return this.typeOptions[0].value;
+        }
+
+        return GeoJsonType.POINT;
     }
 
     private getValue() {
@@ -715,7 +735,7 @@ export class GeojsonTypeComponent implements OnChanges {
         if (!feature.ol_uid) {
             return;
         }
-            
+
         const importedLocation = this.importedLocations.find(location => location.id === feature.getId());
         if (importedLocation) {
             this.addGeometry(importedLocation);
@@ -734,7 +754,7 @@ export class GeojsonTypeComponent implements OnChanges {
                     coordinates: Array.isArray(location.coordinates) ? location.coordinates : location.coordinates && JSON.parse(location.coordinates) || [],
                     coordinatesString: Array.isArray(location.coordinates) ? JSON.stringify(location.coordinates, null, 4) : location.coordinates
                 };
-                
+
                 this.addImportedLocation(newGeometry);
             }
         }
@@ -938,7 +958,7 @@ export class GeojsonTypeComponent implements OnChanges {
 
     public onViewTypeChange(dirty = true) {
         const value = this.formModel?.getValue();
-        
+
         if (!value || !value.type) {
             if (!this.isJSON) {
                 this.map = null;
@@ -976,7 +996,7 @@ export class GeojsonTypeComponent implements OnChanges {
             this.map = null;
             this.mapCreated = false;
             this.setupMap();
-            
+
             this.centerMap();
         }
     }
@@ -1005,15 +1025,17 @@ export class GeojsonTypeComponent implements OnChanges {
 
             return newGeometry;
         } else {
+            const defaultType = this.getFirstAvailableType();
+
             const newGeometry = {
                 id: GenerateUUIDv4(),
-                type: GeoJsonType.POINT,
+                type: defaultType,
                 coordinates: [],
                 coordinatesString: undefined
             };
             this.geometriesList.push(newGeometry);
             this.resetCoordinatesStructure(newGeometry);
-
+            this.type = defaultType;
             return newGeometry;
         }
     }
