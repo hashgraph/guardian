@@ -318,37 +318,36 @@
 
 ### Chapter 22: End-to-End Policy Testing
 
-**Purpose**: Validate complete policy functionality across all user roles and scenarios.
+**Purpose**: Testing complete methodology workflows across all stakeholder roles using Guardian's dry-run capabilities and VM0033 production patterns.
 
 **Key Topics**:
 
-* Test scenario design and coverage analysis
-* Multi-role testing strategies
-* Workflow testing and state validation
-* Data integrity testing across the complete flow
-* User acceptance testing coordination
-* Performance and load testing
+* Multi-role testing framework with virtual user management
+* Complete stakeholder workflow simulation (Project Proponent, VVB, Standard Registry)
+* VM0033 workflow testing using policy navigation structure and role transitions
+* Production-scale data validation with large datasets and multi-year monitoring periods
+* Cross-component integration testing validating schema-workflow-calculation consistency
+* Guardian dry-run artifacts and validation procedures for methodology compliance
 
-**VM0033 Context**: Comprehensive end-to-end testing of VM0033 policy, including multiple project types and restoration scenarios.
+**VM0033 Context**: Complete end-to-end testing using VM0033 policy structure, demonstrating multi-stakeholder workflows from PDD submission through VCU token issuance with role-based testing scenarios.
 
-### Chapter 22: API Integration and Automation
+### Chapter 23: API Integration and Automation
 
-**Purpose**: Leverage Guardian APIs for testing, integration, and automation.
+**Purpose**: Automating methodology operations using Guardian's REST API framework for production deployment and integration.
 
 **Key Topics**:
 
-* Guardian API architecture and authentication
-* Automated data submission and workflow execution
-* Integration with external monitoring systems
-* Bulk data processing and batch operations
-* API testing and validation strategies
-* Error handling and retry mechanisms
+* Guardian API authentication patterns with JWT tokens and refresh token management
+* VM0033 policy block API structure using real block IDs for PDD and monitoring report submission
+* Dry-run API operations with virtual user creation and management for automated testing
+* Automated workflow execution class demonstrating complete VM0033 project lifecycle via APIs
+* Cypress testing integration for automated methodology validation and regression testing
 
-**VM0033 Context**: API-based automation for VM0033 data submission, including PDD registration and monitoring report submission.
+**VM0033 Context**: Practical API automation using VM0033 policy endpoints, demonstrating automated data submission, virtual user workflows, and production API patterns for scalable methodology operations.
 
 ## Part VII: Deployment and Maintenance
 
-### Chapter 23: User Management and Role Assignment
+### Chapter 24: User Management and Role Assignment
 
 **Purpose**: Set up and manage users, roles, and permissions for deployed methodologies.
 
@@ -363,7 +362,7 @@
 
 **VM0033 Context**: User management for VM0033 implementation, including VVB accreditation, project developer registration, and Verra administrator roles.
 
-### Chapter 24: Monitoring and Analytics - Guardian Indexer
+### Chapter 25: Monitoring and Analytics - Guardian Indexer
 
 **Purpose**: Monitoring and analytics for deployed methodologies and data submitted via Indexer
 
@@ -375,7 +374,7 @@
 
 **VM0033 Context**: Viewing all data on Indexer, tracking project registrations, credit issuances
 
-### Chapter 25: Maintenance and Updates
+### Chapter 26: Maintenance and Updates
 
 **Purpose**: Maintain and evolve deployed methodologies over time.
 
@@ -391,7 +390,7 @@
 
 ## Part VIII: Advanced Topics and Best Practices
 
-### Chapter 26: Integration with External Systems
+### Chapter 27: Integration with External Systems
 
 **Purpose**: Connect Guardian-based methodologies with external systems and services.
 
@@ -404,7 +403,7 @@
 
 **VM0033 Context**: Integration of VM0033 with external monitoring systems, satellite data feeds, and Verra's registry systems.
 
-### Chapter 27: Troubleshooting and Common Issues
+### Chapter 28: Troubleshooting and Common Issues
 
 **Purpose**: Provide solutions for common problems encountered during methodology digitization.
 

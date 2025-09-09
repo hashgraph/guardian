@@ -114,33 +114,33 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
-<summary><strong>Part VI: Integration and Testing (Chapters 22-23)</strong> - 20-30 minutes</summary>
+<summary><strong>Part VI: Integration and Testing (Chapters 22-23)</strong> - 1-2 hours</summary>
 
-**Purpose**: Comprehensive testing and API integration **Outcome**: Production-ready methodology implementation
+**Purpose**: End-to-end testing and API automation for production deployment **Outcome**: Production-ready methodology with testing coverage and API integration
 
-* Chapter 22: End-to-End Policy Testing
-* Chapter 23: API Integration and Automation
+* Chapter 22: End-to-End Policy Testing - Multi-role testing, workflow validation, Guardian dry-run capabilities
+* Chapter 23: API Integration and Automation - Guardian APIs, automated workflows, virtual user management
 
 </details>
 
 <details>
-<summary><strong>Part VII: Deployment and Maintenance (Chapters 24-26)</strong> - 10-20 minutes</summary>
+<summary><strong>Part VII: Deployment and Maintenance (Chapters 24-26)</strong> - 5-8 hours</summary>
 
 **Purpose**: Deploy, monitor, and maintain methodology implementations **Outcome**: Operational methodology with ongoing support procedures
 
-* Chapter 24: User Management and Role Assignment
-* Chapter 25: Monitoring and Analytics - Guardian Indexer
-* Chapter 26: Maintenance and Updates
+* Chapter 24: User Management and Role Assignment - User roles, permissions, organization management
+* Chapter 25: Monitoring and Analytics - Guardian Indexer - Analytics, compliance reporting, audit trails
+* Chapter 26: Maintenance and Updates - Version management, bug fixes, regulatory changes
 
 </details>
 
 <details>
-<summary><strong>Part VIII: Advanced Topics (Chapters 27-28)</strong> - 30-40 minutes</summary>
+<summary><strong>Part VIII: Advanced Topics (Chapters 27-28)</strong> - 5-7 hours</summary>
 
 **Purpose**: Advanced integration techniques and troubleshooting **Outcome**: Expert-level understanding and problem-solving capabilities
 
-* Chapter 27: Integration with External Systems
-* Chapter 28: Troubleshooting and Common Issues
+* Chapter 27: Integration with External Systems - Registry integration, monitoring systems, enterprise connectivity
+* Chapter 28: Troubleshooting and Common Issues - Debugging techniques, issue resolution, performance optimization
 
 </details>
 
@@ -216,10 +216,13 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 - **🏗️ [Part III: Schema Design and Development](part-3/README.md)** - Schema development and testing (Available Now)
 - **⚙️ [Part IV: Policy Workflow Design and Implementation](part-4/README.md)** - Complete policy workflow development (Available Now)
 - **🧮 [Part V: Calculation Logic Implementation](part-5/README.md)** - CustomLogicBlock development, Guardian Tools, and testing (Available Now)
+- **🔗 [Part VI: Integration and Testing](part-6/README.md)** - End-to-end testing, API integration, and production deployment validation (Available Now)
+- **🚀 [Part VII: Deployment and Maintenance](part-7/README.md)** - User management, monitoring, and maintenance procedures (In Progress)
+- **⚡ [Part VIII: Advanced Topics and Best Practices](part-8/README.md)** - External integration and troubleshooting (In Progress)
 
 ### Available Content
 {% hint style="success" %}
-**Parts I-V are now available** with all twenty-one chapters complete and ready for use, covering the complete foundation through calculation logic implementation and testing.
+**Parts I-VI are now available** with all twenty-three chapters complete and ready for use, covering the complete foundation through production deployment and API integration.
 {% endhint %}
 
 | Part             | Status          | Chapters                           | Description                                                               |
@@ -229,7 +232,9 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 | **Part III**     | ✅ **Available** | [Chapters 8-12](part-3/README.md)  | Schema development, field management, testing checklist                   |
 | **Part IV**      | ✅ **Available** | [Chapters 13-17](part-4/README.md) | Policy workflow design, VM0033 implementation, production deployment      |
 | **Part V**       | ✅ **Available** | [Chapters 18-21](part-5/README.md) | Calculation logic, customLogicBlock development, Guardian Tools, testing  |
-| **Part VI-VIII** | 🚧 Coming Soon   | Chapters 22-28                     | Integration testing, deployment, and advanced topics                      |
+| **Part VI**      | ✅ **Available** | [Chapters 22-23](part-6/README.md) | End-to-end testing, API integration, automated workflows                  |
+| **Part VII**     | 🚧 **In Progress** | [Chapters 24-26](part-7/README.md) | User management, monitoring, maintenance procedures                        |
+| **Part VIII**    | 🚧 **In Progress** | [Chapters 27-28](part-8/README.md) | External integration, troubleshooting, advanced best practices            |
 
 ### Shared Resources
 - **🔧 [Shared Resources](_shared/README.md)** - Templates, integration guides, and reference materials
