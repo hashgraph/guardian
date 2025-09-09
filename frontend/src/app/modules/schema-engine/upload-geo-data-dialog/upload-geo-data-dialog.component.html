@@ -1,0 +1,29 @@
+<div class="dialog-body">
+    <div class="locations-container">
+    </div>
+
+    <div class="preview-container">
+        <h2>Preview</h2>
+        <div>
+            <i>icon</i>
+            <span>Multiple locations were detected in the uploaded file. Please select one to proceed.</span>
+        </div>
+        <div>map</div>
+    </div>
+</div>
+
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button
+                    (click)="onClose()"
+                    class="button secondary"
+                    label="Cancel"
+                    pButton
+            ></button>
+        </div>
+        <div>
+            <button (click)="onConfirm()" class="button" label="Upload Selected file" pButton></button>
+        </div>
+    </div>
+</div>

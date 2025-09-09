@@ -8,7 +8,7 @@ import {
     PolicyOutputEventType,
     PolicyTagMap
 } from './interfaces/index.js';
-import { BlockType, GenerateUUIDv4, LocationType, ModuleStatus, PolicyEvents, PolicyHelper, PolicyStatus } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
 import {
     ActionType,
     AnyBlockType,
@@ -1065,9 +1065,8 @@ export class PolicyComponentsUtils {
             return null;
         }
         const navMap = PolicyComponentsUtils.NavigationMapByPolicyId.get(policyId);
-        const policy = PolicyComponentsUtils.PolicyById.get(policyId);
         if (!user.role) {
-            if (user.did === policy.owner) {
+            if (user.isAdmin) {
                 return navMap.get('OWNER') as T;
             } else {
                 return navMap.get('NO_ROLE') as T;
@@ -1125,84 +1124,21 @@ export class PolicyComponentsUtils {
      * Get Policy Groups
      * @param policy
      * @param user
+     * @param savepointIds
      */
     public static async GetGroups(
         policy: IPolicyInstance | IPolicyInterfaceBlock,
-        user: PolicyUser
+        user: PolicyUser,
+        savepointIds?: string[]
     ): Promise<PolicyRoles[]> {
         return await policy.components.databaseServer.getGroupsByUser(
             policy.policyId,
             user.did,
             {
                 fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active'],
+                savepointIds,
             }
         );
-    }
-
-    /**
-     * Get Policy Full Info
-     * @param policy
-     * @param did
-     */
-    public static async GetPolicyInfo(
-        policy: Policy,
-        did: string
-    ): Promise<Policy> {
-        const result: any = policy;
-        if (policy && did) {
-            result.userRoles = [];
-            result.userGroups = [];
-            result.userRole = null;
-            result.userGroup = null;
-
-            const policyId = policy.id.toString();
-            const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
-
-            if (dryRun) {
-                const activeUser = await DatabaseServer.getVirtualUser(policyId);
-                if (activeUser) {
-                    did = activeUser.did;
-                }
-            }
-
-            if (policy.owner === did) {
-                result.userRoles.push('Administrator');
-                result.userRole = 'Administrator';
-            }
-
-            const db = new DatabaseServer(dryRun);
-            const groups = await db.getGroupsByUser(policyId, did, {
-                fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active'],
-            });
-            for (const group of groups) {
-                if (group.active !== false) {
-                    result.userRoles.push(group.role);
-                    result.userRole = group.role;
-                    result.userGroup = group;
-                }
-            }
-
-            result.userGroups = groups;
-            if (policy.status === PolicyStatus.PUBLISH || policy.status === PolicyStatus.DISCONTINUED) {
-                const multiPolicy = await DatabaseServer.getMultiPolicy(
-                    policy.instanceTopicId,
-                    did
-                );
-                result.multiPolicyStatus = multiPolicy?.type;
-            }
-        } else {
-            result.userRoles = ['No role'];
-            result.userGroups = [];
-            result.userRole = 'No role';
-            result.userGroup = null;
-        }
-
-        if (!result.userRole) {
-            result.userRoles = ['No role'];
-            result.userRole = 'No role';
-        }
-
-        return result;
     }
 
     /**
@@ -1369,11 +1305,13 @@ export class PolicyComponentsUtils {
      * @param username
      * @param instance
      * @param userId
+     * @param savepointIds
      */
     public static async GetPolicyUserByName(
         username: string,
         instance: IPolicyInstance | AnyBlockType,
-        userId: string | null
+        userId: string | null,
+        savepointIds?: string[],
     ): Promise<PolicyUser> {
         if (!username) {
             return null;
@@ -1396,7 +1334,9 @@ export class PolicyComponentsUtils {
         const groups = await instance
             .components
             .databaseServer
-            .getGroupsByUser(instance.policyId, userFull.did);
+            .getGroupsByUser(instance.policyId, userFull.did, {
+                savepointIds,
+            });
         for (const group of groups) {
             if (group.active !== false) {
                 return userFull.setCurrentGroup(group);

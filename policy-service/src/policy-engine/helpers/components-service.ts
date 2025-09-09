@@ -459,4 +459,12 @@ export class ComponentsService {
     public debugError(tag: string, error: any): void {
         return;
     }
+
+    /**
+     * Get virtual user
+     * @param did
+     */
+    public getVirtualUser(_did: string) {
+        return this.databaseServer.getVirtualUser(_did);
+    }
 }
