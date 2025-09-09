@@ -588,7 +588,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		})
 	})
 
-	it("Enable wipe contract requests", { tags: ['smoke'] }, () => {
+	it("Enable wipe contract requests", () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.POST,
@@ -695,7 +695,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		});
 	});
 
-	it("Approve wipe contract requests", { tags: ['smoke'] }, () => {
+	it("Approve wipe contract requests", () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,

@@ -80,7 +80,7 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
         });
     });
 
-    it("Create new tag(contract)", { tags: ['smoke'] }, () => {
+    it("Create new tag(contract)", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,

@@ -548,7 +548,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Create retire request", { tags: ['smoke'] }, () => {
+        it("Create retire request", () => {
             Authorization.getAccessToken(UserUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -613,7 +613,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Verify balance decreased", { tags: ['smoke'] }, () => {
+        it("Verify balance decreased", () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
