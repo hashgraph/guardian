@@ -63,11 +63,12 @@ export const whileRequestAppear = (authorization, attempts = 0) => {
                     timeout: 180000,
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
+                    cy.task('log', "Request approved")
                 })
             else whileRequestAppear(authorization, attempts)
         })
     }
-    else{
+    else {
         throw new Error(`Failed after ${attempts}`)
     }
 }
