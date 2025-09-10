@@ -14,6 +14,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { fileURLToPath } from 'url';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { BlockActionError } from '../errors/index.js';
+import {hydrateTablesInObject, loadFileTextById} from '../helpers/table-field.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -172,6 +173,11 @@ export class CustomLogicBlock {
                 } else {
                     documents = [state.data];
                 }
+
+                await hydrateTablesInObject(
+                    documents,
+                    async (fileId: string) => loadFileTextById(ref, fileId),
+                );
 
                 let metadata: IMetadata;
                 if (ref.options.unsigned) {

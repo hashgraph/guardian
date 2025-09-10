@@ -2,6 +2,8 @@ import { workerData, parentPort } from 'node:worker_threads';
 import * as mathjs from 'mathjs';
 import * as formulajs from '@formulajs/formulajs'
 
+import { buildTableHelper } from '../helpers/table-field.js';
+
 /**
  * Execute function
  */
@@ -14,7 +16,7 @@ function execute(): void {
     }
 
     const { execFunc, user, documents, artifacts, sources } = workerData;
-    const importCode = `const [done, user, documents, mathjs, artifacts, formulajs, sources, debug] = arguments;\r\n`;
+    const importCode = `const [done, user, documents, mathjs, artifacts, formulajs, sources, debug, table] = arguments;\r\n`;
     const code = `${importCode}${execFunc}`;
 
     const func = Function(code);
@@ -26,7 +28,8 @@ function execute(): void {
         artifacts,
         formulajs,
         sources,
-        debug
+        debug,
+        buildTableHelper()
     ]);
 }
 
