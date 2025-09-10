@@ -134,13 +134,13 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
     it('Create device', () => {
         Authorization.getAccessToken(DepUserUsername).then((authorization) => {
-            cy.wait(60000)
             const waitDeviceAddStatus = {
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies + policyId + "/" + API.CreateDevice,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false
             }
             Checks.whileRequestProccessing(waitDeviceAddStatus, "Approved", "data.0.option.status")
             cy.request({
@@ -187,7 +187,8 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                 url: API.ApiMGS + API.Policies + policyId + "/" + API.GetDevices,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false
             }
             Checks.whileRequestProccessing(waitDeviceApproveStatus, "Waiting for approval", "data.0.option.status")
             cy.request({
@@ -220,7 +221,8 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.GetDeviceIssue,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false
             }
             Checks.whileRequestProccessing(waitDeviceApproveStatus, "Approved", "data.0.option.status")
         })
@@ -279,7 +281,8 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                 url: API.ApiMGS + API.Policies + policyId + "/" + API.GetIssues,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false
             }
             Checks.whileRequestProccessing(waitDeviceApproveStatus, "Waiting for approval", "data.0.option.status")
             cy.request({
