@@ -815,7 +815,7 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private deleteSchema(id: string): void {
+    private deleteSchema(id: string, includeChildren: boolean): void {
         if (!id) {
             return;
         }
@@ -823,6 +823,7 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
+                // delete with children?
                 this.schemaService.deleteSystemSchema(id).subscribe((data: any) => {
                     this.loadSchemas();
                 }, (e) => {
@@ -831,6 +832,7 @@ export class SchemaConfigComponent implements OnInit {
                 break;
             }
             case SchemaType.Tag: {
+                // delete with children?
                 this.tagsService.deleteSchema(id).subscribe((data: any) => {
                     this.loadSchemas();
                 }, (e) => {
@@ -842,7 +844,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Tool:
             case SchemaType.Policy:
             default: {
-                this.schemaService.delete(id).subscribe((data: any) => {
+                this.schemaService.delete(id, includeChildren).subscribe((data: any) => {
                     this.loadSchemas();
                 }, (e) => {
                     this.loadError(e);
@@ -1093,42 +1095,50 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private onDeleteSchema(element: Schema, parents?: ISchema[]): void {
-        if (!Array.isArray(parents) || !parents.length) {
-            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-                showHeader: false,
-                width: '640px',
-                styleClass: 'guardian-dialog',
-                data: {
-                    header: 'Delete Schema',
-                    text: `Are you sure want to delete schema (${element.name})?`,
-                    buttons: [{
-                        name: 'Close',
-                        class: 'secondary'
-                    }, {
-                        name: 'Delete',
-                        class: 'delete'
-                    }]
-                },
-            });
-            dialogRef.onClose.subscribe((result: string) => {
-                if (result === 'Delete') {
-                    this.deleteSchema(element.id);
-                }
-            });
-        } else {
-            this.dialog.open(AlertComponent, {
-                data: {
-                    type: AlertType.WARN,
-                    text: `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
-                        SchemaHelper.getSchemaName(
-                            parent.name,
-                            parent.version || parent.sourceVersion,
-                            parent.status
-                        )
-                    ).join('\r\n')}`
-                }
-            });
-        }
+        
+        // todo add dialogue to ask user for deletion child schemas
+
+        this.schemaService.getSchemaChildren(element.id, element.topicId).subscribe(result => {
+            console.log(result);
+            
+        })
+
+        // if (!Array.isArray(parents) || !parents.length) {
+        //     const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+        //         showHeader: false,
+        //         width: '640px',
+        //         styleClass: 'guardian-dialog',
+        //         data: {
+        //             header: 'Delete Schema',
+        //             text: `Are you sure want to delete schema (${element.name})?`,
+        //             buttons: [{
+        //                 name: 'Close',
+        //                 class: 'secondary'
+        //             }, {
+        //                 name: 'Delete',
+        //                 class: 'delete'
+        //             }]
+        //         },
+        //     });
+        //     dialogRef.onClose.subscribe((result: string) => {
+        //         if (result === 'Delete') {
+        //             this.deleteSchema(element.id, true);
+        //         }
+        //     });
+        // } else {
+        //     this.dialog.open(AlertComponent, {
+        //         data: {
+        //             type: AlertType.WARN,
+        //             text: `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
+        //                 SchemaHelper.getSchemaName(
+        //                     parent.name,
+        //                     parent.version || parent.sourceVersion,
+        //                     parent.status
+        //                 )
+        //             ).join('\r\n')}`
+        //         }
+        //     });
+        // }
     }
 
     private onNewVersion(element: Schema): void {

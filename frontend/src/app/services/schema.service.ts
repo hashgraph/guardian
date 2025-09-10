@@ -128,8 +128,12 @@ export class SchemaService {
         return this.http.put<any[]>(`${this.url}/${id}/unpublish`, null);
     }
 
-    public delete(id: string): Observable<ISchema[]> {
-        return this.http.delete<any[]>(`${this.url}/${id}`);
+    public delete(id: string, includeChildren?: boolean): Observable<ISchema[]> {
+        return this.http.delete<any[]>(`${this.url}/${id}`, {
+            params: {
+                includeChildren: includeChildren ? true : false
+            }
+        });
     }
 
     public exportInFile(id: string): Observable<ArrayBuffer> {
@@ -212,6 +216,11 @@ export class SchemaService {
 
     public getSchemaTree(id: string): Observable<SchemaNode> {
         return this.http.get<SchemaNode>(`${this.singleSchemaUrl}/${id}/tree`);
+    }
+
+    public getSchemaChildren(id: string, topicId?: string): Observable<ISchema[]> {
+        const options = topicId ? { params: { topicId } } : {};
+        return this.http.get<ISchema[]>(`${this.singleSchemaUrl}/${id}/children`, options);
     }
 
     public properties(): Observable<any[]> {

@@ -169,6 +169,61 @@ export class SingleSchemaApi {
             await InternalException(error, this.logger, user.id);
         }
     }
+
+    /**
+     * Returns all child schemas.
+     */
+    @Get('/:schemaId/children')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.AUDITOR ?,
+        // UserRole.USER ?
+    )
+    @ApiOperation({
+        summary: 'Returns all child schemas.',
+        description: 'Returns all child schemas.',
+    })
+    @ApiParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema identifier',
+        required: true
+    })
+    @ApiQuery({
+        name: 'topicId',
+        type: String,
+        description: 'Policy topic Id',
+        required: false
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: SchemaDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSchemaChildren(
+        @AuthUser() user: IAuthUser,
+        @Param('schemaId') schemaId: string,
+        @Query('topicId') topicId?: string,
+    ): Promise<SchemaDTO[]> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const schemas = await guardians.getSchemaChildren(schemaId, topicId, owner);
+            console.log(1);
+            console.log(schemas);
+            
+            return SchemaUtils.toOld(schemas);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
 }
 
 @Controller('schemas')
@@ -1074,6 +1129,12 @@ export class SchemaApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiQuery({
+        name: 'includeChildren',
+        type: Boolean,
+        required: false,
+        description: 'Include child schemas',
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -1088,6 +1149,7 @@ export class SchemaApi {
     async deleteSchema(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
+        @Query('includeChildren') includeChildren = false,
         @Req() req
     ): Promise<SchemaDTO[]> {
         const guardians = new Guardians();
@@ -1112,18 +1174,44 @@ export class SchemaApi {
         if (schema.status === SchemaStatus.DEMO) {
             throw new HttpException('Schema imported in demo mode.', HttpStatus.UNPROCESSABLE_ENTITY)
         }
-        try {
-            const schemas = (await guardians.deleteSchema(schemaId, owner, true) as ISchema[]);
-            SchemaHelper.updatePermission(schemas, owner);
+        console.log(includeChildren);
+        
+        const schemasToDelete: ISchema[] = [schema];
+        const schemasCantBeDeleted: ISchema[] = [];
 
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
-
-            return SchemaUtils.toOld(schemas);
-        } catch (error) {
-            await InternalException(error, this.logger, user.id);
+        if (includeChildren) {
+            let childSchemas: ISchema[] = [];
+            try {
+                // childSchemas = await guardians.getSchemaChildren(schemaId, owner);
+                // console.log(childSchemas);
+            } catch (error) {
+                await InternalException(error, this.logger, user.id);
+            }
+            if (childSchemas.length) {
+                for (const child of childSchemas) {
+                    
+                    // const isUsed = await guardians.isSchemaUsedInOtherSchemas(child.iri);
+                    // if (isUsed) {
+                    //     schemasCantBeDeleted.push(child);
+                    // } else {
+                    //     schemasToDelete.push(child);
+                    // }
+                }
+            }
         }
+        // try {
+        //     const schemas = (await guardians.deleteSchema(schemaId, owner, true) as ISchema[]);
+        //     SchemaHelper.updatePermission(schemas, owner);
+
+        //     const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+        //     await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
+        //     return SchemaUtils.toOld(schemas);
+        // } catch (error) {
+        //     await InternalException(error, this.logger, user.id);
+        // }
+        return null;
     }
 
     /**

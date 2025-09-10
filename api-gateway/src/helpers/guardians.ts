@@ -629,6 +629,15 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Get schema parents
+     * @param id Schema identifier
+     * @returns Schemas
+     */
+    public async getSchemaChildren(id: string, topicId: string, owner: IOwner): Promise<ISchema[]> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_CHILDREN, { id, topicId, owner });
+    }
+
+    /**
      * Get schema tree
      * @param id Id
      * @param owner Owner

@@ -24,6 +24,7 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import process from 'process';
 import { FilterObject } from '@mikro-orm/core';
+import { ObjectId } from 'mongodb';
 
 @Controller()
 export class SchemaService { }
@@ -218,6 +219,115 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         'status'
                     ]
                 }));
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Return child schemas
+     *
+     * @param {Object} [msg] - payload
+     *
+     * @returns {ISchema[]} - Parent schemas
+     */
+    ApiResponse(MessageAPI.GET_SCHEMA_CHILDREN,
+        async (msg: {
+            id: string,
+            topicId: string,
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load schema parameter');
+                }
+
+                const { id, topicId, owner } = msg;
+                if (!id) {
+                    return new MessageError('Invalid schema id');
+                }
+                if (!owner) {
+                    return new MessageError('Invalid schema owner');
+                }
+
+                const schema = await DatabaseServer.getSchema({
+                    id,
+                    owner: owner.owner
+                });
+                if (!schema) {
+                    return new MessageError('Schema is not found');
+                }
+
+
+                
+
+                const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
+                const defsIds = defs.map(id => id.startsWith('#') ? id.slice(1) : id);
+
+                const childSchemas = await DatabaseServer.getSchemas({
+                    uuid: { $in: defsIds },
+                }, {
+                    fields: [
+                        'uuid',
+                        'name',
+                        'version',
+                        'sourceVersion',
+                        'status'
+                    ]
+                })
+
+                const childSchemasCantDelete = new Set<SchemaCollection>();
+                const childSchemasCantDeleteIds = new Set<string>();
+
+
+                if (topicId) {
+                    console.log(topicId);
+                
+                    const filter: any = {
+                        readonly: false,
+                        system: false,
+                        topicId
+                    }
+                    filter.category = SchemaCategory.POLICY;
+
+                    const allPolicySchemas = await DatabaseServer.getSchemas(filter);
+                    console.log(childSchemas);
+                    
+                    if (allPolicySchemas?.length > 0) {
+                        allPolicySchemas.forEach(item => {
+                            if (schema.uuid !== item.uuid) {
+                                const schemaDefs = Array.isArray(item.defs) ? item.defs : [item.defs];
+                                const schemaDefsIds = schemaDefs.map(id => id.startsWith('#') ? id.slice(1) : id);
+
+                                const childSchemaUsedInAnotherSchema = childSchemas.find(child => schemaDefsIds.includes(child.uuid));
+                                console.log(item.name);
+                                console.log(item.uuid);
+                                console.log(schemaDefsIds);
+                                console.log(!!childSchemaUsedInAnotherSchema);
+                                if (childSchemaUsedInAnotherSchema) {
+                                    childSchemasCantDelete.add(childSchemaUsedInAnotherSchema);
+                                    childSchemasCantDeleteIds.add(childSchemaUsedInAnotherSchema.uuid);
+                                }
+                            }
+                        })
+                    }
+                }
+
+                const schemasToDelete = childSchemas.filter(item => !childSchemasCantDeleteIds.has(item.uuid))
+
+                console.log('childSchemas');
+                console.log(childSchemas);
+                console.log('schemasToDelete');
+                console.log(schemasToDelete);
+                console.log('childSchemasCantDelete');
+                console.log(childSchemasCantDelete);
+                
+
+                return new MessageResponse({
+                    schemasToDelete,
+                    childSchemasCantDelete: Array.from(childSchemasCantDelete)
+                });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
