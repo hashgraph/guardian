@@ -32,5 +32,8 @@
         "mocha-junit-reporter": "^2.2.1",
         "util": "^0.12.4",
         "uuidv4": "^6.2.13"
+    },
+    "overrides": {
+        "is-core-module": "2.13.1"
     }
 }

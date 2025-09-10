@@ -67,6 +67,9 @@ export const whileRequestAppear = (authorization, attempts = 0) => {
             else whileRequestAppear(authorization, attempts)
         })
     }
+    else{
+        throw new Error(`Failed after ${attempts}`)
+    }
 }
 
 export const whileRetireRequestCreating = (dataToCompare, authorization, attempts) => {
