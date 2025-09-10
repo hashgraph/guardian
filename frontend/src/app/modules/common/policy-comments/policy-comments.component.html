@@ -1,12 +1,25 @@
 <div class="container">
+    <div class="header">
+        <div class="header-container">
+            <div class="component-name">Comments</div>
+            <div class="field-name">Comments</div>
+        </div>
+        <div class="header-icon">
+            <div class="component-close" (click)="onClose()">
+                <svg-icon
+                    src="/assets/images/icons/close.svg"
+                    svgClass="icon-color-close"></svg-icon>
+            </div>
+        </div>
+    </div>
     <div *ngIf="loading" class="guardian-loading">
         <div class="guardian-loading-image"></div>
     </div>
-    <div class="messages-container">
+    <div #messageContainer class="messages-container">
         <div *ngIf="!data.data.length" class="messages">
             
         </div>
-        <div *ngIf="data.data.length" class="messages">
+        <div *ngIf="data.data.length" class="messages" >
             <div *ngFor="let item of data.data" class="message" [attr.owner]="item.isOwner">
                 <div class="message-time">
                     {{getDate(item.timestamp)}}
@@ -21,10 +34,14 @@
                         </div>
                     </div>
                     <div *ngIf="item.document.text" class="message-text">
-                        {{item.document.text}}
+                        <!-- <span *ngIf="item.recipient" class="message-tag">&#64;{{getUserName(item.recipient)}},</span>
+                        <span *ngIf="item.recipientRole" class="message-tag">&#64;{{item.recipientRole}},</span> -->
+                        <span *ngFor="let t of item.__text" class="text-type-{{t.type}}">
+                            {{getUserName(t)}}
+                        </span>
                     </div>
                     <div *ngIf="item.document.files?.length" class="message-files">
-                        <div *ngFor="let file of item.document.files" class="message-file">
+                        <div *ngFor="let file of item.document.files" class="message-file" (click)="onLoadFile(file)">
                             <div class="file-icon">
                                 <svg-icon src="/assets/images/icons/file.svg" svgClass="icon-color-close"></svg-icon>
                             </div>
@@ -50,12 +67,26 @@
     </div>
     <div class="toolbar">
         <div class="guardian-textarea-container toolbar-textarea">
-            <textarea 
-                [(ngModel)]="textMessage" 
-                pTextarea rows="4" 
-                (input)="onText()"
-                (drop)="onDrop($event)"
-            ></textarea>
+            <mwl-text-input-autocomplete-container>
+                <textarea
+                    placeholder="Write a message"
+                    rows="3" 
+                    [(ngModel)]="textMessage"
+                    mwlTextInputAutocomplete
+                    [findChoices]="_findChoices"
+                    [getChoiceLabel]="_getChoiceLabel"
+                    [menuPosition]="'above'"
+                    (input)="onText()"
+                    (drop)="onDrop($event)">
+                </textarea>
+                <ng-template let-item #itemTemplate>
+                    <div class="autocomplete-item">
+                        <i *ngIf="item.type === 'user'" class="pi pi-user"></i>
+                        <i *ngIf="item.type !== 'user'" class="pi pi-users"></i>
+                        <span class="autocomplete-item-name">{{ item.label }}</span>
+                    </div>
+                </ng-template>
+            </mwl-text-input-autocomplete-container>
         </div>
         <div *ngIf="files.length" class="toolbar-files">
             <div *ngFor="let file of files" class="toolbar-file">
@@ -75,7 +106,7 @@
             </div>
         </div>
         <div class="toolbar-actions">
-            <div class="left-actions">
+            <!-- <div class="left-actions">
                 <p-dropdown
                     [(ngModel)]="currentVisibility"
                     [options]="visibility"
@@ -88,39 +119,47 @@
                     panelStyleClass="guardian-dropdown-panel"
                     optionLabel="label"
                     optionValue="value">
-                    <ng-template pTemplate="selectedItem">
+                    <ng-template let-item pTemplate="selectedItem">
                         <div class="guardian-dropdown-selected">
                             <span class="guardian-dropdown-label">Visible for</span>
-                            <span class="guardian-dropdown-item">{{ currentVisibility }}</span>
+                            <span class="guardian-dropdown-item">{{ item?.label }}</span>
                         </div>
                     </ng-template>
                 </p-dropdown>
-                <!-- <button
-                    (click)="onSend()"
-                    class="guardian-button guardian-button-primary send-btn">
-                    <div class="guardian-button-icon">
-                        <svg-icon
-                            class="icon-btn"
-                            src="/assets/images/icons/add.svg"
-                            svgClass="icon-color-secondary">
-                        </svg-icon>
-                    </div>
-                    <div class="guardian-button-label">Send</div>
-                </button>  -->
-            </div>
+            </div> -->
             <button
+                class="guardian-icon-button attach-btn big"
+                (click)="onAttach($event)">
+                <svg-icon
+                    class="icon-btn svg-icon"
+                    src="/assets/images/icons/attach.svg"
+                    [svgClass]="'icon-color-primary'">
+                </svg-icon>
+            </button>
+            <div class="delimiter"></div>
+            <button
+                class="guardian-icon-button send-btn big"
+                (click)="onSend()"
+                [disabled]="sendDisabled">
+                <svg-icon
+                    class="icon-btn svg-icon"
+                    src="/assets/images/icons/send.svg"
+                    [svgClass]="sendDisabled ? 'icon-color-disabled' : 'icon-color-primary'">
+                </svg-icon>
+            </button>
+            <!-- <button
                 (click)="onSend()"
                 class="guardian-button guardian-button-primary send-btn"
                 [disabled]="sendDisabled">
                 <div class="guardian-button-icon">
                     <svg-icon
                         class="icon-btn"
-                        src="/assets/images/icons/add.svg"
+                        src="/assets/images/icons/send.svg"
                         [svgClass]="sendDisabled ? 'icon-color-disabled' : 'icon-color-secondary'">
                     </svg-icon>
                 </div>
                 <div class="guardian-button-label">Send</div>
-            </button> 
+            </button>  -->
         </div>
     </div>
 </div>

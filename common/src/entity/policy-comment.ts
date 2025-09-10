@@ -101,22 +101,13 @@ export class PolicyComment extends BaseEntity {
     senderName?: string;
 
     /**
-     * Target (user)
+     * Target (users or roles)
      */
     @Property({
         nullable: true,
         index: true
     })
-    recipient?: string;
-
-    /**
-     * Target (user role)
-     */
-    @Property({
-        nullable: true,
-        index: true
-    })
-    recipientRole?: string;
+    recipients?: string[];
 
     /**
      * Anchor

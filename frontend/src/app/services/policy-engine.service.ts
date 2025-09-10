@@ -616,8 +616,9 @@ export class PolicyEngineService {
         documentId: string,
         data: {
             anchor?: string;
-            recipient?: string;
-            recipientRole?: string;
+            // recipient?: string;
+            // recipientRole?: string;
+            recipients?: string[];
             text?: string;
             attachedFiles?: string[];
         }

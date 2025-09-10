@@ -1,132 +1,97 @@
-import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
-import { IPFS_SCHEMA } from 'src/app/services/api';
+import { Component, EventEmitter, Inject, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import moment from 'moment';
 import { DropdownChangeEvent } from 'primeng/dropdown';
+import { AttachedFile } from './attached-file';
+import { DataList } from './data-list';
+import { ProfileService } from 'src/app/services/profile.service';
+import { UserPermissions } from '@guardian/interfaces';
 
-class AttachedFile {
-    public readonly name: string;
-    public readonly type: string;
-    public readonly size: number;
-    public link: string;
-    public cid: string;
-    public loaded: boolean;
-    public error: boolean;
+// this.visibility = [{
+//     label: 'All',
+//     value: 'all',
+//     items: [{
+//         label: 'All',
+//         value: '@all'
+//     }],
+// }];
+// if (this.policy) {
+//     const group: ListItem = {
+//         label: 'Roles',
+//         value: 'roles',
+//         items: [],
+//     }
+//     if (Array.isArray(this.policy.policyRoles)) {
+//         for (const role of this.policy.policyRoles) {
+//             group.items.push({
+//                 label: role,
+//                 value: `@${role}`
+//             })
+//         }
+//     }
+//     if (group.items.length) {
+//         this.visibility.push(group);
+//     }
+// }
+// if (this.owner) {
+//     const group: ListItem = {
+//         label: 'Users',
+//         value: 'users',
+//         items: [],
+//     }
+//     if (this.policyOwner && this.owner !== this.policyOwner) {
+//         group.items.push({
+//             label: 'Administrator',
+//             role: 'Administrator',
+//             value: this.policyOwner
+//         })
+//         this.userNames.set(this.policyOwner, 'Administrator');
+//     }
+//     if (this.documentOwner && this.owner !== this.documentOwner) {
+//         group.items.push({
+//             label: 'Document Owner',
+//             role: 'Document Owner',
+//             value: this.documentOwner
+//         })
+//         this.userNames.set(this.documentOwner, 'Document Owner');
+//     }
+//     const users = this.data.getUsers();
+//     for (const user of users) {
+//         if (
+//             user.sender !== this.policyOwner &&
+//             user.sender !== this.documentOwner &&
+//             user.sender !== this.owner
+//         ) {
+//             group.items.push({
+//                 label: user.senderName,
+//                 role: user.senderRole,
+//                 value: user.sender
+//             })
+//             this.userNames.set(user.sender, user.senderName);
+//         }
+//     }
+//     if (group.items.length) {
+//         this.visibility.push(group);
+//     }
+// }
+// interface ListItem {
+//     label: string;
+//     value: string;
+//     items: {
+//         label: string;
+//         role?: string;
+//         value: string;
+//     }[];
+// }
 
-    private readonly _file: File;
-
-    constructor(file: File) {
-        this.name = file.name;
-        this.type = file.type;
-        this.size = file.size;
-        this.link = '';
-        this.cid = '';
-        this.loaded = false;
-        this.error = false;
-        this._file = file;
-    }
-
-    public upload(
-        ipfs: IPFSService,
-        policyId?: string,
-        dryRun?: boolean,
-        callback?: Function
-    ) {
-        this.loaded = false;
-        this.error = false;
-        let addFileObs;
-        if (dryRun && policyId) {
-            addFileObs = ipfs.addFileDryRun(this._file, policyId);
-        } else {
-            addFileObs = ipfs.addFile(this._file);
-        }
-        addFileObs
-            .subscribe((res) => {
-                this.link = IPFS_SCHEMA + res;
-                this.cid = res;
-                this.loaded = true;
-                this.error = false;
-                if (callback) {
-                    callback();
-                }
-            }, (error) => {
-                this.loaded = true;
-                this.error = true;
-                if (callback) {
-                    callback();
-                }
-            });
-    }
-
-    public toJSON() {
-        return {
-            name: this.name,
-            type: this.type,
-            size: this.size,
-            link: this.link,
-            cid: this.cid,
-        }
-    }
-}
-
-class DataList {
-    public data: any[];
-    public count: number;
-    public full: boolean;
-    public needUpdate: boolean;
-
-    constructor() {
-        this.data = [];
-        this.count = 0;
-        this.full = true;
-        this.needUpdate = false;
-    }
-
-    public setData(data: any[], count: number) {
-        this.data = Array.isArray(data) ? data : [];
-        this.count = count;
-        this.full = this.data.length === count;
-        this.needUpdate = false;
-    }
-
-    public after(data: any[], count: number, target?: string): boolean {
-        data = Array.isArray(data) ? data : [];
-
-        const index = this.data.findIndex((d) => d.id === target);
-        if (index !== -1) {
-            this.data = this.data.slice(0, index + 1);
-        }
-        this.data = this.data.concat(data);
-
-        if (this.count !== count) {
-            this.count = count;
-            this.needUpdate = true;
-        }
-        this.full = this.data.length === count;
-        return this.full;
-    }
-
-    public before(data: any[], count: number, target?: string) {
-        data = Array.isArray(data) ? data : [];
-
-        const index = this.data.findIndex((d) => d.id === target);
-        if (index !== -1) {
-            this.data = this.data.slice(index);
-        }
-        this.data = data.concat(this.data);
-
-        this.needUpdate = false;
-        this.count = count;
-        this.full = this.data.length === count;
-
-        return this.needUpdate;
-    }
-
-    public getLast() {
-        return this.data[this.data.length - 1];
-    }
+interface ListItem {
+    label: string;
+    value: string;
+    search: string;
+    type: string;
+    role?: string;
 }
 
 /**
@@ -138,58 +103,37 @@ class DataList {
     styleUrls: ['./policy-comments.component.scss']
 })
 export class PolicyComments {
-    @Input('policy-id') policyId!: string | undefined;
-    @Input('document-id') documentId!: string | undefined;
+    @Input('document') document!: any | undefined;
+    @Input('field') field!: any | undefined;
+    @ViewChild('messageContainer', { static: true }) messageContainer: any;
+
+    public documentId: string;
+    public policyId: string;
 
     public loading: boolean = true;
     public data: DataList;
 
+    public user: UserPermissions = new UserPermissions();
+    public owner: string;
+    public documentOwner: string;
+    public policyOwner: string;
+    public policy: any;
+
     public textMessage: string;
     public files: AttachedFile[];
-    public currentVisibility: any;
+    // public currentVisibility: any;
     public sendDisabled: boolean;
 
-    public readonly visibility = [
-        {
-            label: 'All',
-            value: 'all',
-            items: [{
-                label: 'All',
-                value: 'all'
-            }],
-        },
-        {
-            label: 'Roles',
-            value: 'role',
-            items: [{
-                label: 'Installer',
-                value: 'Installer'
-            },
-            {
-                label: 'Administrator',
-                value: 'Administrator'
-            }],
-        },
-        {
-            label: 'Users',
-            value: 'User',
-            items: [{
-                label: 'StandardRegistry',
-                value: 'StandardRegistry'
-            },
-            {
-                label: 'Installer',
-                value: 'Installer'
-            }, {
-                label: 'Installer 2',
-                value: 'Installer 2'
-            }],
-        }
-    ]
+    public visibility: ListItem[] = [];
+    public userNames = new Map<string, string>();
+    public users: ListItem[] = [];
 
     private _destroy$ = new Subject<void>();
+    public _findChoices = this.findChoices.bind(this);
+    public _getChoiceLabel = this.getChoiceLabel.bind(this);
 
     constructor(
+        private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private ipfs: IPFSService,
     ) {
@@ -198,7 +142,7 @@ export class PolicyComments {
 
         this.textMessage = '';
         this.files = [];
-        this.currentVisibility = 'all';
+        // this.currentVisibility = '@all';
         this.sendDisabled = true;
     }
 
@@ -207,11 +151,71 @@ export class PolicyComments {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.loadComments('load');
+        this.loading = true;
+
+        this.documentId = this.document?.id;
+        this.policyId = this.document?.policyId;
+        this.documentOwner = this.document.owner;
+        this.policyOwner = '';
+
+        this.loadProfile();
+        this.updateTargets();
     }
 
     ngOnDestroy(): void {
 
+    }
+
+    private updateTargets() {
+        this.userNames.clear();
+
+        this.users = [];
+        this.users.push({
+            label: 'All',
+            value: 'all',
+            search: 'all',
+            type: 'all',
+        })
+        if (this.policy && Array.isArray(this.policy.policyRoles)) {
+            for (const role of this.policy.policyRoles) {
+                this.users.push({
+                    label: role,
+                    value: role,
+                    search: role?.toLowerCase() || '',
+                    type: 'role',
+                })
+            }
+        }
+        if (this.policyOwner && this.owner !== this.policyOwner) {
+            this.users.push({
+                label: 'Administrator',
+                value: 'Administrator',
+                search: 'administrator',
+                type: 'user',
+            })
+        }
+        if (this.documentOwner && this.owner !== this.documentOwner) {
+            this.users.push({
+                label: 'Owner',
+                value: 'Owner',
+                search: 'owner',
+                type: 'user',
+            })
+        }
+
+        const users = this.data.getUsers();
+        for (const user of users) {
+            this.users.push({
+                label: user.senderName,
+                value: user.sender,
+                role: user.senderRole,
+                search: user.senderName?.toLowerCase() || '',
+                type: 'user',
+            })
+        }
+        for (const user of this.users) {
+            this.userNames.set(user.value, `@${user.label}`);
+        }
     }
 
     private getFilters(
@@ -232,6 +236,49 @@ export class PolicyComments {
         }
     }
 
+    private loadProfile() {
+        if (!this.policyId || !this.documentId) {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+            this.data.setData([], 0);
+            return;
+        }
+
+        this.loading = true;
+        const filter = this.getFilters('load');
+        forkJoin([
+            this.profileService.getProfile(),
+            this.policyEngineService.policy(this.policyId),
+            this.policyEngineService
+                .getPolicyComments(
+                    this.policyId,
+                    this.documentId,
+                    filter
+                )
+        ])
+            .pipe(takeUntil(this._destroy$))
+            .subscribe(([profile, policy, response]) => {
+                this.user = new UserPermissions(profile);
+                this.owner = this.user.did;
+
+                this.policy = policy;
+                this.policyOwner = policy.owner;
+
+                const { page, count } = this.policyEngineService.parsePage(response);
+                this.parsMessages(page);
+                this.data.setData(page, count);
+
+                this.updateTargets();
+
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
     private loadComments(
         type: 'load' | 'update' | 'more',
         target?: string
@@ -244,6 +291,7 @@ export class PolicyComments {
 
         this.loading = true;
         const filter = this.getFilters(type, target);
+
         this.policyEngineService
             .getPolicyComments(
                 this.policyId,
@@ -252,15 +300,22 @@ export class PolicyComments {
             )
             .pipe(takeUntil(this._destroy$))
             .subscribe((response) => {
-                const data = response.body || [];
-                const count = Number(response.headers.get('X-Total-Count')) || data.length;
+                const { page, count } = this.policyEngineService.parsePage(response);
+                this.parsMessages(page);
+
                 if (type === 'load') {
-                    this.data.setData(data, count);
+                    this.data.setData(page, count);
                 } else if (type === 'more') {
-                    this.data.after(data, count, target);
+                    this.data.after(page, count, target);
                 } else if (type === 'update') {
-                    this.data.before(data, count);
+                    this.data.before(page, count);
                 }
+
+                this.updateTargets();
+                if (type === 'update') {
+                    this.resetScroll();
+                }
+
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -269,17 +324,81 @@ export class PolicyComments {
             });
     }
 
+    private parsMessages(messages: any[]) {
+        for (const item of messages) {
+            item.__text = this.parsText(item, item?.document?.text);
+        }
+    }
+
+    private parsText(message: any, text: string): any[] {
+        const result: any[] = [];
+        if (!text) {
+            return result;
+        }
+        const tags = text.split(/(@[\[\{][a-zA-Z0-9_:.]+[\]\}])/g);
+        for (const tag of tags) {
+            if (tag) {
+                if ((/(@[\[\{][a-zA-Z0-9_:.]+[\]\}])/g).test(tag)) {
+                    const value = tag.substring(2, tag.length - 1);
+                    const type = tag.startsWith('@[') ? 'role' : 'user';
+                    if (message.recipients && message.recipients.includes(value)) {
+                        result.push({
+                            type: type,
+                            text: tag,
+                            tag: value
+                        });
+                    } else {
+                        result.push({
+                            type: 'text',
+                            text: tag
+                        })
+                    }
+                } else {
+                    result.push({
+                        type: 'text',
+                        text: tag
+                    })
+                }
+            }
+        }
+        return result
+    }
+
+    private findTags(text: string) {
+        const recipients: Set<string> = new Set<string>();
+        const tags = text.match(/@[\[\{][a-zA-Z0-9_:.]+[\]\}]/g);
+        if (tags) {
+            for (const tag of tags) {
+                const value = tag.substring(2, tag.length - 1);
+                const type = tag.startsWith('@[') ? 'role' : 'user';
+                const recipient = this.users.find((user) => user.type === type && user.label === value);
+                if (recipient) {
+                    recipients.add(recipient.value);
+                    text = text.replace(tag, type === 'role' ? `@[${recipient.value}]` : `@{${recipient.value}}`);
+                }
+            }
+        }
+        return {
+            text: text,
+            recipients: Array.from(recipients)
+        };
+    }
+
     public onSend() {
         if (!this.policyId || !this.documentId) {
             this.loading = false;
             return;
         }
 
+        const { text, recipients } = this.findTags(this.textMessage);
+        let anchor: string | undefined = undefined;
+        if (this.field) {
+            anchor = '';
+        }
         const data = {
-            // anchor?: string;
-            // recipient?: string;
-            // recipientRole?: string;
-            text: this.textMessage,
+            anchor,
+            recipients: recipients,
+            text: text,
             files: this.files.map((f) => f.toJSON())
         };
         this.loading = true;
@@ -289,23 +408,57 @@ export class PolicyComments {
                 this.documentId,
                 data
             ).subscribe((response) => {
+                this.textMessage = '';
+                this.files = [];
                 this.loadComments('update');
             }, (e) => {
                 this.loading = false;
             });
     }
 
-    public onDrop($event: any) {
+
+    public onAttach($event: any) {
         $event.preventDefault();
-        const results: AttachedFile[] = [];
-        if ($event.dataTransfer?.items?.length) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.txt, .pdf, .doc, .docx, .xls, .csv, .kml, .geoJSON, image/*';
+        input.onchange = (event) => {
+            const files: File[] = [];
+            if (input.files) {
+                for (let i = 0; i < input.files.length; i++) {
+                    const file = input.files[i];
+                    files.push(file);
+                }
+            }
+            this.addFiles(files);
+            input.remove();
+        }
+        input.click();
+    }
+
+    public onDrop($event: DragEvent) {
+        $event.preventDefault();
+        const files: File[] = [];
+        if ($event.dataTransfer?.items) {
             for (let index = 0; index < $event.dataTransfer.items.length; index++) {
                 const item = $event.dataTransfer.items[index];
                 if (item.kind === "file") {
                     const file = item.getAsFile();
-                    const result = new AttachedFile(file);
-                    results.push(result)
+                    if (file) {
+                        files.push(file);
+                    }
                 }
+            }
+        }
+        this.addFiles(files);
+    }
+
+    private addFiles(files: File[]) {
+        const results: AttachedFile[] = [];
+        if (files?.length) {
+            for (const file of files) {
+                const result = new AttachedFile(file);
+                results.push(result);
             }
         }
         for (const result of results) {
@@ -314,6 +467,7 @@ export class PolicyComments {
         for (const result of results) {
             this.files.push(result);
         }
+        this.updateDisabled();
     }
 
     public getSize(bytes: number): string {
@@ -339,7 +493,7 @@ export class PolicyComments {
     }
 
     public onChangeVisibility($event: DropdownChangeEvent) {
-        debugger;
+        // debugger;
     }
 
     public onText() {
@@ -367,8 +521,62 @@ export class PolicyComments {
         }
     }
 
+    public resetScroll() {
+        try {
+            this.messageContainer
+                .nativeElement
+                .querySelector('.messages')
+                .scrollTo(0, 0)
+        } catch (error) {
+            return;
+        }
+    }
+
     public onMore() {
         const last = this.data.getLast();
         this.loadComments('more', last?.id);
+    }
+
+    public onLoadFile(file: any) {
+        debugger;
+    }
+
+    // public getUserName(did: string) {
+    //     return this.userNames.get(did) || did;
+    // }
+
+    public getUserName(t: any) {
+        if (t.type === 'text') {
+            return t.text;
+        }
+        if (t.type === 'tag') {
+            return this.userNames.get(t.tag) || t.text;
+        }
+        if (t.type === 'role') {
+            return this.userNames.get(t.tag) || t.text;
+        }
+        if (t.type === 'user') {
+            return this.userNames.get(t.tag) || t.text;
+        }
+        return t.text;
+    }
+
+    public findChoices(searchText: string) {
+        const search = searchText.toLowerCase();
+        return this.users.filter((user) => {
+            return user.search.includes(search);
+        })
+    }
+
+    public getChoiceLabel(choice: any): string {
+        if (choice.type === 'user') {
+            return `@{${choice.label}} `;
+        } else {
+            return `@[${choice.value}] `;
+        }
+    }
+
+    public onClose() {
+
     }
 }

@@ -1321,10 +1321,7 @@ export class PolicyEngine extends NatsService {
         documentId: string,
         data: {
             anchor?: string;
-            //recipient
-            recipient?: string;
-            recipientRole?: string;
-            //document
+            recipients?: string[];
             text?: string;
             files?: string[];
         }

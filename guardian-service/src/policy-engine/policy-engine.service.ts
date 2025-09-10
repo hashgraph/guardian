@@ -3382,10 +3382,7 @@ export class PolicyEngineService {
                 documentId: string,
                 data: {
                     anchor?: string;
-                    //recipient
-                    recipient?: string;
-                    recipientRole?: string;
-                    //document
+                    recipients?: string[];
                     text?: string;
                     files?: string[];
                 },
@@ -3419,8 +3416,7 @@ export class PolicyEngineService {
                         sender: user.did,
                         senderRole: userRole,
                         senderName: user.username,
-                        recipient: data.recipient,
-                        recipientRole: data.recipientRole,
+                        recipients: data.recipients,
                         anchor: data.anchor,
                         target: vc.messageId,
                         targetId: documentId,

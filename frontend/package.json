@@ -38,6 +38,8 @@
         "primeng": "17.18.10",
         "rxjs": "~7.8.1",
         "shapefile": "^0.6.6",
+        "textarea-caret": "^3.1.0",
+        "to-px": "^1.1.0",
         "xmldom": "^0.6.0",
         "zone.js": "~0.14.10"
     },
@@ -51,6 +53,7 @@
         "@types/js-yaml": "^4.0.5",
         "@types/mapbox-gl": "^3.1.0",
         "@types/node": "^12.11.1",
+        "@types/textarea-caret": "^3.0.4",
         "@types/xmldom": "^0.1.34",
         "jasmine-core": "~3.9.0",
         "karma": "~6.3.0",

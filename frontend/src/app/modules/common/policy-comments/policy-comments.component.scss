@@ -5,6 +5,64 @@
     display: flex;
     flex-direction: column;
 
+    .header {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: 88px;
+        background: #FFFFFF;
+        border-bottom: 1px solid #E1E7EF;
+        padding: 24px 24px 16px 24px;
+
+        .header-container {
+            height: 47px;
+            width: 100%;
+            overflow: hidden;
+
+            .component-name {
+                font-family: Inter;
+                font-weight: 500;
+                font-size: 12px;
+                line-height: 14px;
+                color: #848FA9;
+                margin-bottom: 4px;
+            }
+
+            .field-name {
+                font-family: Poppins;
+                font-weight: 600;
+                font-size: 16px;
+                line-height: 20px;
+                color: #23252E;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        .header-icon {
+            height: 32px;
+            width: 32px;
+            min-width: 32px;
+            max-width: 32px;
+        }
+
+        .component-close {
+            width: 32px;
+            min-width: 32px;
+            max-width: 32px;
+            height: 32px;
+            padding: 4px;
+            background-color: var(--guardian-secondary-color);
+            border-radius: 100%;
+            cursor: pointer;
+
+            &:hover {
+                filter: brightness(0.95);
+            }
+        }
+    }
+
     .messages-container {
         position: relative;
         width: 100%;
@@ -19,7 +77,7 @@
             overflow: auto;
             display: flex;
             flex-direction: column-reverse;
-            background: #F9FAFC;
+            background: #fff;
             padding: 24px;
         }
     }
@@ -27,10 +85,20 @@
     .toolbar {
         width: 100%;
         border-top: 1px solid #E1E7EF;
-        padding-top: 8px;
+        padding: 16px 16px 8px 16px;
 
         .toolbar-textarea {
             margin-bottom: 8px;
+            position: relative;
+            height: 51px;
+            // padding-right: 32px;
+
+            textarea {
+                border: none !important;
+                padding: 0px !important;
+                word-break: break-all;
+                border-radius: 0;
+            }
         }
 
         .toolbar-files {
@@ -97,21 +165,38 @@
 
         .toolbar-actions {
             width: 100%;
-            height: 40px;
+            height: 36px;
             display: flex;
             flex-direction: row;
             justify-content: flex-end;
 
+            .delimiter {
+                border-left: 1px solid #E1E7EF;
+                margin-right: 8px;
+                margin-left: 3px;
+                margin-top: 6px;
+                width: 2px;
+                height: 24px;
+            }
+
             .left-actions {
-                width: 100%;
+                width: calc(100% - 116px);
                 height: 40px;
                 margin-right: 16px;
             }
 
             .send-btn {
-                min-width: 100px;
-                width: 100px;
-                height: 38px;
+                width: 24px;
+                height: 24px;
+                margin-top: 6px;
+                margin-right: 6px;
+            }
+
+            .attach-btn {
+                width: 24px;
+                height: 24px;
+                margin-top: 6px;
+                margin-right: 6px;
             }
         }
     }
@@ -128,6 +213,10 @@
 
         .message-body {
             background: #EFF3F7;
+        }
+
+        .message-header {
+            display: none !important;
         }
     }
 
@@ -174,7 +263,7 @@
             }
 
             .message-role {
-                border: 1px solid #6000C4;
+                border: 1px solid #4169E2;
                 background: #FFFFFF;
                 height: 24px;
                 border-radius: 4px;
@@ -182,18 +271,42 @@
                 padding-right: 8px;
                 padding-bottom: 4px;
                 padding-left: 8px;
-                margin-left: 8px;
                 font-family: Inter;
                 font-weight: 500;
                 font-size: 12px;
                 line-height: 16px;
                 vertical-align: middle;
-                color: #6000C4;
+                color: #4169E2;
+                width: fit-content;
+                // margin-bottom: 8px;
+
+                margin-left: 8px;
+                background: #E1E7EF;
+                color: #6f7279;
+                border: none;
             }
         }
 
         .message-text {
-            margin-bottom: 8px;
+            font-family: Roboto;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 20px;
+            vertical-align: middle;
+            color: #181818;
+
+            .message-tag,
+            .text-type-role,
+            .text-type-user,
+            .text-type-tag {
+                font-family: Inter;
+                font-weight: 500;
+                font-size: 12px;
+                line-height: 16px;
+                vertical-align: middle;
+                color: #4169E2;
+                margin-bottom: 8px;
+            }
         }
 
         .message-files {
@@ -202,8 +315,9 @@
                 height: 48px;
                 display: flex;
                 flex-direction: row;
-                padding-top: 3px;
                 margin-top: 8px;
+                overflow: hidden;
+                cursor: pointer;
 
                 .file-icon {
                     width: 48px;
@@ -218,8 +332,9 @@
                 }
 
                 .file-metadata {
-                    width: 100%;
+                    width: calc(100% - 64px);
                     height: 48px;
+                    overflow: hidden;
 
                     .file-name {
                         width: 100%;
@@ -232,17 +347,10 @@
                         color: #181818;
                         margin-bottom: 4px;
                         position: relative;
-
-                        span {
-                            position: absolute;
-                            left: 0;
-                            right: 0;
-                            top: 0;
-                            bottom: 0;
-                            white-space: nowrap;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                        }
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        margin-top: 3px;
                     }
 
                     .file-size {
@@ -265,4 +373,21 @@ textarea {
 
 .guardian-dropdown-label {
     color: #848FA9;
+}
+
+.autocomplete-item {
+    display: flex;
+    flex-direction: row;
+    padding: 8px 16px 8px 10px;
+
+    i {
+        width: 26px;
+    }
+}
+
+#editor {
+    width: 400px;
+    height: 100px;
+    padding: 10px;
+    font-size: 14px;
 }

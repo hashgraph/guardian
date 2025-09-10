@@ -43,6 +43,10 @@ import { MenuButton } from './menu-button/menu-button.component';
 import { CheckboxButton } from './checkbox-button/checkbox-button.component';
 import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
 import { PolicyComments } from './policy-comments/policy-comments.component';
+import { TextInputAutocompleteDirective } from './angular-text-input-autocomplete/text-input-autocomplete.directive';
+import { TextInputAutocompleteContainerComponent } from './angular-text-input-autocomplete/text-input-autocomplete-container.component';
+import { TextInputAutocompleteMenuComponent } from './angular-text-input-autocomplete/text-input-autocomplete-menu.component';
+
 
 @NgModule({
     declarations: [
@@ -74,7 +78,10 @@ import { PolicyComments } from './policy-comments/policy-comments.component';
         MenuButton,
         CheckboxButton,
         IPFSLinkComponent,
-        PolicyComments
+        PolicyComments,
+        TextInputAutocompleteDirective,
+        TextInputAutocompleteContainerComponent,
+        TextInputAutocompleteMenuComponent
     ],
     imports: [
         CommonModule,
@@ -126,7 +133,10 @@ import { PolicyComments } from './policy-comments/policy-comments.component';
         MenuButton,
         CheckboxButton,
         IPFSLinkComponent,
-        PolicyComments
+        PolicyComments,
+        TextInputAutocompleteDirective,
+        TextInputAutocompleteContainerComponent,
+        TextInputAutocompleteMenuComponent
     ]
 })
 export class CommonComponentsModule {

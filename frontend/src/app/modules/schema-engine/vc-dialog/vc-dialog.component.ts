@@ -36,6 +36,7 @@ export class VCViewerDialog {
         { label: 'Code View', value: false, icon: 'number' }
     ];
 
+    public row?: any;
     public policyId?: string;
     public documentId?: string;
     public schemaId?: string;
@@ -87,6 +88,7 @@ export class VCViewerDialog {
             additionalOptionsData,
         } = this.dialogConfig.data;
 
+        this.row = row;
         this.policyId = row?.policyId;
         this.documentId = row?.id;
         this.schemaId = row?.schema;
