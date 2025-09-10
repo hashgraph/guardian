@@ -8248,6 +8248,47 @@ paths:
       summary: Returns schema tree.
       tags:
         - schema
+  /schema/{schemaId}/children:
+    get:
+      description: Returns all child schemas.
+      operationId: SingleSchemaApi_getSchemaChildren
+      parameters:
+        - name: schemaId
+          required: true
+          in: path
+          description: Schema identifier
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Policy topic Id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns all child schemas.
+      tags:
+        - schema
   /schemas:
     get:
       description: Returns all schemas.
@@ -8770,6 +8811,12 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
+        - name: includeChildren
+          required: false
+          in: query
+          description: Include child schemas
+          schema:
+            type: boolean
       responses:
         '200':
           description: Successful operation.
