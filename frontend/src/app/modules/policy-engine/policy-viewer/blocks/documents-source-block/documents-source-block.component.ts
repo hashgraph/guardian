@@ -27,6 +27,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 export class DocumentsSourceBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
+    @Input('policyStatus') policyStatus!: string;
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
     @Input('savepointIds') savepointIds?: string[] | null = null;

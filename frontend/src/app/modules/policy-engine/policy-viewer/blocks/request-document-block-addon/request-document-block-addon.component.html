@@ -1,4 +1,4 @@
-<div class="create-button-container" [attr.readonly-block]="readonly">
+<div *ngIf="isBtnVisible()" class="create-button-container" [attr.readonly-block]="readonly">
     <p-button (click)="onDialog()" class="btn-block-{{ uiClass }}">
         {{ buttonName }}
     </p-button>
