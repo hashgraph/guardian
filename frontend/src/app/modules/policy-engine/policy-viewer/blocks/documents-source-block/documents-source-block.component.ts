@@ -8,6 +8,7 @@ import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialo
 import { ViewerDialog } from '../../../dialogs/viewer-dialog/viewer-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
+import { VCFullscreenDialog } from 'src/app/modules/schema-engine/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -238,18 +239,20 @@ export class DocumentsSourceBlockComponent implements OnInit {
             dialogRef.onClose.subscribe(async (result) => {
             });
         } else {
-            const dialogRef = this.dialogService.open(VCViewerDialog, {
+            const dialogRef = this.dialogService.open(VCFullscreenDialog, {
                 showHeader: false,
                 width: '1000px',
                 styleClass: 'guardian-dialog',
+                maskStyleClass: 'guardian-fullscreen-dialog',
                 data: {
+                    type: 'VC',
+                    backLabel: 'Back to Policy',
+                    title: field.dialogContent,
+                    viewDocument: true,
+                    dryRun: !!row.dryRunId,
                     id: row.id,
                     row: row,
                     document: document,
-                    dryRun: !!row.dryRunId,
-                    title: field.dialogContent,
-                    type: 'VC',
-                    viewDocument: true
                 }
             });
             dialogRef.onClose.subscribe(async (result) => {
@@ -501,7 +504,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     getClass(type: string): string {
-        if(type === 'text') {
+        if (type === 'text') {
             return 'text-container';
         }
         return ''

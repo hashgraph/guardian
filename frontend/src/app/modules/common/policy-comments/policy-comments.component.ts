@@ -9,83 +9,6 @@ import { DataList } from './data-list';
 import { ProfileService } from 'src/app/services/profile.service';
 import { UserPermissions } from '@guardian/interfaces';
 
-// this.visibility = [{
-//     label: 'All',
-//     value: 'all',
-//     items: [{
-//         label: 'All',
-//         value: '@all'
-//     }],
-// }];
-// if (this.policy) {
-//     const group: ListItem = {
-//         label: 'Roles',
-//         value: 'roles',
-//         items: [],
-//     }
-//     if (Array.isArray(this.policy.policyRoles)) {
-//         for (const role of this.policy.policyRoles) {
-//             group.items.push({
-//                 label: role,
-//                 value: `@${role}`
-//             })
-//         }
-//     }
-//     if (group.items.length) {
-//         this.visibility.push(group);
-//     }
-// }
-// if (this.owner) {
-//     const group: ListItem = {
-//         label: 'Users',
-//         value: 'users',
-//         items: [],
-//     }
-//     if (this.policyOwner && this.owner !== this.policyOwner) {
-//         group.items.push({
-//             label: 'Administrator',
-//             role: 'Administrator',
-//             value: this.policyOwner
-//         })
-//         this.userNames.set(this.policyOwner, 'Administrator');
-//     }
-//     if (this.documentOwner && this.owner !== this.documentOwner) {
-//         group.items.push({
-//             label: 'Document Owner',
-//             role: 'Document Owner',
-//             value: this.documentOwner
-//         })
-//         this.userNames.set(this.documentOwner, 'Document Owner');
-//     }
-//     const users = this.data.getUsers();
-//     for (const user of users) {
-//         if (
-//             user.sender !== this.policyOwner &&
-//             user.sender !== this.documentOwner &&
-//             user.sender !== this.owner
-//         ) {
-//             group.items.push({
-//                 label: user.senderName,
-//                 role: user.senderRole,
-//                 value: user.sender
-//             })
-//             this.userNames.set(user.sender, user.senderName);
-//         }
-//     }
-//     if (group.items.length) {
-//         this.visibility.push(group);
-//     }
-// }
-// interface ListItem {
-//     label: string;
-//     value: string;
-//     items: {
-//         label: string;
-//         role?: string;
-//         value: string;
-//     }[];
-// }
-
 interface ListItem {
     label: string;
     value: string;
@@ -103,25 +26,21 @@ interface ListItem {
     styleUrls: ['./policy-comments.component.scss']
 })
 export class PolicyComments {
-    @Input('document') document!: any | undefined;
+    @Input('document-id') documentId!: any | undefined;
+    @Input('policy-id') policyId!: any | undefined;
     @Input('field') field!: any | undefined;
-    @ViewChild('messageContainer', { static: true }) messageContainer: any;
 
-    public documentId: string;
-    public policyId: string;
+    @ViewChild('messageContainer', { static: true }) messageContainer: any;
 
     public loading: boolean = true;
     public data: DataList;
 
     public user: UserPermissions = new UserPermissions();
     public owner: string;
-    public documentOwner: string;
-    public policyOwner: string;
     public policy: any;
 
     public textMessage: string;
     public files: AttachedFile[];
-    // public currentVisibility: any;
     public sendDisabled: boolean;
 
     public visibility: ListItem[] = [];
@@ -152,12 +71,6 @@ export class PolicyComments {
 
     ngOnChanges(changes: SimpleChanges) {
         this.loading = true;
-
-        this.documentId = this.document?.id;
-        this.policyId = this.document?.policyId;
-        this.documentOwner = this.document.owner;
-        this.policyOwner = '';
-
         this.loadProfile();
         this.updateTargets();
     }
@@ -186,22 +99,22 @@ export class PolicyComments {
                 })
             }
         }
-        if (this.policyOwner && this.owner !== this.policyOwner) {
-            this.users.push({
-                label: 'Administrator',
-                value: 'Administrator',
-                search: 'administrator',
-                type: 'user',
-            })
-        }
-        if (this.documentOwner && this.owner !== this.documentOwner) {
-            this.users.push({
-                label: 'Owner',
-                value: 'Owner',
-                search: 'owner',
-                type: 'user',
-            })
-        }
+        // if (this.policyOwner && this.owner !== this.policyOwner) {
+        //     this.users.push({
+        //         label: 'Administrator',
+        //         value: 'Administrator',
+        //         search: 'administrator',
+        //         type: 'user',
+        //     })
+        // }
+        // if (this.documentOwner && this.owner !== this.documentOwner) {
+        //     this.users.push({
+        //         label: 'Owner',
+        //         value: 'Owner',
+        //         search: 'owner',
+        //         type: 'user',
+        //     })
+        // }
 
         const users = this.data.getUsers();
         for (const user of users) {
@@ -261,9 +174,7 @@ export class PolicyComments {
             .subscribe(([profile, policy, response]) => {
                 this.user = new UserPermissions(profile);
                 this.owner = this.user.did;
-
                 this.policy = policy;
-                this.policyOwner = policy.owner;
 
                 const { page, count } = this.policyEngineService.parsePage(response);
                 this.parsMessages(page);
