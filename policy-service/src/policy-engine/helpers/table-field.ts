@@ -1,5 +1,5 @@
 import { BlockActionError } from '../errors/index.js';
-import { IPolicyCalculateBlock } from '../policy-engine.interface.js';
+import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
 
 import { IPFS, Workers } from '@guardian/common';
@@ -176,7 +176,7 @@ function toUtf8String(value: unknown): string {
 }
 
 export async function loadFileTextById(
-    ref: IPolicyCalculateBlock,
+    ref: AnyBlockType,
     fileId: string
 ): Promise<string> {
     try {
