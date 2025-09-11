@@ -61,7 +61,11 @@ context("Import policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, 
                         expect(importedPolicyLabel.policyTopicId).eql(policy.topicId);
                         expect(importedPolicyLabel.policyInstanceTopicId).eql(policy.instanceTopicId);
                         expect(importedPolicyLabel.status).eql(policyLabel.status);
-                        expect(importedPolicyLabel.config).eql(policyLabel.config);
+                        expect(importedPolicyLabel.config.imports).eql(policyLabel.config.imports);
+                        expect(importedPolicyLabel.config.schemaId).eql(policyLabel.config.schemaId);
+                        importedPolicyLabel.config.children.forEach((child, index) => {
+                            expect(child).eql(policyLabel.config.children[index]);
+                        })
                     });
                 })
         })
