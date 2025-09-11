@@ -218,7 +218,8 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + waitForApproveApplicationBlockId,
 				headers: {
 					authorization
-				}
+				},
+				failOnStatusCode: false
 			}
 
 			Checks.whileApplicationCreating("Submitted for Approval", requestForApplicationCreationProgress, 0)
@@ -258,7 +259,8 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + deviceGridBlockId,
 				headers: {
 					authorization
-				}
+				},
+				failOnStatusCode: false
 			}
 
 			Checks.whileApplicationApproving("Device Name", requestForApplicationApproveProgress, 0)
@@ -285,7 +287,8 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + deviceGridBlockId,
 				headers: {
 					authorization
-				}
+				},
+				failOnStatusCode: false
 			}
 			Checks.whileDeviceCreating("Waiting for approval", requestForDeviceCreationProgress, 0)
 		})
@@ -328,7 +331,8 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + deviceGridBlockId,
 				headers: {
 					authorization
-				}
+				},
+				failOnStatusCode: false
 			}
 
 			Checks.whileDeviceApproving("Approved", requestForDeviceApproveProgress, 0)
@@ -371,7 +375,8 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 					url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + issueRequestGridBlockId,
 					headers: {
 						authorization
-					}
+					},
+					failOnStatusCode: false
 				}
 
 				Checks.whileIssueRequestCreating("Waiting for approval", requestForIssueCreationProgress, 0)
@@ -415,7 +420,8 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + issueRequestGridBlockId,
 				headers: {
 					authorization
-				}
+				},
+				failOnStatusCode: false
 			}
 
 			Checks.whileIssueRequestApproving("Approved", requestForIssueApproveProgress, 0)
