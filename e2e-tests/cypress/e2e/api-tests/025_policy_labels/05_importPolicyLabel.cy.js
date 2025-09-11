@@ -17,7 +17,7 @@ context("Import policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, 
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                policyLabel = response.body.at(0);
+                policyLabel = response.body.at(-1);
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + API.Policies,
@@ -62,8 +62,8 @@ context("Import policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, 
                         expect(importedPolicyLabel.policyInstanceTopicId).eql(policy.instanceTopicId);
                         expect(importedPolicyLabel.status).eql(policyLabel.status);
                         importedPolicyLabel.config.children.forEach((child, index) => {
-                            child.config.variables.schemaId = "";
-                            policyLabel.config.children[index].config.variables.schemaId = "";
+                            child.config.variables[0].schemaId = "";
+                            policyLabel.config.children[index].config.variables[0].schemaId = "";
                         })
                         expect(importedPolicyLabel.config).eql(policyLabel.config);
                     });
