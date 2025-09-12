@@ -81,6 +81,7 @@ where `tag` can be:
 - permissions - all tests for operations with permissions
 - formulas - all tests for operations with formulas
 - policy_labels - all tests for operations with policy labels
+- remote_policy - all tests for remote policy feature(using MGS)
 
 There's few tags for general tests runs:
 - all - all API tests for Guardian platform
