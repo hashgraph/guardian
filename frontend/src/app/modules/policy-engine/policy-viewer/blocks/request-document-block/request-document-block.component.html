@@ -1,6 +1,6 @@
 <div [hidden]="!isExist" class="content-{{ type }}" [attr.readonly-block]="readonly">
     <ng-container *ngIf="type == 'dialog'">
-        <div class="create-button-container">
+        <div *ngIf="isBtnVisible()" class="create-button-container">
             <p-button (click)="onDialog()" class="btn-block-{{ buttonClass }}">
                 {{ content }}
             </p-button>
