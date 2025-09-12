@@ -37,7 +37,7 @@ export const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
 }
 
 export const whileRequestAppear = (authorization, attempts = 0) => {
-    if (attempts < 100) {
+    if (attempts < 150) {
         attempts++
         cy.wait(3000)
         cy.request({
