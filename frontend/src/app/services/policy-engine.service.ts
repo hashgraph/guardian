@@ -594,35 +594,4 @@ export class PolicyEngineService {
                 throw new Error(`Invalid request type ${type}`);
         }
     }
-
-    public getPolicyComments(
-        policyId: string,
-        documentId: string,
-        filters: {
-            anchor?: string,
-            sender?: string,
-            senderRole?: string;
-            private?: boolean,
-            last?: string,
-        },
-    ): Observable<HttpResponse<any[]>> {
-        const header: any = { observe: 'response' };
-        header.params = PolicyEngineService.getOptions(filters);
-        return this.http.get<any[]>(`${this.url}/${policyId}/comments/${documentId}`, header) as any;
-    }
-
-    public createPolicyComment(
-        policyId: string,
-        documentId: string,
-        data: {
-            anchor?: string;
-            // recipient?: string;
-            // recipientRole?: string;
-            recipients?: string[];
-            text?: string;
-            attachedFiles?: string[];
-        }
-    ) {
-        return this.http.post<any>(`${this.url}/${policyId}/comments/${documentId}`, data);
-    }
 }

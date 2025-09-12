@@ -1,8 +1,22 @@
-<div class="container">
+<div *ngIf="!collapse" class="container">
     <div class="header">
-        <div class="header-container">
-            <div class="component-name">Comments</div>
-            <div class="field-name">Comments</div>
+        <div *ngIf="currentChat" class="header-container back" (click)="selectChat()">
+            <svg-icon
+                class="icon-btn"
+                src="/assets/images/icons/left-arrow.svg"
+                [svgClass]="'icon-color-primary'">
+            </svg-icon>
+            <div class="component-name">
+                {{currentChat.name}}
+            </div>
+        </div>
+        <div  *ngIf="!currentChat" class="header-container">
+            <svg-icon
+                class="icon-btn"
+                src="/assets/images/icons/chat.svg"
+                [svgClass]="'icon-color-primary'">
+            </svg-icon>
+            <div class="component-name">Chats</div>
         </div>
         <div class="header-icon">
             <div class="component-close" (click)="onClose()">
@@ -15,151 +29,173 @@
     <div *ngIf="loading" class="guardian-loading">
         <div class="guardian-loading-image"></div>
     </div>
-    <div #messageContainer class="messages-container">
-        <div *ngIf="!data.data.length" class="messages">
-            
-        </div>
-        <div *ngIf="data.data.length" class="messages" >
-            <div *ngFor="let item of data.data" class="message" [attr.owner]="item.isOwner">
-                <div class="message-time">
-                    {{getDate(item.timestamp)}}
-                </div>
-                <div class="message-body">
-                    <div class="message-header">
-                        <div class="message-name">
-                            {{item.senderName}}
-                        </div>
-                        <div *ngIf="item.senderRole" class="message-role">
-                            {{item.senderRole}}
-                        </div>
+
+    <ng-container *ngIf="!currentChat">
+        <div class="chats">
+            <div *ngFor="let chat of chats" class="full-chats">
+                <div class="full-chat" (click)="onOpen(chat)">
+                    <div class="chat-icon">
+                        {{chat._short}}
                     </div>
-                    <div *ngIf="item.document.text" class="message-text">
-                        <!-- <span *ngIf="item.recipient" class="message-tag">&#64;{{getUserName(item.recipient)}},</span>
-                        <span *ngIf="item.recipientRole" class="message-tag">&#64;{{item.recipientRole}},</span> -->
-                        <span *ngFor="let t of item.__text" class="text-type-{{t.type}}">
-                            {{getUserName(t)}}
-                        </span>
-                    </div>
-                    <div *ngIf="item.document.files?.length" class="message-files">
-                        <div *ngFor="let file of item.document.files" class="message-file" (click)="onLoadFile(file)">
-                            <div class="file-icon">
-                                <svg-icon src="/assets/images/icons/file.svg" svgClass="icon-color-close"></svg-icon>
-                            </div>
-                            <div class="file-metadata">
-                                <div class="file-name">
-                                    <span>{{file.name}}</span>
-                                </div>
-                                <div class="file-size">{{getSize(file.size)}}</div>
-                            </div>
-                        </div>
+                    <div class="chat-name">
+                        {{chat.name}}
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="toolbar">
             <button
-                *ngIf="!data.full"
-                (click)="onMore()"
-                class="guardian-button guardian-button-secondery"
-                style="min-height: 30px; margin-bottom: 16px;"
+                (click)="createNewChat()"
+                class="guardian-button guardian-button-primary new-chat-btn"
             >
-                <div class="guardian-button-label">More</div>
+                <div class="guardian-button-label">Create New Chat</div>
             </button> 
         </div>
-    </div>
-    <div class="toolbar">
-        <div class="guardian-textarea-container toolbar-textarea">
-            <mwl-text-input-autocomplete-container>
-                <textarea
-                    placeholder="Write a message"
-                    rows="3" 
-                    [(ngModel)]="textMessage"
-                    mwlTextInputAutocomplete
-                    [findChoices]="_findChoices"
-                    [getChoiceLabel]="_getChoiceLabel"
-                    [menuPosition]="'above'"
-                    (input)="onText()"
-                    (drop)="onDrop($event)">
-                </textarea>
-                <ng-template let-item #itemTemplate>
-                    <div class="autocomplete-item">
-                        <i *ngIf="item.type === 'user'" class="pi pi-user"></i>
-                        <i *ngIf="item.type !== 'user'" class="pi pi-users"></i>
-                        <span class="autocomplete-item-name">{{ item.label }}</span>
+    </ng-container>
+    <ng-container *ngIf="currentChat">
+        <div #messageContainer class="messages-container">
+            <div *ngIf="!data.data.length" class="messages">
+                
+            </div>
+            <div *ngIf="data.data.length" class="messages" >
+                <div *ngFor="let item of data.data" class="message" [attr.owner]="item.isOwner">
+                    <div class="message-time">
+                        {{getDate(item.timestamp)}}
                     </div>
-                </ng-template>
-            </mwl-text-input-autocomplete-container>
-        </div>
-        <div *ngIf="files.length" class="toolbar-files">
-            <div *ngFor="let file of files" class="toolbar-file">
-                <div *ngIf="file.loaded" class="toolbar-file-icon">
-                    <svg-icon src="/assets/images/icons/file.svg" svgClass="icon-color-close"></svg-icon>
+                    <div class="message-body">
+                        <div class="message-header">
+                            <div class="message-name">
+                                {{item.senderName}}
+                            </div>
+                            <div *ngIf="item.senderRole" class="message-role">
+                                {{item.senderRole}}
+                            </div>
+                        </div>
+                        <div *ngIf="item.document.text" class="message-text">
+                            <!-- <span *ngIf="item.recipient" class="message-tag">&#64;{{getUserName(item.recipient)}},</span>
+                            <span *ngIf="item.recipientRole" class="message-tag">&#64;{{item.recipientRole}},</span> -->
+                            <span *ngFor="let t of item.__text" class="text-type-{{t.type}}">
+                                {{getUserName(t)}}
+                            </span>
+                        </div>
+                        <div *ngIf="item.document.files?.length" class="message-files">
+                            <div *ngFor="let file of item.document.files" class="message-file" (click)="onLoadFile(file)">
+                                <div class="file-icon">
+                                    <svg-icon src="/assets/images/icons/file.svg" svgClass="icon-color-close"></svg-icon>
+                                </div>
+                                <div class="file-metadata">
+                                    <div class="file-name">
+                                        <span>{{file.name}}</span>
+                                    </div>
+                                    <div class="file-size">{{getSize(file.size)}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div *ngIf="!file.loaded" class="toolbar-file-loading guardian-loading">
-                    <div class="guardian-loading-image"></div>
-                </div>
-                <div class="toolbar-file-metadata">
-                    <div class="file-name">{{file.name}}</div>
-                    <!-- <div>{{file.loaded}}</div> -->
-                </div>
-                <div class="toolbar-file-action" (click)="onDeleteFile(file)">
-                    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-                </div>
+                <button
+                    *ngIf="!data.full"
+                    (click)="onMore()"
+                    class="guardian-button guardian-button-secondery"
+                    style="min-height: 30px; margin-bottom: 16px;"
+                >
+                    <div class="guardian-button-label">More</div>
+                </button> 
             </div>
         </div>
-        <div class="toolbar-actions">
-            <!-- <div class="left-actions">
-                <p-dropdown
-                    [(ngModel)]="currentVisibility"
-                    [options]="visibility"
-                    (onChange)="onChangeVisibility($event)"
-                    [showClear]="false"
-                    appendTo="body"
-                    [group]="true"
-                    class="guardian-dropdown"
-                    placeholder="Select visibility"
-                    panelStyleClass="guardian-dropdown-panel"
-                    optionLabel="label"
-                    optionValue="value">
-                    <ng-template let-item pTemplate="selectedItem">
-                        <div class="guardian-dropdown-selected">
-                            <span class="guardian-dropdown-label">Visible for</span>
-                            <span class="guardian-dropdown-item">{{ item?.label }}</span>
+        <div class="toolbar">
+            <div class="guardian-textarea-container toolbar-textarea">
+                <mwl-text-input-autocomplete-container>
+                    <textarea
+                        placeholder="Write a message"
+                        rows="3" 
+                        [(ngModel)]="textMessage"
+                        mwlTextInputAutocomplete
+                        [findChoices]="_findChoices"
+                        [getChoiceLabel]="_getChoiceLabel"
+                        [menuPosition]="'above'"
+                        (input)="onText()"
+                        (drop)="onDrop($event)">
+                    </textarea>
+                    <ng-template let-item #itemTemplate>
+                        <div class="autocomplete-item">
+                            <i *ngIf="item.type === 'user'" class="pi pi-user"></i>
+                            <i *ngIf="item.type !== 'user'" class="pi pi-users"></i>
+                            <span class="autocomplete-item-name">{{ item.label }}</span>
                         </div>
                     </ng-template>
-                </p-dropdown>
-            </div> -->
-            <button
-                class="guardian-icon-button attach-btn big"
-                (click)="onAttach($event)">
-                <svg-icon
-                    class="icon-btn svg-icon"
-                    src="/assets/images/icons/attach.svg"
-                    [svgClass]="'icon-color-primary'">
-                </svg-icon>
-            </button>
-            <div class="delimiter"></div>
-            <button
-                class="guardian-icon-button send-btn big"
-                (click)="onSend()"
-                [disabled]="sendDisabled">
-                <svg-icon
-                    class="icon-btn svg-icon"
-                    src="/assets/images/icons/send.svg"
-                    [svgClass]="sendDisabled ? 'icon-color-disabled' : 'icon-color-primary'">
-                </svg-icon>
-            </button>
-            <!-- <button
-                (click)="onSend()"
-                class="guardian-button guardian-button-primary send-btn"
-                [disabled]="sendDisabled">
-                <div class="guardian-button-icon">
-                    <svg-icon
-                        class="icon-btn"
-                        src="/assets/images/icons/send.svg"
-                        [svgClass]="sendDisabled ? 'icon-color-disabled' : 'icon-color-secondary'">
-                    </svg-icon>
+                </mwl-text-input-autocomplete-container>
+            </div>
+            <div *ngIf="files.length" class="toolbar-files">
+                <div *ngFor="let file of files" class="toolbar-file">
+                    <div *ngIf="file.loaded" class="toolbar-file-icon">
+                        <svg-icon src="/assets/images/icons/file.svg" svgClass="icon-color-close"></svg-icon>
+                    </div>
+                    <div *ngIf="!file.loaded" class="toolbar-file-loading guardian-loading">
+                        <div class="guardian-loading-image"></div>
+                    </div>
+                    <div class="toolbar-file-metadata">
+                        <div class="file-name">{{file.name}}</div>
+                        <!-- <div>{{file.loaded}}</div> -->
+                    </div>
+                    <div class="toolbar-file-action" (click)="onDeleteFile(file)">
+                        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                    </div>
                 </div>
-                <div class="guardian-button-label">Send</div>
-            </button>  -->
+            </div>
+            <div class="toolbar-actions">
+                <button
+                    class="guardian-icon-button attach-btn big"
+                    (click)="onAttach($event)">
+                    <svg-icon
+                        class="icon-btn svg-icon"
+                        src="/assets/images/icons/attach.svg"
+                        [svgClass]="'icon-color-primary'">
+                    </svg-icon>
+                </button>
+                <div class="delimiter"></div>
+                <button
+                    class="guardian-icon-button send-btn big"
+                    (click)="onSend()"
+                    [disabled]="sendDisabled">
+                    <svg-icon
+                        class="icon-btn svg-icon"
+                        src="/assets/images/icons/send.svg"
+                        [svgClass]="sendDisabled ? 'icon-color-disabled' : 'icon-color-primary'">
+                    </svg-icon>
+                </button>
+            </div>
         </div>
+    </ng-container>
+    
+</div>
+
+<div *ngIf="collapse" class="collapse-container">
+    <div class="header">
+        <svg-icon
+            class="icon-btn svg-icon"
+            src="/assets/images/icons/chat.svg"
+            [svgClass]="'icon-color-primary'">
+        </svg-icon>
+    </div>
+    <div class="chats">
+        <div *ngFor="let chat of chats" class="collapse-chats">
+            <div class="collapse-chat" (click)="onOpen(chat)">
+                {{chat._short}}
+            </div>
+        </div>
+    </div>
+    <div class="collapse-toolbar">
+        <button
+            (click)="onOpen()"
+            class="guardian-button guardian-button-primary open-btn">
+            <div class="guardian-button-icon">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/left-arrow.svg"
+                    [svgClass]="'icon-color-secondary'">
+                </svg-icon>
+            </div>
+        </button>
     </div>
 </div>

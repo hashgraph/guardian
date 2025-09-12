@@ -1,20 +1,33 @@
 import { Component, EventEmitter, Inject, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import moment from 'moment';
 import { DropdownChangeEvent } from 'primeng/dropdown';
 import { AttachedFile } from './attached-file';
 import { DataList } from './data-list';
 import { ProfileService } from 'src/app/services/profile.service';
 import { UserPermissions } from '@guardian/interfaces';
+import { CommentsService } from 'src/app/services/comments.service';
 
 interface ListItem {
     label: string;
     value: string;
-    search: string;
     type: string;
-    role?: string;
+    search?: string;
+    roles?: string[];
+}
+
+interface ChatItem {
+    id: string;
+    name: string;
+    owner: string;
+    system: string;
+    count: number;
+    parent: string;
+    documentId: string;
+    policyId: string;
+    relationships: string[];
+    _short?: string
 }
 
 /**
@@ -29,15 +42,18 @@ export class PolicyComments {
     @Input('document-id') documentId!: any | undefined;
     @Input('policy-id') policyId!: any | undefined;
     @Input('field') field!: any | undefined;
+    @Input('collapse') collapse: boolean = true;
 
-    @ViewChild('messageContainer', { static: true }) messageContainer: any;
+    @ViewChild('messageContainer', { static: false }) messageContainer: any;
+
+    @Output('select') selectEvent = new EventEmitter<any>();
+    @Output('collapse') collapseEvent = new EventEmitter<boolean>();
 
     public loading: boolean = true;
     public data: DataList;
 
     public user: UserPermissions = new UserPermissions();
     public owner: string;
-    public policy: any;
 
     public textMessage: string;
     public files: AttachedFile[];
@@ -46,6 +62,8 @@ export class PolicyComments {
     public visibility: ListItem[] = [];
     public userNames = new Map<string, string>();
     public users: ListItem[] = [];
+    public chats: ChatItem[] = [];
+    public currentChat: any = null;
 
     private _destroy$ = new Subject<void>();
     public _findChoices = this.findChoices.bind(this);
@@ -53,7 +71,7 @@ export class PolicyComments {
 
     constructor(
         private profileService: ProfileService,
-        private policyEngineService: PolicyEngineService,
+        private commentsService: CommentsService,
         private ipfs: IPFSService,
     ) {
         this.data = new DataList();
@@ -61,7 +79,6 @@ export class PolicyComments {
 
         this.textMessage = '';
         this.files = [];
-        // this.currentVisibility = '@all';
         this.sendDisabled = true;
     }
 
@@ -81,53 +98,17 @@ export class PolicyComments {
 
     private updateTargets() {
         this.userNames.clear();
-
-        this.users = [];
-        this.users.push({
-            label: 'All',
-            value: 'all',
-            search: 'all',
-            type: 'all',
-        })
-        if (this.policy && Array.isArray(this.policy.policyRoles)) {
-            for (const role of this.policy.policyRoles) {
-                this.users.push({
-                    label: role,
-                    value: role,
-                    search: role?.toLowerCase() || '',
-                    type: 'role',
-                })
-            }
-        }
-        // if (this.policyOwner && this.owner !== this.policyOwner) {
-        //     this.users.push({
-        //         label: 'Administrator',
-        //         value: 'Administrator',
-        //         search: 'administrator',
-        //         type: 'user',
-        //     })
-        // }
-        // if (this.documentOwner && this.owner !== this.documentOwner) {
-        //     this.users.push({
-        //         label: 'Owner',
-        //         value: 'Owner',
-        //         search: 'owner',
-        //         type: 'user',
-        //     })
-        // }
-
-        const users = this.data.getUsers();
-        for (const user of users) {
-            this.users.push({
-                label: user.senderName,
-                value: user.sender,
-                role: user.senderRole,
-                search: user.senderName?.toLowerCase() || '',
-                type: 'user',
-            })
+        for (const user of this.users) {
+            user.search = user.label?.toLowerCase() || '';
         }
         for (const user of this.users) {
             this.userNames.set(user.value, `@${user.label}`);
+        }
+    }
+
+    private updateChats() {
+        for (const chat of this.chats) {
+            chat._short = (chat.name || '#').substring(0, 1);
         }
     }
 
@@ -136,7 +117,7 @@ export class PolicyComments {
         target?: string
     ): any {
         const filters: any = {
-
+            chatId: this.currentChat?.id
         };
         if (type === 'load') {
             return filters;
@@ -154,33 +135,40 @@ export class PolicyComments {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-            this.data.setData([], 0);
             return;
         }
 
         this.loading = true;
-        const filter = this.getFilters('load');
         forkJoin([
             this.profileService.getProfile(),
-            this.policyEngineService.policy(this.policyId),
-            this.policyEngineService
-                .getPolicyComments(
-                    this.policyId,
-                    this.documentId,
-                    filter
-                )
+            this.commentsService.getUsers(this.policyId, this.documentId),
+            this.commentsService.getChats(this.policyId, this.documentId)
         ])
             .pipe(takeUntil(this._destroy$))
-            .subscribe(([profile, policy, response]) => {
+            .subscribe(([profile, users, chats]) => {
                 this.user = new UserPermissions(profile);
                 this.owner = this.user.did;
-                this.policy = policy;
+                this.users = users;
+                this.chats = chats;
 
-                const { page, count } = this.policyEngineService.parsePage(response);
-                this.parsMessages(page);
-                this.data.setData(page, count);
-
+                this.updateChats();
                 this.updateTargets();
+
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    private loadChats() {
+        this.commentsService.getChats(this.policyId, this.documentId)
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((chats) => {
+                this.chats = chats;
+
+                this.updateChats();
 
                 setTimeout(() => {
                     this.loading = false;
@@ -203,7 +191,7 @@ export class PolicyComments {
         this.loading = true;
         const filter = this.getFilters(type, target);
 
-        this.policyEngineService
+        this.commentsService
             .getPolicyComments(
                 this.policyId,
                 this.documentId,
@@ -211,7 +199,7 @@ export class PolicyComments {
             )
             .pipe(takeUntil(this._destroy$))
             .subscribe((response) => {
-                const { page, count } = this.policyEngineService.parsePage(response);
+                const { page, count } = this.commentsService.parsePage(response);
                 this.parsMessages(page);
 
                 if (type === 'load') {
@@ -252,7 +240,10 @@ export class PolicyComments {
                 if ((/(@[\[\{][a-zA-Z0-9_:.]+[\]\}])/g).test(tag)) {
                     const value = tag.substring(2, tag.length - 1);
                     const type = tag.startsWith('@[') ? 'role' : 'user';
-                    if (message.recipients && message.recipients.includes(value)) {
+                    if (
+                        value === 'all' ||
+                        message.recipients && message.recipients.includes(value)
+                    ) {
                         result.push({
                             type: type,
                             text: tag,
@@ -307,26 +298,27 @@ export class PolicyComments {
             anchor = '';
         }
         const data = {
-            anchor,
+            chatId: this.currentChat?.id,
+            anchor: '',
             recipients: recipients,
             text: text,
             files: this.files.map((f) => f.toJSON())
         };
         this.loading = true;
-        this.policyEngineService
-            .createPolicyComment(
+        this.commentsService
+            .createComment(
                 this.policyId,
                 this.documentId,
                 data
             ).subscribe((response) => {
                 this.textMessage = '';
                 this.files = [];
-                this.loadComments('update');
+                const first = this.data.getFirst();
+                this.loadComments('update', first?.id);
             }, (e) => {
                 this.loading = false;
             });
     }
-
 
     public onAttach($event: any) {
         $event.preventDefault();
@@ -434,10 +426,12 @@ export class PolicyComments {
 
     public resetScroll() {
         try {
-            this.messageContainer
-                .nativeElement
-                .querySelector('.messages')
-                .scrollTo(0, 0)
+            if (this.messageContainer) {
+                this.messageContainer
+                    .nativeElement
+                    .querySelector('.messages')
+                    .scrollTo(0, 0)
+            }
         } catch (error) {
             return;
         }
@@ -475,7 +469,7 @@ export class PolicyComments {
     public findChoices(searchText: string) {
         const search = searchText.toLowerCase();
         return this.users.filter((user) => {
-            return user.search.includes(search);
+            return user.search?.includes(search);
         })
     }
 
@@ -488,6 +482,32 @@ export class PolicyComments {
     }
 
     public onClose() {
+        this.currentChat = null;
+        this.collapse = true;
+        this.collapseEvent.emit(true);
+    }
+
+    public onOpen(chat?: ChatItem) {
+        this.currentChat = chat;
+        this.collapse = false;
+        this.collapseEvent.emit(false);
+        if (this.currentChat) {
+            this.loadComments('load');
+        } else {
+            this.loadChats()
+        }
+    }
+
+    public selectChat(chat?: ChatItem) {
+        this.currentChat = chat;
+        if (this.currentChat) {
+            this.loadComments('load');
+        } else {
+            this.loadChats()
+        }
+    }
+
+    public createNewChat() {
 
     }
 }

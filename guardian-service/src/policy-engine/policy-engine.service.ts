@@ -18,6 +18,7 @@ import {
     PinoLogger,
     Policy,
     PolicyAction,
+    PolicyChat,
     PolicyImportExport,
     PolicyMessage,
     RecordImportExport,
@@ -188,6 +189,36 @@ export class PolicyEngineService {
         }
         const module = await DatabaseServer.getModuleById(id);
         return module;
+    }
+
+    private async getCommonChat(policyId: string, documentId: string) {
+        try {
+            const commonChat = await DatabaseServer.getPolicyChat({
+                policyId,
+                system: true,
+                documentId
+            })
+            if (commonChat) {
+                return commonChat;
+            }
+            return await DatabaseServer.createPolicyChat({
+                uuid: '',
+                owner: '',
+                creator: '',
+                policyId,
+                documentId,
+                system: true,
+                count: 0,
+                name: 'Common',
+                relationships: [documentId]
+            });
+        } catch (error) {
+            return await DatabaseServer.getPolicyChat({
+                policyId,
+                system: true,
+                documentId
+            })
+        }
     }
 
     /**
@@ -3374,17 +3405,216 @@ export class PolicyEngineService {
             });
         //#endregion
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         //#region Comment
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_USERS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                documentId: string,
+            }) => {
+                try {
+                    const { user, policyId, documentId } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const vc = await DatabaseServer.getVCById(documentId);
+                    if (!vc || vc.policyId !== policyId) {
+                        throw new Error('Document not found.');
+                    }
+
+                    const items: any = [];
+                    items.push({
+                        label: 'All',
+                        value: 'all',
+                        type: 'all',
+                    })
+                    if (policy && Array.isArray(policy.policyRoles)) {
+                        items.push({
+                            label: 'Administrator',
+                            value: 'Administrator',
+                            type: 'role',
+                        })
+                        for (const role of policy.policyRoles) {
+                            items.push({
+                                label: role,
+                                value: role,
+                                type: 'role',
+                            })
+                        }
+                    }
+
+                    const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
+                    const db = new DatabaseServer(dryRun);
+                    const groups: any[] = await db.getPolicyGroups(policyId, {
+                        fields: ['username', 'did', 'role']
+                    });
+
+                    const policyOwner = await (new Users()).getUserById(policy.owner, user.id);
+                    const documentOwner = await (new Users()).getUserById(vc.owner, user.id);
+                    groups.unshift({
+                        username: policyOwner?.username,
+                        did: policyOwner.did,
+                        role: 'Administrator',
+                    })
+                    groups.unshift({
+                        username: documentOwner?.username,
+                        did: documentOwner.did,
+                        role: 'Document Owner',
+                    })
+
+                    const users = new Map<string, any>();
+                    for (const group of groups) {
+                        const item = users.get(group.did) || {
+                            label: group.username,
+                            value: group.did,
+                            roles: [],
+                            type: 'user',
+                        }
+                        item.roles.push(group.role);
+                        users.set(group.did, item);
+                    }
+
+                    for (const group of users.values()) {
+                        items.push(group);
+                    }
+
+                    return new MessageResponse(items);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_CHATS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                documentId: string,
+            }) => {
+                try {
+                    const { user, policyId, documentId } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const vc = await DatabaseServer.getVCById(documentId);
+                    if (!vc || vc.policyId !== policyId) {
+                        throw new Error('Document not found.');
+                    }
+
+                    const otherOptions: any = {
+                        orderBy: { updateDate: -1 }
+                    };
+                    const chats = await DatabaseServer.getPolicyChats({
+                        policyId,
+                        system: false,
+                        relationships: documentId
+                    }, otherOptions);
+                    let commonChat = await this.getCommonChat(policyId, documentId);
+                    if (commonChat) {
+                        chats.unshift(commonChat);
+                    }
+
+                    return new MessageResponse(chats);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages(PolicyEngineEvents.CREATE_POLICY_CHAT,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                documentId: string,
+                data: {
+                    name: string,
+                    parent: string,
+                    relationships: string[]
+                }
+            }) => {
+                try {
+                    const { user, policyId, documentId, data } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const vc = await DatabaseServer.getVCById(documentId);
+                    if (!vc || vc.policyId !== policyId) {
+                        throw new Error('Document not found.');
+                    }
+
+                    const chat = await DatabaseServer.createPolicyChat({
+                        uuid: GenerateUUIDv4(),
+                        owner: user.did,
+                        creator: user.did,
+                        policyId,
+                        documentId,
+                        system: false,
+                        count: 0,
+                        parent: data?.parent,
+                        name: data?.name,
+                        relationships: data?.relationships
+                    });
+
+                    return new MessageResponse(chat);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_POLICY_COMMENT,
             async (msg: {
                 user: IAuthUser,
                 policyId: string,
                 documentId: string,
                 data: {
+                    chatId?: string;
                     anchor?: string;
                     recipients?: string[];
                     text?: string;
-                    files?: string[];
+                    files?: {
+                        name: string;
+                        type: string;
+                        size: number;
+                        link: string;
+                        cid: string;
+                    }[];
                 },
             }): Promise<IMessageResponse<Policy>> => {
                 try {
@@ -3404,6 +3634,18 @@ export class PolicyEngineService {
                         files: data.files
                     }
 
+                    if (!data.chatId) {
+                        throw new Error('Chat not found.');
+                    }
+                    const chat = await DatabaseServer.getPolicyChat({
+                        _id: new ObjectId(data.chatId),
+                        policyId,
+                        documentId
+                    });
+                    if (!chat) {
+                        throw new Error('Chat not found.');
+                    }
+
                     const comment = {
                         timestamp: Date.now(),
                         uuid: GenerateUUIDv4(),
@@ -3420,10 +3662,18 @@ export class PolicyEngineService {
                         anchor: data.anchor,
                         target: vc.messageId,
                         targetId: documentId,
+                        chatId: chat.id,
                         isDocumentOwner: isDocumentOwner,
                         document: document
                     }
                     const row = await DatabaseServer.createPolicyComment(comment);
+                    chat.count = await DatabaseServer.getPolicyCommentsCount({
+                        policyId,
+                        targetId: documentId,
+                        chatId: chat.id,
+                    })
+                    await DatabaseServer.updatePolicyChat(chat);
+
                     return new MessageResponse(row);
                 } catch (error) {
                     return new MessageError(error);
@@ -3436,10 +3686,11 @@ export class PolicyEngineService {
                 policyId: string,
                 documentId: string,
                 params: {
+                    chatId?: string,
                     anchor?: string,
-                    sender?: string,
-                    senderRole?: string,
-                    private?: boolean,
+                    // sender?: string,
+                    // senderRole?: string,
+                    // private?: boolean,
                     lt?: string,
                     gt?: string
                 }
@@ -3455,7 +3706,7 @@ export class PolicyEngineService {
                     }
 
                     // const isDocumentOwner = user.did === vc.owner;
-                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
+                    // const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
 
                     const filters: any = {
                         policyId: policyId,
@@ -3464,59 +3715,61 @@ export class PolicyEngineService {
                     if (params.anchor) {
                         filters.anchor = params.anchor;
                     }
+                    if (params.chatId) {
+                        filters.chatId = params.chatId;
+                    }
 
-                    filters.$and = [];
+                    // filters.$and = [];
 
                     //Access
-                    filters.$and.push({
-                        $or: [{
-                            sender: user.did
-                        }, {
-                            recipient: user.did
-                        }, {
-                            recipientRole: userRole
-                        }, {
-                            recipient: { $exists: false },
-                            recipientRole: { $exists: false }
-                        }]
-                    })
+                    // filters.$and.push({
+                    //     $or: [{
+                    //         sender: user.did
+                    //     }, {
+                    //         recipient: user.did
+                    //     }, {
+                    //         recipientRole: userRole
+                    //     }, {
+                    //         recipient: { $exists: false },
+                    //         recipientRole: { $exists: false }
+                    //     }]
+                    // })
 
                     //User filters
-                    if (params.private) {
-                        filters.$and.push({
-                            $or: [{
-                                sender: params.sender,
-                                recipient: user.did
-                            }, {
-                                sender: user.did,
-                                recipient: params.sender
-                            }]
-                        })
-                    } else {
-                        if (params.sender) {
-                            filters.$and.push({
-                                sender: params.sender
-                            })
-                        }
-                        if (params.senderRole) {
-                            filters.$and.push({
-                                senderRole: params.senderRole
-                            })
-                        }
-                    }
+                    // if (params.private) {
+                    //     filters.$and.push({
+                    //         $or: [{
+                    //             sender: params.sender,
+                    //             recipient: user.did
+                    //         }, {
+                    //             sender: user.did,
+                    //             recipient: params.sender
+                    //         }]
+                    //     })
+                    // } else {
+                    //     if (params.sender) {
+                    //         filters.$and.push({
+                    //             sender: params.sender
+                    //         })
+                    //     }
+                    //     if (params.senderRole) {
+                    //         filters.$and.push({
+                    //             senderRole: params.senderRole
+                    //         })
+                    //     }
+                    // }
 
                     const otherOptions: any = {
                         orderBy: { _id: -1 },
                         limit: 10
                     };
 
-
                     const count = await DatabaseServer.getPolicyCommentsCount(filters, otherOptions);
                     if (params.lt) {
                         filters._id = { $lt: new ObjectId(params.lt) }
                     }
                     if (params.gt) {
-                        filters._id = { $lt: new ObjectId(params.gt) }
+                        filters._id = { $gt: new ObjectId(params.gt) }
                     }
                     const comments = await DatabaseServer.getPolicyComments(filters, otherOptions);
 

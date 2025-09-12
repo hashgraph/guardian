@@ -90,7 +90,10 @@ export enum PolicyEngineEvents {
     GET_REMOTE_REQUESTS = 'policy-engine-get-remote-requests',
     GET_REMOTE_REQUESTS_COUNT = 'policy-engine-get-remote-requests-count',
     GET_REMOTE_REQUEST_DOCUMENT = 'policy-engine-get-remote-request-document',
-    
+
     CREATE_POLICY_COMMENT = 'policy-engine-create-policy-comment',
     GET_POLICY_COMMENTS = 'policy-engine-get-policy-comments',
+    GET_POLICY_CHATS = 'policy-engine-get-policy-chats',
+    CREATE_POLICY_CHAT = 'policy-engine-create-policy-chat',
+    GET_POLICY_USERS = 'policy-engine-get-policy-users',
 }

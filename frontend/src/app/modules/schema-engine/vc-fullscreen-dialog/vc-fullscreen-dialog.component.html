@@ -75,7 +75,7 @@
             </div>
         </div>
 
-        <div class="step-body-container">
+        <div class="step-body-container" [attr.collapse]="collapse">
             <div class="document-content">
                 <div *ngIf="currentTab === 0" class="document-view">
                     <app-document-view 
@@ -106,6 +106,9 @@
                 <policy-comments
                     [document-id]="id"
                     [policy-id]="policyId"
+                    [collapse]="collapse"
+                    (select)="onMessageSelect($event)"
+                    (collapse)="onCollapse($event)"
                 ></policy-comments>
             </div>
         </div>

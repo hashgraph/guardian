@@ -14,7 +14,7 @@ export class DataList {
     public setData(data: any[], count: number) {
         this.data = Array.isArray(data) ? data : [];
         this.count = count;
-        this.full = this.data.length === count;
+        this.full = this.data.length >= count;
         this.needUpdate = false;
     }
 
@@ -31,7 +31,7 @@ export class DataList {
             this.count = count;
             this.needUpdate = true;
         }
-        this.full = this.data.length === count;
+        this.full = this.data.length >= count;
         return this.full;
     }
 
@@ -46,13 +46,17 @@ export class DataList {
 
         this.needUpdate = false;
         this.count = count;
-        this.full = this.data.length === count;
+        this.full = this.data.length >= count;
 
         return this.needUpdate;
     }
 
     public getLast() {
         return this.data[this.data.length - 1];
+    }
+
+    public getFirst() {
+        return this.data[0];
     }
 
     public getUsers() {

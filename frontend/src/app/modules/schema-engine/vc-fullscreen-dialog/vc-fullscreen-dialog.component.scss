@@ -135,6 +135,16 @@
                 overflow: hidden;
                 border-left: 1px solid #E1E7EF;
             }
+
+            &[collapse="true"] {
+                .document-content {
+                    right: 76px;
+                }
+
+                .comments-content {
+                    width: 76px;
+                }
+            }
         }
     }
 }

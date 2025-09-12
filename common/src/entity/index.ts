@@ -60,3 +60,4 @@ export * from './policy-action.js';
 export * from './policy-keys.js';
 export * from './document-draft.js';
 export * from './policy-comment.js';
+export * from './policy-chat.js';

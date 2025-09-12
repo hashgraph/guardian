@@ -35,6 +35,7 @@ export class VCFullscreenDialog {
     public document: any;
     public json: string = '';
     public fileSize: number = 0;
+    public collapse: boolean = true;
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -172,5 +173,13 @@ export class VCFullscreenDialog {
         a.click();
 
         URL.revokeObjectURL(url);
+    }
+
+    public onMessageSelect($event: any) {
+
+    }
+
+    public onCollapse($event: boolean) {
+        this.collapse = $event;
     }
 }

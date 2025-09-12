@@ -54,7 +54,8 @@ import {
     ExternalPolicy,
     PolicyAction,
     PolicyKey,
-    PolicyComment
+    PolicyComment,
+    PolicyChat
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -1121,6 +1122,58 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public static async removePolicyComment(comment: PolicyComment): Promise<void> {
         return await new DataBaseHelper(PolicyComment).remove(comment);
     }
+
+    /**
+     * Create Policy Chat
+     * @param chat
+     */
+    public static async createPolicyChat(
+        chat: FilterObject<PolicyChat>
+    ): Promise<PolicyChat> {
+        const item = new DataBaseHelper(PolicyChat).create(chat);
+        return await new DataBaseHelper(PolicyChat).save(item);
+    }
+
+    /**
+     * Get Policy Chats
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyChats(
+        filters: FilterQuery<PolicyChat>,
+        options?: FindOptions<object, never, PopulatePath.ALL, never>
+    ): Promise<PolicyChat[]> {
+        return await new DataBaseHelper(PolicyChat).find(filters, options as any);
+    }
+
+    /**
+     * Get Policy Chat
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyChat(
+        filters: FilterQuery<PolicyChat>,
+        options?: FindOptions<object, never, PopulatePath.ALL, never>
+    ): Promise<PolicyChat | null> {
+        return await new DataBaseHelper(PolicyChat).findOne(filters, options as any);
+    }
+
+    /**
+     * Update Policy Chat
+     * @param chat
+     */
+    public static async updatePolicyChat(chat: PolicyChat): Promise<PolicyChat> {
+        return await new DataBaseHelper(PolicyChat).update(chat);
+    }
+
+
+
+
+
+
+
+
+
 
     /**
      * Create ExternalPolicy
@@ -2509,6 +2562,17 @@ export class DatabaseServer extends AbstractDatabaseServer {
             : { policyId, did };
 
         return await this.find(PolicyRolesCollection, where, options);
+    }
+
+    /**
+     * Get Groups
+     * @param policyId
+     * @param options
+     *
+     * @virtual
+     */
+    public async getPolicyGroups(policyId: string, options?: unknown): Promise<PolicyRolesCollection[]> {
+        return await this.find(PolicyRolesCollection, { policyId }, options);
     }
 
     /**

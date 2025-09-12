@@ -128,6 +128,12 @@ export class PolicyComment extends BaseEntity {
     targetId?: string;
 
     /**
+     * Chat id
+     */
+    @Property({ nullable: true })
+    chatId?: string;
+
+    /**
      * Is document owner
      */
     @Property({ nullable: true })

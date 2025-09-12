@@ -1308,6 +1308,65 @@ export class PolicyEngine extends NatsService {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * Create policy users
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getPolicyUsers(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_USERS, { user, policyId, documentId });
+    }
+
+    /**
+     * Get policy chats
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getPolicyChats(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_CHATS, { user, policyId, documentId });
+    }
+
+    /**
+     * Create policy chat
+     * @param user
+     * @param policyId
+     * @param documentId
+     * @param data
+     */
+    public async createPolicyChat(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        data: {
+            name: string,
+            relationships: string[]
+        }
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_CHAT, { user, policyId, documentId, data });
+    }
+
     /**
      * Create policy comment
      * @param user
@@ -1320,13 +1379,14 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         documentId: string,
         data: {
+            chatId?: string,
             anchor?: string;
             recipients?: string[];
             text?: string;
             files?: string[];
         }
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_COMMENT, { user, documentId, policyId, data });
+        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_COMMENT, { user, policyId, documentId, data });
     }
 
     /**
@@ -1341,6 +1401,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         documentId: string,
         params: {
+            chatId?: string,
             anchor?: string,
             sender?: string,
             senderRole?: string,
@@ -1349,6 +1410,6 @@ export class PolicyEngine extends NatsService {
             gt?: string
         }
     ): Promise<{ comments: any[], count: number }> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENTS, { user, documentId, policyId, params });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENTS, { user, policyId, documentId, params });
     }
 }
