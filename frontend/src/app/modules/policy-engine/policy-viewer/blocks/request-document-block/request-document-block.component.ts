@@ -211,7 +211,7 @@ export class RequestDocumentBlockComponent
     }
 
     isBtnVisible() {
-        if (this.policyStatus === PolicyStatus.DRY_RUN && this.hideWhenDiscontinued) {
+        if (this.policyStatus === PolicyStatus.DISCONTINUED && this.hideWhenDiscontinued) {
             return false;
         }
 
