@@ -481,7 +481,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     private updateGeoKeywords(values: string[]) {
         if (!values?.length || values?.length === this.geoJsonOptions.length) {
             this.geoKeywords = ['All'];
-        } else {   
+        } else {
             this.geoKeywords = values || [];
         }
     }
