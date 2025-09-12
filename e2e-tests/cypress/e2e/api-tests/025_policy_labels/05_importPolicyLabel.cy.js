@@ -52,6 +52,8 @@ context("Import policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, 
                     }).then((response) => {
                         expect(response.status).eql(STATUS_CODE.SUCCESS);
                         let importedPolicyLabel = JSON.parse(new TextDecoder('utf-8').decode(response.body));
+                        cy.task('log', importedPolicyLabel);
+                        cy.task('log', policyLabel);
                         expect(importedPolicyLabel.id).not.eql(policyLabel.id);
                         expect(importedPolicyLabel.creator).eql(policyLabel.creator);
                         expect(importedPolicyLabel.owner).eql(policyLabel.owner);
@@ -61,6 +63,8 @@ context("Import policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, 
                         expect(importedPolicyLabel.policyTopicId).eql(policy.topicId);
                         expect(importedPolicyLabel.policyInstanceTopicId).eql(policy.instanceTopicId);
                         expect(importedPolicyLabel.status).eql(policyLabel.status);
+                        cy.task('log', importedPolicyLabel.config.children);
+                        cy.task('log', policyLabel.config.children);
                         importedPolicyLabel.config.children.forEach((child, index) => {
                             child.config.variables[0].schemaId = "";
                             policyLabel.config.children[index].config.variables[0].schemaId = "";
