@@ -389,6 +389,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policy = null;
                 this.policyInfo = null;
                 this.isMultipleGroups = false;
+                this.currentSavepoint = null;
+                this.policy = null;
+                this.groups = [];
+                this.changeDetector.detectChanges();
                 this.loadPolicyById(this.policyId);
             }, (e) => {
                 this.loading = false;
@@ -626,8 +630,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 .subscribe({
                     next: ({ savepoint }) => {
                         this.currentSavepoint = savepoint
-                        this.forceAdminAfterReload = true
-                        this.loadPolicyById(this.policyId)
+
+                        this.policy = null;
+                        this.groups = [];
+                        this.changeDetector.detectChanges();
+                        this.loadPolicyById(this.policyId);
                     },
                     error: () => { this.loading = false; }
                 });
@@ -681,11 +688,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                         this.loadPolicyById(this.policyId);
                     } else if (result.type === 'deleteAll') {
-                        this.currentSavepoint = null;
-                        this.policy = null;
-                        this.groups = [];
-                        this.changeDetector.detectChanges();
-                        this.loadPolicyById(this.policyId);
+                        this.restartDryRun()
                     }
                 });
             },
