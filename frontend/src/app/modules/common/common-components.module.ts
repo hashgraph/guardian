@@ -42,6 +42,8 @@ import { MathLiveComponent } from './mathlive/mathlive.component';
 import { MenuButton } from './menu-button/menu-button.component';
 import { CheckboxButton } from './checkbox-button/checkbox-button.component';
 import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
+import {TableDialogComponent} from './table-dialog/table-dialog.component';
+import {AgGridModule} from "ag-grid-angular";
 
 @NgModule({
     declarations: [
@@ -72,7 +74,8 @@ import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
         MathLiveComponent,
         MenuButton,
         CheckboxButton,
-        IPFSLinkComponent
+        IPFSLinkComponent,
+        TableDialogComponent
     ],
     imports: [
         CommonModule,
@@ -90,6 +93,8 @@ import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
         DynamicDialogModule,
         AngularSvgIconModule.forRoot(),
         TooltipModule,
+        DynamicDialogModule,
+        AgGridModule,
     ],
     providers: [
         provideNgxMask(),
@@ -123,7 +128,8 @@ import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
         MathLiveComponent,
         MenuButton,
         CheckboxButton,
-        IPFSLinkComponent
+        IPFSLinkComponent,
+        TableDialogComponent
     ]
 })
 export class CommonComponentsModule {
