@@ -5,7 +5,7 @@ import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, Ap
 import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader } from '#middlewares';
 import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, EntityOwner, getCacheKey, CacheService } from '#helpers';
 import { AuthUser, Auth } from '#auth';
-import { PREFIXES, TOOL_REQUIRED_PROPS } from '#constants';
+import {CACHE_PREFIXES, PREFIXES, TOOL_REQUIRED_PROPS} from '#constants';
 
 @Controller('tools')
 @ApiTags('tools')
@@ -51,8 +51,8 @@ export class ToolsApi {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
 
-            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
 
             return await guardian.createTool(tool, owner);
         } catch (error) {
@@ -106,8 +106,8 @@ export class ToolsApi {
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
 
-            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
 
             return task;
         } catch (error) {
@@ -274,8 +274,8 @@ export class ToolsApi {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
 
-            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
 
             return await guardian.deleteTool(id, owner);
         } catch (error) {
@@ -379,8 +379,8 @@ export class ToolsApi {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
 
-            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
 
             return await guardian.updateTool(id, tool, owner);
         } catch (error) {
@@ -435,8 +435,8 @@ export class ToolsApi {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
 
-            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
 
             return await guardian.publishTool(id, owner, tool);
         } catch (error) {
@@ -498,8 +498,8 @@ export class ToolsApi {
             taskManager.addError(task.taskId, { code: 500, message: error.message || error });
         });
 
-        const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
-        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+        const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+        await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
 
         return task;
     }
@@ -539,6 +539,10 @@ export class ToolsApi {
         try {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
+
             return await guardian.validateTool(owner, tool);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -674,6 +678,10 @@ export class ToolsApi {
         try {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
+
             return await guardian.previewToolMessage(messageId, owner);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -718,6 +726,9 @@ export class ToolsApi {
         const guardian = new Guardians();
 
         try {
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
+
             return await guardian.importToolMessage(messageId, owner);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -756,6 +767,10 @@ export class ToolsApi {
         try {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
+
             return await guardian.previewToolFile(body, owner);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -795,6 +810,9 @@ export class ToolsApi {
         try {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
 
             return await guardian.importToolFile(body, owner);
         } catch (error) {
@@ -863,6 +881,9 @@ export class ToolsApi {
                 metadata?.buffer && JSON.parse(metadata.buffer.toString())
             );
 
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
+
             return tool;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -912,6 +933,9 @@ export class ToolsApi {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
+
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
 
             return task;
         } catch (error) {
@@ -997,6 +1021,9 @@ export class ToolsApi {
                 }
             );
 
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
+
             return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -1048,6 +1075,10 @@ export class ToolsApi {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
+
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
+
             return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);

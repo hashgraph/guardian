@@ -48,12 +48,6 @@ export class CacheInterceptor implements NestInterceptor {
 
         let { url: route } = request;
 
-        try {
-            route = decodeURI(request.url);
-        } catch (e) {
-            await this.logger.warn(`Bad URI: ${request.url}`, ['API_GATEWAY'], user?.id);
-        }
-
         const [cacheKey] = getCacheKey([route], user, CACHE_PREFIXES.CACHE);
         const [cacheTag] = getCacheKey([route.split('?')[0]], user);
 
