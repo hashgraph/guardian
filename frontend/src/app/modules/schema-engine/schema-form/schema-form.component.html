@@ -13,7 +13,7 @@
             <!-- simple field -->
             <div *ngIf="ifSimpleField(item)" class="form-field">
 
-                <div 
+                <div
                     *ngIf="!isHelpText(item)" class="label-field"
                     [attr.default]="item.default && !item.isPreset && !item.control.dirty"
                     [attr.field-path]="item?.path"
@@ -29,7 +29,7 @@
                 </div>
 
                 <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
-                    <div 
+                    <div
                         *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name">
                         <span class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
                     </div>
@@ -73,25 +73,25 @@
                     </div>
 
                     <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                        <date-time-control 
-                            [control]="item.control" 
-                            item]="item" 
+                        <date-time-control
+                            [control]="item.control"
+                            item]="item"
                             [showTime]="true"></date-time-control>
                     </div>
 
                     <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
-                        <date-time-control 
-                            [control]="item.control" 
-                            [item]="item" 
+                        <date-time-control
+                            [control]="item.control"
+                            [item]="item"
                             [showTime]="false"
                             [showSeconds]="false"></date-time-control>
                     </div>
 
                     <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                        <date-time-control 
-                            [control]="item.control" 
-                            [item]="item" 
-                            [showSeconds]="true" 
+                        <date-time-control
+                            [control]="item.control"
+                            [item]="item"
+                            [showSeconds]="true"
                             [showTime]="true"
                             [timeOnly]="true"></date-time-control>
                     </div>
@@ -172,23 +172,37 @@
 
             <!-- array of simple fields -->
             <div *ngIf="ifSimpleArray(item)" class="form-field-array">
-                <div class="label-field" id="detail-section">
-                    <div *ngIf="!isChildSchema && formModel.controls" class="page-number">
-                        {{ i }}/{{ formModel.controls.length - 1 }}
+                <div class="label-field csv-button" id="detail-section">
+                    <div>
+                        <div *ngIf="!isChildSchema && formModel.controls" class="page-number">
+                            {{ i }}/{{ formModel.controls.length - 1 }}
+                        </div>
+                        <div [attr.default]="item.default && !item.isPreset && !item.control.dirty" [attr.field-path]="item?.path">
+                            <span *ngIf="ifRequiredField(item)" class="required-field">*</span> {{ item.description }}
+                        </div>
+                        <div *ngIf="!isChildSchema && formModel.controls && i !== formModel.controls.length - 1"
+                            class="delimiter-to-next-page"></div>
+                        <div *ngIf="!isChildSchema && formModel.controls && i !== formModel.controls.length - 1"
+                            class="next-page-number">{{ i + 1 }}
+                        </div>
                     </div>
-                    <div [attr.default]="item.default && !item.isPreset && !item.control.dirty" [attr.field-path]="item?.path">
-                        <span *ngIf="ifRequiredField(item)" class="required-field">*</span> {{ item.description }}
-                    </div>
-                    <div *ngIf="!isChildSchema && formModel.controls && i !== formModel.controls.length - 1"
-                         class="delimiter-to-next-page"></div>
-                    <div *ngIf="!isChildSchema && formModel.controls && i !== formModel.controls.length - 1"
-                         class="next-page-number">{{ i + 1 }}
+                    <div *ngIf="item.csvEnabled" class="csv-button-area">
+                        <span class="invalid-field-label">
+                            Quickly prefill the data using a CSV file
+                        </span>
+                        <button
+                            class="guardian-button guardian-button-secondary"
+                            type="button"
+                            (mousedown)="$event.stopPropagation()"
+                            (click)="stopAndTrigger($event, item)">
+                                Upload CSV
+                        </button>
                     </div>
                 </div>
 
                 <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
-                    <div 
-                        *ngIf="!suggestIsObject(item.suggest)" 
+                    <div
+                        *ngIf="!suggestIsObject(item.suggest)"
                         class="suggestion-name"
                     >
                         <span class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
@@ -198,8 +212,8 @@
                         class="guardian-button guardian-button-secondary">Fill the field with suggestion</button>
                 </div>
 
-                <div 
-                    *ngFor="let listItem of item.list; index as i" 
+                <div
+                    *ngFor="let listItem of item.list; index as i"
                     class="form-field-array-item-container"
                     [attr.required]="item.required"
                     [attr.index]="listItem.index"
@@ -216,8 +230,8 @@
                                 class="form-field-input guardian-input-container"
                                 [ngClass]="{'ipfs-url' : isIPFS(item)}"
                             >
-                                <input 
-                                    pInputText 
+                                <input
+                                    pInputText
                                     [formControl]="listItem.control"
                                     [placeholder]="getPlaceholderByFieldType(item)"
                                     (focus)="onFocusField(item.format, listItem)"
@@ -240,31 +254,31 @@
                             </div>
 
                             <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                                <date-time-control 
-                                    [control]="listItem.control" 
-                                    [index]="i" 
-                                    [isMany]="true"             
-                                    [item]="listItem" 
-                                    [showTime]="true"         
+                                <date-time-control
+                                    [control]="listItem.control"
+                                    [index]="i"
+                                    [isMany]="true"
+                                    [item]="listItem"
+                                    [showTime]="true"
                                     [value]="item.suggest"></date-time-control>
                             </div>
 
                             <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
-                                <date-time-control 
-                                    [control]="listItem.control" 
+                                <date-time-control
+                                    [control]="listItem.control"
                                     [isMany]="true"
                                     [item]="listItem"
-                                    [showSeconds]="false" 
+                                    [showSeconds]="false"
                                     [showTime]="false"></date-time-control>
                             </div>
 
                             <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                                <date-time-control 
-                                    [control]="listItem.control" 
-                                    [index]="i" 
+                                <date-time-control
+                                    [control]="listItem.control"
+                                    [index]="i"
                                     [isMany]="true"
                                     [item]="listItem"
-                                    [showSeconds]="true" 
+                                    [showSeconds]="true"
                                     [showTime]="true"
                                     [timeOnly]="true"></date-time-control>
                             </div>
@@ -361,7 +375,7 @@
                                 <div *ngIf="!isChildSchema && formModel.controls" class="page-number">
                                     {{ i + 1 }}/{{ formModel.controls.length }}
                                 </div>
-                                <span 
+                                <span
                                     class="detail-section-title"
                                     [attr.default]="item.default && !item.isPreset && !item.control.dirty"
                                     [attr.field-path]="item?.path"
@@ -452,10 +466,10 @@
             <!-- array of sub schemas -->
             <div *ngIf="ifSubSchemaArray(item)"
                  class="accordion-container form-field-group schema-form-field-array-group sub-schemas sub-schema-{{item.customType}}">
-                <p-accordion class="guardian-accordion {{(item.control?.invalid) ? 'guardian-accordion-error' : ''}}">
+                 <p-accordion class="guardian-accordion {{(item.control?.invalid) ? 'guardian-accordion-error' : ''}}">
                     <p-accordionTab [(selected)]="item.open">
                         <ng-template pTemplate="header">
-                            <div class="group-label-field" id="detail-section">
+                            <div class="group-label-field csv-button csv-button-padding" id="detail-section">
                                 <div *ngIf="!isChildSchema && formModel.controls" class="page-number">
                                     {{ i }}/{{ formModel.controls.length - 1 }}
                                 </div>
@@ -467,9 +481,19 @@
                                 <div *ngIf="!isChildSchema && formModel.controls && i !== formModel.controls.length - 1"
                                      class="next-page-number">{{ i + 1 }}
                                 </div>
+                                <div *ngIf="item.csvEnabled" class="csv-button-area" >
+                                    <span class="invalid-field-label">
+                                        Quickly prefill the data using a CSV file
+                                    </span>
+                                    <button
+                                        type="button"
+                                        (click)="stopAndTrigger($event, item)"
+                                        class="guardian-button guardian-button-secondary">Upload CSV
+                                    </button>
+                                </div>
                             </div>
-                        </ng-template>
 
+                        </ng-template>
                         <ng-container *ngIf="item.open">
                             <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)" class="suggestion">
                                 <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name">
