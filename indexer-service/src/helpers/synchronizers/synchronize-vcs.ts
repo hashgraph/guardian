@@ -4,6 +4,7 @@ import { textSearch } from '../text-search-options.js';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';
 import { SchemaFileHelper } from '../../helpers/schema-file-helper.js';
+import { IPFSService } from '../../helpers/ipfs-service.js';
 
 export class SynchronizationVCs extends SynchronizationTask {
     public readonly name: string = 'vcs';
@@ -79,6 +80,9 @@ export class SynchronizationVCs extends SynchronizationTask {
         for (const document of allDocuments) {
             const row = em.getReference(Message, document._id);
             row.analytics = this.createAnalytics(document, policyMap, topicMap, schemaMap, fileMap);
+
+            await this.attachTableFilesAnalytics(row, document, fileMap);
+
             row.analyticsUpdate = Date.now();
             em.persist(row);
         }
@@ -182,6 +186,155 @@ export class SynchronizationVCs extends SynchronizationTask {
                     fieldValues.add(doc[field].toString());
                 }
             }
+        }
+    }
+
+    /**
+     * Attach table-files mapping to VC analytics.
+     *
+     * @param row        DB entity reference to be persisted (Message)
+     * @param document   Original VC message document
+     * @param fileMap    Map<filename, fileContent> from preloaded GridFS read
+     */
+    private async attachTableFilesAnalytics(
+        row: Message,
+        document: Message,
+        fileMap: Map<string, string>,
+    ): Promise<void> {
+        try {
+            const tableFilesMap = await this.computeTableFilesMap(document, fileMap);
+
+            if (!tableFilesMap || Object.keys(tableFilesMap).length === 0) {
+                return;
+            }
+
+            row.analytics = row.analytics || {};
+            row.analytics.tableFiles = tableFilesMap;
+        } catch (error) {
+            //
+        }
+    }
+
+    /**
+     * Build a map { cid: gridfsId } for all table-like assets referenced by the VC.
+     *
+     * @param document   Original VC message
+     * @param fileMap    Map<filename, fileContent> from preloaded GridFS read
+     * @returns          Record<string, string> where key = CID, value = GridFS _id
+     */
+    private async computeTableFilesMap(
+        document: Message,
+        fileMap: Map<string, string>,
+    ): Promise<Record<string, string>> {
+        const vcCid = Array.isArray(document.files) ? document.files[0] : null;
+        if (!vcCid) {
+            return {};
+        }
+
+        const vcString = fileMap.get(vcCid);
+        if (!vcString) {
+            return {};
+        }
+
+        const vcJson = this.parseFile(vcString);
+        const subject = this.getSubject(vcJson);
+        if (!subject) {
+            return {};
+        }
+
+        const tableCids = this.extractTableCidsFromSubject(subject);
+        if (tableCids.size === 0) {
+            return {};
+        }
+
+        const cidToGridFsId: Record<string, string> = {};
+        for (const cid of tableCids) {
+            const gridFsId = await this.ensureFileCachedInGridFS(cid);
+            if (gridFsId) {
+                cidToGridFsId[cid] = gridFsId;
+            }
+        }
+
+        return cidToGridFsId;
+    }
+
+    /**
+     * Recursively extract table-related CIDs from credentialSubject.
+     *
+     * @param node  Any JSON node
+     * @returns     Set of unique CIDs found
+     */
+    private extractTableCidsFromSubject(node: unknown): Set<string> {
+        const foundCids = new Set<string>();
+
+        const isCid = (value: unknown): value is string => {
+            return typeof value === 'string' && IPFS_CID_PATTERN.test(value);
+        };
+
+        const walk = (value: unknown) => {
+            if (Array.isArray(value)) {
+                for (const item of value) {
+                    walk(item);
+                }
+                return;
+            }
+
+            if (value && typeof value === 'object') {
+                const obj = value as Record<string, unknown>;
+
+                if (typeof obj.type === 'string' && obj.type.toLowerCase() === 'table' && isCid(obj.cid)) {
+                    foundCids.add(obj.cid);
+                }
+
+                for (const val of Object.values(obj)) {
+                    if (val && typeof val === 'object') {
+                        walk(val);
+                    }
+                }
+            }
+        };
+
+        walk(node);
+        return foundCids;
+    }
+
+    /**
+     * Ensure file with given CID is cached in our GridFS (filename = CID).
+     * If missing, downloads bytes from IPFS and uploads to GridFS.
+     *
+     * @param cid        IPFS CID string
+     * @param timeoutMs  IPFS gateway timeout (ms)
+     * @returns          GridFS file _id as string or null if failed
+     */
+    private async ensureFileCachedInGridFS(
+        cid: string,
+        timeoutMs: number = 60_000,
+    ): Promise<string | null> {
+        try {
+            const existingFiles = await DataBaseHelper.gridFS.find({ filename: cid }).toArray();
+
+            if (existingFiles && existingFiles.length > 0) {
+                return existingFiles[0]._id.toString();
+            }
+
+            const fileContent = await IPFSService.getFile(cid, timeoutMs);
+            if (!fileContent) {
+                return null;
+            }
+
+            return await new Promise<string>((resolve, reject) => {
+                try {
+                    const uploadStream = DataBaseHelper.gridFS.openUploadStream(cid);
+                    uploadStream.write(fileContent as Buffer);
+                    uploadStream.end(() => {
+                        resolve(String(uploadStream.id));
+                    });
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        } catch {
+            return null;
         }
     }
 }
