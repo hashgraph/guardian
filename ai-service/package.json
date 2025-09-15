@@ -11,7 +11,7 @@
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@types/express": "^5.0.1",
-        "@types/node": "^22.15.19",
+        "@types/node": "^24.4.0",
         "dotenv": "^16.3.1",
         "module-alias": "^2.2.2",
         "express": "^5.1.0",
