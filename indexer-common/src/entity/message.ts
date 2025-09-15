@@ -90,6 +90,9 @@ export class Message implements IMessage {
     analyticsUpdate?: number;
 
     @Property({ nullable: true })
+    coordUpdate?: number;
+
+    @Property({ nullable: true })
     files: string[];
 
     @Property({ nullable: true })

@@ -181,6 +181,7 @@
         * [Create a new rule from the file](guardian/standard-registry/schemas/schema-rules/apis-related-to-schema-rules/create-a-new-rule-from-the-file.md)
         * [Load the file and return its preview](guardian/standard-registry/schemas/schema-rules/apis-related-to-schema-rules/load-the-file-and-return-its-preview.md)
         * [Export the selected rule (by ID) into the file](guardian/standard-registry/schemas/schema-rules/apis-related-to-schema-rules/export-the-selected-rule-by-id-into-the-file.md)
+    * [How to handle large location files?](guardian/standard-registry/schemas/how-to-handle-large-location-files.md)
   * [Policies](guardian/standard-registry/policies/README.md)
     * [Policy Glossary](guardian/standard-registry/policies/policy-glossary.md)
     * [Versioning and Deprecation Policy](guardian/standard-registry/policies/versioning-and-deprecation-policy/README.md)
@@ -899,9 +900,9 @@
 
 ## Methodology Digitization
 
-* [рџ“љ Methodology Digitization Handbook](methodology-digitization-handbook/README.md)
-  * [рџ“‹ Table of Contents](methodology-digitization-handbook/table-of-contents.md)
-  * [рџ“ќ Chapter Outlines](methodology-digitization-handbook/chapter-outlines.md)
+* [📚 рџ“љ Methodology Digitization Handbook](methodology-digitization-handbook/README.md)
+  * [📋 рџ“‹ Table of Contents](methodology-digitization-handbook/table-of-contents.md)
+  * [📝 рџ“ќ Chapter Outlines](methodology-digitization-handbook/chapter-outlines.md)
   * [рџЏ—пёЏ Part I: Foundation and Preparation](methodology-digitization-handbook/part-1/README.md)
     * [Chapter 1: Introduction to Methodology Digitization](methodology-digitization-handbook/part-1/chapter-1/README.md)
     * [Chapter 2: Understanding VM0033 Methodology](methodology-digitization-handbook/part-1/chapter-2/README.md)
