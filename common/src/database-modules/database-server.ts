@@ -259,10 +259,16 @@ export class DatabaseServer extends AbstractDatabaseServer {
         const {name, savepointPath = []} = savepointProps
 
         const dryRunSavepoint = new DataBaseHelper(DryRunSavepoint);
+        await dryRunSavepoint.updateManyRaw(
+            { policyId, isCurrent: true },
+            { $set: { isCurrent: false } }
+        );
+
         const savepoint = dryRunSavepoint.create({
             policyId,
             name,
             savepointPath: [...savepointPath],
+            isCurrent: true
         });
         await dryRunSavepoint.save(savepoint);
 
@@ -4857,7 +4863,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
             throw new Error('Can not be granted kyc');
         }
         if (item.tokenMap[tokenId].kyc === true) {
-            // throw new Error('Token already granted kyc');
+            throw new Error('Token already granted kyc');
         }
         item.tokenMap[tokenId].kyc = true;
         await new DataBaseHelper(DryRun).update(item);

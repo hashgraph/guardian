@@ -72,6 +72,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
 
     it("Get file from ipfs", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.wait(30000)
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.IPFSFile + cid,

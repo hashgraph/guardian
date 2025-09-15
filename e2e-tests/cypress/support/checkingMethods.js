@@ -1,7 +1,24 @@
 const optionKey = "option";
-import { METHOD } from "../support/api/api-const";
+import { STATUS_CODE, METHOD } from "../support/api/api-const";
 import API from "../support/ApiUrls";
 import CommonElements from "../support/defaultUIElements";
+
+export const whileRequestProccessing = (request, dataToCompare, source, attempts = 0) => {
+    if (attempts < 100) {
+        attempts++
+        cy.wait(3000)
+        cy.request(request).then((response) => {
+            let start = response.body;
+            source.split('.').forEach(part => {
+                start = start?.[part]
+            })
+            cy.log(start);
+            cy.log(start !== dataToCompare);
+            if (start !== dataToCompare)
+                whileRequestProccessing(request, dataToCompare, source, attempts)
+        })
+    }
+}
 
 export const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
     if (attempts < 100) {
@@ -19,8 +36,8 @@ export const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
     }
 }
 
-export const whileRequestAppear = (authorization) => {
-    if (attempts < 100) {
+export const whileRequestAppear = (authorization, attempts = 0) => {
+    if (attempts < 150) {
         attempts++
         cy.wait(3000)
         cy.request({
@@ -31,7 +48,6 @@ export const whileRequestAppear = (authorization) => {
                 type: "REQUEST"
             },
             headers: {
-                "content-type": "binary/octet-stream",
                 authorization,
             },
             timeout: 180000,
@@ -40,17 +56,20 @@ export const whileRequestAppear = (authorization) => {
             if (response.body.length != 0)
                 cy.request({
                     method: METHOD.PUT,
-                    url: API.ApiServer + API.ExternalPolicyRequests + response.body[0].id + '/' + API.Approve,
+                    url: API.ApiServer + API.ExternalPolicyRequests + response.body[0].messageId + '/' + API.Approve,
                     headers: {
-                        "content-type": "binary/octet-stream",
                         authorization,
                     },
                     timeout: 180000,
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
+                    cy.task('log', "Request approved")
                 })
-            else whileRequestAppear(authorization)
+            else whileRequestAppear(authorization, attempts)
         })
+    }
+    else {
+        throw new Error(`Failed after ${attempts}`)
     }
 }
 
