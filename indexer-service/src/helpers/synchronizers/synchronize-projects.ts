@@ -34,6 +34,9 @@ export class SynchronizationProjects extends SynchronizationTask {
             type: MessageType.VC_DOCUMENT,
             action: MessageAction.CreateVC,
             consensusTimestamp: { $nin: projectLocations },
+        }, {
+            sort: { coordUpdate: 1 },
+            limit: 100000
         });
 
         console.log(`Sync projects: load documents`)
@@ -78,6 +81,15 @@ export class SynchronizationProjects extends SynchronizationTask {
             }
         }
         // await em.flush();
+
+        console.log(`Sync VCs: update data`);
+        for (const document of allDocuments) {
+            const row = em.getReference(Message, document._id);
+            row.coordUpdate = Date.now();
+            em.persist(row);
+        }
+        console.log(`Sync VCs: flush`)
+        await em.flush();
     }
 
     private updateGeoCoordinates(

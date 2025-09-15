@@ -1,4 +1,4 @@
-# 🗂️ Artifacts Collection
+# рџ—‚пёЏ Artifacts Collection
 
 > Test artifacts, calculation tools, and reference materials for methodology digitization
 

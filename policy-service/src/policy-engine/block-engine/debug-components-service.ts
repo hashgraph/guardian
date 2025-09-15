@@ -1,6 +1,7 @@
 import {
     Policy as PolicyCollection,
-    PolicyTool as PolicyToolCollection
+    PolicyTool as PolicyToolCollection,
+    Users
 } from '@guardian/common';
 import { ComponentsService } from '../helpers/components-service.js';
 import { BlockEngine } from './block-engine.js';
@@ -72,9 +73,17 @@ export class DebugComponentsService extends ComponentsService {
     /**
      * Save debug error
      * @param context
-     * @protected
      */
     public override debugError(tag: string, error: any): void {
         this.controller.error(error?.toString());
+    }
+
+    /**
+     * Get virtual user
+     * @param did
+     */
+    public override getVirtualUser(_did: string) {
+        const users = new Users();
+        return users.getUserById(this.owner, null);
     }
 }

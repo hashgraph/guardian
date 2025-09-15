@@ -287,7 +287,7 @@ export class UserCredentials {
     public async load(ref: AnyBlockType, userId: string | null): Promise<UserCredentials> {
         let userFull: IAuthUser;
         if (this._dryRun) {
-            userFull = await ref.databaseServer.getVirtualUser(this._did);
+            userFull = await ref.components.getVirtualUser(this._did);
         } else {
             const users = new Users();
             userFull = await users.getUserById(this._did, userId);

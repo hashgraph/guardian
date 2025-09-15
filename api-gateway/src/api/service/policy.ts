@@ -3166,7 +3166,7 @@ export class PolicyApi {
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
         try {
-            return await engineService.createVirtualUser(policyId, owner, body.savepointIds);
+            return await engineService.createVirtualUser(policyId, owner, body?.savepointIds);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

@@ -1,5 +1,6 @@
 const { defineConfig } = require('cypress');
 const { verifyDownloadTasks } = require('cy-verify-downloads');
+const fetch = require('node-fetch');
 
 module.exports = defineConfig({
     video: false,
@@ -36,6 +37,7 @@ module.exports = defineConfig({
             "cypress/e2e/api-tests/023_permissions/*.cy.js",
             "cypress/e2e/api-tests/024_formulas/*.cy.js",
             "cypress/e2e/api-tests/025_policy_labels/*.cy.js",
+            "cypress/e2e/api-tests/026_remote_policy/*.cy.js",
             "cypress/e2e/ui-tests/specs/00_account_creating/*.cy.js",
             "cypress/e2e/ui-tests/specs/00_account_registration/*.cy.js",
             "cypress/e2e/ui-tests/specs/01_administration/*.cy.js",
@@ -72,6 +74,16 @@ module.exports = defineConfig({
                     return null
                 }
             })
+            on('task', {
+                fireAndForget({ url, method, data, headers }) {
+                    fetch(url, {
+                        method,
+                        body: JSON.stringify(data),
+                        headers: headers,
+                    });
+                    return null;
+                },
+            });
             return config;
         },
         env: {

@@ -1,4 +1,4 @@
-FROM cypress/included:14.5.1
+FROM cypress/included:14.5.4
 WORKDIR /e2e
 ENV CYPRESS_INSTALL_BINARY=0
 

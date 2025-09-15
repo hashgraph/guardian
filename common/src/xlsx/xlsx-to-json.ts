@@ -550,6 +550,18 @@ export class XlsxToJson {
                 field.textBold = font.bold;
                 field.textColor = font.color;
                 field.textSize = font.size;
+
+                if (field.required === true) {
+                    xlsxResult.addError({
+                        type: 'error',
+                        text: `Invalid configuration: "Help Text" cannot be required.`,
+                        message: `Field type "Help Text" must not have "Required Field" = Yes. Set it to No.`,
+                        worksheet: worksheet.name,
+                        cell: worksheet.getPath(table.getCol(Dictionary.REQUIRED_FIELD), row),
+                        row,
+                        col: table.getCol(Dictionary.REQUIRED_FIELD),
+                    }, field);
+                }
             }
 
             if (field.autocalculate && !param) {
