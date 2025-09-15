@@ -13048,10 +13048,10 @@ send@^1.1.0, send@^1.2.0:
     range-parser "^1.2.1"
     statuses "^2.0.1"
 
-seq-logging@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/seq-logging/-/seq-logging-2.2.0.tgz#cebabcc1c3445092173bb9e3713a566a1105337c"
-  integrity sha512-2dzK9Ma6iK45lb1FoqokzFGR7v3HaF4mKuGtLeQ0991fQif7SatFxuLFw/bYNzq+Fe4y4hYfFy/02Qb61itfUw==
+seq-logging@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/seq-logging/-/seq-logging-3.0.0.tgz#efc9626a6912504d35293cc605b89260a7d67cc9"
+  integrity sha512-ys5QV0745vxBCWuZBPSkgoobuLoUMxTSz1g7ZclHqX1tXXKFLyRIIn8V89EPgDnfRiWfoSo4KSxy/E0MtOYYyw==
   dependencies:
     abort-controller "^3.0.0"
     node-fetch "^2.7.0"

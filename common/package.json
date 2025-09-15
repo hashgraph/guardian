@@ -46,7 +46,7 @@
         "ws": "^8.2.1",
         "@formulajs/formulajs": "4.5.1",
         "prom-client": "^14.1.1",
-        "seq-logging": "^2.2.0"
+        "seq-logging": "^3.0.0"
     },
     "description": "Common package share cross all services",
     "devDependencies": {
