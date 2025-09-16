@@ -2,7 +2,7 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Enable Individual Filters</td>
+        <td class="propRowCell cellName" pTooltip="Enable Individual Filters" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Enable Individual Filters</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="properties.uiMetaData.enableIndividualFilters"
                    [readonly]="readonly" (blur)="onSave()">
@@ -70,14 +70,14 @@
             </tr>
             <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
                 <td class="propRowCol"></td>
-                <td class="propRowCell cellName">Dialog Description</td>
+                <td class="propRowCell cellName" pTooltip="Dialog Description" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Dialog Description</td>
                 <td class="propRowCell">
                     <input class="prop-input" [(ngModel)]="button.description" [readonly]="readonly" (blur)="onSave()">
                 </td>
             </tr>
             <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
                 <td class="propRowCol"></td>
-                <td class="propRowCell cellName">Dialog Result Field Path</td>
+                <td class="propRowCell cellName" pTooltip="Dialog Result Field Path" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Dialog Result Field Path</td>
                 <td class="propRowCell">
                     <input class="prop-input" placeholder="comment" [(ngModel)]="button.dialogResultFieldPath"
                            [readonly]="readonly">
