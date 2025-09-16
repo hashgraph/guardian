@@ -48,6 +48,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.component';
 import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-dialog.component';
 import {TableFieldComponent} from './table-field/table-field.component';
+import {TableViewerComponent} from "./table-viewer/table-viewer.component";
 
 @NgModule({
     declarations: [
@@ -74,7 +75,8 @@ import {TableFieldComponent} from './table-field/table-field.component';
         SchemaFormDialog,
         DateTimeComponent,
         SchemaFormRootComponent,
-        TableFieldComponent
+        TableFieldComponent,
+        TableViewerComponent
     ],
     imports: [
         CommonModule,

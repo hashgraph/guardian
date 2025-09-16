@@ -1,11 +1,27 @@
 import { Permissions } from '@guardian/interfaces';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UseInterceptors, Version, Req } from '@nestjs/common';
+import {
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Post,
+    Query,
+    Param,
+    Response,
+    UseInterceptors,
+    Version,
+    Req,
+    Res
+} from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey } from '#helpers';
 import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
 import { ARTIFACT_REQUIRED_PROPS, PREFIXES } from '#constants'
+import { FastifyReply } from 'fastify';
 
 @Controller('artifacts')
 @ApiTags('artifacts')
@@ -360,24 +376,31 @@ export class ArtifactApi {
     @ApiOperation({ summary: 'Download file by id', description: 'Returns file from GridFS' })
     @ApiParam({ name: 'fileId', type: String, required: true, description: 'File _id' })
     @HttpCode(HttpStatus.OK)
+    @Get('/files/:fileId')
+    @Auth(Permissions.ARTIFACTS_FILE_READ)
+    @HttpCode(HttpStatus.OK)
     async downloadFile(
         @AuthUser() user: IAuthUser,
         @Param('fileId') fileId: string,
-        @Response() res: any,
+        @Res({ passthrough: true }) res: FastifyReply
     ) {
         try {
             if (!fileId) {
-                throw new HttpException('fileId is required', HttpStatus.BAD_REQUEST);
+                res.code(HttpStatus.BAD_REQUEST);
+                return { message: 'fileId is required' };
             }
 
             const guardian = new Guardians();
             const { buffer, filename, contentType } = await guardian.csvGetFile(fileId, user);
 
-            res.setHeader('Content-Type', contentType || 'application/octet-stream');
-            res.setHeader('X-Content-Type-Options', 'nosniff');
-            res.setHeader('Content-Disposition', `attachment; filename="${(filename || fileId).replace(/"/g, '')}"`);
+            res.header('Content-Type', contentType || 'text/csv; charset=utf-8');
+            res.header('X-Content-Type-Options', 'nosniff');
+            res.header(
+                'Content-Disposition',
+                `attachment; filename="${(filename || fileId).replace(/"/g, '')}"`
+            );
 
-            return res.send(Buffer.from(buffer));
+            return res.send(Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

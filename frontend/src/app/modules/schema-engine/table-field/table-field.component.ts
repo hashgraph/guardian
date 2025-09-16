@@ -4,12 +4,14 @@ import { ColDef } from 'ag-grid-community';
 import { IFieldControl } from '../schema-form-model/field-form';
 import { CsvService } from '../../../services/csv.service';
 import {TableDialogComponent} from '../../common/table-dialog/table-dialog.component';
+import {ArtifactService} from '../../../services/artifact.service';
 
 type TableValue = {
     type: string;
     columnKeys: string[];
     rows: Record<string, string>[];
     fileId?: string;
+    cid?: string;
 };
 
 @Component({
@@ -22,9 +24,12 @@ export class TableFieldComponent implements OnInit, OnChanges {
     @Input() item!: IFieldControl<any>;
     @Input() readonly: boolean = false;
 
+    private hydrated = false;
+
     constructor(
         private dialog: DialogService,
-        private csvService: CsvService
+        private csvService: CsvService,
+        private artifactService: ArtifactService
     ) {}
 
     private getDefaultTable(): TableValue {
@@ -43,7 +48,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
         return this.getDefaultTable();
     }
 
-    private writeTable(next: Partial<TableValue>): void {
+    private writeTable(next: Partial<TableValue>, opts?: { emitEvent?: boolean; markDirty?: boolean }): void {
         const current = this.readTable();
         const merged: TableValue = {
             type: 'table',
@@ -52,8 +57,14 @@ export class TableFieldComponent implements OnInit, OnChanges {
             fileId: next.fileId ?? current.fileId,
         };
 
-        this.item?.control?.patchValue(JSON.stringify(merged), { emitEvent: true });
-        this.item?.control?.markAsDirty();
+        const emitEvent = opts?.emitEvent ?? true;
+        const markDirty = opts?.markDirty ?? true;
+
+        this.item?.control?.patchValue(JSON.stringify(merged), { emitEvent });
+
+        if (markDirty) {
+            this.item?.control?.markAsDirty();
+        }
     }
 
     get columnDefs(): ColDef[] {
@@ -82,9 +93,13 @@ export class TableFieldComponent implements OnInit, OnChanges {
     ngOnInit(): void {
         const tableValue = this.readTable();
         this.item?.control?.patchValue(JSON.stringify(tableValue), { emitEvent: false });
+
+        this.hydrateFromFile();
     }
 
-    ngOnChanges(_changes: SimpleChanges): void {}
+    ngOnChanges(_changes: SimpleChanges): void {
+        // this.hydrateFromFile();
+    }
 
     openModal(): void {
         const ref = this.dialog.open(TableDialogComponent, {
@@ -145,5 +160,45 @@ export class TableFieldComponent implements OnInit, OnChanges {
         }
 
         return label;
+    }
+
+    private hydrateFromFile(): void {
+        if (this.hydrated) {
+            return;
+        }
+
+        if (!this.item || !this.item.control) {
+            this.hydrated = true;
+            return;
+        }
+
+        const table = this.readTable();
+        const hasColumns = Array.isArray(table.columnKeys) && table.columnKeys.length > 0;
+        const hasRows = Array.isArray(table.rows) && table.rows.length > 0;
+        const fileId = (table.fileId ?? '').trim();
+
+        if (!hasColumns && !hasRows && fileId) {
+            const delimiter = this.options?.delimiter || ',';
+
+            this.artifactService.getFile(fileId).subscribe({
+                next: (csvText: string) => {
+                    const parsed = this.csvService.parseCsvToTable(csvText, delimiter);
+
+                    this.writeTable(
+                        { columnKeys: parsed.columnKeys, rows: parsed.rows, fileId },
+                        { emitEvent: false, markDirty: false }
+                    );
+
+                    this.hydrated = true;
+                },
+                error: () => {
+                    this.hydrated = true;
+                },
+            });
+
+            return;
+        }
+
+        this.hydrated = true;
     }
 }

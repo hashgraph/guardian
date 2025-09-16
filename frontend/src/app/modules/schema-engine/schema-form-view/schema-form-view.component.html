@@ -14,6 +14,13 @@
                 <div *ngIf="!item.isInvalidType" class="form-field-value" [attr.rules-status]="isRulesStatus(item)">
                     <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
 
+                    <div *ngIf="item.customType === 'table-field'" class="form-field-table">
+                        <table-viewer
+                                [value]="item.value"
+                                [title]="item.title || item.description || item.name"
+                        ></table-viewer>
+                    </div>
+
                     <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
                         <input
                             pInputText
@@ -114,6 +121,13 @@
 
                         <div class="form-field-value">
                             <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
+
+                            <div *ngIf="item.customType === 'table-field'" class="form-field-table">
+                                <table-viewer
+                                        [value]="listItem.value"
+                                        [title]="item.title || item.description || item.name"
+                                ></table-viewer>
+                            </div>
 
                             <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
                                 <input

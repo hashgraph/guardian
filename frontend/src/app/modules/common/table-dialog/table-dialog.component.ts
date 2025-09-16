@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {
     BodyScrollEvent, CellEditingStoppedEvent, ColDef, GridApi, GridReadyEvent,
     ModuleRegistry, AllCommunityModule, themeQuartz
@@ -14,6 +14,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 })
 export class TableDialogComponent implements OnInit {
     theme = themeQuartz.withParams({ rowHeight: 42, headerHeight: 48 });
+
+    public readOnly: boolean = false;
 
     private dataColumnDefs: ColDef[] = [];
 
@@ -55,7 +57,9 @@ export class TableDialogComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        const data = (this.config?.data ?? {}) as { columnDefs?: ColDef[]; rowData?: any[] };
+        const data = (this.config?.data ?? {}) as { columnDefs?: ColDef[]; rowData?: any[]; readOnly?: boolean };
+
+        this.readOnly = !!data.readOnly;
 
         if (data.columnDefs?.length) {
             this.dataColumnDefs = data.columnDefs.map(c => ({ ...c }));
@@ -75,8 +79,15 @@ export class TableDialogComponent implements OnInit {
     }
 
     onPasteStart(ev: any): void {
+        if (this.readOnly) {
+            return;
+        }
+
         const data: any[][] = ev?.data || [];
-        if (!Array.isArray(data) || !data.length) { return; }
+        if (!Array.isArray(data) || !data.length) {
+            return;
+        }
+
         const rows = data.length;
         const cols = Math.max(...data.map(r => r.length));
         const startRow = ev?.target?.rowIndex ?? 0;
@@ -86,6 +97,10 @@ export class TableDialogComponent implements OnInit {
     }
 
     onCellEditStop(ev: CellEditingStoppedEvent): void {
+        if (this.readOnly) {
+            return;
+        }
+
         const r = ev.rowIndex ?? 0;
         const c = this.colIndexByKey(ev.column.getColId());
         if (r >= this.rowData.length - 1) {
@@ -167,6 +182,11 @@ export class TableDialogComponent implements OnInit {
     }
 
     save(): void {
+        if (this.readOnly) {
+            this.ref.close(null);
+            return;
+        }
+
         this.api?.stopEditing();
         this.ref.close({
             columnDefs: this.dataColumnDefs,

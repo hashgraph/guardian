@@ -22,6 +22,6 @@
     </div>
 
     <div class="text-xs opacity-70">
-        {{ rowData.length ? ('Imported ' + rowData.length + ' rows') : 'No data' }}
+        {{ (rowData || []).length ? ('Imported ' + rowData.length + ' rows') : 'No data' }}
     </div>
 </div>

@@ -15,7 +15,16 @@
     </ag-grid-angular>
 
     <div class="actions">
-        <button class="p-button p-component p-button-outlined" (click)="cancel()">Cancel</button>
-        <button class="p-button p-component p-button-primary" (click)="save()">Save</button>
+        <div class="actions">
+            <button class="p-button p-component p-button-outlined" (click)="cancel()">
+                {{ readOnly ? 'Close' : 'Cancel' }}
+            </button>
+
+            <button
+                    *ngIf="!readOnly"
+                    class="p-button p-component p-button-primary"
+                    (click)="save()">
+                Save
+            </button>
     </div>
 </div>
