@@ -16,7 +16,7 @@
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Enable common sorting</td>
+        <td class="propRowCell cellName" pTooltip="Enable common sorting" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Enable common sorting</td>
         <td class="propRowCell">
             <input type="checkbox" [(ngModel)]="properties.uiMetaData.enableSorting" [readonly]="readonly"
                    (blur)="onSave()">

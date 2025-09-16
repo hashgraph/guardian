@@ -28,7 +28,7 @@
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Check Owned by User</td>
+        <td class="propRowCell cellName" pTooltip="Check Owned by User" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Owned by User</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkOwnerDocument" [readonly]="readonly"
                    (blur)="onSave()">
@@ -36,7 +36,7 @@
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Check Owned by Group</td>
+        <td class="propRowCell cellName" pTooltip="Check Owned by Group" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Owned by Group</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkOwnerByGroupDocument"
                    [readonly]="readonly" (blur)="onSave()">
@@ -44,7 +44,7 @@
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Check Assigned to User</td>
+        <td class="propRowCell cellName" pTooltip="Check Assigned to User" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Assigned to User</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkAssignDocument" [readonly]="readonly"
                    (blur)="onSave()">
@@ -52,7 +52,7 @@
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Check Assigned to Group</td>
+        <td class="propRowCell cellName" pTooltip="Check Assigned to Group" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Assigned to Group</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkAssignByGroupDocument"
                    [readonly]="readonly" (blur)="onSave()">
