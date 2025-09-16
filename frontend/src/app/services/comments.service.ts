@@ -59,8 +59,14 @@ export class CommentsService {
         policyId: string,
         documentId: string,
         data: {
-            name: string,
-            relationships: string[]
+            name?: string | null,
+            parent?: string | null,
+            field?: string | null,
+            fieldName?: string | null,
+            relationships?: string[] | null,
+            visibility?: string | null,
+            roles?: string[] | null,
+            users?: string[] | null,
         }
     ): Observable<any[]> {
         return this.http.post<any[]>(`${this.url}/${policyId}/${documentId}/chats`, data) as any;

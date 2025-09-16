@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges, } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
 import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -23,11 +23,15 @@ export class DocumentViewComponent implements OnInit {
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
     @Input('type') type!: 'VC' | 'VP';
     @Input('schema') schema!: any;
+    @Input('chat') chatData!: any;
+    @Input('chat-action') chatAction: boolean = false;
 
     @Input() dryRun?: boolean = false;
     @Input() policyId?: string;
     @Input() documentId?: string;
     @Input() schemaId?: string;
+
+    @Output('chat-action') chatActionEvent = new EventEmitter<any>();
 
     public loading: boolean = false;
     public isIssuerObject: boolean = false;
@@ -232,5 +236,9 @@ export class DocumentViewComponent implements OnInit {
     public onPage(event: any): void {
         this.pageIndex = event.pageIndex;
         this.pageSize = event.pageSize;
+    }
+
+    public onChatAction($event: any) {
+        this.chatActionEvent.emit($event);
     }
 }

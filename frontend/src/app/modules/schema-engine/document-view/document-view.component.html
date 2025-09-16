@@ -108,7 +108,10 @@
                             [dryRun]="dryRun" 
                             [values]="item"
                             [rules]="rulesResults"
-                            [formulas]="formulasResults">
+                            [formulas]="formulasResults"
+                            [chat]="chatData"
+                            [chat-action]="chatAction"
+                            (chat-action)="onChatAction($event)">
                         </app-schema-form-view>
                     </p-accordionTab>
                 </p-accordion>
@@ -134,7 +137,10 @@
                             [formulas]="formulas"
                             [dryRun]="dryRun" 
                             [hide-fields]="hideFields"
-                            type="VC">
+                            type="VC"
+                            [chat]="chatData"
+                            [chat-action]="chatAction"
+                            (chat-action)="onChatAction($event)">
                         </app-document-view>
                     </p-accordionTab>
                 </p-accordion>

@@ -1,23 +1,34 @@
 <div *ngIf="!collapse" class="container">
     <div class="header">
-        <div *ngIf="currentChat" class="header-container back" (click)="selectChat()">
+        <div *ngIf="currentTab === 'new-chat'" class="header-container">
+            <svg-icon
+                class="icon-btn"
+                src="/assets/images/icons/new-chat.svg"
+                [svgClass]="'icon-color-primary'">
+            </svg-icon>
+            <div class="component-name">Create New Discussion</div>
+        </div>
+
+        <div *ngIf="currentTab === 'chats'" class="header-container">
+            <svg-icon
+                class="icon-btn"
+                src="/assets/images/icons/chat.svg"
+                [svgClass]="'icon-color-primary'">
+            </svg-icon>
+            <div class="component-name">Comments</div>
+        </div>
+
+        <div *ngIf="currentTab === 'messages'" class="header-container back" (click)="selectChat()">
             <svg-icon
                 class="icon-btn"
                 src="/assets/images/icons/left-arrow.svg"
                 [svgClass]="'icon-color-primary'">
             </svg-icon>
             <div class="component-name">
-                {{currentChat.name}}
+                {{currentChat?.name}}
             </div>
         </div>
-        <div  *ngIf="!currentChat" class="header-container">
-            <svg-icon
-                class="icon-btn"
-                src="/assets/images/icons/chat.svg"
-                [svgClass]="'icon-color-primary'">
-            </svg-icon>
-            <div class="component-name">Chats</div>
-        </div>
+
         <div class="header-icon">
             <div class="component-close" (click)="onClose()">
                 <svg-icon
@@ -30,32 +41,194 @@
         <div class="guardian-loading-image"></div>
     </div>
 
-    <ng-container *ngIf="!currentChat">
-        <div class="chats">
-            <div *ngFor="let chat of chats" class="full-chats">
-                <div class="full-chat" (click)="onOpen(chat)">
-                    <div class="chat-icon">
-                        {{chat._short}}
+    <ng-container *ngIf="currentTab === 'new-chat'">
+        <div class="new-chat">
+            <div class="chat-form">
+                <form [formGroup]="chatForm">
+                    <div class="form-title">
+                        General
                     </div>
-                    <div class="chat-name">
-                        {{chat.name}}
+
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Discussion Name</label>
+                        <input formControlName="name" id="name" pInputText type="text" />
                     </div>
-                </div>
+
+                    <div class="form-title">
+                        Relationships
+                    </div>
+
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Selected Field</label>
+                        <input formControlName="fieldName" id="fieldName" pInputText type="text" readonly />
+                    </div>
+
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Documents</label>
+                        <p-multiSelect
+                            formControlName="relationships"
+                            [options]="documentsList"
+                            class="guardian-multiselect full-size"
+                            appendTo="body"
+                            placeholder="Not selected"
+                            optionLabel="label" 
+                            optionValue="value"
+                            filterBy="label"
+                            panelStyleClass="guardian-multiselect-panel">
+                        </p-multiSelect>
+                    </div>
+
+                    <div class="form-title">
+                        Privacy Settings
+                    </div>
+
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Visibility</label>
+                        <p-dropdown 
+                            formControlName="visibility"
+                            [options]="visibilityList"
+                            [showClear]="false" 
+                            class="guardian-dropdown" 
+                            appendTo="body"
+                            placeholder="Not selected" 
+                            optionLabel="label" 
+                            optionValue="value"
+                            panelStyleClass="guardian-dropdown-panel">
+                        </p-dropdown>
+                    </div>
+
+                    <div *ngIf="chatForm.value.visibility==='roles'" class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Roles</label>
+                        <p-multiSelect
+                            formControlName="roles"
+                            [options]="rolesList"
+                            class="guardian-multiselect full-size"
+                            appendTo="body"
+                            placeholder="Not selected"
+                            optionLabel="label" 
+                            optionValue="value"
+                            filterBy="label"
+                            panelStyleClass="guardian-multiselect-panel">
+                        </p-multiSelect>
+                    </div>
+
+                    <div *ngIf="chatForm.value.visibility==='users'" class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Users</label>
+                        <p-multiSelect
+                            formControlName="users"
+                            [options]="usersList"
+                            class="guardian-multiselect full-size"
+                            appendTo="body"
+                            placeholder="Not selected"
+                            optionLabel="label" 
+                            optionValue="value"
+                            filterBy="label"
+                            panelStyleClass="guardian-multiselect-panel">
+                        </p-multiSelect>
+                    </div>
+                </form>
             </div>
         </div>
         <div class="toolbar">
             <button
                 (click)="createNewChat()"
                 class="guardian-button guardian-button-primary new-chat-btn"
+                [disabled]="chatForm.invalid"
+            >Create</button> 
+            <button
+                (click)="cancelNewChat()"
+                class="guardian-button guardian-button-secondery new-chat-btn"
+            >Cancel</button>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="currentTab === 'chats'">
+        <div class="chat-filters">
+            <div class="search-filter">
+                <input
+                    class="guardian-input search-policy-input"
+                    pInputText
+                    placeholder="Search by keyword"
+                    type="text" />
+                <i class="search-icon">
+                    <svg-icon 
+                        class="svg-icon-16" 
+                        src="/assets/images/icons/16/search.svg" 
+                        svgClass="icon-color-close">
+                    </svg-icon>
+                </i>
+            </div>
+            <div *ngIf="searchField" class="field-filter">
+                <div class="field-filter-icon">
+                    <svg-icon 
+                        class="svg-icon-16" 
+                        src="/assets/images/icons/16/hashtag.svg" 
+                        svgClass="icon-color-primary"></svg-icon>
+                </div>
+                <div class="field-filter-name">{{searchField.name}}</div>
+                <div class="field-filter-delete" (click)="onDeleteSearch()">
+                    <svg-icon 
+                        class="svg-icon-16" 
+                        src="/assets/images/icons/16/close.svg" 
+                        svgClass="icon-color-close"></svg-icon>
+                </div>
+            </div>
+        </div>
+        <div class="chats">
+            <div class="full-chats">
+                <div *ngFor="let chat of chats" class="full-chat" (click)="onOpen(chat)">
+                    <div class="chat-visibility">
+                        <div *ngIf="!chat.visibility"></div>
+                        <div *ngIf="chat.visibility === 'public'"></div>
+                        <div *ngIf="chat.visibility === 'roles'"></div>
+                        <div *ngIf="chat.visibility === 'users'"></div>
+                    </div>
+                    <div class="chat-icon">
+                        {{chat._short}}
+                    </div>
+                    <div class="chat-body">
+                        <div class="chat-name">
+                            {{chat.name}}
+                        </div>
+                        <div *ngIf="chat.field" class="chat-field">
+                            <div class="chat-field-icon">
+                                <svg-icon 
+                                    class="svg-icon-16" 
+                                    src="/assets/images/icons/16/hashtag.svg" 
+                                    svgClass="icon-color-primary"></svg-icon>
+                            </div>
+                            <div class="chat-field-name">{{chat.fieldName}}</div> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="toolbar">
+            <button
+                (click)="onNewChat()"
+                class="guardian-button guardian-button-primary new-chat-btn"
             >
-                <div class="guardian-button-label">Create New Chat</div>
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/add.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Create New Discussion</div>
             </button> 
         </div>
     </ng-container>
-    <ng-container *ngIf="currentChat">
+
+    <ng-container *ngIf="currentTab === 'messages'">
         <div #messageContainer class="messages-container">
             <div *ngIf="!data.data.length" class="messages">
-                
+                <div class="not-exist">
+                    <div class="not-exist-icon">
+                        <svg-icon
+                            src="/assets/images/icons/chat.svg"
+                            svgClass="icon-color-disabled"></svg-icon>
+                    </div>
+                    <div class="not-exist-text">There are no comments added yet.</div>
+                </div>
             </div>
             <div *ngIf="data.data.length" class="messages" >
                 <div *ngFor="let item of data.data" class="message" [attr.owner]="item.isOwner">
@@ -107,6 +280,7 @@
             <div class="guardian-textarea-container toolbar-textarea">
                 <mwl-text-input-autocomplete-container>
                     <textarea
+                        #messageInput
                         placeholder="Write a message"
                         rows="3" 
                         [(ngModel)]="textMessage"

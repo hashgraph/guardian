@@ -88,7 +88,10 @@
                         [schema]="schema"
                         [document]="document" 
                         [getByUser]="getByUser" 
-                        [type]="type"></app-document-view>
+                        [type]="type"
+                        [chat]="chatData"
+                        [chat-action]="chatAction"
+                        (chat-action)="onChatAction($event)"></app-document-view>
                 </div>
                 <div *ngIf="currentTab === 1" class="json-container">
                     <ng-container *ngIf="fileSize <= 1; else fileIsTooBigTemplate">
@@ -104,11 +107,13 @@
             </div>
             <div class="comments-content">
                 <policy-comments
+                    #chatComponent
                     [document-id]="id"
                     [policy-id]="policyId"
                     [collapse]="collapse"
                     (select)="onMessageSelect($event)"
                     (collapse)="onCollapse($event)"
+                    (view)="onChatView($event)"
                 ></policy-comments>
             </div>
         </div>

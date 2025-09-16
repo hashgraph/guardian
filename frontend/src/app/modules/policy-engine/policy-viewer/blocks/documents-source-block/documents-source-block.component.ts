@@ -9,6 +9,7 @@ import { ViewerDialog } from '../../../dialogs/viewer-dialog/viewer-dialog.compo
 import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
 import { VCFullscreenDialog } from 'src/app/modules/schema-engine/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
+import { Subject } from 'rxjs';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -55,6 +56,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
     hasHistory: boolean = false;
     readonly: boolean = false;
 
+    private _destroy$ = new Subject<void>();
+
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
@@ -81,6 +84,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (this.socket) {
             this.socket.unsubscribe();
         }
+        this._destroy$.next();
+        this._destroy$.unsubscribe();
     }
 
     onUpdate(blocks: string[]): void {
@@ -253,6 +258,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     id: row.id,
                     row: row,
                     document: document,
+                    destroy: this._destroy$
                 }
             });
             dialogRef.onClose.subscribe(async (result) => {

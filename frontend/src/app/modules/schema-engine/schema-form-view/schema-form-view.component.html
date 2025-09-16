@@ -80,6 +80,44 @@
                     </div>
 
                     <div
+                        *ngIf="isChat(item) as messageCount; else elseChat"
+                        class="form-field-chat">
+                        <button
+                            class="guardian-icon-button"
+                            (click)="openChat(item)">
+                            <svg-icon
+                                src="/assets/images/icons/chat.svg"
+                                svgClass="icon-color-primary"
+                            ></svg-icon>
+                        </button>
+                        <div class="icon-count">{{messageCount}}</div>
+                    </div>
+                    <ng-template #elseChat>
+                        <div class="form-field-chat">
+                            <button
+                                class="guardian-icon-button"
+                                (click)="openChat(item)">
+                                <svg-icon
+                                    src="/assets/images/icons/chat.svg"
+                                    svgClass="icon-color-disabled"
+                                ></svg-icon>
+                            </button>
+                        </div>
+                    </ng-template>
+
+                    <div
+                        *ngIf="chatAction"
+                        class="form-field-chat chat-action">
+                        <button
+                            class="guardian-icon-button"
+                            (click)="linkMessage(item)">
+                            <svg-icon
+                                src="/assets/images/icons/hashtag.svg"
+                                svgClass="icon-color-primary"></svg-icon>
+                        </button>
+                    </div>
+
+                    <div
                         *ngIf="isRules(item) as rule"
                         class="form-field-rule"
                         [pTooltip]="rule.tooltip"
@@ -207,7 +245,10 @@
                                             [fields]="item.fields"
                                             [values]="this.values && this.values[item.name]"
                                             [rules]="rules"
-                                            [formulas]="formulas">
+                                            [formulas]="formulas"
+                                            [chat]="chatData"
+                                            [chat-action]="chatAction"
+                                            (chat-action)="onChatAction($event)">
                                         </app-schema-form-view>
                                     </ng-container>
                                 </div>
@@ -248,7 +289,10 @@
                                             [fields]="item.fields"
                                             [values]="listItem"
                                             [rules]="rules"
-                                            [formulas]="formulas">
+                                            [formulas]="formulas"
+                                            [chat]="chatData"
+                                            [chat-action]="chatAction"
+                                            (chat-action)="onChatAction($event)">
                                         </app-schema-form-view>
                                     </ng-container>
                                 </div>

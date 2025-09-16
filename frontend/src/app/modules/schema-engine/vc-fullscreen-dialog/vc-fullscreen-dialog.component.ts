@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { UserPermissions } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from 'src/app/services/profile.service';
+import { PolicyComments } from '../../common/policy-comments/policy-comments.component';
+import { Subject, Subscription } from 'rxjs';
 
 /**
  * Dialog for display json
@@ -13,6 +15,8 @@ import { ProfileService } from 'src/app/services/profile.service';
     styleUrls: ['./vc-fullscreen-dialog.component.scss']
 })
 export class VCFullscreenDialog {
+    @ViewChild('chatComponent', { static: false }) chatComponent: PolicyComments;
+
     public loading: boolean = true;
 
     public user: UserPermissions = new UserPermissions();
@@ -35,7 +39,12 @@ export class VCFullscreenDialog {
     public document: any;
     public json: string = '';
     public fileSize: number = 0;
-    public collapse: boolean = true;
+    public collapse: boolean = false;
+    public chatData: any = {};
+    public chatAction: boolean = false;
+
+    private _destroy$ = new Subject<void>();
+    private _subscription?: Subscription | null;
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -55,7 +64,8 @@ export class VCFullscreenDialog {
             id,
             row,
             schema,
-            document
+            document,
+            destroy
         } = this.dialogConfig.data;
 
         this.backLabel = backLabel || 'Back'
@@ -107,6 +117,13 @@ export class VCFullscreenDialog {
         this.fileSize = Math.round((fileSizeBytes / (1024 * 1024)));
 
         this.loadProfile();
+
+        if (destroy) {
+            this._destroy$ = destroy;
+        }
+        this._subscription = this._destroy$.subscribe(() => {
+            this.onClose();
+        })
     }
 
 
@@ -144,7 +161,13 @@ export class VCFullscreenDialog {
     }
 
     public onClose(): void {
-        this.dialogRef.close(null);
+        try {
+            this._subscription?.unsubscribe();
+            this._subscription = null;
+            this.dialogRef.close(null);
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     public onFindInExport(): void {
@@ -181,5 +204,19 @@ export class VCFullscreenDialog {
 
     public onCollapse($event: boolean) {
         this.collapse = $event;
+    }
+
+    public onChatAction($event: any) {
+        if (this.chatComponent) {
+            this.chatComponent.onChatAction($event);
+        }
+    }
+
+    public onChatView($event: any) {
+        if ($event?.type === 'messages') {
+            this.chatAction = true;
+        } else {
+            this.chatAction = false;
+        }
     }
 }

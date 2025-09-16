@@ -82,6 +82,14 @@ export class DatabaseServer extends AbstractDatabaseServer {
         ? parseInt(process.env.DOCUMENTS_HANDLING_CHUNK_SIZE, 10)
         : 500;
 
+    public static dbID(id: string): ObjectId {
+        try {
+            return new ObjectId(id);
+        } catch (error) {
+            return null;
+        }
+    }
+
     /**
      * Add dry run id
      * @param item

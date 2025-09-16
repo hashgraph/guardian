@@ -8,6 +8,7 @@ import { DataList } from './data-list';
 import { ProfileService } from 'src/app/services/profile.service';
 import { UserPermissions } from '@guardian/interfaces';
 import { CommentsService } from 'src/app/services/comments.service';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 interface ListItem {
     label: string;
@@ -23,11 +24,19 @@ interface ChatItem {
     owner: string;
     system: string;
     count: number;
-    parent: string;
+    parent?: string;
     documentId: string;
+    field?: string;
+    fieldName?: string;
     policyId: string;
-    relationships: string[];
+    relationships?: string[];
+    visibility?: string;
     _short?: string
+}
+
+interface FieldItem {
+    field: string;
+    name: string;
 }
 
 /**
@@ -45,9 +54,11 @@ export class PolicyComments {
     @Input('collapse') collapse: boolean = true;
 
     @ViewChild('messageContainer', { static: false }) messageContainer: any;
+    @ViewChild('messageInput', { static: false }) messageInput: any;
 
     @Output('select') selectEvent = new EventEmitter<any>();
     @Output('collapse') collapseEvent = new EventEmitter<boolean>();
+    @Output('view') viewEvent = new EventEmitter<any>();
 
     public loading: boolean = true;
     public data: DataList;
@@ -64,6 +75,34 @@ export class PolicyComments {
     public users: ListItem[] = [];
     public chats: ChatItem[] = [];
     public currentChat: any = null;
+    public currentField?: FieldItem = undefined;
+    public searchField?: FieldItem = undefined;
+
+    public currentTab: 'new-chat' | 'chats' | 'messages' = 'chats';
+    public chatForm = new FormGroup({
+        name: new FormControl<string>('', Validators.required),
+        relationships: new FormControl<string[]>([]),
+        visibility: new FormControl<string>('', Validators.required),
+        roles: new FormControl<string[]>([]),
+        users: new FormControl<string[]>([]),
+
+        parent: new FormControl<string>(''),
+        field: new FormControl<string>(''),
+        fieldName: new FormControl<string>(''),
+    });
+    public visibilityList = [{
+        label: 'Public',
+        value: 'public',
+    }, {
+        label: 'Roles',
+        value: 'roles',
+    }, {
+        label: 'Users',
+        value: 'users',
+    }];
+    public rolesList: any[] = [];
+    public usersList: any[] = [];
+    public documentsList: any[] = [];
 
     private _destroy$ = new Subject<void>();
     public _findChoices = this.findChoices.bind(this);
@@ -80,6 +119,19 @@ export class PolicyComments {
         this.textMessage = '';
         this.files = [];
         this.sendDisabled = true;
+
+        this.chatForm.get('visibility')?.valueChanges.subscribe(val => {
+            this.chatForm.controls['roles'].clearValidators();
+            this.chatForm.controls['users'].clearValidators();
+            if (val === 'roles') {
+                this.chatForm.controls['roles'].setValidators([Validators.required]);
+            }
+            if (val === 'users') {
+                this.chatForm.controls['users'].setValidators([Validators.required]);
+            }
+            this.chatForm.controls['roles'].updateValueAndValidity();
+            this.chatForm.controls['users'].updateValueAndValidity();
+        });
     }
 
     ngOnInit(): void {
@@ -90,10 +142,12 @@ export class PolicyComments {
         this.loading = true;
         this.loadProfile();
         this.updateTargets();
+        this.changeView();
     }
 
     ngOnDestroy(): void {
-
+        this._destroy$.next();
+        this._destroy$.unsubscribe();
     }
 
     private updateTargets() {
@@ -103,6 +157,16 @@ export class PolicyComments {
         }
         for (const user of this.users) {
             this.userNames.set(user.value, `@${user.label}`);
+        }
+        this.rolesList = [];
+        this.usersList = [];
+        for (const item of this.users) {
+            if (item.type === 'role') {
+                this.rolesList.push(item);
+            }
+            if (item.type === 'user') {
+                this.usersList.push(item);
+            }
         }
     }
 
@@ -163,6 +227,7 @@ export class PolicyComments {
     }
 
     private loadChats() {
+        this.loading = true;
         this.commentsService.getChats(this.policyId, this.documentId)
             .pipe(takeUntil(this._destroy$))
             .subscribe((chats) => {
@@ -484,30 +549,136 @@ export class PolicyComments {
     public onClose() {
         this.currentChat = null;
         this.collapse = true;
+        this.currentTab = 'chats';
         this.collapseEvent.emit(true);
+        this.changeView();
     }
 
     public onOpen(chat?: ChatItem) {
         this.currentChat = chat;
         this.collapse = false;
+        this.currentTab = chat ? 'messages' : 'chats';
         this.collapseEvent.emit(false);
-        if (this.currentChat) {
+        this.changeView();
+        if (this.currentTab === 'messages') {
             this.loadComments('load');
         } else {
-            this.loadChats()
+            this.loadChats();
         }
     }
 
     public selectChat(chat?: ChatItem) {
         this.currentChat = chat;
-        if (this.currentChat) {
+        this.currentTab = chat ? 'messages' : 'chats';
+        this.changeView();
+        if (this.currentTab === 'messages') {
             this.loadComments('load');
         } else {
-            this.loadChats()
+            this.loadChats();
         }
     }
 
-    public createNewChat() {
-
+    public onNewChat() {
+        this.currentTab = 'new-chat';
+        this.chatForm.setValue({
+            name: '',
+            relationships: [],
+            visibility: 'public',
+            roles: [],
+            users: [],
+            parent: this.currentChat?.id || null,
+            field: this.searchField?.field || null,
+            fieldName: this.searchField?.name || null,
+        })
     }
+
+    public cancelNewChat() {
+        this.currentTab = 'chats';
+    }
+
+    public createNewChat() {
+        if (!this.policyId || !this.documentId) {
+            this.loading = false;
+            return;
+        }
+        this.chatForm.value;
+        this.loading = true;
+        this.commentsService
+            .createChat(
+                this.policyId,
+                this.documentId,
+                this.chatForm.value
+            ).subscribe((response) => {
+                this.currentTab = 'messages';
+                this.currentChat = response;
+                this.loadComments('load');
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public setLink() {
+        try {
+            if (this.messageInput) {
+                this.messageInput
+                    .nativeElement
+                    .focus()
+            }
+        } catch (error) {
+            return;
+        }
+    }
+
+    public onChatAction($event: any) {
+        if ($event?.type === 'open') {
+            this.searchField = {
+                field: $event.field,
+                name: $event.fieldName,
+            };
+            this.currentChat = null;
+            this.collapse = false;
+            this.currentTab = 'chats';
+            this.collapseEvent.emit(false);
+            this.changeView();
+            this.loadChats();
+        }
+        if ($event?.type === 'link') {
+            this.currentField = {
+                field: $event.field,
+                name: $event.fieldName,
+            };
+            if (this.collapse || !this.currentChat) {
+                this.currentChat = null;
+                this.collapse = false;
+                this.currentTab = 'chats';
+                this.collapseEvent.emit(false);
+                this.changeView();
+                this.loadChats();
+            }
+            this.setLink();
+        }
+    }
+
+    private changeView() {
+        if (this.collapse) {
+            this.viewEvent.emit({
+                type: 'collapsed'
+            });
+        } else if (this.currentChat) {
+            this.viewEvent.emit({
+                type: 'messages',
+                chat: this.currentChat
+            });
+        } else {
+            this.viewEvent.emit({
+                type: 'chats'
+            });
+        }
+    }
+
+    public onDeleteSearch() {
+        this.searchField = undefined;
+        this.loadChats();
+    }
+
 }

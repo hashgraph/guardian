@@ -45,7 +45,6 @@ import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
 import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
-import { ObjectId } from '@mikro-orm/mongodb';
 
 /**
  * PolicyEngineChannel
@@ -3543,7 +3542,7 @@ export class PolicyEngineService {
                     const chats = await DatabaseServer.getPolicyChats({
                         policyId,
                         system: false,
-                        relationships: documentId
+                        documentIds: documentId
                     }, otherOptions);
                     let commonChat = await this.getCommonChat(policyId, documentId);
                     if (commonChat) {
@@ -3565,6 +3564,7 @@ export class PolicyEngineService {
                 data: {
                     name: string,
                     parent: string,
+                    field: string,
                     relationships: string[]
                 }
             }) => {
@@ -3577,6 +3577,19 @@ export class PolicyEngineService {
                     if (!vc || vc.policyId !== policyId) {
                         throw new Error('Document not found.');
                     }
+                    const documentIds = data?.relationships || [];
+                    if (!documentIds.includes(documentId)) {
+                        documentIds.push(documentId);
+                    }
+                    const documents = await DatabaseServer.getVCs({
+                        _id: { $in: documentIds.map((e) => DatabaseServer.dbID(e)) },
+                        messageId: { $exists: true }
+                    })
+
+                    const name = data?.name || String(Date.now());
+                    const parent = data?.parent;
+                    const field = data?.field;
+                    const relationships = documents.map((d) => d.messageId);
 
                     const chat = await DatabaseServer.createPolicyChat({
                         uuid: GenerateUUIDv4(),
@@ -3586,9 +3599,11 @@ export class PolicyEngineService {
                         documentId,
                         system: false,
                         count: 0,
-                        parent: data?.parent,
-                        name: data?.name,
-                        relationships: data?.relationships
+                        name,
+                        parent,
+                        field,
+                        relationships,
+                        documentIds
                     });
 
                     return new MessageResponse(chat);
@@ -3638,7 +3653,7 @@ export class PolicyEngineService {
                         throw new Error('Chat not found.');
                     }
                     const chat = await DatabaseServer.getPolicyChat({
-                        _id: new ObjectId(data.chatId),
+                        _id: DatabaseServer.dbID(data.chatId),
                         policyId,
                         documentId
                     });
@@ -3766,10 +3781,10 @@ export class PolicyEngineService {
 
                     const count = await DatabaseServer.getPolicyCommentsCount(filters, otherOptions);
                     if (params.lt) {
-                        filters._id = { $lt: new ObjectId(params.lt) }
+                        filters._id = { $lt: DatabaseServer.dbID(params.lt) }
                     }
                     if (params.gt) {
-                        filters._id = { $gt: new ObjectId(params.gt) }
+                        filters._id = { $gt: DatabaseServer.dbID(params.gt) }
                     }
                     const comments = await DatabaseServer.getPolicyComments(filters, otherOptions);
 

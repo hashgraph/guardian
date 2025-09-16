@@ -62,10 +62,18 @@ export class PolicyChat extends BaseEntity {
      * Relationships
      */
     @Property({
+        nullable: true
+    })
+    relationships?: string[];
+
+    /**
+     * Relationships
+     */
+    @Property({
         nullable: true,
         index: true
     })
-    relationships?: string[];
+    documentIds?: string[];
 
     /**
      * Count
@@ -90,5 +98,14 @@ export class PolicyChat extends BaseEntity {
     @Property({
         nullable: true
     })
-    parent?: string; 
+    parent?: string;
+
+    /**
+     * Parent chat
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    field?: string;
 }
