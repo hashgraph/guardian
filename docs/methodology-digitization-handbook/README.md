@@ -139,8 +139,8 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 
 **Purpose**: Advanced integration techniques and troubleshooting **Outcome**: Expert-level understanding and problem-solving capabilities
 
-* Chapter 27: Integration with External Systems - Registry integration, monitoring systems, enterprise connectivity
-* Chapter 28: Troubleshooting and Common Issues - Debugging techniques, issue resolution, performance optimization
+* Chapter 27: Integration with External Systems - Data transformation and MRV external data reception patterns
+* Chapter 28: Troubleshooting and Common Issues - Practical tips, schema pitfalls, workflow optimization, event debugging
 
 </details>
 
@@ -218,7 +218,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 - **🧮 [Part V: Calculation Logic Implementation](part-5/README.md)** - CustomLogicBlock development, Guardian Tools, and testing (Available Now)
 - **🔗 [Part VI: Integration and Testing](part-6/README.md)** - End-to-end testing, API integration, and production deployment validation (Available Now)
 - **🚀 [Part VII: Deployment and Maintenance](part-7/README.md)** - User management, monitoring, and maintenance procedures (In Progress)
-- **⚡ [Part VIII: Advanced Topics and Best Practices](part-8/README.md)** - External integration and troubleshooting (In Progress)
+- **⚡ [Part VIII: Advanced Topics and Best Practices](part-8/README.md)** - External integration and troubleshooting (Available Now)
 
 ### Available Content
 {% hint style="success" %}
@@ -234,7 +234,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 | **Part V**       | ✅ **Available** | [Chapters 18-21](part-5/README.md) | Calculation logic, customLogicBlock development, Guardian Tools, testing  |
 | **Part VI**      | ✅ **Available** | [Chapters 22-23](part-6/README.md) | End-to-end testing, API integration, automated workflows                  |
 | **Part VII**     | 🚧 **In Progress** | [Chapters 24-26](part-7/README.md) | User management, monitoring, maintenance procedures                        |
-| **Part VIII**    | 🚧 **In Progress** | [Chapters 27-28](part-8/README.md) | External integration, troubleshooting, advanced best practices            |
+| **Part VIII**    | ✅ **Available** | [Chapters 27-28](part-8/README.md) | External integration, troubleshooting, advanced best practices            |
 
 ### Shared Resources
 - **🔧 [Shared Resources](_shared/README.md)** - Templates, integration guides, and reference materials

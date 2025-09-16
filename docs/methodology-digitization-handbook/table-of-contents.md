@@ -115,11 +115,11 @@ Automating methodology operations using Guardian's REST API framework. Covers au
 
 ### [Chapter 27: Integration with External Systems](part-8/chapter-27/README.md)
 
-🚧 **In Development** - Connecting Guardian-based methodologies with external registries, monitoring systems, and third-party tools. Covers advanced integration patterns, data transformation, and enterprise connectivity.
+✅ **Available** - Bidirectional data exchange between Guardian and external platforms. Covers data transformation using dataTransformationAddon blocks and external data reception using MRV configuration patterns.
 
 ### [Chapter 28: Troubleshooting and Common Issues](part-8/chapter-28/README.md)
 
-🚧 **In Development** - Common problems encountered during methodology digitization and their solutions, with specific examples from VM0033 implementation. Covers debugging techniques, performance optimization, and issue resolution.
+✅ **Available** - Practical tips and solutions for common problems encountered during methodology digitization. Covers schema development pitfalls, development workflow optimization, custom logic testing, and event troubleshooting.
 
 ## Part IX: Appendices and References
 
