@@ -2,7 +2,7 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Enable Individual Filters</td>
+        <td class="propRowCell cellName"  pTooltip="Enable Individual Filters" tooltipPosition="top">Enable Individual Filters</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="properties.uiMetaData.enableIndividualFilters"
                    [readonly]="readonly" (blur)="onSave()">
