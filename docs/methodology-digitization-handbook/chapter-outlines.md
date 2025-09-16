@@ -392,30 +392,30 @@
 
 ### Chapter 27: Integration with External Systems
 
-**Purpose**: Connect Guardian-based methodologies with external systems and services.
+**Purpose**: Implement bidirectional data exchange between Guardian and external platforms.
 
 **Key Topics**:
 
-* External system integration patterns
-* Data transformation via blocks
-* Data synchronization and consistency
-* Real-time data feeds and streaming (Metered Policy Example)
+* Data transformation using dataTransformationAddon blocks with JavaScript
+* VM0033 production transformation code for external registry integration
+* External data reception using externalDataBlock and MRV configuration patterns
+* Metered energy policy patterns for automated monitoring data collection
 
-**VM0033 Context**: Integration of VM0033 with external monitoring systems, satellite data feeds, and Verra's registry systems.
+**VM0033 Context**: VM0033's dataTransformationAddon block implementation for Verra Project Hub integration and MRV sender patterns for external monitoring data collection.
 
 ### Chapter 28: Troubleshooting and Common Issues
 
-**Purpose**: Provide solutions for common problems encountered during methodology digitization.
+**Purpose**: Practical tips and solutions for common problems encountered during methodology digitization.
 
 **Key Topics**:
 
-* Common digitization pitfalls and solutions
-* Debugging techniques and tools
-* Data quality issues and resolution
-* User experience problems and fixes
-* Integration and compatibility issues
+* Schema building best practices and Excel import pitfalls
+* Development workflow optimization using savepoints and API testing
+* Custom logic block testing and document history debugging
+* Event troubleshooting when documents don't appear in UI
+* Performance optimization and calculation precision issues
 
-**VM0033 Context**: Some specific troubleshooting scenarios encountered during VM0033 implementation and their solutions.
+**VM0033 Context**: Real-world troubleshooting tips from Guardian methodology development experience, focusing on practical solutions to save development time.
 
 ***
 

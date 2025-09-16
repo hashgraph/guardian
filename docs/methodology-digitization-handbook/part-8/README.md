@@ -17,7 +17,7 @@ Building on operational deployment from Part VII, Part VIII addresses complex in
 ## Part VIII Structure
 
 ### [Chapter 27: Integration with External Systems](chapter-27/README.md)
-Connecting Guardian-based methodologies with external registries, monitoring systems, and third-party tools. Covers advanced integration patterns, data transformation, and real-time synchronization.
+Bidirectional data exchange between Guardian and external platforms. Covers data transformation using VM0033's dataTransformationAddon block and external data reception using MRV configuration patterns from metered energy policies.
 
 ### [Chapter 28: Troubleshooting and Common Issues](chapter-28/README.md)
 Common problems encountered during methodology digitization and their solutions, with specific examples from VM0033 implementation. Covers debugging techniques, performance optimization, and issue resolution.
@@ -39,10 +39,10 @@ Common problems encountered during methodology digitization and their solutions,
 After completing Part VIII, you will be able to:
 
 ### Advanced Integration Mastery
-- Design and implement sophisticated external system integration patterns
-- Handle complex data transformation and synchronization requirements
-- Implement real-time data feeds and streaming integration
-- Manage enterprise-level integration architecture and scaling
+- Implement data transformation using dataTransformationAddon blocks with JavaScript
+- Configure external data reception using externalDataBlock and MRV patterns
+- Handle Guardian-to-external system data export and formatting
+- Set up automated monitoring data collection from external devices and systems
 
 ### Expert Troubleshooting
 - Diagnose and resolve complex methodology implementation issues
@@ -70,7 +70,7 @@ After completing Part VIII, you will be able to:
 
 ## Status
 
-🚧 **In Development** - Part VIII chapters are currently being developed and will be available soon.
+✅ **Available** - Part VIII chapters are complete and ready for use.
 
 ---
 
