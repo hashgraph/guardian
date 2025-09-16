@@ -1055,6 +1055,7 @@ paths:
           description: Forbidden.
       security:
         - bearer: []
+        - bearer: []
       summary: Download file by id
       tags:
         - artifacts
