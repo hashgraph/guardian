@@ -18,7 +18,7 @@ import {
     PinoLogger,
     Policy,
     PolicyAction,
-    PolicyChat,
+    PolicyDiscussion,
     PolicyImportExport,
     PolicyMessage,
     RecordImportExport,
@@ -190,17 +190,17 @@ export class PolicyEngineService {
         return module;
     }
 
-    private async getCommonChat(policyId: string, documentId: string) {
+    private async getCommonDiscussion(policyId: string, documentId: string) {
         try {
-            const commonChat = await DatabaseServer.getPolicyChat({
+            const commonDiscussion = await DatabaseServer.getPolicyDiscussion({
                 policyId,
                 system: true,
                 documentId
             })
-            if (commonChat) {
-                return commonChat;
+            if (commonDiscussion) {
+                return commonDiscussion;
             }
-            return await DatabaseServer.createPolicyChat({
+            return await DatabaseServer.createPolicyDiscussion({
                 uuid: '',
                 owner: '',
                 creator: '',
@@ -212,7 +212,7 @@ export class PolicyEngineService {
                 relationships: [documentId]
             });
         } catch (error) {
-            return await DatabaseServer.getPolicyChat({
+            return await DatabaseServer.getPolicyDiscussion({
                 policyId,
                 system: true,
                 documentId
@@ -3520,7 +3520,7 @@ export class PolicyEngineService {
                 }
             });
 
-        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_CHATS,
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_DISCUSSIONS,
             async (msg: {
                 user: IAuthUser,
                 policyId: string,
@@ -3539,24 +3539,24 @@ export class PolicyEngineService {
                     const otherOptions: any = {
                         orderBy: { updateDate: -1 }
                     };
-                    const chats = await DatabaseServer.getPolicyChats({
+                    const discussions = await DatabaseServer.getPolicyDiscussions({
                         policyId,
                         system: false,
                         documentIds: documentId
                     }, otherOptions);
-                    let commonChat = await this.getCommonChat(policyId, documentId);
-                    if (commonChat) {
-                        chats.unshift(commonChat);
+                    let commonDiscussion = await this.getCommonDiscussion(policyId, documentId);
+                    if (commonDiscussion) {
+                        discussions.unshift(commonDiscussion);
                     }
 
-                    return new MessageResponse(chats);
+                    return new MessageResponse(discussions);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
                 }
             });
 
-        this.channel.getMessages(PolicyEngineEvents.CREATE_POLICY_CHAT,
+        this.channel.getMessages(PolicyEngineEvents.CREATE_POLICY_DISCUSSION,
             async (msg: {
                 user: IAuthUser,
                 policyId: string,
@@ -3591,7 +3591,7 @@ export class PolicyEngineService {
                     const field = data?.field;
                     const relationships = documents.map((d) => d.messageId);
 
-                    const chat = await DatabaseServer.createPolicyChat({
+                    const discussion = await DatabaseServer.createPolicyDiscussion({
                         uuid: GenerateUUIDv4(),
                         owner: user.did,
                         creator: user.did,
@@ -3606,7 +3606,7 @@ export class PolicyEngineService {
                         documentIds
                     });
 
-                    return new MessageResponse(chat);
+                    return new MessageResponse(discussion);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
@@ -3619,7 +3619,7 @@ export class PolicyEngineService {
                 policyId: string,
                 documentId: string,
                 data: {
-                    chatId?: string;
+                    discussionId?: string;
                     anchor?: string;
                     recipients?: string[];
                     text?: string;
@@ -3649,16 +3649,16 @@ export class PolicyEngineService {
                         files: data.files
                     }
 
-                    if (!data.chatId) {
-                        throw new Error('Chat not found.');
+                    if (!data.discussionId) {
+                        throw new Error('Discussion not found.');
                     }
-                    const chat = await DatabaseServer.getPolicyChat({
-                        _id: DatabaseServer.dbID(data.chatId),
+                    const discussion = await DatabaseServer.getPolicyDiscussion({
+                        _id: DatabaseServer.dbID(data.discussionId),
                         policyId,
                         documentId
                     });
-                    if (!chat) {
-                        throw new Error('Chat not found.');
+                    if (!discussion) {
+                        throw new Error('Discussion not found.');
                     }
 
                     const comment = {
@@ -3677,17 +3677,17 @@ export class PolicyEngineService {
                         anchor: data.anchor,
                         target: vc.messageId,
                         targetId: documentId,
-                        chatId: chat.id,
+                        discussionId: discussion.id,
                         isDocumentOwner: isDocumentOwner,
                         document: document
                     }
                     const row = await DatabaseServer.createPolicyComment(comment);
-                    chat.count = await DatabaseServer.getPolicyCommentsCount({
+                    discussion.count = await DatabaseServer.getPolicyCommentsCount({
                         policyId,
                         targetId: documentId,
-                        chatId: chat.id,
+                        discussionId: discussion.id,
                     })
-                    await DatabaseServer.updatePolicyChat(chat);
+                    await DatabaseServer.updatePolicyDiscussion(discussion);
 
                     return new MessageResponse(row);
                 } catch (error) {
@@ -3701,7 +3701,7 @@ export class PolicyEngineService {
                 policyId: string,
                 documentId: string,
                 params: {
-                    chatId?: string,
+                    discussionId?: string,
                     anchor?: string,
                     // sender?: string,
                     // senderRole?: string,
@@ -3730,8 +3730,8 @@ export class PolicyEngineService {
                     if (params.anchor) {
                         filters.anchor = params.anchor;
                     }
-                    if (params.chatId) {
-                        filters.chatId = params.chatId;
+                    if (params.discussionId) {
+                        filters.discussionId = params.discussionId;
                     }
 
                     // filters.$and = [];

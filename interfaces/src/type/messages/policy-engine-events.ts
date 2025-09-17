@@ -93,7 +93,7 @@ export enum PolicyEngineEvents {
 
     CREATE_POLICY_COMMENT = 'policy-engine-create-policy-comment',
     GET_POLICY_COMMENTS = 'policy-engine-get-policy-comments',
-    GET_POLICY_CHATS = 'policy-engine-get-policy-chats',
-    CREATE_POLICY_CHAT = 'policy-engine-create-policy-chat',
+    GET_POLICY_DISCUSSIONS = 'policy-engine-get-policy-discussions',
+    CREATE_POLICY_DISCUSSION = 'policy-engine-create-policy-discussion',
     GET_POLICY_USERS = 'policy-engine-get-policy-users',
 }

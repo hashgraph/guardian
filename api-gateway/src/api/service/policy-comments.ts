@@ -87,9 +87,9 @@ export class PolicyCommentsApi {
     }
 
     /**
-     * Get chats
+     * Get Discussions
      */
-    @Get('/:policyId/:documentId/chats')
+    @Get('/:policyId/:documentId/discussions')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_MANAGE
@@ -122,7 +122,7 @@ export class PolicyCommentsApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getChats(
+    async getDiscussions(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
@@ -132,16 +132,16 @@ export class PolicyCommentsApi {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const engineService = new PolicyEngine();
-            return await engineService.getPolicyChats(user, policyId, documentId);
+            return await engineService.getPolicyDiscussions(user, policyId, documentId);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
     }
 
     /**
-     * Create chat
+     * Create discussion
      */
-    @Post('/:policyId/:documentId/chats')
+    @Post('/:policyId/:documentId/discussions')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_MANAGE
@@ -178,7 +178,7 @@ export class PolicyCommentsApi {
     })
     @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async createChat(
+    async createDiscussion(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
@@ -189,7 +189,7 @@ export class PolicyCommentsApi {
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.createPolicyChat(user, policyId, documentId, body);
+            return await engineService.createPolicyDiscussion(user, policyId, documentId, body);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger, user.id);
@@ -245,7 +245,7 @@ export class PolicyCommentsApi {
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
         @Body() body: {
-            chatId?: string,
+            discussionId?: string,
             anchor?: string;
             recipients?: string[];
             text?: string;
@@ -303,7 +303,7 @@ export class PolicyCommentsApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Body() body: {
-            chatId?: string,
+            discussionId?: string,
             anchor?: string,
             sender?: string,
             senderRole?: string,

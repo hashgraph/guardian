@@ -109,9 +109,9 @@
                             [values]="item"
                             [rules]="rulesResults"
                             [formulas]="formulasResults"
-                            [chat]="chatData"
-                            [chat-action]="chatAction"
-                            (chat-action)="onChatAction($event)">
+                            [discussion]="discussionData"
+                            [discussion-action]="discussionAction"
+                            (discussion-action)="onDiscussionAction($event)">
                         </app-schema-form-view>
                     </p-accordionTab>
                 </p-accordion>
@@ -138,9 +138,9 @@
                             [dryRun]="dryRun" 
                             [hide-fields]="hideFields"
                             type="VC"
-                            [chat]="chatData"
-                            [chat-action]="chatAction"
-                            (chat-action)="onChatAction($event)">
+                            [discussion]="discussionData"
+                            [discussion-action]="discussionAction"
+                            (discussion-action)="onDiscussionAction($event)">
                         </app-document-view>
                     </p-accordionTab>
                 </p-accordion>

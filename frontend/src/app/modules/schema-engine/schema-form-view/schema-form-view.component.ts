@@ -43,10 +43,10 @@ export class SchemaFormViewComponent implements OnInit {
     @Input() dryRun?: boolean = false;
     @Input() rules?: SchemaRuleValidateResult;
     @Input() formulas?: any;
-    @Input('chat') chatData?: any;
-    @Input('chat-action') chatAction: boolean = false;
+    @Input('discussion') discussionData?: any;
+    @Input('discussion-action') discussionAction: boolean = false;
 
-    @Output('chat-action') chatActionEvent = new EventEmitter<any>();
+    @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
 
     public fields: IFieldControl[] | undefined = [];
     private pageSize: number = 25;
@@ -368,13 +368,13 @@ export class SchemaFormViewComponent implements OnInit {
         dialogRef.onClose.subscribe((result: any) => { });
     }
 
-    public isChat(item: IFieldControl) {
+    public isDiscussion(item: IFieldControl) {
         // return 10;
-        return this.chatData ? this.chatData[item.fullPath] : 0;
+        return this.discussionData ? this.discussionData[item.fullPath] : 0;
     }
 
-    public openChat(item: IFieldControl) {
-        this.chatActionEvent.emit({
+    public openDiscussion(item: IFieldControl) {
+        this.discussionActionEvent.emit({
             type: 'open',
             field: item.fullPath,
             fieldName: item.title
@@ -382,14 +382,14 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     public linkMessage(item: IFieldControl) {
-        this.chatActionEvent.emit({
+        this.discussionActionEvent.emit({
             type: 'link',
             field: item.fullPath,
             fieldName: item.title
         });
     }
 
-    public onChatAction($event: any) {
-        this.chatActionEvent.emit($event);
+    public onDiscussionAction($event: any) {
+        this.discussionActionEvent.emit($event);
     }
 }

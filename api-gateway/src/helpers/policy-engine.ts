@@ -1335,27 +1335,27 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
-     * Get policy chats
+     * Get policy discussions
      * @param user
      * @param policyId
      * @param documentId
      */
-    public async getPolicyChats(
+    public async getPolicyDiscussions(
         user: IAuthUser,
         policyId: string,
         documentId: string,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_CHATS, { user, policyId, documentId });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DISCUSSIONS, { user, policyId, documentId });
     }
 
     /**
-     * Create policy chat
+     * Create policy discussion
      * @param user
      * @param policyId
      * @param documentId
      * @param data
      */
-    public async createPolicyChat(
+    public async createPolicyDiscussion(
         user: IAuthUser,
         policyId: string,
         documentId: string,
@@ -1364,7 +1364,7 @@ export class PolicyEngine extends NatsService {
             relationships: string[]
         }
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_CHAT, { user, policyId, documentId, data });
+        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_DISCUSSION, { user, policyId, documentId, data });
     }
 
     /**
@@ -1379,7 +1379,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         documentId: string,
         data: {
-            chatId?: string,
+            discussionId?: string,
             anchor?: string;
             recipients?: string[];
             text?: string;
@@ -1401,7 +1401,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         documentId: string,
         params: {
-            chatId?: string,
+            discussionId?: string,
             anchor?: string,
             sender?: string,
             senderRole?: string,

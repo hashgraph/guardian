@@ -72,7 +72,7 @@
         }
     }
 
-    .chat-filters {
+    .discussion-filters {
         padding: 8px;
         border-bottom: 1px solid #E1E7EF;
 
@@ -138,14 +138,14 @@
         }
     }
 
-    .new-chat {
+    .new-discussion {
         position: relative;
         width: 100%;
         height: 100%;
         display: flex;
         flex-direction: column;
 
-        .chat-form {
+        .discussion-form {
             overflow: auto;
             position: absolute;
             left: 0;
@@ -172,14 +172,14 @@
         }
     }
 
-    .chats {
+    .discussions {
         position: relative;
         width: 100%;
         height: 100%;
         display: flex;
         flex-direction: column;
 
-        .full-chats {
+        .full-discussions {
             overflow: auto;
             position: absolute;
             left: 0;
@@ -188,7 +188,7 @@
             bottom: 0;
         }
 
-        .full-chat {
+        .full-discussion {
             display: flex;
             height: 76px;
             width: 100%;
@@ -196,7 +196,7 @@
             flex-direction: row;
             cursor: pointer;
 
-            .chat-icon {
+            .discussion-icon {
                 min-width: 44px;
                 width: 44px;
                 height: 44px;
@@ -217,13 +217,13 @@
                 user-select: none;
             }
 
-            .chat-body {
+            .discussion-body {
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
             }
 
-            .chat-name {
+            .discussion-name {
                 width: 100%;
                 overflow: hidden;
                 font-family: Inter;
@@ -233,7 +233,7 @@
                 vertical-align: middle;
             }
 
-            .chat-field {
+            .discussion-field {
                 border: 1px solid var(--primary-primary, #4169E2);
                 height: 24px;
                 border-radius: 6px;
@@ -249,14 +249,14 @@
                 user-select: none;
                 width: fit-content;
 
-                .chat-field-icon {
+                .discussion-field-icon {
                     position: absolute;
                     top: 3px;
                     left: 6px;
                     pointer-events: none;
                 }
 
-                .chat-field-name {
+                .discussion-field-name {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
@@ -406,7 +406,7 @@
             }
         }
 
-        .new-chat-btn {
+        .new-discussion-btn {
             height: 40px;
             width: 100%;
             margin-bottom: 8px;
@@ -637,11 +637,11 @@ textarea {
         align-items: center;
     }
 
-    .chats {
+    .discussions {
         width: 76px;
         height: 100%;
 
-        .collapse-chat {
+        .collapse-discussion {
             width: 44px;
             height: 44px;
             border-radius: 32px;

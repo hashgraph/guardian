@@ -23,15 +23,15 @@ export class DocumentViewComponent implements OnInit {
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
     @Input('type') type!: 'VC' | 'VP';
     @Input('schema') schema!: any;
-    @Input('chat') chatData!: any;
-    @Input('chat-action') chatAction: boolean = false;
+    @Input('discussion') discussionData!: any;
+    @Input('discussion-action') discussionAction: boolean = false;
 
     @Input() dryRun?: boolean = false;
     @Input() policyId?: string;
     @Input() documentId?: string;
     @Input() schemaId?: string;
 
-    @Output('chat-action') chatActionEvent = new EventEmitter<any>();
+    @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
 
     public loading: boolean = false;
     public isIssuerObject: boolean = false;
@@ -238,7 +238,7 @@ export class DocumentViewComponent implements OnInit {
         this.pageSize = event.pageSize;
     }
 
-    public onChatAction($event: any) {
-        this.chatActionEvent.emit($event);
+    public onDiscussionAction($event: any) {
+        this.discussionActionEvent.emit($event);
     }
 }

@@ -15,7 +15,7 @@ import { Subject, Subscription } from 'rxjs';
     styleUrls: ['./vc-fullscreen-dialog.component.scss']
 })
 export class VCFullscreenDialog {
-    @ViewChild('chatComponent', { static: false }) chatComponent: PolicyComments;
+    @ViewChild('discussionComponent', { static: false }) discussionComponent: PolicyComments;
 
     public loading: boolean = true;
 
@@ -40,8 +40,8 @@ export class VCFullscreenDialog {
     public json: string = '';
     public fileSize: number = 0;
     public collapse: boolean = false;
-    public chatData: any = {};
-    public chatAction: boolean = false;
+    public discussionData: any = {};
+    public discussionAction: boolean = false;
 
     private _destroy$ = new Subject<void>();
     private _subscription?: Subscription | null;
@@ -206,17 +206,17 @@ export class VCFullscreenDialog {
         this.collapse = $event;
     }
 
-    public onChatAction($event: any) {
-        if (this.chatComponent) {
-            this.chatComponent.onChatAction($event);
+    public onDiscussionAction($event: any) {
+        if (this.discussionComponent) {
+            this.discussionComponent.onDiscussionAction($event);
         }
     }
 
-    public onChatView($event: any) {
+    public onDiscussionView($event: any) {
         if ($event?.type === 'messages') {
-            this.chatAction = true;
+            this.discussionAction = true;
         } else {
-            this.chatAction = false;
+            this.discussionAction = false;
         }
     }
 }

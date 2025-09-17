@@ -80,11 +80,11 @@
                     </div>
 
                     <div
-                        *ngIf="isChat(item) as messageCount; else elseChat"
-                        class="form-field-chat">
+                        *ngIf="isDiscussion(item) as messageCount; else elseDiscussion"
+                        class="form-field-discussion">
                         <button
                             class="guardian-icon-button"
-                            (click)="openChat(item)">
+                            (click)="openDiscussion(item)">
                             <svg-icon
                                 src="/assets/images/icons/chat.svg"
                                 svgClass="icon-color-primary"
@@ -92,11 +92,11 @@
                         </button>
                         <div class="icon-count">{{messageCount}}</div>
                     </div>
-                    <ng-template #elseChat>
-                        <div class="form-field-chat">
+                    <ng-template #elseDiscussion>
+                        <div class="form-field-discussion">
                             <button
                                 class="guardian-icon-button"
-                                (click)="openChat(item)">
+                                (click)="openDiscussion(item)">
                                 <svg-icon
                                     src="/assets/images/icons/chat.svg"
                                     svgClass="icon-color-disabled"
@@ -106,8 +106,8 @@
                     </ng-template>
 
                     <div
-                        *ngIf="chatAction"
-                        class="form-field-chat chat-action">
+                        *ngIf="discussionAction"
+                        class="form-field-discussion discussion-action">
                         <button
                             class="guardian-icon-button"
                             (click)="linkMessage(item)">
@@ -246,9 +246,9 @@
                                             [values]="this.values && this.values[item.name]"
                                             [rules]="rules"
                                             [formulas]="formulas"
-                                            [chat]="chatData"
-                                            [chat-action]="chatAction"
-                                            (chat-action)="onChatAction($event)">
+                                            [discussion]="discussionData"
+                                            [discussion-action]="discussionAction"
+                                            (discussion-action)="onDiscussionAction($event)">
                                         </app-schema-form-view>
                                     </ng-container>
                                 </div>
@@ -290,9 +290,9 @@
                                             [values]="listItem"
                                             [rules]="rules"
                                             [formulas]="formulas"
-                                            [chat]="chatData"
-                                            [chat-action]="chatAction"
-                                            (chat-action)="onChatAction($event)">
+                                            [discussion]="discussionData"
+                                            [discussion-action]="discussionAction"
+                                            (discussion-action)="onDiscussionAction($event)">
                                         </app-schema-form-view>
                                     </ng-container>
                                 </div>

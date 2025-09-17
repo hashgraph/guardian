@@ -1,6 +1,6 @@
 <div *ngIf="!collapse" class="container">
     <div class="header">
-        <div *ngIf="currentTab === 'new-chat'" class="header-container">
+        <div *ngIf="currentTab === 'new-discussion'" class="header-container">
             <svg-icon
                 class="icon-btn"
                 src="/assets/images/icons/new-chat.svg"
@@ -9,7 +9,7 @@
             <div class="component-name">Create New Discussion</div>
         </div>
 
-        <div *ngIf="currentTab === 'chats'" class="header-container">
+        <div *ngIf="currentTab === 'discussions'" class="header-container">
             <svg-icon
                 class="icon-btn"
                 src="/assets/images/icons/chat.svg"
@@ -18,14 +18,14 @@
             <div class="component-name">Comments</div>
         </div>
 
-        <div *ngIf="currentTab === 'messages'" class="header-container back" (click)="selectChat()">
+        <div *ngIf="currentTab === 'messages'" class="header-container back" (click)="selectDiscussion()">
             <svg-icon
                 class="icon-btn"
                 src="/assets/images/icons/left-arrow.svg"
                 [svgClass]="'icon-color-primary'">
             </svg-icon>
             <div class="component-name">
-                {{currentChat?.name}}
+                {{currentDiscussion?.name}}
             </div>
         </div>
 
@@ -41,10 +41,10 @@
         <div class="guardian-loading-image"></div>
     </div>
 
-    <ng-container *ngIf="currentTab === 'new-chat'">
-        <div class="new-chat">
-            <div class="chat-form">
-                <form [formGroup]="chatForm">
+    <ng-container *ngIf="currentTab === 'new-discussion'">
+        <div class="new-discussion">
+            <div class="discussion-form">
+                <form [formGroup]="discussionForm">
                     <div class="form-title">
                         General
                     </div>
@@ -97,7 +97,7 @@
                         </p-dropdown>
                     </div>
 
-                    <div *ngIf="chatForm.value.visibility==='roles'" class="guardian-input-container">
+                    <div *ngIf="discussionForm.value.visibility==='roles'" class="guardian-input-container">
                         <label class="form-label" htmlFor="version">Roles</label>
                         <p-multiSelect
                             formControlName="roles"
@@ -112,7 +112,7 @@
                         </p-multiSelect>
                     </div>
 
-                    <div *ngIf="chatForm.value.visibility==='users'" class="guardian-input-container">
+                    <div *ngIf="discussionForm.value.visibility==='users'" class="guardian-input-container">
                         <label class="form-label" htmlFor="version">Users</label>
                         <p-multiSelect
                             formControlName="users"
@@ -131,19 +131,19 @@
         </div>
         <div class="toolbar">
             <button
-                (click)="createNewChat()"
-                class="guardian-button guardian-button-primary new-chat-btn"
-                [disabled]="chatForm.invalid"
+                (click)="createNewDiscussion()"
+                class="guardian-button guardian-button-primary new-discussion-btn"
+                [disabled]="discussionForm.invalid"
             >Create</button> 
             <button
-                (click)="cancelNewChat()"
-                class="guardian-button guardian-button-secondery new-chat-btn"
+                (click)="cancelNewDiscussion()"
+                class="guardian-button guardian-button-secondery new-discussion-btn"
             >Cancel</button>
         </div>
     </ng-container>
 
-    <ng-container *ngIf="currentTab === 'chats'">
-        <div class="chat-filters">
+    <ng-container *ngIf="currentTab === 'discussions'">
+        <div class="discussion-filters">
             <div class="search-filter">
                 <input
                     class="guardian-input search-policy-input"
@@ -174,30 +174,30 @@
                 </div>
             </div>
         </div>
-        <div class="chats">
-            <div class="full-chats">
-                <div *ngFor="let chat of chats" class="full-chat" (click)="onOpen(chat)">
-                    <div class="chat-visibility">
-                        <div *ngIf="!chat.visibility"></div>
-                        <div *ngIf="chat.visibility === 'public'"></div>
-                        <div *ngIf="chat.visibility === 'roles'"></div>
-                        <div *ngIf="chat.visibility === 'users'"></div>
+        <div class="discussions">
+            <div class="full-discussions">
+                <div *ngFor="let discussion of discussions" class="full-discussion" (click)="onOpen(discussion)">
+                    <div class="discussion-visibility">
+                        <div *ngIf="!discussion.visibility"></div>
+                        <div *ngIf="discussion.visibility === 'public'"></div>
+                        <div *ngIf="discussion.visibility === 'roles'"></div>
+                        <div *ngIf="discussion.visibility === 'users'"></div>
                     </div>
-                    <div class="chat-icon">
-                        {{chat._short}}
+                    <div class="discussion-icon">
+                        {{discussion._short}}
                     </div>
-                    <div class="chat-body">
-                        <div class="chat-name">
-                            {{chat.name}}
+                    <div class="discussion-body">
+                        <div class="discussion-name">
+                            {{discussion.name}}
                         </div>
-                        <div *ngIf="chat.field" class="chat-field">
-                            <div class="chat-field-icon">
+                        <div *ngIf="discussion.field" class="discussion-field">
+                            <div class="discussion-field-icon">
                                 <svg-icon 
                                     class="svg-icon-16" 
                                     src="/assets/images/icons/16/hashtag.svg" 
                                     svgClass="icon-color-primary"></svg-icon>
                             </div>
-                            <div class="chat-field-name">{{chat.fieldName}}</div> 
+                            <div class="discussion-field-name">{{discussion.fieldName}}</div> 
                         </div>
                     </div>
                 </div>
@@ -205,8 +205,8 @@
         </div>
         <div class="toolbar">
             <button
-                (click)="onNewChat()"
-                class="guardian-button guardian-button-primary new-chat-btn"
+                (click)="onNewDiscussion()"
+                class="guardian-button guardian-button-primary new-discussion-btn"
             >
                 <div class="guardian-button-icon">
                     <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/add.svg"
@@ -352,10 +352,10 @@
             [svgClass]="'icon-color-primary'">
         </svg-icon>
     </div>
-    <div class="chats">
-        <div *ngFor="let chat of chats" class="collapse-chats">
-            <div class="collapse-chat" (click)="onOpen(chat)">
-                {{chat._short}}
+    <div class="discussions">
+        <div *ngFor="let discussion of discussions" class="collapse-discussions">
+            <div class="collapse-discussion" (click)="onOpen(discussion)">
+                {{discussion._short}}
             </div>
         </div>
     </div>

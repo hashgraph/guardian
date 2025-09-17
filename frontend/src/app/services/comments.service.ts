@@ -48,14 +48,14 @@ export class CommentsService {
         return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/users`) as any;
     }
 
-    public getChats(
+    public getDiscussions(
         policyId: string,
         documentId: string,
     ): Observable<any[]> {
-        return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/chats`) as any;
+        return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/discussions`) as any;
     }
 
-    public createChat(
+    public createDiscussion(
         policyId: string,
         documentId: string,
         data: {
@@ -69,14 +69,14 @@ export class CommentsService {
             users?: string[] | null,
         }
     ): Observable<any[]> {
-        return this.http.post<any[]>(`${this.url}/${policyId}/${documentId}/chats`, data) as any;
+        return this.http.post<any[]>(`${this.url}/${policyId}/${documentId}/discussions`, data) as any;
     }
 
     public createComment(
         policyId: string,
         documentId: string,
         data: {
-            chatId?: string,
+            discussionId?: string,
             anchor?: string;
             recipients?: string[];
             text?: string;
@@ -90,7 +90,7 @@ export class CommentsService {
         policyId: string,
         documentId: string,
         filters: {
-            chatId?: string,
+            discussionId?: string,
             anchor?: string,
             sender?: string,
             senderRole?: string,

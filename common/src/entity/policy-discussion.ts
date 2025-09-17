@@ -3,11 +3,11 @@ import { BaseEntity } from '../models/index.js';
 import { Entity, Property, Unique } from '@mikro-orm/core';
 
 /**
- * PolicyChat collection
+ * PolicyDiscussion collection
  */
 @Entity()
 @Unique({ name: 'unique_uuid_idx', properties: ['documentId', 'uuid'] })
-export class PolicyChat extends BaseEntity {
+export class PolicyDiscussion extends BaseEntity {
     /**
      * ID
      */

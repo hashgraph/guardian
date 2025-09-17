@@ -18,7 +18,7 @@ interface ListItem {
     roles?: string[];
 }
 
-interface ChatItem {
+interface DiscussionItem {
     id: string;
     name: string;
     owner: string;
@@ -73,13 +73,13 @@ export class PolicyComments {
     public visibility: ListItem[] = [];
     public userNames = new Map<string, string>();
     public users: ListItem[] = [];
-    public chats: ChatItem[] = [];
-    public currentChat: any = null;
+    public discussions: DiscussionItem[] = [];
+    public currentDiscussion: any = null;
     public currentField?: FieldItem = undefined;
     public searchField?: FieldItem = undefined;
 
-    public currentTab: 'new-chat' | 'chats' | 'messages' = 'chats';
-    public chatForm = new FormGroup({
+    public currentTab: 'new-discussion' | 'discussions' | 'messages' = 'discussions';
+    public discussionForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
         relationships: new FormControl<string[]>([]),
         visibility: new FormControl<string>('', Validators.required),
@@ -120,17 +120,17 @@ export class PolicyComments {
         this.files = [];
         this.sendDisabled = true;
 
-        this.chatForm.get('visibility')?.valueChanges.subscribe(val => {
-            this.chatForm.controls['roles'].clearValidators();
-            this.chatForm.controls['users'].clearValidators();
+        this.discussionForm.get('visibility')?.valueChanges.subscribe(val => {
+            this.discussionForm.controls['roles'].clearValidators();
+            this.discussionForm.controls['users'].clearValidators();
             if (val === 'roles') {
-                this.chatForm.controls['roles'].setValidators([Validators.required]);
+                this.discussionForm.controls['roles'].setValidators([Validators.required]);
             }
             if (val === 'users') {
-                this.chatForm.controls['users'].setValidators([Validators.required]);
+                this.discussionForm.controls['users'].setValidators([Validators.required]);
             }
-            this.chatForm.controls['roles'].updateValueAndValidity();
-            this.chatForm.controls['users'].updateValueAndValidity();
+            this.discussionForm.controls['roles'].updateValueAndValidity();
+            this.discussionForm.controls['users'].updateValueAndValidity();
         });
     }
 
@@ -170,9 +170,9 @@ export class PolicyComments {
         }
     }
 
-    private updateChats() {
-        for (const chat of this.chats) {
-            chat._short = (chat.name || '#').substring(0, 1);
+    private updateDiscussions() {
+        for (const discussion of this.discussions) {
+            discussion._short = (discussion.name || '#').substring(0, 1);
         }
     }
 
@@ -181,7 +181,7 @@ export class PolicyComments {
         target?: string
     ): any {
         const filters: any = {
-            chatId: this.currentChat?.id
+            discussionId: this.currentDiscussion?.id
         };
         if (type === 'load') {
             return filters;
@@ -206,16 +206,16 @@ export class PolicyComments {
         forkJoin([
             this.profileService.getProfile(),
             this.commentsService.getUsers(this.policyId, this.documentId),
-            this.commentsService.getChats(this.policyId, this.documentId)
+            this.commentsService.getDiscussions(this.policyId, this.documentId)
         ])
             .pipe(takeUntil(this._destroy$))
-            .subscribe(([profile, users, chats]) => {
+            .subscribe(([profile, users, discussions]) => {
                 this.user = new UserPermissions(profile);
                 this.owner = this.user.did;
                 this.users = users;
-                this.chats = chats;
+                this.discussions = discussions;
 
-                this.updateChats();
+                this.updateDiscussions();
                 this.updateTargets();
 
                 setTimeout(() => {
@@ -226,14 +226,14 @@ export class PolicyComments {
             });
     }
 
-    private loadChats() {
+    private loadDiscussions() {
         this.loading = true;
-        this.commentsService.getChats(this.policyId, this.documentId)
+        this.commentsService.getDiscussions(this.policyId, this.documentId)
             .pipe(takeUntil(this._destroy$))
-            .subscribe((chats) => {
-                this.chats = chats;
+            .subscribe((discussions) => {
+                this.discussions = discussions;
 
-                this.updateChats();
+                this.updateDiscussions();
 
                 setTimeout(() => {
                     this.loading = false;
@@ -363,7 +363,7 @@ export class PolicyComments {
             anchor = '';
         }
         const data = {
-            chatId: this.currentChat?.id,
+            discussionId: this.currentDiscussion?.id,
             anchor: '',
             recipients: recipients,
             text: text,
@@ -547,70 +547,70 @@ export class PolicyComments {
     }
 
     public onClose() {
-        this.currentChat = null;
+        this.currentDiscussion = null;
         this.collapse = true;
-        this.currentTab = 'chats';
+        this.currentTab = 'discussions';
         this.collapseEvent.emit(true);
         this.changeView();
     }
 
-    public onOpen(chat?: ChatItem) {
-        this.currentChat = chat;
+    public onOpen(discussion?: DiscussionItem) {
+        this.currentDiscussion = discussion;
         this.collapse = false;
-        this.currentTab = chat ? 'messages' : 'chats';
+        this.currentTab = discussion ? 'messages' : 'discussions';
         this.collapseEvent.emit(false);
         this.changeView();
         if (this.currentTab === 'messages') {
             this.loadComments('load');
         } else {
-            this.loadChats();
+            this.loadDiscussions();
         }
     }
 
-    public selectChat(chat?: ChatItem) {
-        this.currentChat = chat;
-        this.currentTab = chat ? 'messages' : 'chats';
+    public selectDiscussion(discussion?: DiscussionItem) {
+        this.currentDiscussion = discussion;
+        this.currentTab = discussion ? 'messages' : 'discussions';
         this.changeView();
         if (this.currentTab === 'messages') {
             this.loadComments('load');
         } else {
-            this.loadChats();
+            this.loadDiscussions();
         }
     }
 
-    public onNewChat() {
-        this.currentTab = 'new-chat';
-        this.chatForm.setValue({
+    public onNewDiscussion() {
+        this.currentTab = 'new-discussion';
+        this.discussionForm.setValue({
             name: '',
             relationships: [],
             visibility: 'public',
             roles: [],
             users: [],
-            parent: this.currentChat?.id || null,
+            parent: this.currentDiscussion?.id || null,
             field: this.searchField?.field || null,
             fieldName: this.searchField?.name || null,
         })
     }
 
-    public cancelNewChat() {
-        this.currentTab = 'chats';
+    public cancelNewDiscussion() {
+        this.currentTab = 'discussions';
     }
 
-    public createNewChat() {
+    public createNewDiscussion() {
         if (!this.policyId || !this.documentId) {
             this.loading = false;
             return;
         }
-        this.chatForm.value;
+        this.discussionForm.value;
         this.loading = true;
         this.commentsService
-            .createChat(
+            .createDiscussion(
                 this.policyId,
                 this.documentId,
-                this.chatForm.value
+                this.discussionForm.value
             ).subscribe((response) => {
                 this.currentTab = 'messages';
-                this.currentChat = response;
+                this.currentDiscussion = response;
                 this.loadComments('load');
             }, (e) => {
                 this.loading = false;
@@ -629,31 +629,31 @@ export class PolicyComments {
         }
     }
 
-    public onChatAction($event: any) {
+    public onDiscussionAction($event: any) {
         if ($event?.type === 'open') {
             this.searchField = {
                 field: $event.field,
                 name: $event.fieldName,
             };
-            this.currentChat = null;
+            this.currentDiscussion = null;
             this.collapse = false;
-            this.currentTab = 'chats';
+            this.currentTab = 'discussions';
             this.collapseEvent.emit(false);
             this.changeView();
-            this.loadChats();
+            this.loadDiscussions();
         }
         if ($event?.type === 'link') {
             this.currentField = {
                 field: $event.field,
                 name: $event.fieldName,
             };
-            if (this.collapse || !this.currentChat) {
-                this.currentChat = null;
+            if (this.collapse || !this.currentDiscussion) {
+                this.currentDiscussion = null;
                 this.collapse = false;
-                this.currentTab = 'chats';
+                this.currentTab = 'discussions';
                 this.collapseEvent.emit(false);
                 this.changeView();
-                this.loadChats();
+                this.loadDiscussions();
             }
             this.setLink();
         }
@@ -664,21 +664,21 @@ export class PolicyComments {
             this.viewEvent.emit({
                 type: 'collapsed'
             });
-        } else if (this.currentChat) {
+        } else if (this.currentDiscussion) {
             this.viewEvent.emit({
                 type: 'messages',
-                chat: this.currentChat
+                discussion: this.currentDiscussion
             });
         } else {
             this.viewEvent.emit({
-                type: 'chats'
+                type: 'discussions'
             });
         }
     }
 
     public onDeleteSearch() {
         this.searchField = undefined;
-        this.loadChats();
+        this.loadDiscussions();
     }
 
 }

@@ -55,7 +55,7 @@ import {
     PolicyAction,
     PolicyKey,
     PolicyComment,
-    PolicyChat
+    PolicyDiscussion
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -1132,46 +1132,46 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Create Policy Chat
-     * @param chat
+     * Create Policy discussion
+     * @param discussion
      */
-    public static async createPolicyChat(
-        chat: FilterObject<PolicyChat>
-    ): Promise<PolicyChat> {
-        const item = new DataBaseHelper(PolicyChat).create(chat);
-        return await new DataBaseHelper(PolicyChat).save(item);
+    public static async createPolicyDiscussion(
+        discussion: FilterObject<PolicyDiscussion>
+    ): Promise<PolicyDiscussion> {
+        const item = new DataBaseHelper(PolicyDiscussion).create(discussion);
+        return await new DataBaseHelper(PolicyDiscussion).save(item);
     }
 
     /**
-     * Get Policy Chats
+     * Get Policy discussions
      * @param filters
      * @param options
      */
-    public static async getPolicyChats(
-        filters: FilterQuery<PolicyChat>,
+    public static async getPolicyDiscussions(
+        filters: FilterQuery<PolicyDiscussion>,
         options?: FindOptions<object, never, PopulatePath.ALL, never>
-    ): Promise<PolicyChat[]> {
-        return await new DataBaseHelper(PolicyChat).find(filters, options as any);
+    ): Promise<PolicyDiscussion[]> {
+        return await new DataBaseHelper(PolicyDiscussion).find(filters, options as any);
     }
 
     /**
-     * Get Policy Chat
+     * Get Policy discussion
      * @param filters
      * @param options
      */
-    public static async getPolicyChat(
-        filters: FilterQuery<PolicyChat>,
+    public static async getPolicyDiscussion(
+        filters: FilterQuery<PolicyDiscussion>,
         options?: FindOptions<object, never, PopulatePath.ALL, never>
-    ): Promise<PolicyChat | null> {
-        return await new DataBaseHelper(PolicyChat).findOne(filters, options as any);
+    ): Promise<PolicyDiscussion | null> {
+        return await new DataBaseHelper(PolicyDiscussion).findOne(filters, options as any);
     }
 
     /**
-     * Update Policy Chat
-     * @param chat
+     * Update Policy discussion
+     * @param discussion
      */
-    public static async updatePolicyChat(chat: PolicyChat): Promise<PolicyChat> {
-        return await new DataBaseHelper(PolicyChat).update(chat);
+    public static async updatePolicyDiscussion(discussion: PolicyDiscussion): Promise<PolicyDiscussion> {
+        return await new DataBaseHelper(PolicyDiscussion).update(discussion);
     }
 
 
