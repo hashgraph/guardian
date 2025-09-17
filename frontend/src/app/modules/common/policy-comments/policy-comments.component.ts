@@ -77,6 +77,8 @@ export class PolicyComments {
     public currentDiscussion: any = null;
     public currentField?: FieldItem = undefined;
     public searchField?: FieldItem = undefined;
+    public searchDiscussion: string = '';
+    public searchMessage: string = '';
 
     public currentTab: 'new-discussion' | 'discussions' | 'messages' = 'discussions';
     public discussionForm = new FormGroup({
@@ -181,7 +183,8 @@ export class PolicyComments {
         target?: string
     ): any {
         const filters: any = {
-            discussionId: this.currentDiscussion?.id
+            discussionId: this.currentDiscussion?.id,
+            search: this.searchMessage
         };
         if (type === 'load') {
             return filters;
@@ -206,13 +209,15 @@ export class PolicyComments {
         forkJoin([
             this.profileService.getProfile(),
             this.commentsService.getUsers(this.policyId, this.documentId),
+            this.commentsService.getRelationships(this.policyId, this.documentId),
             this.commentsService.getDiscussions(this.policyId, this.documentId)
         ])
             .pipe(takeUntil(this._destroy$))
-            .subscribe(([profile, users, discussions]) => {
+            .subscribe(([profile, users, relationships, discussions]) => {
                 this.user = new UserPermissions(profile);
                 this.owner = this.user.did;
                 this.users = users;
+                this.documentsList = relationships;
                 this.discussions = discussions;
 
                 this.updateDiscussions();
@@ -228,7 +233,8 @@ export class PolicyComments {
 
     private loadDiscussions() {
         this.loading = true;
-        this.commentsService.getDiscussions(this.policyId, this.documentId)
+        const filters = this.getDiscussionFilters();
+        this.commentsService.getDiscussions(this.policyId, this.documentId, filters)
             .pipe(takeUntil(this._destroy$))
             .subscribe((discussions) => {
                 this.discussions = discussions;
@@ -241,6 +247,13 @@ export class PolicyComments {
             }, (e) => {
                 this.loading = false;
             });
+    }
+
+    private getDiscussionFilters() {
+        return {
+            search: this.searchDiscussion,
+            field: this.searchField?.field
+        }
     }
 
     private loadComments(
@@ -592,6 +605,13 @@ export class PolicyComments {
         })
     }
 
+    public onDeleteFormField() {
+        const value: any = this.discussionForm.value;
+        value.field = '';
+        value.fieldName = '';
+        this.discussionForm.setValue(value);
+    }
+
     public cancelNewDiscussion() {
         this.currentTab = 'discussions';
     }
@@ -637,10 +657,20 @@ export class PolicyComments {
             };
             this.currentDiscussion = null;
             this.collapse = false;
-            this.currentTab = 'discussions';
-            this.collapseEvent.emit(false);
-            this.changeView();
-            this.loadDiscussions();
+
+            if (this.currentTab === 'new-discussion') {
+                this.collapseEvent.emit(false);
+                this.changeView();
+                const value: any = this.discussionForm.value;
+                value.field = this.searchField.field;
+                value.fieldName = this.searchField.name;
+                this.discussionForm.setValue(value);
+            } else {
+                this.currentTab = 'discussions';
+                this.collapseEvent.emit(false);
+                this.changeView();
+                this.loadDiscussions();
+            }
         }
         if ($event?.type === 'link') {
             this.currentField = {
@@ -676,9 +706,20 @@ export class PolicyComments {
         }
     }
 
+    public onSetSearch() {
+        this.loadDiscussions();
+    }
+
     public onDeleteSearch() {
         this.searchField = undefined;
         this.loadDiscussions();
     }
 
+    public onSetMessageSearch() {
+        this.loadComments('load');
+    }
+
+    public onLinkField(field:string) {
+        this.selectEvent.emit(field);
+    }
 }

@@ -16,6 +16,7 @@ interface IFieldControl extends SchemaField {
     pageIndex: number;
     pageSize: number;
     notCorrespondCondition?: boolean;
+    link?: string | undefined;
     open: boolean;
 }
 
@@ -45,6 +46,7 @@ export class SchemaFormViewComponent implements OnInit {
     @Input() formulas?: any;
     @Input('discussion') discussionData?: any;
     @Input('discussion-action') discussionAction: boolean = false;
+    @Input() link?: string | undefined;
 
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
 
@@ -94,6 +96,9 @@ export class SchemaFormViewComponent implements OnInit {
             } else {
                 this.update();
             }
+        }
+        if (changes.link) {
+            this.openField(this.link);
         }
     }
 
@@ -391,5 +396,34 @@ export class SchemaFormViewComponent implements OnInit {
 
     public onDiscussionAction($event: any) {
         this.discussionActionEvent.emit($event);
+    }
+
+    public openField(link?: string): void {
+        let _rootLink: string | undefined = undefined;
+        let _subLink: string | undefined = undefined;
+        if (link) {
+            const index = link.indexOf('.');
+            if (index > -1) {
+                _rootLink = link.substring(0, index);
+                _subLink = link.substring(index + 1) || undefined;
+            } else {
+                _rootLink = link;
+                _subLink = undefined;
+            }
+        } else {
+            _rootLink = undefined;
+            _subLink = undefined;
+        }
+
+        if (_rootLink && this.fields) {
+            for (const field of this.fields) {
+                if (field.name === _rootLink) {
+                    field.open = true;
+                    field.link = _subLink;
+                } else {
+                    field.link = undefined;
+                }
+            }
+        }
     }
 }

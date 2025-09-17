@@ -86,10 +86,11 @@ export class PolicyCommentsApi {
         }
     }
 
+
     /**
-     * Get Discussions
+     * Get relationships
      */
-    @Get('/:policyId/:documentId/discussions')
+    @Get('/:policyId/:documentId/relationships')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_MANAGE
@@ -122,7 +123,7 @@ export class PolicyCommentsApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getDiscussions(
+    async getRelationships(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
@@ -132,7 +133,79 @@ export class PolicyCommentsApi {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const engineService = new PolicyEngine();
-            return await engineService.getPolicyDiscussions(user, policyId, documentId);
+            return await engineService.getDocumentRelationships(user, policyId, documentId);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get Discussions
+     */
+    @Get('/:policyId/:documentId/discussions')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE
+    )
+    @ApiOperation({
+        summary: '',
+        description: ''
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Document Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'search',
+        type: String,
+        description: '.',
+        required: false,
+        example: 'test'
+    })
+    @ApiQuery({
+        name: 'field',
+        type: String,
+        description: '.',
+        required: false,
+        example: 'test'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Object
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getDiscussions(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('documentId') documentId: string,
+        @Query('search') search?: string,
+        @Query('field') field?: string
+    ): Promise<any> {
+        try {
+            if (!policyId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const engineService = new PolicyEngine();
+            const params = {
+                search,
+                field
+            }
+            return await engineService.getPolicyDiscussions(user, policyId, documentId, params);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

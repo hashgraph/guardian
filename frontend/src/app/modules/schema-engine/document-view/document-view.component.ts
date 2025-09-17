@@ -45,6 +45,7 @@ export class DocumentViewComponent implements OnInit {
     public rules: DocumentValidators;
     public rulesResults: SchemaRuleValidateResult;
     public formulasResults: any | null;
+    public link: string | undefined;
 
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -240,5 +241,11 @@ export class DocumentViewComponent implements OnInit {
 
     public onDiscussionAction($event: any) {
         this.discussionActionEvent.emit($event);
+    }
+
+    public openField(id?: string): void {
+        const path = id?.split('/');
+        this.link = path && path.length > 1 ? path[path.length - 1] : undefined;
+        this.ref.detectChanges();
     }
 }

@@ -1,10 +1,11 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { UserPermissions } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from 'src/app/services/profile.service';
 import { PolicyComments } from '../../common/policy-comments/policy-comments.component';
 import { Subject, Subscription } from 'rxjs';
+import { DocumentViewComponent } from '../document-view/document-view.component';
 
 /**
  * Dialog for display json
@@ -16,6 +17,7 @@ import { Subject, Subscription } from 'rxjs';
 })
 export class VCFullscreenDialog {
     @ViewChild('discussionComponent', { static: false }) discussionComponent: PolicyComments;
+    @ViewChild('documentViewComponent', { static: false }) documentViewComponent: DocumentViewComponent;
 
     public loading: boolean = true;
 
@@ -51,7 +53,8 @@ export class VCFullscreenDialog {
         public dialogConfig: DynamicDialogConfig,
         private profileService: ProfileService,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        private el: ElementRef
     ) {
     }
 
@@ -199,7 +202,20 @@ export class VCFullscreenDialog {
     }
 
     public onMessageSelect($event: any) {
-
+        this.documentViewComponent?.openField($event);
+        setTimeout(() => {
+            this.el.nativeElement
+                ?.querySelector('.form-body')
+                ?.querySelector(`[field-id="${$event}"]`)
+                ?.scrollIntoView();
+        }, 0);
+        setTimeout(() => {
+            this.el.nativeElement
+                ?.querySelector('.form-body')
+                ?.querySelector(`[field-id="${$event}"]`)
+                ?.scrollIntoView();
+            this.documentViewComponent?.openField();
+        }, 600);
     }
 
     public onCollapse($event: boolean) {

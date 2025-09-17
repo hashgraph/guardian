@@ -1,7 +1,7 @@
 <form>
     <ng-container *ngFor="let item of fields">
 
-        <div *ngIf="ifFieldVisible(item)" class="form-field-container">
+        <div *ngIf="ifFieldVisible(item)" class="form-field-container" [attr.field-id]="item.fullPath">
 
             <!-- simple field -->
             <div *ngIf="ifSimpleField(item)" class="form-field">
@@ -30,11 +30,11 @@
                                 [readonly]="true"
                                 type="text"/>
                             <div class="form-field-url-buttons">
-                                <button
-                                        [cdkCopyToClipboard]="item.value"
+                                <button 
+                                    [cdkCopyToClipboard]="item.value" 
                                     class="guardian-button guardian-button-primary">Copy Link</button>
                                 <button
-                                        [cdkCopyToClipboard]="getCID(item.value)"
+                                    [cdkCopyToClipboard]="getCID(item.value)"
                                     class="guardian-button guardian-button-secondary">Copy CID</button>
                             </div>
                         </div>
@@ -246,6 +246,7 @@
                                             [values]="this.values && this.values[item.name]"
                                             [rules]="rules"
                                             [formulas]="formulas"
+                                            [link]="item.link"
                                             [discussion]="discussionData"
                                             [discussion-action]="discussionAction"
                                             (discussion-action)="onDiscussionAction($event)">
@@ -290,6 +291,7 @@
                                             [values]="listItem"
                                             [rules]="rules"
                                             [formulas]="formulas"
+                                            [link]="item.link"
                                             [discussion]="discussionData"
                                             [discussion-action]="discussionAction"
                                             (discussion-action)="onDiscussionAction($event)">

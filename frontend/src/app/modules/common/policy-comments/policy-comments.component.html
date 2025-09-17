@@ -58,9 +58,17 @@
                         Relationships
                     </div>
 
-                    <div class="guardian-input-container">
+                    <div *ngIf="discussionForm.value.field" class="guardian-input-container">
                         <label class="form-label" htmlFor="version">Selected Field</label>
-                        <input formControlName="fieldName" id="fieldName" pInputText type="text" readonly />
+                        <div  class="form-field">
+                            <div class="form-field-icon">
+                                <svg-icon src="/assets/images/icons/16/hashtag.svg" svgClass="icon-color-font"></svg-icon>
+                            </div>
+                            <div class="form-field-name">{{discussionForm.value.fieldName}}</div>
+                            <div class="form-field-delete" (click)="onDeleteFormField()">
+                                <svg-icon  src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="guardian-input-container">
@@ -146,10 +154,12 @@
         <div class="discussion-filters">
             <div class="search-filter">
                 <input
+                    [(ngModel)]="searchDiscussion"
                     class="guardian-input search-policy-input"
                     pInputText
                     placeholder="Search by keyword"
-                    type="text" />
+                    type="text" 
+                    (change)="onSetSearch()"/>
                 <i class="search-icon">
                     <svg-icon 
                         class="svg-icon-16" 
@@ -219,6 +229,33 @@
     </ng-container>
 
     <ng-container *ngIf="currentTab === 'messages'">
+        <div class="discussion-filters message-filters">
+            <div *ngIf="currentDiscussion?.field" class="field-filter" (click)="onLinkField(currentDiscussion.field)">
+                <div class="field-filter-icon">
+                    <svg-icon 
+                        class="svg-icon-16" 
+                        src="/assets/images/icons/16/hashtag.svg" 
+                        svgClass="icon-color-primary"></svg-icon>
+                </div>
+                <div class="field-filter-name">{{currentDiscussion.fieldName}}</div>
+            </div>
+            <div class="search-filter">
+                <input
+                    [(ngModel)]="searchMessage"
+                    class="guardian-input search-policy-input"
+                    pInputText
+                    placeholder="Search by keyword"
+                    type="text" 
+                    (change)="onSetMessageSearch()"/>
+                <i class="search-icon">
+                    <svg-icon 
+                        class="svg-icon-16" 
+                        src="/assets/images/icons/16/search.svg" 
+                        svgClass="icon-color-close">
+                    </svg-icon>
+                </i>
+            </div>
+        </div>
         <div #messageContainer class="messages-container">
             <div *ngIf="!data.data.length" class="messages">
                 <div class="not-exist">

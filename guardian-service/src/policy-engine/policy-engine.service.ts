@@ -45,6 +45,7 @@ import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
 import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
+import { PolicyCommentsUtils } from './policy-comments-utils.js';
 
 /**
  * PolicyEngineChannel
@@ -188,36 +189,6 @@ export class PolicyEngineService {
         }
         const module = await DatabaseServer.getModuleById(id);
         return module;
-    }
-
-    private async getCommonDiscussion(policyId: string, documentId: string) {
-        try {
-            const commonDiscussion = await DatabaseServer.getPolicyDiscussion({
-                policyId,
-                system: true,
-                documentId
-            })
-            if (commonDiscussion) {
-                return commonDiscussion;
-            }
-            return await DatabaseServer.createPolicyDiscussion({
-                uuid: '',
-                owner: '',
-                creator: '',
-                policyId,
-                documentId,
-                system: true,
-                count: 0,
-                name: 'Common',
-                relationships: [documentId]
-            });
-        } catch (error) {
-            return await DatabaseServer.getPolicyDiscussion({
-                policyId,
-                system: true,
-                documentId
-            })
-        }
     }
 
     /**
@@ -3520,7 +3491,7 @@ export class PolicyEngineService {
                 }
             });
 
-        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_DISCUSSIONS,
+        this.channel.getMessages(PolicyEngineEvents.GET_DOCUMENT_RELATIONSHIPS,
             async (msg: {
                 user: IAuthUser,
                 policyId: string,
@@ -3536,15 +3507,79 @@ export class PolicyEngineService {
                         throw new Error('Document not found.');
                     }
 
+                    const relationships = await PolicyCommentsUtils.findDocumentRelationships(vc);
+                    return new MessageResponse(relationships);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_DISCUSSIONS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                documentId: string,
+                params?: {
+                    search?: string,
+                    field?: string
+                }
+            }) => {
+                try {
+                    const { user, policyId, documentId, params } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const vc = await DatabaseServer.getVCById(documentId);
+                    if (!vc || vc.policyId !== policyId) {
+                        throw new Error('Document not found.');
+                    }
+
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
+
+                    const filters: any = {
+                        policyId,
+                        documentIds: documentId,
+                        system: false,
+                    }
+                    const accessFilters = [{
+                        visibility: 'public'
+                    }, {
+                        visibility: 'roles',
+                        roles: userRole
+                    }, {
+                        visibility: 'users',
+                        users: user.did
+                    }, {
+                        owner: user.did
+                    }];
+
+                    if (params?.field) {
+                        filters.field = params.field;
+                    }
+                    if (params?.search) {
+                        filters.$and = [
+                            {
+                                $or: [{
+                                    name: { $regex: '.*' + params.search + '.*' }
+                                }, {
+                                    fieldName: { $regex: '.*' + params.search + '.*' }
+                                }]
+                            },
+                            {
+                                $or: accessFilters
+                            }
+                        ]
+                    } else {
+                        filters.$or = accessFilters;
+                    }
+
                     const otherOptions: any = {
                         orderBy: { updateDate: -1 }
                     };
-                    const discussions = await DatabaseServer.getPolicyDiscussions({
-                        policyId,
-                        system: false,
-                        documentIds: documentId
-                    }, otherOptions);
-                    let commonDiscussion = await this.getCommonDiscussion(policyId, documentId);
+
+                    const discussions = await DatabaseServer.getPolicyDiscussions(filters, otherOptions);
+                    let commonDiscussion = await PolicyCommentsUtils.getCommonDiscussion(policyId, documentId);
                     if (commonDiscussion) {
                         discussions.unshift(commonDiscussion);
                     }
@@ -3565,6 +3600,10 @@ export class PolicyEngineService {
                     name: string,
                     parent: string,
                     field: string,
+                    fieldName: string,
+                    visibility: string,
+                    roles: string[],
+                    users: string[],
                     relationships: string[]
                 }
             }) => {
@@ -3589,8 +3628,11 @@ export class PolicyEngineService {
                     const name = data?.name || String(Date.now());
                     const parent = data?.parent;
                     const field = data?.field;
+                    const fieldName = data?.fieldName;
                     const relationships = documents.map((d) => d.messageId);
-
+                    const visibility = data?.visibility || 'public';
+                    const roles = visibility === 'roles' && Array.isArray(data?.roles) ? data?.roles : [];
+                    const users = visibility === 'users' && Array.isArray(data?.users) ? data?.users : [];
                     const discussion = await DatabaseServer.createPolicyDiscussion({
                         uuid: GenerateUUIDv4(),
                         owner: user.did,
@@ -3602,6 +3644,10 @@ export class PolicyEngineService {
                         name,
                         parent,
                         field,
+                        fieldName,
+                        visibility,
+                        roles,
+                        users,
                         relationships,
                         documentIds
                     });
@@ -3620,7 +3666,8 @@ export class PolicyEngineService {
                 documentId: string,
                 data: {
                     discussionId?: string;
-                    anchor?: string;
+                    field: string,
+                    fieldName: string,
                     recipients?: string[];
                     text?: string;
                     files?: {
@@ -3657,8 +3704,8 @@ export class PolicyEngineService {
                         policyId,
                         documentId
                     });
-                    if (!discussion) {
-                        throw new Error('Discussion not found.');
+                    if (!PolicyCommentsUtils.accessDiscussion(discussion, user.did, userRole)) {
+                        throw new Error('Discussion does not exist.');
                     }
 
                     const comment = {
@@ -3674,11 +3721,13 @@ export class PolicyEngineService {
                         senderRole: userRole,
                         senderName: user.username,
                         recipients: data.recipients,
-                        anchor: data.anchor,
+                        field: data.field,
+                        fieldName: data.fieldName,
                         target: vc.messageId,
                         targetId: documentId,
                         discussionId: discussion.id,
                         isDocumentOwner: isDocumentOwner,
+                        text: data.text,
                         document: document
                     }
                     const row = await DatabaseServer.createPolicyComment(comment);
@@ -3701,11 +3750,12 @@ export class PolicyEngineService {
                 policyId: string,
                 documentId: string,
                 params: {
-                    discussionId?: string,
-                    anchor?: string,
+                    discussionId: string,
                     // sender?: string,
                     // senderRole?: string,
                     // private?: boolean,
+                    search?: string,
+                    field?: string,
                     lt?: string,
                     gt?: string
                 }
@@ -3720,64 +3770,44 @@ export class PolicyEngineService {
                         throw new Error('Document not found.');
                     }
 
-                    // const isDocumentOwner = user.did === vc.owner;
-                    // const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
 
-                    const filters: any = {
-                        policyId: policyId,
-                        targetId: documentId
-                    };
-                    if (params.anchor) {
-                        filters.anchor = params.anchor;
+                    const discussion = await DatabaseServer.getPolicyDiscussion({
+                        _id: DatabaseServer.dbID(params.discussionId),
+                        policyId,
+                        documentId
+                    });
+
+                    if (!PolicyCommentsUtils.accessDiscussion(discussion, user.did, userRole)) {
+                        throw new Error('Discussion does not exist.');
                     }
-                    if (params.discussionId) {
-                        filters.discussionId = params.discussionId;
-                    }
-
-                    // filters.$and = [];
-
-                    //Access
-                    // filters.$and.push({
-                    //     $or: [{
-                    //         sender: user.did
-                    //     }, {
-                    //         recipient: user.did
-                    //     }, {
-                    //         recipientRole: userRole
-                    //     }, {
-                    //         recipient: { $exists: false },
-                    //         recipientRole: { $exists: false }
-                    //     }]
-                    // })
-
-                    //User filters
-                    // if (params.private) {
-                    //     filters.$and.push({
-                    //         $or: [{
-                    //             sender: params.sender,
-                    //             recipient: user.did
-                    //         }, {
-                    //             sender: user.did,
-                    //             recipient: params.sender
-                    //         }]
-                    //     })
-                    // } else {
-                    //     if (params.sender) {
-                    //         filters.$and.push({
-                    //             sender: params.sender
-                    //         })
-                    //     }
-                    //     if (params.senderRole) {
-                    //         filters.$and.push({
-                    //             senderRole: params.senderRole
-                    //         })
-                    //     }
-                    // }
 
                     const otherOptions: any = {
                         orderBy: { _id: -1 },
                         limit: 10
                     };
+
+                    const filters: any = {
+                        policyId: policyId,
+                        targetId: documentId
+                    };
+                    if (params.discussionId) {
+                        filters.discussionId = params.discussionId;
+                    }
+                    if (params?.search) {
+                        filters.$or = [{
+                            text: { $regex: '.*' + params.search + '.*' }
+                        }, {
+                            fieldName: { $regex: '.*' + params.search + '.*' }
+                        }, {
+                            senderName: { $regex: '.*' + params.search + '.*' }
+                        }, {
+                            senderRole: { $regex: '.*' + params.search + '.*' }
+                        }]
+                    }
+                    if (params?.field) {
+                        filters.field = params.field;
+                    }
 
                     const count = await DatabaseServer.getPolicyCommentsCount(filters, otherOptions);
                     if (params.lt) {

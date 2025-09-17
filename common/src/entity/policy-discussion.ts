@@ -93,7 +93,7 @@ export class PolicyDiscussion extends BaseEntity {
     system?: boolean;
 
     /**
-     * Parent chat
+     * Parent discussion
      */
     @Property({
         nullable: true
@@ -101,11 +101,46 @@ export class PolicyDiscussion extends BaseEntity {
     parent?: string;
 
     /**
-     * Parent chat
+     * Field id
      */
     @Property({
         nullable: true,
         index: true
     })
     field?: string;
+
+    /**
+     * Field name
+     */
+    @Property({
+        nullable: true
+    })
+    fieldName?: string;
+
+    /**
+     * Visibility
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    visibility?: string;
+
+    /**
+     * Visibility roles
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    roles?: string[];
+
+    /**
+     * Visibility users
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    users?: string[];
 }

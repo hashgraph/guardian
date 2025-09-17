@@ -80,6 +80,7 @@
                 <div *ngIf="currentTab === 0" class="document-view">
                     <app-document-view 
                         *ngIf="type === 'VP' || type === 'VC'"
+                        #documentViewComponent
                         class="document-viewer"
                         [dryRun]="dryRun" 
                         [policyId]="policyId"

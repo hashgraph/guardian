@@ -357,7 +357,7 @@ export class PolicyEngine extends NatsService {
     public async exportFile(
         policyId: string,
         owner: IOwner
-    ): Promise<ArrayBuffer> {
+    ): Promise<Buffer> {
         const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_FILE, { policyId, owner }) as any;
         return Buffer.from(file, 'base64');
     }
@@ -382,7 +382,7 @@ export class PolicyEngine extends NatsService {
     public async exportXlsx(
         policyId: string,
         owner: IOwner
-    ): Promise<ArrayBuffer> {
+    ): Promise<Buffer> {
         const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_XLSX, { policyId, owner }) as any;
         return Buffer.from(file, 'base64');
     }
@@ -1335,6 +1335,20 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Create policy users
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getDocumentRelationships(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_DOCUMENT_RELATIONSHIPS, { user, policyId, documentId });
+    }
+
+    /**
      * Get policy discussions
      * @param user
      * @param policyId
@@ -1344,8 +1358,12 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         documentId: string,
+        params?: {
+            search?: string,
+            field?: string
+        }
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DISCUSSIONS, { user, policyId, documentId });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DISCUSSIONS, { user, policyId, documentId, params });
     }
 
     /**

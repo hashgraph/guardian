@@ -48,11 +48,23 @@ export class CommentsService {
         return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/users`) as any;
     }
 
-    public getDiscussions(
+    public getRelationships(
         policyId: string,
         documentId: string,
     ): Observable<any[]> {
-        return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/discussions`) as any;
+        return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/relationships`) as any;
+    }
+
+    public getDiscussions(
+        policyId: string,
+        documentId: string,
+        filters?: {
+            search?: string,
+            field?: string
+        }
+    ): Observable<any[]> {
+        const params = CommentsService.getOptions(filters);
+        return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/discussions`, { params }) as any;
     }
 
     public createDiscussion(
