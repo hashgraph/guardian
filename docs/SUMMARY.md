@@ -221,7 +221,6 @@
         * [multiSignBlock](guardian/standard-registry/policies/policy-creation/introduction/multisignblock.md)
         * [customLogicBlock](guardian/standard-registry/policies/policy-creation/introduction/customlogicblock.md)
         * [splitBlock](guardian/standard-registry/policies/policy-creation/introduction/splitblock.md)
-        * [wipeDocumentBlock](guardian/standard-registry/policies/policy-creation/introduction/token-wipe-workflow-block.md)
         * [Create Token Block](guardian/standard-registry/policies/policy-creation/introduction/create-token-block.md)
         * [impactAddon](guardian/standard-registry/policies/policy-creation/introduction/impactaddon.md)
         * [Http Request Block](guardian/standard-registry/policies/policy-creation/introduction/http-request-block.md)
