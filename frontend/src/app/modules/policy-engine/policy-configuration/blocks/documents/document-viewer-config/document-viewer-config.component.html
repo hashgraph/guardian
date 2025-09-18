@@ -119,6 +119,21 @@
         <ng-container *ngIf="field.type=='button'">
             <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                 <td class="propRowCol"></td>
+                <td class="propRowCell cellName" title="Hide when discontinued">
+                    Hide when discontinued
+                </td>
+                <td class="propRowCell">
+                    <p-checkbox
+                        [(ngModel)]="field.hideWhenDiscontinued"
+                        [binary]="true"
+                        [readonly]="readonly"
+                        (blur)="onSave()"
+                        [style]="{marginLeft: '8px'}"
+                    ></p-checkbox>
+                </td>
+            </tr>
+            <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+                <td class="propRowCol"></td>
                 <td class="propRowCell cellName">
                     <i class="pi pi-bolt icon-event"></i>
                     Action

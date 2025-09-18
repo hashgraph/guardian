@@ -26,6 +26,7 @@ export const nameGroupKeywords = [
     'dialogTitle',
     'dialogDescription',
     'buttonName',
+    'hideWhenDiscontinued',
 ];
 export const typeGroupKeywords = [
     'status',
@@ -80,6 +81,7 @@ export const simplePropertiesGroupKeywords = [
     'url',
     'dialogClass',
     'uiClass',
+    'hideWhenDiscontinued',
     'field',
     'periodMask',
     'periodInterval',
