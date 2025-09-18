@@ -1773,6 +1773,14 @@
     bson "^6.10.1"
     mongodb "6.16.0"
 
+"@mikro-orm/mongodb@6.5.3":
+  version "6.5.3"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/mongodb/-/mongodb-6.5.3.tgz#07f16ffd323e4651b13d84ed5ce7dbc58ad2af72"
+  integrity sha512-tQgJlek0BuJpgiYfDGqfwOAp4rKjHMq3OqWTi3LlSJqpL0Aud/mYXo7t98MKmtBDP+pRHqaqaDX3U8X3XQjw3A==
+  dependencies:
+    bson "^6.10.4"
+    mongodb "6.19.0"
+
 "@mongodb-js/saslprep@^1.1.9":
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/@mongodb-js/saslprep/-/saslprep-1.2.2.tgz#09506f29cc2a99d9d7b951caa7fffc87e522a6d3"
@@ -4758,7 +4766,7 @@ bson@^4.0.4:
   dependencies:
     buffer "^5.6.0"
 
-bson@^6.10.1, bson@^6.10.3, bson@^6.5.0:
+bson@^6.10.1, bson@^6.10.3, bson@^6.10.4, bson@^6.5.0:
   version "6.10.4"
   resolved "https://registry.yarnpkg.com/bson/-/bson-6.10.4.tgz#d530733bb5bb16fb25c162e01a3344fab332fd2b"
   integrity sha512-WIsKqkSC0ABoBJuT1LEX+2HEvNmNKKgnTAyd0fL8qzK4SH2i9NXg+t08YtdZp/V9IZ33cxe3iV4yM0qg8lMQng==
@@ -10634,6 +10642,15 @@ mongodb@6.16.0:
   dependencies:
     "@mongodb-js/saslprep" "^1.1.9"
     bson "^6.10.3"
+    mongodb-connection-string-url "^3.0.0"
+
+mongodb@6.19.0:
+  version "6.19.0"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-6.19.0.tgz#d28df0ae4cb3bea4381206e2d9efc3c7b77531fe"
+  integrity sha512-H3GtYujOJdeKIMLKBT9PwlDhGrQfplABNF1G904w6r5ZXKWyv77aB0X9B+rhmaAwjtllHzaEkvi9mkGVZxs2Bw==
+  dependencies:
+    "@mongodb-js/saslprep" "^1.1.9"
+    bson "^6.10.4"
     mongodb-connection-string-url "^3.0.0"
 
 move-file@^2.1.0:
