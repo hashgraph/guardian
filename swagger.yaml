@@ -15903,10 +15903,10 @@ paths:
       summary: ''
       tags:
         - policy-comments
-  /policy-comments/{policyId}/{documentId}/chats:
+  /policy-comments/{policyId}/{documentId}/relationships:
     get:
       description: ''
-      operationId: PolicyCommentsApi_getChats
+      operationId: PolicyCommentsApi_getRelationships
       parameters:
         - name: policyId
           required: true
@@ -15944,9 +15944,64 @@ paths:
       summary: ''
       tags:
         - policy-comments
+  /policy-comments/{policyId}/{documentId}/discussions:
+    get:
+      description: ''
+      operationId: PolicyCommentsApi_getDiscussions
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: search
+          required: false
+          in: query
+          description: .
+          schema:
+            example: test
+            type: string
+        - name: field
+          required: false
+          in: query
+          description: .
+          schema:
+            example: test
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: ''
+      tags:
+        - policy-comments
     post:
       description: ''
-      operationId: PolicyCommentsApi_createChat
+      operationId: PolicyCommentsApi_createDiscussion
       parameters:
         - name: policyId
           required: true
