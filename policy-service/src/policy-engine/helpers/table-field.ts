@@ -2,8 +2,7 @@ import { BlockActionError } from '../errors/index.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
 
-import { IPFS, Workers } from '@guardian/common';
-import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
+import { DatabaseServer } from '@guardian/common';
 
 export type TableValue = {
     type: 'table';
@@ -120,157 +119,211 @@ export function parseCsvToTable(
 }
 
 /**
- * Narrow utility: true if value is a plain object (not an array).
+ * Loads a text file by its identifier.
  */
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-    return (
-        !!value &&
-        typeof value === 'object' &&
-        !Array.isArray(value)
-    );
-}
-
-/**
- * Narrow utility: true if value looks like a TableValue.
- */
-function isTableValue(value: unknown): value is TableValue {
-    return isPlainObject(value) && (value as any).type === 'table';
-}
-
-/**
- * Strip leading "ipfs://" and trim whitespace.
- */
-function normalizeFileId(id: string): string {
-    return (id || '').trim().replace(/^ipfs:\/\//i, '');
-}
-
-/**
- * Convert various binary-like values to UTF-8 string.
- */
-function toUtf8String(value: unknown): string {
-    if (typeof value === 'string') {
-        return value;
+export async function loadFileTextById(ref: AnyBlockType, fileId: string, enc: BufferEncoding = 'utf8'): Promise<string> {
+    if (!fileId || typeof fileId !== 'string') {
+        throw new BlockActionError('Invalid fileId', ref.blockType, ref.uuid);
     }
 
-    // Buffer
-    if (typeof Buffer !== 'undefined' && Buffer.isBuffer(value)) {
-        return (value as Buffer).toString('utf-8');
-    }
-
-    // Uint8Array
-    if (value instanceof Uint8Array) {
-        return Buffer.from(value).toString('utf-8');
-    }
-
-    // ArrayBuffer
-    if (value instanceof ArrayBuffer) {
-        return Buffer.from(value as ArrayBuffer as any).toString('utf-8');
-    }
-
-    // Best-effort fallback
     try {
-        return Buffer.from(value as any).toString('utf-8');
-    } catch {
-        return String(value ?? '');
-    }
-}
+        // if (ref?.databaseServer?.getDryRun?.()) {
+        //     const record = await (ref as any).databaseServer.findOne(
+        //         DryRunFiles,
+        //         { id: fileId }
+        //     ) as { file?: Buffer | Binary } | null;
+        //
+        //     const fileField = record?.file;
+        //     if (!fileField) {
+        //         throw new Error('Dry-run file not found');
+        //     }
+        //
+        //     const buffer = binToBuffer(fileField);
+        //     return buffer.toString(enc);
+        // }
 
-export async function loadFileTextById(
-    ref: AnyBlockType,
-    fileId: string
-): Promise<string> {
-    try {
-        if (!fileId || typeof fileId !== 'string') {
-            throw new Error('Invalid fileId');
-        }
+        const { buffer } = await DatabaseServer.getGridFile(fileId);
+        return buffer.toString(enc);
 
-        const normalizedId = normalizeFileId(fileId);
-        const isCid = IPFS.CID_PATTERN.test(normalizedId);
-
-        if (isCid) {
-            const content = await IPFS.getFile(normalizedId, 'str');
-            return toUtf8String(content);
-        }
-
-        // Dry-run path — internal id served from DryRunFiles via NATS
-        const dryRunResponse = await new Workers().addNonRetryableTask(
-            {
-                type: WorkerTaskType.GET_FILE,
-                data: {
-                    target: ['ipfs-client', MessageAPI.GET_FILE_DRY_RUN_STORAGE].join('.'),
-                    payload: {
-                        cid: normalizedId,
-                        responseType: 'str',
-                        userId: null
-                    }
-                }
-            },
-            {
-                priority: 10,
-                registerCallback: true
-            }
-        );
-
-        if (!dryRunResponse) {
-            throw new Error('Empty response from dry-run storage');
-        }
-
-        return toUtf8String(dryRunResponse);
-    } catch (error: any) {
-        const message = PolicyUtils?.getErrorMessage
-            ? PolicyUtils.getErrorMessage(error)
-            : String(error?.message ?? error);
+    } catch (e: any) {
+        const message = PolicyUtils?.getErrorMessage ? PolicyUtils.getErrorMessage(e) : String(e?.message ?? e);
         throw new BlockActionError(message, ref.blockType, ref.uuid);
     }
 }
 
 /**
- * Recursively traverse any object/array and "hydrate" all occurrences
+ * Returns true if the value is a plain object (i.e., created via object literal or Object).
+ */
+export function isPlainObject(value: unknown): value is Record<string, unknown> {
+    const isDefined = value !== null && value !== undefined;
+    if (!isDefined) {
+        return false;
+    }
+
+    const isObjectType = typeof value === 'object';
+    if (!isObjectType) {
+        return false;
+    }
+
+    return (value as object).constructor === Object;
+}
+
+/**
+ * Returns true if the value is a TableValue-like object (has type === "table").
+ */
+export function isTableValue(value: unknown): value is TableValue {
+    const isPlain = isPlainObject(value);
+    if (!isPlain) {
+        return false;
+    }
+
+    return (value as any).type === 'table';
+}
+
+/**
+ * Returns true if the value is a TableValue-like object with a non-empty string fileId.
+ */
+export function isTableWithFileId(value: unknown): value is TableValue & { fileId: string } {
+    const isTableLike = isTableValue(value);
+    if (!isTableLike) {
+        return false;
+    }
+
+    const fileIdValue = (value as any).fileId;
+    const isStringFileId = typeof fileIdValue === 'string';
+    if (!isStringFileId) {
+        return false;
+    }
+
+    return  fileIdValue.trim().length > 0;
+}
+
+function defineHidden<T extends object, K extends string>(
+    obj: T,
+    key: K,
+    value: any
+) {
+    Object.defineProperty(obj, key, {
+        value,
+        configurable: true,
+        writable: true,
+        enumerable: false,
+    });
+}
+
+/**
+ * If the input is a JSON-string (object or array), returns the parsed value; otherwise returns the original input.
+ */
+export function parseIfJson(input: unknown): unknown {
+    const isString = typeof input === 'string';
+    if (!isString) {
+        return input;
+    }
+
+    const trimmed = (input as string).trim();
+    const isNonEmpty = trimmed.length > 0;
+    if (!isNonEmpty) {
+        return input;
+    }
+
+    const startsWithObject = trimmed.startsWith('{');
+    const startsWithArray = trimmed.startsWith('[');
+    const looksLikeJson = startsWithObject || startsWithArray;
+    if (!looksLikeJson) {
+        return input;
+    }
+
+    try {
+        return JSON.parse(trimmed);
+    } catch {
+        return input;
+    }
+}
+
+/**
+ * Recursively traverses any object/array and hydrates all table occurrences.
  */
 export async function hydrateTablesInObject(
     root: unknown,
     loadFileText: TableFileLoader,
     delimiter: string = ','
-): Promise<void> {
-    if (!root) {
-        return;
+): Promise<() => void> {
+    if (root === null || root === undefined) {
+        return () => {
+            //
+        };
     }
 
+    const disposers: (() => void)[] = [];
+
     const visit = async (node: unknown): Promise<void> => {
-        if (!node) {
+        const isNodeDefined = node !== null && node !== undefined;
+        if (!isNodeDefined) {
             return;
         }
 
-        if (Array.isArray(node)) {
-            for (const element of node) {
+        const isArrayNode = Array.isArray(node);
+        if (isArrayNode) {
+            for (const element of node as unknown[]) {
                 await visit(element);
             }
             return;
         }
 
-        if (isPlainObject(node)) {
-            if (isTableValue(node)) {
-                const hasFileId = typeof node.fileId === 'string' && node.fileId.length > 0;
-                const rowsMissing = !Array.isArray(node.rows) || node.rows.length === 0;
+        const isObjectNode = isPlainObject(node);
+        if (!isObjectNode) {
+            return;
+        }
 
-                if (hasFileId && rowsMissing) {
-                    const csvText = await loadFileText(node.fileId);
-                    const parsed = parseCsvToTable(csvText, delimiter);
+        const objectNode = node as Record<string, unknown>;
+        const keys = Object.keys(objectNode);
 
-                    node.columnKeys = parsed.columnKeys;
-                    node.rows = parsed.rows;
+        for (const key of keys) {
+            const originalValue = objectNode[key];
+            const parsedValue = parseIfJson(originalValue);
 
-                    return;
+            const isTableNeedingHydration = isTableWithFileId(parsedValue);
+            if (isTableNeedingHydration) {
+                const tableObject = parsedValue as TableValue & { fileId: string };
+                const shouldRestoreOriginal = originalValue !== tableObject;
+
+                if (shouldRestoreOriginal) {
+                    objectNode[key] = tableObject;
+                    disposers.push(() => {
+                        objectNode[key] = originalValue;
+                    });
                 }
+
+                const csvText = await loadFileText(tableObject.fileId);
+                const parsedTable = parseCsvToTable(csvText, delimiter);
+
+                defineHidden(tableObject, 'columnKeys', parsedTable.columnKeys);
+                defineHidden(tableObject, 'rows', parsedTable.rows);
+
+                disposers.push(() => {
+                    delete (tableObject as any).columnKeys;
+                    delete (tableObject as any).rows;
+                });
+
+                await visit(tableObject);
+                continue;
             }
 
-            for (const key of Object.keys(node)) {
-                await visit(node[key]);
-            }
+            await visit(originalValue);
         }
     };
 
     await visit(root);
+
+    return () => {
+        for (const dispose of disposers) {
+            try {
+                dispose();
+            } catch {
+                //
+            }
+        }
+    };
 }
 
 /**

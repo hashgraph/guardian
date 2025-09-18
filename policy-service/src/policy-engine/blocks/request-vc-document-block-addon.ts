@@ -178,12 +178,15 @@ export class RequestVcDocumentBlockAddon {
                 }
                 const document = _data.document;
 
-                await hydrateTablesInObject(
+                const disposeTables = await hydrateTablesInObject(
                     document,
                     async (fileId: string) => loadFileTextById(ref, fileId),
                 );
 
                 PolicyUtils.setAutoCalculateFields(this._schema, document);
+
+                disposeTables();
+
                 const presetCheck = await this.checkPreset(
                     ref,
                     document,

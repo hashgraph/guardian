@@ -207,12 +207,15 @@ export class RequestVcDocumentBlock {
                 throw new BlockActionError('Invalid document.', ref.blockType, ref.uuid);
             }
 
-            await hydrateTablesInObject(
+            const disposeTables = await hydrateTablesInObject(
                 document,
                 async (fileId: string) => loadFileTextById(ref, fileId),
             );
 
             PolicyUtils.setAutoCalculateFields(this._schema, document);
+
+            disposeTables();
+
             const documentRef = await this.getRelationships(ref, _data.ref);
             const presetCheck = await this.checkPreset(ref, document, documentRef)
             if (!presetCheck.valid) {
