@@ -37,12 +37,12 @@ export class TextInputAutocompleteDirective implements OnDestroy {
     /**
      * The character that will trigger the menu to appear
      */
-    @Input() triggerCharacter = '@';
+    @Input() triggerCharacter: string[] = ['@'];
 
     /**
      * An optional keyboard shortcut that will trigger the menu to appear
      */
-    @Input() keyboardShortcut: (event: KeyboardEvent) => boolean;
+    @Input() keyboardShortcut: (event: KeyboardEvent) => string;
 
     /**
      * The regular expression that will match the search text after the trigger character
@@ -78,7 +78,7 @@ export class TextInputAutocompleteDirective implements OnDestroy {
     /**
      * A function that accepts a search string and returns an array of choices. Can also return a promise.
      */
-    @Input() findChoices: (searchText: string) => AutocompleteItem[] | Promise<AutocompleteItem[]>;
+    @Input() findChoices: (searchText: string, triggerCharacter: string) => AutocompleteItem[] | Promise<AutocompleteItem[]>;
 
     /**
      * A function that formats the selected choice once selected.
@@ -86,6 +86,8 @@ export class TextInputAutocompleteDirective implements OnDestroy {
     @Input() getChoiceLabel: (choice: AutocompleteItem) => string = choice => choice.value;
 
     @Input() menuPosition: 'above' | 'below' = 'below';
+
+    @Input() menuMaxSize: number = 200;
 
     /* tslint:disable member-ordering */
     private menu:
@@ -99,6 +101,7 @@ export class TextInputAutocompleteDirective implements OnDestroy {
     private menuHidden$ = new Subject<void>();
 
     private usingShortcut = false;
+    private usingShortcutCharacter: string = '';
 
     constructor(
         private componentFactoryResolver: ComponentFactoryResolver,
@@ -106,12 +109,12 @@ export class TextInputAutocompleteDirective implements OnDestroy {
         private injector: Injector,
         private elm: ElementRef,
         @Host() private parent: TextInputAutocompleteContainerComponent
-    ) { 
+    ) {
     }
 
     @HostListener('keypress', ['$event.key'])
     onKeypress(key: string) {
-        if (key === this.triggerCharacter) {
+        if (this.triggerCharacter.includes(key)) {
             this.usingShortcut = false;
             this.showMenu();
         }
@@ -119,18 +122,22 @@ export class TextInputAutocompleteDirective implements OnDestroy {
 
     @HostListener('keydown', ['$event'])
     onKeyDown(event: KeyboardEvent) {
-        if (this.keyboardShortcut && this.keyboardShortcut(event)) {
-            this.usingShortcut = true;
-            this.showMenu();
-            this.onChange('');
+        if (this.keyboardShortcut) {
+            this.usingShortcutCharacter = this.keyboardShortcut(event)
+            this.usingShortcut = !!this.usingShortcutCharacter;
+            if (this.usingShortcut) {
+                this.showMenu();
+                this.onChange('');
+            }
         }
     }
 
     @HostListener('input', ['$event.target.value'])
     onChange(value: string) {
         if (this.menu) {
+            const triggerCharacter = value[this.menu.triggerCharacterPosition];
             if (
-                value[this.menu.triggerCharacterPosition] !== this.triggerCharacter &&
+                !this.triggerCharacter.includes(triggerCharacter) &&
                 !this.usingShortcut
             ) {
                 this.hideMenu();
@@ -140,7 +147,7 @@ export class TextInputAutocompleteDirective implements OnDestroy {
                     this.hideMenu();
                 } else {
                     if (this.usingShortcut && !this.menu) {
-                        value = this.triggerCharacter;
+                        value = this.usingShortcutCharacter;
                     }
                     const offset = this.usingShortcut ? 0 : 1;
                     const searchText = value.slice(
@@ -156,7 +163,7 @@ export class TextInputAutocompleteDirective implements OnDestroy {
                         this.menu.component.instance.choiceLoadError = undefined;
                         this.menu.component.instance.choiceLoading = true;
                         this.menu.component.changeDetectorRef.detectChanges();
-                        Promise.resolve(this.findChoices(searchText))
+                        Promise.resolve(this.findChoices(searchText, triggerCharacter))
                             .then(choices => {
                                 if (this.menu) {
                                     this.menu.component.instance.choices = choices;
@@ -201,13 +208,23 @@ export class TextInputAutocompleteDirective implements OnDestroy {
                 triggerCharacterPosition: this.elm.nativeElement.selectionStart
             };
 
+            const size = this.elm.nativeElement?.getBoundingClientRect();
             const lineHeight = this.getLineHeight(this.elm.nativeElement);
-            const { top, left } = getCaretCoordinates(
+            let { top, left } = getCaretCoordinates(
                 this.elm.nativeElement,
                 this.elm.nativeElement.selectionStart
             );
+            if (this.menuPosition !== 'above') {
+                top = top + lineHeight;
+            }
+            if (size && size.width) {
+                const max = size.width - this.menuMaxSize;
+                if (left > max) {
+                    left = max;
+                }
+            }
             this.menu.component.instance.position = {
-                top: this.menuPosition === 'above' ? top : top + lineHeight,
+                top,
                 left,
                 position: this.menuPosition,
                 height: lineHeight

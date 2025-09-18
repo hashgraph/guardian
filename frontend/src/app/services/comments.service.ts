@@ -55,6 +55,13 @@ export class CommentsService {
         return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/relationships`) as any;
     }
 
+    public getSchemas(
+        policyId: string,
+        documentId: string,
+    ): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/schemas`) as any;
+    }
+    
     public getDiscussions(
         policyId: string,
         documentId: string,
@@ -91,6 +98,7 @@ export class CommentsService {
             discussionId?: string,
             anchor?: string;
             recipients?: string[];
+            fields?: string[];
             text?: string;
             files?: any[];
         }

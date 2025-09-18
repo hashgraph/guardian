@@ -201,7 +201,7 @@ export class VCFullscreenDialog {
         URL.revokeObjectURL(url);
     }
 
-    public onMessageSelect($event: any) {
+    public onLinkField($event: any) {
         this.documentViewComponent?.openField($event);
         setTimeout(() => {
             this.el.nativeElement

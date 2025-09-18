@@ -3515,6 +3515,30 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages(PolicyEngineEvents.GET_DOCUMENT_SCHEMAS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                documentId: string,
+            }) => {
+                try {
+                    const { user, policyId, documentId } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const vc = await DatabaseServer.getVCById(documentId);
+                    if (!vc || vc.policyId !== policyId) {
+                        throw new Error('Document not found.');
+                    }
+
+                    const schemas = await PolicyCommentsUtils.findDocumentSchemas(vc);
+                    return new MessageResponse(schemas);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
+
         this.channel.getMessages(PolicyEngineEvents.GET_POLICY_DISCUSSIONS,
             async (msg: {
                 user: IAuthUser,
@@ -3666,9 +3690,8 @@ export class PolicyEngineService {
                 documentId: string,
                 data: {
                     discussionId?: string;
-                    field: string,
-                    fieldName: string,
                     recipients?: string[];
+                    fields?: string[];
                     text?: string;
                     files?: {
                         name: string;
@@ -3721,8 +3744,8 @@ export class PolicyEngineService {
                         senderRole: userRole,
                         senderName: user.username,
                         recipients: data.recipients,
-                        field: data.field,
-                        fieldName: data.fieldName,
+                        fields: data.fields,
+                        field: discussion.field,
                         target: vc.messageId,
                         targetId: documentId,
                         discussionId: discussion.id,
@@ -3751,9 +3774,6 @@ export class PolicyEngineService {
                 documentId: string,
                 params: {
                     discussionId: string,
-                    // sender?: string,
-                    // senderRole?: string,
-                    // private?: boolean,
                     search?: string,
                     field?: string,
                     lt?: string,

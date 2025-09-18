@@ -6,7 +6,7 @@ import { DropdownChangeEvent } from 'primeng/dropdown';
 import { AttachedFile } from './attached-file';
 import { DataList } from './data-list';
 import { ProfileService } from 'src/app/services/profile.service';
-import { UserPermissions } from '@guardian/interfaces';
+import { Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
 import { CommentsService } from 'src/app/services/comments.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
@@ -56,7 +56,7 @@ export class PolicyComments {
     @ViewChild('messageContainer', { static: false }) messageContainer: any;
     @ViewChild('messageInput', { static: false }) messageInput: any;
 
-    @Output('select') selectEvent = new EventEmitter<any>();
+    @Output('link') linkEvent = new EventEmitter<any>();
     @Output('collapse') collapseEvent = new EventEmitter<boolean>();
     @Output('view') viewEvent = new EventEmitter<any>();
 
@@ -72,7 +72,10 @@ export class PolicyComments {
 
     public visibility: ListItem[] = [];
     public userNames = new Map<string, string>();
+    public fieldNames = new Map<string, string>();
     public users: ListItem[] = [];
+    public schemas: Schema[] = [];
+
     public discussions: DiscussionItem[] = [];
     public currentDiscussion: any = null;
     public currentField?: FieldItem = undefined;
@@ -80,6 +83,7 @@ export class PolicyComments {
     public searchDiscussion: string = '';
     public searchMessage: string = '';
 
+    public triggerCharacter: string[] = ['@', '#'];
     public currentTab: 'new-discussion' | 'discussions' | 'messages' = 'discussions';
     public discussionForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
@@ -105,6 +109,7 @@ export class PolicyComments {
     public rolesList: any[] = [];
     public usersList: any[] = [];
     public documentsList: any[] = [];
+    public fieldList: any[] = [];
 
     private _destroy$ = new Subject<void>();
     public _findChoices = this.findChoices.bind(this);
@@ -155,6 +160,9 @@ export class PolicyComments {
     private updateTargets() {
         this.userNames.clear();
         for (const user of this.users) {
+            user.label = user.label
+                ?.replace(/\[\{/g, '(')
+                ?.replace(/\]\}/g, ')');
             user.search = user.label?.toLowerCase() || '';
         }
         for (const user of this.users) {
@@ -168,6 +176,38 @@ export class PolicyComments {
             }
             if (item.type === 'user') {
                 this.usersList.push(item);
+            }
+        }
+
+        this.fieldNames.clear();
+        const fieldMap = new Map<string | undefined, string>();
+        for (const schema of this.schemas) {
+            this.updateFields(schema.fields, fieldMap, '');
+        }
+        this.fieldList = [];
+        for (const [value, label] of fieldMap.entries()) {
+            const _label = label
+                ?.replace(/\[\{/g, '(')
+                ?.replace(/\]\}/g, ')') || '';
+            this.fieldList.push({
+                type: 'field',
+                search: _label,
+                label: _label,
+                value
+            });
+            this.fieldNames.set(value || '', `#${label}`);
+        }
+    }
+
+    private updateFields(
+        fields: SchemaField[] | undefined,
+        map: Map<string | undefined, string>,
+        parent: string
+    ) {
+        if (Array.isArray(fields)) {
+            for (const field of fields) {
+                map.set(field.fullPath, `${parent}${field.description}`);
+                this.updateFields(field.fields, map, `${parent}${field.description}/`);
             }
         }
     }
@@ -210,15 +250,23 @@ export class PolicyComments {
             this.profileService.getProfile(),
             this.commentsService.getUsers(this.policyId, this.documentId),
             this.commentsService.getRelationships(this.policyId, this.documentId),
+            this.commentsService.getSchemas(this.policyId, this.documentId),
             this.commentsService.getDiscussions(this.policyId, this.documentId)
         ])
             .pipe(takeUntil(this._destroy$))
-            .subscribe(([profile, users, relationships, discussions]) => {
+            .subscribe(([
+                profile,
+                users,
+                relationships,
+                schemas,
+                discussions
+            ]) => {
                 this.user = new UserPermissions(profile);
                 this.owner = this.user.did;
                 this.users = users;
                 this.documentsList = relationships;
                 this.discussions = discussions;
+                this.schemas = schemas.map((s) => new Schema(s));
 
                 this.updateDiscussions();
                 this.updateTargets();
@@ -288,7 +336,6 @@ export class PolicyComments {
                     this.data.before(page, count);
                 }
 
-                this.updateTargets();
                 if (type === 'update') {
                     this.resetScroll();
                 }
@@ -312,27 +359,38 @@ export class PolicyComments {
         if (!text) {
             return result;
         }
-        const tags = text.split(/(@[\[\{][a-zA-Z0-9_:.]+[\]\}])/g);
+
+        const separatorMap = new Map<string, string>();
+        if (Array.isArray(message.fields)) {
+            for (const field of message.fields) {
+                separatorMap.set(`#[${field}]`, 'field');
+            }
+        }
+        if (Array.isArray(message.recipients)) {
+            for (const user of message.recipients) {
+                separatorMap.set(`@[${user}]`, 'role');
+                separatorMap.set(`@{${user}}`, 'user');
+            }
+        }
+        separatorMap.set(`@[all]`, 'all');
+        separatorMap.set(`@[All]`, 'all');
+        const separators: string[] = Array.from(separatorMap.keys()).map((s: string) => {
+            return s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        });
+        const reg = `(${separators.join('|')})`;
+        const regExp = new RegExp(reg);
+        const tags = text.split(regExp);
+
         for (const tag of tags) {
             if (tag) {
-                if ((/(@[\[\{][a-zA-Z0-9_:.]+[\]\}])/g).test(tag)) {
+                const type = separatorMap.get(tag);
+                if (type) {
                     const value = tag.substring(2, tag.length - 1);
-                    const type = tag.startsWith('@[') ? 'role' : 'user';
-                    if (
-                        value === 'all' ||
-                        message.recipients && message.recipients.includes(value)
-                    ) {
-                        result.push({
-                            type: type,
-                            text: tag,
-                            tag: value
-                        });
-                    } else {
-                        result.push({
-                            type: 'text',
-                            text: tag
-                        })
-                    }
+                    result.push({
+                        type: type,
+                        text: tag,
+                        tag: value
+                    });
                 } else {
                     result.push({
                         type: 'text',
@@ -341,26 +399,66 @@ export class PolicyComments {
                 }
             }
         }
-        return result
+
+        return result;
+    }
+
+    private parsTags(key: '@' | '#', text: string) {
+        const results: {
+            key: string;
+            type: '[' | '{';
+            tag: string;
+            value: string;
+        }[] = [];
+        if (key === '@') {
+            const items = text.match(/@[\[\{][^\[\{\}\]]+[\]\}]/g)
+            if (items) {
+                for (const tag of items) {
+                    const value = tag.substring(2, tag.length - 1);
+                    const type = tag.startsWith('@[') ? '[' : '{';
+                    results.push({ key, type, tag, value });
+                }
+            }
+        }
+        if (key === '#') {
+            const items = text.match(/#[\[\{][^\[\{\}\]]+[\]\}]/g)
+            if (items) {
+                for (const tag of items) {
+                    const value = tag.substring(2, tag.length - 1);
+                    const type = tag.startsWith('#[') ? '[' : '{';
+                    results.push({ key, type, tag, value });
+                }
+            }
+        }
+        return results;
     }
 
     private findTags(text: string) {
         const recipients: Set<string> = new Set<string>();
-        const tags = text.match(/@[\[\{][a-zA-Z0-9_:.]+[\]\}]/g);
-        if (tags) {
-            for (const tag of tags) {
-                const value = tag.substring(2, tag.length - 1);
-                const type = tag.startsWith('@[') ? 'role' : 'user';
-                const recipient = this.users.find((user) => user.type === type && user.label === value);
-                if (recipient) {
-                    recipients.add(recipient.value);
-                    text = text.replace(tag, type === 'role' ? `@[${recipient.value}]` : `@{${recipient.value}}`);
-                }
+        const recipientTags = this.parsTags('@', text);
+        for (const recipientTag of recipientTags) {
+            const type = recipientTag.type === '[' ? 'role' : 'user';
+            const recipient = this.users.find((e) => e.type === type && e.label === recipientTag.value);
+            if (recipient) {
+                recipients.add(recipient.value);
+                text = text.replace(recipientTag.tag, type === 'role' ? `@[${recipient.value}]` : `@{${recipient.value}}`);
             }
         }
+
+        const fields: Set<string> = new Set<string>();
+        const fieldTags = this.parsTags('#', text);
+        for (const fieldTag of fieldTags) {
+            const field = this.fieldList.find((e) => e.label === fieldTag.value);
+            if (field) {
+                fields.add(field.value);
+                text = text.replace(fieldTag.tag, `#[${field.value}]`);
+            }
+        }
+
         return {
             text: text,
-            recipients: Array.from(recipients)
+            recipients: Array.from(recipients),
+            fields: Array.from(fields),
         };
     }
 
@@ -370,15 +468,11 @@ export class PolicyComments {
             return;
         }
 
-        const { text, recipients } = this.findTags(this.textMessage);
-        let anchor: string | undefined = undefined;
-        if (this.field) {
-            anchor = '';
-        }
+        const { text, recipients, fields } = this.findTags(this.textMessage);
         const data = {
             discussionId: this.currentDiscussion?.id,
-            anchor: '',
             recipients: recipients,
+            fields: fields,
             text: text,
             files: this.files.map((f) => f.toJSON())
         };
@@ -391,6 +485,7 @@ export class PolicyComments {
             ).subscribe((response) => {
                 this.textMessage = '';
                 this.files = [];
+                this.sendDisabled = true;
                 const first = this.data.getFirst();
                 this.loadComments('update', first?.id);
             }, (e) => {
@@ -477,7 +572,15 @@ export class PolicyComments {
         // debugger;
     }
 
-    public onText() {
+    public onText($event: any) {
+        if ($event?.target) {
+            try {
+                $event.target.style.height = "5px";
+                $event.target.style.height = ($event.target.scrollHeight) + "px";
+            } catch (error) {
+                console.error(error);
+            }
+        }
         setTimeout(() => {
             this.updateDisabled();
         });
@@ -541,25 +644,43 @@ export class PolicyComments {
         if (t.type === 'user') {
             return this.userNames.get(t.tag) || t.text;
         }
+        if (t.type === 'field') {
+            return this.fieldNames.get(t.tag) || t.text;
+        }
         return t.text;
     }
 
-    public findChoices(searchText: string) {
+    public findChoices(searchText: string, trigger: string) {
         const search = searchText.toLowerCase();
-        return this.users.filter((user) => {
-            return user.search?.includes(search);
-        })
+        if (trigger === '@') {
+            return this.users.filter((user) => {
+                return user.search?.includes(search);
+            }).slice(0, 10)
+        } else {
+            return this.fieldList.filter((user) => {
+                return user.search?.includes(search);
+            }).slice(0, 10)
+        }
     }
 
     public getChoiceLabel(choice: any): string {
         if (choice.type === 'user') {
             return `@{${choice.label}} `;
+        } else if (choice.type === 'role') {
+            return `@[${choice.label}] `;
+        } else if (choice.type === 'all') {
+            return `@[${choice.label}] `;
+        } else if (choice.type === 'field') {
+            return `#[${choice.label}] `;
         } else {
             return `@[${choice.value}] `;
         }
     }
 
     public onClose() {
+        this.textMessage = '';
+        this.files = [];
+        this.sendDisabled = true;
         this.currentDiscussion = null;
         this.collapse = true;
         this.currentTab = 'discussions';
@@ -581,6 +702,9 @@ export class PolicyComments {
     }
 
     public selectDiscussion(discussion?: DiscussionItem) {
+        this.textMessage = '';
+        this.files = [];
+        this.sendDisabled = true;
         this.currentDiscussion = discussion;
         this.currentTab = discussion ? 'messages' : 'discussions';
         this.changeView();
@@ -719,7 +843,7 @@ export class PolicyComments {
         this.loadComments('load');
     }
 
-    public onLinkField(field:string) {
-        this.selectEvent.emit(field);
+    public onLinkField(field: string) {
+        this.linkEvent.emit(field);
     }
 }

@@ -97,4 +97,5 @@ export enum PolicyEngineEvents {
     CREATE_POLICY_DISCUSSION = 'policy-engine-create-policy-discussion',
     GET_POLICY_USERS = 'policy-engine-get-policy-users',
     GET_DOCUMENT_RELATIONSHIPS = 'policy-engine-get-policy-relationships',
+    GET_DOCUMENT_SCHEMAS = 'policy-engine-get-policy-schemas',
 }

@@ -110,10 +110,22 @@ export class PolicyComment extends BaseEntity {
     recipients?: string[];
 
     /**
-     * Anchor
+     * Target (fields)
      */
-    @Property({ nullable: true })
-    anchor?: string;
+    @Property({
+        nullable: true,
+        index: true
+    })
+    fields?: string[];
+
+    /**
+     * Target (field)
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    field?: string;
 
     /**
      * Message id

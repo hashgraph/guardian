@@ -1349,6 +1349,20 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Create policy schemas
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getDocumentSchemas(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_DOCUMENT_SCHEMAS, { user, policyId, documentId });
+    }
+
+    /**
      * Get policy discussions
      * @param user
      * @param policyId
@@ -1400,6 +1414,7 @@ export class PolicyEngine extends NatsService {
             discussionId?: string,
             anchor?: string;
             recipients?: string[];
+            fields?: string[];
             text?: string;
             files?: string[];
         }

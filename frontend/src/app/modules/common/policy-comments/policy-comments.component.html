@@ -195,6 +195,9 @@
                     </div>
                     <div class="discussion-icon">
                         {{discussion._short}}
+                        <div *ngIf="discussion.count" class="discussion-count">
+                            {{discussion.count}}
+                        </div>
                     </div>
                     <div class="discussion-body">
                         <div class="discussion-name">
@@ -322,25 +325,34 @@
                         rows="3" 
                         [(ngModel)]="textMessage"
                         mwlTextInputAutocomplete
+                        [triggerCharacter]="triggerCharacter"
                         [findChoices]="_findChoices"
                         [getChoiceLabel]="_getChoiceLabel"
                         [menuPosition]="'above'"
-                        (input)="onText()"
-                        (drop)="onDrop($event)">
+                        [menuMaxSize]="200"
+                        (input)="onText($event)"
+                        (drop)="onDrop($event)"
+                        [maxlength]="600">
                     </textarea>
                     <ng-template let-item #itemTemplate>
                         <div class="autocomplete-item">
                             <i *ngIf="item.type === 'user'" class="pi pi-user"></i>
-                            <i *ngIf="item.type !== 'user'" class="pi pi-users"></i>
+                            <i *ngIf="item.type === 'all'" class="pi pi-users"></i>
+                            <i *ngIf="item.type === 'role'" class="pi pi-users"></i>
+                            <i *ngIf="item.type === 'field'" class="pi pi-hashtag"></i>
                             <span class="autocomplete-item-name">{{ item.label }}</span>
                         </div>
                     </ng-template>
                 </mwl-text-input-autocomplete-container>
             </div>
             <div *ngIf="files.length" class="toolbar-files">
-                <div *ngFor="let file of files" class="toolbar-file">
+                <div *ngFor="let file of files" class="toolbar-file {{ files.length>6 ? 'more' : ''}}">
                     <div *ngIf="file.loaded" class="toolbar-file-icon">
-                        <svg-icon src="/assets/images/icons/file.svg" svgClass="icon-color-close"></svg-icon>
+                        <svg-icon 
+                            class="svg-icon-16"
+                            src="/assets/images/icons/16/file.svg" 
+                            svgClass="icon-color-primary"
+                        ></svg-icon>
                     </div>
                     <div *ngIf="!file.loaded" class="toolbar-file-loading guardian-loading">
                         <div class="guardian-loading-image"></div>
@@ -350,8 +362,14 @@
                         <!-- <div>{{file.loaded}}</div> -->
                     </div>
                     <div class="toolbar-file-action" (click)="onDeleteFile(file)">
-                        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                        <svg-icon
+                            class="svg-icon-16"
+                            src="/assets/images/icons/16/close.svg" 
+                            svgClass="icon-color-close"></svg-icon>
                     </div>
+                </div>
+                <div *ngIf="files.length>6" class="toolbar-file-more">
+                    +{{files.length-6}}
                 </div>
             </div>
             <div class="toolbar-actions">
@@ -390,9 +408,12 @@
         </svg-icon>
     </div>
     <div class="discussions">
-        <div *ngFor="let discussion of discussions" class="collapse-discussions">
-            <div class="collapse-discussion" (click)="onOpen(discussion)">
+        <div class="collapse-discussions">
+            <div *ngFor="let discussion of discussions" class="collapse-discussion" (click)="onOpen(discussion)">
                 {{discussion._short}}
+                <div *ngIf="discussion.count" class="discussion-count">
+                    {{discussion.count}}
+                </div>
             </div>
         </div>
     </div>

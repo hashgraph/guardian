@@ -74,6 +74,26 @@ export class PolicyCommentsUtils {
         return false;
     }
 
+    public static async findDocumentSchemas(vc: VcDocument) {
+        const schemaIds = new Set<string>();
+        if (vc?.document?.credentialSubject) {
+            if (Array.isArray(vc.document.credentialSubject)) {
+                for (const subject of vc.document.credentialSubject) {
+                    const schemaId = `#${subject.type}`;
+                    schemaIds.add(schemaId)
+                }
+            } else {
+                const subject: any = vc.document.credentialSubject;
+                const schemaId = `#${subject.type}`;
+                schemaIds.add(schemaId)
+            }
+        }
+        const schemas = await DatabaseServer.getSchemas({
+            iri: Array.from(schemaIds)
+        });
+        return schemas;
+    }
+
     public static async findDocumentRelationships(vc: VcDocument) {
         const map = new Map<string, string>();
         if (vc.messageId) {

@@ -140,6 +140,58 @@ export class PolicyCommentsApi {
     }
 
     /**
+     * Get schemas
+     */
+    @Get('/:policyId/:documentId/schemas')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE
+    )
+    @ApiOperation({
+        summary: '',
+        description: ''
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Document Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Object
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSchemas(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('documentId') documentId: string,
+    ): Promise<any> {
+        try {
+            if (!policyId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const engineService = new PolicyEngine();
+            return await engineService.getDocumentSchemas(user, policyId, documentId);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Get Discussions
      */
     @Get('/:policyId/:documentId/discussions')
@@ -321,6 +373,7 @@ export class PolicyCommentsApi {
             discussionId?: string,
             anchor?: string;
             recipients?: string[];
+            fields?: string[];
             text?: string;
             files?: string[];
         }
