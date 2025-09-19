@@ -105,6 +105,7 @@ const API = {
     DryRun: "dry-run/",
     DryRunUser: "dry-run/user/",
     DryRunLogin: "dry-run/login/",
+    DryRunRestart: "dry-run/restart/",
     ChooseRegistrantRole: "tag/choose_role/blocks/",
     ChooseRole: "tag/Choose_Roles/blocks/",
     CreateApplication: "tag/create_application/blocks",
@@ -147,6 +148,7 @@ const API = {
     ValidationReportsVerra: "tag/validation_reports_verra/blocks",
     VerificationReportsVerra: "tag/verification_reports_verra/blocks",
     ApproveValidationReportBtn: "tag/approve_validation_report_btn/blocks",
+    Savepoint: "savepoints/",
 
     //Records
     Record: "record/",
