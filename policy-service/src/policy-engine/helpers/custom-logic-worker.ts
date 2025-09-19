@@ -15,7 +15,7 @@ function execute(): void {
         parentPort.postMessage({ type: 'debug', message });
     }
 
-    const { execFunc, user, documents, artifacts, sources } = workerData;
+    const { execFunc, user, documents, artifacts, sources, tablesPack } = workerData;
     const importCode = `const [done, user, documents, mathjs, artifacts, formulajs, sources, debug, table] = arguments;\r\n`;
     const code = `${importCode}${execFunc}`;
 
@@ -29,7 +29,7 @@ function execute(): void {
         formulajs,
         sources,
         debug,
-        buildTableHelper()
+        buildTableHelper(tablesPack)
     ]);
 }
 

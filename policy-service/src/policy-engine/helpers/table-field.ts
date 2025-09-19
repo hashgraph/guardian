@@ -329,7 +329,9 @@ export async function hydrateTablesInObject(
 /**
  * Runtime helper injected into the Expression worker.
  */
-export function buildTableHelper() {
+export function buildTableHelper(
+    tablesPack?: Record<string, { rows: any[]; columnKeys: string[] }>
+) {
     type NormalizedTable = {
         type: 'table';
         columnKeys: string[];
@@ -366,6 +368,18 @@ export function buildTableHelper() {
 
         if (!isTableValue(maybeTable)) {
             return emptyTable();
+        }
+
+        if (tablesPack && typeof maybeTable.fileId === 'string') {
+            const packed = tablesPack[maybeTable.fileId];
+            if (packed) {
+                return {
+                    type: 'table',
+                    columnKeys: Array.isArray(packed.columnKeys) ? packed.columnKeys : [],
+                    rows: Array.isArray(packed.rows) ? packed.rows as any[] : [],
+                    fileId: maybeTable.fileId
+                };
+            }
         }
 
         const normalized: NormalizedTable = {
@@ -460,4 +474,49 @@ export function buildTableHelper() {
         col: getColumnValues,
         num: toNumber
     };
+}
+
+/**
+ * Recursively collects hydrated table data into the provided map:
+ * fileId -> { rows, columnKeys }.
+ */
+export function collectTablesPack(
+    root: unknown,
+    tablesPack: Record<string, { rows: any[]; columnKeys: string[] }> = {}
+): Record<string, { rows: any[]; columnKeys: string[] }> {
+    const visit = (node: unknown): void => {
+        if (!node || typeof node !== 'object') {
+            return;
+        }
+
+        if (Array.isArray(node)) {
+            for (const el of node) {
+                visit(el)
+            }
+            return;
+        }
+
+        const obj = node as Record<string, unknown>;
+        const maybeType = (obj as any)?.type;
+        const maybeFileId = (obj as any)?.fileId;
+
+        if (
+            maybeType === 'table' &&
+            typeof maybeFileId === 'string' &&
+            (obj as any)?.rows &&
+            (obj as any)?.columnKeys
+        ) {
+            tablesPack[maybeFileId] = {
+                rows: (obj as any).rows,
+                columnKeys: (obj as any).columnKeys
+            };
+        }
+
+        for (const key of Object.keys(obj)) {
+            visit((obj as any)[key]);
+        }
+    };
+
+    visit(root);
+    return tablesPack;
 }

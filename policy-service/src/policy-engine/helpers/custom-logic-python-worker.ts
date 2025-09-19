@@ -40,7 +40,7 @@ async function execute() {
         }
     }
 
-    const { execFunc, user, documents, artifacts, sources } = workerData;
+    const { execFunc, user, documents, artifacts, sources, tablesPack } = workerData;
 
     pyodide.setStdout({ batched: console.log });
     pyodide.setStderr({ batched: console.error })
@@ -52,7 +52,7 @@ async function execute() {
     pyodide.globals.set('done', done);
     pyodide.globals.set('debug', debug);
 
-    const table = buildTableHelper();
+    const table = buildTableHelper(tablesPack);
     pyodide.globals.set('table', table);
 
     await pyodide.loadPackage('micropip');
