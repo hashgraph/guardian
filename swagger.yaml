@@ -1037,6 +1037,55 @@ paths:
       summary: Delete artifact.
       tags:
         - artifacts
+  /artifacts/files/{fileId}:
+    get:
+      description: Returns file from GridFS
+      operationId: ArtifactApi_downloadFile
+      parameters:
+        - name: fileId
+          required: true
+          in: path
+          description: File _id
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Download file by id
+      tags:
+        - artifacts
+  /artifacts/files:
+    post:
+      description: Uploads/overwrites file in GridFS
+      operationId: ArtifactApi_upsertFile
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                fileId:
+                  type: string
+                  description: Existing file _id to overwrite (optional)
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Uploads/overwrites file
+      tags:
+        - artifacts
   /contracts:
     get:
       description: Returns all contracts.

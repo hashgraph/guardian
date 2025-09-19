@@ -157,6 +157,42 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
     }
 
     /**
+     * Save file with id
+     * @param id
+     * @param filename
+     * @param buffer
+     * @returns file ID
+     */
+    public static async saveFileWithId(id: ObjectId, filename: string, buffer: Buffer): Promise<ObjectId> {
+        return new Promise<ObjectId>((resolve, reject) => {
+            try {
+                const stream = DataBaseHelper.gridFS.openUploadStreamWithId(id, filename);
+                stream.end(buffer, (err?: any) => err ? reject(err) : resolve(id));
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    /**
+     * Overwrite file
+     * @param id
+     * @param filename
+     * @param buffer
+     * @returns file ID
+     */
+    public static async overwriteFile(id: ObjectId, filename: string, buffer: Buffer): Promise<ObjectId> {
+        try {
+            await DataBaseHelper.gridFS.delete(id).catch((err: any) => {
+                return;
+            });
+            return await DataBaseHelper.saveFileWithId(id, filename, buffer);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Load file
      * @param id
      *

@@ -14,6 +14,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { fileURLToPath } from 'url';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { BlockActionError } from '../errors/index.js';
+import {collectTablesPack, hydrateTablesInObject, loadFileTextById} from '../helpers/table-field.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -186,6 +187,12 @@ export class CustomLogicBlock {
                     if (!result) {
                         triggerEvents(null);
                         if (final) {
+                            try {
+                                disposeTables();
+                            } catch {
+                                //
+                            }
+
                             resolve(null);
                         }
                         return;
@@ -207,6 +214,12 @@ export class CustomLogicBlock {
                         }
                         triggerEvents(items);
                         if (final) {
+                            try {
+                                disposeTables();
+                            } catch {
+                                //
+                            }
+
                             resolve(items);
                         }
                         return;
@@ -214,6 +227,11 @@ export class CustomLogicBlock {
                         const item = await processing(result);
                         triggerEvents(item);
                         if (final) {
+                            try {
+                                disposeTables();
+                            } catch {
+                                //
+                            }
                             resolve(item);
                         }
                         return;
@@ -238,6 +256,16 @@ export class CustomLogicBlock {
                 const sources: IPolicyDocument[] = await this.getSources(user);
 
                 const context = await ref.debugContext({ documents, sources });
+
+                const disposeTables = await hydrateTablesInObject(
+                    context.documents,
+                    async (fileId: string) => loadFileTextById(ref, fileId),
+                );
+
+                const tablesPack: Record<string, { rows: any[]; columnKeys: string[] }> = {};
+
+                collectTablesPack(context.documents, tablesPack);
+
                 const expression = ref.options.expression || '';
                 if (ref.options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
                     const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-python-worker.js'), {
@@ -246,7 +274,8 @@ export class CustomLogicBlock {
                             user,
                             artifacts,
                             documents: context.documents,
-                            sources: context.sources
+                            sources: context.sources,
+                            tablesPack
                         },
                     });
                     worker.on('error', (error) => {
@@ -275,7 +304,8 @@ export class CustomLogicBlock {
                             user,
                             artifacts,
                             documents: context.documents,
-                            sources: context.sources
+                            sources: context.sources,
+                            tablesPack
                         },
                     });
                     worker.on('error', (error) => {

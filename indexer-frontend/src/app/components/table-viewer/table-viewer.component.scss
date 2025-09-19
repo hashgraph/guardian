@@ -1,0 +1,35 @@
+.table-viewer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.table-viewer__controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.table-viewer__meta {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.meta-row {
+  display: flex;
+  gap: 8px;
+}
+
+.meta-label {
+  font-weight: 600;
+
+  &.error {
+    color: #d32f2f;
+  }
+}
+
+.meta-value {
+  &.error {
+    color: #d32f2f;
+  }
+}

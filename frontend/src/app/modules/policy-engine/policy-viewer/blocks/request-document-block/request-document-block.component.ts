@@ -11,12 +11,29 @@ import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { audit, takeUntil } from 'rxjs/operators';
-import { interval, Subject } from 'rxjs';
+import { interval, Subject, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { MergeUtils } from 'src/app/utils';
 import { ToastrService } from 'ngx-toastr';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
+import { ArtifactService } from 'src/app/services/artifact.service';
+import { CsvService } from 'src/app/services/csv.service';
+import { IPFSService } from 'src/app/services/ipfs.service';
+
+type TableValue = {
+    type: 'table';
+    columnKeys: string[];
+    rows: Record<string, string>[];
+    fileId?: string;
+    cid?: string;
+};
+
+type TableRef = {
+    type: 'table';
+    fileId: string;
+    cid?: string;
+};
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -98,6 +115,9 @@ export class RequestDocumentBlockComponent
         private changeDetectorRef: ChangeDetectorRef,
         private toastr: ToastrService,
         private savepointFlow: SavepointFlowService,
+        private csv: CsvService,
+        private artifact: ArtifactService,
+        private ipfs: IPFSService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -253,13 +273,17 @@ export class RequestDocumentBlockComponent
         return null;
     }
 
-    public onSubmit(draft?: boolean) {
+    public async onSubmit(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
+
         if (this.dataForm.valid || draft) {
             const data = this.dataForm.getRawValue();
             this.loading = true;
+
+            await this.persistTablesInDocument(data, !!this.dryRun);
+
             prepareVcData(data);
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, {
@@ -444,5 +468,125 @@ export class RequestDocumentBlockComponent
                 }
             }
         }
+    }
+
+    private tryParseTable(value: unknown): TableValue | null {
+        if (typeof value !== 'string') {
+            return null;
+        }
+
+        const trimmed = value.trim();
+        if (!trimmed) {
+            return null;
+        }
+
+        const looksLikeJson = trimmed.startsWith('{') || trimmed.startsWith('[');
+        if (!looksLikeJson) {
+            return null;
+        }
+
+        try {
+            const parsed = JSON.parse(trimmed);
+            if (parsed && parsed.type === 'table') {
+                return parsed as TableValue;
+            }
+            return null;
+        } catch {
+            return null;
+        }
+    }
+
+    private buildCsvFileFromTable(table: TableValue): File {
+        const keys = table.columnKeys || [];
+        const rows = table.rows || [];
+        const filename = 'table.csv';
+        const delimiter = ',';
+
+        return this.csv.toCsvFile(keys, rows, filename, { delimiter });
+    }
+
+    private async uploadToGridFs(file: File, existingFileId?: string): Promise<{ fileId: string }> {
+        const response = await firstValueFrom(this.artifact.upsertFile(file, existingFileId));
+        return { fileId: response.fileId };
+    }
+
+    private async uploadToIpfs(file: File, isDryRun: boolean): Promise<string | null> {
+        if (isDryRun) {
+            return null;
+        }
+
+        const observable = this.ipfs.addFile(file);
+        const cid = await firstValueFrom(observable);
+
+        if (typeof cid === 'string' && cid.trim()) {
+            return cid.trim();
+        }
+
+        return null;
+    }
+
+    private async persistTablesInDocument(root: any, isDryRun: boolean): Promise<void> {
+        if (!root) {
+            return;
+        }
+
+        const visitArray = async (arr: any[]): Promise<void> => {
+            for (const item of arr) {
+                await visitNode(item);
+            }
+        };
+
+        const visitObject = async (obj: Record<string, any>): Promise<void> => {
+            const keys = Object.keys(obj);
+
+            for (const key of keys) {
+                const value = obj[key];
+
+                if (typeof value === 'string') {
+                    const table = this.tryParseTable(value);
+
+                    const hasData =
+                        !!table &&
+                        Array.isArray(table.columnKeys) &&
+                        table.columnKeys.length > 0 &&
+                        Array.isArray(table.rows) &&
+                        table.rows.length > 0;
+
+                    if (hasData && table) {
+                        const csvFile = this.buildCsvFileFromTable(table);
+                        const grid = await this.uploadToGridFs(csvFile, table.fileId);
+                        const cid = await this.uploadToIpfs(csvFile, isDryRun);
+
+                        const compact: TableRef = {
+                            type: 'table',
+                            fileId: grid.fileId,
+                        };
+
+                        if (cid) {
+                            compact.cid = cid;
+                        }
+
+                        obj[key] = JSON.stringify(compact);
+                        continue;
+                    }
+                }
+
+                await visitNode(value);
+            }
+        };
+
+        const visitNode = async (node: any): Promise<void> => {
+            if (Array.isArray(node)) {
+                await visitArray(node);
+                return;
+            }
+
+            if (node && typeof node === 'object') {
+                await visitObject(node as Record<string, any>);
+                return;
+            }
+        };
+
+        await visitNode(root);
     }
 }

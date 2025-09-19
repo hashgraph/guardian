@@ -1,0 +1,18 @@
+<div class="table-viewer">
+    <button
+            class="p-button p-component"
+            type="button"
+            (click)="openDialog()"
+            [disabled]="!fileId || isLoading"
+    >
+    <span class="p-button-label">
+      {{ isLoading ? 'Loading…' : 'Open table' }}
+    </span>
+    </button>
+
+    <div class="meta">
+        <span *ngIf="fileId as id">fileId: {{ id }}</span>
+        <span *ngIf="!fileId">No table</span>
+        <span *ngIf="loadError" class="error">{{ loadError }}</span>
+    </div>
+</div>

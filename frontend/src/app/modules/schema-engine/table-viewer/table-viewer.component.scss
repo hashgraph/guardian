@@ -1,0 +1,16 @@
+.table-viewer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.error {
+  color: #d32f2f;
+}
