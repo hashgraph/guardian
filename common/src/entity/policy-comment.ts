@@ -158,6 +158,12 @@ export class PolicyComment extends BaseEntity {
     messageId?: string;
 
     /**
+     * Text
+     */
+    @Property({ nullable: true })
+    text?: string;
+
+    /**
      * Document instance
      */
     @Property({ persist: false, type: 'unknown' })

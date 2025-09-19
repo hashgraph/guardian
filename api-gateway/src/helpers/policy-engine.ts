@@ -1445,4 +1445,19 @@ export class PolicyEngine extends NatsService {
     ): Promise<{ comments: any[], count: number }> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENTS, { user, policyId, documentId, params });
     }
+
+    /**
+     * Create policy discussion
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getPolicyCommentsCount(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENT_COUNT, { user, policyId, documentId });
+    }
+
 }

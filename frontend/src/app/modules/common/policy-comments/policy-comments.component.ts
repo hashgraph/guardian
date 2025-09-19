@@ -39,6 +39,16 @@ interface FieldItem {
     name: string;
 }
 
+type TextItemType = 'all' | 'tag' | 'role' | 'user' | 'field' | 'text';
+
+interface TextItem {
+    type: TextItemType,
+    text: string;
+    tag: string;
+    label?: string;
+    tooltip?: string;
+}
+
 /**
  * Dialog for icon preview.
  */
@@ -50,6 +60,7 @@ interface FieldItem {
 export class PolicyComments {
     @Input('document-id') documentId!: any | undefined;
     @Input('policy-id') policyId!: any | undefined;
+    @Input('dry-run') dryRun!: any | undefined;
     @Input('field') field!: any | undefined;
     @Input('collapse') collapse: boolean = true;
 
@@ -78,7 +89,6 @@ export class PolicyComments {
 
     public discussions: DiscussionItem[] = [];
     public currentDiscussion: any = null;
-    public currentField?: FieldItem = undefined;
     public searchField?: FieldItem = undefined;
     public searchDiscussion: string = '';
     public searchMessage: string = '';
@@ -157,85 +167,7 @@ export class PolicyComments {
         this._destroy$.unsubscribe();
     }
 
-    private updateTargets() {
-        this.userNames.clear();
-        for (const user of this.users) {
-            user.label = user.label
-                ?.replace(/\[\{/g, '(')
-                ?.replace(/\]\}/g, ')');
-            user.search = user.label?.toLowerCase() || '';
-        }
-        for (const user of this.users) {
-            this.userNames.set(user.value, `@${user.label}`);
-        }
-        this.rolesList = [];
-        this.usersList = [];
-        for (const item of this.users) {
-            if (item.type === 'role') {
-                this.rolesList.push(item);
-            }
-            if (item.type === 'user') {
-                this.usersList.push(item);
-            }
-        }
-
-        this.fieldNames.clear();
-        const fieldMap = new Map<string | undefined, string>();
-        for (const schema of this.schemas) {
-            this.updateFields(schema.fields, fieldMap, '');
-        }
-        this.fieldList = [];
-        for (const [value, label] of fieldMap.entries()) {
-            const _label = label
-                ?.replace(/\[\{/g, '(')
-                ?.replace(/\]\}/g, ')') || '';
-            this.fieldList.push({
-                type: 'field',
-                search: _label,
-                label: _label,
-                value
-            });
-            this.fieldNames.set(value || '', `#${label}`);
-        }
-    }
-
-    private updateFields(
-        fields: SchemaField[] | undefined,
-        map: Map<string | undefined, string>,
-        parent: string
-    ) {
-        if (Array.isArray(fields)) {
-            for (const field of fields) {
-                map.set(field.fullPath, `${parent}${field.description}`);
-                this.updateFields(field.fields, map, `${parent}${field.description}/`);
-            }
-        }
-    }
-
-    private updateDiscussions() {
-        for (const discussion of this.discussions) {
-            discussion._short = (discussion.name || '#').substring(0, 1);
-        }
-    }
-
-    private getFilters(
-        type: 'load' | 'update' | 'more',
-        target?: string
-    ): any {
-        const filters: any = {
-            discussionId: this.currentDiscussion?.id,
-            search: this.searchMessage
-        };
-        if (type === 'load') {
-            return filters;
-        } else if (type === 'more') {
-            filters.lt = target;
-            return filters;
-        } else if (type === 'update') {
-            filters.gt = target;
-            return filters;
-        }
-    }
+    //#region API
 
     private loadProfile() {
         if (!this.policyId || !this.documentId) {
@@ -297,12 +229,6 @@ export class PolicyComments {
             });
     }
 
-    private getDiscussionFilters() {
-        return {
-            search: this.searchDiscussion,
-            field: this.searchField?.field
-        }
-    }
 
     private loadComments(
         type: 'load' | 'update' | 'more',
@@ -348,19 +274,180 @@ export class PolicyComments {
             });
     }
 
-    private parsMessages(messages: any[]) {
-        for (const item of messages) {
-            item.__text = this.parsText(item, item?.document?.text);
+    public createNewDiscussion() {
+        if (!this.policyId || !this.documentId) {
+            this.loading = false;
+            return;
+        }
+        this.discussionForm.value;
+        this.loading = true;
+        this.commentsService
+            .createDiscussion(
+                this.policyId,
+                this.documentId,
+                this.discussionForm.value
+            ).subscribe((response) => {
+                this.currentTab = 'messages';
+                this.currentDiscussion = response;
+                this.loadComments('load');
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public createComment() {
+        if (!this.policyId || !this.documentId) {
+            this.loading = false;
+            return;
+        }
+
+        const { text, recipients, fields } = this.findTags(this.textMessage);
+        const data = {
+            discussionId: this.currentDiscussion?.id,
+            recipients: recipients,
+            fields: fields,
+            text: text,
+            files: this.files.map((f) => f.toJSON())
+        };
+        this.loading = true;
+        this.commentsService
+            .createComment(
+                this.policyId,
+                this.documentId,
+                data
+            ).subscribe((response) => {
+                this.textMessage = '';
+                this.files = [];
+                this.sendDisabled = true;
+                const first = this.data.getFirst();
+                this.loadComments('update', first?.id);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public onLoadFile(file: any) {
+        file.loading = true;
+        const request = this.dryRun ?
+            this.ipfs.getFileFromDryRunStorage(file.cid) :
+            this.ipfs.getFile(file.cid);
+        request.subscribe((response: ArrayBuffer) => {
+            const blob = new Blob([response], { type: file.type });
+            const url = window.URL.createObjectURL(blob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.setAttribute('download', file.name);
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
+            window.URL.revokeObjectURL(url);
+            file.loading = false;
+        }, (e) => {
+            file.loading = false;
+        });
+    }
+    //#endregion
+
+    //#region Filters
+
+    private getFilters(
+        type: 'load' | 'update' | 'more',
+        target?: string
+    ): any {
+        const filters: any = {
+            discussionId: this.currentDiscussion?.id,
+            search: this.searchMessage
+        };
+        if (type === 'load') {
+            return filters;
+        } else if (type === 'more') {
+            filters.lt = target;
+            return filters;
+        } else if (type === 'update') {
+            filters.gt = target;
+            return filters;
         }
     }
 
-    private parsText(message: any, text: string): any[] {
-        const result: any[] = [];
+    private getDiscussionFilters() {
+        return {
+            search: this.searchDiscussion,
+            field: this.searchField?.field
+        }
+    }
+
+    //#endregion
+
+    //#region Parse Data
+
+    private updateTargets() {
+        this.userNames.clear();
+        for (const user of this.users) {
+            user.label = user.label
+                ?.replace(/\[\{/g, '(')
+                ?.replace(/\]\}/g, ')');
+            user.search = user.label?.toLowerCase() || '';
+        }
+        for (const user of this.users) {
+            this.userNames.set(user.value, `@${user.label}`);
+        }
+        this.rolesList = [];
+        this.usersList = [];
+        for (const item of this.users) {
+            if (item.type === 'role') {
+                this.rolesList.push(item);
+            }
+            if (item.type === 'user') {
+                this.usersList.push(item);
+            }
+        }
+
+        this.fieldNames.clear();
+        const fieldMap = new Map<string | undefined, string>();
+        for (const schema of this.schemas) {
+            this.updateFields(schema.fields, fieldMap, '');
+        }
+        this.fieldList = [];
+        for (const [value, label] of fieldMap.entries()) {
+            const _label = label
+                ?.replace(/\[\{/g, '(')
+                ?.replace(/\]\}/g, ')') || '';
+            this.fieldList.push({
+                type: 'field',
+                search: _label.toLocaleLowerCase(),
+                label: _label,
+                value
+            });
+            this.fieldNames.set(value || '', `#${label}`);
+        }
+    }
+
+    private updateFields(
+        fields: SchemaField[] | undefined,
+        map: Map<string | undefined, string>,
+        parent: string
+    ) {
+        if (Array.isArray(fields)) {
+            for (const field of fields) {
+                map.set(field.fullPath, `${parent}${field.description}`);
+                this.updateFields(field.fields, map, `${parent}${field.description}/`);
+            }
+        }
+    }
+
+    private updateDiscussions() {
+        for (const discussion of this.discussions) {
+            discussion._short = (discussion.name || '#').substring(0, 1);
+        }
+    }
+
+    private parsText(message: any, text: string): TextItem[] {
+        const result: TextItem[] = [];
         if (!text) {
             return result;
         }
 
-        const separatorMap = new Map<string, string>();
+        const separatorMap = new Map<string, TextItemType>();
         if (Array.isArray(message.fields)) {
             for (const field of message.fields) {
                 separatorMap.set(`#[${field}]`, 'field');
@@ -379,7 +466,7 @@ export class PolicyComments {
         });
         const reg = `(${separators.join('|')})`;
         const regExp = new RegExp(reg);
-        const tags = text.split(regExp);
+        const tags = text.trim().split(regExp);
 
         for (const tag of tags) {
             if (tag) {
@@ -394,13 +481,69 @@ export class PolicyComments {
                 } else {
                     result.push({
                         type: 'text',
-                        text: tag
+                        text: tag,
+                        tag: ''
                     })
                 }
             }
         }
 
         return result;
+    }
+
+    public getUserName(t: TextItem) {
+        if (t.type === 'all') {
+            return '@All';
+        }
+        if (t.type === 'text') {
+            return t.text;
+        }
+        if (t.type === 'tag') {
+            return this.userNames.get(t.tag) || t.text;
+        }
+        if (t.type === 'role') {
+            return this.userNames.get(t.tag) || t.text;
+        }
+        if (t.type === 'user') {
+            return this.userNames.get(t.tag) || t.text;
+        }
+        if (t.type === 'field') {
+            return this.fieldNames.get(t.tag) || t.text;
+        }
+        return t.text;
+    }
+
+    public getTooltip(t: TextItem) {
+        if (t.type === 'all') {
+            return '';
+        }
+        if (t.type === 'text') {
+            return '';
+        }
+        if (t.type === 'tag') {
+            return '';
+        }
+        if (t.type === 'role') {
+            return '';
+        }
+        if (t.type === 'user') {
+            return '';
+        }
+        if (t.type === 'field') {
+            return '';
+        }
+        return '';
+    }
+
+    private parsMessages(messages: any[]) {
+        for (const item of messages) {
+            const text = this.parsText(item, item?.document?.text);
+            for (const textItem of text) {
+                textItem.label = this.getUserName(textItem);
+                textItem.tooltip = this.getTooltip(textItem);
+            }
+            item.__text = text;
+        }
     }
 
     private parsTags(key: '@' | '#', text: string) {
@@ -462,36 +605,9 @@ export class PolicyComments {
         };
     }
 
-    public onSend() {
-        if (!this.policyId || !this.documentId) {
-            this.loading = false;
-            return;
-        }
+    //#endregion
 
-        const { text, recipients, fields } = this.findTags(this.textMessage);
-        const data = {
-            discussionId: this.currentDiscussion?.id,
-            recipients: recipients,
-            fields: fields,
-            text: text,
-            files: this.files.map((f) => f.toJSON())
-        };
-        this.loading = true;
-        this.commentsService
-            .createComment(
-                this.policyId,
-                this.documentId,
-                data
-            ).subscribe((response) => {
-                this.textMessage = '';
-                this.files = [];
-                this.sendDisabled = true;
-                const first = this.data.getFirst();
-                this.loadComments('update', first?.id);
-            }, (e) => {
-                this.loading = false;
-            });
-    }
+    //#region Other
 
     public onAttach($event: any) {
         $event.preventDefault();
@@ -538,7 +654,7 @@ export class PolicyComments {
             }
         }
         for (const result of results) {
-            result.upload(this.ipfs, this.policyId, false, this.onText.bind(this));
+            result.upload(this.ipfs, this.policyId, this.dryRun, this.onText.bind(this));
         }
         for (const result of results) {
             this.files.push(result);
@@ -623,32 +739,12 @@ export class PolicyComments {
         this.loadComments('more', last?.id);
     }
 
-    public onLoadFile(file: any) {
-        debugger;
-    }
+
 
     // public getUserName(did: string) {
     //     return this.userNames.get(did) || did;
     // }
 
-    public getUserName(t: any) {
-        if (t.type === 'text') {
-            return t.text;
-        }
-        if (t.type === 'tag') {
-            return this.userNames.get(t.tag) || t.text;
-        }
-        if (t.type === 'role') {
-            return this.userNames.get(t.tag) || t.text;
-        }
-        if (t.type === 'user') {
-            return this.userNames.get(t.tag) || t.text;
-        }
-        if (t.type === 'field') {
-            return this.fieldNames.get(t.tag) || t.text;
-        }
-        return t.text;
-    }
 
     public findChoices(searchText: string, trigger: string) {
         const search = searchText.toLowerCase();
@@ -657,8 +753,8 @@ export class PolicyComments {
                 return user.search?.includes(search);
             }).slice(0, 10)
         } else {
-            return this.fieldList.filter((user) => {
-                return user.search?.includes(search);
+            return this.fieldList.filter((field) => {
+                return field.search?.includes(search);
             }).slice(0, 10)
         }
     }
@@ -740,29 +836,12 @@ export class PolicyComments {
         this.currentTab = 'discussions';
     }
 
-    public createNewDiscussion() {
-        if (!this.policyId || !this.documentId) {
-            this.loading = false;
-            return;
-        }
-        this.discussionForm.value;
-        this.loading = true;
-        this.commentsService
-            .createDiscussion(
-                this.policyId,
-                this.documentId,
-                this.discussionForm.value
-            ).subscribe((response) => {
-                this.currentTab = 'messages';
-                this.currentDiscussion = response;
-                this.loadComments('load');
-            }, (e) => {
-                this.loading = false;
-            });
-    }
 
-    public setLink() {
+    public setLink(currentField?: any) {
         try {
+            const field = this.fieldList.find((f) => f.value === currentField.field);
+            const name = field ? field.label : currentField.name;
+            this.textMessage = (this.textMessage || '') + ` #[${name}]`;
             if (this.messageInput) {
                 this.messageInput
                     .nativeElement
@@ -797,7 +876,7 @@ export class PolicyComments {
             }
         }
         if ($event?.type === 'link') {
-            this.currentField = {
+            const currentField = {
                 field: $event.field,
                 name: $event.fieldName,
             };
@@ -809,7 +888,7 @@ export class PolicyComments {
                 this.changeView();
                 this.loadDiscussions();
             }
-            this.setLink();
+            this.setLink(currentField);
         }
     }
 
@@ -846,4 +925,12 @@ export class PolicyComments {
     public onLinkField(field: string) {
         this.linkEvent.emit(field);
     }
+
+    public onLinkText(item: TextItem) {
+        if (item.type === 'field') {
+            this.linkEvent.emit(item.tag);
+        }
+    }
+
+    //#endregion
 }

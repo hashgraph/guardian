@@ -98,4 +98,5 @@ export enum PolicyEngineEvents {
     GET_POLICY_USERS = 'policy-engine-get-policy-users',
     GET_DOCUMENT_RELATIONSHIPS = 'policy-engine-get-policy-relationships',
     GET_DOCUMENT_SCHEMAS = 'policy-engine-get-policy-schemas',
+    GET_POLICY_COMMENT_COUNT = 'policy-engine-get-policy-comments-count',
 }

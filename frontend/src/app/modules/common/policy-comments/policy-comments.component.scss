@@ -704,6 +704,7 @@
             line-height: 20px;
             vertical-align: middle;
             color: #181818;
+            white-space: pre-wrap;
 
             .message-tag,
             .text-type-all,
@@ -737,6 +738,22 @@
                 overflow: hidden;
                 cursor: pointer;
                 user-select: none;
+                position: relative;
+
+                .guardian-loading {
+                    position: absolute !important;
+                    width: 42px !important;
+                    height: 42px !important;
+                    padding: 6px !important;
+                    background: #e1e7ef !important;
+                    top: 3px !important;
+                    left: 3px !important;
+
+                    .guardian-loading-image {
+                        width: 20px !important;
+                        height: 20px !important;
+                    }
+                }
 
                 .file-icon {
                     width: 48px;

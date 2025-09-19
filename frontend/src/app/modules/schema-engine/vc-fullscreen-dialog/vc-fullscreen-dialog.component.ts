@@ -4,8 +4,9 @@ import { UserPermissions } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from 'src/app/services/profile.service';
 import { PolicyComments } from '../../common/policy-comments/policy-comments.component';
-import { Subject, Subscription } from 'rxjs';
+import { forkJoin, Subject, Subscription, takeUntil } from 'rxjs';
 import { DocumentViewComponent } from '../document-view/document-view.component';
+import { CommentsService } from 'src/app/services/comments.service';
 
 /**
  * Dialog for display json
@@ -52,6 +53,7 @@ export class VCFullscreenDialog {
         public dialogRef: DynamicDialogRef,
         public dialogConfig: DynamicDialogConfig,
         private profileService: ProfileService,
+        private commentsService: CommentsService,
         private route: ActivatedRoute,
         private router: Router,
         private el: ElementRef
@@ -132,13 +134,23 @@ export class VCFullscreenDialog {
 
     private loadProfile() {
         this.loading = true;
-        this.profileService.getProfile()
-            .subscribe((profile) => {
+        forkJoin([
+            this.profileService.getProfile(),
+            this.commentsService.getPolicyCommentsCount(this.policyId, this.documentId),
+        ])
+            .pipe(takeUntil(this._destroy$))
+            .subscribe(([
+                profile,
+                count,
+            ]) => {
                 this.user = new UserPermissions(profile);
+                this.discussionData = count?.fields || {};
+
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
                 this.loading = false;
-            }, (error) => {
-                this.loading = false;
-                console.error(error);
             });
     }
 

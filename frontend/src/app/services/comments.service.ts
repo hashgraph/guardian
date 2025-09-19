@@ -61,7 +61,7 @@ export class CommentsService {
     ): Observable<any[]> {
         return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/schemas`) as any;
     }
-    
+
     public getDiscussions(
         policyId: string,
         documentId: string,
@@ -111,14 +111,21 @@ export class CommentsService {
         documentId: string,
         filters: {
             discussionId?: string,
-            anchor?: string,
-            sender?: string,
-            senderRole?: string,
-            private?: boolean,
+            search?: string,
             lt?: string,
             gt?: string
         },
     ): Observable<HttpResponse<any[]>> {
         return this.http.post<any[]>(`${this.url}/${policyId}/${documentId}/comments/search`, filters, { observe: 'response' }) as any;
+    }
+
+    public getPolicyCommentsCount(
+        policyId?: string,
+        documentId?: string,
+    ): Observable<any> {
+        if (!policyId || !documentId) {
+            return of(null);
+        }
+        return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/comments/count`) as any;
     }
 }

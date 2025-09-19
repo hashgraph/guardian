@@ -285,14 +285,27 @@
                             </div>
                         </div>
                         <div *ngIf="item.document.text" class="message-text">
-                            <!-- <span *ngIf="item.recipient" class="message-tag">&#64;{{getUserName(item.recipient)}},</span>
-                            <span *ngIf="item.recipientRole" class="message-tag">&#64;{{item.recipientRole}},</span> -->
-                            <span *ngFor="let t of item.__text" class="text-type-{{t.type}}">
-                                {{getUserName(t)}}
-                            </span>
+                            <ng-container *ngFor="let textItem of item.__text">
+                                <span *ngIf="textItem.type === 'text'" class="text-type-text">{{textItem.label}}</span>
+                                <span *ngIf="textItem.type === 'tag'" class="text-type-tag">{{textItem.label}}</span>
+                                <span *ngIf="textItem.type === 'all'" class="text-type-all">{{textItem.label}}</span>
+                                <span 
+                                    *ngIf="textItem.type === 'role'" 
+                                    class="text-type-role">{{textItem.label}}</span>
+                                <span 
+                                    *ngIf="textItem.type === 'user'" 
+                                    class="text-type-user">{{textItem.label}}</span>
+                                <span 
+                                    *ngIf="textItem.type === 'field'" 
+                                    class="text-type-field" 
+                                    (click)="onLinkText(textItem)">{{textItem.label}}</span>
+                            </ng-container>
                         </div>
                         <div *ngIf="item.document.files?.length" class="message-files">
                             <div *ngFor="let file of item.document.files" class="message-file" (click)="onLoadFile(file)">
+                                <div *ngIf="file.loading" class="message-file-loading guardian-loading">
+                                    <div class="guardian-loading-image"></div>
+                                </div>
                                 <div class="file-icon">
                                     <svg-icon src="/assets/images/icons/file.svg" svgClass="icon-color-close"></svg-icon>
                                 </div>
@@ -385,7 +398,7 @@
                 <div class="delimiter"></div>
                 <button
                     class="guardian-icon-button send-btn big"
-                    (click)="onSend()"
+                    (click)="createComment()"
                     [disabled]="sendDisabled">
                     <svg-icon
                         class="icon-btn svg-icon"
