@@ -1,4 +1,4 @@
-## Verra VM0042 REDD+ Methodology
+## Verra's VM0042 Methodology for Improved Agricultural Land Management
 
 **Policy Description**: 
 
@@ -20,8 +20,8 @@ Roles in the below Workflow Diagram are represented as follows : Project Propone
 For Demo purpose, we have uploaded Verra Policies into IPFS and created Timestamps, which are mentioned in the below table.
 
 
-**Verra REDD Versions and their IPFS timestamps:**
+**VM0042 V1.0 Version and its IPFS timestamps:**
 
 | Version | IPFS Timestamp | Policy File Link | Version Differences |
 |---|---|---|---:|
-| Verra Redd 5  | 1707208546.227326003 | [Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/Verra/VM0042/Policies/Verra%20VM0042.policy) | Verra Methodology |
+| VM0042 V1.0  | 1707208546.227326003 | [Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/Verra/VM0042/Policies/Verra%20VM0042.policy) | Verra Methodology |

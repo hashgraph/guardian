@@ -75,7 +75,7 @@
                     <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
                         <date-time-control 
                             [control]="item.control" 
-                            item]="item" 
+                            [item]="item" 
                             [showTime]="true"></date-time-control>
                     </div>
 
@@ -333,7 +333,7 @@
                         </div>
                     </div>
                     <div *ngIf="ifInvalidField(listItem)"
-                         class="invalid-field-label">{{ getInvalidMessageByFieldType(item) }}
+                         class="invalid-field-label">{{ getInvalidMessageByFieldType(item, listItem) }}
                     </div>
                 </div>
 
