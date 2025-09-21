@@ -20,8 +20,6 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                 expect(response.status).to.eq(STATUS_CODE.OK)
                 policyId1 = response.body.at(0).id;
                 policyId2 = response.body.at(1).id;
-                prelastPolicy = response.body.at(-1).id;
-                preprelastPolicy = response.body.at(-2).id;
             })
         })
     })
