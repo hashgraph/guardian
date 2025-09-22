@@ -4,7 +4,7 @@ import * as Authorization from "../../../support/authorization";
 
 context('Import policy', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    let policyId, sv1, sv2, sv3, sv4, sv5, adminDid, registrantDid;
+    let policyId, sv1, sv3, sv4, sv5, adminDid, registrantDid;
 
     before('Get policy id', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -181,7 +181,6 @@ context('Import policy', { tags: ['policies', 'secondPool', 'all'] }, () => {
                                 timeout: 180000
                             }).then((response) => {
                                 expect(response.status).to.eq(STATUS_CODE.OK);
-                                sv2 = response.body.savepoint.id;
                             })
                             cy.request({
                                 method: METHOD.PUT,

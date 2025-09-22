@@ -395,6 +395,7 @@ context('Import policy', { tags: ['policies', 'secondPool', 'all'] }, () => {
                                         "name": "SV6",
                                         "savepointPath": [sv1, sv2, sv3, sv4, sv5]
                                     },
+                                    failOnStatusCode: false,
                                     timeout: 180000
                                 }).then((response) => {
                                     expect(response.status).to.eq(STATUS_CODE.ERROR);

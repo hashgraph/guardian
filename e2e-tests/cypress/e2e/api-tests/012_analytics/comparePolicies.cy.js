@@ -59,15 +59,20 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                 }
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK)
+                response.body.forEach(element => {
+                    cy.task('log', element.name)
+                });
                 prelastPolicy = response.body.at(-1).id;
                 preprelastPolicy = response.body.at(-2).id;
+                cy.task('log', response.body.at(-1).name)
+                cy.task('log', response.body.at(-2).name)
                 cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.PolicyCompare,
                     body: {
                         policyId1: preprelastPolicy,
                         policyId2: prelastPolicy,
-                        eventsLvl: 1,
+                        eventsLvl: 2,
                         propLvl: 2,
                         childrenLvl: 2,
                         idLvl: 0
