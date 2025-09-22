@@ -6,6 +6,25 @@ import { loadFiles } from '../load-files.js';
 import { SchemaFileHelper } from '../../helpers/schema-file-helper.js';
 import { IPFSService } from '../../helpers/ipfs-service.js';
 
+type TableReference = {
+    cid: string;
+    path: string;
+};
+
+class TableAssetDownloadError extends Error {
+    public readonly vcId: string;
+    public readonly fieldPath: string;
+    public readonly cid: string;
+
+    constructor(vcId: string, fieldPath: string, cid: string, reason: string) {
+        super(`VC ${vcId}: table file download failed at '${fieldPath}' for cid=${cid}: ${reason}`);
+        this.vcId = vcId;
+        this.fieldPath = fieldPath;
+        this.cid = cid;
+        this.name = 'TableAssetDownloadError';
+    }
+}
+
 export class SynchronizationVCs extends SynchronizationTask {
     public readonly name: string = 'vcs';
 
@@ -171,6 +190,12 @@ export class SynchronizationVCs extends SynchronizationTask {
                 {
                     'analytics.schemaId': null,
                 },
+                {
+                    'analytics.tableFiles': { $exists: false }
+                },
+                {
+                    'analytics.tableFiles': null
+                }
             ],
         };
     }
@@ -192,67 +217,84 @@ export class SynchronizationVCs extends SynchronizationTask {
     /**
      * Attach table-files mapping to VC analytics.
      *
-     * @param row        DB entity reference to be persisted (Message)
-     * @param document   Original VC message document
+     * @param entity
+     * @param message
      * @param fileMap    Map<filename, fileContent> from preloaded GridFS read
      */
     private async attachTableFilesAnalytics(
-        row: Message,
-        document: Message,
-        fileMap: Map<string, string>,
+        entity: Message,
+        message: Message,
+        fileMap: Map<string, string>
     ): Promise<void> {
         try {
-            const tableFilesMap = await this.computeTableFilesMap(document, fileMap);
+            const cidToFileId = await this.computeTableFilesMap(message, fileMap);
 
-            if (!tableFilesMap || Object.keys(tableFilesMap).length === 0) {
+            const hasData =
+                cidToFileId &&
+                Object.keys(cidToFileId).length > 0;
+
+            if (!hasData) {
                 return;
             }
 
-            row.analytics = row.analytics || {};
-            row.analytics.tableFiles = tableFilesMap;
+            const previousAnalytics = entity.analytics || {};
+
+            entity.analytics = {
+                ...previousAnalytics,
+                tableFiles: cidToFileId
+            };
         } catch (error) {
-            //
+            const errorText = error instanceof Error ? error.message : String(error);
+            console.error('attachTableFilesAnalytics:', errorText);
         }
     }
 
     /**
      * Build a map { cid: gridfsId } for all table-like assets referenced by the VC.
      *
-     * @param document   Original VC message
+     * @param message
      * @param fileMap    Map<filename, fileContent> from preloaded GridFS read
      * @returns          Record<string, string> where key = CID, value = GridFS _id
      */
     private async computeTableFilesMap(
-        document: Message,
-        fileMap: Map<string, string>,
+        message: Message,
+        fileMap: Map<string, string>
     ): Promise<Record<string, string>> {
-        const vcCid = Array.isArray(document.files) ? document.files[0] : null;
-        if (!vcCid) {
-            return {};
+        const vcCid = this.findVcCid(message.files, fileMap);
+
+        let vcString: string | undefined;
+
+        if (vcCid) {
+            vcString = fileMap.get(vcCid);
         }
 
-        const vcString = fileMap.get(vcCid);
+        if (!vcString && Array.isArray(message.documents) && message.documents[0]) {
+            vcString = message.documents[0];
+        }
+
         if (!vcString) {
             return {};
         }
 
         const vcJson = this.parseFile(vcString);
         const subject = this.getSubject(vcJson);
+
         if (!subject) {
             return {};
         }
 
-        const tableCids = this.extractTableCidsFromSubject(subject);
+        const tableCids = this.extractTableCids(subject);
+
         if (tableCids.size === 0) {
             return {};
         }
 
+        const vcIdentifier = message.consensusTimestamp || message.uuid || 'unknown';
         const cidToGridFsId: Record<string, string> = {};
+
         for (const cid of tableCids) {
-            const gridFsId = await this.ensureFileCachedInGridFS(cid);
-            if (gridFsId) {
-                cidToGridFsId[cid] = gridFsId;
-            }
+            const gridFsId = await this.ensureFileCachedInGridFSStrict(vcIdentifier, cid);
+            cidToGridFsId[cid] = gridFsId;
         }
 
         return cidToGridFsId;
@@ -264,77 +306,175 @@ export class SynchronizationVCs extends SynchronizationTask {
      * @param node  Any JSON node
      * @returns     Set of unique CIDs found
      */
-    private extractTableCidsFromSubject(node: unknown): Set<string> {
-        const foundCids = new Set<string>();
+    private extractTableCids(rootNode: unknown): Set<string> {
+        const result = new Set<string>();
 
         const isCid = (value: unknown): value is string => {
-            return typeof value === 'string' && IPFS_CID_PATTERN.test(value);
+            if (typeof value !== 'string') {
+                return false;
+            }
+            return IPFS_CID_PATTERN.test(value);
         };
 
-        const walk = (value: unknown) => {
-            if (Array.isArray(value)) {
-                for (const item of value) {
-                    walk(item);
+        const walk = (node: unknown): void => {
+            if (Array.isArray(node)) {
+                for (let i = 0; i < node.length; i += 1) {
+                    walk(node[i]);
                 }
                 return;
             }
 
-            if (value && typeof value === 'object') {
-                const obj = value as Record<string, unknown>;
+            if (node && typeof node === 'object') {
+                const obj = node as Record<string, unknown>;
 
-                if (typeof obj.type === 'string' && obj.type.toLowerCase() === 'table' && isCid(obj.cid)) {
-                    foundCids.add(obj.cid);
+                const typeValue = obj.type;
+                const cidValue = obj.cid;
+                const isTable =
+                    typeof typeValue === 'string' &&
+                    typeValue.toLowerCase() === 'table' &&
+                    isCid(cidValue);
+
+                if (isTable) {
+                    result.add(String(cidValue));
                 }
 
-                for (const val of Object.values(obj)) {
-                    if (val && typeof val === 'object') {
-                        walk(val);
+                for (const value of Object.values(obj)) {
+                    if (value && typeof value === 'object') {
+                        walk(value);
                     }
                 }
             }
         };
 
-        walk(node);
-        return foundCids;
+        walk(rootNode);
+        return result;
+    }
+
+    private extractTableRefsWithPaths(rootNode: unknown, basePath: string = 'credentialSubject[0]'): TableReference[] {
+        const results: TableReference[] = [];
+
+        const isCid = (value: unknown): value is string => {
+            if (typeof value !== 'string') {
+                return false;
+            }
+            return IPFS_CID_PATTERN.test(value);
+        };
+
+        const walk = (node: unknown, currentPath: string): void => {
+            if (Array.isArray(node)) {
+                for (let index = 0; index < node.length; index += 1) {
+                    const child = node[index];
+                    walk(child, `${currentPath}[${index}]`);
+                }
+                return;
+            }
+
+            if (node && typeof node === 'object') {
+                const obj = node as Record<string, unknown>;
+
+                const typeValue = obj.type;
+                const cidValue = obj.cid;
+                const isTable =
+                    typeof typeValue === 'string' &&
+                    typeValue.toLowerCase() === 'table' &&
+                    isCid(cidValue);
+
+                if (isTable) {
+                    results.push({
+                        cid: String(cidValue),
+                        path: currentPath
+                    });
+                }
+
+                for (const [key, value] of Object.entries(obj)) {
+                    if (value && typeof value === 'object') {
+                        walk(value, `${currentPath}.${key}`);
+                    }
+                }
+            }
+        };
+
+        walk(rootNode, basePath);
+        return results;
     }
 
     /**
      * Ensure file with given CID is cached in our GridFS (filename = CID).
      * If missing, downloads bytes from IPFS and uploads to GridFS.
      *
+     * @param vcId
      * @param cid        IPFS CID string
      * @param timeoutMs  IPFS gateway timeout (ms)
      * @returns          GridFS file _id as string or null if failed
      */
-    private async ensureFileCachedInGridFS(
+    private async ensureFileCachedInGridFSStrict(
+        vcId: string,
         cid: string,
-        timeoutMs: number = 60_000,
-    ): Promise<string | null> {
-        try {
-            const existingFiles = await DataBaseHelper.gridFS.find({ filename: cid }).toArray();
+        timeoutMs: number = 60_000
+    ): Promise<string> {
+        const existing = await DataBaseHelper.gridFS.find({ filename: cid }).toArray();
+        if (existing && existing.length > 0) {
+            return existing[0]._id.toString();
+        }
 
-            if (existingFiles && existingFiles.length > 0) {
-                return existingFiles[0]._id.toString();
-            }
+        const fileBuffer = await IPFSService.getFile(cid, timeoutMs);
 
-            const fileContent = await IPFSService.getFile(cid, timeoutMs);
-            if (!fileContent) {
-                return null;
-            }
-
-            return await new Promise<string>((resolve, reject) => {
-                try {
-                    const uploadStream = DataBaseHelper.gridFS.openUploadStream(cid);
-                    uploadStream.write(fileContent as Buffer);
-                    uploadStream.end(() => {
-                        resolve(String(uploadStream.id));
-                    });
-                } catch (error) {
-                    reject(error);
-                }
+        const gridFsId = await new Promise<string>((resolve, reject) => {
+            const upload = DataBaseHelper.gridFS.openUploadStream(cid, {
+                metadata: { contentType: 'text/csv; charset=utf-8' }
             });
-        } catch {
+
+            const timer = setTimeout(() => {
+                reject(new Error(`GridFS upload timeout for cid=${cid}`));
+            }, Math.max(30_000, Math.floor(timeoutMs * 0.8)));
+
+            upload.once('finish', () => {
+                clearTimeout(timer);
+                resolve(String(upload.id));
+            });
+
+            upload.once('error', (err) => {
+                clearTimeout(timer);
+                reject(err instanceof Error ? err : new Error(String(err)));
+            });
+
+            upload.end(fileBuffer);
+        });
+
+        return gridFsId;
+    }
+
+    private findVcCid(files: unknown, fileMap: Map<string, string>): string | null {
+        if (!Array.isArray(files)) {
             return null;
         }
+
+        for (const cidCandidate of files) {
+            if (typeof cidCandidate !== 'string') {
+                continue;
+            }
+
+            const content = fileMap.get(cidCandidate);
+
+            if (!content) {
+                continue;
+            }
+
+            const parsed = this.parseFile(content);
+
+            const hasSubject = Boolean(parsed && parsed.credentialSubject);
+            const hasTypeArray =
+                Array.isArray(parsed?.type) &&
+                parsed.type.includes('VerifiableCredential');
+            const hasTypeScalar =
+                typeof parsed?.type === 'string' &&
+                parsed.type === 'VerifiableCredential';
+
+            if (hasSubject || hasTypeArray || hasTypeScalar) {
+                return cidCandidate;
+            }
+        }
+
+        return null;
     }
 }
