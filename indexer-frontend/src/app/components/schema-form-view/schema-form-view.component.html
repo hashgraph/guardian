@@ -6,7 +6,10 @@
 
                 <div *ngIf="item.customType === 'table'" class="example-full-width">
                     <div *ngIf="item.customType === 'table'" class="example-full-width">
-                        <app-table-viewer [item]="item"></app-table-viewer>
+                        <app-table-viewer
+                                [value]="item.value"
+                                [analytics]="analytics"
+                        ></app-table-viewer>
                     </div>
                 </div>
 
@@ -67,7 +70,9 @@
                                 [fields]="item.fields"
                                 [private-fields]="hide"
                                 [delimiter-hide]="true"
-                                [values]="this.values && this.values[item.name]">
+                                [values]="this.values && this.values[item.name]"
+                                [analytics]="analytics"
+                            >
                             </app-schema-form-view>
                         }
                     </div>
@@ -134,7 +139,9 @@
                                 [fields]="item.fields"
                                 [private-fields]="hide"
                                 [delimiter-hide]="true"
-                                [values]="listItem">
+                                [values]="listItem"
+                                [analytics]="analytics"
+                            >
                             </app-schema-form-view>
                         }
                     </div>

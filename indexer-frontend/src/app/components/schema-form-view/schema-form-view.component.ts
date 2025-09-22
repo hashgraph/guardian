@@ -52,6 +52,7 @@ export class SchemaFormViewComponent {
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('values') values: any;
     @Input() formulas?: any;
+    @Input('analytics') analytics?: any;
 
     fields: any[] | undefined = [];
     pageSize: number = 20;

@@ -1,47 +1,18 @@
 <div class="table-viewer">
-    <div class="table-viewer__controls">
-        <button
-                class="p-button p-component"
-                type="button"
-                [disabled]="!fileId || isDownloading"
-                (click)="onDownloadClick()"
-        >
-            <span class="p-button-label">Download CSV</span>
-        </button>
+    <button
+            class="p-button p-component"
+            type="button"
+            (click)="openDialog()"
+            [disabled]="!fileId || isLoading"
+    >
+    <span class="p-button-label">
+      {{ isLoading ? 'Loading…' : 'Open table' }}
+    </span>
+    </button>
 
-        <button
-                class="p-button p-component p-button-outlined"
-                type="button"
-                [disabled]="!hasDownloaded || isDownloading || parsedColumnDefs.length === 0"
-                (click)="onPreviewClick()"
-        >
-            <span class="p-button-label">Preview table</span>
-        </button>
-
-        <button
-                class="p-button p-component p-button-text"
-                type="button"
-                [disabled]="!hasDownloaded || isDownloading || !downloadedCsvText"
-                (click)="onSaveCsvClick()"
-        >
-            <span class="p-button-label">Save CSV</span>
-        </button>
-    </div>
-
-    <div class="table-viewer__meta">
-        <div class="meta-row">
-            <span class="meta-label">fileId:</span>
-            <span class="meta-value">{{ fileId || '—' }}</span>
-        </div>
-
-        <div class="meta-row" *ngIf="isDownloading">
-            <span class="meta-label">Status:</span>
-            <span class="meta-value">Downloading...</span>
-        </div>
-
-        <div class="meta-row" *ngIf="downloadError">
-            <span class="meta-label error">Error:</span>
-            <span class="meta-value error">{{ downloadError }}</span>
-        </div>
+    <div class="meta">
+        <span *ngIf="fileId as id">fileId: {{ id }}</span>
+        <span *ngIf="!fileId">No table</span>
+        <span *ngIf="loadError" class="error">{{ loadError }}</span>
     </div>
 </div>
