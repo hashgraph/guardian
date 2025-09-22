@@ -5,9 +5,20 @@
             (click)="openDialog()"
             [disabled]="!fileId || isLoading"
     >
-    <span class="p-button-label">
-      {{ isLoading ? 'Loading…' : 'Open table' }}
-    </span>
+        <span class="p-button-label">
+          {{ isLoading ? 'Loading…' : 'Open table' }}
+        </span>
+    </button>
+
+    <button
+            class="p-button p-component p-button-outlined"
+            type="button"
+            (click)="downloadCsv()"
+            [disabled]="!fileId || isDownloading"
+    >
+        <span class="p-button-label">
+          {{ isDownloading ? 'Downloading…' : 'Download CSV' }}
+        </span>
     </button>
 
     <div class="meta">

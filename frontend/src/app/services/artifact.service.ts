@@ -63,4 +63,10 @@ export class ArtifactService {
             responseType: 'text'
         });
     }
+
+    public getFileBlob(fileId: string): Observable<Blob> {
+        return this.http.get(`${this.url}/files/${encodeURIComponent(fileId)}`, {
+            responseType: 'blob'
+        });
+    }
 }

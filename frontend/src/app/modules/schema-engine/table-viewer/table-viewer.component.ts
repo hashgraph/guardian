@@ -4,6 +4,7 @@ import { ColDef } from 'ag-grid-community';
 import { ArtifactService } from 'src/app/services/artifact.service';
 import { CsvService } from 'src/app/services/csv.service';
 import { TableDialogComponent } from '../../common/table-dialog/table-dialog.component';
+import {finalize, take} from 'rxjs/operators';
 
 type TableRefLike = { type?: string; fileId?: string } | string | null | undefined;
 
@@ -21,6 +22,7 @@ export class TableViewerComponent {
     public title?: string;
 
     public isLoading: boolean = false;
+    public isDownloading = false;
     public loadError?: string;
 
     constructor(
@@ -83,6 +85,63 @@ export class TableViewerComponent {
         });
     }
 
+    private isUserCancel(err: any): boolean {
+        const name = err?.name;
+        return name === 'AbortError' || name === 'NotAllowedError' || name === 'SecurityError';
+    }
+
+    public downloadCsv(): void {
+        const fileId = this.fileId;
+        if (!fileId || this.isDownloading) {
+            return;
+        }
+
+        this.isDownloading = true;
+
+        this.artifactService
+            .getFileBlob(fileId)
+            .pipe(
+                take(1),
+                finalize(() => (this.isDownloading = false))
+            )
+            .subscribe({
+                next: async (blob: Blob) => {
+                    const suggested = `${fileId}.csv`;
+                    const w = window as any;
+
+                    if (w?.showSaveFilePicker) {
+                        try {
+                            const handle = await w.showSaveFilePicker({
+                                suggestedName: suggested,
+                                types: [{ description: 'CSV file', accept: { 'text/csv': ['.csv'] } }]
+                            });
+                            const stream = await handle.createWritable();
+                            await stream.write(blob);
+                            await stream.close();
+                            return;
+                        } catch (e: any) {
+                            if (this.isUserCancel(e)) {
+                                return;
+                            }
+                        }
+                    }
+
+                    const objectUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = objectUrl;
+                    a.download = suggested;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(objectUrl);
+                },
+                error: (err: unknown) => {
+                    const message = (err as any)?.error?.message || 'Failed to download CSV';
+                    this.loadError = String(message);
+                }
+            });
+    }
+
     private getFileIdFromValue(input: TableRefLike): string | null {
         if (!input) {
             return null;
@@ -107,15 +166,15 @@ export class TableViewerComponent {
             const obj = input as Record<string, unknown>;
 
             const isTableType =
-                typeof obj['type'] === 'string' &&
-                obj['type'].toLowerCase() === 'table';
+                typeof obj.type === 'string' &&
+                obj.type.toLowerCase() === 'table';
 
             const hasFileId =
-                typeof obj['fileId'] === 'string' &&
-                (obj['fileId'] as string).trim().length > 0;
+                typeof obj.fileId === 'string' &&
+                obj.fileId.trim().length > 0;
 
             if (isTableType && hasFileId) {
-                const id = (obj['fileId'] as string).trim();
+                const id = (obj.fileId as string).trim();
                 return id || null;
             }
         }
