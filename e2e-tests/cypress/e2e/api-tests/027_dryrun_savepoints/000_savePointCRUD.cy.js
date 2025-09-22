@@ -399,7 +399,7 @@ context('Import policy', { tags: ['policies', 'secondPool', 'all'] }, () => {
                                     timeout: 180000
                                 }).then((response) => {
                                     expect(response.status).to.eq(STATUS_CODE.ERROR);
-                                    expect(response.message).to.eq("Savepoints limit reached (5). Delete existing savepoints to create a new one.");
+                                    expect(response.body.message).to.eq("Savepoints limit reached (5). Delete existing savepoints to create a new one.");
                                 })
                             })
                         })

@@ -633,6 +633,7 @@ context('Import policy', { tags: ['policies', 'secondPool', 'all'] }, () => {
                     },
                     timeout: 180000
                 }).then(() => {
+                    cy.wait(5000);
                     cy.request({
                         method: METHOD.GET,
                         url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,
@@ -711,7 +712,7 @@ context('Import policy', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                cy.wait(5000);
+                cy.wait(10000);
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,

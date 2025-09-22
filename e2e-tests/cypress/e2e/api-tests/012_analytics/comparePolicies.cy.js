@@ -60,12 +60,11 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK)
                 response.body.forEach(element => {
-                    cy.task('log', element.name)
+                    if (element.name.startsWith("iRec_2_"))
+                        preprelastPolicy = element.id;
+                    if (element.name == "iRec_2")
+                        prelastPolicy = element.id;
                 });
-                prelastPolicy = response.body.at(-1).id;
-                preprelastPolicy = response.body.at(-2).id;
-                cy.task('log', response.body.at(-1).name)
-                cy.task('log', response.body.at(-2).name)
                 cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.PolicyCompare,
