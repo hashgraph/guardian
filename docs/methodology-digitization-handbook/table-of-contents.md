@@ -97,27 +97,17 @@ Testing complete methodology workflows across all stakeholder roles using Guardi
 
 Automating methodology operations using Guardian's REST API framework. Covers authentication patterns, VM0033 policy block API structure, dry-run operations with virtual users, automated workflow execution, and Cypress testing integration for production deployment.
 
-## Part VII: Deployment and Maintenance
+### [Chapter 24: Guardian Indexer for Methodology Analytics](part-6/chapter-24/README.md)
 
-### [Chapter 24: User Management and Role Assignment](part-7/chapter-24/README.md)
+✅ **Available** - Comprehensive data analytics, search, and monitoring for deployed methodologies using Guardian's global indexing system. Covers global search, project tracking, compliance reporting, and operational insights.
 
-🚧 **In Development** - Setting up user roles, permissions, and access controls for different stakeholders in the methodology workflow. Covers user onboarding, organization management, security policies, and role-based access controls.
+## Part VII: Advanced Topics and Best Practices
 
-### [Chapter 25: Monitoring and Analytics - Guardian Indexer](part-7/chapter-25/README.md)
-
-🚧 **In Development** - Implementing monitoring, logging, and analytics for deployed methodologies using Guardian Indexer. Covers usage analytics, compliance reporting, audit trails, and performance monitoring.
-
-### [Chapter 26: Maintenance and Updates](part-7/chapter-26/README.md)
-
-🚧 **In Development** - Strategies for maintaining deployed methodologies, handling methodology updates, and managing backward compatibility. Covers version management, bug fixing, and regulatory change management.
-
-## Part VIII: Advanced Topics and Best Practices
-
-### [Chapter 27: Integration with External Systems](part-8/chapter-27/README.md)
+### [Chapter 25: Integration with External Systems](part-7/chapter-25/README.md)
 
 ✅ **Available** - Bidirectional data exchange between Guardian and external platforms. Covers data transformation using dataTransformationAddon blocks and external data reception using MRV configuration patterns.
 
-### [Chapter 28: Troubleshooting and Common Issues](part-8/chapter-28/README.md)
+### [Chapter 26: Troubleshooting and Common Issues](part-7/chapter-26/README.md)
 
 ✅ **Available** - Practical tips and solutions for common problems encountered during methodology digitization. Covers schema development pitfalls, development workflow optimization, custom logic testing, and event troubleshooting.
 

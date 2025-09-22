@@ -49,19 +49,13 @@
 * [Part VI Overview](part-6/README.md)
   * [Chapter 22: End-to-End Policy Testing](part-6/chapter-22/README.md)
   * [Chapter 23: API Integration and Automation](part-6/chapter-23/README.md)
+  * [Chapter 24: Guardian Indexer for Methodology Analytics](part-6/chapter-24/README.md)
 
-## Part VII: Deployment and Maintenance
+## Part VII: Advanced Topics and Best Practices
 
 * [Part VII Overview](part-7/README.md)
-  * [Chapter 24: User Management and Role Assignment](part-7/chapter-24/README.md)
-  * [Chapter 25: Monitoring and Analytics - Guardian Indexer](part-7/chapter-25/README.md)
-  * [Chapter 26: Maintenance and Updates](part-7/chapter-26/README.md)
-
-## Part VIII: Advanced Topics and Best Practices
-
-* [Part VIII Overview](part-8/README.md)
-  * [Chapter 27: Integration with External Systems](part-8/chapter-27/README.md)
-  * [Chapter 28: Troubleshooting and Common Issues](part-8/chapter-28/README.md)
+  * [Chapter 25: Integration with External Systems](part-7/chapter-25/README.md)
+  * [Chapter 26: Troubleshooting and Common Issues](part-7/chapter-26/README.md)
 
 ## Shared Resources
 
