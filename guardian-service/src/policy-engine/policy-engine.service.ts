@@ -30,7 +30,7 @@ import {
     VcHelper,
     XlsxToJson
 } from '@guardian/common';
-import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType, PolicyActionStatus } from '@guardian/interfaces';
+import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType, PolicyActionStatus, SchemaHelper } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
@@ -3567,12 +3567,12 @@ export class PolicyEngineService {
                         system: false,
                         $and: [{
                             $or: [{
-                                visibility: 'public'
+                                privacy: 'public'
                             }, {
-                                visibility: 'roles',
+                                privacy: 'roles',
                                 roles: userRole
                             }, {
-                                visibility: 'users',
+                                privacy: 'users',
                                 users: user.did
                             }, {
                                 owner: user.did
@@ -3621,7 +3621,7 @@ export class PolicyEngineService {
                     };
 
                     const discussions = await DatabaseServer.getPolicyDiscussions(filters, otherOptions);
-                    let commonDiscussion = await PolicyCommentsUtils.getCommonDiscussion(policyId, documentId);
+                    let commonDiscussion = await PolicyCommentsUtils.getCommonDiscussion(policy, vc);
                     if (commonDiscussion) {
                         discussions.unshift(commonDiscussion);
                     }
@@ -3643,7 +3643,7 @@ export class PolicyEngineService {
                     parent: string,
                     field: string,
                     fieldName: string,
-                    visibility: string,
+                    privacy: string,
                     roles: string[],
                     users: string[],
                     relationships: string[]
@@ -3658,43 +3658,11 @@ export class PolicyEngineService {
                     if (!vc || vc.policyId !== policyId) {
                         throw new Error('Document not found.');
                     }
-                    const documentIds = data?.relationships || [];
-                    if (!documentIds.includes(documentId)) {
-                        documentIds.push(documentId);
-                    }
-                    const documents = await DatabaseServer.getVCs({
-                        _id: { $in: documentIds.map((e) => DatabaseServer.dbID(e)) },
-                        messageId: { $exists: true }
-                    })
 
-                    const name = data?.name || String(Date.now());
-                    const parent = data?.parent;
-                    const field = data?.field;
-                    const fieldName = data?.fieldName;
-                    const relationships = documents.map((d) => d.messageId);
-                    const visibility = data?.visibility || 'public';
-                    const roles = visibility === 'roles' && Array.isArray(data?.roles) ? data?.roles : [];
-                    const users = visibility === 'users' && Array.isArray(data?.users) ? data?.users : [];
-                    const discussion = await DatabaseServer.createPolicyDiscussion({
-                        uuid: GenerateUUIDv4(),
-                        owner: user.did,
-                        creator: user.did,
-                        policyId,
-                        documentId,
-                        system: false,
-                        count: 0,
-                        name,
-                        parent,
-                        field,
-                        fieldName,
-                        visibility,
-                        roles,
-                        users,
-                        relationships,
-                        documentIds
-                    });
+                    const discussion = await PolicyCommentsUtils.createDiscussion(user, policy, vc, data);
 
-                    return new MessageResponse(discussion);
+                    const row = await DatabaseServer.createPolicyDiscussion(discussion);
+                    return new MessageResponse(row);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
@@ -3730,13 +3698,6 @@ export class PolicyEngineService {
                         throw new Error('Document not found.');
                     }
 
-                    const isDocumentOwner = user.did === vc.owner;
-                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
-                    const document: any = {
-                        text: data.text,
-                        files: data.files
-                    }
-
                     if (!data.discussionId) {
                         throw new Error('Discussion not found.');
                     }
@@ -3745,44 +3706,14 @@ export class PolicyEngineService {
                         policyId,
                         documentId
                     });
+
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
                     if (!PolicyCommentsUtils.accessDiscussion(discussion, user.did, userRole)) {
                         throw new Error('Discussion does not exist.');
                     }
 
-                    const fields = new Set<string>();
-                    if (Array.isArray(data.fields)) {
-                        for (const field of data.fields) {
-                            if (field) {
-                                fields.add(field);
-                            }
-                        }
-                    }
-                    if (discussion.field) {
-                        fields.add(discussion.field);
-                    }
+                    const comment = await PolicyCommentsUtils.createComment(user, userRole, policy, vc, discussion, data);
 
-                    const comment = {
-                        timestamp: Date.now(),
-                        uuid: GenerateUUIDv4(),
-                        owner: user.did,
-                        creator: user.did,
-                        topicId: '',  //policy.commentsTopicId,
-                        policyId: policyId,
-                        policyTopicId: policy.topicId,
-                        policyInstanceTopicId: policy.instanceTopicId,
-                        sender: user.did,
-                        senderRole: userRole,
-                        senderName: user.username,
-                        recipients: data.recipients,
-                        fields: Array.from(fields),
-                        field: discussion.field,
-                        target: vc.messageId,
-                        targetId: documentId,
-                        discussionId: discussion.id,
-                        isDocumentOwner: isDocumentOwner,
-                        text: data.text,
-                        document: document
-                    }
                     const row = await DatabaseServer.createPolicyComment(comment);
                     discussion.count = await DatabaseServer.getPolicyCommentsCount({
                         policyId,
@@ -3900,12 +3831,12 @@ export class PolicyEngineService {
                         policyId,
                         documentIds: documentId,
                         $or: [{
-                            visibility: 'public'
+                            privacy: 'public'
                         }, {
-                            visibility: 'roles',
+                            privacy: 'roles',
                             roles: userRole
                         }, {
-                            visibility: 'users',
+                            privacy: 'users',
                             users: user.did
                         }, {
                             owner: user.did

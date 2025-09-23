@@ -309,6 +309,12 @@ export class PolicyCommentsApi {
         @Param('documentId') documentId: string,
         @Body() body: {
             name: string,
+            parent: string,
+            field: string,
+            fieldName: string,
+            privacy: string,
+            roles: string[],
+            users: string[],
             relationships: string[]
         }
     ): Promise<any> {

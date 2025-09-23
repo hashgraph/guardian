@@ -1393,6 +1393,12 @@ export class PolicyEngine extends NatsService {
         documentId: string,
         data: {
             name: string,
+            parent: string,
+            field: string,
+            fieldName: string,
+            privacy: string,
+            roles: string[],
+            users: string[],
             relationships: string[]
         }
     ): Promise<any> {

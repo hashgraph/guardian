@@ -284,25 +284,47 @@
                                 {{item.senderRole}}
                             </div>
                         </div>
-                        <div *ngIf="item.document.text" class="message-text">
+                        <div *ngIf="item.__text" class="message-text">
                             <ng-container *ngFor="let textItem of item.__text">
-                                <span *ngIf="textItem.type === 'text'" class="text-type-text">{{textItem.label}}</span>
-                                <span *ngIf="textItem.type === 'tag'" class="text-type-tag">{{textItem.label}}</span>
-                                <span *ngIf="textItem.type === 'all'" class="text-type-all">{{textItem.label}}</span>
+                                <span 
+                                    *ngIf="textItem.type === 'text'" 
+                                    class="text-type-text">{{textItem.label}}</span>
+                                <span 
+                                    *ngIf="textItem.type === 'tag'" 
+                                    class="text-type-tag">{{textItem.label}}</span>
+                                <span 
+                                    *ngIf="textItem.type === 'all'" 
+                                    class="text-type-all">{{textItem.label}}</span>
                                 <span 
                                     *ngIf="textItem.type === 'role'" 
-                                    class="text-type-role">{{textItem.label}}</span>
+                                    class="text-type-role"
+                                    [pTooltip]="tooltipContent"
+                                    [tooltipOptions]="{showDelay: 300}"
+                                    tooltipPosition="top">{{textItem.label}}</span>
                                 <span 
                                     *ngIf="textItem.type === 'user'" 
-                                    class="text-type-user">{{textItem.label}}</span>
+                                    class="text-type-user"
+                                    [pTooltip]="tooltipContent"
+                                    [tooltipOptions]="{showDelay: 300}"
+                                    tooltipPosition="top">{{textItem.label}}</span>
                                 <span 
                                     *ngIf="textItem.type === 'field'" 
                                     class="text-type-field" 
-                                    (click)="onLinkText(textItem)">{{textItem.label}}</span>
+                                    (click)="onLinkText(textItem)"
+                                    [pTooltip]="tooltipContent"
+                                    [tooltipOptions]="{showDelay: 300}"
+                                    tooltipPosition="top">{{textItem.label}}</span>                                      
+                                <ng-template #tooltipContent>
+                                    <div *ngIf="textItem.tooltip" class="link-tooltip">
+                                        <div>{{textItem.tooltip.type}}</div>
+                                        <div>{{textItem.tooltip.name}}</div>
+                                        <div *ngIf="textItem.tooltip.value">{{textItem.tooltip.value}}</div>
+                                    </div>
+                                </ng-template>
                             </ng-container>
                         </div>
-                        <div *ngIf="item.document.files?.length" class="message-files">
-                            <div *ngFor="let file of item.document.files" class="message-file" (click)="onLoadFile(file)">
+                        <div *ngIf="item.__files" class="message-files">
+                            <div *ngFor="let file of item.__files" class="message-file" (click)="onLoadFile(file)">
                                 <div *ngIf="file.loading" class="message-file-loading guardian-loading">
                                     <div class="guardian-loading-image"></div>
                                 </div>

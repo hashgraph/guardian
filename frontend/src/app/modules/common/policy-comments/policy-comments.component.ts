@@ -46,7 +46,7 @@ interface TextItem {
     text: string;
     tag: string;
     label?: string;
-    tooltip?: string;
+    tooltip?: any;
 }
 
 /**
@@ -513,36 +513,57 @@ export class PolicyComments {
         return t.text;
     }
 
-    public getTooltip(t: TextItem) {
-        if (t.type === 'all') {
-            return '';
-        }
-        if (t.type === 'text') {
-            return '';
-        }
-        if (t.type === 'tag') {
-            return '';
-        }
+    public getTooltip(t: TextItem): {
+        type: string;
+        name: string;
+        value?: string;
+    } | null {
         if (t.type === 'role') {
-            return '';
+            return {
+                type: 'Role',
+                name: t.label || ''
+            };
         }
         if (t.type === 'user') {
-            return '';
+            return {
+                type: 'User',
+                name: t.label || '',
+                value: t.tag
+            };
         }
         if (t.type === 'field') {
-            return '';
+            return {
+                type: 'Field',
+                name: t.label || ''
+            };
         }
-        return '';
+        return null;
+    }
+
+    private getDocument(item: any) {
+        if (item?.document?.credentialSubject) {
+            if (Array.isArray(item.document.credentialSubject)) {
+                return item.document.credentialSubject[0];
+            } else if (item.document.credentialSubject) {
+                return item?.document.credentialSubject;
+            }
+        }
+        return null;
     }
 
     private parsMessages(messages: any[]) {
         for (const item of messages) {
-            const text = this.parsText(item, item?.document?.text);
-            for (const textItem of text) {
+            const document = this.getDocument(item);
+            const text = document?.text;
+            const files = document?.files;
+
+            const textItems = this.parsText(item, text);
+            for (const textItem of textItems) {
                 textItem.label = this.getUserName(textItem);
                 textItem.tooltip = this.getTooltip(textItem);
             }
-            item.__text = text;
+            item.__text = textItems;
+            item.__files = files;
         }
     }
 
@@ -682,10 +703,6 @@ export class PolicyComments {
 
     public onDeleteFile(file: AttachedFile) {
         this.files = this.files.filter(f => f !== file);
-    }
-
-    public onChangeVisibility($event: DropdownChangeEvent) {
-        // debugger;
     }
 
     public onText($event: any) {

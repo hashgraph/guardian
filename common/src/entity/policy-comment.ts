@@ -1,4 +1,3 @@
-
 import { BaseEntity } from '../models/index.js';
 import { GenerateUUIDv4, IVC } from '@guardian/interfaces';
 import { Entity, Property, BeforeCreate, OnLoad, BeforeUpdate, AfterDelete, AfterUpdate, AfterCreate } from '@mikro-orm/core';
