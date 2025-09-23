@@ -19,6 +19,15 @@
         >
             Open Table
         </button>
+
+        <button
+                class="p-button p-component p-button-text"
+                (click)="clearTable()"
+                [disabled]="readonly || !(rowData?.length || columnDefs?.length)"
+                title="Clear table data"
+        >
+            Clear table
+        </button>
     </div>
 
     <div class="text-xs opacity-70">

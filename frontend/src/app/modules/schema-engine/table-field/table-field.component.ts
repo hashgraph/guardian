@@ -162,6 +162,13 @@ export class TableFieldComponent implements OnInit, OnChanges {
         return label;
     }
 
+    clearTable(): void {
+        this.writeTable(
+            { columnKeys: [], rows: [], fileId: undefined, cid: undefined },
+            { emitEvent: true, markDirty: true }
+        );
+    }
+
     private hydrateFromFile(): void {
         if (this.hydrated) {
             return;
