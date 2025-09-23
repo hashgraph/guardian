@@ -3049,6 +3049,25 @@ paths:
       summary: Get Hedera network explorer settings
       tags:
         - settings
+  /artifacts/files/{fileId}:
+    get:
+      description: Returns a file from storage by id
+      operationId: ArtifactApi_downloadFile
+      parameters:
+        - name: fileId
+          required: true
+          in: path
+          description: GridFS file _id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Raw file contents
+        '500':
+          description: Internal server error
+      summary: Download file by id
+      tags:
+        - artifacts
 info:
   title: Guardian
   description: >-
