@@ -60,7 +60,7 @@ export class ArtifactService {
 
     public getFile(fileId: string): Observable<string> {
         return this.http.get(`${this.url}/files/${encodeURIComponent(fileId)}`, {
-            responseType: 'text'
+            responseType: 'text',
         });
     }
 

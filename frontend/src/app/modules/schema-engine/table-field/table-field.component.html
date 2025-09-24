@@ -8,14 +8,16 @@
                     accept=".csv,text/csv"
                     hidden
                     (change)="onFileChange($event)"
+                    [disabled]="isImporting"
             />
-            <span>Import CSV</span>
+            <span>{{ isImporting ? 'Importing…' : 'Import CSV' }}</span>
         </label>
 
         <button
                 class="p-button p-component p-button-outlined"
-                (click)="openModal()"
-                [disabled]="readonly"
+                (click)="openModal()
+      "
+                [disabled]="readonly || isImporting"
         >
             Open Table
         </button>
@@ -23,7 +25,7 @@
         <button
                 class="p-button p-component p-button-text"
                 (click)="clearTable()"
-                [disabled]="readonly || !(rowData?.length || columnDefs?.length)"
+                [disabled]="readonly || isImporting || !((rowData || []).length || (columnDefs || []).length)"
                 title="Clear table data"
         >
             Clear table
@@ -31,6 +33,12 @@
     </div>
 
     <div class="text-xs opacity-70">
-        {{ (rowData || []).length ? ('Imported ' + rowData.length + ' rows') : 'No data' }}
+        <ng-container *ngIf="isImporting; else importedInfo">Importing…</ng-container>
+        <ng-template #importedInfo>
+            {{ (rowData || []).length ? ('Imported ' + rowData.length + ' rows') : 'No data' }}
+        </ng-template>
     </div>
+
+    <div *ngIf="previewError">{{ previewError }}</div>
+    <div *ngIf="importError">{{ importError }}</div>
 </div>

@@ -12,6 +12,7 @@ type TableValue = {
     rows: Record<string, string>[];
     fileId?: string;
     cid?: string;
+    sizeBytes?: number;
 };
 
 @Component({
@@ -25,6 +26,11 @@ export class TableFieldComponent implements OnInit, OnChanges {
     @Input() readonly: boolean = false;
 
     private hydrated = false;
+    public previewError?: string;
+    public isImporting = false;
+    public importError?: string;
+
+    private readonly MAX_PREVIEW_BYTES = 10 * 1024 * 1024;
 
     constructor(
         private dialog: DialogService,
@@ -55,6 +61,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
             columnKeys: next.columnKeys ?? current.columnKeys,
             rows: next.rows ?? current.rows,
             fileId: next.fileId ?? current.fileId,
+            sizeBytes: next.sizeBytes ?? current.sizeBytes,
         };
 
         const emitEvent = opts?.emitEvent ?? true;
@@ -102,6 +109,24 @@ export class TableFieldComponent implements OnInit, OnChanges {
     }
 
     openModal(): void {
+        const table = this.readTable();
+        const size = typeof table.sizeBytes === 'number'
+            ? table.sizeBytes
+            : undefined;
+
+        if (size !== undefined && size > this.MAX_PREVIEW_BYTES) {
+            this.previewError = 'File is too large for preview (>10 MB).';
+            this.item?.control?.setErrors?.({ tableTooLarge: true });
+            return;
+        } else {
+            this.previewError = undefined;
+
+            if (this.item?.control?.errors?.tableTooLarge) {
+                const { tableTooLarge, ...rest } = this.item.control.errors;
+                this.item.control.setErrors(Object.keys(rest).length ? rest : null);
+            }
+        }
+
         const ref = this.dialog.open(TableDialogComponent, {
             header: this.item.title || 'Table',
             width: '70vw',
@@ -134,17 +159,25 @@ export class TableFieldComponent implements OnInit, OnChanges {
             return;
         }
 
+        this.isImporting = true;
+        this.importError = undefined;
+
+        const sizeBytes = file.size;
         file.text().then((csvText: string) => {
-            this.applyCsvText(csvText);
-        });
+            this.applyCsvText(csvText, sizeBytes);
+        }).catch((e) => { this.importError = e?.message || 'Failed to read file'; })
+            .finally(() => {
+                this.isImporting = false;
+                if (input) { input.value = ''; }
+            });
     }
 
-    private applyCsvText(csvText: string): void {
+    private applyCsvText(csvText: string, sizeBytes?: number): void {
         const { columnKeys, rows } = this.csvService.parseCsvToTable(
             csvText,
             this.options.delimiter || ','
         );
-        this.writeTable({ columnKeys, rows });
+        this.writeTable({ columnKeys, rows, sizeBytes });
     }
 
     private buildColumnHeader(index: number): string {
@@ -164,7 +197,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
 
     clearTable(): void {
         this.writeTable(
-            { columnKeys: [], rows: [], fileId: undefined, cid: undefined },
+            { columnKeys: [], rows: [], fileId: undefined, cid: undefined, sizeBytes: undefined },
             { emitEvent: true, markDirty: true }
         );
     }
@@ -190,9 +223,10 @@ export class TableFieldComponent implements OnInit, OnChanges {
             this.artifactService.getFile(fileId).subscribe({
                 next: (csvText: string) => {
                     const parsed = this.csvService.parseCsvToTable(csvText, delimiter);
+                    const sizeBytes = new Blob([csvText]).size;
 
                     this.writeTable(
-                        { columnKeys: parsed.columnKeys, rows: parsed.rows, fileId },
+                        { columnKeys: parsed.columnKeys, rows: parsed.rows, fileId, sizeBytes },
                         { emitEvent: false, markDirty: false }
                     );
 

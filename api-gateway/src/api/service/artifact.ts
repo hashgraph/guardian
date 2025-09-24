@@ -376,8 +376,6 @@ export class ArtifactApi {
     @ApiOperation({ summary: 'Download file by id', description: 'Returns file from GridFS' })
     @ApiParam({ name: 'fileId', type: String, required: true, description: 'File _id' })
     @HttpCode(HttpStatus.OK)
-    @Get('/files/:fileId')
-    @HttpCode(HttpStatus.OK)
     async downloadFile(
         @AuthUser() user: IAuthUser,
         @Param('fileId') fileId: string,
