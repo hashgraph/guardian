@@ -9,8 +9,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool'] }, () => {
     const DepSRUsername = Cypress.env('DepSRUser');
     const MainUserUsername = Cypress.env('MainUser');
     const DepUserUsername = Cypress.env('DepUser');
-    //const MGSAdminUsername = Cypress.env('MGSAdmin');
-    const MGSAdminUsername = "NNTest";
+    const MGSAdminUsername = Cypress.env('MGSAdmin');
     const tenantName = "testTenantFromOS";
 
     let policyId, remoteMessageId, tokenId, tenantId;

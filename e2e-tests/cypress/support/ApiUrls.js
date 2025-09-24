@@ -186,6 +186,7 @@ const API = {
     Publish: "publish/",
     Blocks: "blocks/",
     Approve: "approve/",
+    Reload: "reload/",
     Reject: "reject/",
     Cancel: "cancel/",
     Requests: "requests/",

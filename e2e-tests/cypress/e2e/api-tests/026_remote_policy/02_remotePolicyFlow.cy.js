@@ -8,8 +8,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool'] }, () => {
 
     const MainSRUsername = Cypress.env('MainSRUser');
     const DepUserUsername = Cypress.env('DepUser');
-    //const MGSAdminUsername = Cypress.env('MGSAdmin');
-    const MGSAdminUsername = "NNTest";
+    const MGSAdminUsername = Cypress.env('MGSAdmin');
     const tenantName = "testTenantFromOS";
 
     let policyId, tenantId;
@@ -144,7 +143,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool'] }, () => {
                 },
                 failOnStatusCode: false
             }
-            Checks.whileRequestProccessing(waitDeviceAddStatus, "Approved", "data.0.option.status")
+            Checks.whileRequestProccessing(waitDeviceAddStatus, "Approved", "data.option.status")
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies + policyId + "/" + API.CreateDevice,
@@ -328,21 +327,21 @@ context("Policies", { tags: ['remote_policy', 'secondPool'] }, () => {
         })
     })
 
-    after('Delete MGS Tenant', () => {
-        Authorization.getAccessTokenMGS(MGSAdminUsername, null).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiMGS + API.TenantsDelete,
-                headers: {
-                    authorization,
-                },
-                body: {
-                    tenantId: tenantId,
-                    tenantName: tenantName
-                }
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-            })
-        })
-    })
+    // after('Delete MGS Tenant', () => {
+    //     Authorization.getAccessTokenMGS(MGSAdminUsername, null).then((authorization) => {
+    //         cy.request({
+    //             method: METHOD.POST,
+    //             url: API.ApiMGS + API.TenantsDelete,
+    //             headers: {
+    //                 authorization,
+    //             },
+    //             body: {
+    //                 tenantId: tenantId,
+    //                 tenantName: tenantName
+    //             }
+    //         }).then((response) => {
+    //             expect(response.status).to.eq(STATUS_CODE.OK);
+    //         })
+    //     })
+    // })
 })
