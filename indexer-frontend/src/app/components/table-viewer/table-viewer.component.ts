@@ -4,7 +4,7 @@ import { ChangeDetectorRef, Component, Input, NgZone } from '@angular/core';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
 import { ButtonModule } from 'primeng/button';
-import { finalize, take } from 'rxjs';
+import {EMPTY, finalize, switchMap, take} from 'rxjs';
 
 import { CsvService } from '@services/csv.service';
 import { ArtifactsService } from '@services/artifacts.service';
@@ -27,6 +27,8 @@ export class TableViewerComponent {
     public isDownloading = false;
     public loadError?: string;
 
+    private readonly PREVIEW_LIMIT = 10 * 1024 * 1024;
+
     constructor(
         private readonly dialog: DialogService,
         private readonly csv: CsvService,
@@ -44,24 +46,44 @@ export class TableViewerComponent {
 
     public openDialog(): void {
         const id = this.fileId;
-        if (!id || this.isLoading) {
-            return;
-        }
+        if (!id || this.isLoading) { return; }
 
         this.isLoading = true;
         this.loadError = undefined;
         this.mark();
 
         this.artifacts
-            .getFileText(id)
+            .getFileBlob(id)
             .pipe(
                 take(1),
+                switchMap((resp: HttpResponse<Blob>) => {
+                    const blob = resp.body ?? new Blob([]);
+                    if (blob.size > this.PREVIEW_LIMIT) {
+                        const mb = (blob.size / (1024 * 1024)).toFixed(1);
+                        this.zone.run(() => {
+                            this.loadError = `File is too large for preview (${mb} MB). Use "Download CSV" instead.`;
+                            this.mark();
+                        });
+                        return EMPTY;
+                    }
+
+                    return this.artifacts.getFileText(id).pipe(take(1));
+                }),
                 finalize(() => this.stop('isLoading'))
             )
             .subscribe({
-                next: (resp: HttpResponse<string>) => {
+                next: (resp: any) => {
                     const csvText = resp.body ?? '';
-                    const parsed = this.csv.parseCsvToTable(csvText, ',');
+                    let parsed: { columnKeys: string[]; rows: any[] };
+                    try {
+                        parsed = this.csv.parseCsvToTable(csvText, ',');
+                    } catch (e: any) {
+                        this.zone.run(() => {
+                            this.loadError = e?.message || 'Failed to parse CSV';
+                            this.mark();
+                        });
+                        return;
+                    }
 
                     const columnDefs: ColDef[] = parsed.columnKeys.map((key: string, i: number) => ({
                         field: key,
@@ -80,7 +102,6 @@ export class TableViewerComponent {
                 },
                 error: (err: unknown) => {
                     this.zone.run(() => {
-                        this.isLoading = false;
                         this.loadError = (err as any)?.error?.message || 'Failed to load table file';
                         this.mark();
                     });
