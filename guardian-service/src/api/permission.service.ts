@@ -319,6 +319,8 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                                 topicId: entityId
                             }) > 0
                         );
+                    case KeyEntity.DISCUSSION:
+                        return new MessageResponse(true);
                     default:
                         return new MessageResponse(false);
                 }

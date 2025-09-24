@@ -2,11 +2,14 @@ import {
     BinaryMessageResponse,
     DataBaseHelper,
     DatabaseServer,
+    DryRunFiles,
+    EncryptUtils,
     findAllEntities,
     GenerateBlocks,
     IAuthUser,
     IMessageResponse,
     ImportExportUtils,
+    IPFS,
     JsonToXlsx,
     MessageAction,
     MessageError,
@@ -100,6 +103,8 @@ export class PolicyEngineService {
         this.channel.setConnection(cn)
         this.policyEngine = new PolicyEngine(logger)
     }
+
+    //#region Common
 
     /**
      * Callback fires when block state changed
@@ -197,6 +202,8 @@ export class PolicyEngineService {
     public async init(): Promise<void> {
         await this.channel.init();
     }
+
+    //#endregion
 
     /**
      * Register endpoints for policy engine
@@ -3662,6 +3669,9 @@ export class PolicyEngineService {
                     const discussion = await PolicyCommentsUtils.createDiscussion(user, policy, vc, data);
 
                     const row = await DatabaseServer.createPolicyDiscussion(discussion);
+
+                    await PolicyCommentsUtils.generateKey(policy.owner, row.id);
+
                     return new MessageResponse(row);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
@@ -3674,8 +3684,8 @@ export class PolicyEngineService {
                 user: IAuthUser,
                 policyId: string,
                 documentId: string,
+                discussionId: string,
                 data: {
-                    discussionId?: string;
                     recipients?: string[];
                     fields?: string[];
                     text?: string;
@@ -3689,7 +3699,8 @@ export class PolicyEngineService {
                 },
             }): Promise<IMessageResponse<Policy>> => {
                 try {
-                    const { user, documentId, policyId, data } = msg;
+                    const { user, documentId, policyId, discussionId, data } = msg;
+
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
 
@@ -3698,11 +3709,11 @@ export class PolicyEngineService {
                         throw new Error('Document not found.');
                     }
 
-                    if (!data.discussionId) {
+                    if (!discussionId) {
                         throw new Error('Discussion not found.');
                     }
                     const discussion = await DatabaseServer.getPolicyDiscussion({
-                        _id: DatabaseServer.dbID(data.discussionId),
+                        _id: DatabaseServer.dbID(discussionId),
                         policyId,
                         documentId
                     });
@@ -3733,8 +3744,8 @@ export class PolicyEngineService {
                 user: IAuthUser,
                 policyId: string,
                 documentId: string,
+                discussionId: string,
                 params: {
-                    discussionId: string,
                     search?: string,
                     field?: string,
                     lt?: string,
@@ -3742,7 +3753,7 @@ export class PolicyEngineService {
                 }
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, documentId, policyId, params } = msg;
+                    const { user, documentId, policyId, discussionId, params } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
 
@@ -3753,8 +3764,11 @@ export class PolicyEngineService {
 
                     const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
 
+                    if (!discussionId) {
+                        throw new Error('Discussion not found.');
+                    }
                     const discussion = await DatabaseServer.getPolicyDiscussion({
-                        _id: DatabaseServer.dbID(params.discussionId),
+                        _id: DatabaseServer.dbID(discussionId),
                         policyId,
                         documentId
                     });
@@ -3770,11 +3784,9 @@ export class PolicyEngineService {
 
                     const filters: any = {
                         policyId: policyId,
-                        targetId: documentId
+                        targetId: documentId,
+                        discussionId: discussionId
                     };
-                    if (params.discussionId) {
-                        filters.discussionId = params.discussionId;
-                    }
                     if (params?.search) {
                         filters.$or = [{
                             text: { $regex: '.*' + params.search + '.*' }
@@ -3873,6 +3885,129 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages(PolicyEngineEvents.IPFS_ADD_FILE,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                documentId: string,
+                discussionId: string,
+                buffer: ArrayBuffer
+            }) => {
+                try {
+                    const { user, policyId, documentId, discussionId, buffer } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+
+                    const vc = await DatabaseServer.getVCById(documentId);
+                    if (!vc) {
+                        throw new Error('Document not found.');
+                    }
+
+                    if (!discussionId) {
+                        throw new Error('Discussion not found.');
+                    }
+                    const discussion = await DatabaseServer.getPolicyDiscussion({
+                        _id: DatabaseServer.dbID(discussionId),
+                        policyId,
+                        documentId
+                    });
+
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
+                    if (!PolicyCommentsUtils.accessDiscussion(discussion, user.did, userRole)) {
+                        throw new Error('Discussion does not exist.');
+                    }
+
+                    const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
+                    const encryptBuffer = await EncryptUtils.encrypt(buffer, encryptKey);
+
+                    if (policy.status === PolicyStatus.DRY_RUN || policy.status === PolicyStatus.DEMO) {
+                        const fileBuffer = Buffer.from(encryptBuffer);
+                        const entity = (new DatabaseServer()).create(DryRunFiles, {
+                            policyId,
+                            file: fileBuffer
+                        });
+                        await (new DatabaseServer()).save(DryRunFiles, entity)
+                        return new MessageResponse({
+                            cid: entity.id,
+                            url: IPFS.IPFS_PROTOCOL + entity.id
+                        });
+                    } else {
+                        const result = await IPFS.addFile(encryptBuffer, {
+                            userId: user.id,
+                            interception: null
+                        });
+                        return new MessageResponse(result);
+                    }
+                }
+                catch (error) {
+                    await logger.error(error, ['IPFS_CLIENT'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            })
+
+        this.channel.getMessages(PolicyEngineEvents.IPFS_GET_FILE,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                documentId: string,
+                discussionId: string,
+                cid: string,
+                responseType: 'json' | 'raw' | 'str'
+            }) => {
+                try {
+
+                    const { user, policyId, documentId, discussionId, cid, responseType } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+
+                    const vc = await DatabaseServer.getVCById(documentId);
+                    if (!vc) {
+                        throw new Error('Document not found.');
+                    }
+
+                    if (!discussionId) {
+                        throw new Error('Discussion not found.');
+                    }
+                    const discussion = await DatabaseServer.getPolicyDiscussion({
+                        _id: DatabaseServer.dbID(discussionId),
+                        policyId,
+                        documentId
+                    });
+
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
+                    if (!PolicyCommentsUtils.accessDiscussion(discussion, user.did, userRole)) {
+                        throw new Error('Discussion does not exist.');
+                    }
+                    if (!cid) {
+                        throw new Error('Invalid cid');
+                    }
+                    if (!responseType) {
+                        throw new Error('Invalid response type');
+                    }
+
+                    let encryptBuffer: any;
+                    if (policy.status === PolicyStatus.DRY_RUN || policy.status === PolicyStatus.DEMO) {
+                        const row = await new DatabaseServer().findOne(DryRunFiles, { id: cid });
+                        encryptBuffer = row?.file;
+                    } else {
+                        encryptBuffer = await IPFS.getFile(cid, responseType, {
+                            userId: user?.id,
+                            interception: null
+                        });
+                    }
+
+                    const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
+                    const buffer = await EncryptUtils.decrypt(encryptBuffer, encryptKey);
+
+                    return new MessageResponse(buffer);
+                }
+                catch (error) {
+                    await logger.error(error, ['IPFS_CLIENT'], msg?.user?.id);
+                    return new MessageResponse({ error: error.message });
+                }
+            })
         //#endregion
     }
 }

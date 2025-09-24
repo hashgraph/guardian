@@ -1,11 +1,40 @@
-import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper } from "@guardian/common";
+import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType } from "@guardian/common";
 import { EntityOwner, GenerateUUIDv4, IOwner, Schema, SchemaEntity, SchemaHelper, TopicType } from "@guardian/interfaces";
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
+import { PrivateKey } from "@hashgraph/sdk";
 
 /**
  * Policy component utils
  */
 export class PolicyCommentsUtils {
+    public static generateKey(
+        did: string,
+        discussionId: string,
+    ): Promise<void> {
+        const key = PrivateKey.generate().toString();
+        const wallet = new Wallet();
+        return wallet.setUserKey(
+            did,
+            KeyType.DISCUSSION,
+            discussionId,
+            key,
+            null
+        )
+    }
+
+    public static getKey(
+        did: string,
+        discussionId: string,
+    ): Promise<string> {
+        const wallet = new Wallet();
+        return wallet.getUserKey(
+            did,
+            KeyType.DISCUSSION,
+            discussionId,
+            null
+        )
+    }
+
     public static async getTopic(
         policy: Policy,
         user: IAuthUser | IOwner

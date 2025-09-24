@@ -94,8 +94,8 @@ export class CommentsService {
     public createComment(
         policyId: string,
         documentId: string,
+        discussionId: string,
         data: {
-            discussionId?: string,
             anchor?: string;
             recipients?: string[];
             fields?: string[];
@@ -103,20 +103,20 @@ export class CommentsService {
             files?: any[];
         }
     ) {
-        return this.http.post<any>(`${this.url}/${policyId}/${documentId}/comments`, data);
+        return this.http.post<any>(`${this.url}/${policyId}/${documentId}/discussions/${discussionId}/comments`, data);
     }
 
     public getPolicyComments(
         policyId: string,
         documentId: string,
+        discussionId: string,
         filters: {
-            discussionId?: string,
             search?: string,
             lt?: string,
             gt?: string
         },
     ): Observable<HttpResponse<any[]>> {
-        return this.http.post<any[]>(`${this.url}/${policyId}/${documentId}/comments/search`, filters, { observe: 'response' }) as any;
+        return this.http.post<any[]>(`${this.url}/${policyId}/${documentId}/discussions/${discussionId}/comments/search`, filters, { observe: 'response' }) as any;
     }
 
     public getPolicyCommentsCount(
@@ -127,5 +127,29 @@ export class CommentsService {
             return of(null);
         }
         return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/comments/count`) as any;
+    }
+
+    public addFile(
+        policyId: string,
+        documentId: string,
+        discussionId: string,
+        file: File
+    ): Observable<any> {
+        return this.http.post<string>(`${this.url}/${policyId}/${documentId}/discussions/${discussionId}/comments/file`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream',
+            },
+        });
+    }
+
+    public getFile(
+        policyId: string,
+        documentId: string,
+        discussionId: string,
+        cid: string
+    ): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${policyId}/${documentId}/discussions/${discussionId}/comments/file/${cid}`, {
+            responseType: 'arraybuffer',
+        });
     }
 }

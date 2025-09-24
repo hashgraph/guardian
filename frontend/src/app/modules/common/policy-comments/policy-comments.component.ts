@@ -247,6 +247,7 @@ export class PolicyComments {
             .getPolicyComments(
                 this.policyId,
                 this.documentId,
+                this.currentDiscussion?.id,
                 filter
             )
             .pipe(takeUntil(this._destroy$))
@@ -303,7 +304,6 @@ export class PolicyComments {
 
         const { text, recipients, fields } = this.findTags(this.textMessage);
         const data = {
-            discussionId: this.currentDiscussion?.id,
             recipients: recipients,
             fields: fields,
             text: text,
@@ -314,6 +314,7 @@ export class PolicyComments {
             .createComment(
                 this.policyId,
                 this.documentId,
+                this.currentDiscussion?.id,
                 data
             ).subscribe((response) => {
                 this.textMessage = '';
@@ -326,25 +327,24 @@ export class PolicyComments {
             });
     }
 
-    public onLoadFile(file: any) {
-        file.loading = true;
-        const request = this.dryRun ?
-            this.ipfs.getFileFromDryRunStorage(file.cid) :
-            this.ipfs.getFile(file.cid);
-        request.subscribe((response: ArrayBuffer) => {
-            const blob = new Blob([response], { type: file.type });
-            const url = window.URL.createObjectURL(blob);
-            const downloadLink = document.createElement('a');
-            downloadLink.href = url;
-            downloadLink.setAttribute('download', file.name);
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            downloadLink.remove();
-            window.URL.revokeObjectURL(url);
-            file.loading = false;
-        }, (e) => {
-            file.loading = false;
-        });
+    public onLoadFile(file: AttachedFile) {
+        file
+            .download(this.commentsService)
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((response: ArrayBuffer) => {
+                const blob = new Blob([response], { type: file.type });
+                const url = window.URL.createObjectURL(blob);
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.setAttribute('download', file.name);
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                downloadLink.remove();
+                window.URL.revokeObjectURL(url);
+                file.loading = false;
+            }, (e) => {
+                file.loading = false;
+            });
     }
     //#endregion
 
@@ -355,7 +355,6 @@ export class PolicyComments {
         target?: string
     ): any {
         const filters: any = {
-            discussionId: this.currentDiscussion?.id,
             search: this.searchMessage
         };
         if (type === 'load') {
@@ -555,7 +554,7 @@ export class PolicyComments {
         for (const item of messages) {
             const document = this.getDocument(item);
             const text = document?.text;
-            const files = document?.files;
+            const files: any[] = document?.files || [];
 
             const textItems = this.parsText(item, text);
             for (const textItem of textItems) {
@@ -563,7 +562,7 @@ export class PolicyComments {
                 textItem.tooltip = this.getTooltip(textItem);
             }
             item.__text = textItems;
-            item.__files = files;
+            item.__files = files.map((f) => AttachedFile.fromLink(item.policyId, item.targetId, item.discussionId, f));
         }
     }
 
@@ -670,12 +669,19 @@ export class PolicyComments {
         const results: AttachedFile[] = [];
         if (files?.length) {
             for (const file of files) {
-                const result = new AttachedFile(file);
+                const result = AttachedFile.fromFile(this.policyId, this.documentId, this.currentDiscussion?.id, file);
                 results.push(result);
             }
         }
         for (const result of results) {
-            result.upload(this.ipfs, this.policyId, this.dryRun, this.onText.bind(this));
+            result
+                .upload(this.commentsService)
+                .pipe(takeUntil(this._destroy$))
+                .subscribe((cid: string) => {
+                    this.onText(null);
+                }, (e) => {
+                    this.onText(null);
+                });
         }
         for (const result of results) {
             this.files.push(result);

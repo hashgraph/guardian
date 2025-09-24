@@ -99,4 +99,6 @@ export enum PolicyEngineEvents {
     GET_DOCUMENT_RELATIONSHIPS = 'policy-engine-get-policy-relationships',
     GET_DOCUMENT_SCHEMAS = 'policy-engine-get-policy-schemas',
     GET_POLICY_COMMENT_COUNT = 'policy-engine-get-policy-comments-count',
+    IPFS_ADD_FILE = 'policy-engine-ipfs-add-file',
+    IPFS_GET_FILE = 'policy-engine-ipfs-get-file',
 }

@@ -3,7 +3,7 @@ import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson } from '#helpers';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version, Patch } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version, Patch, StreamableFile } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 import {
     BlockDTO,
@@ -330,7 +330,7 @@ export class PolicyCommentsApi {
     /**
      * Create policy comment
      */
-    @Post('/:policyId/:documentId/comments')
+    @Post('/:policyId/:documentId/discussions/:discussionId/comments')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_MANAGE
@@ -350,6 +350,13 @@ export class PolicyCommentsApi {
         name: 'documentId',
         type: String,
         description: 'Document Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'discussionId',
+        type: String,
+        description: 'Discussion Identifier',
         required: true,
         example: Examples.DB_ID
     })
@@ -375,8 +382,8 @@ export class PolicyCommentsApi {
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
+        @Param('discussionId') discussionId: string,
         @Body() body: {
-            discussionId?: string,
             anchor?: string;
             recipients?: string[];
             fields?: string[];
@@ -386,7 +393,7 @@ export class PolicyCommentsApi {
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.createPolicyComment(user, policyId, documentId, body);
+            return await engineService.createPolicyComment(user, policyId, documentId, discussionId, body);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger, user.id);
@@ -396,7 +403,7 @@ export class PolicyCommentsApi {
     /**
      * Return a list of comments
      */
-    @Post('/:policyId/:documentId/comments/search')
+    @Post('/:policyId/:documentId/discussions/:discussionId/comments/search')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_MANAGE,
@@ -419,6 +426,13 @@ export class PolicyCommentsApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiParam({
+        name: 'discussionId',
+        type: String,
+        description: 'Discussion Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -433,9 +447,10 @@ export class PolicyCommentsApi {
     @HttpCode(HttpStatus.OK)
     async getPolicyComments(
         @AuthUser() user: IAuthUser,
-        @Response() res: any,
+        @Param('policyId') policyId: string,
+        @Param('documentId') documentId: string,
+        @Param('discussionId') discussionId: string,
         @Body() body: {
-            discussionId?: string,
             anchor?: string,
             sender?: string,
             senderRole?: string,
@@ -443,12 +458,11 @@ export class PolicyCommentsApi {
             lt?: string,
             gt?: string
         },
-        @Param('policyId') policyId: string,
-        @Param('documentId') documentId: string,
+        @Response() res: any
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            const { comments, count } = await engineService.getPolicyComments(user, policyId, documentId, body);
+            const { comments, count } = await engineService.getPolicyComments(user, policyId, documentId, discussionId, body);
             return res.header('X-Total-Count', count).send(comments);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -505,6 +519,153 @@ export class PolicyCommentsApi {
             return await engineService.getPolicyCommentsCount(user, policyId, documentId);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Add file from ipfs
+     */
+    @Post('/:policyId/:documentId/discussions/:discussionId/comments/file')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE
+    )
+    @ApiOperation({
+        summary: 'Add file from ipfs.',
+        description: 'Add file from ipfs.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Document Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'discussionId',
+        type: String,
+        description: 'Discussion Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Binary data.',
+        required: true,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async postFile(
+        @Body() body: any,
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('documentId') documentId: string,
+        @Param('discussionId') discussionId: string,
+        @Req() req
+    ): Promise<string> {
+        try {
+            if (!Object.values(body).length) {
+                throw new HttpException('Body content in request is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+            }
+
+            const engineService = new PolicyEngine();
+            const { cid } = await engineService.addFileIpfs(user, policyId, documentId, discussionId, body);
+            if (!cid) {
+                throw new HttpException('File is not uploaded', HttpStatus.BAD_REQUEST);
+            }
+
+            const invalidedCacheTags = [`${PREFIXES.POLICY_COMMENTS}file/${cid}`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
+
+            return JSON.stringify(cid);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get file
+     */
+    @Get('/:policyId/:documentId/discussions/:discussionId/comments/file/:cid')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE
+    )
+    @ApiOperation({
+        summary: 'Get file from ipfs.',
+        description: 'Get file from ipfs.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Document Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'discussionId',
+        type: String,
+        description: 'Discussion Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'cid',
+        type: String,
+        description: 'File cid',
+        required: true,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @UseCache({ ttl: CACHE.LONG_TTL })
+    @HttpCode(HttpStatus.OK)
+    async getFile(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('documentId') documentId: string,
+        @Param('discussionId') discussionId: string,
+        @Param('cid') cid: string
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            const result = await engineService.getFileIpfs(user, policyId, documentId, discussionId, cid, 'raw');
+            if (result.type !== 'Buffer') {
+                throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
+            }
+            return new StreamableFile(Buffer.from(result));
+        } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
     }

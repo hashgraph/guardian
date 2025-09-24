@@ -1416,8 +1416,8 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         documentId: string,
+        discussionId: string,
         data: {
-            discussionId?: string,
             anchor?: string;
             recipients?: string[];
             fields?: string[];
@@ -1425,7 +1425,7 @@ export class PolicyEngine extends NatsService {
             files?: string[];
         }
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_COMMENT, { user, policyId, documentId, data });
+        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_COMMENT, { user, policyId, documentId, discussionId, data });
     }
 
     /**
@@ -1439,8 +1439,8 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         documentId: string,
+        discussionId: string,
         params: {
-            discussionId?: string,
             anchor?: string,
             sender?: string,
             senderRole?: string,
@@ -1449,7 +1449,7 @@ export class PolicyEngine extends NatsService {
             gt?: string
         }
     ): Promise<{ comments: any[], count: number }> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENTS, { user, policyId, documentId, params });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENTS, { user, policyId, documentId, discussionId, params });
     }
 
     /**
@@ -1466,4 +1466,44 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENT_COUNT, { user, policyId, documentId });
     }
 
+    /**
+     * Add file to IPFS
+     * @param buffer File
+     * @returns CID, URL
+     */
+    public async addFileIpfs(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        discussionId: string,
+        buffer: ArrayBuffer
+    ): Promise<{
+        /**
+         * CID
+         */
+        cid: string,
+        /**
+         * URL
+         */
+        url: string
+    }> {
+        return await this.sendMessage(PolicyEngineEvents.IPFS_ADD_FILE, { user, policyId, documentId, discussionId, buffer });
+    }
+
+    /**
+     * Get file from IPFS
+     * @param cid CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public async getFileIpfs(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        discussionId: string,
+        cid: string,
+        responseType: 'json' | 'raw' | 'str'
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.IPFS_GET_FILE, { user, policyId, documentId, discussionId, cid, responseType });
+    }
 }

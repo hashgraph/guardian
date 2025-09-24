@@ -1,18 +1,41 @@
+import { Observable } from 'rxjs';
 import { IPFS_SCHEMA } from 'src/app/services/api';
-import { IPFSService } from 'src/app/services/ipfs.service';
+import { CommentsService } from 'src/app/services/comments.service';
+
+interface IFile {
+    name: string;
+    type: string;
+    size: number;
+    link: string;
+    cid: string;
+}
 
 export class AttachedFile {
     public readonly name: string;
     public readonly type: string;
     public readonly size: number;
+
+    public readonly policyId: string;
+    public readonly documentId: string;
+    public readonly discussionId: string;
+
     public link: string;
     public cid: string;
     public loaded: boolean;
     public error: boolean;
+    public loading: boolean;
 
-    private readonly _file: File;
+    private _file: File;
 
-    constructor(file: File) {
+    private constructor(
+        policyId: string,
+        documentId: string,
+        discussionId: string,
+        file: File | IFile
+    ) {
+        this.policyId = policyId;
+        this.documentId = documentId;
+        this.discussionId = discussionId;
         this.name = file.name;
         this.type = file.type;
         this.size = file.size;
@@ -20,42 +43,74 @@ export class AttachedFile {
         this.cid = '';
         this.loaded = false;
         this.error = false;
-        this._file = file;
+        this.loaded = false;
     }
 
-    public upload(
-        ipfs: IPFSService,
-        policyId?: string,
-        dryRun?: boolean,
-        callback?: Function
+    public static fromFile(
+        policyId: string,
+        documentId: string,
+        discussionId: string,
+        file: File
     ) {
+        const result = new AttachedFile(policyId, documentId, discussionId, file);
+        result._file = file;
+        result.link = '';
+        result.cid = '';
+        return result;
+    }
+
+    public static fromLink(
+        policyId: string,
+        documentId: string,
+        discussionId: string,
+        file: IFile
+    ) {
+        const result = new AttachedFile(policyId, documentId, discussionId, file);
+        result.link = file.link;
+        result.cid = file.cid;
+        return result;
+    }
+
+    public upload(service: CommentsService): Observable<string> {
         this.loaded = false;
         this.error = false;
-        let addFileObs;
-        if (dryRun && policyId) {
-            addFileObs = ipfs.addFileDryRun(this._file, policyId);
-        } else {
-            addFileObs = ipfs.addFile(this._file);
-        }
-        addFileObs
-            .subscribe((res) => {
-                this.link = IPFS_SCHEMA + res;
-                this.cid = res;
-                this.loaded = true;
-                this.error = false;
-                if (callback) {
-                    callback();
-                }
-            }, (error) => {
-                this.loaded = true;
-                this.error = true;
-                if (callback) {
-                    callback();
-                }
-            });
+        return new Observable<string>((subscriber) => {
+            service.addFile(this.policyId, this.documentId, this.discussionId, this._file)
+                .subscribe((res) => {
+                    this.link = IPFS_SCHEMA + res;
+                    this.cid = res;
+                    this.loaded = true;
+                    this.error = false;
+                    subscriber.next(this.cid);
+                    subscriber.complete();
+                }, (error) => {
+                    this.loaded = true;
+                    this.error = true;
+                    subscriber.error(error);
+                });
+
+        });
     }
 
-    public toJSON() {
+    public download(service: CommentsService): Observable<ArrayBuffer> {
+        this.loading = true;
+        return new Observable<ArrayBuffer>((subscriber) => {
+            service.getFile(this.policyId, this.documentId, this.discussionId,this.cid)
+                .subscribe((response: ArrayBuffer) => {
+                    this.loading = false;
+                    this.error = false;
+                    this.loaded = true;
+                    subscriber.next(response);
+                    subscriber.complete();
+                }, (error) => {
+                    this.loading = false;
+                    this.error = true;
+                    subscriber.error(error);
+                });
+        });
+    }
+
+    public toJSON(): IFile {
         return {
             name: this.name,
             type: this.type,
