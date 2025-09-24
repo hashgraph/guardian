@@ -2,13 +2,15 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
+//context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
+context("Policies", { tags: ['remote_policy', 'secondPool'] }, () => {
 
     const MainSRUsername = Cypress.env('MainSRUser');
     const DepSRUsername = Cypress.env('DepSRUser');
     const MainUserUsername = Cypress.env('MainUser');
     const DepUserUsername = Cypress.env('DepUser');
-    const MGSAdminUsername = Cypress.env('MGSAdmin');
+    //const MGSAdminUsername = Cypress.env('MGSAdmin');
+    const MGSAdminUsername = "NNTest";
     const tenantName = "testTenantFromOS";
 
     let policyId, remoteMessageId, tokenId, tenantId;
