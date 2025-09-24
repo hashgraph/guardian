@@ -5,7 +5,7 @@ import { ArtifactService } from 'src/app/services/artifact.service';
 import { CsvService } from 'src/app/services/csv.service';
 import { TableDialogComponent } from '../../common/table-dialog/table-dialog.component';
 import {finalize, switchMap, take} from 'rxjs/operators';
-import {EMPTY} from "rxjs";
+import {EMPTY} from 'rxjs';
 
 type TableRefLike = { type?: string; fileId?: string } | string | null | undefined;
 
@@ -42,7 +42,7 @@ export class TableViewerComponent {
 
     public openDialog(): void {
         const id = this.fileId;
-        if (!id || this.isLoading) return;
+        if (!id || this.isLoading) { return; }
 
         this.isLoading = true;
         this.loadError = undefined;

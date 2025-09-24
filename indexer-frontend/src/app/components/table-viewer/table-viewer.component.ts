@@ -38,10 +38,7 @@ export class TableViewerComponent {
     ) {}
 
     public get fileId(): string | null {
-        const cid: string | undefined = this.value?.cid;
-        const tableFiles: Record<string, string> | undefined = this.analytics?.tableFiles;
-        const raw = cid && tableFiles ? tableFiles[cid] : undefined;
-        return typeof raw === 'string' && raw.trim() ? raw.trim() : null;
+        return this.getFileIdFromValue(this.value, this.analytics?.tableFiles);
     }
 
     public openDialog(): void {
@@ -185,6 +182,52 @@ export class TableViewerComponent {
     private isUserCancel(err: any): boolean {
         const name = err?.name;
         return name === 'AbortError' || name === 'NotAllowedError' || name === 'SecurityError';
+    }
+
+    private getFileIdFromValue(
+        value: unknown,
+        tableFiles?: Record<string, string>
+    ): string | null {
+        if (!tableFiles) {
+            return null;
+        }
+
+        if (value === null) {
+            return null;
+        }
+
+        if (typeof value === 'string') {
+            const s = value.trim();
+            if (s.startsWith('{') || s.startsWith('[')) {
+                try {
+                    return this.getFileIdFromValue(JSON.parse(s), tableFiles);
+                } catch {
+                    return null;
+                }
+            }
+
+            return null;
+        }
+
+        if (typeof value === 'object') {
+            const obj = value as { type?: unknown; cid?: unknown };
+
+            const type =
+                typeof obj.type === 'string' ? obj.type.toLowerCase() : '';
+            if (type !== 'table') {
+                return null;
+            }
+
+            const cid =
+                typeof obj.cid === 'string' ? obj.cid.trim() : '';
+            if (!cid) {
+                return null;
+            }
+
+            return tableFiles[cid] ?? null;
+        }
+
+        return null;
     }
 
     private excelHeader(index: number): string {

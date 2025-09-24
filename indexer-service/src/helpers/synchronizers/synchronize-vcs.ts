@@ -6,25 +6,6 @@ import { loadFiles } from '../load-files.js';
 import { SchemaFileHelper } from '../../helpers/schema-file-helper.js';
 import { IPFSService } from '../../helpers/ipfs-service.js';
 
-type TableReference = {
-    cid: string;
-    path: string;
-};
-
-class TableAssetDownloadError extends Error {
-    public readonly vcId: string;
-    public readonly fieldPath: string;
-    public readonly cid: string;
-
-    constructor(vcId: string, fieldPath: string, cid: string, reason: string) {
-        super(`VC ${vcId}: table file download failed at '${fieldPath}' for cid=${cid}: ${reason}`);
-        this.vcId = vcId;
-        this.fieldPath = fieldPath;
-        this.cid = cid;
-        this.name = 'TableAssetDownloadError';
-    }
-}
-
 export class SynchronizationVCs extends SynchronizationTask {
     public readonly name: string = 'vcs';
 
@@ -303,99 +284,65 @@ export class SynchronizationVCs extends SynchronizationTask {
     /**
      * Recursively extract table-related CIDs from credentialSubject.
      *
-     * @param node  Any JSON node
      * @returns     Set of unique CIDs found
+     * @param rootNode
      */
     private extractTableCids(rootNode: unknown): Set<string> {
-        const result = new Set<string>();
+        const cids = new Set<string>();
 
-        const isCid = (value: unknown): value is string => {
+        const isCid = (value: unknown): value is string =>
+            typeof value === 'string' && IPFS_CID_PATTERN.test(value);
+
+        const parseJsonIfString = (value: unknown): unknown => {
             if (typeof value !== 'string') {
-                return false;
+                return value;
             }
-            return IPFS_CID_PATTERN.test(value);
+            const trimmed = value.trim();
+            if (!trimmed || (trimmed[0] !== '{' && trimmed[0] !== '[')) {
+                return value;
+            }
+            try {
+                return JSON.parse(trimmed);
+            } catch {
+                return value;
+            }
         };
 
         const walk = (node: unknown): void => {
-            if (Array.isArray(node)) {
-                for (let i = 0; i < node.length; i += 1) {
-                    walk(node[i]);
+            if (node === null) {
+                return;
+            }
+
+            const value = parseJsonIfString(node);
+
+            if (Array.isArray(value)) {
+                for (const item of value) {
+                    walk(item);
                 }
                 return;
             }
 
-            if (node && typeof node === 'object') {
-                const obj = node as Record<string, unknown>;
-
+            if (typeof value === 'object') {
+                const obj = value as Record<string, unknown>;
                 const typeValue = obj.type;
                 const cidValue = obj.cid;
-                const isTable =
+
+                if (
                     typeof typeValue === 'string' &&
                     typeValue.toLowerCase() === 'table' &&
-                    isCid(cidValue);
-
-                if (isTable) {
-                    result.add(String(cidValue));
+                    isCid(cidValue)
+                ) {
+                    cids.add(String(cidValue));
                 }
 
-                for (const value of Object.values(obj)) {
-                    if (value && typeof value === 'object') {
-                        walk(value);
-                    }
+                for (const child of Object.values(obj)) {
+                    walk(child);
                 }
             }
         };
 
         walk(rootNode);
-        return result;
-    }
-
-    private extractTableRefsWithPaths(rootNode: unknown, basePath: string = 'credentialSubject[0]'): TableReference[] {
-        const results: TableReference[] = [];
-
-        const isCid = (value: unknown): value is string => {
-            if (typeof value !== 'string') {
-                return false;
-            }
-            return IPFS_CID_PATTERN.test(value);
-        };
-
-        const walk = (node: unknown, currentPath: string): void => {
-            if (Array.isArray(node)) {
-                for (let index = 0; index < node.length; index += 1) {
-                    const child = node[index];
-                    walk(child, `${currentPath}[${index}]`);
-                }
-                return;
-            }
-
-            if (node && typeof node === 'object') {
-                const obj = node as Record<string, unknown>;
-
-                const typeValue = obj.type;
-                const cidValue = obj.cid;
-                const isTable =
-                    typeof typeValue === 'string' &&
-                    typeValue.toLowerCase() === 'table' &&
-                    isCid(cidValue);
-
-                if (isTable) {
-                    results.push({
-                        cid: String(cidValue),
-                        path: currentPath
-                    });
-                }
-
-                for (const [key, value] of Object.entries(obj)) {
-                    if (value && typeof value === 'object') {
-                        walk(value, `${currentPath}.${key}`);
-                    }
-                }
-            }
-        };
-
-        walk(rootNode, basePath);
-        return results;
+        return cids;
     }
 
     /**

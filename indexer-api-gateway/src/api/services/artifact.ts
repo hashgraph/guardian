@@ -17,39 +17,48 @@ import { Response } from 'express';
 import { ApiClient } from '../api-client.js';
 import { IndexerMessageAPI } from '@indexer/common';
 
-type ArtifactFileDTO = {
-    buffer: Buffer | Uint8Array | string;
-    filename?: string;
-    contentType?: string;
+type MetaRes = {
+    fileId: string;
+    length: number;
+    filename: string;
+    contentType: string;
+    chunkSize: number;
+    totalChunks: number;
 };
+
+type ChunkRes = { index: number; b64: string };
 
 @Controller('artifacts')
 @ApiTags('artifacts')
 export class ArtifactApi extends ApiClient {
     @Get('/files/:fileId')
-    @ApiOperation({ summary: 'Download file by id', description: 'Returns a file from storage by id' })
-    @ApiParam({ name: 'fileId', required: true, description: 'GridFS file _id' })
-    @ApiOkResponse({ description: 'Raw file contents' })
+    @ApiOperation({ summary: 'Download file by id', description: 'Streamed via chunked NATS' })
+    @ApiParam({ name: 'fileId', required: true })
+    @ApiOkResponse({ description: 'Raw file contents (streamed)' })
     @ApiInternalServerErrorResponse({ description: 'Internal server error' })
     @HttpCode(HttpStatus.OK)
-    async downloadFile(
-        @Param('fileId') fileId: string,
-        @Res() res: Response,
-    ) {
-        console.log('fileId', fileId)
-        const { buffer, filename, contentType } = await this.send<ArtifactFileDTO>(
-            IndexerMessageAPI.GET_ARTIFACT_FILE,
-            { fileId },
-        );
+    async downloadFile(@Param('fileId') fileId: string, @Res() res: Response) {
+        const meta = await this.send<MetaRes>(IndexerMessageAPI.GET_ARTIFACT_FILE_META, { fileId });
 
-        res.setHeader('Content-Type', contentType || 'text/csv; charset=utf-8');
+        res.setHeader('Content-Type', meta.contentType || 'text/csv; charset=utf-8');
         res.setHeader('X-Content-Type-Options', 'nosniff');
         res.setHeader(
             'Content-Disposition',
-            `attachment; filename="${(filename || `${fileId}.csv`).replace(/"/g, '')}"`,
+            `attachment; filename="${(meta.filename || `${fileId}.csv`).replace(/"/g, '')}"`
         );
+        if (Number.isFinite(meta.length)) {
+            res.setHeader('Content-Length', String(meta.length));
+        }
 
-        const data = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer || '');
-        res.status(HttpStatus.OK).send(data);
+        for (let i = 0; i < meta.totalChunks; i += 1) {
+            const chunk = await this.send<ChunkRes>(
+                IndexerMessageAPI.GET_ARTIFACT_FILE_CHUNK,
+                { fileId, index: i, chunkSize: meta.chunkSize }
+            );
+            if (!chunk?.b64) { break; }
+            res.write(Buffer.from(chunk.b64, 'base64'));
+        }
+
+        res.end();
     }
 }
