@@ -3051,18 +3051,17 @@ paths:
         - settings
   /artifacts/files/{fileId}:
     get:
-      description: Returns a file from storage by id
+      description: Streamed via chunked NATS
       operationId: ArtifactApi_downloadFile
       parameters:
         - name: fileId
           required: true
           in: path
-          description: GridFS file _id
           schema:
             type: string
       responses:
         '200':
-          description: Raw file contents
+          description: Raw file contents (streamed)
         '500':
           description: Internal server error
       summary: Download file by id
