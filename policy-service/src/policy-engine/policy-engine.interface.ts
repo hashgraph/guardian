@@ -981,6 +981,12 @@ export interface IPolicyDBDocument<T> {
      * Token identifier
      */
     tokenId?: string;
+
+    draft?: boolean;
+
+    draftId?: string;
+
+    draftRef?: string;
 }
 
 /**
@@ -1003,8 +1009,6 @@ export interface IPolicyDocument extends IPolicyDBDocument<any> {
      * sourceTag
      */
     __sourceTag__?: string;
-
-    draft?: boolean;
 }
 
 /**

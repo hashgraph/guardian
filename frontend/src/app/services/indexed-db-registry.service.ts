@@ -19,18 +19,39 @@ export class IndexedDbRegistryService {
     async registerStore(dbName: string, cfg: StoreConfig): Promise<void> {
         let meta = this.metas.get(dbName);
         if (!meta) {
-            meta = {version: 1, stores: new Map([[cfg.name, cfg.options]])};
+            meta = { version: 1, stores: new Map() };
             this.metas.set(dbName, meta);
         }
 
-        if (meta.stores.has(cfg.name)) {
+        meta.stores.set(cfg.name, cfg.options);
+
+        const probe = await openDB(dbName);
+        const existingVersion = probe.version;
+        const hasStoreInDB = probe.objectStoreNames.contains(cfg.name);
+        probe.close();
+
+        const openWithListener = () =>
+            this.open(dbName, meta).then((db: any) => {
+            db.addEventListener('versionchange', () => {
+                try { db.close(); } catch {}
+                const m = this.metas.get(dbName);
+                if (m) m.dbPromise = undefined;
+            });
+                return db;
+            });
+
+        if (!hasStoreInDB) {
+            meta.version = Math.max(meta.version, existingVersion) + 1;
+            meta.dbPromise = openWithListener();
+            await meta.dbPromise;
             return;
         }
 
-        meta.stores.set(cfg.name, cfg.options);
-        meta.version++;
-        meta.dbPromise = this.open(dbName, meta);
-        await meta.dbPromise;
+        meta.version = Math.max(meta.version, existingVersion);
+        if (!meta.dbPromise) {
+            meta.dbPromise = openWithListener();
+            await meta.dbPromise;
+        }
     }
 
     async getDB<T = unknown>(dbName: string): Promise<IDBPDatabase<T>> {
@@ -40,13 +61,8 @@ export class IndexedDbRegistryService {
         }
 
         if (meta.dbPromise) {
-            try {
-                const oldDb = await meta.dbPromise;
-                oldDb.close();
-            } catch(err) {
-                console.warn(`[IndexedDB] Failed to close "${dbName}", but continuing…`, err);
-            }
-            meta.dbPromise = undefined;
+            try { return await meta.dbPromise as IDBPDatabase<T>; }
+            catch { meta.dbPromise = undefined; }
         }
 
         meta.dbPromise = this.open(dbName, meta);
@@ -77,13 +93,21 @@ export class IndexedDbRegistryService {
     }
 
     private open(dbName: string, meta: DbMeta) {
+        const storesSnapshot = Array.from(meta.stores.entries());
+
         return openDB(dbName, meta.version, {
-            upgrade(db) {
-                meta.stores.forEach((opts, name) => {
-                    if (!db.objectStoreNames.contains(name)) {
-                        db.createObjectStore(name, opts);
-                    }
-                });
+            upgrade(db, oldVersion, newVersion, tx) {
+                for (const [name, opts] of storesSnapshot) {
+                    const exists = db.objectStoreNames.contains(name);
+                    const os = exists ? tx.objectStore(name) : db.createObjectStore(name, opts);
+                }
+            },
+
+            blocked() {
+                console.warn(`[IndexedDB] Upgrade for "${dbName}" is blocked by another tab. Close other tabs to continue.`);
+            },
+            blocking() {
+                console.warn(`[IndexedDB] Another tab is upgrading "${dbName}". This connection will be closed.`);
             },
         });
     }

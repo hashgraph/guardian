@@ -3,6 +3,10 @@ export interface PolicyStorageItem {
     value: string;
 }
 
+export interface DocumentAutosaveStorageItem {
+    value: string;
+}
+
 /**
  * Base class for storing states
  *

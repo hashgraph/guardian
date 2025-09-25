@@ -214,6 +214,24 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     _encryptedDocumentFileId?: ObjectId;
 
     /**
+     * draft
+     */
+    @Property({ nullable: true })
+    draft?: boolean;
+
+    /**
+     * draft Id
+     */
+    @Property({ nullable: true })
+    draftId?: string;
+
+    /**
+     * draft ref
+     */
+    @Property({ nullable: true })
+    draftRef?: string;
+
+    /**
      * Document defaults
      */
     @BeforeCreate()

@@ -133,14 +133,6 @@ export class RequestVcDocumentBlock {
         const sources = await ref.getSources(user);
         const restoreData = this.state[user.id] && this.state[user.id].restoreData;
 
-        const collection = DataBaseHelper.orm.em.getCollection('DocumentDraft');
-
-        const draftDocument = await collection.findOne<any>({
-            policyId: ref.policyId,
-            blockId: ref.uuid,
-            user: user.id
-        });
-
         return {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -156,7 +148,6 @@ export class RequestVcDocumentBlock {
             hideFields: options.hideFields || [],
             data: sources && sources.length && sources[0] || null,
             restoreData,
-            draftDocument
         };
     }
 
@@ -192,11 +183,7 @@ export class RequestVcDocumentBlock {
         if (!user.did) {
             throw new BlockActionError('User have no any did.', ref.blockType, ref.uuid);
         }
-        if (_data.draft) {
-            return await this.saveDraftData(user, _data, ref);
-        } else {
-            return await this.setBlockData(user, _data, ref);
-        }
+        return await this.setBlockData(user, _data, ref);
     }
 
     private async setBlockData(user: PolicyUser, _data: IPolicyDocument, ref: IPolicyRequestBlock) {
@@ -243,16 +230,17 @@ export class RequestVcDocumentBlock {
                 _vcHelper.addDryRunContext(credentialSubject);
             }
 
-            const res = await _vcHelper.verifySubject(credentialSubject);
-            if (!res.ok) {
-                throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
+            if(!_data.draft) {
+                const res = await _vcHelper.verifySubject(credentialSubject);
+                if (!res.ok) {
+                    throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
+                }
             }
 
             const groupContext = await PolicyUtils.getGroupContext(ref, user);
             const uuid = await ref.components.generateUUID();
 
             const vc = await PolicyActionsUtils.signVC(ref, credentialSubject, user.did, { uuid, group: groupContext }, user.userId);
-
             let item = PolicyUtils.createVC(ref, user, vc);
 
             const accounts = PolicyUtils.getHederaAccounts(vc, userAccountId, this._schema);
@@ -260,15 +248,26 @@ export class RequestVcDocumentBlock {
             item.type = schemaIRI;
             item.schema = schemaIRI;
             item.accounts = accounts;
-            item = PolicyUtils.setDocumentRef(item, documentRef);
-
-            const state: IPolicyEventState = { data: item };
-            const error = await this.validateDocuments(user, state);
-            if (error) {
-                throw new BlockActionError(error, ref.blockType, ref.uuid);
+            item.draft = _data.draft;
+            item.draftId = _data.draftId;
+            if(_data.draft) {
+                item.draftRef = credentialSubject?.ref;
+            } else {
+                item = PolicyUtils.setDocumentRef(item, documentRef);
             }
 
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            const state: IPolicyEventState = { data: item };
+            if(!_data.draft) {
+                const error = await this.validateDocuments(user, state);
+                if (error) {
+                    throw new BlockActionError(error, ref.blockType, ref.uuid);
+                }
+            }
+            if(_data.draft) {
+                ref.triggerEvents(PolicyOutputEventType.DraftEvent, user, state);
+            } else {
+                ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            }
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
 
@@ -276,7 +275,6 @@ export class RequestVcDocumentBlock {
                 documents: ExternalDocuments(item)
             }));
             ref.backup();
-
             return item;
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
@@ -284,28 +282,6 @@ export class RequestVcDocumentBlock {
         }
     }
 
-    private async saveDraftData(user: PolicyUser, _data: IPolicyDocument, ref: IPolicyRequestBlock) {
-        const collection = DataBaseHelper.orm.em.getCollection<DocumentDraft>('DocumentDraft');
-        const foundDraft = await collection.findOne<any>({
-            policyId: ref.policyId,
-            blockId: ref.uuid,
-            user: user.id
-        });
-
-        if (foundDraft) {
-            await collection.updateOne({ _id: foundDraft._id }, { $set: { data: _data.document } });
-        } else {
-            const row: any = {
-                policyId: ref.policyId,
-                blockId: ref.uuid,
-                blockTag: ref.tag,
-                user: user.id,
-                data: _data.document
-            };
-
-            await collection.insertOne(row);
-        }
-    }
 
     /**
      * Save data to restore

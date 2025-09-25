@@ -11,12 +11,15 @@ import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { audit, takeUntil } from 'rxjs/operators';
-import { interval, Subject } from 'rxjs';
+import { interval, Subject, Subscription } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { MergeUtils } from 'src/app/utils';
 import { ToastrService } from 'ngx-toastr';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
+import { DocumentAutosaveStorage } from '../../../structures';
+import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
+import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -26,7 +29,7 @@ interface IRequestDocumentData {
     presetFields: any[];
     restoreData: any;
     data: any;
-    draftDocument: any;
+    draft: boolean;
     uiMetaData: {
         type: string;
         title: string;
@@ -36,6 +39,7 @@ interface IRequestDocumentData {
         buttonClass: string;
         dialogContent: string;
         dialogClass: string;
+        editType: 'new' | 'edit';
     }
 }
 
@@ -83,8 +87,16 @@ export class RequestDocumentBlockComponent
     public rulesResults: any;
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public readonly: boolean = false;
-    public draftDocument: any;
+    public draft: boolean;
+    public draftId?: string;
     public dialog: RequestDocumentBlockDialog;
+    public edit: boolean;
+    private storage: DocumentAutosaveStorage;
+    public lastSavedAt?: Date;
+    private sub?: Subscription;
+    private readonly AUTOSAVE_INTERVAL = 120000;
+
+    public minutesAgo$ =  getMinutesAgoStream(() => this.lastSavedAt);
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -98,9 +110,11 @@ export class RequestDocumentBlockComponent
         private changeDetectorRef: ChangeDetectorRef,
         private toastr: ToastrService,
         private savepointFlow: SavepointFlowService,
+        private indexedDb: IndexedDbRegistryService
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
+        this.storage = new DocumentAutosaveStorage(indexedDb);
     }
 
     ngOnInit(): void {
@@ -109,12 +123,18 @@ export class RequestDocumentBlockComponent
         (window as any).__request = (window as any).__request || {};
         (window as any).__request[this.id] = this;
         this.initForm(this.dataForm);
+        this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(() => {
+            const data = this.dataForm.getRawValue();
+            this.storage.save(this.getAutosaveId(), data);
+            this.lastSavedAt = new Date();
+        });
     }
 
     ngOnDestroy(): void {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
         this.destroy();
+        this.sub?.unsubscribe();
     }
 
     public initForm($event: any) {
@@ -143,7 +163,7 @@ export class RequestDocumentBlockComponent
             }, 500);
         } else if (this.type === 'page') {
             this.loadRules();
-            this.draftDocument && this.showDraftDialog();
+            this.showAutosaveDiag();
         } else {
             setTimeout(() => {
                 this.loading = false;
@@ -151,8 +171,19 @@ export class RequestDocumentBlockComponent
         }
     }
 
+    async showAutosaveDiag() {
+        const autosaveId = this.getAutosaveId();
+        const autosaveDocument = await this.storage.load(autosaveId);
+
+        if(autosaveDocument) {
+            this.showAutosaveDialog(autosaveDocument);
+        }
+    }
+
     override setData(data: IRequestDocumentData) {
         if (data) {
+            const isDraft = data.data?.draft ?? false;
+
             this.readonly = !!data.readonly;
             const uiMetaData = data.uiMetaData;
             const row = data.data;
@@ -160,9 +191,11 @@ export class RequestDocumentBlockComponent
             const active = data.active;
             this.ref = row;
             this.type = uiMetaData.type;
+            this.edit = uiMetaData.editType === 'edit';
             this.schema = new Schema(schema);
             this.hideFields = {};
-            this.draftDocument = data.draftDocument;
+            this.draft = isDraft;
+            this.draftId = (isDraft && row) ? row.id : null;
             if (uiMetaData.privateFields) {
                 for (
                     let index = 0;
@@ -260,67 +293,21 @@ export class RequestDocumentBlockComponent
         if (this.dataForm.valid || draft) {
             const data = this.dataForm.getRawValue();
             this.loading = true;
+            this.storage.delete(this.getAutosaveId());
             prepareVcData(data);
             this.policyEngineService
-                .setBlockData(this.id, this.policyId, {
+            .setBlockData(this.id, this.policyId, {
                     document: data,
                     ref: this.ref,
-                    draft
-                })
-                .subscribe(() => {
-                    setTimeout(() => {
-                        this.loading = false;
-                        if (draft) {
-                            this.draftDocument = {
-                                policyId: this.policyId,
-                                user: this.user.did,
-                                blockId: this.id,
-                                data
-                            };
-
-                            this.toastr.success('The draft version of the document was saved successfully', '', {
-                                timeOut: 3000,
-                                closeButton: true,
-                                positionClass: 'toast-bottom-right',
-                                enableHtml: true,
-                            });
-                        }
-                    }, 1000);
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
+                    draft,
+                    draftId: this.draftId
                 });
         }
     }
 
     public handleSaveBtnEvent($event: any) {
         if (!this.loading) {
-            if (this.draftDocument) {
-                const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
-                    showHeader: false,
-                    width: '640px',
-                    styleClass: 'guardian-dialog draft-dialog',
-                    data: {
-                        header: 'Overwrite Old Draft',
-                        text: 'You already have a saved draft. Are you sure you want to overwrite it? \n Please note that saving a new draft will permanently delete the previous one.',
-                        buttons: [{
-                            name: 'Cancel',
-                            class: 'secondary'
-                        }, {
-                            name: 'Save Draft',
-                            class: 'primary'
-                        }]
-                    },
-                });
-
-                dialogOptionRef.onClose.subscribe((result: string) => {
-                    if (result == 'Save Draft') {
-                        this.onSubmit(true);
-                    }
-                });
-            } else {
-                this.onSubmit(true);
-            }
+            this.onSubmit(true);
         }
     }
 
@@ -333,7 +320,31 @@ export class RequestDocumentBlockComponent
     }
 
     public getRef() {
+        if(!this.ref) {
+            return null;
+        }
+
+        if(this.ref.draft) {
+            return this.ref.draftRef;
+        }
+
         return this.ref;
+    }
+
+    public getAutosaveId() {
+        return this.ref?.id ?? `${this.policyId}_${this.id}_${this?.user?.id}`;
+    }
+
+    public async onDialogOpen() {
+        const autosaveId = this.getAutosaveId();
+        const autosaveDocument = await this.storage.load(autosaveId);
+
+        if(autosaveDocument) {
+            this.showAutosaveDialog(autosaveDocument);
+        } else {
+            this.onDialog();
+        }
+
     }
 
     public onDialog() {
@@ -343,11 +354,11 @@ export class RequestDocumentBlockComponent
             this.presetDocument = null;
         }
 
-        if (this.draftDocument) {
-            this.showDraftDialog(this.showDocumentDialog);
-        } else {
-            this.showDocumentDialog();
+        if(this.edit && this.draft) {
+            this.draftRestore();
         }
+
+        this.showDocumentDialog();
     }
 
     private showDocumentDialog() {
@@ -358,28 +369,28 @@ export class RequestDocumentBlockComponent
             data: this
         });
 
-        dialogRef && dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef && dialogRef.onClose.subscribe(async (result) => {});
     }
 
-    private showDraftDialog(callback?: any) {
-
+    private showAutosaveDialog(autosaveDocument: string, callback?: any) {
         this.savepointFlow.markBusy();
-
         const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog draft-dialog',
             data: {
-                header: 'Open Existing Draft',
-                text: 'You have previously saved draft. Do you want to continue with editing it or create completely new one? \n\n Remember that after saving new draft, previous one will be deleted.',
+                header: 'Restore Autosave',
+                text: 'An autosave was found. Do you want to restore it?',
                 buttons: [{
                     name: 'Cancel',
                     class: 'secondary'
-                }, {
-                    name: 'Create New',
-                    class: 'secondary'
-                }, {
-                    name: 'Continue with Draft',
+                },
+                {
+                    name: 'No',
+                    class: 'primary'
+                },
+                {
+                    name: 'Restore',
                     class: 'primary'
                 }]
             },
@@ -387,10 +398,17 @@ export class RequestDocumentBlockComponent
 
         dialogOptionRef.onClose.subscribe((result: string) => {
             if (result != 'Cancel') {
-                if (result === 'Continue with Draft') {
-                    this.draftRestore();
+                if (result === 'Restore') {
+                    this.preset(autosaveDocument);
                     this.savepointFlow.setSkipOnce();
+                    if (this.type == 'dialog') {
+                        this.showDocumentDialog();
+                    }
                 }
+                else if(result === 'No' && this.type === 'dialog') {
+                    this.onDialog();
+                }
+
 
                 if (callback) {
                     callback.call(this);
@@ -402,11 +420,15 @@ export class RequestDocumentBlockComponent
     }
 
     public draftRestore() {
-        if (this.draftDocument) {
-            if (this.needPreset && this.rowDocument) {
-                this.preset(MergeUtils.deepMerge(this.draftDocument.data, this.presetDocument))
-            } else {
-                this.preset(this.draftDocument.data);
+        if (this.draft) {
+            const draftDocument = Array.isArray(
+                this.ref.document?.credentialSubject
+            )
+            ? this.ref.document.credentialSubject[0]
+            : this.ref.document?.credentialSubject;
+
+            if (draftDocument) {
+                this.preset(draftDocument);
             }
         }
     }
