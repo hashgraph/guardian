@@ -612,6 +612,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool'] }, () => {
     })
 
     it('Dry-run flow - Restore savepoint and reject mint', () => {
+        cy.wait(5000);
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,
@@ -637,7 +638,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool'] }, () => {
                     cy.wait(5000);
                     cy.request({
                         method: METHOD.GET,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,
+                        url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues + "?savepointIds=%5B%22" + sv1 + "%22,%22" + sv3 + "%22,%22" + sv4 + "%22%5D",
                         headers: {
                             authorization
                         },
@@ -661,13 +662,13 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool'] }, () => {
                             cy.wait(10000);
                             cy.request({
                                 method: METHOD.GET,
-                                url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,
+                                url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues + "?savepointIds=%5B%22" + sv1 + "%22,%22" + sv3 + "%22,%22" + sv4 + "%22%5D",
                                 headers: {
                                     authorization
                                 },
                                 timeout: 180000
                             }).then((response) => {
-                                expect(response.body.data.at(1).option.status).to.eq("Rejected");
+                                expect(response.body.data.at(0).option.status).to.eq("Rejected");
                             })
                         })
                     })
