@@ -234,7 +234,7 @@ export class VCMessage extends Message {
             });
             document = encryptedDocument.serialized;
         }
-        const buffer = Buffer.from(document);
+        const buffer = Buffer.from(document) as any;
         return [buffer];
     }
 

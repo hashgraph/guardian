@@ -996,6 +996,7 @@ export class PolicyEngine extends NatsService {
         const STEP_CREATE_SYNC_TOPIC = 'Create synchronization topic';
         const STEP_CREATE_RESTORE_TOPIC = 'Create restore topic';
         const STEP_CREATE_ACTION_TOPIC = 'Create actions topic';
+        const STEP_CREATE_COMMENTS_TOPIC = 'Create comments topic';
         const STEP_PUBLISH_POLICY = 'Publish policy';
         const STEP_PUBLISH_MESSAGE = 'Publish message';
         const STEP_PUBLISH_TAGS = 'Publish tags';
@@ -1011,6 +1012,7 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_CREATE_SYNC_TOPIC, 2);
         notifier.addStep(STEP_CREATE_RESTORE_TOPIC, 2);
         notifier.addStep(STEP_CREATE_ACTION_TOPIC, 2);
+        notifier.addStep(STEP_CREATE_COMMENTS_TOPIC, 2);
         notifier.addStep(STEP_PUBLISH_POLICY, 20);
         notifier.addStep(STEP_PUBLISH_MESSAGE, 4);
         notifier.addStep(STEP_PUBLISH_TAGS, 4);
@@ -1232,6 +1234,31 @@ export class PolicyEngine extends NatsService {
                 }
             } else {
                 notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
+            }
+
+            const createCommentsTopic = async () => {
+                notifier.startStep(STEP_CREATE_COMMENTS_TOPIC);
+                const commentsTopic = await topicHelper.create({
+                    type: TopicType.CommentsTopic,
+                    name: TopicType.CommentsTopic,
+                    description: TopicType.CommentsTopic,
+                    owner: user.creator,
+                    policyId: model.id.toString(),
+                    policyUUID: model.uuid
+                }, user.id, { admin: true, submit: false });
+                await commentsTopic.saveKeys(user.id);
+                await DatabaseServer.saveTopic(commentsTopic.toObject());
+                model.commentsTopicId = commentsTopic.topicId;
+                notifier.completeStep(STEP_CREATE_COMMENTS_TOPIC);
+            }
+            if (model.status === PolicyStatus.PUBLISH_ERROR) {
+                if (!!model.commentsTopicId) {
+                    await createCommentsTopic();
+                } else {
+                    notifier.skipStep(STEP_CREATE_COMMENTS_TOPIC);
+                }
+            } else {
+                await createCommentsTopic();
             }
 
             const configToPublish = structuredClone(model.config);

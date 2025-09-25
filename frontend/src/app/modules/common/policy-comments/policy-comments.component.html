@@ -29,12 +29,37 @@
             </div>
         </div>
 
-        <div class="header-icon">
+        <div *ngIf="currentTab === 'discussions'" class="header-icon">
             <div class="component-close" (click)="onClose()">
                 <svg-icon
                     src="/assets/images/icons/close.svg"
                     svgClass="icon-color-close"></svg-icon>
             </div>
+        </div>
+        <div *ngIf="currentTab === 'messages' && currentDiscussion" class="header-icon">
+            <button
+                *ngIf="isGroup()"
+                class="guardian-icon-button group-btn big"
+                (click)="groupMenu.toggle($event)">
+                <svg-icon class="icon-btn svg-icon" 
+                    src="/assets/images/icons/group.svg"
+                    svgClass="icon-color-grey-color-3">
+                </svg-icon>
+            </button>
+            <p-overlayPanel #groupMenu styleClass="guardian-popup">
+                <div *ngIf="currentDiscussion.privacy === 'users'">
+                    <div>Users</div>
+                    <div *ngFor="let item of currentDiscussion.users">
+                        {{getUserName(item)}}
+                    </div>
+                </div>
+                <div *ngIf="currentDiscussion.privacy === 'roles'">
+                    <div>Roles</div>
+                    <div *ngFor="let item of currentDiscussion.roles">
+                        {{item}}
+                    </div>
+                </div>
+            </p-overlayPanel>
         </div>
     </div>
     <div *ngIf="loading" class="guardian-loading">
@@ -91,10 +116,10 @@
                     </div>
 
                     <div class="guardian-input-container">
-                        <label class="form-label" htmlFor="version">Visibility</label>
+                        <label class="form-label" htmlFor="version">Type</label>
                         <p-dropdown 
-                            formControlName="visibility"
-                            [options]="visibilityList"
+                            formControlName="privacy"
+                            [options]="privacyList"
                             [showClear]="false" 
                             class="guardian-dropdown" 
                             appendTo="body"
@@ -105,7 +130,7 @@
                         </p-dropdown>
                     </div>
 
-                    <div *ngIf="discussionForm.value.visibility==='roles'" class="guardian-input-container">
+                    <div *ngIf="discussionForm.value.privacy==='roles'" class="guardian-input-container">
                         <label class="form-label" htmlFor="version">Roles</label>
                         <p-multiSelect
                             formControlName="roles"
@@ -120,7 +145,7 @@
                         </p-multiSelect>
                     </div>
 
-                    <div *ngIf="discussionForm.value.visibility==='users'" class="guardian-input-container">
+                    <div *ngIf="discussionForm.value.privacy==='users'" class="guardian-input-container">
                         <label class="form-label" htmlFor="version">Users</label>
                         <p-multiSelect
                             formControlName="users"
@@ -187,11 +212,11 @@
         <div class="discussions">
             <div class="full-discussions">
                 <div *ngFor="let discussion of discussions" class="full-discussion" (click)="onOpen(discussion)">
-                    <div class="discussion-visibility">
-                        <div *ngIf="!discussion.visibility"></div>
-                        <div *ngIf="discussion.visibility === 'public'"></div>
-                        <div *ngIf="discussion.visibility === 'roles'"></div>
-                        <div *ngIf="discussion.visibility === 'users'"></div>
+                    <div class="discussion-privacy">
+                        <div *ngIf="!discussion.privacy"></div>
+                        <div *ngIf="discussion.privacy === 'public'"></div>
+                        <div *ngIf="discussion.privacy === 'roles'"></div>
+                        <div *ngIf="discussion.privacy === 'users'"></div>
                     </div>
                     <div class="discussion-icon">
                         {{discussion._short}}

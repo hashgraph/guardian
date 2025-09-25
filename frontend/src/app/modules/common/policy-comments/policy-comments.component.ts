@@ -30,7 +30,7 @@ interface DiscussionItem {
     fieldName?: string;
     policyId: string;
     relationships?: string[];
-    visibility?: string;
+    privacy?: string;
     _short?: string
 }
 
@@ -81,7 +81,7 @@ export class PolicyComments {
     public files: AttachedFile[];
     public sendDisabled: boolean;
 
-    public visibility: ListItem[] = [];
+    public privacy: ListItem[] = [];
     public userNames = new Map<string, string>();
     public fieldNames = new Map<string, string>();
     public users: ListItem[] = [];
@@ -98,7 +98,7 @@ export class PolicyComments {
     public discussionForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
         relationships: new FormControl<string[]>([]),
-        visibility: new FormControl<string>('', Validators.required),
+        privacy: new FormControl<string>('', Validators.required),
         roles: new FormControl<string[]>([]),
         users: new FormControl<string[]>([]),
 
@@ -106,7 +106,7 @@ export class PolicyComments {
         field: new FormControl<string>(''),
         fieldName: new FormControl<string>(''),
     });
-    public visibilityList = [{
+    public privacyList = [{
         label: 'Public',
         value: 'public',
     }, {
@@ -137,7 +137,7 @@ export class PolicyComments {
         this.files = [];
         this.sendDisabled = true;
 
-        this.discussionForm.get('visibility')?.valueChanges.subscribe(val => {
+        this.discussionForm.get('privacy')?.valueChanges.subscribe(val => {
             this.discussionForm.controls['roles'].clearValidators();
             this.discussionForm.controls['users'].clearValidators();
             if (val === 'roles') {
@@ -152,7 +152,6 @@ export class PolicyComments {
     }
 
     ngOnInit(): void {
-        console.log(this);
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -490,7 +489,7 @@ export class PolicyComments {
         return result;
     }
 
-    public getUserName(t: TextItem) {
+    public getTagName(t: TextItem) {
         if (t.type === 'all') {
             return '@All';
         }
@@ -558,7 +557,7 @@ export class PolicyComments {
 
             const textItems = this.parsText(item, text);
             for (const textItem of textItems) {
-                textItem.label = this.getUserName(textItem);
+                textItem.label = this.getTagName(textItem);
                 textItem.tooltip = this.getTooltip(textItem);
             }
             item.__text = textItems;
@@ -762,12 +761,14 @@ export class PolicyComments {
         this.loadComments('more', last?.id);
     }
 
-
-
-    // public getUserName(did: string) {
-    //     return this.userNames.get(did) || did;
-    // }
-
+    public getUserName(did: string) {
+        for (const user of this.users) {
+            if (user.value === did) {
+                return user.label;
+            }
+        }
+        return did;
+    }
 
     public findChoices(searchText: string, trigger: string) {
         const search = searchText.toLowerCase();
@@ -839,7 +840,7 @@ export class PolicyComments {
         this.discussionForm.setValue({
             name: '',
             relationships: [],
-            visibility: 'public',
+            privacy: 'public',
             roles: [],
             users: [],
             parent: this.currentDiscussion?.id || null,
@@ -953,6 +954,16 @@ export class PolicyComments {
         if (item.type === 'field') {
             this.linkEvent.emit(item.tag);
         }
+    }
+
+    public isGroup() {
+        return (
+            this.currentDiscussion &&
+            (
+                this.currentDiscussion.privacy === 'users' ||
+                this.currentDiscussion.privacy === 'roles'
+            )
+        )
     }
 
     //#endregion

@@ -50,4 +50,6 @@ export enum MessageAction {
     CreatePolicyRequest = 'create-policy-request',
     UpdatePolicyRequest = 'update-policy-request',
     ErrorPolicyRequest = 'error-policy-request',
+    CreateComment = 'create-policy-comment',
+    CreateDiscussion = 'create-policy-discussion',
 }

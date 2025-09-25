@@ -8,7 +8,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
  * PolicyDiscussion collection
  */
 @Entity()
-@Unique({ name: 'unique_uuid_idx', properties: ['documentId', 'uuid'] })
+@Unique({ name: 'unique_uuid_idx', properties: ['targetId', 'uuid'] })
 export class PolicyDiscussion extends BaseEntity {
     /**
      * ID
@@ -50,7 +50,15 @@ export class PolicyDiscussion extends BaseEntity {
         nullable: true,
         index: true
     })
-    documentId?: string;
+    targetId?: string;
+
+    /**
+     * Document message id
+     */
+    @Property({
+        nullable: true
+    })
+    target?: string;
 
     /**
      * Name
@@ -75,7 +83,7 @@ export class PolicyDiscussion extends BaseEntity {
         nullable: true,
         index: true
     })
-    documentIds?: string[];
+    relationshipIds?: string[];
 
     /**
      * Count
@@ -151,6 +159,12 @@ export class PolicyDiscussion extends BaseEntity {
      */
     @Property({ nullable: true })
     messageId?: string;
+
+    /**
+     * Hash
+     */
+    @Property({ nullable: true })
+    hash?: string;
 
     /**
      * Document instance

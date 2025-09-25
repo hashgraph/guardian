@@ -22,6 +22,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TooltipModule } from 'primeng/tooltip';
 import { TreeModule } from 'primeng/tree';
+import { MenuModule } from 'primeng/menu';
 
 @NgModule({
     declarations: [],
@@ -46,6 +47,7 @@ import { TreeModule } from 'primeng/tree';
         TooltipModule,
         DragDropModule,
         CdkTableModule,
+        MenuModule
     ],
     exports: [
         TabViewModule,
@@ -70,6 +72,7 @@ import { TreeModule } from 'primeng/tree';
         ChipsModule,
         DragDropModule,
         CdkTableModule,
+        MenuModule
     ]
 })
 export class MaterialModule {

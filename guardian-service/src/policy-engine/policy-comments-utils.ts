@@ -1,17 +1,30 @@
-import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType } from "@guardian/common";
-import { EntityOwner, GenerateUUIDv4, IOwner, Schema, SchemaEntity, SchemaHelper, TopicType } from "@guardian/interfaces";
+import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType, DiscussionMessage, MessageAction } from "@guardian/common";
+import { EntityOwner, GenerateUUIDv4, IOwner, PolicyStatus, Schema, SchemaEntity, SchemaHelper, TopicType } from "@guardian/interfaces";
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 import { PrivateKey } from "@hashgraph/sdk";
+import * as crypto from 'crypto';
 
 /**
  * Policy component utils
  */
 export class PolicyCommentsUtils {
-    public static generateKey(
+    public static isDryRun(policy: Policy) {
+        if (policy.status === PolicyStatus.DRY_RUN || policy.status === PolicyStatus.DEMO) {
+            return policy.id?.toString();
+        } else {
+            return undefined;
+        }
+    }
+
+    public static generateKey(): string {
+        return PrivateKey.generate().toString();
+    }
+
+    public static saveKey(
         did: string,
         discussionId: string,
+        key: string,
     ): Promise<void> {
-        const key = PrivateKey.generate().toString();
         const wallet = new Wallet();
         return wallet.setUserKey(
             did,
@@ -35,14 +48,11 @@ export class PolicyCommentsUtils {
         )
     }
 
-    public static async getTopic(
-        policy: Policy,
-        user: IAuthUser | IOwner
-    ): Promise<TopicConfig> {
+    public static async getTopic(policy: Policy): Promise<TopicConfig> {
         let topicConfig: TopicConfig;
         if (policy.commentsTopicId) {
             const topic = await DatabaseServer.getTopicById(policy.commentsTopicId);
-            topicConfig = await TopicConfig.fromObject(topic, true, user?.id);
+            topicConfig = await TopicConfig.fromObject(topic, true, null);
         }
         if (!topicConfig) {
             const users = new Users();
@@ -53,6 +63,8 @@ export class PolicyCommentsUtils {
                 root.hederaAccountKey,
                 root.signOptions
             );
+            const rootTopic = await DatabaseServer.getTopicById(policy.instanceTopicId);
+            const rootTopicConfig = await TopicConfig.fromObject(rootTopic, true, user?.id);
             topicConfig = await topicHelper.create({
                 type: TopicType.CommentsTopic,
                 name: TopicType.CommentsTopic,
@@ -60,10 +72,10 @@ export class PolicyCommentsUtils {
                 owner: policy.owner,
                 policyId: policy.id,
                 policyUUID: policy.uuid
-            }, user.id);
+            }, user.id, { admin: true, submit: false });
             await topicConfig.saveKeys(user.id);
             await DatabaseServer.saveTopic(topicConfig.toObject());
-            await topicHelper.twoWayLink(topicConfig, null, null, user.id);
+            await topicHelper.twoWayLink(topicConfig, rootTopicConfig, null, user.id);
 
             policy.commentsTopicId = topicConfig.topicId;
             await DatabaseServer.updatePolicy(policy);
@@ -76,12 +88,12 @@ export class PolicyCommentsUtils {
         policy: Policy,
     ): Promise<SchemaCollection> {
         const dataBaseServer = new DatabaseServer();
-        let schema: SchemaCollection
-        if (policy.commentsTopicId) {
+        let schema: SchemaCollection;
+        if (policy.topicId) {
             schema = await dataBaseServer.findOne(SchemaCollection, {
                 entity,
                 readonly: true,
-                topicId: policy.commentsTopicId
+                topicId: policy.topicId
             });
         }
         if (schema) {
@@ -97,12 +109,13 @@ export class PolicyCommentsUtils {
                 const user = await users.getUserById(policy.owner, null);
                 const owner = new EntityOwner(user);
                 const root = await users.getHederaAccount(policy.owner, owner?.id);
-                const topic = await PolicyCommentsUtils.getTopic(policy, owner);
+                const topic = await DatabaseServer.getTopicById(policy.topicId);
+                const topicConfig = await TopicConfig.fromObject(topic, true, user?.id);
                 const messageServer = new MessageServer({
                     operatorId: root.hederaAccountId,
                     operatorKey: root.hederaAccountKey,
                     signOptions: root.signOptions
-                }).setTopicObject(topic);
+                }).setTopicObject(topicConfig);
                 const item = await publishSystemSchema(schema, owner, messageServer, NewNotifier.empty());
                 const result = await dataBaseServer.save(SchemaCollection, item);
                 return result;
@@ -119,7 +132,7 @@ export class PolicyCommentsUtils {
         try {
             const commonDiscussion = await DatabaseServer.getPolicyDiscussion({
                 policyId: policy.id,
-                documentId: document.id,
+                targetId: document.id,
                 system: true
             })
             if (commonDiscussion) {
@@ -128,17 +141,43 @@ export class PolicyCommentsUtils {
 
             const users = new Users();
             const user = await users.getUserById(document.owner, null);
-            const discussion = await PolicyCommentsUtils.createDiscussion(user, policy, document, {
+            const discussion: any = await PolicyCommentsUtils.createDiscussion(user, policy, document, {
                 name: 'Common',
                 privacy: 'public',
                 relationships: [document.id]
-            });
+            }, true);
 
-            return await DatabaseServer.createPolicyDiscussion(discussion);
+            const messageKey: string = PolicyCommentsUtils.generateKey();
+
+            const userAccount = await users.getHederaAccount(user.did, user.id);
+            const topic = await PolicyCommentsUtils.getTopic(policy);
+            const message = new DiscussionMessage(MessageAction.CreateDiscussion);
+            message.setDocument(discussion);
+            const messageStatus = await (new MessageServer({
+                operatorId: userAccount.hederaAccountId,
+                operatorKey: userAccount.hederaAccountKey,
+                signOptions: userAccount.signOptions,
+                encryptKey: messageKey,
+                dryRun: PolicyCommentsUtils.isDryRun(policy)
+            }))
+                .setTopicObject(topic)
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: user.id,
+                    interception: null
+                });
+            discussion.messageId = messageStatus.getId();
+
+            const row = await DatabaseServer.createPolicyDiscussion(discussion);
+
+            await PolicyCommentsUtils.saveKey(policy.owner, row.id, messageKey);
+
+            return row;
         } catch (error) {
             return await DatabaseServer.getPolicyDiscussion({
                 policyId: policy.id,
-                documentId: document.id,
+                targetId: document.id,
                 system: true
             })
         }
@@ -267,7 +306,8 @@ export class PolicyCommentsUtils {
             roles?: string[],
             users?: string[],
             relationships?: string[]
-        }
+        },
+        system: boolean = false
     ) {
         const name = data?.name || String(Date.now());
         const parent = data?.parent;
@@ -277,25 +317,31 @@ export class PolicyCommentsUtils {
         const roles = privacy === 'roles' && Array.isArray(data?.roles) ? data?.roles : [];
         const users = privacy === 'users' && Array.isArray(data?.users) ? data?.users : [];
 
-        const documentIds = data?.relationships || [];
-        if (!documentIds.includes(document.id)) {
-            documentIds.push(document.id);
+        const relationshipIds = data?.relationships || [];
+        if (!relationshipIds.includes(document.id)) {
+            relationshipIds.push(document.id);
         }
         const documents = await DatabaseServer.getVCs({
-            _id: { $in: documentIds.map((e) => DatabaseServer.dbID(e)) },
+            _id: { $in: relationshipIds.map((e) => DatabaseServer.dbID(e)) },
             messageId: { $exists: true }
         })
         const relationships = documents.map((d) => d.messageId);
 
-        const vcObject = await PolicyCommentsUtils.createDiscussionVC(user, policy, document, data);
-
+        const vcObject = await PolicyCommentsUtils.createDiscussionVC(user, policy, document, relationships, data);
+        const vcDocument = vcObject.getDocument();
+        const documentHash = crypto
+            .createHash('sha256')
+            .update(JSON.stringify(vcDocument))
+            .digest('base64')
+            .toString();
         const discussion = {
             uuid: GenerateUUIDv4(),
             owner: user.did,
             creator: user.did,
             policyId: policy.id,
-            documentId: document.id,
-            system: false,
+            targetId: document.id,
+            target: document.messageId,
+            system,
             count: 0,
             name,
             parent,
@@ -305,8 +351,9 @@ export class PolicyCommentsUtils {
             roles,
             users,
             relationships,
-            documentIds,
-            document: vcObject.getDocument()
+            relationshipIds,
+            document: vcDocument,
+            hash: documentHash
         };
 
         return discussion;
@@ -316,6 +363,7 @@ export class PolicyCommentsUtils {
         user: IAuthUser,
         policy: Policy,
         document: VcDocument,
+        relationships: string[],
         data: {
             name?: string,
             parent?: string,
@@ -353,7 +401,7 @@ export class PolicyCommentsUtils {
         if (data.users?.length) {
             credentialSubject.users = data.users;
         }
-        if (data.relationships?.length) {
+        if (relationships?.length) {
             credentialSubject.relationships = data.relationships;
         }
         const schema = await PolicyCommentsUtils.getSchema(SchemaEntity.POLICY_DISCUSSION, policy);
@@ -407,6 +455,12 @@ export class PolicyCommentsUtils {
             discussion,
             data
         );
+        const vcDocument = vcObject.getDocument();
+        const documentHash = crypto
+            .createHash('sha256')
+            .update(JSON.stringify(vcDocument))
+            .digest('base64')
+            .toString();
         const comment = {
             timestamp: Date.now(),
             uuid: GenerateUUIDv4(),
@@ -425,9 +479,11 @@ export class PolicyCommentsUtils {
             target: document.messageId,
             targetId: document.id,
             discussionId: discussion.id,
+            discussionMessageId: discussion.messageId,
             isDocumentOwner: user.did === document.owner,
             text: data.text,
-            document: vcObject.getDocument()
+            document: vcDocument,
+            hash: documentHash
         }
 
         return comment;

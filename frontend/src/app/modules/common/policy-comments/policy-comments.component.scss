@@ -70,6 +70,11 @@
                 filter: brightness(0.95);
             }
         }
+
+        .group-btn {
+            height: 32px;
+            width: 32px;
+        }
     }
 
     .discussion-filters {
@@ -959,5 +964,11 @@ textarea {
             height: 56px;
             border-radius: 0;
         }
+    }
+}
+
+.guardian-icon-button {
+    * {
+        pointer-events: none;
     }
 }

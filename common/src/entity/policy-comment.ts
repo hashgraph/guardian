@@ -145,6 +145,12 @@ export class PolicyComment extends BaseEntity {
     discussionId?: string;
 
     /**
+     * Discussion id
+     */
+    @Property({ nullable: true })
+    discussionMessageId?: string;
+
+    /**
      * Is document owner
      */
     @Property({ nullable: true })
@@ -161,6 +167,12 @@ export class PolicyComment extends BaseEntity {
      */
     @Property({ nullable: true })
     text?: string;
+
+    /**
+     * Hash
+     */
+    @Property({ nullable: true })
+    hash?: string;
 
     /**
      * Document instance

@@ -128,6 +128,10 @@ export interface PolicyMessageBody extends MessageBody {
      */
     actionsTopicId: string;
     /**
+     * commentsTopicId
+     */
+    commentsTopicId: string;
+    /**
      * Effective Date
      */
     effectiveDate?: string;
@@ -912,4 +916,56 @@ export interface SchemaPackageMessageBody extends MessageBody {
      * Metadata URI
      */
     metadata_uri?: string;
+}
+
+/**
+ * Discussion message body
+ */
+export interface DiscussionMessageBody extends MessageBody {
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+    /**
+     * Relationships
+     */
+    relationships: string[];
+    /**
+     * Hash
+     */
+    hash: string;
+    /**
+     * Target
+     */
+    target: string;
+}
+
+/**
+ * Comment message body
+ */
+export interface CommentMessageBody extends MessageBody {
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+    /**
+     * Discussion
+     */
+    discussion: string;
+    /**
+     * Hash
+     */
+    hash: string;
+    /**
+     * Target
+     */
+    target: string;
 }

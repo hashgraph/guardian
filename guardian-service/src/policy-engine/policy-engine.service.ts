@@ -1,7 +1,9 @@
 import {
     BinaryMessageResponse,
+    CommentMessage,
     DataBaseHelper,
     DatabaseServer,
+    DiscussionMessage,
     DryRunFiles,
     EncryptUtils,
     findAllEntities,
@@ -3570,7 +3572,7 @@ export class PolicyEngineService {
 
                     const filters: any = {
                         policyId,
-                        documentIds: documentId,
+                        relationshipIds: documentId,
                         system: false,
                         $and: [{
                             $or: [{
@@ -3666,11 +3668,33 @@ export class PolicyEngineService {
                         throw new Error('Document not found.');
                     }
 
-                    const discussion = await PolicyCommentsUtils.createDiscussion(user, policy, vc, data);
+                    const discussion: any = await PolicyCommentsUtils.createDiscussion(user, policy, vc, data);
+
+                    const messageKey: string = PolicyCommentsUtils.generateKey();
+
+                    const userAccount = await this.users.getHederaAccount(user.did, user.id);
+                    const topic = await PolicyCommentsUtils.getTopic(policy);
+                    const message = new DiscussionMessage(MessageAction.CreateDiscussion);
+                    message.setDocument(discussion);
+                    const messageStatus = await (new MessageServer({
+                        operatorId: userAccount.hederaAccountId,
+                        operatorKey: userAccount.hederaAccountKey,
+                        signOptions: userAccount.signOptions,
+                        encryptKey: messageKey,
+                        dryRun: PolicyCommentsUtils.isDryRun(policy)
+                    }))
+                        .setTopicObject(topic)
+                        .sendMessage(message, {
+                            sendToIPFS: true,
+                            memo: null,
+                            userId: user.id,
+                            interception: null
+                        });
+                    discussion.messageId = messageStatus.getId();
 
                     const row = await DatabaseServer.createPolicyDiscussion(discussion);
 
-                    await PolicyCommentsUtils.generateKey(policy.owner, row.id);
+                    await PolicyCommentsUtils.saveKey(policy.owner, row.id, messageKey);
 
                     return new MessageResponse(row);
                 } catch (error) {
@@ -3715,7 +3739,7 @@ export class PolicyEngineService {
                     const discussion = await DatabaseServer.getPolicyDiscussion({
                         _id: DatabaseServer.dbID(discussionId),
                         policyId,
-                        documentId
+                        targetId: documentId
                     });
 
                     const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
@@ -3723,7 +3747,29 @@ export class PolicyEngineService {
                         throw new Error('Discussion does not exist.');
                     }
 
-                    const comment = await PolicyCommentsUtils.createComment(user, userRole, policy, vc, discussion, data);
+                    const comment: any = await PolicyCommentsUtils
+                        .createComment(user, userRole, policy, vc, discussion, data);
+
+                    const userAccount = await this.users.getHederaAccount(user.did, user.id);
+                    const messageKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
+                    const topic = await PolicyCommentsUtils.getTopic(policy);
+                    const message = new CommentMessage(MessageAction.CreateComment);
+                    message.setDocument(comment);
+                    const messageStatus = await (new MessageServer({
+                        operatorId: userAccount.hederaAccountId,
+                        operatorKey: userAccount.hederaAccountKey,
+                        signOptions: userAccount.signOptions,
+                        encryptKey: messageKey,
+                        dryRun: PolicyCommentsUtils.isDryRun(policy)
+                    }))
+                        .setTopicObject(topic)
+                        .sendMessage(message, {
+                            sendToIPFS: true,
+                            memo: null,
+                            userId: user.id,
+                            interception: null
+                        });
+                    comment.messageId = messageStatus.getId();
 
                     const row = await DatabaseServer.createPolicyComment(comment);
                     discussion.count = await DatabaseServer.getPolicyCommentsCount({
@@ -3770,7 +3816,7 @@ export class PolicyEngineService {
                     const discussion = await DatabaseServer.getPolicyDiscussion({
                         _id: DatabaseServer.dbID(discussionId),
                         policyId,
-                        documentId
+                        targetId: documentId
                     });
 
                     if (!PolicyCommentsUtils.accessDiscussion(discussion, user.did, userRole)) {
@@ -3841,7 +3887,7 @@ export class PolicyEngineService {
                     const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
                     const filters: any = {
                         policyId,
-                        documentIds: documentId,
+                        relationshipIds: documentId,
                         $or: [{
                             privacy: 'public'
                         }, {
@@ -3910,7 +3956,7 @@ export class PolicyEngineService {
                     const discussion = await DatabaseServer.getPolicyDiscussion({
                         _id: DatabaseServer.dbID(discussionId),
                         policyId,
-                        documentId
+                        targetId: documentId
                     });
 
                     const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
@@ -3921,7 +3967,7 @@ export class PolicyEngineService {
                     const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
                     const encryptBuffer = await EncryptUtils.encrypt(buffer, encryptKey);
 
-                    if (policy.status === PolicyStatus.DRY_RUN || policy.status === PolicyStatus.DEMO) {
+                    if (PolicyCommentsUtils.isDryRun(policy)) {
                         const fileBuffer = Buffer.from(encryptBuffer);
                         const entity = (new DatabaseServer()).create(DryRunFiles, {
                             policyId,
@@ -3973,7 +4019,7 @@ export class PolicyEngineService {
                     const discussion = await DatabaseServer.getPolicyDiscussion({
                         _id: DatabaseServer.dbID(discussionId),
                         policyId,
-                        documentId
+                        targetId: documentId
                     });
 
                     const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);

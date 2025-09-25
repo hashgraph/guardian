@@ -71,6 +71,10 @@ export class PolicyMessage extends Message {
      * Actions Topic Id
      */
     public actionsTopicId: string;
+    /**
+     * Comments Topic Id
+     */
+    public commentsTopicId: string;
 
     constructor(type: MessageType.Policy | MessageType.InstancePolicy, action: MessageAction) {
         super(action, type);
@@ -98,6 +102,7 @@ export class PolicyMessage extends Message {
         this.availability = model.availability;
         this.restoreTopicId = model.restoreTopicId;
         this.actionsTopicId = model.actionsTopicId;
+        this.commentsTopicId = model.commentsTopicId;
         this.document = zip;
     }
 
@@ -131,6 +136,7 @@ export class PolicyMessage extends Message {
             availability: this.availability,
             restoreTopicId: this.restoreTopicId,
             actionsTopicId: this.actionsTopicId,
+            commentsTopicId: this.commentsTopicId,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url)
         };
@@ -184,7 +190,7 @@ export class PolicyMessage extends Message {
      */
     public loadDocuments(documents: any[]): PolicyMessage {
         if (documents && documents.length === 1) {
-            this.document = Buffer.from(documents[0]);
+            this.document = Buffer.from(documents[0]) as any;
         }
         return this;
     }
@@ -232,6 +238,7 @@ export class PolicyMessage extends Message {
         message.availability = json.availability;
         message.restoreTopicId = json.restoreTopicId;
         message.actionsTopicId = json.actionsTopicId;
+        message.commentsTopicId = json.commentsTopicId;
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(json.action)
             && json.effectiveDate) {
             message.discontinuedDate = new Date(json.effectiveDate)
@@ -290,6 +297,7 @@ export class PolicyMessage extends Message {
         result.availability = this.availability;
         result.restoreTopicId = this.restoreTopicId;
         result.actionsTopicId = this.actionsTopicId;
+        result.commentsTopicId = this.commentsTopicId;
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
             result.effectiveDate = this.discontinuedDate;
         }
@@ -316,6 +324,7 @@ export class PolicyMessage extends Message {
         result.availability = json.availability;
         result.restoreTopicId = json.restoreTopicId;
         result.actionsTopicId = json.actionsTopicId;
+        result.commentsTopicId = json.commentsTopicId;
         result.discontinuedDate = json.effectiveDate;
         result.document = json.document;
         return result;
