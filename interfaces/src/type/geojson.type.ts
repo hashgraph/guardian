@@ -8,5 +8,5 @@ export enum GeoJsonType {
     MULTI_POINT = 'MultiPoint',
     MULTI_LINE_STRING = 'MultiLineString',
     MULTI_POLYGON = 'MultiPolygon',
-    FEATURE_COLLECTION = "FeatureCollection"
+    FEATURE_COLLECTION = 'FeatureCollection'
 }
