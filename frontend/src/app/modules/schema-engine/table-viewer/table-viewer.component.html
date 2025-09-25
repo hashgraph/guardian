@@ -3,11 +3,11 @@
             class="p-button p-component"
             type="button"
             (click)="openDialog()"
-            [disabled]="!fileId || isLoading"
+            [disabled]="!fileId || isLoading || !!tooLargeMessage"
     >
-        <span class="p-button-label">
-          {{ isLoading ? 'Loading…' : 'Open table' }}
-        </span>
+    <span class="p-button-label">
+      {{ isLoading ? 'Loading…' : 'Open table' }}
+    </span>
     </button>
 
     <button
@@ -16,14 +16,22 @@
             (click)="downloadCsv()"
             [disabled]="!fileId || isDownloading"
     >
-        <span class="p-button-label">
-          {{ isDownloading ? 'Downloading…' : 'Download CSV' }}
-        </span>
+    <span class="p-button-label">
+      {{ isDownloading ? 'Downloading…' : 'Download CSV' }}
+    </span>
     </button>
+
+    <div class="alerts">
+        <div *ngIf="tooLargeMessage" class="notice warn" aria-live="polite">
+            {{ tooLargeMessage }}
+        </div>
+        <div *ngIf="loadError" class="notice error" aria-live="polite">
+            {{ loadError }}
+        </div>
+    </div>
 
     <div class="meta">
         <span *ngIf="fileId as id">fileId: {{ id }}</span>
         <span *ngIf="!fileId">No table</span>
-        <span *ngIf="loadError" class="error">{{ loadError }}</span>
     </div>
 </div>

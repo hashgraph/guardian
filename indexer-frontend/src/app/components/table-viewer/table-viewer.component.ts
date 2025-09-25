@@ -4,11 +4,15 @@ import { ChangeDetectorRef, Component, Input, NgZone } from '@angular/core';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
 import { ButtonModule } from 'primeng/button';
-import {EMPTY, finalize, switchMap, take} from 'rxjs';
+import { EMPTY, finalize, switchMap, take } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 import { CsvService } from '@services/csv.service';
 import { ArtifactsService } from '@services/artifacts.service';
 import { TableDialogComponent } from '../../dialogs/table-dialog/table-dialog.component';
+
+import { IndexedDbRegistryService } from '@services/indexed-db-registry.service';
+import { GzipService } from '@services/gzip.service';
 
 @Component({
     selector: 'app-table-viewer',
@@ -27,18 +31,34 @@ export class TableViewerComponent {
     public isDownloading = false;
     public loadError?: string;
 
+    public tooLargeMessage?: string;
+    public canOpenPreview = false;
+
     private readonly PREVIEW_LIMIT = 10 * 1024 * 1024;
+
+    private readonly IDB_NAME = 'TABLES';
+    private readonly FILES_STORE = 'FILES';
+
+    private storesReady?: Promise<void>;
+    private idbQueue: Promise<void> = Promise.resolve();
+    private putInflight = new Map<string, Promise<void>>();
 
     constructor(
         private readonly dialog: DialogService,
         private readonly csv: CsvService,
         private readonly artifacts: ArtifactsService,
         private readonly cdr: ChangeDetectorRef,
-        private readonly zone: NgZone
+        private readonly zone: NgZone,
+        private readonly idb: IndexedDbRegistryService,
+        private readonly gzip: GzipService
     ) {}
 
     public get fileId(): string | null {
         return this.getFileIdFromValue(this.value, this.analytics?.tableFiles);
+    }
+
+    ngOnChanges(): void {
+        this.initPreview().catch(() => {});
     }
 
     public openDialog(): void {
@@ -49,117 +69,283 @@ export class TableViewerComponent {
         this.loadError = undefined;
         this.mark();
 
-        this.artifacts
-            .getFileBlob(id)
-            .pipe(
-                take(1),
-                switchMap((resp: HttpResponse<Blob>) => {
-                    const blob = resp.body ?? new Blob([]);
-                    if (blob.size > this.PREVIEW_LIMIT) {
-                        const mb = (blob.size / (1024 * 1024)).toFixed(1);
-                        this.zone.run(() => {
-                            this.loadError = `File is too large for preview (${mb} MB). Use "Download CSV" instead.`;
-                            this.mark();
-                        });
-                        return EMPTY;
-                    }
+        (async () => {
+            await this.ensureIdbStores();
 
-                    return this.artifacts.getFileText(id).pipe(take(1));
-                }),
-                finalize(() => this.stop('isLoading'))
-            )
-            .subscribe({
-                next: (resp: any) => {
-                    const csvText = resp.body ?? '';
-                    let parsed: { columnKeys: string[]; rows: any[] };
-                    try {
-                        parsed = this.csv.parseCsvToTable(csvText, ',');
-                    } catch (e: any) {
-                        this.zone.run(() => {
-                            this.loadError = e?.message || 'Failed to parse CSV';
-                            this.mark();
-                        });
-                        return;
-                    }
-
-                    const columnDefs: ColDef[] = parsed.columnKeys.map((key: string, i: number) => ({
-                        field: key,
-                        colId: key,
-                        headerName: this.excelHeader(i),
-                        editable: false,
-                        minWidth: 100,
-                        resizable: true
-                    }));
-
-                    this.dialog.open(TableDialogComponent, {
-                        header: this.title || 'Table',
-                        width: '70vw',
-                        data: { columnDefs, rowData: parsed.rows, readonly: true }
-                    });
-                },
-                error: (err: unknown) => {
-                    this.zone.run(() => {
-                        this.loadError = (err as any)?.error?.message || 'Failed to load table file';
-                        this.mark();
-                    });
+            let cached = await this.getFromIdb(id);
+            if (!cached) {
+                const resp = await firstValueFrom(this.artifacts.getFileBlob(id));
+                const gz: Blob | undefined = resp.body ?? undefined;
+                if (!gz) {
+                    throw new Error('No blob');
                 }
+                await this.putToIdb(id, gz);
+                cached = await this.getFromIdb(id);
+            }
+
+            if (!cached) {
+                throw new Error('No cached file');
+            }
+
+            const csvText = await this.gzip.gunzipToText(cached.gz);
+            const unzippedBytes = this.utf8Size(csvText);
+
+            if (unzippedBytes > this.PREVIEW_LIMIT) {
+                const mb = (unzippedBytes / (1024 * 1024)).toFixed(1);
+                this.zone.run(() => {
+                    this.loadError = `File is too large for preview (${mb} MB). Use "Download CSV" instead.`;
+                    this.mark();
+                });
+                return;
+            }
+
+            let parsed: { columnKeys: string[]; rows: any[] };
+            parsed = this.csv.parseCsvToTable(csvText, ',');
+
+            const columnDefs: ColDef[] = parsed.columnKeys.map((key: string, i: number) => ({
+                field: key,
+                colId: key,
+                headerName: this.excelHeader(i),
+                editable: false,
+                minWidth: 100,
+                resizable: true
+            }));
+
+            this.dialog.open(TableDialogComponent, {
+                header: this.title || 'Table',
+                width: '70vw',
+                data: { columnDefs, rowData: parsed.rows, readonly: true }
             });
+        })()
+            .catch((e: any) => {
+                this.zone.run(() => {
+                    this.loadError = e?.message || 'Failed to open table';
+                    this.mark();
+                });
+            })
+            .finally(() => this.stop('isLoading'));
     }
 
     public downloadCsv(): void {
-        const id = this.fileId;
-        if (!id || this.isDownloading) {
+        const fileId = this.fileId;
+
+        if (!fileId || this.isDownloading) {
             return;
         }
 
         this.isDownloading = true;
         this.mark();
 
-        this.artifacts
-            .getFileBlob(id)
-            .pipe(
-                take(1),
-                finalize(() => this.stop('isDownloading'))
-            )
-            .subscribe({
-                next: async (resp: HttpResponse<Blob>) => {
-                    const blob = new Blob([resp.body ?? new Blob([])], { type: 'text/csv;charset=utf-8' });
-                    const suggested = this.filenameFromDisposition(resp) ?? `${id}.csv`;
+        (async () => {
+            await this.ensureIdbStores();
 
-                    const w = window as any;
-                    if (w.showSaveFilePicker) {
-                        try {
-                            const handle = await w.showSaveFilePicker({
-                                suggestedName: suggested,
-                                types: [{ description: 'CSV file', accept: { 'text/csv': ['.csv'] } }]
-                            });
-                            const stream = await handle.createWritable();
-                            await stream.write(blob);
-                            await stream.close();
-                            return;
-                        } catch (e: any) {
-                            if (this.isUserCancel(e)) {
-                                return;
-                            }
-                        }
-                    }
+            let cached = await this.getFromIdb(fileId);
 
-                    const objectUrl = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = objectUrl;
-                    a.download = suggested;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(objectUrl);
-                },
-                error: (err: unknown) => {
-                    this.zone.run(() => {
-                        this.loadError = (err as any)?.error?.message || 'Failed to download CSV';
-                        this.mark();
-                    });
+            if (!cached) {
+                const blobResponse = await firstValueFrom(this.artifacts.getFileBlob(fileId));
+                const gzBlob: Blob | undefined =
+                    blobResponse instanceof Blob ? blobResponse : (blobResponse as any)?.body;
+
+                if (!gzBlob) {
+                    throw new Error('No blob');
                 }
-            });
+
+                await this.putToIdb(fileId, gzBlob);
+                cached = await this.getFromIdb(fileId);
+            }
+
+            if (!cached) {
+                throw new Error('No cached file');
+            }
+
+            const csvText = await this.gzip.gunzipToText(cached.gz);
+
+            const outBlob = new Blob([csvText], { type: 'text/csv;charset=utf-8' });
+            const objectUrl = URL.createObjectURL(outBlob);
+
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = `${fileId}.csv`.replace(/"/g, '');
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            URL.revokeObjectURL(objectUrl);
+        })()
+            .catch((error: any) => {
+                this.zone.run(() => {
+                    this.loadError = error?.message || 'Failed to download CSV';
+                    this.mark();
+                });
+            })
+            .finally(() => this.stop('isDownloading'));
+    }
+
+    private async initPreview(): Promise<void> {
+        const id = this.fileId;
+
+        this.tooLargeMessage = undefined;
+        this.loadError = undefined;
+        this.canOpenPreview = false;
+        this.mark();
+
+        if (!id) {
+            return;
+        }
+
+        await this.ensureIdbStores();
+
+        try {
+            let cached = await this.getFromIdb(id);
+            if (!cached) {
+                const resp = await firstValueFrom(this.artifacts.getFileBlob(id));
+                const gz: Blob | undefined = resp.body ?? undefined;
+                if (!gz) {
+                    throw new Error('No blob');
+                }
+                await this.putToIdb(id, gz);
+                cached = await this.getFromIdb(id);
+            }
+
+            if (!cached) {
+                throw new Error('No cached file');
+            }
+
+            const csvText = await this.gzip.gunzipToText(cached.gz);
+            const unzippedBytes = this.utf8Size(csvText);
+
+            if (unzippedBytes > this.PREVIEW_LIMIT) {
+                const mb = (unzippedBytes / (1024 * 1024)).toFixed(1);
+                this.tooLargeMessage = `File is too large for preview (${mb} MB). Use "Download CSV".`;
+                this.canOpenPreview = false;
+                this.mark();
+                return;
+            }
+
+            this.canOpenPreview = true;
+            this.mark();
+        } catch (error: any) {
+            this.loadError = error?.message ?? 'Failed to prepare preview';
+            this.mark();
+        }
+    }
+
+    private async ensureIdbStores(): Promise<void> {
+        if (!this.storesReady) {
+            this.storesReady = this.idb.registerStore(
+                this.IDB_NAME,
+                { name: this.FILES_STORE, options: { keyPath: 'id' } }
+            );
+        }
+        await this.storesReady;
+    }
+
+    private wait(ms: number): Promise<void> {
+        return new Promise<void>(resolve => setTimeout(resolve, ms));
+    }
+
+    private isIdbClosingError(err: unknown): boolean {
+        const anyErr = err as any;
+
+        const name: string =
+            (typeof anyErr?.name === 'string' && anyErr.name) ||
+            (typeof anyErr?.target?.error?.name === 'string' && anyErr.target.error.name) ||
+            '';
+
+        const code: number | undefined =
+            typeof anyErr?.code === 'number'
+                ? anyErr.code
+                : typeof anyErr?.target?.error?.code === 'number'
+                    ? anyErr.target.error.code
+                    : undefined;
+
+        const isDomException =
+            (typeof DOMException !== 'undefined' && err instanceof DOMException) ||
+            (typeof anyErr?.constructor?.name === 'string' && anyErr.constructor.name === 'DOMException');
+
+        const isTransient =
+            name === 'InvalidStateError' ||
+            name === 'TransactionInactiveError' ||
+            name === 'AbortError' ||
+            name === 'VersionError';
+
+        const isLegacyInvalidState = code === 11;
+
+        return isDomException && (isTransient || isLegacyInvalidState);
+    }
+
+    private async withIdbRetry<T>(fn: () => Promise<T>, attempts: number = 3): Promise<T> {
+        for (let i = 0; i < attempts; i += 1) {
+            try {
+                await this.ensureIdbStores();
+                return await this.queueIdb(fn);
+            } catch (e) {
+                if (this.isIdbClosingError(e) && i < attempts - 1) {
+                    await this.wait(30);
+                    continue;
+                }
+                throw e;
+            }
+        }
+        throw new Error('withIdbRetry exhausted retries');
+    }
+
+    private queueIdb<T>(op: () => Promise<T>): Promise<T> {
+        const run = this.idbQueue.then(() => op());
+        this.idbQueue = run.then(
+            () => undefined,
+            () => undefined
+        );
+        return run;
+    }
+
+    private async putToIdb(fileId: string, gzBlobFromGridFs: Blob): Promise<void> {
+        const existing = this.putInflight.get(fileId);
+        if (existing) {
+            await existing;
+            return;
+        }
+
+        const task = (async () => {
+            const head = new Uint8Array(await gzBlobFromGridFs.slice(0, 2).arrayBuffer());
+            const isGzip = head.length >= 2 && head[0] === 0x1f && head[1] === 0x8b;
+            if (!isGzip) {
+                throw new Error('Expected gz blob from GridFS');
+            }
+
+            await this.withIdbRetry(() =>
+                this.idb.put(this.IDB_NAME, this.FILES_STORE, {
+                    id: fileId,
+                    blob: gzBlobFromGridFs,
+                    originalName: `${fileId}.csv.gz`,
+                    originalSize: undefined,
+                    gzSize: gzBlobFromGridFs.size,
+                    delimiter: ',',
+                    createdAt: Date.now()
+                })
+            );
+        })();
+
+        this.putInflight.set(fileId, task);
+        try {
+            await task;
+        } finally {
+            this.putInflight.delete(fileId);
+        }
+    }
+
+    private async getFromIdb(fileId: string): Promise<{ gz: Blob } | null> {
+        const record: any = await this.withIdbRetry(() =>
+            this.idb.get(this.IDB_NAME, this.FILES_STORE, fileId)
+        );
+
+        const blob: Blob | undefined = record?.blob;
+        if (!(blob instanceof Blob)) {
+            return null;
+        }
+
+        return { gz: blob };
     }
 
     private stop(flag: 'isLoading' | 'isDownloading'): void {
@@ -241,5 +427,9 @@ export class TableViewerComponent {
             }
         }
         return label;
+    }
+
+    private utf8Size(text: string): number {
+        return new TextEncoder().encode(text).length;
     }
 }
