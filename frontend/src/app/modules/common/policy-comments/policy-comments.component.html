@@ -38,7 +38,7 @@
         </div>
         <div *ngIf="currentTab === 'messages' && currentDiscussion" class="header-icon">
             <button
-                *ngIf="isGroup()"
+                *ngIf="currentDiscussion._users?.length"
                 class="guardian-icon-button group-btn big"
                 (click)="groupMenu.toggle($event)">
                 <svg-icon class="icon-btn svg-icon" 
@@ -47,16 +47,14 @@
                 </svg-icon>
             </button>
             <p-overlayPanel #groupMenu styleClass="guardian-popup">
-                <div *ngIf="currentDiscussion.privacy === 'users'">
-                    <div>Users</div>
-                    <div *ngFor="let item of currentDiscussion.users">
-                        {{getUserName(item)}}
-                    </div>
-                </div>
-                <div *ngIf="currentDiscussion.privacy === 'roles'">
-                    <div>Roles</div>
-                    <div *ngFor="let item of currentDiscussion.roles">
-                        {{item}}
+                <div *ngFor="let item of currentDiscussion._users" class="discussion-user">
+                    <svg-icon
+                        class="icon-btn discussion-user-icon"
+                        src="/assets/images/icons/{{item.icon}}.svg"
+                        [svgClass]="'icon-color-primary'">
+                    </svg-icon>
+                    <div class="discussion-user-name">
+                        {{item.label}}
                     </div>
                 </div>
             </p-overlayPanel>
@@ -219,7 +217,10 @@
                         <div *ngIf="discussion.privacy === 'users'"></div>
                     </div>
                     <div class="discussion-icon">
-                        {{discussion._short}}
+                        <svg-icon 
+                            *ngIf="discussion._icon"
+                            src="/assets/images/icons/{{discussion._icon}}.svg" 
+                            svgClass="icon-color-primary"></svg-icon>
                         <div *ngIf="discussion.count" class="discussion-count">
                             {{discussion.count}}
                         </div>
@@ -258,14 +259,14 @@
 
     <ng-container *ngIf="currentTab === 'messages'">
         <div class="discussion-filters message-filters">
-            <div *ngIf="currentDiscussion?.field" class="field-filter" (click)="onLinkField(currentDiscussion.field)">
+            <div *ngIf="currentDiscussion?.field" class="field-filter" (click)="onLinkField(currentDiscussion?.field)">
                 <div class="field-filter-icon">
                     <svg-icon 
                         class="svg-icon-16" 
                         src="/assets/images/icons/16/hashtag.svg" 
                         svgClass="icon-color-primary"></svg-icon>
                 </div>
-                <div class="field-filter-name">{{currentDiscussion.fieldName}}</div>
+                <div class="field-filter-name">{{currentDiscussion?.fieldName}}</div>
             </div>
             <div class="search-filter">
                 <input
@@ -376,7 +377,7 @@
                 </button> 
             </div>
         </div>
-        <div class="toolbar">
+        <div class="toolbar" (drop)="onDrop($event)">
             <div class="guardian-textarea-container toolbar-textarea">
                 <mwl-text-input-autocomplete-container>
                     <textarea
@@ -391,7 +392,6 @@
                         [menuPosition]="'above'"
                         [menuMaxSize]="200"
                         (input)="onText($event)"
-                        (drop)="onDrop($event)"
                         [maxlength]="600">
                     </textarea>
                     <ng-template let-item #itemTemplate>
@@ -433,6 +433,7 @@
                 </div>
             </div>
             <div class="toolbar-actions">
+                <div class="text-length">{{textMessage.length}}/600</div>
                 <button
                     class="guardian-icon-button attach-btn big"
                     (click)="onAttach($event)">
@@ -470,7 +471,10 @@
     <div class="discussions">
         <div class="collapse-discussions">
             <div *ngFor="let discussion of discussions" class="collapse-discussion" (click)="onOpen(discussion)">
-                {{discussion._short}}
+                <svg-icon 
+                    *ngIf="discussion._icon"
+                    src="/assets/images/icons/{{discussion._icon}}.svg" 
+                    svgClass="icon-color-primary"></svg-icon>
                 <div *ngIf="discussion.count" class="discussion-count">
                     {{discussion.count}}
                 </div>

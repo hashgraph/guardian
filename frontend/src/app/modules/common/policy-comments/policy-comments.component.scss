@@ -578,6 +578,18 @@
             display: flex;
             flex-direction: row;
             justify-content: flex-end;
+            position: relative;
+
+            .text-length {
+                position: absolute;
+                top: 8px;
+                left: 0;
+                font-family: Inter;
+                font-weight: 400;
+                font-size: 14px;
+                color: #848FA9;
+                pointer-events: none;
+            }
 
             .delimiter {
                 border-left: 1px solid #E1E7EF;
@@ -970,5 +982,23 @@ textarea {
 .guardian-icon-button {
     * {
         pointer-events: none;
+    }
+}
+
+.discussion-user {
+    height: 40px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .discussion-user-icon {
+        margin-right: 8px;
+    }
+
+    .discussion-user-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
     }
 }

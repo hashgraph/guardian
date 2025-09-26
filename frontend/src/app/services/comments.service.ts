@@ -87,15 +87,15 @@ export class CommentsService {
             roles?: string[] | null,
             users?: string[] | null,
         }
-    ): Observable<any[]> {
+    ): Observable<any> {
         return this.http.post<any[]>(`${this.url}/${policyId}/${documentId}/discussions`, data) as any;
     }
 
     public createComment(
-        policyId: string,
-        documentId: string,
-        discussionId: string,
-        data: {
+        policyId?: string,
+        documentId?: string,
+        discussionId?: string,
+        data?: {
             anchor?: string;
             recipients?: string[];
             fields?: string[];
@@ -107,10 +107,10 @@ export class CommentsService {
     }
 
     public getPolicyComments(
-        policyId: string,
-        documentId: string,
-        discussionId: string,
-        filters: {
+        policyId?: string,
+        documentId?: string,
+        discussionId?: string,
+        filters?: {
             search?: string,
             lt?: string,
             gt?: string

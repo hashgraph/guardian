@@ -31,7 +31,15 @@ interface DiscussionItem {
     policyId: string;
     relationships?: string[];
     privacy?: string;
-    _short?: string
+    roles?: string[];
+    users?: string[];
+    _short?: string;
+    _icon?: string;
+    _users?: {
+        icon: string,
+        type: string,
+        label: string
+    }[];
 }
 
 interface FieldItem {
@@ -88,7 +96,7 @@ export class PolicyComments {
     public schemas: Schema[] = [];
 
     public discussions: DiscussionItem[] = [];
-    public currentDiscussion: any = null;
+    public currentDiscussion: DiscussionItem | null | undefined = null;
     public searchField?: FieldItem = undefined;
     public searchDiscussion: string = '';
     public searchMessage: string = '';
@@ -436,6 +444,42 @@ export class PolicyComments {
     private updateDiscussions() {
         for (const discussion of this.discussions) {
             discussion._short = (discussion.name || '#').substring(0, 1);
+            discussion._icon = (
+                discussion.privacy === 'users' ||
+                discussion.privacy === 'roles'
+            ) ? 'chat-2' : 'chat-1';
+            discussion._users = [];
+            if (discussion.privacy === 'users' || discussion.privacy === 'roles') {
+                const map = new Map<string, any>();
+                if (discussion.roles) {
+                    for (const role of discussion.roles) {
+                        map.set(role, {
+                            icon: 'group',
+                            label: role,
+                            type: 'role'
+                        })
+                    }
+                }
+                if (discussion.users) {
+                    for (const user of discussion.users) {
+                        map.set(user, {
+                            icon: 'user-2',
+                            label: this.getUserName(user),
+                            type: 'user'
+                        })
+                    }
+                }
+                if (discussion.owner) {
+                    map.set(discussion.owner, {
+                        icon: 'user-2',
+                        label: this.getUserName(discussion.owner),
+                        type: 'user'
+                    })
+                }
+                for (const item of map.values()) {
+                    discussion._users.push(item);
+                }
+            }
         }
     }
 
@@ -668,7 +712,12 @@ export class PolicyComments {
         const results: AttachedFile[] = [];
         if (files?.length) {
             for (const file of files) {
-                const result = AttachedFile.fromFile(this.policyId, this.documentId, this.currentDiscussion?.id, file);
+                const result = AttachedFile.fromFile(
+                    this.policyId,
+                    this.documentId,
+                    this.currentDiscussion?.id || '',
+                    file
+                );
                 results.push(result);
             }
         }
@@ -946,7 +995,7 @@ export class PolicyComments {
         this.loadComments('load');
     }
 
-    public onLinkField(field: string) {
+    public onLinkField(field?: string) {
         this.linkEvent.emit(field);
     }
 
@@ -954,16 +1003,6 @@ export class PolicyComments {
         if (item.type === 'field') {
             this.linkEvent.emit(item.tag);
         }
-    }
-
-    public isGroup() {
-        return (
-            this.currentDiscussion &&
-            (
-                this.currentDiscussion.privacy === 'users' ||
-                this.currentDiscussion.privacy === 'roles'
-            )
-        )
     }
 
     //#endregion
