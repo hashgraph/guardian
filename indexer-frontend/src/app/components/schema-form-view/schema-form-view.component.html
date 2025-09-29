@@ -5,12 +5,10 @@
                 <div class="label-field">{{item.description}}</div>
 
                 <div *ngIf="item.customType === 'table'" class="example-full-width">
-                    <div *ngIf="item.customType === 'table'" class="example-full-width">
-                        <app-table-viewer
-                                [value]="item.value"
-                                [analytics]="analytics"
-                        ></app-table-viewer>
-                    </div>
+                    <app-table-viewer
+                            [value]="item.value"
+                            [analytics]="analytics"
+                    ></app-table-viewer>
                 </div>
 
                 <div class="form-field-value">

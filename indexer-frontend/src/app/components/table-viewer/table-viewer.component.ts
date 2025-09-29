@@ -4,7 +4,6 @@ import { ChangeDetectorRef, Component, Input, NgZone } from '@angular/core';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
 import { ButtonModule } from 'primeng/button';
-import { EMPTY, finalize, switchMap, take } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 
 import { CsvService } from '@services/csv.service';
@@ -34,6 +33,9 @@ export class TableViewerComponent {
     public tooLargeMessage?: string;
     public canOpenPreview = false;
 
+    public previewColumnDefs: ColDef[] = [];
+    public previewRowData: Record<string, string>[] = [];
+
     private readonly PREVIEW_LIMIT = 10 * 1024 * 1024;
 
     private readonly IDB_NAME = 'TABLES';
@@ -57,8 +59,52 @@ export class TableViewerComponent {
         return this.getFileIdFromValue(this.value, this.analytics?.tableFiles);
     }
 
+    public get hasData(): boolean {
+        return !!this.fileId;
+    }
+
+    public get previewHeaderKeysLimited(): string[] {
+        const keys = (this.previewColumnDefs || [])
+            .map(def => String(def.field || '').trim())
+            .filter(Boolean);
+
+        return keys.slice(0, 8);
+    }
+
+    public get previewRowsLimited(): Record<string, string>[] {
+        const sourceRows = this.previewRowData || [];
+        const limitedRows = sourceRows.slice(0, 4);
+        const headerKeys = this.previewHeaderKeysLimited;
+
+        return limitedRows.map(row => {
+            const normalized: Record<string, string> = {};
+            for (const key of headerKeys) {
+                normalized[key] = String((row as any)?.[key] ?? '');
+            }
+            return normalized;
+        });
+    }
+
+    public buildColumnHeader(index: number): string {
+        let currentIndex = index;
+        let label = '';
+
+        for (;;) {
+            label = String.fromCharCode((currentIndex % 26) + 65) + label;
+            currentIndex = Math.floor(currentIndex / 26) - 1;
+
+            if (currentIndex < 0) {
+                break;
+            }
+        }
+
+        return label;
+    }
+
     ngOnChanges(): void {
-        this.initPreview().catch(() => {});
+        this.initPreview().catch(() => {
+            //
+        });
     }
 
     public openDialog(): void {
@@ -182,30 +228,59 @@ export class TableViewerComponent {
             .finally(() => this.stop('isDownloading'));
     }
 
+    private makePreview(
+        columnKeys: string[],
+        rows: Record<string, string>[],
+        maxColumns: number,
+        maxRows: number
+    ): { columns: string[]; rows: Record<string, string>[] } {
+        const limitedColumns = columnKeys.slice(0, Math.min(maxColumns, columnKeys.length));
+
+        const limitedRows = rows
+            .slice(0, Math.min(maxRows, rows.length))
+            .map(source => {
+                const out: Record<string, string> = {};
+                for (const key of limitedColumns) {
+                    out[key] = source[key] ?? '';
+                }
+                return out;
+            });
+
+        return {
+            columns: limitedColumns,
+            rows: limitedRows
+        };
+    }
+
     private async initPreview(): Promise<void> {
-        const id = this.fileId;
+        const fileId = this.fileId;
 
         this.tooLargeMessage = undefined;
         this.loadError = undefined;
         this.canOpenPreview = false;
+        this.previewColumnDefs = [];
+        this.previewRowData = [];
         this.mark();
 
-        if (!id) {
+        if (!fileId) {
             return;
         }
 
         await this.ensureIdbStores();
 
         try {
-            let cached = await this.getFromIdb(id);
+            let cached = await this.getFromIdb(fileId);
             if (!cached) {
-                const resp = await firstValueFrom(this.artifacts.getFileBlob(id));
-                const gz: Blob | undefined = resp.body ?? undefined;
+                const resp = await firstValueFrom(this.artifacts.getFileBlob(fileId));
+                const gz: Blob | undefined =
+                    resp instanceof Blob ? resp : (resp as any)?.body;
+
                 if (!gz) {
                     throw new Error('No blob');
                 }
-                await this.putToIdb(id, gz);
-                cached = await this.getFromIdb(id);
+
+                await this.putToIdb(fileId, gz);
+                cached = await this.getFromIdb(fileId);
             }
 
             if (!cached) {
@@ -216,17 +291,31 @@ export class TableViewerComponent {
             const unzippedBytes = this.utf8Size(csvText);
 
             if (unzippedBytes > this.PREVIEW_LIMIT) {
-                const mb = (unzippedBytes / (1024 * 1024)).toFixed(1);
-                this.tooLargeMessage = `File is too large for preview (${mb} MB). Use "Download CSV".`;
+                const megabytes = (unzippedBytes / (1024 * 1024)).toFixed(1);
+                this.tooLargeMessage = `File is too large for preview (${megabytes} MB). Use "Download CSV".`;
                 this.canOpenPreview = false;
-                this.mark();
-                return;
+            } else {
+                this.canOpenPreview = true;
             }
 
-            this.canOpenPreview = true;
+            const parsed = this.csv.parseCsvToTable(csvText, ',');
+
+            const preview = this.makePreview(parsed.columnKeys, parsed.rows, 8, 4);
+
+            this.previewColumnDefs = preview.columns.map((key: string, index: number) => ({
+                field: key,
+                headerName: this.buildColumnHeader(index),
+                editable: false,
+                minWidth: 100,
+                resizable: true
+            }));
+
+            this.previewRowData = preview.rows;
             this.mark();
         } catch (error: any) {
             this.loadError = error?.message ?? 'Failed to prepare preview';
+            this.previewColumnDefs = [];
+            this.previewRowData = [];
             this.mark();
         }
     }
