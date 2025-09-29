@@ -635,7 +635,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool'] }, () => {
                     },
                     timeout: 180000
                 }).then(() => {
-                    cy.wait(10000);
+                    cy.wait(20000);
                     cy.request({
                         method: METHOD.GET,
                         url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues + "?savepointIds=%5B%22" + sv1 + "%22,%22" + sv3 + "%22,%22" + sv4 + "%22%5D",
@@ -644,7 +644,6 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool'] }, () => {
                         },
                         timeout: 180000
                     }).then((response) => {
-                        cy.wait(10000);
                         expect(response.body.data.at(0).option.status).to.eq("Waiting for approval")
                         let issueData = response.body.data.at(0)
                         issueData.option = { "status": "Rejected", "comment": ["q"] };
