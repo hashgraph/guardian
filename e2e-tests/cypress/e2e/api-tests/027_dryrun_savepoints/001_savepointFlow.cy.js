@@ -646,6 +646,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool'] }, () => {
                     }).then((response) => {
                         cy.wait(5000);
                         cy.task('log', response.body)
+                        cy.wait(5000);
                         //expect(response.body.data.at(0).option.status).to.eq("Waiting for approval")
                         let issueData = response.body.data.at(0)
                         issueData.option = { "status": "Rejected", "comment": ["q"] };
