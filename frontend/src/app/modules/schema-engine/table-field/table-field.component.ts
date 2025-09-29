@@ -35,7 +35,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
 
     private readonly MAX_PREVIEW_BYTES = 10 * 1024 * 1024;
 
-    private readonly PREVIEW_COLUMNS_LIMIT = 10;
+    private readonly PREVIEW_COLUMNS_LIMIT = 8;
     private readonly PREVIEW_ROWS_LIMIT = 4;
 
     private readonly IDB_NAME = 'TABLES';
@@ -70,6 +70,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
         const rows = value.rows || [];
         const limited = rows.slice(0, this.PREVIEW_ROWS_LIMIT);
         const keys = this.previewHeaderKeysLimited;
+
         return limited.map(row => {
             const normalized: Record<string, string> = {};
             for (const key of keys) {

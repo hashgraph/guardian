@@ -33,6 +33,8 @@ export class TableViewerComponent {
     public tooLargeMessage?: string;
 
     private readonly PREVIEW_LIMIT = 10 * 1024 * 1024;
+    private readonly PREVIEW_COLUMNS_LIMIT = 8;
+    private readonly PREVIEW_ROWS_LIMIT = 4;
     private readonly IDB_NAME = 'TABLES';
     private readonly FILES_STORE = 'FILES';
 
@@ -55,21 +57,19 @@ export class TableViewerComponent {
     }
 
     public get previewHeaderKeysLimited(): string[] {
-        const keys = (this.previewColumnDefs || [])
+        const fields = (this.previewColumnDefs || [])
             .map(def => String(def.field || '').trim())
             .filter(Boolean);
-
-        return keys.slice(0, 10);
+        return fields.slice(0, this.PREVIEW_COLUMNS_LIMIT);
     }
 
     public get previewRowsLimited(): Record<string, string>[] {
-        const sourceRows = this.previewRowData || [];
-        const limitedRows = sourceRows.slice(0, 4);
-        const headerKeys = this.previewHeaderKeysLimited;
-
+        const rows = this.previewRowData || [];
+        const limitedRows = rows.slice(0, this.PREVIEW_ROWS_LIMIT);
+        const keys = this.previewHeaderKeysLimited;
         return limitedRows.map(row => {
             const normalized: Record<string, string> = {};
-            for (const key of headerKeys) {
+            for (const key of keys) {
                 normalized[key] = String((row as any)?.[key] ?? '');
             }
             return normalized;
@@ -288,6 +288,7 @@ export class TableViewerComponent {
 
         try {
             let cached = await this.getFromIdb(fileId);
+
             if (!cached) {
                 const resp = await firstValueFrom(this.artifactService.getFileBlob(fileId));
                 const gz: Blob | undefined = resp instanceof Blob ? resp : (resp as any)?.body;
@@ -297,20 +298,31 @@ export class TableViewerComponent {
                 await this.putToIdb(fileId, gz);
                 cached = await this.getFromIdb(fileId);
             }
+
             if (!cached) {
                 throw new Error('No cached file');
             }
 
             const csvText = await this.gzip.gunzipToText(cached.gz);
 
-            const unzippedBytes = new Blob([csvText]).size;
-
-            if (!this.handlePreviewLimit(unzippedBytes)) {
-                return
+            const byteLength = new TextEncoder().encode(csvText).length;
+            if (byteLength > this.PREVIEW_LIMIT) {
+                const mb = (byteLength / (1024 * 1024)).toFixed(1);
+                this.tooLargeMessage = `File is too large for preview (${mb} MB). Use "Download CSV".`;
+                this.canOpenPreview = false;
+            } else {
+                this.tooLargeMessage = undefined;
+                this.canOpenPreview = true;
             }
 
             const parsed = this.csvService.parseCsvToTable(csvText, ',');
-            const preview = this.makePreview(parsed.columnKeys, parsed.rows, 10, 10);
+
+            const preview = this.makePreview(
+                parsed.columnKeys,
+                parsed.rows,
+                this.PREVIEW_COLUMNS_LIMIT,
+                this.PREVIEW_ROWS_LIMIT
+            );
 
             this.previewColumnDefs = preview.columns.map((key: string, index: number) => ({
                 field: key,
@@ -319,10 +331,10 @@ export class TableViewerComponent {
                 minWidth: 100,
                 resizable: true,
             }));
-            this.previewRowData = preview.rows;
-            this.canOpenPreview = true;
-            this.mark();
 
+            this.previewRowData = preview.rows;
+
+            this.mark();
         } catch (error: any) {
             this.loadError = error?.message ?? 'Failed to prepare preview';
             this.mark();

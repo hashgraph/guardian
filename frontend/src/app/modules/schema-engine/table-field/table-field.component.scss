@@ -132,7 +132,7 @@
 
 .table-field__row {
     display: grid;
-    grid-template-columns: 48px repeat(10, minmax(80px, 1fr));
+    grid-template-columns: 48px repeat(8, minmax(80px, 1fr));
 }
 
 .table-field__row--header {
@@ -167,4 +167,12 @@
 
 :host ::ng-deep .pi {
     margin-right: 8px;
+}
+
+.table-field__cell--data {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 6px;
 }

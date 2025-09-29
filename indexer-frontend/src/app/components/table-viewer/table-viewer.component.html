@@ -47,9 +47,10 @@
             <div class="table-viewer__row table-viewer__row--header" role="row">
                 <div class="table-viewer__cell table-viewer__cell--rownum">№</div>
                 <div
-                        class="table-viewer__cell table-viewer__cell--head"
-                        *ngFor="let columnKey of previewHeaderKeysLimited; let columnIndex = index"
-                        role="columnheader">
+                    class="table-viewer__cell table-viewer__cell--head"
+                    *ngFor="let columnKey of previewHeaderKeysLimited; let columnIndex = index"
+                    [title]="columnKey"
+                    role="columnheader">
                     {{ buildColumnHeader(columnIndex) }}
                 </div>
             </div>
@@ -59,7 +60,10 @@
                     *ngFor="let row of previewRowsLimited; let rowIndex = index"
                     role="row">
                 <div class="table-viewer__cell table-viewer__cell--rownum">{{ rowIndex + 1 }}</div>
-                <div class="table-viewer__cell" *ngFor="let columnKey of previewHeaderKeysLimited">
+                <div
+                    class="table-viewer__cell table-viewer__cell--data"
+                    *ngFor="let columnKey of previewHeaderKeysLimited"
+                    [title]="row[columnKey] || ''">
                     {{ row[columnKey] || '' }}
                 </div>
             </div>
