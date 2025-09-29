@@ -636,7 +636,6 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool'] }, () => {
                     },
                     timeout: 180000
                 }).then(() => {
-                    Checks.whileRequestAppear(authorization);
                     const waitIssueApproveStatus = {
                         method: METHOD.GET,
                         url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues + "?savepointIds=%5B%22" + sv1 + "%22,%22" + sv3 + "%22,%22" + sv4 + "%22%5D",
