@@ -3,8 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 import * as Checks from "../../../support/checkingMethods";
 
-//context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => {
-context("Savepoints Flow", { tags: ['savepoints', 'secondPool'] }, () => {
+context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let policyId, sv1, sv3, sv4, sv5, adminDid, registrantDid;
 

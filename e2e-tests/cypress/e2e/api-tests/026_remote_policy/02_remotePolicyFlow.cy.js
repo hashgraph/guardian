@@ -3,8 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 import * as Checks from "../../../support/checkingMethods";
 
-//context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
-context("Policies", { tags: ['remote_policy', 'secondPool'] }, () => {
+context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
     const MainSRUsername = Cypress.env('MainSRUser');
     const DepUserUsername = Cypress.env('DepUser');
