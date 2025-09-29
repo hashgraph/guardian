@@ -14,7 +14,7 @@ icon: cart-plus
 * From the left-hand navigation panel, go to **Manage** **Schemas**.
 * You’ll see system schemas (default ones) and any custom schemas already created.
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### **3. Create a New Schema**
 
@@ -25,7 +25,7 @@ icon: cart-plus
   * **Description** → short explanation of what the schema will be used for
   * For(Entity) → Select the relevant document.&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### **4. Define Schema Fields**
 
@@ -49,7 +49,7 @@ Schemas can be defined/changed by editing their JSON definitions
 
 <figure><img src="../../../.gitbook/assets/image (103).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Schema JSON definition contains the following editable fields
 
