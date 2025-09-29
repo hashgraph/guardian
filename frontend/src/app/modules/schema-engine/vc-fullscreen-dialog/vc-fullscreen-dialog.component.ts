@@ -45,6 +45,10 @@ export class VCFullscreenDialog {
     public collapse: boolean = false;
     public discussionData: any = {};
     public discussionAction: boolean = false;
+    public exportDocument: boolean;
+    public key: boolean;
+    public comments: boolean;
+    public commentsReadonly: boolean;
 
     private _destroy$ = new Subject<void>();
     private _subscription?: Subscription | null;
@@ -70,6 +74,10 @@ export class VCFullscreenDialog {
             row,
             schema,
             document,
+            exportDocument,
+            key,
+            comments,
+            commentsReadonly,
             destroy
         } = this.dialogConfig.data;
 
@@ -103,6 +111,12 @@ export class VCFullscreenDialog {
         this.dryRun = !!dryRun;
         this.getByUser = false;
         this.schema = schema;
+
+        this.exportDocument = exportDocument !== false;
+        this.key = key === true;
+
+        this.comments = comments !== false;
+        this.commentsReadonly = commentsReadonly === true;
 
         this.document = document;
         if (document) {
@@ -169,6 +183,7 @@ export class VCFullscreenDialog {
 
     public get isExport(): boolean {
         return (
+            this.exportDocument &&
             (!this.dryRun) &&
             (!!this.messageId) &&
             (this.type === 'VC' || this.type === 'VP')
@@ -242,7 +257,7 @@ export class VCFullscreenDialog {
 
     public onDiscussionView($event: any) {
         if ($event?.type === 'messages') {
-            this.discussionAction = true;
+            this.discussionAction = !this.commentsReadonly;
         } else {
             this.discussionAction = false;
         }

@@ -263,7 +263,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
             });
             dialogRef.onClose.subscribe(async (result) => {
             });
-
         }
     }
 

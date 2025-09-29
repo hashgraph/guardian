@@ -77,7 +77,7 @@ export class InterfaceDocumentsSource {
         const sourceAddons = fields
             ?.filter((field) => field.bindGroup)
             .map((field) => field.bindGroup);
-        const documents = (await this._getData(user, ref, enableCommonSorting,  {}, null, undefined, savepointIds)) as any[];
+        const documents = (await this._getData(user, ref, enableCommonSorting, {}, null, undefined, savepointIds)) as any[];
         const document = documents.find(
             // tslint:disable-next-line:no-shadowed-variable
             (document) =>
@@ -299,6 +299,10 @@ export class InterfaceDocumentsSource {
         if (filterByUUID) {
             const doc = data.find(d => d.document.id === filterByUUID);
             data = [doc];
+        }
+
+        for (const d of data) {
+            (d as any).comments = await ref.components.getPolicyCommentsCount(d.id);
         }
 
         if (filterIds) {

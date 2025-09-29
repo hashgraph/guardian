@@ -71,6 +71,8 @@ export class PolicyComments {
     @Input('dry-run') dryRun!: any | undefined;
     @Input('field') field!: any | undefined;
     @Input('collapse') collapse: boolean = true;
+    @Input('readonly') readonly: boolean = false;
+    @Input('key') key: boolean = false;
 
     @ViewChild('messageContainer', { static: false }) messageContainer: any;
     @ViewChild('messageInput', { static: false }) messageInput: any;
@@ -135,8 +137,7 @@ export class PolicyComments {
 
     constructor(
         private profileService: ProfileService,
-        private commentsService: CommentsService,
-        private ipfs: IPFSService,
+        private commentsService: CommentsService
     ) {
         this.data = new DataList();
         this.loading = true;
@@ -190,7 +191,7 @@ export class PolicyComments {
             this.commentsService.getUsers(this.policyId, this.documentId),
             this.commentsService.getRelationships(this.policyId, this.documentId),
             this.commentsService.getSchemas(this.policyId, this.documentId),
-            this.commentsService.getDiscussions(this.policyId, this.documentId)
+            this.commentsService.getDiscussions(this.policyId, this.documentId, undefined, this.readonly)
         ])
             .pipe(takeUntil(this._destroy$))
             .subscribe(([
@@ -221,7 +222,7 @@ export class PolicyComments {
     private loadDiscussions() {
         this.loading = true;
         const filters = this.getDiscussionFilters();
-        this.commentsService.getDiscussions(this.policyId, this.documentId, filters)
+        this.commentsService.getDiscussions(this.policyId, this.documentId, filters, this.readonly)
             .pipe(takeUntil(this._destroy$))
             .subscribe((discussions) => {
                 this.discussions = discussions;
@@ -255,7 +256,8 @@ export class PolicyComments {
                 this.policyId,
                 this.documentId,
                 this.currentDiscussion?.id,
-                filter
+                filter,
+                this.readonly
             )
             .pipe(takeUntil(this._destroy$))
             .subscribe((response) => {
@@ -1005,5 +1007,29 @@ export class PolicyComments {
         }
     }
 
+    public onKey(discussion: any) {
+        this.loading = true;
+        this.commentsService
+            .downloadKey(
+                this.policyId,
+                this.documentId,
+                discussion?.id,
+            )
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((response: ArrayBuffer) => {
+                const blob = new Blob([response], { type: "text/plain;charset=utf-8" });
+                const url = window.URL.createObjectURL(blob);
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.setAttribute('download', `${discussion?.name}.key`);
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                downloadLink.remove();
+                window.URL.revokeObjectURL(url);
+                this.loading = false;
+            }, (e) => {
+                this.loading = false;
+            });
+    }
     //#endregion
 }

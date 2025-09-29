@@ -1374,7 +1374,8 @@ export class PolicyEngine extends NatsService {
         documentId: string,
         params?: {
             search?: string,
-            field?: string
+            field?: string,
+            audit?: boolean
         }
     ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DISCUSSIONS, { user, policyId, documentId, params });
@@ -1446,7 +1447,8 @@ export class PolicyEngine extends NatsService {
             senderRole?: string,
             private?: boolean,
             lt?: string,
-            gt?: string
+            gt?: string,
+            audit?: boolean,
         }
     ): Promise<{ comments: any[], count: number }> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENTS, { user, policyId, documentId, discussionId, params });
@@ -1505,5 +1507,65 @@ export class PolicyEngine extends NatsService {
         responseType: 'json' | 'raw' | 'str'
     ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.IPFS_GET_FILE, { user, policyId, documentId, discussionId, cid, responseType });
+    }
+
+    /**
+     * Get file from IPFS
+     * @param cid CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public async getDiscussionKey(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        discussionId: string,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DISCUSSION_KEY, { user, policyId, documentId, discussionId });
+    }
+
+    /**
+     * Create policy users
+     * @param user
+     * @param policyId
+     */
+    public async getPolicyRepositoryUsers(
+        user: IAuthUser,
+        policyId: string,
+    ): Promise<any[]> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_REPOSITORY_USERS, { user, policyId });
+    }
+
+    /**
+     * Create policy schemas
+     * @param user
+     * @param policyId
+     */
+    public async getPolicyRepositorySchemas(
+        user: IAuthUser,
+        policyId: string,
+    ): Promise<any[]> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_REPOSITORY_SCHEMAS, { user, policyId });
+    }
+
+    /**
+     * Get policy documents
+     * @param user
+     * @param policyId
+     * @param filters
+     */
+    public async getPolicyRepositoryDocuments(
+        user: IAuthUser,
+        policyId: string,
+        filters: {
+            type?: string,
+            owner?: string,
+            schema?: string,
+            comments?: boolean,
+            pageIndex?: number | string,
+            pageSize?: number | string
+        }
+    ): Promise<{ documents: any[], count: number }> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_REPOSITORY_DOCUMENTS, { user, policyId, filters });
     }
 }

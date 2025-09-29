@@ -2,7 +2,7 @@ import { Auth, AuthUser } from '#auth';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson } from '#helpers';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
+import { DocumentType, Permissions, PolicyHelper, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version, Patch, StreamableFile } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -40,7 +40,8 @@ export class PolicyCommentsApi {
     @Get('/:policyId/:documentId/users')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
-        Permissions.POLICIES_POLICY_MANAGE
+        Permissions.POLICIES_POLICY_MANAGE,
+        Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
         summary: '',
@@ -93,7 +94,8 @@ export class PolicyCommentsApi {
     @Get('/:policyId/:documentId/relationships')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
-        Permissions.POLICIES_POLICY_MANAGE
+        Permissions.POLICIES_POLICY_MANAGE,
+        Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
         summary: '',
@@ -145,7 +147,8 @@ export class PolicyCommentsApi {
     @Get('/:policyId/:documentId/schemas')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
-        Permissions.POLICIES_POLICY_MANAGE
+        Permissions.POLICIES_POLICY_MANAGE,
+        Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
         summary: '',
@@ -197,7 +200,8 @@ export class PolicyCommentsApi {
     @Get('/:policyId/:documentId/discussions')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
-        Permissions.POLICIES_POLICY_MANAGE
+        Permissions.POLICIES_POLICY_MANAGE,
+        Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
         summary: '',
@@ -231,6 +235,13 @@ export class PolicyCommentsApi {
         required: false,
         example: 'test'
     })
+    @ApiQuery({
+        name: 'readonly',
+        type: Boolean,
+        description: '.',
+        required: false,
+        example: false
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Object
@@ -246,16 +257,19 @@ export class PolicyCommentsApi {
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
         @Query('search') search?: string,
-        @Query('field') field?: string
+        @Query('field') field?: string,
+        @Query('readonly') readonly?: boolean
     ): Promise<any> {
         try {
             if (!policyId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const audit = UserPermissions.has(user, Permissions.POLICIES_POLICY_AUDIT) && !!readonly;
             const engineService = new PolicyEngine();
             const params = {
                 search,
-                field
+                field,
+                audit
             }
             return await engineService.getPolicyDiscussions(user, policyId, documentId, params);
         } catch (error) {
@@ -407,6 +421,7 @@ export class PolicyCommentsApi {
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_MANAGE,
+        Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
         summary: 'Return a list of comments.',
@@ -433,6 +448,13 @@ export class PolicyCommentsApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiQuery({
+        name: 'readonly',
+        type: Boolean,
+        description: '.',
+        required: false,
+        example: false
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -458,11 +480,13 @@ export class PolicyCommentsApi {
             lt?: string,
             gt?: string
         },
-        @Response() res: any
+        @Response() res: any,
+        @Query('readonly') readonly?: boolean
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            const { comments, count } = await engineService.getPolicyComments(user, policyId, documentId, discussionId, body);
+            const audit = UserPermissions.has(user, Permissions.POLICIES_POLICY_AUDIT) && !!readonly;
+            const { comments, count } = await engineService.getPolicyComments(user, policyId, documentId, discussionId, { ...body, audit });
             return res.header('X-Total-Count', count).send(comments);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -604,7 +628,8 @@ export class PolicyCommentsApi {
     @Get('/:policyId/:documentId/discussions/:discussionId/comments/file/:cid')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
-        Permissions.POLICIES_POLICY_MANAGE
+        Permissions.POLICIES_POLICY_MANAGE,
+        Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
         summary: 'Get file from ipfs.',
@@ -661,6 +686,70 @@ export class PolicyCommentsApi {
         try {
             const engineService = new PolicyEngine();
             const result = await engineService.getFileIpfs(user, policyId, documentId, discussionId, cid, 'raw');
+            if (result.type !== 'Buffer') {
+                throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
+            }
+            return new StreamableFile(Buffer.from(result));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get file
+     */
+    @Get('/:policyId/:documentId/discussions/:discussionId/key')
+    @Auth(
+        Permissions.POLICIES_POLICY_AUDIT,
+    )
+    @ApiOperation({
+        summary: 'Get file from ipfs.',
+        description: 'Get file from ipfs.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Document Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'discussionId',
+        type: String,
+        description: 'Discussion Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @UseCache({ ttl: CACHE.LONG_TTL })
+    @HttpCode(HttpStatus.OK)
+    async getKey(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('documentId') documentId: string,
+        @Param('discussionId') discussionId: string
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            const result = await engineService.getDiscussionKey(user, policyId, documentId, discussionId);
             if (result.type !== 'Buffer') {
                 throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
             }

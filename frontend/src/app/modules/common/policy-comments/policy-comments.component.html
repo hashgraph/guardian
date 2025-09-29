@@ -12,7 +12,7 @@
         <div *ngIf="currentTab === 'discussions'" class="header-container">
             <svg-icon
                 class="icon-btn"
-                src="/assets/images/icons/chat.svg"
+                src="/assets/images/icons/chat-1.svg"
                 [svgClass]="'icon-color-primary'">
             </svg-icon>
             <div class="component-name">Comments</div>
@@ -36,7 +36,16 @@
                     svgClass="icon-color-close"></svg-icon>
             </div>
         </div>
-        <div *ngIf="currentTab === 'messages' && currentDiscussion" class="header-icon">
+        <div *ngIf="currentTab === 'messages' && currentDiscussion" class="header-toolbar">
+            <button
+                *ngIf="key"
+                class="guardian-icon-button group-btn big"
+                (click)="onKey(currentDiscussion)">
+                <svg-icon class="icon-btn svg-icon" 
+                    src="/assets/images/icons/key.svg"
+                    svgClass="icon-color-grey-color-3">
+                </svg-icon>
+            </button>
             <button
                 *ngIf="currentDiscussion._users?.length"
                 class="guardian-icon-button group-btn big"
@@ -242,7 +251,7 @@
                 </div>
             </div>
         </div>
-        <div class="toolbar">
+        <div *ngIf="!readonly" class="toolbar">
             <button
                 (click)="onNewDiscussion()"
                 class="guardian-button guardian-button-primary new-discussion-btn"
@@ -290,7 +299,7 @@
                 <div class="not-exist">
                     <div class="not-exist-icon">
                         <svg-icon
-                            src="/assets/images/icons/chat.svg"
+                            src="/assets/images/icons/chat-1.svg"
                             svgClass="icon-color-disabled"></svg-icon>
                     </div>
                     <div class="not-exist-text">There are no comments added yet.</div>
@@ -377,7 +386,7 @@
                 </button> 
             </div>
         </div>
-        <div class="toolbar" (drop)="onDrop($event)">
+        <div *ngIf="!readonly" class="toolbar" (drop)="onDrop($event)">
             <div class="guardian-textarea-container toolbar-textarea">
                 <mwl-text-input-autocomplete-container>
                     <textarea
@@ -464,7 +473,7 @@
     <div class="header">
         <svg-icon
             class="icon-btn svg-icon"
-            src="/assets/images/icons/chat.svg"
+            src="/assets/images/icons/chat-1.svg"
             [svgClass]="'icon-color-primary'">
         </svg-icon>
     </div>

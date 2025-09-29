@@ -56,6 +56,25 @@
             max-width: 32px;
         }
 
+        .header-toolbar {
+            height: 32px;
+            width: 72px;
+            min-width: 72px;
+            max-width: 72px;
+            display: flex;
+            flex-direction: row;
+            overflow: visible;
+            justify-content: flex-end;
+
+            button {
+                margin-right: 8px;
+                min-width: 32px;
+                max-width: 32px;
+                margin-right: 0px;
+                margin-left: 8px;
+            }
+        }
+
         .component-close {
             width: 32px;
             min-width: 32px;
@@ -265,41 +284,41 @@
             flex-direction: row;
             cursor: pointer;
 
-            &:nth-child(6n+1) {
-                .discussion-icon {
-                    background: #DAECFF;
-                }
-            }
+            // &:nth-child(6n+1) {
+            //     .discussion-icon {
+            //         background: #DAECFF;
+            //     }
+            // }
 
-            &:nth-child(6n+2) {
-                .discussion-icon {
-                    background: #EBDAFF;
-                }
-            }
+            // &:nth-child(6n+2) {
+            //     .discussion-icon {
+            //         background: #EBDAFF;
+            //     }
+            // }
 
-            &:nth-child(6n+3) {
-                .discussion-icon {
-                    background: #FFDAFE;
-                }
-            }
+            // &:nth-child(6n+3) {
+            //     .discussion-icon {
+            //         background: #FFDAFE;
+            //     }
+            // }
 
-            &:nth-child(6n+4) {
-                .discussion-icon {
-                    background: #FFDADA;
-                }
-            }
+            // &:nth-child(6n+4) {
+            //     .discussion-icon {
+            //         background: #FFDADA;
+            //     }
+            // }
 
-            &:nth-child(6n+5) {
-                .discussion-icon {
-                    background: #FFF7DA;
-                }
-            }
+            // &:nth-child(6n+5) {
+            //     .discussion-icon {
+            //         background: #FFF7DA;
+            //     }
+            // }
 
-            &:nth-child(6n+6) {
-                .discussion-icon {
-                    background: #E8FFDA;
-                }
-            }
+            // &:nth-child(6n+6) {
+            //     .discussion-icon {
+            //         background: #E8FFDA;
+            //     }
+            // }
 
             .discussion-icon {
                 min-width: 44px;
@@ -321,6 +340,7 @@
                 user-select: none;
                 position: relative;
                 text-transform: uppercase;
+                background: #f0f3fc;
 
                 .discussion-count {
                     pointer-events: none !important;
@@ -915,6 +935,7 @@ textarea {
                 user-select: none;
                 text-transform: uppercase;
                 position: relative;
+                background: #f0f3fc;
 
                 &:hover {
                     filter: brightness(0.95);
@@ -939,29 +960,29 @@ textarea {
                     justify-content: center;
                 }
 
-                &:nth-child(6n+1) {
-                    background: #DAECFF;
-                }
+                // &:nth-child(6n+1) {
+                //     background: #DAECFF;
+                // }
 
-                &:nth-child(6n+2) {
-                    background: #EBDAFF;
-                }
+                // &:nth-child(6n+2) {
+                //     background: #EBDAFF;
+                // }
 
-                &:nth-child(6n+3) {
-                    background: #FFDAFE;
-                }
+                // &:nth-child(6n+3) {
+                //     background: #FFDAFE;
+                // }
 
-                &:nth-child(6n+4) {
-                    background: #FFDADA;
-                }
+                // &:nth-child(6n+4) {
+                //     background: #FFDADA;
+                // }
 
-                &:nth-child(6n+5) {
-                    background: #FFF7DA;
-                }
+                // &:nth-child(6n+5) {
+                //     background: #FFF7DA;
+                // }
 
-                &:nth-child(6n+6) {
-                    background: #E8FFDA;
-                }
+                // &:nth-child(6n+6) {
+                //     background: #E8FFDA;
+                // }
             }
         }
     }

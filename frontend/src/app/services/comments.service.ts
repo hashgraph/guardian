@@ -67,9 +67,13 @@ export class CommentsService {
         documentId: string,
         filters?: {
             search?: string,
-            field?: string
-        }
+            field?: string,
+            readonly?: boolean
+        },
+        readonly?: boolean
     ): Observable<any[]> {
+        filters = filters || {};
+        filters.readonly = readonly;
         const params = CommentsService.getOptions(filters);
         return this.http.get<any[]>(`${this.url}/${policyId}/${documentId}/discussions`, { params }) as any;
     }
@@ -115,8 +119,18 @@ export class CommentsService {
             lt?: string,
             gt?: string
         },
+        readonly?: boolean
     ): Observable<HttpResponse<any[]>> {
-        return this.http.post<any[]>(`${this.url}/${policyId}/${documentId}/discussions/${discussionId}/comments/search`, filters, { observe: 'response' }) as any;
+        return this.http.post<any[]>(
+            `${this.url}/${policyId}/${documentId}/discussions/${discussionId}/comments/search`,
+            filters,
+            {
+                observe: 'response',
+                params: {
+                    readonly: !!readonly
+                }
+            }
+        ) as any;
     }
 
     public getPolicyCommentsCount(
@@ -149,6 +163,16 @@ export class CommentsService {
         cid: string
     ): Observable<ArrayBuffer> {
         return this.http.get(`${this.url}/${policyId}/${documentId}/discussions/${discussionId}/comments/file/${cid}`, {
+            responseType: 'arraybuffer',
+        });
+    }
+
+    public downloadKey(
+        policyId?: string,
+        documentId?: string,
+        discussionId?: string
+    ): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${policyId}/${documentId}/discussions/${discussionId}/key`, {
             responseType: 'arraybuffer',
         });
     }

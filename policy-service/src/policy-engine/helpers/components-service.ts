@@ -468,4 +468,15 @@ export class ComponentsService {
     public getVirtualUser(did: string): Promise<IAuthUser> {
         return this.databaseServer.getVirtualUser(did);
     }
+
+    /**
+     * Get document comments
+     * @param documentId
+     */
+    public async getPolicyCommentsCount(documentId: string): Promise<number> {
+        return await DatabaseServer.getPolicyCommentsCount({
+            policyId: this.policyId,
+            targetId: documentId
+        });
+    }
 }

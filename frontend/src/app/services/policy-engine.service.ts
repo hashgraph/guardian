@@ -366,21 +366,17 @@ export class PolicyEngineService {
         includeDocument: boolean = false,
         type: string,
         pageIndex?: number,
-        pageSize?: number
+        pageSize?: number,
+        filters?: any
     ): Observable<HttpResponse<any[]>> {
-        const params: any = {}
+        filters = filters || {};
         if (includeDocument) {
-            params.includeDocument = includeDocument;
+            filters.includeDocument = includeDocument;
         }
         if (type) {
-            params.type = type;
+            filters.type = type;
         }
-        if (Number.isInteger(pageIndex)) {
-            params.pageIndex = pageIndex;
-        }
-        if (Number.isInteger(pageSize)) {
-            params.pageSize = pageSize;
-        }
+        const params = PolicyEngineService.getOptions(filters, pageIndex, pageSize);
         return this.http.get<any>(`${this.url}/${policyId}/documents`, { observe: 'response', params });
     }
 

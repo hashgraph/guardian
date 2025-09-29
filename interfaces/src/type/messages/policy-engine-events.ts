@@ -101,4 +101,9 @@ export enum PolicyEngineEvents {
     GET_POLICY_COMMENT_COUNT = 'policy-engine-get-policy-comments-count',
     IPFS_ADD_FILE = 'policy-engine-ipfs-add-file',
     IPFS_GET_FILE = 'policy-engine-ipfs-get-file',
+    GET_POLICY_DISCUSSION_KEY = 'policy-engine-get-policy-discussion-key',
+
+    GET_POLICY_REPOSITORY_USERS = 'policy-engine-policy-repository-users',
+    GET_POLICY_REPOSITORY_DOCUMENTS = 'policy-engine-policy-repository-documents',
+    GET_POLICY_REPOSITORY_SCHEMAS = 'policy-engine-policy-repository-schemas',
 }

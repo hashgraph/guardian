@@ -158,6 +158,7 @@ import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integrat
 import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
 import { AddSavepointDialog } from "./policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component";
 import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
+import { PolicyRepositoryComponent } from './policy-repository/policy-repository.component';
 
 @NgModule({
     declarations: [
@@ -274,7 +275,8 @@ import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint
         SearchToolDialog,
         RestoreSavepointDialog,
         AddSavepointDialog,
-        OnLoadSavepointDialog
+        OnLoadSavepointDialog,
+        PolicyRepositoryComponent
     ],
     imports: [
         CommonModule,

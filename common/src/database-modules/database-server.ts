@@ -3467,6 +3467,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Get VCs
+     * @param filters
+     * @param options
+     */
+    public static async getVCsAndCount(
+        filters?: FilterQuery<VcDocumentCollection>,
+        options?: FindOptions<VcDocumentCollection>
+    ): Promise<[VcDocumentCollection[], number]> {
+        return await new DataBaseHelper(VcDocumentCollection).findAndCount(filters, options);
+    }
+
+    /**
      * Get VC
      * @param filters
      * @param options
@@ -3617,6 +3629,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getVPs(filters?: FilterQuery<VpDocumentCollection>, options?: FindOptions<VpDocumentCollection>): Promise<VpDocumentCollection[]> {
         return await new DataBaseHelper(VpDocumentCollection).find(filters, options);
+    }
+
+    /**
+     * Get VCs
+     * @param filters
+     * @param options
+     */
+    public static async getVPsAndCount(
+        filters?: FilterQuery<VpDocumentCollection>,
+        options?: FindOptions<VpDocumentCollection>
+    ): Promise<[VpDocumentCollection[], number]> {
+        return await new DataBaseHelper(VpDocumentCollection).findAndCount(filters, options);
     }
 
     /**

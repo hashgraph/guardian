@@ -128,6 +128,7 @@ export class PolicyCommentsUtils {
     public static async getCommonDiscussion(
         policy: Policy,
         document: VcDocument,
+        audit: boolean
     ) {
         try {
             const commonDiscussion = await DatabaseServer.getPolicyDiscussion({
@@ -135,7 +136,7 @@ export class PolicyCommentsUtils {
                 targetId: document.id,
                 system: true
             })
-            if (commonDiscussion) {
+            if (commonDiscussion || audit) {
                 return commonDiscussion;
             }
 

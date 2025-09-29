@@ -158,6 +158,7 @@ const columns = [{
     }
 }, {
     id: 'instance',
+    size: '150',
     permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
@@ -210,6 +211,7 @@ export class PoliciesComponent implements OnInit {
     public publishMenuSelector: any = null;
     public noFilterResults: boolean = false;
     private columns: string[] = [];
+    private columnSize = new Map<string, string | undefined>();
     private publishMenuOption = [
         {
             id: 'Publish',
@@ -341,6 +343,18 @@ export class PoliciesComponent implements OnInit {
         }
     }
 
+    public showAudit(policy: any) {
+        switch (policy.status) {
+            case PolicyStatus.PUBLISH:
+            case PolicyStatus.DISCONTINUED: {
+                if (this.user.POLICIES_POLICY_AUDIT) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public checkMultiPolicyStatus(status: string): boolean {
         return (
             status === PolicyStatus.PUBLISH ||
@@ -359,6 +373,10 @@ export class PoliciesComponent implements OnInit {
 
     public canDisplayColumn(columnName: string): boolean {
         return !!this.columns.find((column) => column === columnName);
+    }
+
+    public sizeColumn(columnName: string) {
+        return this.columnSize.get(columnName);
     }
 
     public getColor(status: string, expired: boolean = false) {
@@ -707,18 +725,39 @@ export class PoliciesComponent implements OnInit {
         this.policyEngineService
             .page(this.pageIndex, this.pageSize, this.tab)
             .pipe(takeUntil(this._destroy$)).subscribe((policiesResponse) => {
-                this.columns = columns
-                    .filter((c) => c.permissions(this.user, this.tab))
-                    .map((c) => c.id);
-                this.policies = policiesResponse.body?.map(policy => {
-                    if (policy.discontinuedDate) {
-                        policy.discontinuedDate = new Date(policy.discontinuedDate);
+                let publishedPolicy = false;
+
+                this.policies = [];
+                if (policiesResponse.body) {
+                    for (const policy of policiesResponse.body) {
+                        if (policy.discontinuedDate) {
+                            policy.discontinuedDate = new Date(policy.discontinuedDate);
+                        }
+                        this.policies.push(policy);
+                        publishedPolicy = publishedPolicy || (
+                            policy.status === PolicyStatus.PUBLISH ||
+                            policy.status === PolicyStatus.DISCONTINUED
+                        )
                     }
-                    return policy;
-                }) || [];
+                }
+
                 this.policiesCount =
                     policiesResponse.headers.get('X-Total-Count') ||
                     this.policies.length;
+
+                this.columns = [];
+                this.columnSize.clear();
+                for (const config of columns) {
+                    if (config.permissions(this.user, this.tab)) {
+                        this.columns.push(config.id);
+                        this.columnSize.set(config.id, config?.size);
+                    }
+                }
+                if (publishedPolicy && this.user.POLICIES_POLICY_AUDIT) {
+                    this.columnSize.set('instance', '350')
+                } else {
+                    this.columnSize.set('instance', '150')
+                }
 
                 this.loadPolicyTags(this.policies);
             }, (e) => {

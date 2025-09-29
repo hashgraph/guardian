@@ -35,7 +35,7 @@ import {
     VcHelper,
     XlsxToJson
 } from '@guardian/common';
-import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType, PolicyActionStatus, SchemaHelper } from '@guardian/interfaces';
+import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType, PolicyActionStatus, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
@@ -2489,7 +2489,7 @@ export class PolicyEngineService {
 
                     let loader: PolicyDataLoader;
                     if (type === DocumentType.VC) {
-                        otherOptions.fields.push('schema');
+                        otherOptions.fields.push('schema', 'messageId');
                         filters.schema = {
                             $ne: null,
                         };
@@ -3555,7 +3555,8 @@ export class PolicyEngineService {
                 documentId: string,
                 params?: {
                     search?: string,
-                    field?: string
+                    field?: string,
+                    audit?: boolean
                 }
             }) => {
                 try {
@@ -3574,7 +3575,9 @@ export class PolicyEngineService {
                         policyId,
                         relationshipIds: documentId,
                         system: false,
-                        $and: [{
+                    }
+                    if (!params.audit) {
+                        filters.$and = [{
                             $or: [{
                                 privacy: 'public'
                             }, {
@@ -3630,7 +3633,7 @@ export class PolicyEngineService {
                     };
 
                     const discussions = await DatabaseServer.getPolicyDiscussions(filters, otherOptions);
-                    let commonDiscussion = await PolicyCommentsUtils.getCommonDiscussion(policy, vc);
+                    let commonDiscussion = await PolicyCommentsUtils.getCommonDiscussion(policy, vc, params.audit);
                     if (commonDiscussion) {
                         discussions.unshift(commonDiscussion);
                     }
@@ -3795,7 +3798,8 @@ export class PolicyEngineService {
                     search?: string,
                     field?: string,
                     lt?: string,
-                    gt?: string
+                    gt?: string,
+                    audit?: boolean,
                 }
             }): Promise<IMessageResponse<any>> => {
                 try {
@@ -3819,7 +3823,7 @@ export class PolicyEngineService {
                         targetId: documentId
                     });
 
-                    if (!PolicyCommentsUtils.accessDiscussion(discussion, user.did, userRole)) {
+                    if (!params.audit && !PolicyCommentsUtils.accessDiscussion(discussion, user.did, userRole)) {
                         throw new Error('Discussion does not exist.');
                     }
 
@@ -4054,6 +4058,198 @@ export class PolicyEngineService {
                     return new MessageResponse({ error: error.message });
                 }
             })
+
+
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_DISCUSSION_KEY,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                documentId: string,
+                discussionId: string
+            }) => {
+                try {
+
+                    const { user, policyId, documentId, discussionId } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+
+                    const vc = await DatabaseServer.getVCById(documentId);
+                    if (!vc) {
+                        throw new Error('Document not found.');
+                    }
+
+                    if (!discussionId) {
+                        throw new Error('Discussion not found.');
+                    }
+                    const discussion = await DatabaseServer.getPolicyDiscussion({
+                        _id: DatabaseServer.dbID(discussionId),
+                        policyId,
+                        targetId: documentId
+                    });
+
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
+                    if (!PolicyCommentsUtils.accessDiscussion(discussion, user.did, userRole)) {
+                        throw new Error('Discussion does not exist.');
+                    }
+
+                    const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
+                    const buffer = Buffer.from(encryptKey, 'utf-8');
+
+                    return new MessageResponse(buffer);
+                }
+                catch (error) {
+                    await logger.error(error, ['IPFS_CLIENT'], msg?.user?.id);
+                    return new MessageResponse({ error: error.message });
+                }
+            })
+        //#endregion
+
+        //#region Repository
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_REPOSITORY_USERS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+            }) => {
+                try {
+                    const { user, policyId } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+
+                    const items: any = [];
+                    const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
+                    const db = new DatabaseServer(dryRun);
+                    const groups: any[] = await db.getPolicyGroups(policyId, {
+                        fields: ['username', 'did', 'role']
+                    });
+
+                    const policyOwner = await (new Users()).getUserById(policy.owner, user.id);
+                    groups.unshift({
+                        username: policyOwner?.username,
+                        did: policyOwner.did,
+                        role: 'Administrator',
+                    })
+
+                    const users = new Map<string, any>();
+                    for (const group of groups) {
+                        const item = users.get(group.did) || {
+                            label: group.username,
+                            value: group.did,
+                            roles: [],
+                            type: 'user',
+                        }
+                        item.roles.push(group.role);
+                        users.set(group.did, item);
+                    }
+
+                    for (const group of users.values()) {
+                        items.push(group);
+                    }
+
+                    return new MessageResponse(items);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_REPOSITORY_DOCUMENTS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                filters: {
+                    type?: string,
+                    owner?: string,
+                    schema?: string,
+                    comments?: boolean,
+                    pageIndex?: number | string,
+                    pageSize?: number | string
+                }
+            }) => {
+                try {
+                    const { user, policyId, filters } = msg;
+                    const { type, owner, schema, comments, pageIndex, pageSize } = filters;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+
+                    const otherOptions: any = {};
+                    const _pageSize = parseInt(String(pageSize), 10);
+                    const _pageIndex = parseInt(String(pageIndex), 10);
+                    if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.limit = _pageSize;
+                        otherOptions.offset = _pageIndex * _pageSize;
+                    } else {
+                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.limit = 100;
+                    }
+
+                    const query: any = {
+                        policyId: policy.id?.toString(),
+                        messageId: { $exists: true, $ne: null }
+                    };
+                    if (owner) {
+                        query.owner = owner;
+                    }
+                    if (schema) {
+                        query.schema = schema;
+                    }
+
+                    if (type === 'VP') {
+                        const [documents, count] = await DatabaseServer.getVPsAndCount(query, otherOptions);
+                        return new MessageResponse({ documents, count });
+                    } else if (type === 'VC') {
+                        const [documents, count] = await DatabaseServer.getVCsAndCount(query, otherOptions);
+                        if (comments) {
+                            for (const document of documents) {
+                                (document as any).comments = await DatabaseServer.getPolicyCommentsCount({
+                                    policyId,
+                                    targetId: document.id
+                                });
+                            }
+                        }
+                        return new MessageResponse({ documents, count });
+                    } else {
+                        return new MessageResponse({ documents: [], count: 0 });
+                    }
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_REPOSITORY_SCHEMAS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string
+            }) => {
+                try {
+                    const { user, policyId } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+
+                    const schemas = await DatabaseServer.getSchemas({
+                        topicId: policy.topicId,
+                        status: SchemaStatus.PUBLISHED
+                    }, {
+                        fields: [
+                            'uuid',
+                            'name',
+                            'version',
+                            'iri',
+                            'documentURL',
+                            'contextURL'
+                        ]
+                    });
+                    return new MessageResponse(schemas);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
         //#endregion
     }
 }

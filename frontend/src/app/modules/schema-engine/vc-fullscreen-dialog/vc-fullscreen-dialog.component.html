@@ -17,7 +17,7 @@
             </button>
         </div>
 
-        <div class="header-taxt">
+        <div class="header-text">
             {{title}}
         </div>
 
@@ -106,13 +106,15 @@
                     </ng-template>
                 </div>
             </div>
-            <div class="comments-content">
+            <div *ngIf="comments" class="comments-content">
                 <policy-comments
                     #discussionComponent
                     [document-id]="id"
                     [policy-id]="policyId"
                     [dry-run]="dryRun"
                     [collapse]="collapse"
+                    [readonly]="commentsReadonly"
+                    [key]="key"
                     (link)="onLinkField($event)"
                     (collapse)="onCollapse($event)"
                     (view)="onDiscussionView($event)"
