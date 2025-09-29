@@ -45,8 +45,8 @@
                 >
                     <div *ngIf="isPrefix(item)" class="form-field-prefix">{{ item.unit }}</div>
 
-                    <ng-container *ngIf="item.customType === 'table'" class="table-field-container">
-                        <table-field
+                    <ng-container *ngIf="item.customType === 'table'">
+                        <table-field  class="table-field-container"
                                 [item]="item"
                                 [readonly]="readonly?.[item.fullPath]"
                         ></table-field>

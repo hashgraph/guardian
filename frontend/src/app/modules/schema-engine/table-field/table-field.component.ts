@@ -35,6 +35,9 @@ export class TableFieldComponent implements OnInit, OnChanges {
 
     private readonly MAX_PREVIEW_BYTES = 10 * 1024 * 1024;
 
+    private readonly PREVIEW_COLUMNS_LIMIT = 10;
+    private readonly PREVIEW_ROWS_LIMIT = 4;
+
     private readonly IDB_NAME = 'TABLES';
     private readonly FILES_STORE = 'FILES';
 
@@ -47,6 +50,47 @@ export class TableFieldComponent implements OnInit, OnChanges {
     ) {}
 
     private storesReady?: Promise<void>;
+
+    get hasData(): boolean {
+        const value = this.readTable();
+        const hasColumns = (value.columnKeys?.length || 0) > 0;
+        const hasRows = (value.rows?.length || 0) > 0;
+        const hasFileBack = !!(value.idbKey || value.fileId);
+        return hasColumns || hasRows || hasFileBack;
+    }
+
+    get previewHeaderKeysLimited(): string[] {
+        const value = this.readTable();
+        const keys = value.columnKeys || [];
+        return keys.slice(0, this.PREVIEW_COLUMNS_LIMIT);
+    }
+
+    get previewRowsLimited(): Record<string, string>[] {
+        const value = this.readTable();
+        const rows = value.rows || [];
+        const limited = rows.slice(0, this.PREVIEW_ROWS_LIMIT);
+        const keys = this.previewHeaderKeysLimited;
+        return limited.map(row => {
+            const normalized: Record<string, string> = {};
+            for (const key of keys) {
+                normalized[key] = row[key] ?? '';
+            }
+            return normalized;
+        });
+    }
+
+    get isTooLargeForPreview(): boolean {
+        const v = this.readTable();
+        const hasBackedFile = !!((v.idbKey || '').trim() || (v.fileId || '').trim());
+        const size = typeof v.sizeBytes === 'number' ? v.sizeBytes : 0;
+        return hasBackedFile && size > this.MAX_PREVIEW_BYTES;
+    }
+
+    private setPreviewLimitMessage(): void {
+        this.previewError = this.isTooLargeForPreview
+            ? 'File is too large for preview (>10 MB). You can still download it.'
+            : undefined;
+    }
 
     private ensureIdbStores(): Promise<void> {
         if (!this.storesReady) {
@@ -144,6 +188,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
         const tableValue = this.readTable();
         this.item?.control?.patchValue(JSON.stringify(tableValue), { emitEvent: false });
 
+        this.setPreviewLimitMessage();
         this.hydrateFromFile();
     }
 
@@ -236,21 +281,6 @@ export class TableFieldComponent implements OnInit, OnChanges {
     }
 
     async openModal(): Promise<void> {
-        const table = this.readTable();
-
-        const hasBackedFile =
-            (typeof table.idbKey === 'string' && table.idbKey.trim().length > 0) ||
-            (typeof table.fileId === 'string' && table.fileId.trim().length > 0);
-
-        const originalSize = typeof table.sizeBytes === 'number' ? table.sizeBytes : undefined;
-
-        if (hasBackedFile && originalSize !== undefined && originalSize > this.MAX_PREVIEW_BYTES) {
-            this.previewError = 'File is too large for preview (>10 MB).';
-            return;
-        } else {
-            this.previewError = undefined;
-        }
-
         let parsedColumnKeys: string[] = [];
         let parsedRows: Record<string, string>[] = [];
 
@@ -302,7 +332,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
                 const sizeBytes = csvFile.size;
 
                 const gzippedFile =
-                    await this.gzip.gzipSortLexicographic(csvFile);
+                    await this.gzip.gzip(csvFile);
 
                 const currentValue = this.readTable();
                 const existingIdbKey = (currentValue.idbKey || '').trim();
@@ -383,7 +413,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
             });
 
             const gzippedFile =
-                await this.gzip.gzipSortLexicographic(file);
+                await this.gzip.gzip(file);
 
             const currentValue = this.readTable();
             const existingIdbKey = (currentValue.idbKey || '').trim();
@@ -406,6 +436,8 @@ export class TableFieldComponent implements OnInit, OnChanges {
                 idbKey,
             });
 
+            this.setPreviewLimitMessage();
+
         } catch (error: any) {
             this.importError = error?.message || 'Failed to import CSV';
         } finally {
@@ -416,7 +448,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
         }
     }
 
-    private buildColumnHeader(index: number): string {
+    public buildColumnHeader(index: number): string {
         let numberIndex = index;
         let label = '';
 
@@ -510,5 +542,49 @@ export class TableFieldComponent implements OnInit, OnChanges {
         }
 
         this.hydrated = true;
+    }
+
+    async downloadCsv(): Promise<void> {
+        try {
+            const table = this.readTable();
+            let csvText: string | null = null;
+
+            const idbKey = (table.idbKey || '').trim();
+            if (idbKey) {
+                csvText = await this.loadCsvTextFromIdb(idbKey);
+            }
+
+            if (!csvText && (table.fileId || '').trim()) {
+                csvText = await new Promise<string>((resolve, reject) => {
+                    this.artifactService.getFile(table.fileId!).subscribe({
+                        next: text => resolve(text),
+                        error: error => reject(error)
+                    });
+                });
+            }
+
+            if (!csvText) {
+                const delimiter = this.options?.delimiter || ',';
+                const file = this.csvService.toCsvFile(
+                    table.columnKeys || [],
+                    table.rows || [],
+                    'table.csv',
+                    { delimiter, bom: false, mime: 'text/csv;charset=utf-8' }
+                );
+                csvText = await file.text();
+            }
+
+            const blob = new Blob([csvText || ''], { type: 'text/csv;charset=utf-8' });
+            const objectUrl = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = objectUrl;
+            anchor.download = 'table.csv';
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+            URL.revokeObjectURL(objectUrl);
+        } catch (error) {
+            this.importError = (error as any)?.message || 'Failed to download CSV';
+        }
     }
 }
