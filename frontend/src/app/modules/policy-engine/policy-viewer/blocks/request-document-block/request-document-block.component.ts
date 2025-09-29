@@ -17,19 +17,7 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
 import { MergeUtils } from 'src/app/utils';
 import { ToastrService } from 'ngx-toastr';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
-import { ArtifactService } from 'src/app/services/artifact.service';
-import { CsvService } from 'src/app/services/csv.service';
-import { IPFSService } from 'src/app/services/ipfs.service';
-import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
-
-type TableValue = {
-    type: 'table';
-    columnKeys: string[];
-    rows: Record<string, string>[];
-    fileId?: string;
-    cid?: string;
-    idbKey?: string;
-};
+import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -99,9 +87,6 @@ export class RequestDocumentBlockComponent
     public draftDocument: any;
     public dialog: RequestDocumentBlockDialog;
 
-    private readonly IDB_NAME = 'TABLES';
-    private readonly FILES_STORE = 'FILES';
-
     constructor(
         policyEngineService: PolicyEngineService,
         wsService: WebSocketService,
@@ -114,10 +99,7 @@ export class RequestDocumentBlockComponent
         private changeDetectorRef: ChangeDetectorRef,
         private toastr: ToastrService,
         private savepointFlow: SavepointFlowService,
-        private csv: CsvService,
-        private artifact: ArtifactService,
-        private ipfs: IPFSService,
-        private idb: IndexedDbRegistryService
+        private tablePersist: TablePersistenceService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -282,7 +264,7 @@ export class RequestDocumentBlockComponent
             const data = this.dataForm.getRawValue();
             this.loading = true;
 
-            await this.persistTablesInDocument(data, !!this.dryRun);
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun);
 
             prepareVcData(data);
             this.policyEngineService
@@ -468,185 +450,5 @@ export class RequestDocumentBlockComponent
                 }
             }
         }
-    }
-
-    private tryParseTable(value: unknown): TableValue | null {
-        if (typeof value !== 'string') {
-            return null;
-        }
-
-        const trimmed = value.trim();
-        if (!trimmed) {
-            return null;
-        }
-
-        const looksLikeJson = trimmed.startsWith('{') || trimmed.startsWith('[');
-        if (!looksLikeJson) {
-            return null;
-        }
-
-        try {
-            const parsed = JSON.parse(trimmed);
-            if (parsed && parsed.type === 'table') {
-                return parsed as TableValue;
-            }
-            return null;
-        } catch {
-            return null;
-        }
-    }
-
-    private async uploadToGridFs(file: File, existingFileId?: string): Promise<{ fileId: string }> {
-        const response = await firstValueFrom(this.artifact.upsertFile(file, existingFileId));
-        return { fileId: response.fileId };
-    }
-
-    private async uploadToIpfs(file: File, isDryRun: boolean): Promise<string | null> {
-        if (isDryRun) {
-            return null;
-        }
-
-        const observable = this.ipfs.addFile(file);
-        const cid = await firstValueFrom(observable);
-
-        if (typeof cid === 'string' && cid.trim()) {
-            return cid.trim();
-        }
-
-        return null;
-    }
-
-    private async persistTablesInDocument(root: any, isDryRun: boolean): Promise<void> {
-        if (!root) {
-            return;
-        }
-
-        const hasFilesStore = await (async () => {
-            try {
-                const db = await this.idb.getDB(this.IDB_NAME);
-                const contains = db.objectStoreNames.contains(this.FILES_STORE);
-                db.close();
-                return contains;
-            } catch {
-                return false;
-            }
-        })();
-
-        const loadFileFromIdb = async (idbKey: string): Promise<File | null> => {
-            if (!hasFilesStore || !idbKey) {
-                return null;
-            }
-
-            try {
-                const record: any = await this.idb.get(this.IDB_NAME, this.FILES_STORE, idbKey);
-                if (!record || !record.blob) {
-                    return null;
-                }
-
-                const blob: Blob = record.blob as Blob;
-
-                const fileName =
-                    (typeof record.originalName === 'string' && record.originalName)
-                        ? record.originalName
-                        : 'table.csv.gz';
-
-                const mimeType =
-                    (blob as any)?.type && String((blob as any).type).trim()
-                        ? String((blob as any).type).trim()
-                        : 'application/gzip';
-
-                return new File([blob], fileName, { type: mimeType });
-            } catch {
-                return null;
-            }
-        };
-
-        const deleteFromIdbIfAny = async (idbKey?: string): Promise<void> => {
-            const key = (idbKey || '').trim();
-
-            if (!hasFilesStore || !key) {
-                return;
-            }
-
-            try {
-                await this.idb.delete(this.IDB_NAME, this.FILES_STORE, key);
-            } catch {
-                // ignore
-            }
-        };
-
-        const toCompactJson = (fileId?: string | null, cid?: string | null): string => {
-            const compact: any = { type: 'table' };
-
-            if (typeof fileId === 'string' && fileId.trim()) {
-                compact.fileId = fileId.trim();
-            }
-
-            if (typeof cid === 'string' && cid.trim()) {
-                compact.cid = cid.trim();
-            }
-
-            return JSON.stringify(compact);
-        };
-
-        const visitArray = async (array: any[]): Promise<void> => {
-            for (const element of array) {
-                await visitNode(element);
-            }
-        };
-
-        const visitObject = async (object: Record<string, any>): Promise<void> => {
-            const keys = Object.keys(object);
-
-            for (const key of keys) {
-                const value = object[key];
-
-                if (typeof value === 'string') {
-                    const table = this.tryParseTable(value);
-                    const isTable = !!table && table.type === 'table';
-
-                    if (isTable) {
-                        const idbKey = (table!.idbKey || '').trim();
-                        const existingFileId = (table!.fileId || '').trim();
-                        const existingCid = (table!.cid || '').trim();
-
-                        let fileFromIdb: File | null = null;
-
-                        if (idbKey) {
-                            fileFromIdb = await loadFileFromIdb(idbKey);
-                        }
-
-                        if (fileFromIdb) {
-                            const grid = await this.uploadToGridFs(fileFromIdb, existingFileId || undefined);
-                            const cid = await this.uploadToIpfs(fileFromIdb, isDryRun);
-
-                            await deleteFromIdbIfAny(idbKey);
-
-                            object[key] = toCompactJson(grid.fileId, cid);
-                        } else {
-                            object[key] = toCompactJson(existingFileId || null, existingCid || null);
-                        }
-
-                        continue;
-                    }
-                }
-
-                await visitNode(value);
-            }
-        };
-
-        const visitNode = async (node: any): Promise<void> => {
-            if (Array.isArray(node)) {
-                await visitArray(node);
-                return;
-            }
-
-            if (node && typeof node === 'object') {
-                await visitObject(node as Record<string, any>);
-                return;
-            }
-        };
-
-        await visitNode(root);
     }
 }

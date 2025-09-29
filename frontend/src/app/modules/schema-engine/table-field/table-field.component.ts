@@ -107,8 +107,11 @@ export class TableFieldComponent implements OnInit, OnChanges {
         return { type: 'table', columnKeys: [], rows: [] };
     }
 
+
     private readTable(): TableValue {
-        const rawValue = this.item?.control?.value;
+        const targetControl = this.getTargetElementControl();
+        const rawValue = targetControl ? targetControl.value : this.localRawValue;
+
         if (typeof rawValue === 'string' && rawValue) {
             try {
                 return JSON.parse(rawValue);
@@ -116,7 +119,21 @@ export class TableFieldComponent implements OnInit, OnChanges {
                 return this.getDefaultTable();
             }
         }
+
         return this.getDefaultTable();
+    }
+
+    private safePatchValue(nextValue: string, emitEvent: boolean): void {
+        const targetControl = this.getTargetElementControl();
+
+        if (targetControl) {
+            targetControl.patchValue(nextValue, { emitEvent });
+            try {
+                targetControl.updateValueAndValidity({ onlySelf: true, emitEvent });
+            } catch {}
+        } else {
+            this.localRawValue = nextValue;
+        }
     }
 
     private writeTable(next: Partial<TableValue>, opts?: { emitEvent?: boolean; markDirty?: boolean }): void {
@@ -153,9 +170,11 @@ export class TableFieldComponent implements OnInit, OnChanges {
         const emitEvent = opts?.emitEvent ?? true;
         const markDirty = opts?.markDirty ?? true;
 
-        this.item?.control?.patchValue(JSON.stringify(merged), { emitEvent });
+        const json = JSON.stringify(merged);
+        this.localRawValue = json;
+        this.safePatchValue(json, emitEvent);
 
-        if (markDirty) {
+        if (markDirty && !this.isFormArrayContainer(this.item?.control)) {
             this.item?.control?.markAsDirty();
         }
     }
@@ -183,11 +202,30 @@ export class TableFieldComponent implements OnInit, OnChanges {
         }
     }
 
+    private localRawValue?: string;
+
+    private isFormArrayContainer(control: any): boolean {
+        return !!control && Array.isArray(control?.controls);
+    }
+
+    private getTargetElementControl(): any | null {
+        if (!this.isFormArrayContainer(this.item?.control)) {
+            return this.item?.control ?? null;
+        }
+
+        const list: any[] = Array.isArray((this.item as any)?.list) ? (this.item as any).list : [];
+        const lastItem = list.length ? list[list.length - 1] : null;
+        const elementControl = lastItem?.control ?? null;
+
+        return elementControl && !this.isFormArrayContainer(elementControl) ? elementControl : null;
+    }
+
     async ngOnInit(): Promise<void> {
         await this.ensureIdbStores();
 
         const tableValue = this.readTable();
-        this.item?.control?.patchValue(JSON.stringify(tableValue), { emitEvent: false });
+        this.localRawValue = JSON.stringify(tableValue);
+        this.safePatchValue(this.localRawValue, false);
 
         this.setPreviewLimitMessage();
         this.hydrateFromFile();
