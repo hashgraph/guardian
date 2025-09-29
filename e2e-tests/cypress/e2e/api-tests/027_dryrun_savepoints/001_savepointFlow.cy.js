@@ -517,6 +517,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool'] }, () => {
                 },
                 timeout: 180000
             }).then(() => {
+                cy.wait(5000);
                 //Block wait
                 cy.request({
                     method: METHOD.POST,
