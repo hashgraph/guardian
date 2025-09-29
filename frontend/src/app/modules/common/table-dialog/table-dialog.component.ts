@@ -35,12 +35,10 @@ export class TableDialogComponent implements OnInit {
     private rowNumberCol: ColDef = {
         headerName: '№',
         colId: '__row__',
-        width: 48,
         minWidth: 48,
-        maxWidth: 60,
         pinned: 'left',
         suppressMovable: true,
-        resizable: false,
+        resizable: true,
         suppressSizeToFit: true,
         editable: false,
         sortable: false,
@@ -73,9 +71,29 @@ export class TableDialogComponent implements OnInit {
         }
     }
 
+    private updateRowNumberWidth(): void {
+        if (!this.api) {
+            return;
+        }
+
+        const totalRows = Math.max(1, this.rowData.length);
+        const digitCount = Math.floor(Math.log10(totalRows)) + 1;
+        const calculatedWidth = Math.max(56, 32 + digitCount * 10);
+
+        this.api.setColumnWidths([
+            {
+                key: '__row__',
+                newWidth: calculatedWidth
+            }
+        ]);
+    }
+
     onGridReady(e: GridReadyEvent): void {
         this.api = e.api;
-        setTimeout(() => this.api?.sizeColumnsToFit(), 0);
+        setTimeout(() => {
+            this.api?.sizeColumnsToFit();
+            this.updateRowNumberWidth();
+        }, 0);
     }
 
     onPasteStart(ev: any): void {
@@ -134,6 +152,8 @@ export class TableDialogComponent implements OnInit {
     }
 
     private ensureSize(minRows: number, minCols: number): void {
+        let columnsChanged = false;
+        let rowsChanged = false;
 
         if (minCols > this.dataColumnDefs.length) {
             const start = this.dataColumnDefs.length;
@@ -141,6 +161,7 @@ export class TableDialogComponent implements OnInit {
                 this.dataColumnDefs.push(this.makeColDef(i));
             }
             this.api?.setGridOption('columnDefs', this.columnDefs);
+            columnsChanged = true;
 
             for (const row of this.rowData) {
                 for (let i = start; i < minCols; i++) {
@@ -153,6 +174,15 @@ export class TableDialogComponent implements OnInit {
             const extra = Array.from({ length: minRows - this.rowData.length }, () => this.makeEmptyRow());
             this.rowData = this.rowData.concat(extra);
             this.api?.setGridOption('rowData', this.rowData);
+            rowsChanged = true;
+        }
+
+        if (columnsChanged) {
+            this.api?.sizeColumnsToFit();
+        }
+
+        if (rowsChanged) {
+            this.updateRowNumberWidth();
         }
     }
 
