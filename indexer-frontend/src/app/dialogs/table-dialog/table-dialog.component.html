@@ -14,12 +14,15 @@
             (bodyScroll)="onBodyScroll($event)">
     </ag-grid-angular>
 
-    <div class="actions">
+    <div class="modal__footer">
         <button class="p-button p-component p-button-outlined" (click)="onCancel()">
             Close
         </button>
 
-        <button class="p-button p-component p-button-primary" *ngIf="!readonly" (click)="onSave()">
+        <button
+            class="p-button p-component p-button-primary"
+            *ngIf="!readonly"
+            (click)="onSave()">
             Save
         </button>
     </div>

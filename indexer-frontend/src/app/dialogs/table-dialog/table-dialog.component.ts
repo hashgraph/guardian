@@ -97,7 +97,6 @@ export class TableDialogComponent implements OnInit {
         this.readonly = data.readonly ?? true;
         this.errorMessage = data.error;
 
-        // apply readonly to default col def
         this.defaultColDef = {
             ...this.defaultColDef,
             editable: !this.readonly

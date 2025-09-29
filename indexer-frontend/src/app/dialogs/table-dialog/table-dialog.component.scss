@@ -15,7 +15,6 @@
   width: 100%;
 }
 
-/* AG Grid cosmetics */
 :host ::ng-deep .ag-root .ag-cell {
   border-right: 1px solid var(--ag-border-color, rgba(0, 0, 0, 0.12));
 }
@@ -61,4 +60,53 @@
   gap: 12px;
   justify-content: flex-end;
   padding-top: 12px;
+}
+
+.modal__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 8px 16px;
+    background: #ffffff;
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    margin-top: 16px;
+}
+
+.modal__footer .p-button {
+    min-width: 96px;
+    border-radius: 8px;
+}
+
+.grid-modal {
+    display: flex;
+    flex-direction: column;
+    height: 70vh;
+    min-height: 320px;
+}
+
+.grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+}
+
+:host ::ng-deep .p-button {
+    display: grid;
+}
+
+:host ::ng-deep .p-button-outlined {
+    background: var(--color-background);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+:host ::ng-deep .p-button-primary {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: var(--color-background);
 }

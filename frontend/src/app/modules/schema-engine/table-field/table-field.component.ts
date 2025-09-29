@@ -311,7 +311,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
         }));
 
         const ref = this.dialog.open(TableDialogComponent, {
-            header: this.item.title || 'Table',
+            header: 'Edit table',
             width: '70vw',
             data: { columnDefs, rowData: parsedRows },
         });

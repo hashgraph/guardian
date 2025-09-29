@@ -158,7 +158,7 @@ export class TableViewerComponent {
             }));
 
             this.dialog.open(TableDialogComponent, {
-                header: this.title || 'Table',
+                header: 'View table',
                 width: '70vw',
                 data: { columnDefs, rowData: parsed.rows, readonly: true }
             });
