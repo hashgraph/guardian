@@ -514,30 +514,62 @@ export class TableFieldComponent implements OnInit, OnChanges {
             return;
         }
 
-        const table = this.readTable();
-        const hasColumns = Array.isArray(table.columnKeys) && table.columnKeys.length > 0;
-        const hasRows = Array.isArray(table.rows) && table.rows.length > 0;
-        const fileId = (table.fileId ?? '').trim();
+        const tableValue = this.readTable();
+
+        const hasColumns =
+            Array.isArray(tableValue.columnKeys) &&
+            tableValue.columnKeys.length > 0;
+
+        const hasRows =
+            Array.isArray(tableValue.rows) &&
+            tableValue.rows.length > 0;
+
+        const fileId =
+            (tableValue.fileId ?? '').trim();
 
         if (!hasColumns && !hasRows && fileId) {
-            const delimiter = this.options?.delimiter || ',';
+            const delimiter =
+                this.options?.delimiter || ',';
 
-            this.artifactService.getFile(fileId).subscribe({
-                next: (csvText: string) => {
-                    const parsed = this.csvService.parseCsvToTable(csvText, delimiter);
-                    const sizeBytes = new Blob([csvText]).size;
+            this.artifactService
+                .getFileBlob(fileId)
+                .subscribe({
+                    next: async (blob: Blob) => {
+                        try {
+                            const csvText =
+                                await this.gzip.gunzipToText(blob);
 
-                    this.writeTable(
-                        { columnKeys: parsed.columnKeys, rows: parsed.rows, fileId, sizeBytes },
-                        { emitEvent: false, markDirty: false }
-                    );
+                            const parsed =
+                                this.csvService.parseCsvToTable(
+                                    csvText,
+                                    delimiter
+                                );
 
-                    this.hydrated = true;
-                },
-                error: () => {
-                    this.hydrated = true;
-                },
-            });
+                            const sizeBytes =
+                                new Blob([csvText]).size;
+
+                            this.writeTable(
+                                {
+                                    columnKeys: parsed.columnKeys,
+                                    rows: parsed.rows,
+                                    fileId,
+                                    sizeBytes
+                                },
+                                {
+                                    emitEvent: false,
+                                    markDirty: false
+                                }
+                            );
+
+                            this.hydrated = true;
+                        } catch {
+                            this.hydrated = true;
+                        }
+                    },
+                    error: () => {
+                        this.hydrated = true;
+                    }
+                });
 
             return;
         }
