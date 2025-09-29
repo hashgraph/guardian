@@ -31,12 +31,6 @@ type TableValue = {
     idbKey?: string;
 };
 
-type TableRef = {
-    type: 'table';
-    fileId: string;
-    cid?: string;
-};
-
 interface IRequestDocumentData {
     readonly: boolean;
     schema: ISchema;
