@@ -48,6 +48,7 @@
                     <ng-container *ngIf="item.customType === 'table'">
                         <table-field  class="table-field-container"
                                 [item]="item"
+                                [required]="item.required"
                                 [readonly]="readonly?.[item.fullPath]"
                         ></table-field>
                     </ng-container>
@@ -222,6 +223,7 @@
                                 <table-field
                                     class="table-field-container"
                                     [item]="$any(listItem)"
+                                    [required]="item.required"
                                     [readonly]="readonly?.[item.fullPath]"
                                 ></table-field>
                             </ng-container>

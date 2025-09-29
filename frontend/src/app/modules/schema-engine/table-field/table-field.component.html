@@ -52,7 +52,10 @@
     </div>
 
     <div *ngIf="!hasData" class="table-field__placeholder">
-        <div class="table-field__placeholder-box">
+        <div
+            class="table-field__placeholder-box"
+            [class.table-field__invalid]="isInvalidRequired"
+        >
             <i class="pi pi-table table-field__placeholder-icon"></i>
             <div class="table-field__placeholder-title">No data provided</div>
             <input

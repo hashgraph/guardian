@@ -176,3 +176,9 @@
     text-overflow: ellipsis;
     padding: 0 6px;
 }
+
+.table-field__placeholder-box.table-field__invalid {
+    border-color: #d32f2f;
+    box-shadow: inset 0 0 0 1px #d32f2f;
+    background: #fff5f5;
+}

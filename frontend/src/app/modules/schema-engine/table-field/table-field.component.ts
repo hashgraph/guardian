@@ -26,6 +26,7 @@ type TableValue = {
 })
 export class TableFieldComponent implements OnInit, OnChanges {
     @Input() item!: IFieldControl<any>;
+    @Input() required: boolean = false;
     @Input() readonly: boolean = false;
 
     private hydrated = false;
@@ -87,6 +88,10 @@ export class TableFieldComponent implements OnInit, OnChanges {
         return hasBackedFile && size > this.MAX_PREVIEW_BYTES;
     }
 
+    get isInvalidRequired(): boolean {
+        return !!(this.required && this.item?.control && this.item.control.invalid);
+    }
+
     private setPreviewLimitMessage(): void {
         this.previewError = this.isTooLargeForPreview
             ? 'File is too large for preview (>10 MB). You can still download it.'
@@ -123,7 +128,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
         return this.getDefaultTable();
     }
 
-    private safePatchValue(nextValue: string, emitEvent: boolean): void {
+    private safePatchValue(nextValue: string | null, emitEvent: boolean): void {
         const targetControl = this.getTargetElementControl();
 
         if (targetControl) {
@@ -132,36 +137,33 @@ export class TableFieldComponent implements OnInit, OnChanges {
                 targetControl.updateValueAndValidity({ onlySelf: true, emitEvent });
             } catch {}
         } else {
-            this.localRawValue = nextValue;
+            this.localRawValue = nextValue ?? undefined;
         }
     }
 
-    private writeTable(next: Partial<TableValue>, opts?: { emitEvent?: boolean; markDirty?: boolean }): void {
+    private writeTable(
+        next: Partial<TableValue>,
+        opts?: { emitEvent?: boolean; markDirty?: boolean }
+    ): void {
         const current = this.readTable();
 
         const merged: TableValue = {
             type: 'table',
-
             columnKeys: (Object.prototype.hasOwnProperty.call(next, 'columnKeys'))
                 ? (next.columnKeys as string[])
                 : current.columnKeys,
-
             rows: (Object.prototype.hasOwnProperty.call(next, 'rows'))
                 ? (next.rows as Record<string, string>[])
                 : current.rows,
-
             fileId: (Object.prototype.hasOwnProperty.call(next, 'fileId'))
                 ? next.fileId
                 : current.fileId,
-
             cid: (Object.prototype.hasOwnProperty.call(next, 'cid'))
                 ? next.cid
                 : current.cid,
-
             sizeBytes: (Object.prototype.hasOwnProperty.call(next, 'sizeBytes'))
                 ? next.sizeBytes
                 : current.sizeBytes,
-
             idbKey: (Object.prototype.hasOwnProperty.call(next, 'idbKey'))
                 ? next.idbKey
                 : current.idbKey,
@@ -170,9 +172,15 @@ export class TableFieldComponent implements OnInit, OnChanges {
         const emitEvent = opts?.emitEvent ?? true;
         const markDirty = opts?.markDirty ?? true;
 
-        const json = JSON.stringify(merged);
-        this.localRawValue = json;
-        this.safePatchValue(json, emitEvent);
+        const hasColumns = (merged.columnKeys?.length || 0) > 0;
+        const hasRows = (merged.rows?.length || 0) > 0;
+        const hasBack = !!((merged.idbKey || '').trim() || (merged.fileId || '').trim());
+        const hasAnyData = hasColumns || hasRows || hasBack;
+
+        const valueForControl: string | null = hasAnyData ? JSON.stringify(merged) : null;
+
+        this.localRawValue = hasAnyData ? valueForControl! : undefined;
+        this.safePatchValue(valueForControl, emitEvent);
 
         if (markDirty && !this.isFormArrayContainer(this.item?.control)) {
             this.item?.control?.markAsDirty();
@@ -224,8 +232,12 @@ export class TableFieldComponent implements OnInit, OnChanges {
         await this.ensureIdbStores();
 
         const tableValue = this.readTable();
-        this.localRawValue = JSON.stringify(tableValue);
-        this.safePatchValue(this.localRawValue, false);
+        const hasColumns = (tableValue.columnKeys?.length || 0) > 0;
+        const hasRows = (tableValue.rows?.length || 0) > 0;
+        const hasBack = !!((tableValue.idbKey || '').trim() || (tableValue.fileId || '').trim());
+        const hasAnyData = hasColumns || hasRows || hasBack;
+
+        this.safePatchValue(hasAnyData ? JSON.stringify(tableValue) : null, false);
 
         this.setPreviewLimitMessage();
         this.hydrateFromFile();
