@@ -50,6 +50,32 @@ export class TableViewerComponent {
         return this.getFileIdFromValue(this.value);
     }
 
+    public get hasData(): boolean {
+        return !!this.fileId;
+    }
+
+    public get previewHeaderKeysLimited(): string[] {
+        const keys = (this.previewColumnDefs || [])
+            .map(def => String(def.field || '').trim())
+            .filter(Boolean);
+
+        return keys.slice(0, 10);
+    }
+
+    public get previewRowsLimited(): Record<string, string>[] {
+        const sourceRows = this.previewRowData || [];
+        const limitedRows = sourceRows.slice(0, 4);
+        const headerKeys = this.previewHeaderKeysLimited;
+
+        return limitedRows.map(row => {
+            const normalized: Record<string, string> = {};
+            for (const key of headerKeys) {
+                normalized[key] = String((row as any)?.[key] ?? '');
+            }
+            return normalized;
+        });
+    }
+
     private wait(ms: number) {
         return new Promise<void>(resolve => setTimeout(resolve, ms));
     }
@@ -209,7 +235,7 @@ export class TableViewerComponent {
         };
     }
 
-    private buildColumnHeader(index: number): string {
+    public buildColumnHeader(index: number): string {
         let current = index;
         let label = '';
 
