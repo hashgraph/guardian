@@ -13,7 +13,9 @@ export function getCacheKey(routes: string[], user: IAuthUser | null, prefix: st
         let normalized = route;
         try {
             normalized = decodeURI(route);
-        } catch (e) {}
+        } catch (e) {
+            //
+        }
         return `${prefix}${normalized}:${hashUser}`;
     });
 }
