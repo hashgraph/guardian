@@ -67,39 +67,49 @@ export class DocumentDraft extends RestoreEntity {
     @Property({ persist: false, nullable: true })
     _oldTableFileIds?: ObjectId[];
 
+
     @BeforeCreate()
     async setDefaults() {
-        try {
-            const parsed = JSON.parse(this.data);
-            this.tableFileIds = extractTableFileIds(parsed);
-        } catch {
-            this.tableFileIds = undefined;
+        let parsed: unknown | undefined;
+        if (typeof this.data === 'string') {
+            const s = this.data.trim();
+            if (s) {
+                try { parsed = JSON.parse(s); } catch { parsed = undefined; }
+            }
+        } else if (this.data && typeof this.data === 'object') {
+            parsed = this.data;
         }
+
+        this.tableFileIds = parsed ? extractTableFileIds(parsed) : undefined;
     }
 
     @BeforeUpdate()
     async updateFiles() {
-        if (this.data.trim()) {
-            try {
-                const parsed = JSON.parse(this.data);
-                const nextTableFileIds = extractTableFileIds(parsed) || [];
-                const currentTableFileIds = this.tableFileIds || [];
+        const raw = this.data;
 
-                const removedTableFileIds = currentTableFileIds.filter((existingId) => {
-                    const existing = String(existingId);
-                    return !nextTableFileIds.some((nextId) => String(nextId) === existing);
-                });
-
-                this._oldTableFileIds = removedTableFileIds.length ? removedTableFileIds : undefined;
-                this.tableFileIds = nextTableFileIds;
-            } catch {
-                if (this.tableFileIds && this.tableFileIds.length) {
-                    this._oldTableFileIds = this.tableFileIds;
-                }
-                this.tableFileIds = undefined;
+        let parsed: unknown | undefined;
+        if (typeof raw === 'string') {
+            const s = raw.trim();
+            if (s) {
+                try { parsed = JSON.parse(s); } catch { parsed = undefined; }
             }
+        } else if (raw && typeof raw === 'object') {
+            parsed = raw;
+        }
+
+        if (parsed) {
+            const nextTableFileIds = extractTableFileIds(parsed) || [];
+            const currentTableFileIds = this.tableFileIds || [];
+
+            const removedTableFileIds = currentTableFileIds.filter((existingId) => {
+                const existing = String(existingId);
+                return !nextTableFileIds.some((nextId) => String(nextId) === existing);
+            });
+
+            this._oldTableFileIds = removedTableFileIds.length ? removedTableFileIds : undefined;
+            this.tableFileIds = nextTableFileIds;
         } else {
-            if (this.tableFileIds && this.tableFileIds.length) {
+            if (this.tableFileIds?.length) {
                 this._oldTableFileIds = this.tableFileIds;
             }
             this.tableFileIds = undefined;

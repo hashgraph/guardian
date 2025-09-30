@@ -3,15 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { ArtifactService } from './artifact.service';
 import { IPFSService } from './ipfs.service';
 import { IndexedDbRegistryService } from './indexed-db-registry.service';
-
-export type TableValue = {
-    type: 'table';
-    columnKeys?: string[];
-    rows?: Record<string, string>[];
-    fileId?: string;
-    cid?: string;
-    idbKey?: string;
-};
+import { ITableField } from '@guardian/interfaces';
 
 @Injectable({ providedIn: 'root' })
 export class TablePersistenceService {
@@ -82,7 +74,7 @@ export class TablePersistenceService {
         return this.buildCompactTableJson(existingFileId || null, existingCid || null);
     }
 
-    private tryParseTable(value: unknown): TableValue | null {
+    private tryParseTable(value: unknown): ITableField | null {
         if (typeof value !== 'string') {
             return null;
         }
@@ -99,7 +91,7 @@ export class TablePersistenceService {
         try {
             const parsed = JSON.parse(trimmed);
             if (parsed && parsed.type === 'table') {
-                return parsed as TableValue;
+                return parsed as ITableField;
             }
             return null;
         } catch {

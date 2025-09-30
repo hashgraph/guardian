@@ -7,17 +7,12 @@ import {TableDialogComponent} from '../../common/table-dialog/table-dialog.compo
 import {ArtifactService} from '../../../services/artifact.service';
 import {IndexedDbRegistryService} from '../../../services/indexed-db-registry.service';
 import { GzipService } from '../../../services/gzip.service';
+import { ITableField } from '@guardian/interfaces';
 
-type TableValue = {
-    type: string;
+export interface ITableFieldRequired extends ITableField {
     columnKeys: string[];
     rows: Record<string, string>[];
-    fileId?: string;
-    cid?: string;
-    sizeBytes?: number;
-    idbKey?: string;
-};
-
+}
 @Component({
     selector: 'table-field',
     templateUrl: './table-field.component.html',
@@ -108,12 +103,12 @@ export class TableFieldComponent implements OnInit, OnChanges {
         return this.storesReady;
     }
 
-    private getDefaultTable(): TableValue {
+    private getDefaultTable(): ITableFieldRequired {
         return { type: 'table', columnKeys: [], rows: [] };
     }
 
 
-    private readTable(): TableValue {
+    private readTable(): ITableFieldRequired {
         const targetControl = this.getTargetElementControl();
         const rawValue = targetControl ? targetControl.value : this.localRawValue;
 
@@ -142,12 +137,12 @@ export class TableFieldComponent implements OnInit, OnChanges {
     }
 
     private writeTable(
-        next: Partial<TableValue>,
+        next: Partial<ITableFieldRequired>,
         opts?: { emitEvent?: boolean; markDirty?: boolean }
     ): void {
         const current = this.readTable();
 
-        const merged: TableValue = {
+        const merged: ITableFieldRequired = {
             type: 'table',
             columnKeys: (Object.prototype.hasOwnProperty.call(next, 'columnKeys'))
                 ? (next.columnKeys as string[])

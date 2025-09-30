@@ -3,18 +3,12 @@ import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
 
 import { DatabaseServer } from '@guardian/common';
+import { ITableField } from '@guardian/interfaces';
 
 import { promisify } from 'node:util';
 import { gunzip as gunzipRaw } from 'node:zlib';
 
 const gunzipBuffer = promisify(gunzipRaw);
-
-export type TableValue = {
-    type: 'table';
-    columnKeys?: string[];
-    rows?: Record<string, string>[];
-    fileId?: string;
-};
 
 export type TableFileLoader = (fileId: string) => Promise<string>;
 
@@ -179,7 +173,7 @@ export function isPlainObject(value: unknown): value is Record<string, unknown> 
 /**
  * Returns true if the value is a TableValue-like object (has type === "table").
  */
-export function isTableValue(value: unknown): value is TableValue {
+export function isTableValue(value: unknown): value is ITableField {
     const isPlain = isPlainObject(value);
     if (!isPlain) {
         return false;
@@ -191,7 +185,7 @@ export function isTableValue(value: unknown): value is TableValue {
 /**
  * Returns true if the value is a TableValue-like object with a non-empty string fileId.
  */
-export function isTableWithFileId(value: unknown): value is TableValue & { fileId: string } {
+export function isTableWithFileId(value: unknown): value is ITableField & { fileId: string } {
     const isTableLike = isTableValue(value);
     if (!isTableLike) {
         return false;
@@ -292,7 +286,7 @@ export async function hydrateTablesInObject(
 
             const isTableNeedingHydration = isTableWithFileId(parsedValue);
             if (isTableNeedingHydration) {
-                const tableObject = parsedValue as TableValue & { fileId: string };
+                const tableObject = parsedValue as ITableField & { fileId: string };
                 const shouldRestoreOriginal = originalValue !== tableObject;
 
                 if (shouldRestoreOriginal) {
