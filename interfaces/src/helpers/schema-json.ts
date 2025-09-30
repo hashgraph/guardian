@@ -828,7 +828,6 @@ export class JsonToSchema {
         }
     }
 
-
     private static fromavailableOptions(
         value: IFieldJson,
         context: ErrorContext

@@ -448,11 +448,18 @@ export class SchemaFormComponent implements OnInit {
     }
 
 
-    public getInvalidMessageByFieldType(item: IFieldControl<any>): string {
+    public getInvalidMessageByFieldType(item: IFieldControl<any>, itemFromList?: IFieldIndexControl<any>): string {
         const type = item.format || item.type;
         const messages = item.isArray
             ? ErrorArrayMessageByFieldType
             : ErrorFieldMessageByFieldType;
+
+        if (item.control?.errors?.[item.id]) {
+            return item.control.errors[item.id];
+        } else if (itemFromList?.control?.errors?.[item.id]) {
+            return itemFromList.control.errors[item.id];
+        }
+
         switch (type) {
             case 'email':
                 return messages.Email;
