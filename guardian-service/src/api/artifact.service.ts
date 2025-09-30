@@ -1,6 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer, getArtifactExtention, getArtifactType, IAuthUser, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
-import {GenerateUUIDv4, IOwner, MessageAPI, ModuleStatus, PolicyStatus} from '@guardian/interfaces';
+import { IOwner, MessageAPI, ModuleStatus, PolicyStatus } from '@guardian/interfaces';
 
 export async function getParent(parentId: string) {
     if (!parentId) {

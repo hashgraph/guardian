@@ -841,7 +841,6 @@ export class DryRun extends BaseEntity {
             const nextTableFileIds = extractTableFileIds(this.document) || [];
             const currentTableFileIds = this.tableFileIds || [];
 
-
             const removedTableFileIds = currentTableFileIds.filter((existingId) => {
                 const existing = String(existingId);
                 return !nextTableFileIds.some((nextId) => String(nextId) === existing);

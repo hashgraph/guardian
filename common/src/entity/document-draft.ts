@@ -67,7 +67,6 @@ export class DocumentDraft extends RestoreEntity {
     @Property({ persist: false, nullable: true })
     _oldTableFileIds?: ObjectId[];
 
-
     @BeforeCreate()
     async setDefaults() {
         let parsed: unknown | undefined;
