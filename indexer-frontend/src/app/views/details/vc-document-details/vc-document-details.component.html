@@ -14,7 +14,7 @@
                     @if (target) {
                     <p-tabPanel [header]="'details.overview' | transloco">
                         <app-overview-form [target]="target" [fields]="overviewFields"></app-overview-form>
-                        
+
                         @if (geoShapes?.length > 0) {
                             <div class="map-project-container">
                                 <app-project-locations [geoShapes]="geoShapes"></app-project-locations>
@@ -55,10 +55,10 @@
                                         <div class="document-view-options-header">
                                             {{ 'details.document' | transloco }}
                                         </div>
-                                        <p-selectButton 
+                                        <p-selectButton
                                             [options]="documentViewOptions"
-                                            [(ngModel)]="documentViewOption" 
-                                            [unselectable]="true" 
+                                            [(ngModel)]="documentViewOption"
+                                            [unselectable]="true"
                                             optionValue="value"
                                             optionLabel="label">
                                         </p-selectButton>
@@ -79,11 +79,13 @@
                                                 @if (schema) {
                                                     <div class="details-document-view-container">
                                                         <div class="details-document__document">
-                                                            <app-schema-form-view 
+                                                            <app-schema-form-view
                                                                 [schema]="schema"
                                                                 [values]="first._ipfs[0].credentialSubject"
                                                                 [private-fields]="privateFields"
-                                                                [formulas]="formulasResults">
+                                                                [formulas]="formulasResults"
+                                                                [analytics]="analytics"
+                                                            >
                                                             </app-schema-form-view>
                                                         </div>
                                                     </div>
@@ -99,9 +101,9 @@
                                                     <div class="document-container-error-message">
                                                         {{ 'details.document_not_loaded_message' | transloco }}
                                                     </div>
-                                                    <p-button 
-                                                        class="document-container-error-btn" 
-                                                        [label]="'details.try_load' | transloco" 
+                                                    <p-button
+                                                        class="document-container-error-btn"
+                                                        [label]="'details.try_load' | transloco"
                                                         (onClick)="onLoadDocument(first)"/>
                                                 </div>
                                             </div>
@@ -124,9 +126,9 @@
                                                         {{ 'details.documents_not_loaded_message' | transloco }}
                                                     </div>
                                                 }
-                                                <p-button 
-                                                    class="document-container-error-btn" 
-                                                    [label]="'details.try_load' | transloco" 
+                                                <p-button
+                                                    class="document-container-error-btn"
+                                                    [label]="'details.try_load' | transloco"
                                                     (onClick)="onLoadDocument(first)"/>
                                             </div>
                                         </div>

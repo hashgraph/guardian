@@ -21,7 +21,8 @@
     "lib": [
       "es2018",
       "dom",
-      "dom.iterable"
+      "dom.iterable",
+      "WebWorker"
     ],
     "paths": {
       "crypto": [
