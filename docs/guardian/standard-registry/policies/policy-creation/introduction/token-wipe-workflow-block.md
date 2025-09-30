@@ -1,5 +1,11 @@
 # wipeDocumentBlock
 
+### Description
+This block allows to wipe tokens. 
+* **Fungible (FT):** Wipes the amount computed by **Rule**.
+* **Non-Fungible (NFT):** Wipes the serials in the **inclusive range** from **Start Serial Number** to **End Serial Number**. If the block is configured with **fixed serial numbers** , the wipe operation will always target that same serial range. This effectively makes the run **single-use for those serials**. To keep the policy reusable across documents, configure **Start/End Serial Number** to be derived from the selected document.
+
+
 ### Properties
 
 | Block Property   | Definition                                                                        | Example Input                             | Status |
@@ -12,10 +18,12 @@
 
 ### UI Properties
 
-| UI Property | Definition                                                                 |
-| ----------- | -------------------------------------------------------------------------- |
-| Token       | Select which token to wipe. The token must exist in the Guardian instance. |
-| Rule        | Enter any wiping calculations.                                             |
+| UI Property         | Definition                                                                                      | Examples                                              |
+| ------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Token       | Select which token to wipe. The token must exist in the Guardian instance. | specific token                        |
+| Rule        | **FT required.** Enter any wiping calculations.                                             | `field0`, `10` |
+| Start Serial Number        | **NFT required.** Enter start serial number for wiping calculations.                                             | `field1`, `5`        |
+| End Serial Number	        | **NFT required.** Enter end serial number for wiping calculations.                                             | `field2`, `12`         |
 
 ### Events
 

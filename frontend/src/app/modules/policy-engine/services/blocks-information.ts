@@ -56,6 +56,7 @@ import { TransformationButtonBlockComponent } from '../policy-viewer/blocks/tran
 import { IntegrationButtonBlockComponent } from '../policy-viewer/blocks/integration-button-block/integration-button-block.component';
 import { HttpRequestUIAddonCode } from '../policy-viewer/code/http-request-ui-addon';
 import { TransformationUIAddonCode } from '../policy-viewer/code/transformation-ui-addon';
+import { WipeConfigComponent } from '../policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -663,7 +664,7 @@ const Wipe: IBlockSetting = {
     group: BlockGroup.Tokens,
     header: BlockHeaders.ServerBlocks,
     factory: null,
-    property: MintConfigComponent,
+    property: WipeConfigComponent,
     code: null,
 }
 

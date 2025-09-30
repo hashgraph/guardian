@@ -18,11 +18,15 @@ services:
     restart: always
     expose:
       - 27017
+    volumes:
+      - mongo_data:/data/db
 
   mongo-express:
     image: mongo-express:1.0.2-20
     expose:
       - 8081
+    ports:
+      - "8081:8081"
     environment:
       ME_CONFIG_MONGODB_SERVER: mongo
       ME_CONFIG_MONGODB_PORT: 27017
@@ -36,6 +40,8 @@ services:
     restart: always
     expose:
       - 6379
+    volumes:
+      - redis_data:/data
 
 #  seq:
 #    image: datalust/seq
@@ -328,6 +334,8 @@ volumes:
   grafana_data:
   ipfs_data:
   ipfs_export:
+  mongo_data:
+  redis_data:
 #  seq_data:
 
 networks:
