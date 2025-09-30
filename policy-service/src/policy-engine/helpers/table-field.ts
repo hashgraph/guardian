@@ -4,6 +4,11 @@ import { PolicyUtils } from '../helpers/utils.js';
 
 import { DatabaseServer } from '@guardian/common';
 
+import { promisify } from 'node:util';
+import { gunzip as gunzipRaw } from 'node:zlib';
+
+const gunzipBuffer = promisify(gunzipRaw);
+
 export type TableValue = {
     type: 'table';
     columnKeys?: string[];
@@ -118,32 +123,35 @@ export function parseCsvToTable(
     };
 }
 
+export async function decodeGridFileText(
+    fileBuffer: Buffer,
+    encoding: BufferEncoding = 'utf8'
+): Promise<string> {
+    const isGzip =
+        fileBuffer.length >= 2 &&
+        fileBuffer[0] === 0x1f &&
+        fileBuffer[1] === 0x8b;
+
+    if (isGzip) {
+        const uncompressed = await gunzipBuffer(fileBuffer);
+        return uncompressed.toString(encoding);
+    }
+
+    return fileBuffer.toString(encoding);
+}
+
 /**
  * Loads a text file by its identifier.
  */
-export async function loadFileTextById(ref: AnyBlockType, fileId: string, enc: BufferEncoding = 'utf8'): Promise<string> {
+export async function loadFileTextById(ref: AnyBlockType, fileId: string, encoding: BufferEncoding = 'utf8'): Promise<string> {
     if (!fileId || typeof fileId !== 'string') {
         throw new BlockActionError('Invalid fileId', ref.blockType, ref.uuid);
     }
 
     try {
-        // if (ref?.databaseServer?.getDryRun?.()) {
-        //     const record = await (ref as any).databaseServer.findOne(
-        //         DryRunFiles,
-        //         { id: fileId }
-        //     ) as { file?: Buffer | Binary } | null;
-        //
-        //     const fileField = record?.file;
-        //     if (!fileField) {
-        //         throw new Error('Dry-run file not found');
-        //     }
-        //
-        //     const buffer = binToBuffer(fileField);
-        //     return buffer.toString(enc);
-        // }
-
         const { buffer } = await DatabaseServer.getGridFile(fileId);
-        return buffer.toString(enc);
+
+        return  await decodeGridFileText(buffer, encoding);
 
     } catch (e: any) {
         const message = PolicyUtils?.getErrorMessage ? PolicyUtils.getErrorMessage(e) : String(e?.message ?? e);
