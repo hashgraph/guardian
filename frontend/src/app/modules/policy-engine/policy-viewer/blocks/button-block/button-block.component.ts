@@ -5,6 +5,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
+import { PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Component for display block of 'Buttons' type.
@@ -18,6 +19,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 export class ButtonBlockComponent implements OnInit, AfterContentChecked {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
+    @Input('policyStatus') policyStatus!: string;
     @Input('static') static!: any;
 
     loading: boolean = true;
@@ -123,6 +125,14 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         } else {
             this.data = null;
         }
+    }
+
+    isBtnVisible(button: any) {
+        if (this.policyStatus === PolicyStatus.DISCONTINUED && button.hideWhenDiscontinued) {
+            return false;
+        }
+
+        return true;
     }
 
     checkVisible(button: any) {

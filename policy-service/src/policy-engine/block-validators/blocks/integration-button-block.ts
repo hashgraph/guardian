@@ -1,7 +1,7 @@
 import { IntegrationServiceFactory } from '@guardian/common';
 import { BlockValidator, IBlockProp } from '../../block-validators/index.js';
 import { CommonBlock } from './common.js';
-import { ParseTypes } from '@guardian/interfaces';
+import { ParseTypes, SchemaEntity } from '@guardian/interfaces';
 
 /**
  * Document Integration Button Block with UI
@@ -21,7 +21,7 @@ export class IntegrationButtonBlock {
         try {
             await CommonBlock.validate(validator, ref);
 
-            if (validator.schemaNotExist('#IntegrationDataV2')) {
+            if (validator.schemaNotExistByEntity(SchemaEntity.INTEGRATION_DATA_V2)) {
                 validator.addError('Policy outdated. Re-import required — IntegrationDataV2 schema unavailable');
             }
 
