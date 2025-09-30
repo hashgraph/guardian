@@ -630,13 +630,13 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 reportVerifyData.option.status = "APPROVED";
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveValidationReportBtn,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.MintTokenVerra,
                     headers: {
                         authorization
                     },
                     body: {
                         document: reportVerifyData,
-                        tag: "Approve_Button_Validation"
+                        tag: "Option_0"
                     },
                     timeout: 60000
                 })
