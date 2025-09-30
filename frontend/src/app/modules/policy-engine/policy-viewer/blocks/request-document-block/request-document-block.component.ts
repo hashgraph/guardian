@@ -18,6 +18,7 @@ import { MergeUtils } from 'src/app/utils';
 import { ToastrService } from 'ngx-toastr';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { PolicyStatus } from '@guardian/interfaces';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -37,6 +38,7 @@ interface IRequestDocumentData {
         buttonClass: string;
         dialogContent: string;
         dialogClass: string;
+        hideWhenDiscontinued?: boolean;
     }
 }
 
@@ -57,6 +59,7 @@ export class RequestDocumentBlockComponent
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
     @Input('savepointIds') savepointIds?: string[] | null = null;
+    @Input('policyStatus') policyStatus!: string;
 
     @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
 
@@ -77,6 +80,7 @@ export class RequestDocumentBlockComponent
     public presetReadonlyFields: any;
     public dialogTitle: any;
     public dialogClass: any;
+    public hideWhenDiscontinued: any;
     public dialogRef: any;
     public buttonClass: any;
     public restoreData: any;
@@ -180,6 +184,7 @@ export class RequestDocumentBlockComponent
                 this.buttonClass = uiMetaData.buttonClass;
                 this.dialogTitle = uiMetaData.dialogContent;
                 this.dialogClass = uiMetaData.dialogClass;
+                this.hideWhenDiscontinued = !!uiMetaData.hideWhenDiscontinued;
                 this.description = uiMetaData.description;
             }
             if (this.type == 'page') {
@@ -205,6 +210,14 @@ export class RequestDocumentBlockComponent
             this.disabled = false;
             this.isExist = false;
         }
+    }
+
+    isBtnVisible() {
+        if (this.policyStatus === PolicyStatus.DISCONTINUED && this.hideWhenDiscontinued) {
+            return false;
+        }
+
+        return true;
     }
 
     private loadRules() {

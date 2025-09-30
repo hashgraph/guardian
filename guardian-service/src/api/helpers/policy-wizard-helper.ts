@@ -737,6 +737,7 @@ export class PolicyWizardHelper {
                         action: 'dialog',
                         content: 'View Document',
                         uiClass: 'link',
+                        hideWhenDiscontinued: false,
                         dialogContent: 'VC',
                         dialogClass: '',
                         dialogType: 'json',
@@ -892,6 +893,7 @@ export class PolicyWizardHelper {
                         field: 'option.status',
                         value: 'Approved',
                         uiClass: 'btn-approve',
+                        hideWhenDiscontinued: false,
                     },
                     {
                         tag: 'Button_1',
@@ -903,6 +905,7 @@ export class PolicyWizardHelper {
                         uiClass: 'btn-reject',
                         title: 'Reject',
                         description: 'Enter reject reason',
+                        hideWhenDiscontinued: false,
                     },
                 ],
             },

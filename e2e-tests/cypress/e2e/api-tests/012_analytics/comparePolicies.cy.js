@@ -20,8 +20,6 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                 expect(response.status).to.eq(STATUS_CODE.OK)
                 policyId1 = response.body.at(0).id;
                 policyId2 = response.body.at(1).id;
-                prelastPolicy = response.body.at(-1).id;
-                preprelastPolicy = response.body.at(-2).id;
             })
         })
     })
@@ -61,15 +59,19 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                 }
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK)
-                prelastPolicy = response.body.at(-1).id;
-                preprelastPolicy = response.body.at(-2).id;
+                response.body.forEach(element => {
+                    if (element.name.startsWith("iRec_2_"))
+                        preprelastPolicy = element.id;
+                    if (element.name == "iRec_2")
+                        prelastPolicy = element.id;
+                });
                 cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.PolicyCompare,
                     body: {
                         policyId1: preprelastPolicy,
                         policyId2: prelastPolicy,
-                        eventsLvl: 1,
+                        eventsLvl: 2,
                         propLvl: 2,
                         childrenLvl: 2,
                         idLvl: 0
