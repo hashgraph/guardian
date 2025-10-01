@@ -10,7 +10,7 @@ Below is complete API flow to execute Verra VM0033 Methodology:
 
 #### 1.1 Login by SR
 
-<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
 
 To login, the user must request a refresh token:
 
@@ -115,7 +115,7 @@ Successful response looks like:
 
 #### 1.3 Policy Publishing
 
-<figure><img src="../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 **To publish a policy, use the id field from the previous step in the request:**
 
@@ -226,7 +226,7 @@ Successful response looks like:
 
 #### 1.4 Assign Policy to VVB and Project Proponent (PP) Users
 
-<figure><img src="../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 **To assign a policy to a user, include the username in the request body, and set the `policyId` field to the id value from the policy importing step:**
 
@@ -343,7 +343,7 @@ Successful response looks like:
 
 #### 3.2 Choose PP Role in Policy and Create Project Description
 
-<figure><img src="../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 **To choose a role in the policy, send a request with the role name in the body:**
 
@@ -364,6 +364,8 @@ true
 ```
 
 **To create a project description in the policy, send a request with the project description details. (The payload example is large and will be attached separately.):**
+
+<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
 
 <mark style="color:green;">`POST`</mark> `http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/add_project_bnt/blocks/`
 
@@ -415,6 +417,8 @@ Successful response looks like:
 ```
 
 **Wait for the request to finish processing:**
+
+<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
 <mark style="color:red;">`GET`</mark> `http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/project_grid_pp_2/blocks`
 
@@ -677,6 +681,10 @@ Waiting while `data.option.status` would be equal "Waiting to be Added":
 
 #### 4.2 Choose VVB Role
 
+<figure><img src="../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+
 **To choose a role in the policy, send a request with the role name in the body:**
 
 <mark style="color:green;">`POST`</mark> `http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/Choose_Roles/blocks/`
@@ -696,6 +704,8 @@ true
 ```
 
 **To create a VVB in the policy, send a request with the VVB name in the body:**
+
+<figure><img src="../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
 
 `POST http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/create_new_vvb/blocks`
 
@@ -764,7 +774,7 @@ Successful response looks like:
 
 **Wait until the title is equal to “Waiting for approval”:**
 
-<figure><img src="../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
 
 <mark style="color:red;">`GET`</mark>` ``http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/new_VVB/blocks`
 
@@ -814,11 +824,15 @@ Waiting while `blocks.uiMetaData.title` would be equal "Waiting for approval":
 
 #### 5.2 Add Project
 
+<figure><img src="../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+
 **Get the project reference by saving the response data:**
 
 <mark style="color:red;">`GET`</mark> `http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/project_grid_verra/blocks`
 
 Change the project status from “Waiting to be Added” to “Waiting to Validate”:
+
+<figure><img src="../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
 
 ```json5
 {
@@ -982,6 +996,8 @@ With body:
 #### 5.3 Login by PP
 
 #### 5.4 Assign Project
+
+<figure><img src="../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
 
 **Get the project reference by saving the response data:**
 
@@ -1259,11 +1275,15 @@ With body:
 
 #### 5.6 Approve Project
 
+<figure><img src="../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+
 **Wait until the project status changes to “Waiting to Validate”:**
 
 <mark style="color:red;">`GET`</mark> `http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/project_grid_vvb/blocks`
 
 Save the response data as a reference and update the status to “Validated”
+
+<figure><img src="../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
 
 ```json5
 {
@@ -1477,6 +1497,8 @@ With body:
 #### 6.1 Login by PP
 
 #### 6.2 Create Report
+
+<figure><img src="../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
 
 **Wait until the project status changes to “approved\_project”:**
 

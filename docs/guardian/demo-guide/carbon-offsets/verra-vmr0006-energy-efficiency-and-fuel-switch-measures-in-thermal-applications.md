@@ -110,7 +110,7 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 
 5.  Once the project details are submitted, Verra can add it to the project pipeline.\\
 
-    <figure><img src="../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 6. The Standard Registry can now add the project to the project pipeline by selecting “Add”.
 
 ![](<../../../.gitbook/assets/14 (10).png>)
@@ -152,4 +152,4 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
     <figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 16. The Trust Chain can also be viewed by clicking on the “View Trust Chain” button:
 
-<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
