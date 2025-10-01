@@ -13,8 +13,8 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
 import { ToastrService } from 'ngx-toastr';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structures';
-import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { autosaveValueChanged, getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -49,7 +49,7 @@ export class RequestDocumentBlockDialog {
     private sub?: Subscription;
     private readonly AUTOSAVE_INTERVAL = 120000;
 
-    public minutesAgo$ =  getMinutesAgoStream(() => this.lastSavedAt);
+    public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
     private buttonNames: { [id: string]: string } = {
         save: "Save",
         cancel: "Cancel",
@@ -82,10 +82,15 @@ export class RequestDocumentBlockDialog {
         this.loading = true;
         this.loadRules();
         this.initForm(this.dataForm);
-        this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(() => {
+        this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(async () => {
             const data = this.dataForm.getRawValue();
-            this.storage.save(this.autosaveId, data);
-            this.lastSavedAt = new Date();
+            const savedData = await this.storage.load(this.autosaveId);
+            const saveNeeded = await autosaveValueChanged(data, savedData);
+
+            if (saveNeeded) {
+                this.storage.save(this.autosaveId, data);
+                this.lastSavedAt = new Date();
+            }
         });
     }
 
@@ -159,7 +164,7 @@ export class RequestDocumentBlockDialog {
                 .subscribe(() => {
                     setTimeout(() => {
                         this.loading = false;
-                        if(!draft) {
+                        if (!draft) {
                             this.dialogRef.close(null);
                         }
                     }, 1000);

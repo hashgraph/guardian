@@ -97,11 +97,6 @@ export class RequestDocumentBlockComponent
     public dialog: RequestDocumentBlockDialog;
     public edit: boolean;
     private storage: DocumentAutosaveStorage;
-    public lastSavedAt?: Date;
-    private sub?: Subscription;
-    private readonly AUTOSAVE_INTERVAL = 120000;
-
-    public minutesAgo$ =  getMinutesAgoStream(() => this.lastSavedAt);
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -129,18 +124,12 @@ export class RequestDocumentBlockComponent
         (window as any).__request = (window as any).__request || {};
         (window as any).__request[this.id] = this;
         this.initForm(this.dataForm);
-        this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(() => {
-            const data = this.dataForm.getRawValue();
-            this.storage.save(this.getAutosaveId(), data);
-            this.lastSavedAt = new Date();
-        });
     }
 
     ngOnDestroy(): void {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
         this.destroy();
-        this.sub?.unsubscribe();
     }
 
     public initForm($event: any) {
@@ -169,7 +158,6 @@ export class RequestDocumentBlockComponent
             }, 500);
         } else if (this.type === 'page') {
             this.loadRules();
-            this.showAutosaveDiag();
         } else {
             setTimeout(() => {
                 this.loading = false;
