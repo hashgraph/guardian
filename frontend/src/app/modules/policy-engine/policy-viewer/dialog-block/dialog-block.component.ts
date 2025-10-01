@@ -14,6 +14,7 @@ export class DialogBlock {
     block: any = null;
     static: any = null;
     policyId: any = null;
+    policyStatus: any = null;
     dryRun: any = null;
 
     public data: any
@@ -30,6 +31,7 @@ export class DialogBlock {
         this.static = this.data.static;
         this.title = this.data.title;
         this.policyId = this.data.policyId;
+        this.policyStatus = this.data.policyStatus;
         this.dryRun = this.data.dryRun;
     }
 

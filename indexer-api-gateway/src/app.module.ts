@@ -13,6 +13,7 @@ import {
     LandingApi,
     AnalyticsApi,
     SettingsApi,
+    ArtifactApi
 } from './api/index.js';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
@@ -39,6 +40,7 @@ const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
         LandingApi,
         AnalyticsApi,
         SettingsApi,
+        ArtifactApi
     ],
     providers: [
         // LoggerService,

@@ -1,8 +1,16 @@
 import { CustomError } from '@indexer/common';
-import axios from 'axios';
+import axios, {AxiosResponse} from 'axios';
 import CID from 'cids';
 
 export class IPFSService {
+    private static commonHeaders(): Record<string, string> {
+        return {
+            'Accept': '*/*',
+            'User-Agent': 'curl/8.4.0',
+            'Cache-Control': 'no-cache',
+        };
+    }
+
     public static parseCID(url: string): string | null {
         try {
             const cid = new CID(url);
@@ -19,6 +27,7 @@ export class IPFSService {
                 {
                     responseType: 'arraybuffer',
                     timeout,
+                    headers: IPFSService.commonHeaders(),
                 }
             );
             return items.data;
