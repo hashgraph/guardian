@@ -85,7 +85,7 @@ export class CsvService {
     toCsvFile(
         columnKeys: string[],
         rows: Record<string, unknown>[],
-        filename: string = 'table.csv',
+        filename: string = 'file.csv',
         opts: CsvBuildOptions = {}
     ): File {
         const blob = this.toCsvBlob(columnKeys, rows, opts);

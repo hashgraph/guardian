@@ -70,6 +70,62 @@ export class IpfsApi {
     }
 
     /**
+     * Add file to ipfs directly
+     */
+    @Post('/file/direct')
+    @Auth(
+        Permissions.IPFS_FILE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
+    )
+    @ApiOperation({
+        summary: 'Add file from ipfs.',
+        description: 'Add file from ipfs.',
+    })
+    @ApiBody({
+        description: 'Binary data.',
+        required: true,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async postFileDirect(
+        @Body() body: any,
+        @AuthUser() user: IAuthUser,
+        @Req() req
+    ): Promise<string> {
+        try {
+            if (!Object.values(body).length) {
+                throw new HttpException('Body content in request is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+            }
+
+            const guardians = new Guardians();
+            const { cid } = await guardians.addFileIpfsDirect(user, body);
+            if (!cid) {
+                throw new HttpException('File is not uploaded', HttpStatus.BAD_REQUEST);
+            }
+
+            const invalidedCacheTags = [
+                `${PREFIXES.IPFS}file/${cid}`,
+                `${PREFIXES.IPFS}file/${cid}/dry-run`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
+
+            return JSON.stringify(cid);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Add file from ipfs for dry run mode
      */
     @Post('/file/dry-run/:policyId')

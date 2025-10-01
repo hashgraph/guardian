@@ -372,7 +372,9 @@ export class ArtifactApi {
     }
 
     @Get('/files/:fileId')
-    @Auth()
+    @Auth(
+        Permissions.IPFS_FILE_READ,
+    )
     @ApiOperation({ summary: 'Download file by id', description: 'Returns file from GridFS' })
     @ApiParam({ name: 'fileId', type: String, required: true, description: 'File _id' })
     @HttpCode(HttpStatus.OK)
@@ -404,7 +406,9 @@ export class ArtifactApi {
     }
 
     @Post('/files')
-    @Auth()
+    @Auth(
+        Permissions.IPFS_FILE_CREATE,
+    )
     @ApiOperation({ summary: 'Uploads/overwrites file', description: 'Uploads/overwrites file in GridFS' })
     @ApiConsumes('multipart/form-data')
     @ApiBody({

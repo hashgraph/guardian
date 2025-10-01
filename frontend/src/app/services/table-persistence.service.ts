@@ -148,7 +148,7 @@ export class TablePersistenceService {
             return null;
         }
 
-        const cid = await firstValueFrom(this.ipfsService.addFile(file));
+        const cid = await firstValueFrom(this.ipfsService.addFileDirect(file));
         if (typeof cid === 'string' && cid.trim()) {
             return cid.trim();
         }
