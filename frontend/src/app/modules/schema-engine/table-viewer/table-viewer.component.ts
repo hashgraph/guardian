@@ -17,6 +17,7 @@ type TableRefLike = { type?: string; fileId?: string } | string | null | undefin
     styleUrls: ['./table-viewer.component.scss'],
     providers: [DialogService]
 })
+
 export class TableViewerComponent implements OnInit {
     @Input()
     public value: TableRefLike;

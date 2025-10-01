@@ -47,6 +47,7 @@ export class ArtifactService {
         const fd = new FormData();
 
         const name = (file as File)?.name || 'file.csv';
+
         fd.append('file', file, name);
         if (fileId) {
             fd.append('fileId', fileId);

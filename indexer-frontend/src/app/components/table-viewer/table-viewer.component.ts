@@ -12,6 +12,7 @@ import { TableDialogComponent } from '../../dialogs/table-dialog/table-dialog.co
 
 import { IndexedDbRegistryService } from '@services/indexed-db-registry.service';
 import { GzipService } from '@services/gzip.service';
+
 import {DB_NAME, STORES_NAME} from "../../constants";
 
 @Component({
@@ -22,6 +23,7 @@ import {DB_NAME, STORES_NAME} from "../../constants";
     styleUrls: ['./table-viewer.component.scss'],
     providers: [DialogService]
 })
+
 export class TableViewerComponent implements OnInit {
     @Input() public value: any;
     @Input() public title?: string;

@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges} from '@angular/core';
+import {Component, Input, OnInit, SimpleChanges} from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
 import { IFieldControl } from '../schema-form-model/field-form';
@@ -8,6 +8,7 @@ import {ArtifactService} from '../../../services/artifact.service';
 import {IndexedDbRegistryService} from '../../../services/indexed-db-registry.service';
 import { GzipService } from '../../../services/gzip.service';
 import { ITableField } from '@guardian/interfaces';
+
 import {DB_NAME, STORES_NAME} from "../../../constants";
 
 export interface ITableFieldRequired extends ITableField {
@@ -20,6 +21,7 @@ export interface ITableFieldRequired extends ITableField {
     styleUrls: ['./table-field.component.scss'],
     providers: [DialogService],
 })
+
 export class TableFieldComponent implements OnInit {
     @Input() item!: IFieldControl<any>;
     @Input() required: boolean = false;
@@ -240,6 +242,7 @@ export class TableFieldComponent implements OnInit {
 
     private async loadCsvTextFromIdb(idbKey: string): Promise<string | null> {
         const record: any = await this.idb.get(DB_NAME.TABLES, STORES_NAME.FILES_STORE, idbKey);
+
 
         if (!record || !record.blob) {
             return null;

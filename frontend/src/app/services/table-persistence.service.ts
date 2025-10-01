@@ -4,6 +4,7 @@ import { ArtifactService } from './artifact.service';
 import { IPFSService } from './ipfs.service';
 import { IndexedDbRegistryService } from './indexed-db-registry.service';
 import { ITableField } from '@guardian/interfaces';
+
 import {DB_NAME, STORES_NAME} from "../constants";
 
 @Injectable({ providedIn: 'root' })
