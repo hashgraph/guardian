@@ -1,5 +1,5 @@
 import { DatabaseServer, Policy } from '@guardian/common';
-import { ISchema, ModuleStatus } from '@guardian/interfaces';
+import { ISchema, ModuleStatus, SchemaEntity } from '@guardian/interfaces';
 import { BlockValidator } from './block-validator.js';
 import { ModuleValidator } from './module-validator.js';
 import { ISerializedErrors } from './interfaces/serialized-errors.interface.js';
@@ -66,6 +66,11 @@ export class PolicyValidator {
      */
     private readonly schemas: Map<string, SchemaValidator>;
     /**
+     * Schemas by entity
+     * @private
+     */
+    private readonly schemasByEntity: Map<string, SchemaValidator>;
+    /**
      * Is Dry Run Mode
      * @private
      */
@@ -83,6 +88,7 @@ export class PolicyValidator {
         this.policyTopics = policy.policyTopics || [];
         this.policyGroups = policy.policyGroups;
         this.schemas = new Map();
+        this.schemasByEntity = new Map();
         this.isDryRunMode = isDruRun
     }
 
@@ -117,6 +123,10 @@ export class PolicyValidator {
         this.schemas.set('#SentinelHUB', SchemaValidator.fromSystem('#SentinelHUB'));
         const schemas = await DatabaseServer.getSchemas({ topicId: this.topicId });
         for (const schema of schemas) {
+            if (schema.entity) {
+                this.schemasByEntity.set(schema.entity, SchemaValidator.fromSchema(schema));
+            }
+
             this.schemas.set(schema.iri, SchemaValidator.fromSchema(schema));
         }
         for (const validator of this.schemas.values()) {
@@ -404,6 +414,19 @@ export class PolicyValidator {
             }
             return false;
         }
+    }
+
+    /**
+     * Schema exist by entity
+     * @param entity
+     */
+    public schemaExistByEntity(entity: SchemaEntity): boolean {
+        if (this.schemasByEntity.has(entity)) {
+            const validator = this.schemasByEntity.get(entity);
+            return validator.isValid;
+        }
+
+        return false;
     }
 
     /**

@@ -14,6 +14,7 @@ import { ToastrService } from 'ngx-toastr';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structures';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
+import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -66,7 +67,8 @@ export class RequestDocumentBlockDialog {
         private fb: UntypedFormBuilder,
         private toastr: ToastrService,
         private changeDetectorRef: ChangeDetectorRef,
-        private indexedDb: IndexedDbRegistryService
+        private indexedDb: IndexedDbRegistryService,
+        private tablePersist: TablePersistenceService,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
@@ -132,12 +134,15 @@ export class RequestDocumentBlockDialog {
         this.dialogRef.close(null);
     }
 
-    public onSubmit(draft?: boolean) {
+    public async onSubmit(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
         if (this.dataForm.valid || draft) {
             const data = this.dataForm.getRawValue();
+            this.loading = true;
+
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun);
 
             prepareVcData(data);
             const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;

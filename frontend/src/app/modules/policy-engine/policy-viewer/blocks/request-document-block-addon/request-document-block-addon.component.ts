@@ -18,6 +18,7 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { RequestDocumentBlockDialog } from '../request-document-block/dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
+import { PolicyStatus } from '@guardian/interfaces';
 
 interface IRequestDocumentAddonData {
     readonly: boolean;
@@ -25,6 +26,7 @@ interface IRequestDocumentAddonData {
     active: boolean;
     data: any;
     buttonName: string;
+    hideWhenDiscontinued?: boolean;
     uiClass: string;
     dialogTitle: string;
     preset: boolean;
@@ -49,6 +51,7 @@ export class RequestDocumentBlockAddonComponent
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
     @Input('savepointIds') savepointIds?: string[] | null = null;
+    @Input('policyStatus') policyStatus!: string;
 
     public isExist = false;
     public disabled = false;
@@ -66,6 +69,7 @@ export class RequestDocumentBlockAddonComponent
     public dialogRef: any;
     public uiClass: any;
     public buttonName: any;
+    public hideWhenDiscontinued?: boolean = false;
     public restoreData: any;
     public rules: any;
     public hideFields: any;
@@ -108,6 +112,7 @@ export class RequestDocumentBlockAddonComponent
             this.ref = row;
             this.schema = new Schema(schema);
             this.buttonName = data.buttonName;
+            this.hideWhenDiscontinued = !!data.hideWhenDiscontinued;
             this.uiClass = data.uiClass;
             this.dialogTitle = data.dialogTitle;
             this.disabled = active === false;
@@ -128,6 +133,14 @@ export class RequestDocumentBlockAddonComponent
             this.disabled = false;
             this.isExist = false;
         }
+    }
+
+    isBtnVisible() {
+        if (this.policyStatus === PolicyStatus.DISCONTINUED && this.hideWhenDiscontinued) {
+            return false;
+        }
+
+        return true;
     }
 
     private getJson(data: any, presetFields: any[]) {

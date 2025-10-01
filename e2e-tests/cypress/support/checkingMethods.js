@@ -53,18 +53,34 @@ export const whileRequestAppear = (authorization, attempts = 0) => {
             timeout: 180000,
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.OK);
-            if (response.body.length != 0)
-                cy.request({
-                    method: METHOD.PUT,
-                    url: API.ApiServer + API.ExternalPolicyRequests + response.body[0].messageId + '/' + API.Approve,
-                    headers: {
-                        authorization,
-                    },
-                    timeout: 180000,
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.OK);
-                    cy.task('log', "Request approved")
-                })
+            if (response.body.length != 0) {
+                if (response.body[0].loaded == false) {
+                    cy.request({
+                        method: METHOD.PUT,
+                        url: API.ApiServer + API.ExternalPolicyRequests + response.body[0].messageId + '/' + API.Reload,
+                        headers: {
+                            authorization,
+                        },
+                        timeout: 180000,
+                    }).then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.OK);
+                        whileRequestAppear(authorization, attempts)
+                    })
+                }
+                else {
+                    cy.request({
+                        method: METHOD.PUT,
+                        url: API.ApiServer + API.ExternalPolicyRequests + response.body[0].messageId + '/' + API.Approve,
+                        headers: {
+                            authorization,
+                        },
+                        timeout: 180000,
+                    }).then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.OK);
+                        cy.task('log', "Request approved")
+                    })
+                }
+            }
             else whileRequestAppear(authorization, attempts)
         })
     }

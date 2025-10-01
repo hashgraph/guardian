@@ -45,6 +45,14 @@
                 >
                     <div *ngIf="isPrefix(item)" class="form-field-prefix">{{ item.unit }}</div>
 
+                    <ng-container *ngIf="item.customType === 'table'">
+                        <table-field  class="table-field-container"
+                                [item]="item"
+                                [required]="item.required"
+                                [readonly]="readonly?.[item.fullPath]"
+                        ></table-field>
+                    </ng-container>
+
                     <div
                         *ngIf="isInput(item)"
                         class="form-field-input guardian-input-container"
@@ -210,6 +218,15 @@
                             [attr.invalid-required-field]="ifRequiredField(item) && !listItem.control.valid"
                         >
                             <div *ngIf="isPrefix(item)" class="form-field-prefix">{{ item.unit }}</div>
+
+                            <ng-container *ngIf="item.customType === 'table'" class="table-field-container">
+                                <table-field
+                                    class="table-field-container"
+                                    [item]="$any(listItem)"
+                                    [required]="item.required"
+                                    [readonly]="readonly?.[item.fullPath]"
+                                ></table-field>
+                            </ng-container>
 
                             <div
                                 *ngIf="isInput(item)"

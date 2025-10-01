@@ -39,4 +39,34 @@ export class ArtifactService {
     public deleteArtifact(artifactId: string): Observable<any> {
         return this.http.delete<any>(`${this.url}/${artifactId}`);
     }
+
+    public upsertFile(
+        file: Blob | File,
+        fileId?: string
+    ): Observable<{ fileId: string; filename: string; contentType: string }> {
+        const fd = new FormData();
+
+        const name = (file as File)?.name || 'table.csv';
+        fd.append('file', file, name);
+        if (fileId) {
+            fd.append('fileId', fileId);
+        }
+
+        return this.http.post<{ fileId: string; filename: string; contentType: string }>(
+            `${this.url}/files`,
+            fd
+        );
+    }
+
+    public getFile(fileId: string): Observable<string> {
+        return this.http.get(`${this.url}/files/${encodeURIComponent(fileId)}`, {
+            responseType: 'text',
+        });
+    }
+
+    public getFileBlob(fileId: string): Observable<Blob> {
+        return this.http.get(`${this.url}/files/${encodeURIComponent(fileId)}`, {
+            responseType: 'blob'
+        });
+    }
 }
