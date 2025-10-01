@@ -23,17 +23,18 @@
         "@angular/router": "^17.3.0",
         "@indexer/interfaces": "file:../indexer-interfaces",
         "@jsverse/transloco": "^7.2.1",
+        "@meeco/cryppo": "^2.0.2",
         "chart.js": "^4.4.3",
         "cids": "^1.1.9",
         "echarts": "^5.5.0",
+        "mathlive": "^0.103.0",
         "ngx-echarts": "^17.1.0",
         "ol": "^9.2.2",
         "primeicons": "^7.0.0",
         "primeng": "17.16.1",
         "rxjs": "~7.8.0",
         "tslib": "^2.3.0",
-        "zone.js": "~0.14.3",
-        "mathlive": "^0.103.0"
+        "zone.js": "~0.14.3"
     },
     "devDependencies": {
         "@angular-devkit/build-angular": "^17.3.2",

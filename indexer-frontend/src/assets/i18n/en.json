@@ -34,6 +34,7 @@
         "instances": "Instances",
         "policies": "Policies",
         "documents": "Documents",
+        "comments": "Comments",
         "nfts": "NFTs",
         "vps": "Verifiable Presentation (VPs)",
         "vcs": "Verifiable Credentials (VCs)",
@@ -135,6 +136,8 @@
         "overview": "Overview",
         "documents": "Document",
         "history": "History",
+        "discussions": "Discussions",
+        "comments": "Comments",
         "view": "View",
         "relationships": "Relationships",
         "raw_data": "Raw data",
@@ -159,7 +162,7 @@
             "modules": "Modules",
             "vcs": "Verifiable Credentials",
             "vps": "Verifiable Presentations",
-            "formulas": "Formulas"  
+            "formulas": "Formulas"
         },
         "hedera": {
             "topic_id": "Topic Id",
@@ -176,7 +179,8 @@
             "receiver_account_id": "Receiver",
             "token_id": "Token Id",
             "token_amount": "Token Amount",
-            "target": "Target"
+            "target": "Target",
+            "comments": "Comments"
         },
         "ipfs": "IPFS",
         "header": {

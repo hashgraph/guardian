@@ -2072,6 +2072,74 @@ export class EntityService {
         }
     }
     //#endregion
+    //#region DISCUSSIONS
+    @MessagePattern(IndexerMessageAPI.GET_DISCUSSIONS)
+    async getDiscussions(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<any>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const discussions = await em.find(Message, {
+                'options.target': messageId,
+                type: MessageType.POLICY_DISCUSSION,
+            } as any);
+            const comments = await em.find(Message, {
+                'options.target': messageId,
+                type: MessageType.POLICY_COMMENT,
+            } as any);
+
+            const map = new Map<string, number>();
+            for (const comment of comments) {
+                if (comment.options?.discussion) {
+                    const count = (map.get(comment.options.discussion) || 0) + 1;
+                    map.set(comment.options.discussion, count);
+                }
+            }
+            for (const discussion of discussions) {
+                if (!discussion.options) {
+                    discussion.options = {};
+                }
+                discussion.options.comments = map.get(discussion.consensusTimestamp) || 0;
+            }
+            for (let i = 0; i < discussions.length; i++) {
+                discussions[i] = await loadDocuments(discussions[i], true);
+            }
+
+            return new MessageResponse<any>(discussions);
+        } catch (error) {
+            console.log(error);
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_COMMENTS)
+    async getComments(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<any>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.POLICY_COMMENT;
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [any[], number];
+            const result = {
+                items: rows,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<any>>(result);
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+    //#endregion
     //#region LABELS DOCUMENTS
     @MessagePattern(IndexerMessageAPI.GET_LABEL_DOCUMENTS)
     async getLabelDocuments(

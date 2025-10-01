@@ -136,6 +136,31 @@
                         }
                     </p-tabPanel>
 
+                    <p-tabPanel [header]="'details.comments' | transloco">
+                        <div class="comments-header" >
+                            <div class="comments-header-item">
+                                <div class="comments-header-item-name">{{ 'details.discussions' | transloco }}</div>
+                                <div class="comments-header-item-value">{{discussionsCount}}</div>
+                            </div>
+                            <div class="comments-header-item">
+                                <div class="comments-header-item-name">{{ 'details.comments' | transloco }}</div>
+                                <div class="comments-header-item-value">{{commentsCount}}</div>
+                            </div>
+                            <div class="comments-header-action">
+                                <p-button 
+                                    class="comments-add_key-btn" 
+                                    [label]="'details.add_key' | transloco" 
+                                    (onClick)="onDecryptDiscussion()"/>
+                            </div>
+                        </div>
+                        <app-table 
+                            [columns]="discussionsColumns" 
+                            [data]="discussions" 
+                            [paginator]="false"
+                            [loading]="false"></app-table>
+                        <!-- <app-comments [targetId]="id"></app-comments> -->
+                    </p-tabPanel>
+
                     <p-tabPanel [header]="'details.history' | transloco">
                         <app-table [columns]="historyColumns" [data]="history" [paginator]="false"
                             [loading]="false"></app-table>

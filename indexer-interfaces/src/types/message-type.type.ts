@@ -26,5 +26,7 @@ export enum MessageType {
     FORMULA = 'Formula',
     SCHEMA_PACKAGE = 'Schema-Package',
     POLICY_DIFF = 'Policy-Diff',
-    POLICY_ACTION = 'Policy-Action'
+    POLICY_ACTION = 'Policy-Action',
+    POLICY_DISCUSSION = 'Policy-Discussion',
+    POLICY_COMMENT = 'Policy-Comment'
 }

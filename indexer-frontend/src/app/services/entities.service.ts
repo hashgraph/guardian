@@ -299,6 +299,20 @@ export class EntitiesService {
             `${this.url}/${entity}/${messageId}/relationships`
         ) as any;
     }
+
+    public getVcDiscussions(messageId: string): Observable<any> {
+        const entity = 'vc-documents';
+        return this.http.get<any>(
+            `${this.url}/${entity}/${messageId}/discussions`
+        ) as any;
+    }
+
+    public getVcComments(messageId: string, discussionId: string): Observable<any> {
+        const entity = 'vc-documents';
+        return this.http.get<any>(
+            `${this.url}/${entity}/${messageId}/discussions/${discussionId}/comments`
+        ) as any;
+    }
     //#endregion
     //#endregion
 

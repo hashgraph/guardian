@@ -4094,7 +4094,8 @@ export class PolicyEngineService {
                     }
 
                     const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
-                    const buffer = Buffer.from(encryptKey, 'utf-8');
+                    const data = { discussion: discussion.messageId, key: encryptKey };
+                    const buffer = Buffer.from(JSON.stringify(data), 'utf-8');
 
                     return new MessageResponse(buffer);
                 }
