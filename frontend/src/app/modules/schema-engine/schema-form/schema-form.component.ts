@@ -5,6 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
+import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -86,6 +87,7 @@ export class SchemaFormComponent implements OnInit {
     @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
     @Input() isFormForRequestBlock: boolean = false;
+    @Input() lastSavedAt?: Date;
 
     @Output() change = new EventEmitter<Schema | null>();
     @Output() destroy = new EventEmitter<void>();
@@ -94,26 +96,12 @@ export class SchemaFormComponent implements OnInit {
     @Output() saveBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() buttons = new EventEmitter<any>();
 
+    public minutesAgo$ =  getMinutesAgoStream(() => this.lastSavedAt);
+
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public isShown: boolean[] = [true];
     public currentIndex: number = 0;
     public buttonsConfig: IButton[] = [
-        {
-            id: 'save',
-            visible: () => {
-                return this.saveShown;
-            },
-            disabled: () => {
-                return false;
-            },
-            text: this.saveText,
-            class: 'p-button-outlined',
-            type: 'secondary',
-            iconPath: '/assets/images/icons/save.svg',
-            fn: () => {
-                this.onSaveBtnClick(this.formModel?.controls);
-            },
-        },
         {
             id: 'cancel',
             visible: () => {
@@ -185,7 +173,23 @@ export class SchemaFormComponent implements OnInit {
             fn: () => {
                 this.onSubmitBtnClick(this.formModel?.controls);
             },
-        }
+        },
+        {
+            id: 'save',
+            visible: () => {
+                return this.saveShown;
+            },
+            disabled: () => {
+                return false;
+            },
+            text: this.saveText,
+            class: 'p-button-outlined',
+            type: 'secondary',
+            iconPath: '/assets/images/icons/save.svg',
+            fn: () => {
+                this.onSaveBtnClick(this.formModel?.controls);
+            },
+        },
     ]
 
     constructor(

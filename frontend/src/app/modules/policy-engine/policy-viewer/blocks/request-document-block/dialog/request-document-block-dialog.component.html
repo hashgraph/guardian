@@ -29,7 +29,6 @@
                 <div class="guardian-button-label">Restore Values</div>
             </button>
         </div>
-
         <div *ngIf="dryRun" class="restore-data">
             <svg-icon class="svg-icon"
                 src="/assets/images/icons/info.svg"
@@ -68,7 +67,7 @@
                         [comesFromDialog]="true"
                         [showButtons]="false"
                         cancelText = "Cancel"
-                        submitText = "Create"
+                        submitText = "Validate & Create"
                         saveText = "Save"
                         (form)="initForm($event)"
                         (buttons)="onChangeButtons($event)"
@@ -95,7 +94,11 @@
                 class="guardian-button guardian-button-{{config.type}}">
                 <svg-icon *ngIf="config.iconPath" src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
 
-                {{config.text}}</button>
+                {{config.text}}
+            </button>
+        </div>
+        <div *ngIf="lastSavedAt" class="last-autosave">
+            {{ minutesAgo$ | async }}
         </div>
     </div>
 </div>

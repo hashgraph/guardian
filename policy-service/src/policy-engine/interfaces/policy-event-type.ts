@@ -32,7 +32,8 @@ export enum PolicyOutputEventType {
     SignatureSetInsufficientEvent = 'SignatureSetInsufficientEvent',
     ErrorEvent = 'ErrorEvent',
     ReleaseEvent = 'ReleaseEvent',
-    GetDataEvent = 'GetDataEvent'
+    GetDataEvent = 'GetDataEvent',
+    DraftEvent = 'DraftEvent',
 }
 
 /**

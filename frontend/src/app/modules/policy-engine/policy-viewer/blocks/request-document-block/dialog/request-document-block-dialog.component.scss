@@ -66,13 +66,21 @@ form {
     }
     .dialog-button[id="save"] {
         display: block;
-        margin-right: auto;
+        margin-left: auto;
 
         button {
             display: flex;
             gap: 8px;
         }
     }
+}
+
+.last-autosave {
+    position: absolute;
+    right: 150px;
+    bottom: 42px;
+    font-size: 14px;
+    color: #8E8E8E;
 }
 
 .close-icon-color {
