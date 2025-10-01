@@ -137,19 +137,19 @@ Existing labels can be used as components of other (higher order) labels. The in
 
 It is recommended to frequently use ‘Save’ button to preserve the current state of the Label being edited.
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **2.3.5 Preview**
 
 Label authors can preview (i.e. ‘dry run’ test) their Label functioning once its definition is complete by clicking the ‘Preview’ button in the configurator UI. Such test evaluations require manual input of the test data.
 
-<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/image (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/image (5) (1) (1) (5).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (6) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (6) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Components which were successfully validated on the provided test data would be marked in green, the unsuccessful results are marked in red.
 
@@ -167,7 +167,7 @@ To enable other users to find and use the Label it must be published.
 
 Once the Label has been published it can be used to create Label documents on specific token data.
 
-<figure><img src="../../../../.gitbook/assets/image (8) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (8) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **2.4.1 Targets**
 

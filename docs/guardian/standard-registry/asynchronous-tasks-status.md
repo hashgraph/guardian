@@ -2,10 +2,10 @@
 
 Worker Tasks tab displays active user's jobs performed asynchronously by the ‘worker’.
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * Tasks can have the following status:
-  * &#x20;IN QUEUE - for task which are queued pending activation
+  * IN QUEUE - for task which are queued pending activation
   * PROCESSING - for task which are being performed (in progress)
   * COMPLETE - for tasks completed successfully
   * ERROR, Reason: \<some error> - for tasks which did not complete successfully, with the reason for failure.

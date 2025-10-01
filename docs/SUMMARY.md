@@ -31,6 +31,7 @@
     * [Contribute a New Policy](guardian/readme/contributing/contribute-a-new-policy.md)
   * [Frameworks/Libraries](guardian/readme/built-with/README.md)
     * [Guardian CLI](guardian/readme/built-with/guardian-cli.md)
+  * [VM0033 API Workthrough](guardian/readme/vm0033-api-workthrough.md)
   * [API Guideline](guardian/readme/api-guideline.md)
   * [Guardian Vault](guardian/readme/guardian-vault.md)
   * [Environments](guardian/readme/environments/README.md)
