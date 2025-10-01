@@ -16018,6 +16018,13 @@ paths:
           schema:
             example: test
             type: string
+        - name: readonly
+          required: false
+          in: query
+          description: .
+          schema:
+            example: false
+            type: boolean
       responses:
         '200':
           description: Successful operation.
@@ -16174,6 +16181,13 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
+        - name: readonly
+          required: false
+          in: query
+          description: .
+          schema:
+            example: false
+            type: boolean
       responses:
         '200':
           description: Successful operation.
@@ -16360,6 +16374,198 @@ paths:
       summary: Get file from ipfs.
       tags:
         - policy-comments
+  /policy-comments/{policyId}/{documentId}/discussions/{discussionId}/key:
+    get:
+      description: Get file from ipfs.
+      operationId: PolicyCommentsApi_getKey
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: discussionId
+          required: true
+          in: path
+          description: Discussion Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get file from ipfs.
+      tags:
+        - policy-comments
+  /policy-repository/{policyId}/users:
+    get:
+      description: ''
+      operationId: PolicyRepositoryApi_getUsers
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: ''
+      tags:
+        - policy-repository
+  /policy-repository/{policyId}/schemas:
+    get:
+      description: ''
+      operationId: PolicyRepositoryApi_getSchemas
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: ''
+      tags:
+        - policy-repository
+  /policy-repository/{policyId}/documents:
+    get:
+      description: ''
+      operationId: PolicyRepositoryApi_getDocuments
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+        - name: type
+          required: false
+          in: query
+          description: ''
+          schema:
+            example: VC
+            type: string
+        - name: owner
+          required: false
+          in: query
+          description: ''
+          schema:
+            type: string
+        - name: schema
+          required: false
+          in: query
+          description: ''
+          schema:
+            type: string
+        - name: comments
+          required: false
+          in: query
+          description: ''
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: ''
+      tags:
+        - policy-repository
   /worker-tasks:
     get:
       description: Returns all worker tasks.
@@ -19794,6 +20000,7 @@ components:
             - POLICIES_POLICY_REVIEW
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
+            - POLICIES_POLICY_AUDIT
             - POLICIES_EXTERNAL_POLICY_READ
             - POLICIES_EXTERNAL_POLICY_CREATE
             - POLICIES_EXTERNAL_POLICY_UPDATE
@@ -19876,6 +20083,7 @@ components:
             - POLICIES_POLICY_REVIEW
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
+            - POLICIES_POLICY_AUDIT
             - POLICIES_EXTERNAL_POLICY_READ
             - POLICIES_EXTERNAL_POLICY_CREATE
             - POLICIES_EXTERNAL_POLICY_UPDATE
