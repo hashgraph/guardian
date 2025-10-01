@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, Input, NgZone } from '@angular/core';
+import {ChangeDetectorRef, Component, Input, NgZone, OnInit} from '@angular/core';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
 import { ButtonModule } from 'primeng/button';
@@ -12,6 +12,7 @@ import { TableDialogComponent } from '../../dialogs/table-dialog/table-dialog.co
 
 import { IndexedDbRegistryService } from '@services/indexed-db-registry.service';
 import { GzipService } from '@services/gzip.service';
+import {DB_NAME, STORES_NAME} from "../../constants";
 
 @Component({
     selector: 'app-table-viewer',
@@ -21,7 +22,7 @@ import { GzipService } from '@services/gzip.service';
     styleUrls: ['./table-viewer.component.scss'],
     providers: [DialogService]
 })
-export class TableViewerComponent {
+export class TableViewerComponent implements OnInit {
     @Input() public value: any;
     @Input() public title?: string;
     @Input() public analytics?: any;
@@ -37,9 +38,6 @@ export class TableViewerComponent {
     public previewRowData: Record<string, string>[] = [];
 
     private readonly PREVIEW_LIMIT = 10 * 1024 * 1024;
-
-    private readonly IDB_NAME = 'TABLES';
-    private readonly FILES_STORE = 'FILES';
 
     private storesReady?: Promise<void>;
     private idbQueue: Promise<void> = Promise.resolve();
@@ -99,6 +97,12 @@ export class TableViewerComponent {
         }
 
         return label;
+    }
+
+    async ngOnInit(): Promise<void> {
+        await this.ensureIdbStores();
+
+        await this.idb.clearStore(DB_NAME.TABLES, STORES_NAME.FILES_STORE);
     }
 
     ngOnChanges(): void {
@@ -323,8 +327,8 @@ export class TableViewerComponent {
     private async ensureIdbStores(): Promise<void> {
         if (!this.storesReady) {
             this.storesReady = this.idb.registerStore(
-                this.IDB_NAME,
-                { name: this.FILES_STORE, options: { keyPath: 'id' } }
+                DB_NAME.TABLES,
+                { name: STORES_NAME.FILES_STORE, options: { keyPath: 'id' } }
             );
         }
         await this.storesReady;
@@ -404,7 +408,7 @@ export class TableViewerComponent {
             }
 
             await this.withIdbRetry(() =>
-                this.idb.put(this.IDB_NAME, this.FILES_STORE, {
+                this.idb.put(DB_NAME.TABLES, STORES_NAME.FILES_STORE, {
                     id: fileId,
                     blob: gzBlobFromGridFs,
                     originalName: `${fileId}.csv.gz`,
@@ -426,7 +430,7 @@ export class TableViewerComponent {
 
     private async getFromIdb(fileId: string): Promise<{ gz: Blob } | null> {
         const record: any = await this.withIdbRetry(() =>
-            this.idb.get(this.IDB_NAME, this.FILES_STORE, fileId)
+            this.idb.get(DB_NAME.TABLES, STORES_NAME.FILES_STORE, fileId)
         );
 
         const blob: Blob | undefined = record?.blob;

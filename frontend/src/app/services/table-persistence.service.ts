@@ -4,12 +4,10 @@ import { ArtifactService } from './artifact.service';
 import { IPFSService } from './ipfs.service';
 import { IndexedDbRegistryService } from './indexed-db-registry.service';
 import { ITableField } from '@guardian/interfaces';
+import {DB_NAME, STORES_NAME} from "../constants";
 
 @Injectable({ providedIn: 'root' })
 export class TablePersistenceService {
-    private readonly indexedDbName = 'TABLES';
-    private readonly filesStoreName = 'FILES';
-
     constructor(
         private artifactService: ArtifactService,
         private ipfsService: IPFSService,
@@ -101,8 +99,8 @@ export class TablePersistenceService {
 
     private async hasFilesStore(): Promise<boolean> {
         try {
-            const db = await this.indexedDb.getDB(this.indexedDbName);
-            const contains = db.objectStoreNames.contains(this.filesStoreName);
+            const db = await this.indexedDb.getDB(DB_NAME.TABLES);
+            const contains = db.objectStoreNames.contains(STORES_NAME.FILES_STORE);
             db.close();
             return contains;
         } catch {
@@ -112,7 +110,7 @@ export class TablePersistenceService {
 
     private async readFileFromIndexedDb(key: string): Promise<File | null> {
         try {
-            const record: any = await this.indexedDb.get(this.indexedDbName, this.filesStoreName, key);
+            const record: any = await this.indexedDb.get(DB_NAME.TABLES, STORES_NAME.FILES_STORE, key);
             if (!record || !record.blob) {
                 return null;
             }
@@ -134,7 +132,7 @@ export class TablePersistenceService {
         }
 
         try {
-            await this.indexedDb.delete(this.indexedDbName, this.filesStoreName, normalized);
+            await this.indexedDb.delete(DB_NAME.TABLES, STORES_NAME.FILES_STORE, normalized);
         } catch {}
     }
 

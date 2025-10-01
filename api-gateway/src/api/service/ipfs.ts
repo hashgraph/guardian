@@ -74,14 +74,12 @@ export class IpfsApi {
      */
     @Post('/file/direct')
     @Auth(
-        Permissions.IPFS_FILE_CREATE,
-        // UserRole.STANDARD_REGISTRY,
-        // UserRole.USER,
-        // UserRole.AUDITOR
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
     )
     @ApiOperation({
-        summary: 'Add file from ipfs.',
-        description: 'Add file from ipfs.',
+        summary: 'Add file to ipfs directly.',
+        description: 'Add file to ipfs directly.',
     })
     @ApiBody({
         description: 'Binary data.',

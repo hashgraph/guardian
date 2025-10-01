@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Input, NgZone} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, NgZone, OnChanges, OnDestroy, OnInit} from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
 import { ArtifactService } from 'src/app/services/artifact.service';
@@ -7,6 +7,7 @@ import { TableDialogComponent } from '../../common/table-dialog/table-dialog.com
 import { firstValueFrom } from 'rxjs';
 import { IndexedDbRegistryService } from '../../../services/indexed-db-registry.service';
 import { GzipService } from '../../../services/gzip.service';
+import {DB_NAME, STORES_NAME} from "../../../constants";
 
 type TableRefLike = { type?: string; fileId?: string } | string | null | undefined;
 
@@ -16,7 +17,7 @@ type TableRefLike = { type?: string; fileId?: string } | string | null | undefin
     styleUrls: ['./table-viewer.component.scss'],
     providers: [DialogService]
 })
-export class TableViewerComponent {
+export class TableViewerComponent implements OnInit {
     @Input()
     public value: TableRefLike;
 
@@ -35,8 +36,6 @@ export class TableViewerComponent {
     private readonly PREVIEW_LIMIT = 10 * 1024 * 1024;
     private readonly PREVIEW_COLUMNS_LIMIT = 8;
     private readonly PREVIEW_ROWS_LIMIT = 4;
-    private readonly IDB_NAME = 'TABLES';
-    private readonly FILES_STORE = 'FILES';
 
     constructor(
         private readonly dialog: DialogService,
@@ -144,8 +143,8 @@ export class TableViewerComponent {
     private ensureIdbStores(): Promise<void> {
         if (!this.storesReady) {
             this.storesReady = this.idb.registerStore(
-                this.IDB_NAME,
-                { name: this.FILES_STORE, options: { keyPath: 'id' } }
+                DB_NAME.TABLES,
+                { name: STORES_NAME.FILES_STORE, options: { keyPath: 'id' } }
             );
         }
         return this.storesReady;
@@ -169,7 +168,7 @@ export class TableViewerComponent {
             }
 
             await this.withIdbRetry(() =>
-                this.idb.put(this.IDB_NAME, this.FILES_STORE, {
+                this.idb.put(DB_NAME.TABLES, STORES_NAME.FILES_STORE, {
                     id: fileId,
                     blob: gzBlobFromGridFs,
                     originalName: `${fileId}.csv.gz`,
@@ -191,7 +190,7 @@ export class TableViewerComponent {
 
     private async getFromIdb(fileId: string): Promise<{ gz: Blob } | null> {
         const record: any = await this.withIdbRetry(() =>
-            this.idb.get(this.IDB_NAME, this.FILES_STORE, fileId)
+            this.idb.get(DB_NAME.TABLES, STORES_NAME.FILES_STORE, fileId)
         );
 
         if (!record) {
@@ -250,6 +249,12 @@ export class TableViewerComponent {
         }
 
         return label;
+    }
+
+    async ngOnInit(): Promise<void> {
+        await this.ensureIdbStores();
+
+        await this.idb.clearStore(DB_NAME.TABLES, STORES_NAME.FILES_STORE);
     }
 
     ngOnChanges(): void {
