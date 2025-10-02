@@ -48,6 +48,34 @@ paths:
       summary: Search
       tags:
         - search
+  /entities/ipfs/{cid}:
+    get:
+      description: Returns file
+      operationId: EntityApi_loadFile
+      parameters:
+        - name: cid
+          required: true
+          in: path
+          description: CID
+          schema:
+            example: bafybe...3w5sk3m
+            type: string
+      responses:
+        '200':
+          description: File
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get file
+      tags:
+        - entities
   /entities/registries:
     get:
       description: Returns standard registries
