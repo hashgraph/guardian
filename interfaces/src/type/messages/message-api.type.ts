@@ -31,6 +31,7 @@ export enum MessageAPI {
     PREVIEW_SCHEMA = 'preview-schema',
     PREVIEW_SCHEMA_ASYNC = 'preview-schema-async',
     IPFS_ADD_FILE = 'ipfs-add-file',
+    IPFS_ADD_FILE_DIRECT = 'ipfs-add-file-direct',
     IPFS_ADD_FILE_ASYNC = 'ipfs-add-file-async',
     IPFS_GET_FILE = 'ipfs-get-file',
     IPFS_GET_FILE_ASYNC = 'ipfs-get-file-async',

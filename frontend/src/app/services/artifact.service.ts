@@ -46,7 +46,8 @@ export class ArtifactService {
     ): Observable<{ fileId: string; filename: string; contentType: string }> {
         const fd = new FormData();
 
-        const name = (file as File)?.name || 'table.csv';
+        const name = (file as File)?.name || 'file.csv';
+
         fd.append('file', file, name);
         if (fileId) {
             fd.append('fileId', fileId);

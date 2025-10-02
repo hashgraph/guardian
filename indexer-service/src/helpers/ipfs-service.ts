@@ -1,5 +1,5 @@
 import { CustomError } from '@indexer/common';
-import axios, {AxiosResponse} from 'axios';
+import axios from 'axios';
 import CID from 'cids';
 
 export class IPFSService {

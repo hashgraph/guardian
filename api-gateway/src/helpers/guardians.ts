@@ -1024,6 +1024,25 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Add file to IPFS directly
+     * @param user
+     * @param buffer File
+     * @returns CID, URL
+     */
+    public async addFileIpfsDirect(user: IAuthUser, buffer: ArrayBuffer | string): Promise<{
+        /**
+         * CID
+         */
+        cid: string,
+        /**
+         * URL
+         */
+        url: string
+    }> {
+        return await this.sendMessage(MessageAPI.IPFS_ADD_FILE_DIRECT, { user, buffer });
+    }
+
+    /**
      * Add file to dry run storage
      * @param buffer File
      * @returns CID, URL

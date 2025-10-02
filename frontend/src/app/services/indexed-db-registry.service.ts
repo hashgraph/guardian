@@ -87,4 +87,9 @@ export class IndexedDbRegistryService {
             },
         });
     }
+
+    async clearStore(dbName: string, storeName: string): Promise<void> {
+        const connection = await this.getDB(dbName);
+        await connection.clear(storeName);
+    }
 }
