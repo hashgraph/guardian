@@ -19,17 +19,13 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { Schema } from '@indexer/interfaces';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
-import {
-    OverviewFormComponent,
-    OverviewFormField,
-} from '@components/overview-form/overview-form.component';
+import { OverviewFormComponent, OverviewFormField } from '@components/overview-form/overview-form.component';
 import { ButtonModule } from 'primeng/button';
 import { FormulasTree } from '../../../models/formula-tree';
 import { ProjectLocationsComponent } from '@components/project-locations/project-locations.component';
-import {
-    bytesToUtf8,
-    decryptWithKeyDerivedFromString
-} from '@meeco/cryppo';
+import { bytesToUtf8, decryptWithKeyDerivedFromString } from '@meeco/cryppo';
+import { DialogService } from 'primeng/dynamicdialog';
+import { VCFullscreenDialog } from '../../../dialogs/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
 
 @Component({
     selector: 'vc-document-details',
@@ -56,8 +52,10 @@ import {
         OverviewFormComponent,
         ButtonModule,
         ProjectLocationsComponent,
-        CommentsComponent
+        CommentsComponent,
+        VCFullscreenDialog
     ],
+    providers: [DialogService],
 })
 export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     public chartOption: EChartsOption = createChart();
@@ -250,10 +248,12 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
 
     constructor(
         entitiesService: EntitiesService,
+        private dialogService: DialogService,
         route: ActivatedRoute,
         router: Router
     ) {
         super(entitiesService, route, router);
+        console.log(1)
     }
 
     protected override setResult(result?: any) {
@@ -398,7 +398,7 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
                     const encryptedData = discussion.documents[0];
                     const decryptedData = await this.decryptData(key, encryptedData);
                     if (decryptedData) {
-                        discussion._document = JSON.parse(decryptedData);
+                        discussion._document = decryptedData;
                         const subject = this.getCredentialSubject(discussion._document);
                         discussion._name = subject?.name;
                         discussion._status = 'decrypted';
@@ -480,17 +480,44 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
         }
     }
 
-    private onOpenComments(row: any) {
-        debugger;
+    private onOpenComments(discussion: any) {
+        const dialogRef = this.dialogService.open(VCFullscreenDialog, {
+            showHeader: false,
+            width: '950px',
+            styleClass: 'guardian-dialog',
+            maskStyleClass: 'guardian-fullscreen-dialog',
+            data: {
+                title: this.schema?.name,
+                schema: this.schema,
+                credentialSubject: this.getDocumentSubject(),
+                formulasResults: this.formulasResults,
+                targetId: this.id,
+                discussionId: discussion.consensusTimestamp,
+                discussion: discussion,
+                key: this.discussionsKey.get(discussion.consensusTimestamp)
+            },
+        });
+        dialogRef.onClose.subscribe((result: any) => { });
+    }
+
+    private getDocumentSubject() {
+        if (this.first && this.first._ipfs && this.first._ipfs[0]) {
+            return this.first._ipfs[0].credentialSubject;
+        }
+        return null;
     }
 
     async decryptData(key: string, encryptedData: string): Promise<string | null> {
         try {
+            if (!encryptedData?.startsWith('Aes256')) {
+                return null;
+            }
             const decrypted: any = await decryptWithKeyDerivedFromString({
                 serialized: encryptedData,
                 passphrase: key,
             });
-            return bytesToUtf8(decrypted);
+            const decryptedData = bytesToUtf8(decrypted);
+            return JSON.parse(decryptedData);
         } catch (error) {
             console.error('Decryption failed:', error);
             return null;

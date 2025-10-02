@@ -430,6 +430,7 @@ export class PolicyCommentsUtils {
             files?: {
                 name: string;
                 type: string;
+                fileType: string;
                 size: number;
                 link: string;
                 cid: string;
@@ -504,6 +505,7 @@ export class PolicyCommentsUtils {
             files?: {
                 name: string;
                 type: string;
+                fileType: string;
                 size: number;
                 link: string;
                 cid: string;
@@ -525,7 +527,16 @@ export class PolicyCommentsUtils {
             credentialSubject.text = data.text;
         }
         if (data.files?.length) {
-            credentialSubject.files = data.files;
+            credentialSubject.files = [];
+            for (const file of data.files) {
+                credentialSubject.files.push({
+                    name: file.name,
+                    fileType: file.fileType || file.type,
+                    size: file.size,
+                    link: file.link,
+                    cid: file.cid,
+                })
+            }
         }
         if (data.recipients?.length) {
             credentialSubject.users = data.recipients;

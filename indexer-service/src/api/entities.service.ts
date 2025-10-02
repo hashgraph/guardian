@@ -411,6 +411,22 @@ async function addRelationship(
 
 @Controller()
 export class EntityService {
+    @MessagePattern(IndexerMessageAPI.GET_IPFS_FILE)
+    async loadFile(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Registry>>> {
+        try {
+            const file = await IPFSService.getFile(msg.cid, 20 * 1000);
+            if (file) {
+                return new MessageResponse<any>(file.toString('base64'));
+            } else {
+                return new MessageResponse<any>(null);
+            }
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+
     //#region ACCOUNTS
     //#region STANDARD REGISTRIES
     @MessagePattern(IndexerMessageAPI.GET_REGISTRIES)
@@ -2119,14 +2135,16 @@ export class EntityService {
     ): Promise<AnyResponse<Page<any>>> {
         try {
             const options = parsePageParams(msg);
-            const filters = parsePageFilters(msg);
-            filters.type = MessageType.POLICY_COMMENT;
+            const { messageId, discussionId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = (await em.findAndCount(
-                Message,
-                filters,
-                options
-            )) as [any[], number];
+            const [rows, count] = (await em.findAndCount(Message, {
+                type: MessageType.POLICY_COMMENT,
+                'options.target': messageId,
+                'options.discussion': discussionId,
+            } as any, options)) as [any[], number];
+            for (let i = 0; i < rows.length; i++) {
+                rows[i] = await loadDocuments(rows[i], true);
+            }
             const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,

@@ -68,6 +68,29 @@ import {
 @Controller('entities')
 @ApiTags('entities')
 export class EntityApi extends ApiClient {
+    @ApiOperation({
+        summary: 'Get file',
+        description: 'Returns file',
+    })
+    @ApiOkResponse({
+        description: 'File',
+        type: String,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/ipfs/:cid')
+    @ApiParam({
+        name: 'cid',
+        description: 'CID',
+        example: 'bafybe...3w5sk3m',
+    })
+    @HttpCode(HttpStatus.OK)
+    async loadFile(@Param('cid') cid: string) {
+        return await this.send(IndexerMessageAPI.GET_IPFS_FILE, { cid });
+    }
+
     //#region ACCOUNTS
     //#region STANDARD REGISTRIES
     @ApiOperation({

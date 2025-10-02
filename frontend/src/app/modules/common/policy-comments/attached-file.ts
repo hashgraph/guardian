@@ -5,6 +5,7 @@ import { CommentsService } from 'src/app/services/comments.service';
 interface IFile {
     name: string;
     type: string;
+    fileType: string;
     size: number;
     link: string;
     cid: string;
@@ -37,7 +38,7 @@ export class AttachedFile {
         this.documentId = documentId;
         this.discussionId = discussionId;
         this.name = file.name;
-        this.type = file.type;
+        this.type = (file as any).fileType || file.type;
         this.size = file.size;
         this.link = '';
         this.cid = '';
@@ -95,7 +96,7 @@ export class AttachedFile {
     public download(service: CommentsService): Observable<ArrayBuffer> {
         this.loading = true;
         return new Observable<ArrayBuffer>((subscriber) => {
-            service.getFile(this.policyId, this.documentId, this.discussionId,this.cid)
+            service.getFile(this.policyId, this.documentId, this.discussionId, this.cid)
                 .subscribe((response: ArrayBuffer) => {
                     this.loading = false;
                     this.error = false;
@@ -114,6 +115,7 @@ export class AttachedFile {
         return {
             name: this.name,
             type: this.type,
+            fileType: this.type,
             size: this.size,
             link: this.link,
             cid: this.cid,
