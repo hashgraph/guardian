@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, SimpleChanges} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
 import { IFieldControl } from '../schema-form-model/field-form';
@@ -22,7 +22,7 @@ export interface ITableFieldRequired extends ITableField {
     providers: [DialogService],
 })
 
-export class TableFieldComponent implements OnInit {
+export class TableFieldComponent implements OnInit, OnDestroy {
     @Input() item!: IFieldControl<any>;
     @Input() required: boolean = false;
     @Input() readonly: boolean = false;
@@ -223,21 +223,49 @@ export class TableFieldComponent implements OnInit {
         return elementControl && !this.isFormArrayContainer(elementControl) ? elementControl : null;
     }
 
+    private async hasIdbRecord(idbKey: string): Promise<boolean> {
+        const key = (idbKey || '').trim();
+        if (!key) {
+            return false;
+        }
+        try {
+            const record = await this.idb.get(DB_NAME.TABLES, STORES_NAME.FILES_STORE, key);
+            return !!record;
+        } catch {
+            return false;
+        }
+    }
+
     async ngOnInit(): Promise<void> {
         await this.ensureIdbStores();
 
-        await this.idb.clearStore(DB_NAME.TABLES, STORES_NAME.FILES_STORE);
+        const current = this.readTable();
+        const idbKey = (current.idbKey || '').trim();
+        const hasLocal = await this.hasIdbRecord(idbKey);
 
-        const tableValue = this.readTable();
-        const hasColumns = (tableValue.columnKeys?.length || 0) > 0;
-        const hasRows = (tableValue.rows?.length || 0) > 0;
-        const hasBack = !!((tableValue.idbKey || '').trim() || (tableValue.fileId || '').trim());
-        const hasAnyData = hasColumns || hasRows || hasBack;
-
-        this.safePatchValue(hasAnyData ? JSON.stringify(tableValue) : null, false);
+        if (hasLocal) {
+            const hasColumns = (current.columnKeys?.length || 0) > 0;
+            const hasRows = (current.rows?.length || 0) > 0;
+            const hasAnyData = hasColumns || hasRows || !!idbKey;
+            this.safePatchValue(hasAnyData ? JSON.stringify(current) : null, false);
+        } else {
+            this.writeTable(
+                {
+                    columnKeys: [],
+                    rows: [],
+                    idbKey: undefined,
+                    sizeBytes: undefined
+                },
+                { emitEvent: false, markDirty: false }
+            );
+        }
 
         this.setPreviewLimitMessage();
-        this.hydrateFromFile();
+        this.hydrated = true;
+    }
+
+    ngOnDestroy(): void {
+        void this.clearIdbRecordIfAny();
     }
 
     private async loadCsvTextFromIdb(idbKey: string): Promise<string | null> {
