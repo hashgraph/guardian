@@ -1,7 +1,7 @@
-import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType, DiscussionMessage, MessageAction } from "@guardian/common";
-import { EntityOwner, GenerateUUIDv4, IOwner, PolicyStatus, Schema, SchemaEntity, SchemaHelper, TopicType } from "@guardian/interfaces";
+import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType, DiscussionMessage, MessageAction } from '@guardian/common';
+import { EntityOwner, GenerateUUIDv4, PolicyStatus, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
-import { PrivateKey } from "@hashgraph/sdk";
+import { PrivateKey } from '@hashgraph/sdk';
 import * as crypto from 'crypto';
 
 /**
@@ -288,8 +288,8 @@ export class PolicyCommentsUtils {
 
         map.set(messageId, vc.schema);
         if (Array.isArray(vc.relationships)) {
-            for (const messageId of vc.relationships) {
-                await PolicyCommentsUtils.findRelationships(vc.policyId, messageId, map);
+            for (const id of vc.relationships) {
+                await PolicyCommentsUtils.findRelationships(vc.policyId, id, map);
             }
         }
     }

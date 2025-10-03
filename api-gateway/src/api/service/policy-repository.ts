@@ -1,37 +1,18 @@
 import { Auth, AuthUser } from '#auth';
-import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
-import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson } from '#helpers';
-import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version, Patch, StreamableFile } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
+import { InternalException, PolicyEngine } from '#helpers';
+import { IAuthUser, PinoLogger } from '@guardian/common';
+import { Permissions } from '@guardian/interfaces';
+import { Controller, Get, HttpCode, HttpException, HttpStatus, Param, Query, Response } from '@nestjs/common';
+import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
-    BlockDTO,
-    DebugBlockConfigDTO,
-    DebugBlockHistoryDTO,
-    DebugBlockResultDTO,
     Examples,
-    ExportMessageDTO,
-    ImportMessageDTO,
-    InternalServerErrorDTO,
-    MigrationConfigDTO,
-    pageHeader,
-    PoliciesValidationDTO,
-    PolicyCategoryDTO,
-    PolicyDTO,
-    PolicyPreviewDTO,
-    PolicyTestDTO,
-    PolicyValidationDTO,
-    PolicyVersionDTO,
-    RunningDetailsDTO,
-    ServiceUnavailableErrorDTO,
-    TaskDTO
+    InternalServerErrorDTO
 } from '#middlewares';
 
 @Controller('policy-repository')
 @ApiTags('policy-repository')
 export class PolicyRepositoryApi {
-    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
+    constructor(private readonly logger: PinoLogger) {
     }
 
     /**

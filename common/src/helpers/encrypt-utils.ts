@@ -1,5 +1,4 @@
 import {
-    bytesToUtf8,
     CipherStrategy,
     decryptWithKeyDerivedFromString,
     encryptWithKeyDerivedFromString,

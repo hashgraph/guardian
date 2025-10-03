@@ -1,4 +1,4 @@
-import { ExportMessageDTO, PoliciesValidationDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO } from '#middlewares';
+import { ExportMessageDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
@@ -1302,24 +1302,6 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.GET_REMOTE_REQUEST_DOCUMENT, { options, user });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * Create policy users
      * @param user
@@ -1330,7 +1312,7 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         documentId: string,
-    ): Promise<any> {
+    ): Promise<PolicyCommentUserDTO[]> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_USERS, { user, policyId, documentId });
     }
 
@@ -1344,7 +1326,7 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         documentId: string,
-    ): Promise<any> {
+    ): Promise<PolicyCommentRelationshipDTO[]> {
         return await this.sendMessage(PolicyEngineEvents.GET_DOCUMENT_RELATIONSHIPS, { user, policyId, documentId });
     }
 
@@ -1358,7 +1340,7 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         documentId: string,
-    ): Promise<any> {
+    ): Promise<SchemaDTO[]> {
         return await this.sendMessage(PolicyEngineEvents.GET_DOCUMENT_SCHEMAS, { user, policyId, documentId });
     }
 
@@ -1377,7 +1359,7 @@ export class PolicyEngine extends NatsService {
             field?: string,
             audit?: boolean
         }
-    ): Promise<any> {
+    ): Promise<PolicyDiscussionDTO[]> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DISCUSSIONS, { user, policyId, documentId, params });
     }
 
@@ -1402,7 +1384,7 @@ export class PolicyEngine extends NatsService {
             users: string[],
             relationships: string[]
         }
-    ): Promise<any> {
+    ): Promise<PolicyDiscussionDTO> {
         return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_DISCUSSION, { user, policyId, documentId, data });
     }
 
@@ -1425,7 +1407,7 @@ export class PolicyEngine extends NatsService {
             text?: string;
             files?: string[];
         }
-    ): Promise<any> {
+    ): Promise<PolicyCommentDTO> {
         return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_COMMENT, { user, policyId, documentId, discussionId, data });
     }
 
@@ -1450,7 +1432,7 @@ export class PolicyEngine extends NatsService {
             gt?: string,
             audit?: boolean,
         }
-    ): Promise<{ comments: any[], count: number }> {
+    ): Promise<{ comments: PolicyCommentDTO[], count: number }> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENTS, { user, policyId, documentId, discussionId, params });
     }
 
@@ -1464,7 +1446,7 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         documentId: string
-    ): Promise<any> {
+    ): Promise<PolicyCommentCountDTO> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENT_COUNT, { user, policyId, documentId });
     }
 

@@ -1174,15 +1174,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return await new DataBaseHelper(PolicyDiscussion).update(discussion);
     }
 
-
-
-
-
-
-
-
-
-
     /**
      * Create ExternalPolicy
      * @param externalPolicy

@@ -23,7 +23,6 @@ import {
     PinoLogger,
     Policy,
     PolicyAction,
-    PolicyDiscussion,
     PolicyImportExport,
     PolicyMessage,
     RecordImportExport,
@@ -35,7 +34,26 @@ import {
     VcHelper,
     XlsxToJson
 } from '@guardian/common';
-import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType, PolicyActionStatus, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import {
+    DocumentCategoryType,
+    DocumentType,
+    EntityOwner,
+    ExternalMessageEvents,
+    GenerateUUIDv4,
+    IOwner,
+    PolicyEngineEvents,
+    PolicyEvents,
+    PolicyHelper,
+    PolicyTestStatus,
+    PolicyStatus,
+    Schema,
+    SchemaField,
+    TopicType,
+    PolicyAvailability,
+    PolicyActionType,
+    PolicyActionStatus,
+    SchemaStatus
+} from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
@@ -3384,42 +3402,6 @@ export class PolicyEngineService {
             });
         //#endregion
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         //#region Comment
         this.channel.getMessages(PolicyEngineEvents.GET_POLICY_USERS,
             async (msg: {
@@ -3633,7 +3615,7 @@ export class PolicyEngineService {
                     };
 
                     const discussions = await DatabaseServer.getPolicyDiscussions(filters, otherOptions);
-                    let commonDiscussion = await PolicyCommentsUtils.getCommonDiscussion(policy, vc, params.audit);
+                    const commonDiscussion = await PolicyCommentsUtils.getCommonDiscussion(policy, vc, params.audit);
                     if (commonDiscussion) {
                         discussions.unshift(commonDiscussion);
                     }
@@ -3719,6 +3701,7 @@ export class PolicyEngineService {
                     files?: {
                         name: string;
                         type: string;
+                        fileType: string;
                         size: number;
                         link: string;
                         cid: string;
@@ -3833,9 +3816,9 @@ export class PolicyEngineService {
                     };
 
                     const filters: any = {
-                        policyId: policyId,
+                        policyId,
                         targetId: documentId,
-                        discussionId: discussionId
+                        discussionId
                     };
                     if (params?.search) {
                         filters.$or = [{
@@ -4059,7 +4042,6 @@ export class PolicyEngineService {
                 }
             })
 
-
         this.channel.getMessages(PolicyEngineEvents.GET_POLICY_DISCUSSION_KEY,
             async (msg: {
                 user: IAuthUser,
@@ -4068,7 +4050,6 @@ export class PolicyEngineService {
                 discussionId: string
             }) => {
                 try {
-
                     const { user, policyId, documentId, discussionId } = msg;
 
                     const policy = await DatabaseServer.getPolicyById(policyId);

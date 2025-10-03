@@ -1,31 +1,21 @@
 import { Auth, AuthUser } from '#auth';
-import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
-import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson } from '#helpers';
-import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, Permissions, PolicyHelper, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version, Patch, StreamableFile } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
+import { CACHE, PREFIXES } from '#constants';
+import { CacheService, getCacheKey, InternalException, PolicyEngine, UseCache } from '#helpers';
+import { IAuthUser, PinoLogger } from '@guardian/common';
+import { Permissions, UserPermissions } from '@guardian/interfaces';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Query, Req, Response, StreamableFile } from '@nestjs/common';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 import {
-    BlockDTO,
-    DebugBlockConfigDTO,
-    DebugBlockHistoryDTO,
-    DebugBlockResultDTO,
     Examples,
-    ExportMessageDTO,
-    ImportMessageDTO,
     InternalServerErrorDTO,
-    MigrationConfigDTO,
     pageHeader,
-    PoliciesValidationDTO,
-    PolicyCategoryDTO,
-    PolicyDTO,
-    PolicyPreviewDTO,
-    PolicyTestDTO,
-    PolicyValidationDTO,
-    PolicyVersionDTO,
-    RunningDetailsDTO,
-    ServiceUnavailableErrorDTO,
-    TaskDTO
+    PolicyCommentCountDTO,
+    PolicyCommentDTO,
+    PolicyCommentRelationshipDTO,
+    PolicyCommentUserDTO,
+    PolicyDiscussionDTO,
+    SchemaDTO,
+    ServiceUnavailableErrorDTO
 } from '#middlewares';
 
 @Controller('policy-comments')
@@ -63,19 +53,20 @@ export class PolicyCommentsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        isArray: true,
+        type: PolicyCommentUserDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(PolicyCommentUserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getUsers(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
-    ): Promise<any> {
+    ): Promise<PolicyCommentUserDTO[]> {
         try {
             if (!policyId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -86,7 +77,6 @@ export class PolicyCommentsApi {
             await InternalException(error, this.logger, user.id);
         }
     }
-
 
     /**
      * Get relationships
@@ -117,19 +107,20 @@ export class PolicyCommentsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        isArray: true,
+        type: PolicyCommentRelationshipDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(PolicyCommentRelationshipDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRelationships(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
-    ): Promise<any> {
+    ): Promise<PolicyCommentRelationshipDTO[]> {
         try {
             if (!policyId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -170,7 +161,8 @@ export class PolicyCommentsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        isArray: true,
+        type: SchemaDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -182,7 +174,7 @@ export class PolicyCommentsApi {
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
-    ): Promise<any> {
+    ): Promise<SchemaDTO[]> {
         try {
             if (!policyId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -244,13 +236,14 @@ export class PolicyCommentsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        isArray: true,
+        type: PolicyDiscussionDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(PolicyDiscussionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getDiscussions(
         @AuthUser() user: IAuthUser,
@@ -259,7 +252,7 @@ export class PolicyCommentsApi {
         @Query('search') search?: string,
         @Query('field') field?: string,
         @Query('readonly') readonly?: boolean
-    ): Promise<any> {
+    ): Promise<PolicyDiscussionDTO[]> {
         try {
             if (!policyId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -309,13 +302,13 @@ export class PolicyCommentsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: BlockDTO
+        type: PolicyDiscussionDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyDiscussionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async createDiscussion(
         @AuthUser() user: IAuthUser,
@@ -331,7 +324,7 @@ export class PolicyCommentsApi {
             users: string[],
             relationships: string[]
         }
-    ): Promise<any> {
+    ): Promise<PolicyDiscussionDTO> {
         try {
             const engineService = new PolicyEngine();
             return await engineService.createPolicyDiscussion(user, policyId, documentId, body);
@@ -380,7 +373,7 @@ export class PolicyCommentsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: BlockDTO
+        type: PolicyCommentDTO
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
@@ -390,7 +383,7 @@ export class PolicyCommentsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyCommentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async createPolicyComment(
         @AuthUser() user: IAuthUser,
@@ -404,7 +397,7 @@ export class PolicyCommentsApi {
             text?: string;
             files?: string[];
         }
-    ): Promise<any> {
+    ): Promise<PolicyCommentDTO> {
         try {
             const engineService = new PolicyEngine();
             return await engineService.createPolicyComment(user, policyId, documentId, discussionId, body);
@@ -459,13 +452,13 @@ export class PolicyCommentsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: PolicyDTO,
+        type: PolicyCommentDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyCommentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getPolicyComments(
         @AuthUser() user: IAuthUser,
@@ -482,7 +475,7 @@ export class PolicyCommentsApi {
         },
         @Response() res: any,
         @Query('readonly') readonly?: boolean
-    ): Promise<any> {
+    ): Promise<PolicyCommentDTO[]> {
         try {
             const engineService = new PolicyEngine();
             const audit = UserPermissions.has(user, Permissions.POLICIES_POLICY_AUDIT) && !!readonly;
@@ -521,7 +514,7 @@ export class PolicyCommentsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: BlockDTO
+        type: PolicyCommentCountDTO
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
@@ -531,13 +524,13 @@ export class PolicyCommentsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyCommentCountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getPolicyCommentsCount(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string
-    ): Promise<any> {
+    ): Promise<PolicyCommentCountDTO> {
         try {
             const engineService = new PolicyEngine();
             return await engineService.getPolicyCommentsCount(user, policyId, documentId);
@@ -696,15 +689,15 @@ export class PolicyCommentsApi {
     }
 
     /**
-     * Get file
+     * Get key
      */
     @Get('/:policyId/:documentId/discussions/:discussionId/key')
     @Auth(
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: 'Get file from ipfs.',
-        description: 'Get file from ipfs.',
+        summary: '.',
+        description: '.',
     })
     @ApiParam({
         name: 'policyId',

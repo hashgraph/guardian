@@ -106,7 +106,6 @@ export class PolicyComponentsUtils {
         return result;
     }
 
-
     /**
      * Get Policy Full Info
      * @param policy
