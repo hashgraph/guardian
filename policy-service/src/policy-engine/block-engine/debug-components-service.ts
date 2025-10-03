@@ -74,7 +74,6 @@ export class DebugComponentsService extends ComponentsService {
     /**
      * Save debug error
      * @param context
-     * @protected
      */
     public override debugError(tag: string, error: any): void {
         this.controller.error(error?.toString());

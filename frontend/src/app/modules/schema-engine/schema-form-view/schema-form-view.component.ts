@@ -313,7 +313,8 @@ export class SchemaFormViewComponent implements OnInit {
             ) && (
                 item.format !== 'date' &&
                 item.format !== 'time' &&
-                item.format !== 'date-time'
+                item.format !== 'date-time' &&
+                item.customType !== 'table'
             )
         );
     }

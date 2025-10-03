@@ -11,6 +11,7 @@ import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { DocumentValidators } from '@guardian/interfaces';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { ToastrService } from 'ngx-toastr';
+import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -56,6 +57,7 @@ export class RequestDocumentBlockDialog {
         private fb: UntypedFormBuilder,
         private toastr: ToastrService,
         private changeDetectorRef: ChangeDetectorRef,
+        private tablePersist: TablePersistenceService,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
@@ -114,13 +116,16 @@ export class RequestDocumentBlockDialog {
         this.dialogRef.close(null);
     }
 
-    public onSubmit(draft?: boolean) {
+    public async onSubmit(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
         if (this.dataForm.valid || draft) {
             const data = this.dataForm.getRawValue();
             this.loading = true;
+
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun);
+
             prepareVcData(data);
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, {

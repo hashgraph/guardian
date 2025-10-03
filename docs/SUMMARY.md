@@ -842,7 +842,7 @@
     * [Verra Redd VM0007 Demo UI Guide](guardian/demo-guide/carbon-offsets/verra-redd+-demo-guide.md)
     * [Verra Redd\_3 User Journey Demo UI Guide](guardian/demo-guide/carbon-offsets/verra-redd_3-user-journey-demo-ui-guide.md)
     * [VM0017 Adoption of Sustainable Agricultural Land Management, v1.0](guardian/demo-guide/carbon-offsets/verra-vm0017-redd+-methodology.md)
-    * [VM0042 Methodology for Improved Agricultural Land Management](guardian/demo-guide/carbon-offsets/verra-vm0042-redd+-methodology.md)
+    * [Verra's VM0042 1.0 Methodology for Improved Agricultural Land Management](guardian/demo-guide/carbon-offsets/verra-vm0042-redd+-methodology.md)
     * [Verra VM0047 - Afforestation, Reforestation, and Revegetation (ARR) v0.1](guardian/demo-guide/carbon-offsets/verra-afforestation-reforestation-and-revegetation-arr-v0.1.md)
     * [Gold Standard Afforestation and Reforestation (AR) v2.0](guardian/demo-guide/carbon-offsets/gold-standard-afforestation-and-reforestation-ar-v2.0.md)
     * [Dovu Methodologies](guardian/demo-guide/carbon-offsets/dovu-methodologies.md)

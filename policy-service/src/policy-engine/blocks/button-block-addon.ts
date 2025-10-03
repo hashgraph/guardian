@@ -53,6 +53,13 @@ import { LocationType } from '@guardian/interfaces';
                 default: false,
             },
             {
+                name: 'hideWhenDiscontinued',
+                label: 'Hide when discontinued',
+                title: 'Hide when discontinued',
+                type: PropertyType.Checkbox,
+                default: false
+            },
+            {
                 name: 'dialogOptions',
                 label: 'Dialog Options',
                 title: 'Dialog Options',

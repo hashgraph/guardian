@@ -32,3 +32,4 @@ export * from './generate-tls-options.js';
 export * from './encrypt-vc-helper.js';
 export * from './generate-config-for-integration-block-helper.js';
 export * from './encrypt-utils.js';
+export * from './table-file-ids.js';

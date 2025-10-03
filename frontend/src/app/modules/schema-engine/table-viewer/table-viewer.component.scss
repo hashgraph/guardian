@@ -1,0 +1,151 @@
+.table-viewer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.table-viewer__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.table-viewer__errors {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.table-viewer__error {
+    color: #d32f2f;
+}
+
+.table-viewer__placeholder {
+    width: 100%;
+}
+
+.table-viewer__placeholder-icon {
+    font-size: 18px;
+    margin-bottom: 6px;
+    line-height: 1;
+    margin-right: 8px;
+    color: rgba(0, 0, 0, 0.35);
+}
+
+.table-viewer__placeholder-title {
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.table-viewer__placeholder-hint {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.table-viewer__preview {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.table-viewer__preview-title {
+    font-size: 16px;
+    font-weight: 500;
+    padding: 0 0 12px 2px;
+}
+
+.table-viewer__grid {
+    --row-height: 42px;
+    --header-height: 44px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+    max-height: calc(4 * var(--row-height) + var(--header-height));
+}
+
+.table-viewer__row {
+    display: grid;
+    grid-template-columns: 48px repeat(8, minmax(80px, 1fr));
+}
+
+.table-viewer__row--header {
+    background: #f5f7f9;
+    color: #5f6b7a;
+    height: var(--header-height);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    align-items: center;
+}
+
+.table-viewer__row + .table-viewer__row .table-viewer__cell {
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.table-viewer__cell {
+    padding: 0 8px;
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    height: var(--row-height);
+}
+
+.table-viewer__cell:last-child {
+    border-right: none;
+}
+
+.table-viewer__cell--rownum {
+    justify-content: center;
+    background: #f5f7f9;
+    color: #5f6b7a;
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.table-viewer__cell--head {
+    justify-content: center;
+    font-weight: 600;
+}
+
+.table-viewer__placeholder-box {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 120px;
+    padding: 18px 14px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    background: #f7f9fc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(0, 0, 0, 0.55);
+    flex-direction: column;
+}
+
+:host ::ng-deep .p-button {
+    border-radius: 8px;
+}
+
+:host ::ng-deep .primary-btn .p-button {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: var(--color-background);
+    border-radius: 8px;
+}
+
+:host ::ng-deep .secondary-btn .p-button {
+    background: var(--color-background);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    border-radius: 8px;
+}
+
+.table-viewer__cell--head,
+.table-viewer__cell--data {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.table-viewer__cell--data {
+    padding: 0 6px;
+}
