@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FormulaFiles, FormulaItem, FormulasTree, SchemaItem } from '../../models/formula-tree';
 import { TreeListData, TreeListItem, TreeListView } from '../../models/tree-list';
@@ -41,6 +41,7 @@ export class VCFullscreenDialog {
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private dialogService: DialogService,
+        private el: ElementRef
     ) {
         this.title = this.config.data?.title;
         this.schema = this.config.data?.schema;
@@ -62,5 +63,14 @@ export class VCFullscreenDialog {
 
     public onClose(): void {
         this.ref.close(null);
+    }
+
+    public onLinkField($event: any) {
+        setTimeout(() => {
+            this.el.nativeElement
+                ?.querySelector('.form')
+                ?.querySelector(`[field-id="${$event}"]`)
+                ?.scrollIntoView();
+        }, 0);
     }
 }

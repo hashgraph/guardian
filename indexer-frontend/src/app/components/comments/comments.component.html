@@ -5,7 +5,14 @@
         </div>
     }
     <div class="discussion-header">
-        {{discussion._name}}
+        <div class="discussion-header-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" >
+                <path d="M6 14H18V12H6V14ZM6 11H18V9H6V11ZM6 8H18V6H6V8ZM4 18C3.45 18 2.97933 17.8043 2.588 17.413C2.19667 17.0217 2.00067 16.5507 2 16V4C2 3.45 2.196 2.97933 2.588 2.588C2.98 2.19667 3.45067 2.00067 4 2H20C20.55 2 21.021 2.196 21.413 2.588C21.805 2.98 22.0007 3.45067 22 4V22L18 18H4Z"></path>
+            </svg>
+        </div>
+        <div class="discussion-header-text">
+            {{discussion._name}}
+        </div>
     </div>
     <div class="messages" #messages>
         @for (item of data.items; track $index) {
@@ -28,7 +35,26 @@
                             </div>
                             @if (item._text) {
                                 <div class="message-text">
-                                    {{item._text}}
+                                    @for (textItem of item._text; track $index) {
+                                        @if (textItem.type === 'text') {
+                                            <span class="text-type-text">{{textItem.label}}</span>
+                                        }
+                                        @if (textItem.type === 'tag') {
+                                            <span class="text-type-tag">{{textItem.label}}</span>
+                                        }
+                                        @if (textItem.type === 'all') {
+                                            <span class="text-type-all">{{textItem.label}}</span>
+                                        }
+                                        @if (textItem.type === 'role') {
+                                            <span class="text-type-role">{{textItem.label}}</span>
+                                        }
+                                        @if (textItem.type === 'user') {
+                                            <span class="text-type-user">{{textItem.label}}</span>
+                                        }
+                                        @if (textItem.type === 'field') {
+                                            <span class="text-type-field" (click)="onLinkText(textItem)">{{textItem.label}}</span>
+                                        }
+                                    }
                                 </div>
                             }
                             @if (item._files && item._files.length) {

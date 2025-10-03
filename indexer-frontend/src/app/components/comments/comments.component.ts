@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingComponent } from '@components/loading/loading.component';
@@ -93,11 +93,15 @@ export class CommentsComponent {
     @Input('discussion-id') discussionId!: string;
     @Input('key') key!: string;
     @Input('discussion') discussion!: any;
+    @Input('schema') schema!: any;
+
+    @Output('link') linkEvent = new EventEmitter<any>();
 
     @ViewChild('messages', { static: false }) messages: any;
 
     public loading: boolean = true;
     public data = new List(10);
+    public fieldNames = new Map<string, string>();
 
     constructor(
         private entitiesService: EntitiesService,
@@ -109,6 +113,7 @@ export class CommentsComponent {
 
     ngOnInit() {
         this.loading = true;
+        this.setSchema()
         this.loadData();
     }
 
@@ -162,7 +167,30 @@ export class CommentsComponent {
         }
     }
 
-    public async decryptMessages(items: any[]) {
+    private setSchema() {
+        this.fieldNames.clear();
+        const fieldMap = new Map<string | undefined, string>();
+
+        this.updateFields(this.schema?.fields, fieldMap, '');
+        for (const [value, label] of fieldMap.entries()) {
+            this.fieldNames.set(value || '', `#${label}`);
+        }
+    }
+
+    private updateFields(
+        fields: any[] | undefined,
+        map: Map<string | undefined, string>,
+        parent: string
+    ) {
+        if (Array.isArray(fields)) {
+            for (const field of fields) {
+                map.set(field.fullPath, `${parent}${field.description}`);
+                this.updateFields(field.fields, map, `${parent}${field.description}/`);
+            }
+        }
+    }
+
+    private async decryptMessages(items: any[]) {
         for (const item of items) {
             const encryptedData = item.documents[0];
             const decryptedData = await this.decryptData(this.key, encryptedData);
@@ -218,13 +246,90 @@ export class CommentsComponent {
         }
     }
 
+    private parsText(message: any, text: string): any[] {
+        const result: any[] = [];
+        if (!message || !text) {
+            return result;
+        }
+
+        const separatorMap = new Map<string, any>();
+        if (Array.isArray(message.fields)) {
+            for (const field of message.fields) {
+                separatorMap.set(`#[${field}]`, 'field');
+            }
+        }
+        if (Array.isArray(message.users)) {
+            for (const user of message.users) {
+                separatorMap.set(`@[${user}]`, 'role');
+                separatorMap.set(`@{${user}}`, 'user');
+            }
+        }
+        separatorMap.set(`@[all]`, 'all');
+        separatorMap.set(`@[All]`, 'all');
+        const separators: string[] = Array.from(separatorMap.keys()).map((s: string) => {
+            return s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        });
+        const reg = `(${separators.join('|')})`;
+        const regExp = new RegExp(reg);
+        const tags = text.trim().split(regExp);
+
+        for (const tag of tags) {
+            if (tag) {
+                const type = separatorMap.get(tag);
+                if (type) {
+                    const value = tag.substring(2, tag.length - 1);
+                    result.push({
+                        type: type,
+                        text: tag,
+                        tag: value
+                    });
+                } else {
+                    result.push({
+                        type: 'text',
+                        text: tag,
+                        tag: ''
+                    })
+                }
+            }
+        }
+
+        return result;
+    }
+
     private parseMessage(item: any) {
         item._date = this.getDate(item.consensusTimestamp);
         item._sender = item._subject?.sender;
         item._senderName = item._subject?.senderName;
         item._senderRole = item._subject?.senderRole;
-        item._text = item._subject?.text;
+
         item._files = item._subject?.files;
+        const textItems = this.parsText(item._subject, item._subject?.text);
+        for (const textItem of textItems) {
+            textItem.label = this.getTagName(textItem);
+        }
+        item._text = textItems;
+    }
+
+    public getTagName(t: any) {
+        if (t.type === 'all') {
+            return '@All';
+        }
+        if (t.type === 'text') {
+            return t.text;
+        }
+        if (t.type === 'tag') {
+            return t.text;
+        }
+        if (t.type === 'role') {
+            return t.text;
+        }
+        if (t.type === 'user') {
+            return t.text;
+        }
+        if (t.type === 'field') {
+            return this.fieldNames.get(t.tag) || t.text;
+        }
+        return t.text;
     }
 
     public getDate(value: any) {
@@ -278,5 +383,11 @@ export class CommentsComponent {
         const sizes = ["Bytes", "Kb", "Mb", "Gb", "Tb"];
         const i = Math.floor(Math.log(bytes) / Math.log(1024));
         return (bytes / Math.pow(1024, i)).toFixed(1) + " " + sizes[i];
+    }
+
+    public onLinkText(item: any) {
+        if (item.type === 'field') {
+            this.linkEvent.emit(item.tag);
+        }
     }
 }
