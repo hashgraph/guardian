@@ -15887,7 +15887,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyCommentUserDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -15928,7 +15930,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyCommentRelationshipDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -15969,7 +15973,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -16031,7 +16037,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDiscussionDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -16078,7 +16086,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BlockDTO'
+                $ref: '#/components/schemas/PolicyDiscussionDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -16133,7 +16141,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BlockDTO'
+                $ref: '#/components/schemas/PolicyCommentDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -16201,7 +16209,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PolicyDTO'
+                  $ref: '#/components/schemas/PolicyCommentDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -16242,7 +16250,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BlockDTO'
+                $ref: '#/components/schemas/PolicyCommentCountDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -16376,7 +16384,7 @@ paths:
         - policy-comments
   /policy-comments/{policyId}/{documentId}/discussions/{discussionId}/key:
     get:
-      description: Get file from ipfs.
+      description: .
       operationId: PolicyCommentsApi_getKey
       parameters:
         - name: policyId
@@ -16420,7 +16428,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Get file from ipfs.
+      summary: .
       tags:
         - policy-comments
   /policy-repository/{policyId}/users:
@@ -20917,6 +20925,206 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VcDocumentDTO'
+    PolicyCommentUserDTO:
+      type: object
+      properties:
+        label:
+          type: string
+          example: Administrator
+        value:
+          type: string
+          example: Administrator
+        type:
+          type: string
+          enum:
+            - all
+            - role
+            - user
+          example: role
+      required:
+        - label
+        - value
+        - type
+    PolicyCommentRelationshipDTO:
+      type: object
+      properties:
+        label:
+          type: string
+          example: Description
+        value:
+          type: string
+          example: '0000000000.000000001'
+      required:
+        - label
+        - value
+    PolicyDiscussionDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        target:
+          type: string
+          example: '0000000000.000000001'
+        targetId:
+          type: string
+          example: '000000000000000000000001'
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        hash:
+          type: string
+        name:
+          type: string
+          example: Common
+        relationships:
+          example:
+            - '0000000000.000000001'
+          type: array
+          items:
+            type: string
+        relationshipIds:
+          example:
+            - '000000000000000000000001'
+          type: array
+          items:
+            type: string
+        privacy:
+          type: string
+          enum:
+            - public
+            - roles
+            - users
+          example: public
+        roles:
+          type: array
+          items:
+            type: string
+        users:
+          type: array
+          items:
+            type: string
+        system:
+          type: boolean
+          example: true
+        count:
+          type: string
+          example: 0
+        document:
+          nullable: false
+          allOf:
+            - $ref: '#/components/schemas/VcDTO'
+      required:
+        - id
+        - document
+    PolicyCommentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        topicId:
+          type: string
+          example: 0.0.1
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
+          type: string
+          example: 0.0.1
+        target:
+          type: string
+          example: '0000000000.000000001'
+        targetId:
+          type: string
+          example: '000000000000000000000001'
+        discussionMessageId:
+          type: string
+          example: '0000000000.000000001'
+        discussionId:
+          type: string
+          example: '000000000000000000000001'
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        timestamp:
+          type: string
+          example: 1759493933458
+        hash:
+          type: string
+        sender:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        senderRole:
+          type: string
+          example: Administrator
+        senderName:
+          type: string
+          example: StandardRegistry
+        recipients:
+          example:
+            - >-
+              #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+          type: array
+          items:
+            type: string
+        fields:
+          example:
+            - '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+          type: array
+          items:
+            type: string
+        text:
+          type: string
+          example: text
+        document:
+          nullable: false
+          allOf:
+            - $ref: '#/components/schemas/VcDTO'
+      required:
+        - id
+        - document
+    PolicyCommentCountDTO:
+      type: object
+      properties:
+        fields:
+          example:
+            - '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+          type: array
+          items:
+            type: string
+        count:
+          type: string
+          example: 0
     WorkersTasksDTO:
       type: object
       properties:
