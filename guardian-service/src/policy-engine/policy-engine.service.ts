@@ -23,6 +23,7 @@ import {
     PinoLogger,
     Policy,
     PolicyAction,
+    PolicyDiscussion,
     PolicyImportExport,
     PolicyMessage,
     RecordImportExport,
@@ -3974,7 +3975,7 @@ export class PolicyEngineService {
                     }
                 }
                 catch (error) {
-                    await logger.error(error, ['IPFS_CLIENT'], msg?.user?.id);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
                 }
             })
@@ -4037,7 +4038,7 @@ export class PolicyEngineService {
                     return new MessageResponse(buffer);
                 }
                 catch (error) {
-                    await logger.error(error, ['IPFS_CLIENT'], msg?.user?.id);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageResponse({ error: error.message });
                 }
             })
@@ -4047,7 +4048,7 @@ export class PolicyEngineService {
                 user: IAuthUser,
                 policyId: string,
                 documentId: string,
-                discussionId: string
+                discussionId?: string
             }) => {
                 try {
                     const { user, policyId, documentId, discussionId } = msg;
@@ -4060,29 +4061,38 @@ export class PolicyEngineService {
                         throw new Error('Document not found.');
                     }
 
-                    if (!discussionId) {
-                        throw new Error('Discussion not found.');
-                    }
-                    const discussion = await DatabaseServer.getPolicyDiscussion({
-                        _id: DatabaseServer.dbID(discussionId),
-                        policyId,
-                        targetId: documentId
-                    });
+                    let discussions: PolicyDiscussion[];
+                    if (discussionId) {
+                        const discussion = await DatabaseServer.getPolicyDiscussion({
+                            _id: DatabaseServer.dbID(discussionId),
+                            policyId,
+                            targetId: documentId
+                        });
+                        if (discussion) {
+                            discussions = [discussion];
+                        } else {
+                            discussions = [];
+                        }
 
-                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
-                    if (!PolicyCommentsUtils.accessDiscussion(discussion, user.did, userRole)) {
-                        throw new Error('Discussion does not exist.');
+                    } else {
+                        discussions = await DatabaseServer.getPolicyDiscussions({
+                            policyId,
+                            targetId: documentId
+                        });
                     }
 
-                    const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
-                    const data = { discussion: discussion.messageId, key: encryptKey };
-                    const buffer = Buffer.from(JSON.stringify(data), 'utf-8');
+                    const result: any = [];
+                    for (const discussion of discussions) {
+                        const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussion.id?.toString());
+                        result.push({ discussion: discussion.messageId, key: encryptKey });
+                    }
+                    const buffer = Buffer.from(JSON.stringify(result), 'utf-8');
 
                     return new MessageResponse(buffer);
                 }
                 catch (error) {
-                    await logger.error(error, ['IPFS_CLIENT'], msg?.user?.id);
-                    return new MessageResponse({ error: error.message });
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
                 }
             })
         //#endregion

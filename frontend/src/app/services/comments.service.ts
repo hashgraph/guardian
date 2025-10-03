@@ -172,7 +172,9 @@ export class CommentsService {
         documentId?: string,
         discussionId?: string
     ): Observable<ArrayBuffer> {
-        return this.http.get(`${this.url}/${policyId}/${documentId}/discussions/${discussionId}/key`, {
+        const params = CommentsService.getOptions({ discussionId });
+        return this.http.get(`${this.url}/${policyId}/${documentId}/keys`, {
+            params,
             responseType: 'arraybuffer',
         });
     }

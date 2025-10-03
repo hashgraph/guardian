@@ -1007,7 +1007,7 @@ export class PolicyComments {
         }
     }
 
-    public onKey(discussion: any) {
+    public onKey(discussion?: any) {
         this.loading = true;
         this.commentsService
             .downloadKey(
@@ -1021,7 +1021,7 @@ export class PolicyComments {
                 const url = window.URL.createObjectURL(blob);
                 const downloadLink = document.createElement('a');
                 downloadLink.href = url;
-                downloadLink.setAttribute('download', `${discussion?.name}.key`);
+                downloadLink.setAttribute('download', `${discussion?.name || this.documentId}.key`);
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 downloadLink.remove();

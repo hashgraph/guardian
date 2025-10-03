@@ -474,8 +474,16 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     private addKey(text: string) {
         try {
             const config = JSON.parse(text);
-            if (config.discussion && config.key) {
-                this.discussionsKey.set(config.discussion, config.key);
+            if (Array.isArray(config)) {
+                for (const item of config) {
+                    if (item && item.discussion && item.key) {
+                        this.discussionsKey.set(item.discussion, item.key);
+                    }
+                }
+            } else if (config) {
+                if (config.discussion && config.key) {
+                    this.discussionsKey.set(config.discussion, config.key);
+                }
             }
         } catch (error) {
             console.error('Load key:', error);

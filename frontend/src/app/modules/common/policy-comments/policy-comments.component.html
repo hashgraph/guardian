@@ -29,7 +29,23 @@
             </div>
         </div>
 
-        <div *ngIf="currentTab === 'discussions'" class="header-icon">
+        <!-- <div *ngIf="currentTab === 'discussions'" class="header-icon">
+            <div class="component-close" (click)="onClose()">
+                <svg-icon
+                    src="/assets/images/icons/close.svg"
+                    svgClass="icon-color-close"></svg-icon>
+            </div>
+        </div> -->
+        <div *ngIf="currentTab === 'discussions'" class="header-toolbar">
+            <button
+                *ngIf="key"
+                class="guardian-icon-button group-btn big"
+                (click)="onKey()">
+                <svg-icon class="icon-btn svg-icon" 
+                    src="/assets/images/icons/key.svg"
+                    svgClass="icon-color-grey-color-3">
+                </svg-icon>
+            </button>
             <div class="component-close" (click)="onClose()">
                 <svg-icon
                     src="/assets/images/icons/close.svg"

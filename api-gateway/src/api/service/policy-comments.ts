@@ -691,7 +691,7 @@ export class PolicyCommentsApi {
     /**
      * Get key
      */
-    @Get('/:policyId/:documentId/discussions/:discussionId/key')
+    @Get('/:policyId/:documentId/keys')
     @Auth(
         Permissions.POLICIES_POLICY_AUDIT,
     )
@@ -713,11 +713,11 @@ export class PolicyCommentsApi {
         required: true,
         example: Examples.DB_ID
     })
-    @ApiParam({
+    @ApiQuery({
         name: 'discussionId',
         type: String,
         description: 'Discussion Identifier',
-        required: true,
+        required: false,
         example: Examples.DB_ID
     })
     @ApiOkResponse({
@@ -738,7 +738,7 @@ export class PolicyCommentsApi {
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
-        @Param('discussionId') discussionId: string
+        @Query('discussionId') discussionId?: string
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();

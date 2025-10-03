@@ -1501,7 +1501,7 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         documentId: string,
-        discussionId: string,
+        discussionId?: string,
     ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DISCUSSION_KEY, { user, policyId, documentId, discussionId });
     }
