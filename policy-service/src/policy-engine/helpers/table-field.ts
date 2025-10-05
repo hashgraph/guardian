@@ -251,10 +251,12 @@ export async function hydrateTablesInObject(
     delimiter: string = ','
 ): Promise<() => void> {
     if (root === null || root === undefined) {
-        return () => {};
+        return () => {
+            //
+        };
     }
 
-    const disposers: Array<() => void> = [];
+    const disposers: (() => void)[] = [];
 
     const ensureTableHydrated = async (table: ITableField & { fileId: string }) => {
         const hasColumns = !!(table as any).columnKeys;
@@ -331,7 +333,9 @@ export async function hydrateTablesInObject(
         for (const dispose of disposers) {
             try {
                 dispose();
-            } catch {}
+            } catch {
+                //
+            }
         }
     };
 }

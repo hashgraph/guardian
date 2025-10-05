@@ -392,8 +392,8 @@ export class Workers extends NatsService {
             return false;
         }
 
-        const candidateIndex = availableWorkers.findIndex((worker) => {
-            return task.priority >= worker.minPriority && task.priority <= worker.maxPriority;
+        const candidateIndex = availableWorkers.findIndex((candidate) => {
+            return task.priority >= candidate.minPriority && task.priority <= candidate.maxPriority;
         });
 
         if (candidateIndex === -1) {
