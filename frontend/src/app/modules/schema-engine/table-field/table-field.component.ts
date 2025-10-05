@@ -1,7 +1,7 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
-import { IFieldControl } from '../schema-form-model/field-form';
+import {IFieldControl, IFieldIndexControl} from '../schema-form-model/field-form';
 import { CsvService } from '../../../services/csv.service';
 import {TableDialogComponent} from '../../common/table-dialog/table-dialog.component';
 import {ArtifactService} from '../../../services/artifact.service';
@@ -23,9 +23,12 @@ export interface ITableFieldRequired extends ITableField {
 })
 
 export class TableFieldComponent implements OnInit, OnDestroy {
-    @Input() item!: IFieldControl<any>;
+    @Input() item!: IFieldControl<any> | IFieldIndexControl<any>;
     @Input() required: boolean = false;
     @Input() readonly: boolean = false;
+    @Input() policyId?: string = '';
+    @Input() blockId: string = '';
+    @Input() delimiter: any = ',';
 
     private hydrated = false;
     public previewError?: string;
@@ -95,9 +98,13 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
     private ensureIdbStores(): Promise<void> {
         if (!this.storesReady) {
-            this.storesReady = this.idb.registerStore(
+            this.storesReady = this.idb.registerStores(
                 DB_NAME.TABLES,
-                { name: STORES_NAME.FILES_STORE, options: { keyPath: 'id' } }
+                [
+                    { name: STORES_NAME.DRAFT_STORE, options: { keyPath: 'id' } },
+                    { name: STORES_NAME.FILES_STORE, options: { keyPath: 'id' } },
+                    { name: STORES_NAME.FILES_VIEW_STORE, options: { keyPath: 'id' } },
+                ]
             );
         }
         return this.storesReady;
@@ -195,14 +202,6 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
     get rowData(): Record<string, string>[] {
         return this.readTable().rows;
-    }
-
-    get options(): any {
-        try {
-            return this.item?.comment ? JSON.parse(this.item.comment) : {};
-        } catch {
-            return {};
-        }
     }
 
     private localRawValue?: string;
@@ -308,9 +307,8 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         }
 
         if (table.columnKeys.length && table.rows.length) {
-            const delimiter = this.options?.delimiter || ',';
             const file = this.csvService.toCsvFile(table.columnKeys, table.rows, 'table.csv', {
-                delimiter,
+                delimiter: this.delimiter,
                 bom: false,
                 mime: 'text/csv;charset=utf-8',
             });
@@ -345,9 +343,8 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         rows: Record<string, string>[],
         filename: string = 'table.csv'
     ): File {
-        const delimiter = this.options?.delimiter || ',';
         return this.csvService.toCsvFile(columnKeys, rows, filename, {
-            delimiter,
+            delimiter: this.delimiter,
             bom: false,
             mime: 'text/csv;charset=utf-8',
         });
@@ -361,7 +358,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
             const csvText = await this.loadCsvTextForEdit();
 
             if (csvText) {
-                const delimiter = this.options?.delimiter || ',';
+                const delimiter = this.delimiter;
                 const parsed = this.csvService.parseCsvToTable(csvText, delimiter);
                 parsedColumnKeys = parsed.columnKeys;
                 parsedRows = parsed.rows;
@@ -399,8 +396,6 @@ export class TableFieldComponent implements OnInit, OnDestroy {
             const nextRows: Record<string, string>[] = result.rowData || parsedRows;
 
             try {
-                await this.ensureIdbStores();
-
                 const csvFile = this.buildCsvFile(nextColumnKeys, nextRows);
                 const sizeBytes = csvFile.size;
 
@@ -417,7 +412,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
                     originalName: csvFile.name,
                     originalSize: sizeBytes,
                     gzSize: gzippedFile.size,
-                    delimiter: this.options?.delimiter || ',',
+                    delimiter: this.delimiter,
                     createdAt: Date.now(),
                 });
 
@@ -439,17 +434,8 @@ export class TableFieldComponent implements OnInit, OnDestroy {
     }
 
     private generateFreshIdbKey(): string {
-        const base =
-            (this.item?.title || this.item?.path || this.item?.name || 'table')
-                .toString()
-                .trim() || 'table';
-
-        const uid =
-            (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
-                ? (crypto as any).randomUUID()
-                : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
-        return `${base}__${uid}.csv.gz`;
+        const index = (this.item as any)?.index ?? 0;
+        return `${this.policyId}__${this.blockId}__${this.item.name}__${index}`;
     }
 
     async onFileChange(event: Event): Promise<void> {
@@ -464,9 +450,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         this.importError = undefined;
 
         try {
-            await this.ensureIdbStores();
-
-            const delimiter = this.options?.delimiter || ',';
+            const delimiter = this.delimiter;
             const csvText = await file.text();
 
             const parsed = this.csvService.parseCsvToTable(csvText, delimiter);
@@ -600,8 +584,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
             (tableValue.fileId ?? '').trim();
 
         if (!hasColumns && !hasRows && fileId) {
-            const delimiter =
-                this.options?.delimiter || ',';
+            const delimiter = this.delimiter;
 
             this.artifactService
                 .getFileBlob(fileId)
@@ -669,7 +652,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
             }
 
             if (!csvText) {
-                const delimiter = this.options?.delimiter || ',';
+                const delimiter = this.delimiter;
                 const file = this.csvService.toCsvFile(
                     table.columnKeys || [],
                     table.rows || [],

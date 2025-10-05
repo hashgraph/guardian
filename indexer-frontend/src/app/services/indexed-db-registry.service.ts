@@ -16,19 +16,32 @@ interface DbMeta {
 export class IndexedDbRegistryService {
     private metas = new Map<string, DbMeta>();
 
-    async registerStore(dbName: string, cfg: StoreConfig): Promise<void> {
-        let meta = this.metas.get(dbName);
-        if (!meta) {
-            meta = {version: 1, stores: new Map([[cfg.name, cfg.options]])};
-            this.metas.set(dbName, meta);
-        }
-
-        if (meta.stores.has(cfg.name)) {
+    async registerStores(
+        dbName: string,
+        storeConfigs: StoreConfig[]
+    ): Promise<void> {
+        if (this.metas.has(dbName)) {
             return;
         }
 
-        meta.stores.set(cfg.name, cfg.options);
-        meta.version++;
+        const databaseExists = await this.databaseExists(dbName);
+
+        const storesMap = new Map<string, IDBObjectStoreParameters | undefined>(
+            storeConfigs.map((c) => [c.name, c.options])
+        );
+
+        const meta: DbMeta = {
+            version: 1,
+            stores: storesMap,
+            dbPromise: undefined
+        };
+
+        this.metas.set(dbName, meta);
+
+        if (databaseExists) {
+            return;
+        }
+
         meta.dbPromise = this.open(dbName, meta);
         await meta.dbPromise;
     }
@@ -91,5 +104,17 @@ export class IndexedDbRegistryService {
     async clearStore(dbName: string, storeName: string): Promise<void> {
         const connection = await this.getDB(dbName);
         await connection.clear(storeName);
+    }
+
+    private async databaseExists(dbName: string): Promise<boolean> {
+        try {
+            const nativeIndexedDb: any = (globalThis as any).indexedDB;
+            if (nativeIndexedDb && typeof nativeIndexedDb.databases === 'function') {
+                const list: Array<{ name?: string }> = await nativeIndexedDb.databases();
+                return list.some((d) => d.name === dbName);
+            }
+        } catch {
+        }
+        return false;
     }
 }

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpResponse } from '@angular/common/http';
-import {ChangeDetectorRef, Component, Input, NgZone, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, NgZone, OnChanges, OnDestroy, OnInit} from '@angular/core';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
 import { ButtonModule } from 'primeng/button';
@@ -24,7 +24,7 @@ import {DB_NAME, STORES_NAME} from "../../constants";
     providers: [DialogService]
 })
 
-export class TableViewerComponent implements OnInit {
+export class TableViewerComponent implements OnInit, OnChanges, OnDestroy {
     @Input() public value: any;
     @Input() public title?: string;
     @Input() public analytics?: any;
@@ -103,14 +103,16 @@ export class TableViewerComponent implements OnInit {
 
     async ngOnInit(): Promise<void> {
         await this.ensureIdbStores();
-
-        await this.idb.clearStore(DB_NAME.TABLES, STORES_NAME.FILES_STORE);
     }
 
     ngOnChanges(): void {
         this.initPreview().catch(() => {
             //
         });
+    }
+
+    async ngOnDestroy(): Promise<void> {
+        await this.idb.clearStore(DB_NAME.TABLES, STORES_NAME.FILES_VIEW_STORE);
     }
 
     public openDialog(): void {
@@ -122,8 +124,6 @@ export class TableViewerComponent implements OnInit {
         this.mark();
 
         (async () => {
-            await this.ensureIdbStores();
-
             let cached = await this.getFromIdb(id);
             if (!cached) {
                 const resp = await firstValueFrom(this.artifacts.getFileBlob(id));
@@ -189,8 +189,6 @@ export class TableViewerComponent implements OnInit {
         this.mark();
 
         (async () => {
-            await this.ensureIdbStores();
-
             let cached = await this.getFromIdb(fileId);
 
             if (!cached) {
@@ -272,8 +270,6 @@ export class TableViewerComponent implements OnInit {
             return;
         }
 
-        await this.ensureIdbStores();
-
         try {
             let cached = await this.getFromIdb(fileId);
             if (!cached) {
@@ -326,14 +322,16 @@ export class TableViewerComponent implements OnInit {
         }
     }
 
-    private async ensureIdbStores(): Promise<void> {
+    private ensureIdbStores(): Promise<void> {
         if (!this.storesReady) {
-            this.storesReady = this.idb.registerStore(
+            this.storesReady = this.idb.registerStores(
                 DB_NAME.TABLES,
-                { name: STORES_NAME.FILES_STORE, options: { keyPath: 'id' } }
+                [
+                    { name: STORES_NAME.FILES_VIEW_STORE, options: { keyPath: 'id' } },
+                ]
             );
         }
-        await this.storesReady;
+        return this.storesReady;
     }
 
     private wait(ms: number): Promise<void> {
@@ -373,7 +371,6 @@ export class TableViewerComponent implements OnInit {
     private async withIdbRetry<T>(fn: () => Promise<T>, attempts: number = 3): Promise<T> {
         for (let i = 0; i < attempts; i += 1) {
             try {
-                await this.ensureIdbStores();
                 return await this.queueIdb(fn);
             } catch (e) {
                 if (this.isIdbClosingError(e) && i < attempts - 1) {

@@ -16,6 +16,36 @@ interface DbMeta {
 export class IndexedDbRegistryService {
     private metas = new Map<string, DbMeta>();
 
+    async registerStores(
+        dbName: string,
+        storeConfigs: StoreConfig[]
+    ): Promise<void> {
+        if (this.metas.has(dbName)) {
+            return;
+        }
+
+        const databaseExists = await this.databaseExists(dbName);
+
+        const storesMap = new Map<string, IDBObjectStoreParameters | undefined>(
+            storeConfigs.map((c) => [c.name, c.options])
+        );
+
+        const meta: DbMeta = {
+            version: 1,
+            stores: storesMap,
+            dbPromise: undefined
+        };
+
+        this.metas.set(dbName, meta);
+
+        if (databaseExists) {
+            return;
+        }
+
+        meta.dbPromise = this.open(dbName, meta);
+        await meta.dbPromise;
+    }
+
     async registerStore(dbName: string, cfg: StoreConfig): Promise<void> {
         let meta = this.metas.get(dbName);
         if (!meta) {
@@ -91,5 +121,70 @@ export class IndexedDbRegistryService {
     async clearStore(dbName: string, storeName: string): Promise<void> {
         const connection = await this.getDB(dbName);
         await connection.clear(storeName);
+    }
+
+    private async databaseExists(dbName: string): Promise<boolean> {
+        try {
+            const nativeIndexedDb: any = (globalThis as any).indexedDB;
+            if (nativeIndexedDb && typeof nativeIndexedDb.databases === 'function') {
+                const list: Array<{ name?: string }> = await nativeIndexedDb.databases();
+                return list.some((d) => d.name === dbName);
+            }
+        } catch {
+        }
+        return false;
+    }
+
+    async clearByKeyPrefixAcrossStores(
+        databaseName: string,
+        storeNames: string[],
+        keyPrefix: string
+    ): Promise<void> {
+        const metadata = this.metas.get(databaseName);
+
+        if (!metadata) {
+            const exists = await this.databaseExists(databaseName);
+            if (!exists) {
+                return;
+            }
+        }
+
+        let connection: IDBPDatabase | null = null;
+
+        if (metadata?.dbPromise) {
+            connection = await metadata.dbPromise;
+        } else if (metadata) {
+            return;
+        } else {
+            connection = await openDB(databaseName);
+        }
+
+        for (const storeName of storeNames) {
+            if (!connection.objectStoreNames.contains(storeName)) {
+                continue;
+            }
+
+            const readOnlyTransaction = connection.transaction(storeName, 'readonly');
+            const readOnlyStore = readOnlyTransaction.objectStore(storeName);
+            const allKeys = await readOnlyStore.getAllKeys();
+
+            const keysToDelete = allKeys.filter((key) => {
+                const keyString = String(key ?? '');
+                return keyString.startsWith(keyPrefix);
+            });
+
+            if (keysToDelete.length === 0) {
+                continue;
+            }
+
+            const writeTransaction = connection.transaction(storeName, 'readwrite');
+            const writeStore = writeTransaction.objectStore(storeName);
+
+            for (const key of keysToDelete) {
+                await writeStore.delete(key);
+            }
+
+            await writeTransaction.done;
+        }
     }
 }
