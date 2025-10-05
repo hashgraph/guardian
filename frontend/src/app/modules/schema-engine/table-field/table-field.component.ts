@@ -28,7 +28,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
     @Input() readonly: boolean = false;
     @Input() policyId?: string = '';
     @Input() blockId: string = '';
-    @Input() delimiter: any = ',';
+    @Input() delimiter: string = ',';
 
     private hydrated = false;
     public previewError?: string;

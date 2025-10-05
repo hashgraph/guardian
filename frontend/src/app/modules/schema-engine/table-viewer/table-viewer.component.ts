@@ -24,6 +24,7 @@ export class TableViewerComponent implements OnInit, OnChanges, OnDestroy {
 
     @Input()
     public title?: string;
+    @Input() delimiter: string = ',';
 
     public isLoading: boolean = false;
     public isDownloading = false;
@@ -178,7 +179,7 @@ export class TableViewerComponent implements OnInit, OnChanges, OnDestroy {
                     originalName: `${fileId}.csv.gz`,
                     originalSize: undefined,
                     gzSize: gzBlobFromGridFs.size,
-                    delimiter: ',',
+                    delimiter: this.delimiter,
                     createdAt: Date.now(),
                 })
             );
