@@ -23,6 +23,7 @@ RefreshEvents are used to refreshing the UI, instead of "dependencies" property.
 | Type                 | Style of the render of the form. It can be either a Page (the form is rendered as a page) or Dialogue (displays a button, which opens a dialogue with the form when clicked). |
 | Title                | Provides the Page or Dialogue box a title.                                                                                                                                    |
 | Description          | Provides the Page or Dialogue box a description.                                                                                                                              |
+| hideWhenDiscontinued | Check if the button should be hidden when policy is discontinued                                                                                                              |
 | Button Content       | Text to fill inside a button. Needs the Dialogue box to be selected from the "Type."                                                                                          |
 | Dialogue Text        | Provides a tile inside the Dialogue box. Needs the dialogue box to be selected from the "Type."                                                                               |
 | Dialogue Description | Provides a description inside the Dialogue box. Needs the dialogue box to be selected from the "Type."                                                                        |

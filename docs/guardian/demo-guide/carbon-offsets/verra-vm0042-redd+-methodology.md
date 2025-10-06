@@ -2,13 +2,13 @@
 description: Policy developed by Envision Blockchain
 ---
 
-# VM0042 Methodology for Improved Agricultural Land Management
+# Verra's VM0042 1.0 Methodology for Improved Agricultural Land Management
 
 * [Policy Description](verra-vm0042-redd+-methodology.md#policy-description)
 * [Workflow Description](verra-vm0042-redd+-methodology.md#workflow-description)
 * [Policy Guide](verra-vm0042-redd+-methodology.md#policy-guide)
 
-**For more Verra VM0042 REDD+ Methodology policy information, please visit the Envision Blockchain-contributed open-source Guardian policy page** [**here**](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/Verra/Verra%20Redd/VM0042)
+**For more Verra VM0042 V1.0 Methodology policy information, please visit the Envision Blockchain-contributed open-source Guardian policy page** [**here**](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/Verra/Verra%20Redd/VM0042)
 
 ## **Policy Description**:
 
