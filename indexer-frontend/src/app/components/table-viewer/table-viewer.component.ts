@@ -326,6 +326,8 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
             this.storesReady = this.idb.registerStores(
                 DB_NAME.TABLES,
                 [
+                    { name: STORES_NAME.DRAFT_STORE, options: { keyPath: 'id' } },
+                    { name: STORES_NAME.FILES_STORE, options: { keyPath: 'id' } },
                     { name: STORES_NAME.FILES_VIEW_STORE, options: { keyPath: 'id' } },
                 ]
             );
