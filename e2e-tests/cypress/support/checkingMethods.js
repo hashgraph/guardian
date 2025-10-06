@@ -89,6 +89,20 @@ export const whileRequestAppear = (authorization, attempts = 0) => {
     }
 }
 
+export const whileIPFSProcessingFile = (request, attempts = 0) => {
+    if (attempts < 100) {
+        attempts++
+        cy.wait(10000)
+        cy.request(request).then((response) => {
+            if (response.status != 200)
+                whileIPFSProcessingFile(request, attempts)
+        })
+    }
+    else {
+        throw new Error(`IPFS check failed after ${attempts}`)
+    }
+}
+
 export const whileRetireRequestCreating = (dataToCompare, authorization, attempts) => {
     let request = {
         method: METHOD.GET,
