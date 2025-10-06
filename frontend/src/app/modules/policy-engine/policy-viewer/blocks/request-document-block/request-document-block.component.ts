@@ -298,7 +298,6 @@ export class RequestDocumentBlockComponent
             const data = this.dataForm.getRawValue();
             this.loading = true;
             this.storage.delete(this.getAutosaveId());
-
             await this.tablePersist.persistTablesInDocument(data, !!this.dryRun);
 
             prepareVcData(data);
@@ -308,7 +307,18 @@ export class RequestDocumentBlockComponent
                     ref: this.ref,
                     draft,
                     draftId: this.draftId
-                });
+                })
+                .subscribe(() => {
+                    setTimeout(() => {
+                        this.loading = false;
+                        if (!draft) {
+                            this.dialogRef.close(null);
+                        }
+                    }, 1000);
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });;
         }
     }
 
