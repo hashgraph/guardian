@@ -31,7 +31,7 @@ Once the Policy is imported, you will need to create another user account to be 
 
 <figure><img src="../../../.gitbook/assets/image (2) (1) (6) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (11) (1) (2) (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (1) (2) (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Next, fill out the Organization data form.
 

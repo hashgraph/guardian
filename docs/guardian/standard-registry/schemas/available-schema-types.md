@@ -81,6 +81,7 @@ Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup
 2. Polygons and lines can be placed by double clicking on map.
 3. Right Click on the map will remove temporary points for polygons and lines
 4. View type can also be changed by pasting the GeoJSON.
+5. We can upload .kml, .json files to add locations. More details on this can be found in this [doc](how-to-handle-large-location-files.md).
 {% endhint %}
 
 {% hint style="info" %}
@@ -89,4 +90,23 @@ Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup
 1. Pattern input field is added in the advanced mode configuration.
 
 Detailed information for patterns is available on [https://json-schema.org/understanding-json-schema/reference/regular\_expressions.html](https://json-schema.org/understanding-json-schema/reference/regular_expressions.html).
+{% endhint %}
+
+{% hint style="info" %}
+For all fields of type string with different formats (e.g., `url`, `uri`, `file`), an IPFS validator has been added.
+
+* If the value looks like an IPFS link or must be an IPFS link (depending on the format’s internal validation), the field will validate against this requirement.
+* The validation is applied only for published policies. For draft policies, validation is disabled.
+{% endhint %}
+
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="info" %}
+For geoJSON fields :\
+
+
+* A new property `availableOptions` has been added.
+* On the UI, a dropdown list is displayed to select which geoJSON types are available.&#x20;
+* If certain types are selected, then when creating a document, the `geoJSON` field will only allow choosing those specific types.
+* Validation has also been added for the `geoJSON` field to ensure that values comply with the rules of the selected geoJSON type.
 {% endhint %}
