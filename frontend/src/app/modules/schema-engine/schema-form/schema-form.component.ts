@@ -83,6 +83,7 @@ export class SchemaFormComponent implements OnInit {
     @Input() comesFromDialog: boolean = false;
     @Input() dryRun?: boolean = false;
     @Input() policyId?: string = '';
+    @Input() blockId: string = '';
     @Input() rules?: SchemaRuleValidateResult;
     @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;

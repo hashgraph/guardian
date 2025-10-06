@@ -147,7 +147,7 @@ export class RequestDocumentBlockDialog {
             const data = this.dataForm.getRawValue();
             this.loading = true;
 
-            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun);
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
 
             prepareVcData(data);
             const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;

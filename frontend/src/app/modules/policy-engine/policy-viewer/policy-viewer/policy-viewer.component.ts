@@ -20,6 +20,8 @@ import { AddSavepointDialog, AddSavepointResult } from
 import { DynamicDialogConfig } from 'primeng/dynamicdialog'
 import {OnLoadSavepointDialog} from "../dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
+import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
+import { DB_NAME, STORES_NAME } from 'src/app/constants';
 
 /**
  * Component for choosing a policy and
@@ -83,6 +85,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private changeDetector: ChangeDetectorRef,
         private router: Router,
         private savepointFlow: SavepointFlowService,
+        private indexedDb: IndexedDbRegistryService
     ) {
         this.policy = null;
         this.pageIndex = 0;
@@ -384,6 +387,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     restartDryRun() {
         this.loading = true;
+
         this.policyEngineService.restartDryRun(this.policyInfo.id).subscribe(
             (users) => {
                 this.policy = null;
@@ -397,6 +401,19 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             }, (e) => {
                 this.loading = false;
             });
+
+        const databaseName = DB_NAME.TABLES;
+        const storeNames = [
+            STORES_NAME.FILES_STORE,
+            STORES_NAME.DRAFT_STORE
+        ];
+        const keyPrefix = `${this.policyId}__`;
+
+        this.indexedDb.clearByKeyPrefixAcrossStores(
+            databaseName,
+            storeNames,
+            keyPrefix
+        );
     }
 
     onView(view: string) {
