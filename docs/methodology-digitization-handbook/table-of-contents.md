@@ -89,37 +89,27 @@ Comprehensive testing using Guardian's built-in testing capabilities including d
 
 ## Part VI: Integration and Testing
 
-### Chapter 22: End-to-End Policy Testing
+### [Chapter 22: End-to-End Policy Testing](part-6/chapter-22/README.md)
 
-Comprehensive testing strategies including dry runs, role-based testing, and workflow validation using VM0033 scenarios.
+Testing complete methodology workflows across all stakeholder roles using Guardian's dry-run capabilities and VM0033 production patterns. Covers multi-role testing frameworks, virtual user management, production-scale data validation, and cross-component integration testing.
 
-### Chapter 23: API Integration and Automation
+### [Chapter 23: API Integration and Automation](part-6/chapter-23/README.md)
 
-Using Guardian APIs for automated testing, data submission, and integration with external systems. Includes practical examples for VM0033 data submission.
+Automating methodology operations using Guardian's REST API framework. Covers authentication patterns, VM0033 policy block API structure, dry-run operations with virtual users, automated workflow execution, and Cypress testing integration for production deployment.
 
-## Part VII: Deployment and Maintenance
+### [Chapter 24: Guardian Indexer for Methodology Analytics](part-6/chapter-24/README.md)
 
-### Chapter 23: User Management and Role Assignment
+✅ **Available** - Comprehensive data analytics, search, and monitoring for deployed methodologies using Guardian's global indexing system. Covers global search, project tracking, compliance reporting, and operational insights.
 
-Setting up user roles, permissions, and access controls for different stakeholders in the methodology workflow.
+## Part VII: Advanced Topics and Best Practices
 
-### Chapter 24: Monitoring and Analytics - Guardian Indexer
+### [Chapter 25: Integration with External Systems](part-7/chapter-25/README.md)
 
-Implementing monitoring, logging, and analytics for deployed methodologies to track usage, performance, and issues.
+✅ **Available** - Bidirectional data exchange between Guardian and external platforms. Covers data transformation using dataTransformationAddon blocks and external data reception using MRV configuration patterns.
 
-### Chapter 25: Maintenance and Updates
+### [Chapter 26: Troubleshooting and Common Issues](part-7/chapter-26/README.md)
 
-Strategies for maintaining deployed methodologies, handling methodology updates, and managing backward compatibility.
-
-## Part VIII: Advanced Topics and Best Practices
-
-### Chapter 26: Integration with External Systems
-
-Connecting Guardian-based methodologies with external registries, monitoring systems, and third-party tools.
-
-### Chapter 27: Troubleshooting and Common Issues
-
-Common problems encountered during methodology digitization and their solutions, with specific examples from VM0033 implementation.
+✅ **Available** - Practical tips and solutions for common problems encountered during methodology digitization. Covers schema development pitfalls, development workflow optimization, custom logic testing, and event troubleshooting.
 
 ## Part IX: Appendices and References
 

@@ -22,26 +22,24 @@
 | Field                     | Field of document to change                                                                                                                                                                                          | option.status                                                                                                            |        |
 | Value                     | Value to set                                                                                                                                                                                                         | Validated                                                                                                                |        |
 | UI Class                  | UI class of the button                                                                                                                                                                                               | btn-approve                                                                                                              |        |
+| hideWhenDiscontinued      | Check if the button should be hidden when policy is discontinued                                                                                                                                                     | Checked/Unchecked                                                                                                        |        |
 | Filters                   | array of addition visible filters                                                                                                                                                                                    | <p>Field (field) – field of document.</p><p>Value (value) – field to compare.</p><p>Type (type)– type of comparison.</p> |        |
 | dialogResultFieldPath     | This will allow to define destination field where value from dialog will be stored. Also it will not override value of this field, it will only be replaced to array or value will be just pushed to existing array. | Field Path                                                                                                               |        |
 | Enable Individual Filters | As per button visibility filters instead of hiding all buttons                                                                                                                                                       | Checked or Unchecked                                                                                                     |        |
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{policyId}/blocks/{uuid}`
 
-{% endswagger-description %}
+#### Path Parameters
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| policyId<mark style="color:red;">\*</mark> | String | Policy ID   |
+| uuid<mark style="color:red;">\*</mark>     | String | Block UUID  |
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block UUID
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
   "id": "fa4c1642-700a-44f6-a8eb-1089e77c4d64",
@@ -76,23 +74,20 @@ Block UUID
 }
 
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{policyId}/blocks/{uuid}`
 
-{% endswagger-description %}
+#### Path Parameters
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| policyId<mark style="color:red;">\*</mark> | String | Policy ID   |
+| uuid<mark style="color:red;">\*</mark>     | String | Block UUID  |
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block UUID
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="body" name="document" type="Object" required="true" %}
-VC Document
-{% endswagger-parameter %}
-{% endswagger %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| document<mark style="color:red;">\*</mark> | Object | VC Document |
