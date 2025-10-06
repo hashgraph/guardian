@@ -298,7 +298,8 @@ export class RequestDocumentBlockComponent
             const data = this.dataForm.getRawValue();
             this.loading = true;
             this.storage.delete(this.getAutosaveId());
-            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun);
+
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
 
             prepareVcData(data);
             this.policyEngineService
@@ -413,10 +414,14 @@ export class RequestDocumentBlockComponent
             },
         });
 
-        dialogOptionRef.onClose.subscribe((result: string) => {
+        dialogOptionRef.onClose.subscribe(async (result: string) => {
             if (result != 'Cancel') {
+
                 if (result === 'Restore') {
                     this.preset(autosaveDocument);
+
+                    await this.tablePersist.restoreTablesFromDraft(autosaveDocument);
+
                     this.savepointFlow.setSkipOnce();
                     if (this.type == 'dialog') {
                         this.showDocumentDialog();

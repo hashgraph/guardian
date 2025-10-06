@@ -50,6 +50,8 @@
                                 [item]="item"
                                 [required]="item.required"
                                 [readonly]="readonly?.[item.fullPath]"
+                                [policyId]="policyId"
+                                [blockId]="blockId"
                         ></table-field>
                     </ng-container>
 
@@ -225,6 +227,8 @@
                                     [item]="$any(listItem)"
                                     [required]="item.required"
                                     [readonly]="readonly?.[item.fullPath]"
+                                    [policyId]="policyId"
+                                    [blockId]="blockId"
                                 ></table-field>
                             </ng-container>
 
@@ -441,6 +445,7 @@
                                             [rules]="rules"
                                             [dryRun]="dryRun"
                                             [policyId]="policyId"
+                                            [blockId]="blockId"
                                             [delimiter-hide]="true"
                                             [isChildSchema]="true"
                                             [isFormForRequestBlock]="isFormForRequestBlock">
@@ -548,6 +553,7 @@
                                                             [form-model]="listItem.model"
                                                             [dryRun]="dryRun"
                                                             [policyId]="policyId"
+                                                            [blockId]="blockId"
                                                             [rules]="rules"
                                                             [private-fields]="hide"
                                                             [delimiter-hide]="true"
