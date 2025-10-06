@@ -1,13 +1,15 @@
-import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
-import { IFieldControl } from '../schema-form-model/field-form';
+import {IFieldControl, IFieldIndexControl} from '../schema-form-model/field-form';
 import { CsvService } from '../../../services/csv.service';
 import {TableDialogComponent} from '../../common/table-dialog/table-dialog.component';
 import {ArtifactService} from '../../../services/artifact.service';
 import {IndexedDbRegistryService} from '../../../services/indexed-db-registry.service';
 import { GzipService } from '../../../services/gzip.service';
 import { ITableField } from '@guardian/interfaces';
+
+import {DB_NAME, STORES_NAME} from "../../../constants";
 
 export interface ITableFieldRequired extends ITableField {
     columnKeys: string[];
@@ -19,10 +21,14 @@ export interface ITableFieldRequired extends ITableField {
     styleUrls: ['./table-field.component.scss'],
     providers: [DialogService],
 })
-export class TableFieldComponent implements OnInit, OnChanges {
-    @Input() item!: IFieldControl<any>;
+
+export class TableFieldComponent implements OnInit, OnDestroy {
+    @Input() item!: IFieldControl<any> | IFieldIndexControl<any>;
     @Input() required: boolean = false;
     @Input() readonly: boolean = false;
+    @Input() policyId?: string = '';
+    @Input() blockId: string = '';
+    @Input() delimiter: string = ',';
 
     private hydrated = false;
     public previewError?: string;
@@ -33,9 +39,6 @@ export class TableFieldComponent implements OnInit, OnChanges {
 
     private readonly PREVIEW_COLUMNS_LIMIT = 8;
     private readonly PREVIEW_ROWS_LIMIT = 4;
-
-    private readonly IDB_NAME = 'TABLES';
-    private readonly FILES_STORE = 'FILES';
 
     constructor(
         private dialog: DialogService,
@@ -95,9 +98,13 @@ export class TableFieldComponent implements OnInit, OnChanges {
 
     private ensureIdbStores(): Promise<void> {
         if (!this.storesReady) {
-            this.storesReady = this.idb.registerStore(
-                this.IDB_NAME,
-                { name: this.FILES_STORE, options: { keyPath: 'id' } }
+            this.storesReady = this.idb.registerStores(
+                DB_NAME.TABLES,
+                [
+                    { name: STORES_NAME.DRAFT_STORE, options: { keyPath: 'id' } },
+                    { name: STORES_NAME.FILES_STORE, options: { keyPath: 'id' } },
+                    { name: STORES_NAME.FILES_VIEW_STORE, options: { keyPath: 'id' } },
+                ]
             );
         }
         return this.storesReady;
@@ -197,14 +204,6 @@ export class TableFieldComponent implements OnInit, OnChanges {
         return this.readTable().rows;
     }
 
-    get options(): any {
-        try {
-            return this.item?.comment ? JSON.parse(this.item.comment) : {};
-        } catch {
-            return {};
-        }
-    }
-
     private localRawValue?: string;
 
     private isFormArrayContainer(control: any): boolean {
@@ -223,27 +222,54 @@ export class TableFieldComponent implements OnInit, OnChanges {
         return elementControl && !this.isFormArrayContainer(elementControl) ? elementControl : null;
     }
 
+    private async hasIdbRecord(idbKey: string): Promise<boolean> {
+        const key = (idbKey || '').trim();
+        if (!key) {
+            return false;
+        }
+        try {
+            const record = await this.idb.get(DB_NAME.TABLES, STORES_NAME.FILES_STORE, key);
+            return !!record;
+        } catch {
+            return false;
+        }
+    }
+
     async ngOnInit(): Promise<void> {
         await this.ensureIdbStores();
 
-        const tableValue = this.readTable();
-        const hasColumns = (tableValue.columnKeys?.length || 0) > 0;
-        const hasRows = (tableValue.rows?.length || 0) > 0;
-        const hasBack = !!((tableValue.idbKey || '').trim() || (tableValue.fileId || '').trim());
-        const hasAnyData = hasColumns || hasRows || hasBack;
+        const current = this.readTable();
+        const idbKey = (current.idbKey || '').trim();
+        const hasLocal = await this.hasIdbRecord(idbKey);
 
-        this.safePatchValue(hasAnyData ? JSON.stringify(tableValue) : null, false);
+        if (hasLocal) {
+            const hasColumns = (current.columnKeys?.length || 0) > 0;
+            const hasRows = (current.rows?.length || 0) > 0;
+            const hasAnyData = hasColumns || hasRows || !!idbKey;
+            this.safePatchValue(hasAnyData ? JSON.stringify(current) : null, false);
+        } else {
+            this.writeTable(
+                {
+                    columnKeys: [],
+                    rows: [],
+                    idbKey: undefined,
+                    sizeBytes: undefined
+                },
+                { emitEvent: false, markDirty: false }
+            );
+        }
 
         this.setPreviewLimitMessage();
-        this.hydrateFromFile();
+        this.hydrated = true;
     }
 
-    ngOnChanges(_changes: SimpleChanges): void {
-        //
+    ngOnDestroy(): void {
+        void this.clearIdbRecordIfAny();
     }
 
     private async loadCsvTextFromIdb(idbKey: string): Promise<string | null> {
-        const record: any = await this.idb.get(this.IDB_NAME, this.FILES_STORE, idbKey);
+        const record: any = await this.idb.get(DB_NAME.TABLES, STORES_NAME.FILES_STORE, idbKey);
+
 
         if (!record || !record.blob) {
             return null;
@@ -281,9 +307,8 @@ export class TableFieldComponent implements OnInit, OnChanges {
         }
 
         if (table.columnKeys.length && table.rows.length) {
-            const delimiter = this.options?.delimiter || ',';
             const file = this.csvService.toCsvFile(table.columnKeys, table.rows, 'table.csv', {
-                delimiter,
+                delimiter: this.delimiter,
                 bom: false,
                 mime: 'text/csv;charset=utf-8',
             });
@@ -318,9 +343,8 @@ export class TableFieldComponent implements OnInit, OnChanges {
         rows: Record<string, string>[],
         filename: string = 'table.csv'
     ): File {
-        const delimiter = this.options?.delimiter || ',';
         return this.csvService.toCsvFile(columnKeys, rows, filename, {
-            delimiter,
+            delimiter: this.delimiter,
             bom: false,
             mime: 'text/csv;charset=utf-8',
         });
@@ -334,7 +358,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
             const csvText = await this.loadCsvTextForEdit();
 
             if (csvText) {
-                const delimiter = this.options?.delimiter || ',';
+                const delimiter = this.delimiter;
                 const parsed = this.csvService.parseCsvToTable(csvText, delimiter);
                 parsedColumnKeys = parsed.columnKeys;
                 parsedRows = parsed.rows;
@@ -372,8 +396,6 @@ export class TableFieldComponent implements OnInit, OnChanges {
             const nextRows: Record<string, string>[] = result.rowData || parsedRows;
 
             try {
-                await this.ensureIdbStores();
-
                 const csvFile = this.buildCsvFile(nextColumnKeys, nextRows);
                 const sizeBytes = csvFile.size;
 
@@ -384,13 +406,13 @@ export class TableFieldComponent implements OnInit, OnChanges {
                 const existingIdbKey = (currentValue.idbKey || '').trim();
                 const idbKey = existingIdbKey || this.generateFreshIdbKey();
 
-                await this.idb.put(this.IDB_NAME, this.FILES_STORE, {
+                await this.idb.put(DB_NAME.TABLES, STORES_NAME.FILES_STORE, {
                     id: idbKey,
                     blob: gzippedFile,
                     originalName: csvFile.name,
                     originalSize: sizeBytes,
                     gzSize: gzippedFile.size,
-                    delimiter: this.options?.delimiter || ',',
+                    delimiter: this.delimiter,
                     createdAt: Date.now(),
                 });
 
@@ -412,17 +434,8 @@ export class TableFieldComponent implements OnInit, OnChanges {
     }
 
     private generateFreshIdbKey(): string {
-        const base =
-            (this.item?.title || this.item?.path || this.item?.name || 'table')
-                .toString()
-                .trim() || 'table';
-
-        const uid =
-            (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
-                ? (crypto as any).randomUUID()
-                : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
-        return `${base}__${uid}.csv.gz`;
+        const index = (this.item as any)?.index ?? 0;
+        return `${this.policyId}__${this.blockId}__${this.item.name}__${index}`;
     }
 
     async onFileChange(event: Event): Promise<void> {
@@ -437,9 +450,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
         this.importError = undefined;
 
         try {
-            await this.ensureIdbStores();
-
-            const delimiter = this.options?.delimiter || ',';
+            const delimiter = this.delimiter;
             const csvText = await file.text();
 
             const parsed = this.csvService.parseCsvToTable(csvText, delimiter);
@@ -465,7 +476,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
             const existingIdbKey = (currentValue.idbKey || '').trim();
             const idbKey = existingIdbKey || this.generateFreshIdbKey();
 
-            await this.idb.put(this.IDB_NAME, this.FILES_STORE, {
+            await this.idb.put(DB_NAME.TABLES, STORES_NAME.FILES_STORE, {
                 id: idbKey,
                 blob: gzippedFile,
                 originalName: file.name,
@@ -518,7 +529,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
         }
 
         try {
-            await this.idb.delete(this.IDB_NAME, this.FILES_STORE, idbKey);
+            await this.idb.delete(DB_NAME.TABLES, STORES_NAME.FILES_STORE, idbKey);
         } catch (error) {
             console.warn('[table-field] Failed to delete IDB record:', error);
         }
@@ -573,8 +584,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
             (tableValue.fileId ?? '').trim();
 
         if (!hasColumns && !hasRows && fileId) {
-            const delimiter =
-                this.options?.delimiter || ',';
+            const delimiter = this.delimiter;
 
             this.artifactService
                 .getFileBlob(fileId)
@@ -642,7 +652,7 @@ export class TableFieldComponent implements OnInit, OnChanges {
             }
 
             if (!csvText) {
-                const delimiter = this.options?.delimiter || ',';
+                const delimiter = this.delimiter;
                 const file = this.csvService.toCsvFile(
                     table.columnKeys || [],
                     table.rows || [],
