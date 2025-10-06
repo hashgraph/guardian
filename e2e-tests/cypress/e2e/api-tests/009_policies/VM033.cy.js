@@ -194,7 +194,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                     url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectBtn,
                     headers: {
                         authorization
-                    }
+                    },
+                    failOnStatusCode: false,
                 }
                 Checks.whileRequestProccessing(waitCreateProjectButton, "New project", "uiMetaData.content")
             })
@@ -239,7 +240,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                         url: API.ApiServer + API.Policies + policyId + "/" + API.NewVVB,
                         headers: {
                             authorization
-                        }
+                        },
+                        failOnStatusCode: false,
                     }
                     Checks.whileRequestProccessing(waitProjectApproveStatus, "Waiting for approval", "blocks.3.uiMetaData.title")
                 })
@@ -268,7 +270,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                         url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectGridPP2,
                         headers: {
                             authorization
-                        }
+                        },
+                        failOnStatusCode: false,
                     }
                     Checks.whileRequestProccessing(waitProjectAddStatus, "Waiting to be Added", "data.0.option.status")
                 })
@@ -303,7 +306,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                         url: API.ApiServer + API.Policies + policyId + "/" + API.VVBGrid,
                         headers: {
                             authorization
-                        }
+                        },
+                        failOnStatusCode: false,
                     }
                     Checks.whileRequestProccessing(waitVVBApproved, "APPROVED", "data.0.option.status")
                 })
@@ -338,7 +342,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                         url: API.ApiServer + API.Policies + policyId + "/" + API.ProjGridVVB,
                         headers: {
                             authorization
-                        }
+                        },
+                        failOnStatusCode: false,
                     }
                     Checks.whileRequestProccessing(waitProjValidate, "Waiting to Validate", "data.0.option.status")
                 })
@@ -376,7 +381,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ProjGridVVB2,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false,
             }
             Checks.whileRequestProccessing(waitProjectValidateStatus, "Waiting to Validate", "data.0.option.status")
             cy.request({
@@ -410,7 +416,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectGridPP2,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false,
             }
             Checks.whileRequestProccessing(waitProjectValidated, "approved_project", "data.0.type")
             cy.request({
@@ -439,7 +446,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                             url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridPP,
                             headers: {
                                 authorization
-                            }
+                            },
+                            failOnStatusCode: false,
                         }
                         Checks.whileRequestProccessing(waitReportCreating, "Waiting for Verification", "data.0.option.status")
                     })
@@ -479,7 +487,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridVVB,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false,
             }
             Checks.whileRequestProccessing(waitProjectValidateStatus, "Waiting for Verification", "data.0.option.status")
             cy.request({
@@ -508,7 +517,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                         url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridVVB,
                         headers: {
                             authorization
-                        }
+                        },
+                        failOnStatusCode: false,
                     }
                     Checks.whileRequestProccessing(waitReportIsVerifying, "Verified", "data.0.option.status")
                 })
@@ -552,7 +562,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ValidationReportsVerra,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false,
             }
             Checks.whileRequestProccessing(waitValidationReportIsCreating, "Submitted", "data.0.option.status")
             cy.request({
@@ -616,7 +627,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.VerificationReportsVerra,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false,
             }
             Checks.whileRequestProccessing(waitValidationReportIsCreating, "Submitted", "data.0.option.status")
             cy.request({
