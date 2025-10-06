@@ -83,7 +83,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 headers: {
                     authorization,
                 },
-                timeout: 18000000,
+                timeout: 1800000,
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                 policyId = response.body.at(0).id;
@@ -97,7 +97,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                         headers: {
                             authorization
                         },
-                        timeout: 18000000,
+                        timeout: 1800000,
                     })
                 })
             })
