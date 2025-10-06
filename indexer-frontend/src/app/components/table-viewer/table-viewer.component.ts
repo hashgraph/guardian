@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpResponse } from '@angular/common/http';
-import {ChangeDetectorRef, Component, Input, NgZone, OnChanges, OnDestroy, OnInit} from '@angular/core';
+import { ChangeDetectorRef, Component, Input, NgZone, OnChanges, OnDestroy } from '@angular/core';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
 import { ButtonModule } from 'primeng/button';
@@ -24,7 +23,7 @@ import {DB_NAME, STORES_NAME} from "../../constants";
     providers: [DialogService]
 })
 
-export class TableViewerComponent implements OnInit, OnChanges, OnDestroy {
+export class TableViewerComponent implements OnChanges, OnDestroy {
     @Input() public value: any;
     @Input() public title?: string;
     @Input() public analytics?: any;
@@ -102,12 +101,11 @@ export class TableViewerComponent implements OnInit, OnChanges, OnDestroy {
         return label;
     }
 
-    async ngOnInit(): Promise<void> {
-        await this.ensureIdbStores();
-    }
-
     ngOnChanges(): void {
-        this.initPreview().catch(() => {
+        (async () => {
+            await this.ensureIdbStores();
+            await this.initPreview();
+        })().catch(() => {
             //
         });
     }
@@ -408,7 +406,7 @@ export class TableViewerComponent implements OnInit, OnChanges, OnDestroy {
             }
 
             await this.withIdbRetry(() =>
-                this.idb.put(DB_NAME.TABLES, STORES_NAME.FILES_STORE, {
+                this.idb.put(DB_NAME.TABLES, STORES_NAME.FILES_VIEW_STORE, {
                     id: fileId,
                     blob: gzBlobFromGridFs,
                     originalName: `${fileId}.csv.gz`,
@@ -430,7 +428,7 @@ export class TableViewerComponent implements OnInit, OnChanges, OnDestroy {
 
     private async getFromIdb(fileId: string): Promise<{ gz: Blob } | null> {
         const record: any = await this.withIdbRetry(() =>
-            this.idb.get(DB_NAME.TABLES, STORES_NAME.FILES_STORE, fileId)
+            this.idb.get(DB_NAME.TABLES, STORES_NAME.FILES_VIEW_STORE, fileId)
         );
 
         const blob: Blob | undefined = record?.blob;
@@ -450,17 +448,6 @@ export class TableViewerComponent implements OnInit, OnChanges, OnDestroy {
 
     private mark(): void {
         this.cdr.markForCheck();
-    }
-
-    private filenameFromDisposition(resp: HttpResponse<any>): string | null {
-        const header = resp.headers.get('content-disposition') || '';
-        const m = header.match(/filename\*?=(?:UTF-8''|")?([^;"']+)/i);
-        return m && m[1] ? m[1].replace(/"/g, '').trim() : null;
-    }
-
-    private isUserCancel(err: any): boolean {
-        const name = err?.name;
-        return name === 'AbortError' || name === 'NotAllowedError' || name === 'SecurityError';
     }
 
     private getFileIdFromValue(

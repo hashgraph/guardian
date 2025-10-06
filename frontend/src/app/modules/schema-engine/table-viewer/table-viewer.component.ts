@@ -7,7 +7,7 @@ import { TableDialogComponent } from '../../common/table-dialog/table-dialog.com
 import { firstValueFrom } from 'rxjs';
 import { IndexedDbRegistryService } from '../../../services/indexed-db-registry.service';
 import { GzipService } from '../../../services/gzip.service';
-import {DB_NAME, STORES_NAME} from "../../../constants";
+import {DB_NAME, STORES_NAME} from '../../../constants';
 
 type TableRefLike = { type?: string; fileId?: string } | string | null | undefined;
 
