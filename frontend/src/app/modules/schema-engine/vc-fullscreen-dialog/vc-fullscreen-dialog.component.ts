@@ -78,6 +78,7 @@ export class VCFullscreenDialog {
             key,
             comments,
             commentsReadonly,
+            openComments,
             destroy
         } = this.dialogConfig.data;
 
@@ -117,7 +118,8 @@ export class VCFullscreenDialog {
 
         this.comments = comments !== false;
         this.commentsReadonly = commentsReadonly === true;
-
+        this.collapse = openComments !== true;
+        
         this.document = document;
         if (document) {
             if (typeof document === 'string') {

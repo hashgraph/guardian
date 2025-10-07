@@ -224,7 +224,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         });
     }
 
-    onDialog(row: any, field: any) {
+    onDialog(row: any, field: any, comments?: boolean) {
         const data = row;
         const document = row[field.name];
         if (field._block) {
@@ -259,6 +259,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     id: row.id,
                     row: row,
                     document: document,
+                    openComments: comments,
                     destroy: this._destroy$
                 }
             });
@@ -442,11 +443,11 @@ export class DocumentsSourceBlockComponent implements OnInit {
         });
     }
 
-    onButton(event: MouseEvent, row: any, field: any) {
+    onButton(event: MouseEvent, row: any, field: any, comments?: boolean) {
         event.preventDefault();
         event.stopPropagation();
         if (field.action == 'dialog') {
-            this.onDialog(row, field);
+            this.onDialog(row, field, comments);
         }
         if (field.action == 'link') {
             this.onRedirect(row, field);

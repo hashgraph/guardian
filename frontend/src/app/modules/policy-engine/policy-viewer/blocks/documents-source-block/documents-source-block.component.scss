@@ -374,6 +374,13 @@ tr.revoked td:not(.mat-column-history) {
         margin-right: 8px;
     }
 
+    .comments-button {
+        display: flex;
+        align-items: center;
+        width: 74px;
+        min-width: 74px;
+    }
+
     .comments-count {
         color: #848FA9;
         font-family: Inter;

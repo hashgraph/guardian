@@ -81,15 +81,16 @@
                                               (click)="$event.stopImmediatePropagation()">
 
                                             <div class="buttons">
-                                                <svg-icon
-                                                    *ngIf="option.action == 'dialog'"
-                                                    class="icon-btn"
-                                                    src="/assets/images/icons/chat-fill.svg"
-                                                    [svgClass]="'icon-color-grey-color-3'">
-                                                </svg-icon>
-                                                <div 
-                                                    *ngIf="option.action == 'dialog'"
-                                                    class="comments-count">{{element.comments}}</div>
+                                                <div *ngIf="option.action == 'dialog'" class="comments-button" (click)="onButton($event, element, option, true)">
+                                                    <svg-icon
+                                                        class="icon-btn"
+                                                        src="/assets/images/icons/chat-fill.svg"
+                                                        [svgClass]="'icon-color-grey-color-3'">
+                                                    </svg-icon>
+                                                    <div 
+                                                        *ngIf="option.action == 'dialog'"
+                                                        class="comments-count">{{element.comments}}</div>
+                                                </div>
                                                 <div
                                                     (click)="onButton($event, element, option)"
                                                     class="btn-field {{ option.uiClass }}">
