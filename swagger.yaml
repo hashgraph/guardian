@@ -16431,7 +16431,7 @@ paths:
       summary: Get file from ipfs.
       tags:
         - policy-comments
-  /policy-comments/{policyId}/{documentId}/discussions/{discussionId}/key:
+  /policy-comments/{policyId}/{documentId}/keys:
     get:
       description: .
       operationId: PolicyCommentsApi_getKey
@@ -16451,8 +16451,8 @@ paths:
             example: '000000000000000000000001'
             type: string
         - name: discussionId
-          required: true
-          in: path
+          required: false
+          in: query
           description: Discussion Identifier
           schema:
             example: '000000000000000000000001'
