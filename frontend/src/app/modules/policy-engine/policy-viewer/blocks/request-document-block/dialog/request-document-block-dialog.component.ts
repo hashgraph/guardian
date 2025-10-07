@@ -136,7 +136,11 @@ export class RequestDocumentBlockDialog {
     }
 
     public onClose(): void {
-        this.dialogRef.close(null);
+        if(this.dataForm.dirty) {
+            this.showUnsavedChangesDialog();
+        } else {
+            this.dialogRef.close(null);
+        }
     }
 
     public async onSubmit(draft?: boolean) {
@@ -151,7 +155,6 @@ export class RequestDocumentBlockDialog {
 
             prepareVcData(data);
             const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;
-            //remove autosave
             this.storage.delete(this.autosaveId);
 
             this.policyEngineService
@@ -171,6 +174,33 @@ export class RequestDocumentBlockDialog {
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
+                });
+        }
+    }
+
+    public showUnsavedChangesDialog() {
+        if (!this.loading) {
+                const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
+                    showHeader: false,
+                    width: '640px',
+                    styleClass: 'guardian-dialog draft-dialog',
+                    data: {
+                        header: 'Leave without saving?',
+                        text: 'You’re trying to leave the page without saving your changes. \n\nAre you sure you want to discard them and exit the creation process?',
+                        buttons: [{
+                            name: 'Close',
+                            class: 'secondary'
+                        }, {
+                            name: 'Confirm',
+                            class: 'primary'
+                        }]
+                    },
+                });
+
+                dialogOptionRef.onClose.subscribe((result: string) => {
+                    if (result == 'Confirm') {
+                        this.dialogRef.close(null);
+                    }
                 });
         }
     }
