@@ -48,6 +48,7 @@ export class RequestDocumentBlockDialog {
     private storage: DocumentAutosaveStorage;
     private sub?: Subscription;
     private readonly AUTOSAVE_INTERVAL = 120000;
+    private dataSaved: boolean = false;
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
     private buttonNames: { [id: string]: string } = {
@@ -107,6 +108,7 @@ export class RequestDocumentBlockDialog {
             .pipe(audit(ev => interval(1000)))
             .subscribe(val => {
                 this.validate();
+                this.dataSaved = false;
             });
     }
 
@@ -136,7 +138,7 @@ export class RequestDocumentBlockDialog {
     }
 
     public onClose(): void {
-        if(this.dataForm.dirty) {
+        if(this.dataForm.dirty && !this.dataSaved) {
             this.showUnsavedChangesDialog();
         } else {
             this.dialogRef.close(null);
@@ -169,6 +171,8 @@ export class RequestDocumentBlockDialog {
                         this.loading = false;
                         if (!draft) {
                             this.dialogRef.close(null);
+                        } else {
+                            this.dataSaved = true;
                         }
                     }, 1000);
                 }, (e) => {
