@@ -116,10 +116,10 @@ export class VCFullscreenDialog {
         this.exportDocument = exportDocument !== false;
         this.key = key === true;
 
-        this.comments = comments !== false;
+        this.comments = (comments !== false) && !dryRun;
         this.commentsReadonly = commentsReadonly === true;
         this.collapse = openComments !== true;
-        
+
         this.document = document;
         if (document) {
             if (typeof document === 'string') {
@@ -150,24 +150,37 @@ export class VCFullscreenDialog {
 
     private loadProfile() {
         this.loading = true;
-        forkJoin([
-            this.profileService.getProfile(),
-            this.commentsService.getPolicyCommentsCount(this.policyId, this.documentId),
-        ])
-            .pipe(takeUntil(this._destroy$))
-            .subscribe(([
-                profile,
-                count,
-            ]) => {
-                this.user = new UserPermissions(profile);
-                this.discussionData = count?.fields || {};
+        if (this.comments) {
+            forkJoin([
+                this.profileService.getProfile(),
+                this.commentsService.getPolicyCommentsCount(this.policyId, this.documentId),
+            ])
+                .pipe(takeUntil(this._destroy$))
+                .subscribe(([
+                    profile,
+                    count,
+                ]) => {
+                    this.user = new UserPermissions(profile);
+                    this.discussionData = count?.fields || {};
 
-                setTimeout(() => {
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }, (e) => {
                     this.loading = false;
-                }, 500);
-            }, (e) => {
-                this.loading = false;
-            });
+                });
+        } else {
+            this.profileService.getProfile()
+                .pipe(takeUntil(this._destroy$))
+                .subscribe((profile) => {
+                    this.user = new UserPermissions(profile);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }, (e) => {
+                    this.loading = false;
+                });
+        }
     }
 
     public onToggle(index: number) {

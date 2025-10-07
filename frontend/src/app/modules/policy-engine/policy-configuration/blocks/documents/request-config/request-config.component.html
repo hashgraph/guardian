@@ -34,11 +34,11 @@
         <td class="propRowCell cellName">Edit type</td>
         <td class="propRowCell">
             <p-dropdown
-                [(ngModel)]="properties.uiMetaData.editType"
+                [(ngModel)]="properties.editType"
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select an Edit type"
-                [options]="uiMetaDataEditType"
+                [options]="editType"
                 [appendTo]="'body'"
             >
             </p-dropdown>

@@ -982,11 +982,25 @@ export interface IPolicyDBDocument<T> {
      */
     tokenId?: string;
 
+    /**
+     * Is Draft
+     */
     draft?: boolean;
 
+    /**
+     * Draft ID
+     */
     draftId?: string;
 
+    /**
+     * Parent document
+     */
     draftRef?: string;
+
+    /**
+     * Parent message
+     */
+    startMessageId?: string;
 }
 
 /**

@@ -76,6 +76,7 @@ export class RequestDocumentBlockAddonComponent
     public readonly: boolean = false;
     public dialog: RequestDocumentBlockDialog;
     public edit: boolean;
+    public draft: boolean;
 
     constructor(
         policyEngineService: PolicyEngineService,

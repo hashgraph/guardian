@@ -60,35 +60,52 @@ form {
 
 .action-buttons {
     display: flex;
-    justify-content: flex-end;
     user-select: none;
+    justify-content: flex-start !important;
 
     &>div {
-        margin-left: 15px;
-        margin-right: 0px;
+        margin-left: 0px;
+        margin-right: 16px;
     }
 
     .dialog-button {
         display: none;
     }
+
     .dialog-button[id="cancel"] {
         display: block;
     }
+
     .dialog-button[id="submit"] {
         display: block;
+
         button {
             padding-left: 16px;
             padding-right: 16px;
         }
     }
+
     .dialog-button[id="save"] {
         display: block;
         margin-left: auto;
+        margin-right: 0px;
+
+        &[visible="false"] {
+            display: none !important;
+        }
 
         button {
             display: flex;
             gap: 8px;
         }
+    }
+
+    .dialog-button[id="save"][visible="false"]+.last-autosave {
+        right: 20px;
+    }
+
+    .dialog-button[id="save"][visible="true"]+.last-autosave {
+        right: 150px;
     }
 }
 
@@ -115,6 +132,7 @@ form {
         .dialog-button[visible="false"] {
             display: none !important;
         }
+
         .dialog-button[visible="true"] {
             display: block !important;
         }

@@ -74,7 +74,7 @@ export class SendToGuardianBlock {
      */
     private async getVCRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
         let old: any = null;
-        if(document.draft || document.draftId) {
+        if (document.draft || document.draftId) {
             old = await ref.databaseServer.getVcDocument({
                 id: { $eq: document?.draftId },
                 policyId: { $eq: ref.policyId },
@@ -176,14 +176,14 @@ export class SendToGuardianBlock {
     ): Promise<IPolicyDocument> {
         let old = await this.getVCRecord(document, operation, ref);
         if (old) {
-            if(!document.draft) {
+            if (!document.draft) {
                 delete document.draftId;
                 delete old.draftId;
             }
             old = this.mapDocument(old, document);
             old = await PolicyUtils.updateVC(ref, old, userId);
         } else {
-            if(!document.draft) {
+            if (!document.draft) {
                 delete document.draftId;
             }
             delete document.id;
@@ -399,6 +399,7 @@ export class SendToGuardianBlock {
         document.documentFields = Array.from(
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
         );
+        document.startMessageId = document.startMessageId || document.messageId;
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
         } else if (type === DocumentType.VerifiableCredential) {
@@ -457,6 +458,7 @@ export class SendToGuardianBlock {
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
             document.topicId = vcMessageResult.getTopicId();
+            document.startMessageId = document.startMessageId || document.messageId;
 
             return document;
         } catch (error) {

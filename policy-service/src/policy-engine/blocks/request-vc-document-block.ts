@@ -12,7 +12,7 @@ import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import deepEqual from 'deep-equal';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
-import {hydrateTablesInObject, loadFileTextById} from '../helpers/table-field.js';
+import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 
 /**
  * Request VC document block
@@ -145,6 +145,7 @@ export class RequestVcDocumentBlock {
             schema: { ...this._schema, fields: [], conditions: [] },
             presetSchema: options.presetSchema,
             presetFields: options.presetFields,
+            editType: options.editType || 'new',
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || [],
             data: sources && sources.length && sources[0] || null,
@@ -169,41 +170,45 @@ export class RequestVcDocumentBlock {
     /**
      * Set block data
      * @param user
-     * @param _data
+     * @param data
      */
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async setData(user: PolicyUser, _data: IPolicyDocument): Promise<any> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-
+    async setData(user: PolicyUser, data: IPolicyDocument): Promise<any> {
         if (this.state.hasOwnProperty(user.id)) {
             delete this.state[user.id].restoreData;
         }
 
         if (!user.did) {
+            const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
             throw new BlockActionError('User have no any did.', ref.blockType, ref.uuid);
         }
-        return await this.setBlockData(user, _data, ref);
+        return await this.setBlockData(user, data);
     }
 
-    private async setBlockData(user: PolicyUser, _data: IPolicyDocument, ref: IPolicyRequestBlock) {
+    private async setBlockData(user: PolicyUser, data: IPolicyDocument) {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         try {
-            const document = _data.document;
-            if (!document) {
-                throw new BlockActionError('Invalid document.', ref.blockType, ref.uuid);
+            //Prepare data
+            const document = await this.prepareDocument(data);
+            const draft = data.draft;
+            const draftId = data.draftId;
+            const editType = ref.options.editType;
+
+            //Prepare Credential Subject
+            const credentialSubject = await this.createCredentialSubject(user, document);
+
+            //Get relationships
+            const documentRef = await this.getRelationships(ref, data.ref);
+            if (documentRef) {
+                credentialSubject.ref = PolicyUtils.getSubjectId(documentRef);
+                if (!credentialSubject.ref) {
+                    throw new BlockActionError('Reference document not found.', ref.blockType, ref.uuid);
+                }
             }
 
-            const disposeTables = await hydrateTablesInObject(
-                document,
-                async (fileId: string) => loadFileTextById(ref, fileId),
-            );
-
-            PolicyUtils.setAutoCalculateFields(this._schema, document);
-
-            disposeTables();
-
-            const documentRef = await this.getRelationships(ref, _data.ref);
+            //Validate preset
             const presetCheck = await this.checkPreset(ref, document, documentRef)
             if (!presetCheck.valid) {
                 throw new BlockActionError(
@@ -213,76 +218,52 @@ export class RequestVcDocumentBlock {
                 );
             }
 
-            SchemaHelper.updateObjectContext(this._schema, document);
-
-            const _vcHelper = new VcHelper();
-            const idType = ref.options.idType;
-            const userAccountId = await PolicyUtils.getHederaAccountId(ref, user.did, user.userId);
-
-            const credentialSubject = document;
-            credentialSubject.policyId = ref.policyId;
-
-            PolicyUtils.setGuardianVersion(credentialSubject, this._schema);
-
-            const newId = await PolicyActionsUtils.generateId(ref, idType, user, user.userId);
-            if (newId) {
-                credentialSubject.id = newId;
-            }
-
-            if (documentRef) {
-                credentialSubject.ref = PolicyUtils.getSubjectId(documentRef);
-                if (!credentialSubject.ref) {
-                    throw new BlockActionError('Reference document not found.', ref.blockType, ref.uuid);
-                }
-            }
-            if (ref.dryRun) {
-                _vcHelper.addDryRunContext(credentialSubject);
-            }
-
-            if(!_data.draft) {
+            //Validate
+            if (!draft) {
+                const _vcHelper = new VcHelper();
                 const res = await _vcHelper.verifySubject(credentialSubject);
                 if (!res.ok) {
                     throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
                 }
             }
 
-            const groupContext = await PolicyUtils.getGroupContext(ref, user);
-            const uuid = await ref.components.generateUUID();
+            //Create Verifiable Credential
+            const item = await this.createVerifiableCredential(user, credentialSubject);
+            PolicyUtils.setDocumentRef(item, documentRef);
 
-            const vc = await PolicyActionsUtils.signVC(ref, credentialSubject, user.did, { uuid, group: groupContext }, user.userId);
-            let item = PolicyUtils.createVC(ref, user, vc);
-
-            const accounts = PolicyUtils.getHederaAccounts(vc, userAccountId, this._schema);
-            const schemaIRI = ref.options.schema;
-            item.type = schemaIRI;
-            item.schema = schemaIRI;
-            item.accounts = accounts;
-            item.draft = _data.draft;
-            item.draftId = _data.draftId;
-            if(_data.draft) {
+            //Update metadata
+            item.draft = draft;
+            item.draftId = draftId;
+            if (draft) {
                 item.draftRef = credentialSubject?.ref;
-            } else {
-                item = PolicyUtils.setDocumentRef(item, documentRef);
             }
-
+            if (editType === 'edit') {
+                item.startMessageId = documentRef?.startMessageId;
+            }
             const state: IPolicyEventState = { data: item };
-            if(!_data.draft) {
+
+            //Validate
+            if (!draft) {
                 const error = await this.validateDocuments(user, state);
                 if (error) {
                     throw new BlockActionError(error, ref.blockType, ref.uuid);
                 }
             }
-            if(_data.draft) {
+
+            //Trigger Events
+            if (draft) {
                 ref.triggerEvents(PolicyOutputEventType.DraftEvent, user, state);
             } else {
                 ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             }
+
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
-
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
                 documents: ExternalDocuments(item)
             }));
+
+            //Backup
             ref.backup();
             return item;
         } catch (error) {
@@ -368,5 +349,76 @@ export class RequestVcDocumentBlock {
         }
 
         return { valid: true };
+    }
+
+
+    private async prepareDocument(data: IPolicyDocument): Promise<any> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+
+        const document = data.document;
+
+        if (!document) {
+            throw new BlockActionError('Invalid document.', ref.blockType, ref.uuid);
+        }
+
+        const disposeTables = await hydrateTablesInObject(
+            document,
+            async (fileId: string) => loadFileTextById(ref, fileId),
+        );
+
+        PolicyUtils.setAutoCalculateFields(this._schema, document);
+
+        disposeTables();
+
+        return document;
+    }
+
+    private async createCredentialSubject(
+        user: PolicyUser,
+        document: any
+    ): Promise<any> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+
+        SchemaHelper.updateObjectContext(this._schema, document);
+
+        const _vcHelper = new VcHelper();
+        const idType = ref.options.idType;
+
+        const credentialSubject = document;
+        credentialSubject.policyId = ref.policyId;
+
+        PolicyUtils.setGuardianVersion(credentialSubject, this._schema);
+
+        const newId = await PolicyActionsUtils.generateId(ref, idType, user, user.userId);
+        if (newId) {
+            credentialSubject.id = newId;
+        }
+
+        if (ref.dryRun) {
+            _vcHelper.addDryRunContext(credentialSubject);
+        }
+
+        return credentialSubject;
+    }
+
+    private async createVerifiableCredential(
+        user: PolicyUser,
+        credentialSubject: any
+    ): Promise<IPolicyDocument> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+
+        const groupContext = await PolicyUtils.getGroupContext(ref, user);
+        const uuid = await ref.components.generateUUID();
+
+        const vc = await PolicyActionsUtils.signVC(ref, credentialSubject, user.did, { uuid, group: groupContext }, user.userId);
+        const item = PolicyUtils.createVC(ref, user, vc);
+
+        const userAccountId = await PolicyUtils.getHederaAccountId(ref, user.did, user.userId);
+        const accounts = PolicyUtils.getHederaAccounts(vc, userAccountId, this._schema);
+        const schemaIRI = ref.options.schema;
+        item.type = schemaIRI;
+        item.schema = schemaIRI;
+        item.accounts = accounts;
+        return item;
     }
 }

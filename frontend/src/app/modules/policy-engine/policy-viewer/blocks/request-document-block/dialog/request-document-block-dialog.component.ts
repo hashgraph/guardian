@@ -38,6 +38,7 @@ export class RequestDocumentBlockDialog {
     public get docRef() { return this.parent?.getRef(); }
     public get autosaveId() { return this.parent?.getAutosaveId(); }
     public get edit() { return this.parent?.edit; }
+    public get draft() { return this.parent?.draft; }
 
     public buttons: any = [];
     public rules: DocumentValidators;
@@ -92,6 +93,7 @@ export class RequestDocumentBlockDialog {
                 this.lastSavedAt = new Date();
             }
         });
+        this.buttonNames['submit'] = (this.edit && !this.draft) ? 'Validate & Update' : 'Validate & Create';
     }
 
     ngOnDestroy(): void {
@@ -136,7 +138,7 @@ export class RequestDocumentBlockDialog {
     }
 
     public onClose(): void {
-        if(this.dataForm.dirty) {
+        if (this.dataForm.dirty) {
             this.showUnsavedChangesDialog();
         } else {
             this.dialogRef.close(null);
@@ -180,28 +182,28 @@ export class RequestDocumentBlockDialog {
 
     public showUnsavedChangesDialog() {
         if (!this.loading) {
-                const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
-                    showHeader: false,
-                    width: '640px',
-                    styleClass: 'guardian-dialog draft-dialog',
-                    data: {
-                        header: 'Leave without saving?',
-                        text: 'You’re trying to leave the page without saving your changes. \n\nAre you sure you want to discard them and exit the creation process?',
-                        buttons: [{
-                            name: 'Close',
-                            class: 'secondary'
-                        }, {
-                            name: 'Confirm',
-                            class: 'primary'
-                        }]
-                    },
-                });
+            const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'guardian-dialog draft-dialog',
+                data: {
+                    header: 'Leave without saving?',
+                    text: 'You’re trying to leave the page without saving your changes. \n\nAre you sure you want to discard them and exit the creation process?',
+                    buttons: [{
+                        name: 'Close',
+                        class: 'secondary'
+                    }, {
+                        name: 'Confirm',
+                        class: 'primary'
+                    }]
+                },
+            });
 
-                dialogOptionRef.onClose.subscribe((result: string) => {
-                    if (result == 'Confirm') {
-                        this.dialogRef.close(null);
-                    }
-                });
+            dialogOptionRef.onClose.subscribe((result: string) => {
+                if (result == 'Confirm') {
+                    this.dialogRef.close(null);
+                }
+            });
         }
     }
 

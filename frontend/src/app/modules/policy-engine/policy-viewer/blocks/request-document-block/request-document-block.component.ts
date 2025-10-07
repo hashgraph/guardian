@@ -14,12 +14,10 @@ import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject, Subscription, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { MergeUtils } from 'src/app/utils';
 import { ToastrService } from 'ngx-toastr';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { DocumentAutosaveStorage } from '../../../structures';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
-import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { PolicyStatus } from '@guardian/interfaces';
 
@@ -32,6 +30,7 @@ interface IRequestDocumentData {
     restoreData: any;
     data: any;
     draft: boolean;
+    editType: 'new' | 'edit';
     uiMetaData: {
         type: string;
         title: string;
@@ -41,7 +40,6 @@ interface IRequestDocumentData {
         buttonClass: string;
         dialogContent: string;
         dialogClass: string;
-        editType: 'new' | 'edit';
         hideWhenDiscontinued?: boolean;
     }
 }
@@ -169,7 +167,7 @@ export class RequestDocumentBlockComponent
         const autosaveId = this.getAutosaveId();
         const autosaveDocument = await this.storage.load(autosaveId);
 
-        if(autosaveDocument) {
+        if (autosaveDocument) {
             this.showAutosaveDialog(autosaveDocument);
         }
     }
@@ -185,7 +183,7 @@ export class RequestDocumentBlockComponent
             const active = data.active;
             this.ref = row;
             this.type = uiMetaData.type;
-            this.edit = uiMetaData.editType === 'edit';
+            this.edit = data.editType === 'edit';
             this.schema = new Schema(schema);
             this.hideFields = {};
             this.draft = isDraft;
@@ -303,7 +301,7 @@ export class RequestDocumentBlockComponent
 
             prepareVcData(data);
             this.policyEngineService
-            .setBlockData(this.id, this.policyId, {
+                .setBlockData(this.id, this.policyId, {
                     document: data,
                     ref: this.ref,
                     draft,
@@ -332,17 +330,17 @@ export class RequestDocumentBlockComponent
     public preset(document: any) {
         this.presetDocument = document;
         this.changeDetectorRef.detectChanges();
-        if(this.dialog) {
+        if (this.dialog) {
             this.dialog.detectChanges();
         }
     }
 
     public getRef() {
-        if(!this.ref) {
+        if (!this.ref) {
             return null;
         }
 
-        if(this.ref.draft) {
+        if (this.ref.draft) {
             return this.ref.draftRef;
         }
 
@@ -357,7 +355,7 @@ export class RequestDocumentBlockComponent
         const autosaveId = this.getAutosaveId();
         const autosaveDocument = await this.storage.load(autosaveId);
 
-        if(autosaveDocument) {
+        if (autosaveDocument) {
             this.showAutosaveDialog(autosaveDocument);
         } else {
             this.onDialog();
@@ -372,8 +370,12 @@ export class RequestDocumentBlockComponent
             this.presetDocument = null;
         }
 
-        if(this.edit && this.draft) {
-            this.draftRestore();
+        if (this.edit) {
+            if (this.draft) {
+                this.draftRestore();
+            } else {
+                this.updateRestore();
+            }
         }
 
         this.showDocumentDialog();
@@ -387,7 +389,7 @@ export class RequestDocumentBlockComponent
             data: this
         });
 
-        dialogRef && dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef && dialogRef.onClose.subscribe(async (result) => { });
     }
 
     private showAutosaveDialog(autosaveDocument: string, callback?: any) {
@@ -427,7 +429,7 @@ export class RequestDocumentBlockComponent
                         this.showDocumentDialog();
                     }
                 }
-                else if(result === 'No' && this.type === 'dialog') {
+                else if (result === 'No' && this.type === 'dialog') {
                     this.onDialog();
                 }
 
@@ -446,11 +448,25 @@ export class RequestDocumentBlockComponent
             const draftDocument = Array.isArray(
                 this.ref.document?.credentialSubject
             )
-            ? this.ref.document.credentialSubject[0]
-            : this.ref.document?.credentialSubject;
+                ? this.ref.document.credentialSubject[0]
+                : this.ref.document?.credentialSubject;
 
             if (draftDocument) {
                 this.preset(draftDocument);
+            }
+        }
+    }
+
+    public updateRestore() {
+        if (this.ref) {
+            const document = Array.isArray(
+                this.ref.document?.credentialSubject
+            )
+                ? this.ref.document.credentialSubject[0]
+                : this.ref.document?.credentialSubject;
+
+            if (document) {
+                this.preset(document);
             }
         }
     }

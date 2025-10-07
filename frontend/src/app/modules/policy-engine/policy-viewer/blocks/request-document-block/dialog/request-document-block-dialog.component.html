@@ -64,7 +64,7 @@
                         [blockId]="id"
                         [rules]="rulesResults"
                         [isFormForRequestBlock]="true"
-                        [saveShown]="true"
+                        [saveShown]="!edit || draft"
                         [comesFromDialog]="true"
                         [showButtons]="false"
                         cancelText = "Cancel"
@@ -92,9 +92,9 @@
             <button
                 (click)="config.fn()"
                 [disabled]="ifDisabledBtn(config)"
-                class="guardian-button guardian-button-{{config.type}}">
+                class="guardian-button guardian-button-{{config.type}}"
+            >
                 <svg-icon *ngIf="config.iconPath" src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
-
                 {{config.text}}
             </button>
         </div>

@@ -89,6 +89,10 @@
                 right: 400px;
                 overflow: auto;
 
+                &[comments="false"] {
+                    right: 0px !important;
+                }
+
                 .document-viewer {
                     &::ng-deep>form {
                         position: absolute;

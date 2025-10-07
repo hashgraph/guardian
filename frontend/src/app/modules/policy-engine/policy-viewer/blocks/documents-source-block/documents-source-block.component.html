@@ -81,7 +81,7 @@
                                               (click)="$event.stopImmediatePropagation()">
 
                                             <div class="buttons">
-                                                <div *ngIf="option.action == 'dialog'" class="comments-button" (click)="onButton($event, element, option, true)">
+                                                <div *ngIf="option.action == 'dialog' && !dryRun" class="comments-button" (click)="onButton($event, element, option, true)">
                                                     <svg-icon
                                                         class="icon-btn"
                                                         src="/assets/images/icons/chat-fill.svg"

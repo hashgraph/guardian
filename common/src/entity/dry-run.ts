@@ -121,6 +121,12 @@ export class DryRun extends BaseEntity {
     messageId?: any;
 
     /**
+     * Parent message id
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    startMessageId?: any;
+
+    /**
      * Topic id
      */
     @Property({ nullable: true, type: 'unknown' })

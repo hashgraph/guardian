@@ -154,6 +154,12 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     messageId?: string;
 
     /**
+     * Parent message
+     */
+    @Property({ nullable: true })
+    startMessageId?: string;
+
+    /**
      * Hedera Hash
      */
     @Property({ nullable: true })
