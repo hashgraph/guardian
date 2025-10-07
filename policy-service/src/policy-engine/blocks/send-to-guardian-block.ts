@@ -74,7 +74,14 @@ export class SendToGuardianBlock {
      */
     private async getVCRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
         let old: any = null;
-        if (document.hash) {
+        if(document.draft || document.draftId) {
+            old = await ref.databaseServer.getVcDocument({
+                id: { $eq: document?.draftId },
+                policyId: { $eq: ref.policyId },
+                draft: { $eq: true }
+            });
+        }
+        else if (document.hash) {
             old = await ref.databaseServer.getVcDocument({
                 policyId: { $eq: ref.policyId },
                 hash: { $eq: document.hash },
@@ -169,9 +176,16 @@ export class SendToGuardianBlock {
     ): Promise<IPolicyDocument> {
         let old = await this.getVCRecord(document, operation, ref);
         if (old) {
+            if(!document.draft) {
+                delete document.draftId;
+                delete old.draftId;
+            }
             old = this.mapDocument(old, document);
             old = await PolicyUtils.updateVC(ref, old, userId);
         } else {
+            if(!document.draft) {
+                delete document.draftId;
+            }
             delete document.id;
             delete document._id;
             old = await PolicyUtils.saveVC(ref, document, userId);

@@ -751,6 +751,23 @@ export class DryRun extends BaseEntity {
     _contextFileId?: ObjectId;
 
     /**
+     * is draft
+     */
+    @Property({ nullable: true })
+    draft?: boolean;
+
+    /**
+     * draft id
+     */
+    @Property({ nullable: true })
+    draftId?: string;
+
+    /**
+     * draft ref
+     */
+    @Property({ nullable: true })
+    draftRef?: string;
+    /**
      * old file id
      */
     @Property({ persist: false, nullable: true })

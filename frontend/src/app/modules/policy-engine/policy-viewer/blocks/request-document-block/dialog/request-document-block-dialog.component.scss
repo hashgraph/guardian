@@ -28,6 +28,19 @@ form {
 
 .guardian-loading {
     border-radius: 0 !important;
+    background: #fff;
+    opacity: 0.5;
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
 }
 
 .dialog-body {
@@ -63,16 +76,28 @@ form {
     }
     .dialog-button[id="submit"] {
         display: block;
+        button {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
     }
     .dialog-button[id="save"] {
         display: block;
-        margin-right: auto;
+        margin-left: auto;
 
         button {
             display: flex;
             gap: 8px;
         }
     }
+}
+
+.last-autosave {
+    position: absolute;
+    right: 150px;
+    bottom: 42px;
+    font-size: 14px;
+    color: #8E8E8E;
 }
 
 .close-icon-color {

@@ -6,12 +6,15 @@ import { RequestDocumentBlockAddonComponent } from '../../request-document-block
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { audit, takeUntil } from 'rxjs/operators';
-import { interval, Subject } from 'rxjs';
+import { interval, Subject, Subscription } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { DocumentValidators } from '@guardian/interfaces';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { ToastrService } from 'ngx-toastr';
+import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
+import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structures';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { autosaveValueChanged, getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -33,19 +36,26 @@ export class RequestDocumentBlockDialog {
     public get policyId() { return this.parent?.policyId; }
     public get disabled() { return this.parent?.disabled; }
     public get docRef() { return this.parent?.getRef(); }
+    public get autosaveId() { return this.parent?.getAutosaveId(); }
+    public get edit() { return this.parent?.edit; }
 
     public buttons: any = [];
     public rules: DocumentValidators;
     public dataForm: UntypedFormGroup;
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public rulesResults: any;
+    public lastSavedAt?: Date;
+    private storage: DocumentAutosaveStorage;
+    private sub?: Subscription;
+    private readonly AUTOSAVE_INTERVAL = 120000;
 
+    public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
     private buttonNames: { [id: string]: string } = {
         save: "Save",
         cancel: "Cancel",
         prev: "Previous",
         next: "Next",
-        submit: "Create"
+        submit: "Validate & Create"
     }
 
     constructor(
@@ -57,10 +67,12 @@ export class RequestDocumentBlockDialog {
         private fb: UntypedFormBuilder,
         private toastr: ToastrService,
         private changeDetectorRef: ChangeDetectorRef,
+        private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
+        this.storage = new DocumentAutosaveStorage(indexedDb);
         if (this.parent) {
             this.parent.dialog = this;
         }
@@ -70,11 +82,22 @@ export class RequestDocumentBlockDialog {
         this.loading = true;
         this.loadRules();
         this.initForm(this.dataForm);
+        this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(async () => {
+            const data = this.dataForm.getRawValue();
+            const savedData = await this.storage.load(this.autosaveId);
+            const saveNeeded = await autosaveValueChanged(data, savedData);
+
+            if (saveNeeded) {
+                this.storage.save(this.autosaveId, data);
+                this.lastSavedAt = new Date();
+            }
+        });
     }
 
     ngOnDestroy(): void {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
+        this.sub?.unsubscribe();
     }
 
     public initForm($event: any) {
@@ -113,7 +136,11 @@ export class RequestDocumentBlockDialog {
     }
 
     public onClose(): void {
-        this.dialogRef.close(null);
+        if(this.dataForm.dirty) {
+            this.showUnsavedChangesDialog();
+        } else {
+            this.dialogRef.close(null);
+        }
     }
 
     public async onSubmit(draft?: boolean) {
@@ -127,36 +154,53 @@ export class RequestDocumentBlockDialog {
             await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
 
             prepareVcData(data);
+            const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;
+            this.storage.delete(this.autosaveId);
+
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, {
                     document: data,
                     ref: this.docRef,
-                    draft,
+                    draft: draft,
+                    draftId: draftId,
                 })
                 .subscribe(() => {
                     setTimeout(() => {
                         this.loading = false;
-                        if (draft && this.parent instanceof RequestDocumentBlockComponent) {
-                            this.parent.draftDocument = {
-                                policyId: this.parent.policyId,
-                                user: this.parent.user.did,
-                                blockId: this.parent.id,
-                                data
-                            };
-
-                            this.toastr.success('The draft version of the document was saved successfully', '', {
-                                timeOut: 3000,
-                                closeButton: true,
-                                positionClass: 'toast-bottom-right',
-                                enableHtml: true,
-                            });
+                        if (!draft) {
+                            this.dialogRef.close(null);
                         }
-
-                        this.dialogRef.close(null);
                     }, 1000);
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
+                });
+        }
+    }
+
+    public showUnsavedChangesDialog() {
+        if (!this.loading) {
+                const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
+                    showHeader: false,
+                    width: '640px',
+                    styleClass: 'guardian-dialog draft-dialog',
+                    data: {
+                        header: 'Leave without saving?',
+                        text: 'You’re trying to leave the page without saving your changes. \n\nAre you sure you want to discard them and exit the creation process?',
+                        buttons: [{
+                            name: 'Close',
+                            class: 'secondary'
+                        }, {
+                            name: 'Confirm',
+                            class: 'primary'
+                        }]
+                    },
+                });
+
+                dialogOptionRef.onClose.subscribe((result: string) => {
+                    if (result == 'Confirm') {
+                        this.dialogRef.close(null);
+                    }
                 });
         }
     }
@@ -181,32 +225,7 @@ export class RequestDocumentBlockDialog {
 
     public handleSaveBtnEvent($event: any, data: RequestDocumentBlockDialog) {
         if (!this.loading) {
-            if (this.parent instanceof RequestDocumentBlockComponent && this.parent.draftDocument) {
-                const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
-                    showHeader: false,
-                    width: '640px',
-                    styleClass: 'guardian-dialog draft-dialog',
-                    data: {
-                        header: 'Overwrite Old Draft',
-                        text: 'You already have a saved draft. Are you sure you want to overwrite it? \n Please note that saving a new draft will permanently delete the previous one.',
-                        buttons: [{
-                            name: 'Cancel',
-                            class: 'secondary'
-                        }, {
-                            name: 'Save Draft',
-                            class: 'primary'
-                        }]
-                    },
-                });
-
-                dialogOptionRef.onClose.subscribe((result: string) => {
-                    if (result == 'Save Draft') {
-                        data.onSubmit(true);
-                    }
-                });
-            } else {
-                data.onSubmit(true);
-            }
+            data.onSubmit(true);
         }
     }
 

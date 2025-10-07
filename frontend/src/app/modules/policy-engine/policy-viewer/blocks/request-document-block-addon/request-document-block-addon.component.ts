@@ -75,6 +75,7 @@ export class RequestDocumentBlockAddonComponent
     public hideFields: any;
     public readonly: boolean = false;
     public dialog: RequestDocumentBlockDialog;
+    public edit: boolean;
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -219,6 +220,10 @@ export class RequestDocumentBlockAddonComponent
 
     public getRef() {
         return this.ref.id;
+    }
+
+    public getAutosaveId() {
+        return this.ref?.id ?? `${this.policyId}_${this.id}_${this?.user?.id}`;
     }
 
     public onDialog() {
