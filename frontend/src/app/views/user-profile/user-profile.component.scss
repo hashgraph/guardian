@@ -746,7 +746,7 @@ a[disabled="true"] {
         width: 24px;
         height: 24px;
         border-radius: 24px;
-        background: var(--color-primary, #0681ee);
+        background: var(--color-primary, #0031ff);
         color: white;
     }
 
@@ -760,7 +760,7 @@ a[disabled="true"] {
         font-style: normal;
         font-weight: 500;
         line-height: normal;
-        color: var(--color-primary, #0681ee);
+        color: var(--color-primary, #0031ff);
     }
 }
 
@@ -1027,8 +1027,8 @@ mat-radio-button {
 }
 
 .primary-color {
-    fill: var(--color-primary, #0681ee);
-    color: var(--color-primary, #0681ee);
+    fill: var(--color-primary, #0031ff);
+    color: var(--color-primary, #0031ff);
 }
 
 .example-full-width {

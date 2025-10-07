@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, Input, NgZone } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, NgZone, OnChanges, OnDestroy } from '@angular/core';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
 import { ButtonModule } from 'primeng/button';
@@ -13,6 +12,8 @@ import { TableDialogComponent } from '../../dialogs/table-dialog/table-dialog.co
 import { IndexedDbRegistryService } from '@services/indexed-db-registry.service';
 import { GzipService } from '@services/gzip.service';
 
+import {DB_NAME, STORES_NAME} from "../../constants";
+
 @Component({
     selector: 'app-table-viewer',
     standalone: true,
@@ -21,10 +22,12 @@ import { GzipService } from '@services/gzip.service';
     styleUrls: ['./table-viewer.component.scss'],
     providers: [DialogService]
 })
-export class TableViewerComponent {
+
+export class TableViewerComponent implements OnChanges, OnDestroy {
     @Input() public value: any;
     @Input() public title?: string;
     @Input() public analytics?: any;
+    @Input() delimiter: string = ',';
 
     public isLoading = false;
     public isDownloading = false;
@@ -37,9 +40,6 @@ export class TableViewerComponent {
     public previewRowData: Record<string, string>[] = [];
 
     private readonly PREVIEW_LIMIT = 10 * 1024 * 1024;
-
-    private readonly IDB_NAME = 'TABLES';
-    private readonly FILES_STORE = 'FILES';
 
     private storesReady?: Promise<void>;
     private idbQueue: Promise<void> = Promise.resolve();
@@ -102,9 +102,16 @@ export class TableViewerComponent {
     }
 
     ngOnChanges(): void {
-        this.initPreview().catch(() => {
+        (async () => {
+            await this.ensureIdbStores();
+            await this.initPreview();
+        })().catch(() => {
             //
         });
+    }
+
+    async ngOnDestroy(): Promise<void> {
+        await this.idb.clearStore(DB_NAME.TABLES, STORES_NAME.FILES_VIEW_STORE);
     }
 
     public openDialog(): void {
@@ -116,8 +123,6 @@ export class TableViewerComponent {
         this.mark();
 
         (async () => {
-            await this.ensureIdbStores();
-
             let cached = await this.getFromIdb(id);
             if (!cached) {
                 const resp = await firstValueFrom(this.artifacts.getFileBlob(id));
@@ -183,8 +188,6 @@ export class TableViewerComponent {
         this.mark();
 
         (async () => {
-            await this.ensureIdbStores();
-
             let cached = await this.getFromIdb(fileId);
 
             if (!cached) {
@@ -266,8 +269,6 @@ export class TableViewerComponent {
             return;
         }
 
-        await this.ensureIdbStores();
-
         try {
             let cached = await this.getFromIdb(fileId);
             if (!cached) {
@@ -320,14 +321,18 @@ export class TableViewerComponent {
         }
     }
 
-    private async ensureIdbStores(): Promise<void> {
+    private ensureIdbStores(): Promise<void> {
         if (!this.storesReady) {
-            this.storesReady = this.idb.registerStore(
-                this.IDB_NAME,
-                { name: this.FILES_STORE, options: { keyPath: 'id' } }
+            this.storesReady = this.idb.registerStores(
+                DB_NAME.TABLES,
+                [
+                    { name: STORES_NAME.DRAFT_STORE, options: { keyPath: 'id' } },
+                    { name: STORES_NAME.FILES_STORE, options: { keyPath: 'id' } },
+                    { name: STORES_NAME.FILES_VIEW_STORE, options: { keyPath: 'id' } },
+                ]
             );
         }
-        await this.storesReady;
+        return this.storesReady;
     }
 
     private wait(ms: number): Promise<void> {
@@ -367,7 +372,6 @@ export class TableViewerComponent {
     private async withIdbRetry<T>(fn: () => Promise<T>, attempts: number = 3): Promise<T> {
         for (let i = 0; i < attempts; i += 1) {
             try {
-                await this.ensureIdbStores();
                 return await this.queueIdb(fn);
             } catch (e) {
                 if (this.isIdbClosingError(e) && i < attempts - 1) {
@@ -404,13 +408,13 @@ export class TableViewerComponent {
             }
 
             await this.withIdbRetry(() =>
-                this.idb.put(this.IDB_NAME, this.FILES_STORE, {
+                this.idb.put(DB_NAME.TABLES, STORES_NAME.FILES_VIEW_STORE, {
                     id: fileId,
                     blob: gzBlobFromGridFs,
                     originalName: `${fileId}.csv.gz`,
                     originalSize: undefined,
                     gzSize: gzBlobFromGridFs.size,
-                    delimiter: ',',
+                    delimiter: this.delimiter,
                     createdAt: Date.now()
                 })
             );
@@ -426,7 +430,7 @@ export class TableViewerComponent {
 
     private async getFromIdb(fileId: string): Promise<{ gz: Blob } | null> {
         const record: any = await this.withIdbRetry(() =>
-            this.idb.get(this.IDB_NAME, this.FILES_STORE, fileId)
+            this.idb.get(DB_NAME.TABLES, STORES_NAME.FILES_VIEW_STORE, fileId)
         );
 
         const blob: Blob | undefined = record?.blob;
@@ -446,17 +450,6 @@ export class TableViewerComponent {
 
     private mark(): void {
         this.cdr.markForCheck();
-    }
-
-    private filenameFromDisposition(resp: HttpResponse<any>): string | null {
-        const header = resp.headers.get('content-disposition') || '';
-        const m = header.match(/filename\*?=(?:UTF-8''|")?([^;"']+)/i);
-        return m && m[1] ? m[1].replace(/"/g, '').trim() : null;
-    }
-
-    private isUserCancel(err: any): boolean {
-        const name = err?.name;
-        return name === 'AbortError' || name === 'NotAllowedError' || name === 'SecurityError';
     }
 
     private getFileIdFromValue(

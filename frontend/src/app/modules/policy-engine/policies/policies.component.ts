@@ -859,6 +859,19 @@ export class PoliciesComponent implements OnInit {
                 this.loading = false;
             }
         );
+
+        const databaseName = DB_NAME.TABLES;
+        const storeNames = [
+            STORES_NAME.FILES_STORE,
+            STORES_NAME.DRAFT_STORE
+        ];
+        const keyPrefix = `${element.id}__`;
+
+        this.indexedDb.clearByKeyPrefixAcrossStores(
+            databaseName,
+            storeNames,
+            keyPrefix
+        );
     }
 
     private setVersion(element: any) {
@@ -896,6 +909,19 @@ export class PoliciesComponent implements OnInit {
             (e) => {
                 this.loading = false;
             }
+        );
+
+        const databaseName = DB_NAME.TABLES;
+        const storeNames = [
+            STORES_NAME.FILES_STORE,
+            STORES_NAME.DRAFT_STORE
+        ];
+        const keyPrefix = `${element.id}__`;
+
+        this.indexedDb.clearByKeyPrefixAcrossStores(
+            databaseName,
+            storeNames,
+            keyPrefix
         );
     }
 

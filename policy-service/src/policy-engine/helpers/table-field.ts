@@ -258,22 +258,63 @@ export async function hydrateTablesInObject(
 
     const disposers: (() => void)[] = [];
 
-    const visit = async (node: unknown): Promise<void> => {
-        const isNodeDefined = node !== null && node !== undefined;
-        if (!isNodeDefined) {
+    const ensureTableHydrated = async (table: ITableField & { fileId: string }) => {
+        const hasColumns = !!(table as any).columnKeys;
+        const hasRows = !!(table as any).rows;
+        if (hasColumns && hasRows) {
             return;
         }
 
-        const isArrayNode = Array.isArray(node);
-        if (isArrayNode) {
-            for (const element of node as unknown[]) {
-                await visit(element);
+        const csvText = await loadFileText(table.fileId);
+        const parsed = parseCsvToTable(csvText, delimiter);
+
+        defineHidden(table, 'columnKeys', parsed.columnKeys);
+        defineHidden(table, 'rows', parsed.rows);
+
+        disposers.push(() => {
+            delete (table as any).columnKeys;
+            delete (table as any).rows;
+        });
+    };
+
+    const processCandidate = async (
+        currentValue: unknown,
+        setValue: (v: unknown) => void
+    ): Promise<void> => {
+        const parsed = parseIfJson(currentValue);
+
+        if (isTableWithFileId(parsed)) {
+            const tableObject = parsed as ITableField & { fileId: string };
+            const replaced = currentValue !== tableObject;
+
+            if (replaced) {
+                setValue(tableObject);
+                disposers.push(() => setValue(currentValue));
+            }
+
+            await ensureTableHydrated(tableObject);
+            await visit(tableObject);
+            return;
+        }
+
+        await visit(parsed);
+    };
+
+    const visit = async (node: unknown): Promise<void> => {
+        if (node === null || node === undefined) {
+            return;
+        }
+
+        if (Array.isArray(node)) {
+            const arrayNode = node as unknown[];
+            for (let index = 0; index < arrayNode.length; index++) {
+                const original = arrayNode[index];
+                await processCandidate(original, (v) => { arrayNode[index] = v; });
             }
             return;
         }
 
-        const isObjectNode = isPlainObject(node);
-        if (!isObjectNode) {
+        if (!isPlainObject(node)) {
             return;
         }
 
@@ -281,37 +322,8 @@ export async function hydrateTablesInObject(
         const keys = Object.keys(objectNode);
 
         for (const key of keys) {
-            const originalValue = objectNode[key];
-            const parsedValue = parseIfJson(originalValue);
-
-            const isTableNeedingHydration = isTableWithFileId(parsedValue);
-            if (isTableNeedingHydration) {
-                const tableObject = parsedValue as ITableField & { fileId: string };
-                const shouldRestoreOriginal = originalValue !== tableObject;
-
-                if (shouldRestoreOriginal) {
-                    objectNode[key] = tableObject;
-                    disposers.push(() => {
-                        objectNode[key] = originalValue;
-                    });
-                }
-
-                const csvText = await loadFileText(tableObject.fileId);
-                const parsedTable = parseCsvToTable(csvText, delimiter);
-
-                defineHidden(tableObject, 'columnKeys', parsedTable.columnKeys);
-                defineHidden(tableObject, 'rows', parsedTable.rows);
-
-                disposers.push(() => {
-                    delete (tableObject as any).columnKeys;
-                    delete (tableObject as any).rows;
-                });
-
-                await visit(tableObject);
-                continue;
-            }
-
-            await visit(originalValue);
+            const original = objectNode[key];
+            await processCandidate(original, (v) => { objectNode[key] = v; });
         }
     };
 

@@ -277,7 +277,7 @@ export class RequestDocumentBlockComponent
             const data = this.dataForm.getRawValue();
             this.loading = true;
 
-            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun);
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
 
             prepareVcData(data);
             this.policyEngineService
@@ -404,9 +404,11 @@ export class RequestDocumentBlockComponent
             },
         });
 
-        dialogOptionRef.onClose.subscribe((result: string) => {
+        dialogOptionRef.onClose.subscribe(async (result: string) => {
             if (result != 'Cancel') {
                 if (result === 'Continue with Draft') {
+                    await this.tablePersist.restoreTablesFromDraft(this.draftDocument?.data);
+
                     this.draftRestore();
                     this.savepointFlow.setSkipOnce();
                 }

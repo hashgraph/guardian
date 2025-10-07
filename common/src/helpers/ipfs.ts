@@ -120,4 +120,31 @@ export class IPFS {
         }
         return res;
     }
+
+    public static async addFileDirect(file: ArrayBuffer, options?: IPFSOptions): Promise<{ cid: string, url: string }> {
+        const res = await new Workers().addRetryableTaskDirect({
+            type: WorkerTaskType.ADD_FILE,
+            data: {
+                payload: {
+                    content: Buffer.from(file).toString('base64'),
+                    userId: options?.userId
+                }
+            }
+        }, {
+            priority: 10,
+            attempts: 3,
+            registerCallback: true,
+            interception: options?.interception,
+            userId: options?.userId
+        });
+
+        if (!res) {
+            throw new Error('Add File: Invalid response');
+        }
+
+        return {
+            cid: res,
+            url: IPFS.IPFS_PROTOCOL + res
+        };
+    }
 }

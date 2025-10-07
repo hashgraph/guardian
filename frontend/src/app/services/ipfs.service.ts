@@ -21,6 +21,14 @@ export class IPFSService {
         });
     }
 
+    public addFileDirect(file: any): Observable<any> {
+        return this.http.post<string>(`${this.url}/file/direct`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream',
+            },
+        });
+    }
+
     public addFileDryRun(file: any, policyId: string): Observable<any> {
         return this.http.post<string>(`${this.url}/file/dry-run/${policyId}`, file, {
             headers: {
