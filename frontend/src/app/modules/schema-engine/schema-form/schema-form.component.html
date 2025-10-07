@@ -636,5 +636,8 @@
                 {{ config.text }}
             </button>
         </ng-container>
+        <div *ngIf="lastSavedAt" class="last-autosave">
+            {{ minutesAgo$ | async }}
+        </div>
     </div>
 </form>
