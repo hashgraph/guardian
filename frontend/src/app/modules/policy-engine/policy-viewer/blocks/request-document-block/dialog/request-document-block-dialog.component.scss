@@ -76,6 +76,10 @@ form {
     }
     .dialog-button[id="submit"] {
         display: block;
+        button {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
     }
     .dialog-button[id="save"] {
         display: block;

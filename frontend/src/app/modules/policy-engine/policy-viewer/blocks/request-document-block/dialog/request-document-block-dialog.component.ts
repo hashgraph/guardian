@@ -55,7 +55,7 @@ export class RequestDocumentBlockDialog {
         cancel: "Cancel",
         prev: "Previous",
         next: "Next",
-        submit: "Create"
+        submit: "Validate & Create"
     }
 
     constructor(
