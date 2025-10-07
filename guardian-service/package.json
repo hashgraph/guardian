@@ -44,7 +44,7 @@
         "@types/express": "^5.0.1",
         "@types/fs-extra": "^9.0.12",
         "@types/jszip": "^3.4.1",
-        "@types/node": "^22.15.19",
+        "@types/node": "^24.7.0",
         "chai": "4.3.4",
         "gulp": "^5.0.0",
         "gulp-rename": "^2.0.0",
