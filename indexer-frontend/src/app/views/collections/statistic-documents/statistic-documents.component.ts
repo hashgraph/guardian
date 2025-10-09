@@ -54,12 +54,42 @@ import { HederaType } from '@components/hedera-explorer/hedera-explorer.componen
 export class StatisticDocumentsComponent extends BaseGridComponent {
     columns: any[] = [
         {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'analytics.schemaName',
+            title: 'grid.schema',
+            width: '350px',
+        },
+        {
+            type: ColumnType.CHIP,
+            field: 'status',
+            title: 'grid.status',
+            width: '100px',
+            sort: true,
+        },
+        {
             type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
-            width: '250px',
+            width: '350px',
             sort: true,
             hederaType: HederaType.TRANSACTION,
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'topicId',
+            title: 'grid.topic_id',
+            width: '250px',
+            link: {
+                field: 'topicId',
+                url: '/topics',
+            },
         },
         {
             type: ColumnType.TEXT,
@@ -74,42 +104,6 @@ export class StatisticDocumentsComponent extends BaseGridComponent {
                 return formattedDate;
             }
         },
-        {
-            type: ColumnType.TEXT,
-            field: 'topicId',
-            title: 'grid.topic_id',
-            width: '150px',
-            link: {
-                field: 'topicId',
-                url: '/topics',
-            },
-        },
-        {
-            type: ColumnType.CHIP,
-            field: 'status',
-            title: 'grid.status',
-            width: '100px',
-            sort: true,
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'analytics.schemaName',
-            title: 'grid.schema',
-            width: '200px',
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'options.issuer',
-            title: 'grid.issuer',
-            width: '650px',
-        },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
-        },
     ];
 
     constructor(
@@ -119,6 +113,10 @@ export class StatisticDocumentsComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(
             new Filter({
                 label: 'grid.filter.topic_id',
