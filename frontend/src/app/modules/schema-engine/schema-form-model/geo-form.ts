@@ -6,11 +6,13 @@ import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
 export class GeoForm {
     private readonly form: UntypedFormControl;
     private presetDocument: any;
+    private availableTypes: any;
     private errorsFieldName = 'geoJsonFieldErrors';
 
     constructor(form: UntypedFormControl) {
         this.form = form;
         this.presetDocument = null;
+        this.availableTypes = null;
     }
 
     public setData(data: {
@@ -19,6 +21,10 @@ export class GeoForm {
         if (data.preset) {
             this.presetDocument = data.preset;
         }
+    }
+
+    public setAvailableTypes(types: GeoJsonType[]) {
+        this.availableTypes = types;
     }
 
     public build() {
@@ -261,6 +267,11 @@ export class GeoForm {
 
     private validateGeometryCore(type: string, coords: any): { valid: boolean; errors: string[] } {
         let errors: string[] = [];
+
+        if (Array.isArray(this.availableTypes) && !this.availableTypes.includes(type)) {
+            return { valid: false, errors: [`geometry type "${type}" is not available`] };
+        }
+
         switch (type) {
             case GeoJsonType.POINT:
                 errors = this.validatePoint(coords);
