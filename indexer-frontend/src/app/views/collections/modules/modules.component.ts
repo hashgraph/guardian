@@ -54,12 +54,35 @@ import { HederaType } from '@components/hedera-explorer/hedera-explorer.componen
 export class ModulesComponent extends BaseGridComponent {
     columns: any[] = [
         {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'options.name',
+            title: 'grid.name',
+            width: '650px',
+        },
+        {
             type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
             width: '250px',
             sort: true,
             hederaType: HederaType.TRANSACTION,
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'topicId',
+            title: 'grid.topic_id',
+            width: '150px',
+            link: {
+                field: 'topicId',
+                url: '/topics',
+            },
         },
         {
             type: ColumnType.TEXT,
@@ -74,35 +97,6 @@ export class ModulesComponent extends BaseGridComponent {
                 return formattedDate;
             }
         },
-        {
-            type: ColumnType.TEXT,
-            field: 'topicId',
-            title: 'grid.topic_id',
-            width: '150px',
-            link: {
-                field: 'topicId',
-                url: '/topics',
-            },
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'options.owner',
-            title: 'grid.owner',
-            width: '550px',
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'options.name',
-            title: 'grid.name',
-            width: '200px',
-        },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
-        },
     ];
 
     constructor(
@@ -112,6 +106,10 @@ export class ModulesComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(
             new Filter({
                 label: 'grid.filter.topic_id',

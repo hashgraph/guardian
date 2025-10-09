@@ -54,25 +54,37 @@ import { HederaType } from '@components/hedera-explorer/hedera-explorer.componen
 export class RolesComponent extends BaseGridComponent {
     columns: any[] = [
         {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'options.role',
+            title: 'grid.role',
+            width: '250px',
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'options.group',
+            title: 'grid.group',
+            width: '200px',
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'analytics.sr',
+            title: 'grid.sr',
+            width: '200px',
+        },
+        {
             type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
             width: '250px',
             sort: true,
             hederaType: HederaType.TRANSACTION,
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'consensusTimestamp',
-            title: 'grid.date',
-            width: '250px',
-            sort: true,
-            formatValue: (value: any) => {
-                const fixedTimestamp = Math.floor(value * 1000);
-                value = new Date(fixedTimestamp);
-                const formattedDate = value.toLocaleString();
-                return formattedDate;
-            }
         },
         {
             type: ColumnType.TEXT,
@@ -86,35 +98,17 @@ export class RolesComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.TEXT,
-            field: 'options.group',
-            title: 'grid.group',
+            field: 'consensusTimestamp',
+            title: 'grid.date',
             width: '250px',
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'options.role',
-            title: 'grid.role',
-            width: '250px',
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'options.issuer',
-            title: 'grid.issuer',
-            width: '650px',
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'analytics.sr',
-            title: 'grid.sr',
-            width: '250px',
-        },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
-        },
+            sort: true,
+            formatValue: (value: any) => {
+                const fixedTimestamp = Math.floor(value * 1000);
+                value = new Date(fixedTimestamp);
+                const formattedDate = value.toLocaleString();
+                return formattedDate;
+            }
+        }
     ];
 
     constructor(
@@ -124,6 +118,10 @@ export class RolesComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(
             new Filter({
                 label: 'grid.filter.topic_id',
