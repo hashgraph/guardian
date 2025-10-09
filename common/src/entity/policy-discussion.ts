@@ -1,6 +1,6 @@
 import { BaseEntity } from '../models/index.js';
 import { GenerateUUIDv4, IVC } from '@guardian/interfaces';
-import { Entity, Property, BeforeCreate, OnLoad, BeforeUpdate, AfterDelete, AfterUpdate, AfterCreate, Unique } from '@mikro-orm/core';
+import { Entity, Property, BeforeCreate, OnLoad, BeforeUpdate, AfterDelete, AfterUpdate, AfterCreate, Unique, Index } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 
@@ -9,6 +9,10 @@ import { ObjectId } from '@mikro-orm/mongodb';
  */
 @Entity()
 @Unique({ name: 'unique_uuid_idx', properties: ['targetId', 'uuid'] })
+@Index({ name: 'policyId_index', properties: ['policyId'] })
+@Index({ name: 'targetId_index', properties: ['targetId'] })
+@Index({ name: 'relationshipIds_index', properties: ['relationshipIds'] })
+@Index({ name: 'field_index', properties: ['field'] })
 export class PolicyDiscussion extends BaseEntity {
     /**
      * ID

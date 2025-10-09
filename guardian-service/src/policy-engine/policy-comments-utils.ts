@@ -125,64 +125,108 @@ export class PolicyCommentsUtils {
         }
     }
 
-    public static async getCommonDiscussion(
-        policy: Policy,
+    public static async getRelationships(
         document: VcDocument,
-        audit: boolean
-    ) {
-        try {
-            const commonDiscussion = await DatabaseServer.getPolicyDiscussion({
-                policyId: policy.id,
-                targetId: document.id,
-                system: true
-            })
-            if (commonDiscussion || audit) {
-                return commonDiscussion;
+        relationships?: string[]
+    ): Promise<VcDocument[]> {
+        const ids = new Set<string>();
+        ids.add(document.id?.toString());
+        if (relationships) {
+            for (const relationship of relationships) {
+                ids.add(relationship);
             }
-
-            const users = new Users();
-            const user = await users.getUserById(document.owner, null);
-            const discussion: any = await PolicyCommentsUtils.createDiscussion(user, policy, document, {
-                name: 'Common',
-                privacy: 'public',
-                relationships: [document.id]
-            }, true);
-
-            const messageKey: string = PolicyCommentsUtils.generateKey();
-
-            const userAccount = await users.getHederaAccount(user.did, user.id);
-            const topic = await PolicyCommentsUtils.getTopic(policy);
-            const message = new DiscussionMessage(MessageAction.CreateDiscussion);
-            message.setDocument(discussion);
-            const messageStatus = await (new MessageServer({
-                operatorId: userAccount.hederaAccountId,
-                operatorKey: userAccount.hederaAccountKey,
-                signOptions: userAccount.signOptions,
-                encryptKey: messageKey,
-                dryRun: PolicyCommentsUtils.isDryRun(policy)
-            }))
-                .setTopicObject(topic)
-                .sendMessage(message, {
-                    sendToIPFS: true,
-                    memo: null,
-                    userId: user.id,
-                    interception: null
-                });
-            discussion.messageId = messageStatus.getId();
-
-            const row = await DatabaseServer.createPolicyDiscussion(discussion);
-
-            await PolicyCommentsUtils.saveKey(policy.owner, row.id, messageKey);
-
-            return row;
-        } catch (error) {
-            return await DatabaseServer.getPolicyDiscussion({
-                policyId: policy.id,
-                targetId: document.id,
-                system: true
-            })
         }
+        const _ids = Array.from(ids).map((e) => DatabaseServer.dbID(e));
+        const documents = await DatabaseServer.getVCs({
+            policyId: document.policyId,
+            _id: { $in: _ids },
+        });
+        return documents;
     }
+
+    public static async getTargets(
+        policyId: string,
+        documentId: string
+    ): Promise<string[]> {
+        const target = await DatabaseServer.getVCById(documentId);
+        if (!target || target.policyId !== policyId) {
+            throw new Error('Document not found.');
+        }
+
+        const ids = new Set<string>();
+        ids.add(target.id?.toString());
+
+        if (target.startMessageId) {
+            const documents = await DatabaseServer.getVCs({
+                policyId: policyId,
+                startMessageId: target.startMessageId
+            }, { fields: ['_id', 'id', 'messageId'] } as any);
+            for (const item of documents) {
+                ids.add(item.id?.toString());
+            }
+        }
+
+        return Array.from(ids);
+    }
+
+    // public static async getCommonDiscussion(
+    //     policy: Policy,
+    //     document: VcDocument,
+    //     audit: boolean
+    // ) {
+    //     try {
+    //         const commonDiscussion = await DatabaseServer.getPolicyDiscussion({
+    //             policyId: policy.id,
+    //             targetId: document.id,
+    //             system: true
+    //         })
+    //         if (commonDiscussion || audit) {
+    //             return commonDiscussion;
+    //         }
+
+    //         const users = new Users();
+    //         const user = await users.getUserById(document.owner, null);
+    //         const discussion: any = await PolicyCommentsUtils.createDiscussion(user, policy, document, {
+    //             name: 'Common',
+    //             privacy: 'public',
+    //             relationships: [document.id]
+    //         }, true);
+
+    //         const messageKey: string = PolicyCommentsUtils.generateKey();
+
+    //         const userAccount = await users.getHederaAccount(user.did, user.id);
+    //         const topic = await PolicyCommentsUtils.getTopic(policy);
+    //         const message = new DiscussionMessage(MessageAction.CreateDiscussion);
+    //         message.setDocument(discussion);
+    //         const messageStatus = await (new MessageServer({
+    //             operatorId: userAccount.hederaAccountId,
+    //             operatorKey: userAccount.hederaAccountKey,
+    //             signOptions: userAccount.signOptions,
+    //             encryptKey: messageKey,
+    //             dryRun: PolicyCommentsUtils.isDryRun(policy)
+    //         }))
+    //             .setTopicObject(topic)
+    //             .sendMessage(message, {
+    //                 sendToIPFS: true,
+    //                 memo: null,
+    //                 userId: user.id,
+    //                 interception: null
+    //             });
+    //         discussion.messageId = messageStatus.getId();
+
+    //         const row = await DatabaseServer.createPolicyDiscussion(discussion);
+
+    //         await PolicyCommentsUtils.saveKey(policy.owner, row.id, messageKey);
+
+    //         return row;
+    //     } catch (error) {
+    //         return await DatabaseServer.getPolicyDiscussion({
+    //             policyId: policy.id,
+    //             targetId: document.id,
+    //             system: true
+    //         })
+    //     }
+    // }
 
     /**
      * Check access
@@ -317,16 +361,12 @@ export class PolicyCommentsUtils {
         const privacy = data?.privacy || 'public';
         const roles = privacy === 'roles' && Array.isArray(data?.roles) ? data?.roles : [];
         const users = privacy === 'users' && Array.isArray(data?.users) ? data?.users : [];
+        const documents = await this.getRelationships(document, data?.relationships);
 
-        const relationshipIds = data?.relationships || [];
-        if (!relationshipIds.includes(document.id)) {
-            relationshipIds.push(document.id);
-        }
-        const documents = await DatabaseServer.getVCs({
-            _id: { $in: relationshipIds.map((e) => DatabaseServer.dbID(e)) },
-            messageId: { $exists: true }
-        })
-        const relationships = documents.map((d) => d.messageId);
+        const relationshipIds = documents.map((d) => d.id);
+        const relationships = documents
+            .filter((d) => d.messageId)
+            .map((d) => d.messageId);
 
         const vcObject = await PolicyCommentsUtils.createDiscussionVC(user, policy, document, relationships, data);
         const vcDocument = vcObject.getDocument();
@@ -340,8 +380,8 @@ export class PolicyCommentsUtils {
             owner: user.did,
             creator: user.did,
             policyId: policy.id,
-            targetId: document.id,
             target: document.messageId,
+            targetId: document.id,
             system,
             count: 0,
             name,
@@ -480,6 +520,8 @@ export class PolicyCommentsUtils {
             field: discussion.field,
             target: document.messageId,
             targetId: document.id,
+            relationships: discussion.relationships,
+            relationshipIds: discussion.relationships,
             discussionId: discussion.id,
             discussionMessageId: discussion.messageId,
             isDocumentOwner: user.did === document.owner,

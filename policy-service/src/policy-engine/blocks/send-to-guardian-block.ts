@@ -501,6 +501,7 @@ export class SendToGuardianBlock {
             vcMessage.setEntityType(ref);
             vcMessage.setOption(document, ref);
             vcMessage.setUser(owner.roleMessage);
+            vcMessage.setRef(document.startMessageId);
             message = vcMessage;
             docObject = vc;
         } else if (type === DocumentType.VerifiablePresentation) {

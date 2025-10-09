@@ -278,6 +278,10 @@ export interface VcMessageBody extends MessageBody {
      */
     tag: string;
     /**
+     * Start Message
+     */
+    startMessage: string;
+    /**
      * Entity Type
      */
     entityType: string;

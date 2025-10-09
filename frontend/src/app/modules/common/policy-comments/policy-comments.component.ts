@@ -22,6 +22,8 @@ interface DiscussionItem {
     id: string;
     name: string;
     owner: string;
+    targetId: string;
+    historyIds: string[];
     system: string;
     count: number;
     parent?: string;
@@ -40,6 +42,7 @@ interface DiscussionItem {
         type: string,
         label: string
     }[];
+    _hidden?: boolean;
 }
 
 interface FieldItem {
@@ -55,6 +58,12 @@ interface TextItem {
     tag: string;
     label?: string;
     tooltip?: any;
+}
+
+interface DiscussionGroup {
+    name: string,
+    collapsed: boolean,
+    items: DiscussionItem[]
 }
 
 /**
@@ -98,6 +107,7 @@ export class PolicyComments {
     public schemas: Schema[] = [];
 
     public discussions: DiscussionItem[] = [];
+    public discussionGroups: DiscussionGroup[] = [];
     public currentDiscussion: DiscussionItem | null | undefined = null;
     public searchField?: FieldItem = undefined;
     public searchDiscussion: string = '';
@@ -242,7 +252,7 @@ export class PolicyComments {
         type: 'load' | 'update' | 'more',
         target?: string
     ) {
-        if (!this.policyId || !this.documentId) {
+        if (!this.policyId || !this.currentDiscussion) {
             this.loading = false;
             this.data.setData([], 0);
             return;
@@ -254,8 +264,8 @@ export class PolicyComments {
         this.commentsService
             .getPolicyComments(
                 this.policyId,
-                this.documentId,
-                this.currentDiscussion?.id,
+                this.currentDiscussion.targetId,
+                this.currentDiscussion.id,
                 filter,
                 this.readonly
             )
@@ -306,7 +316,7 @@ export class PolicyComments {
     }
 
     public createComment() {
-        if (!this.policyId || !this.documentId) {
+        if (!this.policyId || !this.currentDiscussion) {
             this.loading = false;
             return;
         }
@@ -322,8 +332,8 @@ export class PolicyComments {
         this.commentsService
             .createComment(
                 this.policyId,
-                this.documentId,
-                this.currentDiscussion?.id,
+                this.currentDiscussion.targetId,
+                this.currentDiscussion.id,
                 data
             ).subscribe((response) => {
                 this.textMessage = '';
@@ -482,6 +492,34 @@ export class PolicyComments {
                     discussion._users.push(item);
                 }
             }
+        }
+
+        const currentGroup: DiscussionGroup = { name: 'Current', items: [], collapsed: false };
+        const relatedGroup: DiscussionGroup = { name: 'Related Documents', items: [], collapsed: false };
+        const historyGroup: DiscussionGroup = { name: 'Previous version', items: [], collapsed: false };
+        for (const discussion of this.discussions) {
+            if (discussion.targetId === this.documentId) {
+                currentGroup.items.push(discussion);
+                discussion._hidden = currentGroup.collapsed;
+            } else if (
+                Array.isArray(discussion.historyIds) &&
+                discussion.historyIds.includes(this.documentId)
+            ) {
+                historyGroup.items.push(discussion);
+                discussion._hidden = historyGroup.collapsed;
+            } else {
+                relatedGroup.items.push(discussion);
+                discussion._hidden = relatedGroup.collapsed;
+            }
+        }
+        if (this.discussions.length) {
+            this.discussionGroups = [currentGroup];
+        }
+        if (relatedGroup.items.length) {
+            this.discussionGroups.push(relatedGroup);
+        }
+        if (historyGroup.items.length) {
+            this.discussionGroups.push(historyGroup);
         }
     }
 
@@ -711,13 +749,16 @@ export class PolicyComments {
     }
 
     private addFiles(files: File[]) {
+        if (!this.policyId || !this.currentDiscussion) {
+            return;
+        }
         const results: AttachedFile[] = [];
         if (files?.length) {
             for (const file of files) {
                 const result = AttachedFile.fromFile(
                     this.policyId,
-                    this.documentId,
-                    this.currentDiscussion?.id || '',
+                    this.currentDiscussion.targetId,
+                    this.currentDiscussion.id,
                     file
                 );
                 results.push(result);
@@ -869,6 +910,13 @@ export class PolicyComments {
             this.loadComments('load');
         } else {
             this.loadDiscussions();
+        }
+    }
+
+    public onOpenGroup(group: DiscussionGroup) {
+        group.collapsed = !group.collapsed;
+        for (const item of group.items) {
+            item._hidden = group.collapsed;
         }
     }
 

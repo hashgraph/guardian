@@ -278,6 +278,43 @@
             top: 0;
             right: 0;
             bottom: 0;
+            padding-top: 10px;
+        }
+
+        .discussion-group-header {
+            display: flex;
+            flex-direction: row;
+            height: 40px;
+            padding: 0px 16px;
+            cursor: pointer;
+            align-items: center;
+
+            .discussion-group-name {
+                text-transform: uppercase;
+                height: 24px;
+                line-height: 24px;
+                font-family: Inter;
+                font-weight: 400;
+                font-size: 12px;
+                color: #848FA9;
+            }
+
+            .discussion-group-count {
+                margin-left: 8px;
+                height: 24px;
+                line-height: 24px;
+                font-family: Inter;
+                font-weight: 400;
+                font-size: 12px;
+                color: #848FA9;
+            }
+
+            .discussion-group-icon {
+                width: 24px;
+                height: 24px;
+                padding-top: 1px;
+                margin-left: auto;
+            }
         }
 
         .full-discussion {
@@ -287,6 +324,10 @@
             overflow: hidden;
             flex-direction: row;
             cursor: pointer;
+
+            &[hidden="true"] {
+                display: none !important;
+            }
 
             // &:nth-child(6n+1) {
             //     .discussion-icon {

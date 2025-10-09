@@ -473,10 +473,21 @@ export class ComponentsService {
      * Get document comments
      * @param documentId
      */
-    public async getPolicyCommentsCount(documentId: string): Promise<number> {
+    public async getPolicyCommentsCount(target: any): Promise<number> {
+        const ids = new Set<string>();
+        ids.add(target.id?.toString());
+        if (target.startMessageId) {
+            const documents = await DatabaseServer.getVCs({
+                policyId: this.policyId,
+                startMessageId: target.startMessageId
+            }, { fields: ['_id', 'id', 'messageId'] } as any);
+            for (const item of documents) {
+                ids.add(item.id?.toString());
+            }
+        }
         return await DatabaseServer.getPolicyCommentsCount({
             policyId: this.policyId,
-            targetId: documentId
+            targetId: { $in: Array.from(ids) }
         });
     }
 }

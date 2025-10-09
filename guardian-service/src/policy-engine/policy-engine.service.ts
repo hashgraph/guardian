@@ -3552,15 +3552,21 @@ export class PolicyEngineService {
                         throw new Error('Document not found.');
                     }
 
+                    const targets = await PolicyCommentsUtils.getTargets(policyId, documentId);
                     const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
 
                     const filters: any = {
                         policyId,
-                        relationshipIds: documentId,
-                        system: false,
+                        $and: [{
+                            $or: [{
+                                relationshipIds: documentId,
+                            }, {
+                                targetId: { $in: targets }
+                            }]
+                        }]
                     }
                     if (!params.audit) {
-                        filters.$and = [{
+                        filters.$and.push({
                             $or: [{
                                 privacy: 'public'
                             }, {
@@ -3572,7 +3578,7 @@ export class PolicyEngineService {
                             }, {
                                 owner: user.did
                             }]
-                        }]
+                        });
                     }
                     if (params?.search) {
                         filters.$and.push({
@@ -3584,42 +3590,46 @@ export class PolicyEngineService {
                         });
                     }
 
-                    if (params?.field) {
-                        const comments = await DatabaseServer.getPolicyComments({
-                            policyId,
-                            targetId: documentId,
-                            fields: params.field
-                        }, {
-                            fields: [
-                                'discussionId',
-                                'fields'
-                            ] as any
-                        });
-                        const discussionMap = new Set<string>();
-                        for (const comment of comments) {
-                            discussionMap.add(comment.discussionId);
-                        }
-                        const discussionIds = Array
-                            .from(discussionMap)
-                            .map((id) => DatabaseServer.dbID(id));
-                        filters.$and.push({
-                            $or: [{
-                                field: params.field
-                            }, {
-                                _id: { $in: discussionIds }
-                            }]
-                        });
-                    }
+                    // if (params?.field) {
+                    //     const comments = await DatabaseServer.getPolicyComments({
+                    //         policyId,
+                    //         relationshipIds: documentId,
+                    //         fields: params.field
+                    //     }, {
+                    //         fields: [
+                    //             'discussionId',
+                    //             'fields'
+                    //         ] as any
+                    //     });
+                    //     const discussionMap = new Set<string>();
+                    //     for (const comment of comments) {
+                    //         discussionMap.add(comment.discussionId);
+                    //     }
+                    //     const discussionIds = Array
+                    //         .from(discussionMap)
+                    //         .map((id) => DatabaseServer.dbID(id));
+                    //     filters.$and.push({
+                    //         $or: [{
+                    //             field: params.field
+                    //         }, {
+                    //             _id: { $in: discussionIds }
+                    //         }]
+                    //     });
+                    // }
 
                     const otherOptions: any = {
                         orderBy: { updateDate: -1 }
                     };
 
                     const discussions = await DatabaseServer.getPolicyDiscussions(filters, otherOptions);
-                    const commonDiscussion = await PolicyCommentsUtils.getCommonDiscussion(policy, vc, params.audit);
-                    if (commonDiscussion) {
-                        discussions.unshift(commonDiscussion);
+                    for (const discussion of discussions) {
+                        (discussion as any).historyIds = targets;
                     }
+                    // const commonDiscussion = await PolicyCommentsUtils.getCommonDiscussion(policy, vc, params.audit);
+                    // if (commonDiscussion) {
+                    //     discussions = discussions.filter((d)=>d.id === commonDiscussion.id);
+                    //     discussions.unshift(commonDiscussion);
+                    // }
 
                     return new MessageResponse(discussions);
                 } catch (error) {
@@ -3761,7 +3771,6 @@ export class PolicyEngineService {
                     const row = await DatabaseServer.createPolicyComment(comment);
                     discussion.count = await DatabaseServer.getPolicyCommentsCount({
                         policyId,
-                        targetId: documentId,
                         discussionId: discussion.id,
                     })
                     await DatabaseServer.updatePolicyDiscussion(discussion);
@@ -3818,7 +3827,6 @@ export class PolicyEngineService {
 
                     const filters: any = {
                         policyId,
-                        targetId: documentId,
                         discussionId
                     };
                     if (params?.search) {
@@ -3872,27 +3880,34 @@ export class PolicyEngineService {
                         throw new Error('Document not found.');
                     }
 
+                    const targets = await PolicyCommentsUtils.getTargets(policyId, documentId);
                     const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
                     const filters: any = {
                         policyId,
-                        relationshipIds: documentId,
-                        $or: [{
-                            privacy: 'public'
+                        $and: [{
+                            $or: [{
+                                relationshipIds: documentId,
+                            }, {
+                                targetId: { $in: targets }
+                            }]
                         }, {
-                            privacy: 'roles',
-                            roles: userRole
-                        }, {
-                            privacy: 'users',
-                            users: user.did
-                        }, {
-                            owner: user.did
+                            $or: [{
+                                privacy: 'public'
+                            }, {
+                                privacy: 'roles',
+                                roles: userRole
+                            }, {
+                                privacy: 'users',
+                                users: user.did
+                            }, {
+                                owner: user.did
+                            }]
                         }]
                     };
                     const discussions = await DatabaseServer.getPolicyDiscussions(filters);
                     const discussionIds = discussions.map((d) => d._id.toString());
                     const comments = await DatabaseServer.getPolicyComments({
                         policyId,
-                        targetId: documentId,
                         discussionId: { $in: discussionIds }
                     }, {
                         fields: [
@@ -4061,6 +4076,8 @@ export class PolicyEngineService {
                         throw new Error('Document not found.');
                     }
 
+                    const targets = await PolicyCommentsUtils.getTargets(policyId, documentId);
+
                     let discussions: PolicyDiscussion[];
                     if (discussionId) {
                         const discussion = await DatabaseServer.getPolicyDiscussion({
@@ -4077,7 +4094,7 @@ export class PolicyEngineService {
                     } else {
                         discussions = await DatabaseServer.getPolicyDiscussions({
                             policyId,
-                            targetId: documentId
+                            targetId: { $in: targets }
                         });
                     }
 

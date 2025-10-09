@@ -160,7 +160,9 @@ form {
 
             .form-field-boolean {
                 position: relative;
-                height: auto;
+                height: 40px;
+                width: 100%;
+                padding: 8px 4px;
             }
 
             .form-field-postfix {

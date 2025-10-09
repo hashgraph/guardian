@@ -234,34 +234,67 @@
         </div>
         <div class="discussions">
             <div class="full-discussions">
-                <div *ngFor="let discussion of discussions" class="full-discussion" (click)="onOpen(discussion)">
-                    <div class="discussion-privacy">
-                        <div *ngIf="!discussion.privacy"></div>
-                        <div *ngIf="discussion.privacy === 'public'"></div>
-                        <div *ngIf="discussion.privacy === 'roles'"></div>
-                        <div *ngIf="discussion.privacy === 'users'"></div>
+                <div *ngIf="!discussionGroups.length" class="not-exist">
+                    <div class="not-exist-icon">
+                        <svg-icon
+                            src="/assets/images/icons/chat-1.svg"
+                            svgClass="icon-color-disabled"></svg-icon>
                     </div>
-                    <div class="discussion-icon">
-                        <svg-icon 
-                            *ngIf="discussion._icon"
-                            src="/assets/images/icons/{{discussion._icon}}.svg" 
-                            svgClass="icon-color-primary"></svg-icon>
-                        <div *ngIf="discussion.count" class="discussion-count">
-                            {{discussion.count}}
+                    <div class="not-exist-text">There are no discussions added yet.</div>
+                </div>
+                <div 
+                    *ngFor="let group of discussionGroups" 
+                    class="discussion-group" 
+                    (click)="onOpenGroup(group)"
+                >
+                    <div class="discussion-group-header" [attr.collapsed]="group.collapsed" >
+                        <div class="discussion-group-name">{{group.name}}</div>
+                        <div class="discussion-group-count">({{group.items.length}})</div>
+                        <div class="discussion-group-icon">
+                            <svg-icon 
+                                *ngIf="group.collapsed"
+                                src="/assets/images/icons/collapse-down.svg"
+                                svgClass="icon-color-disabled"></svg-icon>
+                             <svg-icon 
+                                *ngIf="!group.collapsed"
+                                src="/assets/images/icons/collapse-up.svg"
+                                svgClass="icon-color-disabled"></svg-icon>
                         </div>
                     </div>
-                    <div class="discussion-body">
-                        <div class="discussion-name">
-                            {{discussion.name}}
+                    <div 
+                        *ngFor="let discussion of group.items" 
+                        class="full-discussion" 
+                        (click)="onOpen(discussion)"
+                        [attr.hidden]="discussion._hidden"
+                    >
+                        <div class="discussion-privacy">
+                            <div *ngIf="!discussion.privacy"></div>
+                            <div *ngIf="discussion.privacy === 'public'"></div>
+                            <div *ngIf="discussion.privacy === 'roles'"></div>
+                            <div *ngIf="discussion.privacy === 'users'"></div>
                         </div>
-                        <div *ngIf="discussion.field" class="discussion-field">
-                            <div class="discussion-field-icon">
-                                <svg-icon 
-                                    class="svg-icon-16" 
-                                    src="/assets/images/icons/16/hashtag.svg" 
-                                    svgClass="icon-color-primary"></svg-icon>
+                        <div class="discussion-icon">
+                            <svg-icon 
+                                *ngIf="discussion._icon"
+                                src="/assets/images/icons/{{discussion._icon}}.svg" 
+                                svgClass="icon-color-primary"></svg-icon>
+                            <div *ngIf="discussion.count" class="discussion-count">
+                                {{discussion.count}}
                             </div>
-                            <div class="discussion-field-name">{{discussion.fieldName}}</div> 
+                        </div>
+                        <div class="discussion-body">
+                            <div class="discussion-name">
+                                {{discussion.name}}
+                            </div>
+                            <div *ngIf="discussion.field" class="discussion-field">
+                                <div class="discussion-field-icon">
+                                    <svg-icon 
+                                        class="svg-icon-16" 
+                                        src="/assets/images/icons/16/hashtag.svg" 
+                                        svgClass="icon-color-primary"></svg-icon>
+                                </div>
+                                <div class="discussion-field-name">{{discussion.fieldName}}</div> 
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -495,13 +528,15 @@
     </div>
     <div class="discussions">
         <div class="collapse-discussions">
-            <div *ngFor="let discussion of discussions" class="collapse-discussion" (click)="onOpen(discussion)">
-                <svg-icon 
-                    *ngIf="discussion._icon"
-                    src="/assets/images/icons/{{discussion._icon}}.svg" 
-                    svgClass="icon-color-primary"></svg-icon>
-                <div *ngIf="discussion.count" class="discussion-count">
-                    {{discussion.count}}
+            <div *ngFor="let group of discussionGroups" >
+                <div *ngFor="let discussion of group.items" class="collapse-discussion" (click)="onOpen(discussion)">
+                    <svg-icon 
+                        *ngIf="discussion._icon"
+                        src="/assets/images/icons/{{discussion._icon}}.svg" 
+                        svgClass="icon-color-primary"></svg-icon>
+                    <div *ngIf="discussion.count" class="discussion-count">
+                        {{discussion.count}}
+                    </div>
                 </div>
             </div>
         </div>

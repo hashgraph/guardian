@@ -1,6 +1,6 @@
 import { BaseEntity } from '../models/index.js';
 import { GenerateUUIDv4, IVC } from '@guardian/interfaces';
-import { Entity, Property, BeforeCreate, OnLoad, BeforeUpdate, AfterDelete, AfterUpdate, AfterCreate } from '@mikro-orm/core';
+import { Entity, Property, BeforeCreate, OnLoad, BeforeUpdate, AfterDelete, AfterUpdate, AfterCreate, Index } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 
@@ -8,6 +8,11 @@ import { ObjectId } from '@mikro-orm/mongodb';
  * PolicyComment collection
  */
 @Entity()
+@Index({ name: 'policyId_index', properties: ['policyId'] })
+@Index({ name: 'targetId_index', properties: ['targetId'] })
+@Index({ name: 'relationshipIds_index', properties: ['relationshipIds'] })
+@Index({ name: 'field_index', properties: ['field'] })
+@Index({ name: 'fields_index', properties: ['fields'] })
 export class PolicyComment extends BaseEntity {
     /**
      * ID
@@ -125,6 +130,23 @@ export class PolicyComment extends BaseEntity {
         index: true
     })
     field?: string;
+
+    /**
+     * Relationships
+     */
+    @Property({
+        nullable: true
+    })
+    relationships?: string[];
+
+    /**
+     * Relationships
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    relationshipIds?: string[];
 
     /**
      * Message id
