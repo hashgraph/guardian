@@ -268,7 +268,7 @@ export class GeoForm {
     private validateGeometryCore(type: string, coords: any): { valid: boolean; errors: string[] } {
         let errors: string[] = [];
 
-        if (Array.isArray(this.availableTypes) && !this.availableTypes.includes(type)) {
+        if (Array.isArray(this.availableTypes) && this.availableTypes.length && !this.availableTypes.includes(type)) {
             return { valid: false, errors: [`geometry type "${type}" is not available`] };
         }
 
