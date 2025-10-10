@@ -322,9 +322,12 @@ export class SchemaImport {
     private async saveSchemas(
         schemas: ISchema[],
         step: INotificationStep,
-        userId: string | null
+        userId: string | null,
+        schemasIds?: string[],
     ): Promise<void> {
         step.start();
+        const schemasByIds = await DatabaseServer.getSchemasByIds(schemasIds);
+
         let index = 0;
         for (const file of schemas) {
             const _step = step.addStep(`${file.name || '-'}`);
@@ -346,9 +349,49 @@ export class SchemaImport {
                 schemaObject.status = SchemaStatus.ERROR;
             }
 
-            const row = await DatabaseServer.saveSchema(schemaObject);
+            const schemaForUpdate = schemasByIds.find(({ name }) => name === schemaObject.name);
+            if (schemaForUpdate) {
+                const {
+                    id,
+                    _id,
+                    iri,
+                    uuid,
+                    creator,
+                    owner,
+                    topicId,
+                    contextURL
+                } = schemaForUpdate;
+                // {
+                //     ...schemaObject,
+                //     id,
+                //     _id,
+                //     iri,
+                //     uuid,
+                //     creator,
+                //     owner,
+                //     topicId,
+                //     contextURL,
+                // }
+                schemaObject.id = id;
+                schemaObject._id = _id;
+                schemaObject.iri = iri;
+                schemaObject.uuid = uuid;
+                schemaObject.creator = creator;
+                schemaObject.owner = owner;
+                schemaObject.topicId = topicId;
+                schemaObject.contextURL = contextURL;
+                schemaObject.context = '';
+// 
+                const { context, ...other } = schemaObject;
+                // console.log(other, 'other');
 
-            this.schemasMapping[index].newID = row.id.toString();
+                const row = await DatabaseServer.updateSchema(schemaForUpdate.id, schemaObject as unknown as any);
+                this.schemasMapping[index].newID = id;
+            } else {
+                const row = await DatabaseServer.saveSchema(schemaObject);
+                this.schemasMapping[index].newID = row.id.toString();
+            }
+
             _step.complete();
             index++;
         }
@@ -406,7 +449,8 @@ export class SchemaImport {
         components: ISchema[],
         user: IOwner,
         options: ImportSchemaOptions,
-        userId: string | null
+        userId: string | null,
+        schemasIds?: string[],
     ): Promise<ImportSchemaResult> {
         const { topicId, category } = options;
 
@@ -452,7 +496,8 @@ export class SchemaImport {
         await this.saveSchemas(
             components,
             this.notifier.getStep(STEP_SAVE),
-            userId
+            userId,
+            schemasIds,
         );
 
         this.notifier.complete();

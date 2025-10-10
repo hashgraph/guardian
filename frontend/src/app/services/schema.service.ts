@@ -230,8 +230,8 @@ export class SchemaService {
         });
     }
 
-    public previewByXlsx(file: any): Observable<any> {
-        return this.http.post<any[]>(`${this.url}/import/xlsx/preview`, file, {
+    public previewByXlsx(file: any, policyId?: string): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/import/xlsx/preview?policyId=${policyId}`, file, {
             headers: {
                 'Content-Type': 'binary/octet-stream',
             },

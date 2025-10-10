@@ -3013,6 +3013,7 @@ export class PolicyApi {
     async importPolicyFromXlsxAsync(
         @AuthUser() user: IAuthUser,
         @Query('policyId') policyId: string,
+        @Query('schemas') schemas: string,
         @Body() file: ArrayBuffer,
         @Req() req
     ): Promise<TaskDTO> {
@@ -3023,7 +3024,8 @@ export class PolicyApi {
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.importXlsxAsync(file, new EntityOwner(user), policyId, task);
+            const schemasIds = schemas.split(',');
+            await engineService.importXlsxAsync(file, new EntityOwner(user), policyId, schemasIds, task);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
@@ -3066,14 +3068,15 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async importPolicyFromXlsxPreview(
         @AuthUser() user: IAuthUser,
-        @Body() file: ArrayBuffer
+        @Body() file: ArrayBuffer,
+        @Query('policyId') policyId?: string
     ) {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         try {
             const engineService = new PolicyEngine();
-            return await engineService.importXlsxPreview(file, new EntityOwner(user));
+            return await engineService.importXlsxPreview(file, new EntityOwner(user), policyId);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

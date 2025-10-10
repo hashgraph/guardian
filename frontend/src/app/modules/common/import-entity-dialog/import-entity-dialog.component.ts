@@ -37,6 +37,8 @@ export interface IImportEntityArray {
     statistic?: any,
     label?: any,
     formula?: any,
+    shemas?: any,
+    schemasForReplace?: any,
 }
 
 export interface IImportEntityMessage {
@@ -50,6 +52,8 @@ export interface IImportEntityMessage {
     statistic?: any,
     label?: any,
     formula?: any,
+    shemas?: any,
+    schemasForReplace?: any,
 }
 
 export type IImportEntityResult = IImportEntityArray | IImportEntityMessage;
@@ -70,6 +74,7 @@ export class ImportEntityDialog {
     public expectedTaskMessages: number = 0;
 
     public type: ImportEntityType = ImportEntityType.Policy;
+    public policyId?: string = '';
     public importType: ImportType = ImportType.FILE;
 
     public dataForm = this.fb.group({
@@ -90,6 +95,7 @@ export class ImportEntityDialog {
         public config: DynamicDialogConfig<{
             type?: string,
             timeStamp?: string,
+            policyId?: string;
         }>,
         //Form
         private fb: UntypedFormBuilder,
@@ -107,6 +113,7 @@ export class ImportEntityDialog {
     ) {
         const _config = this.config.data || {};
 
+        this.policyId = _config.policyId;
         switch (_config.type) {
             case 'policy':
                 this.type = ImportEntityType.Policy;
@@ -454,9 +461,10 @@ export class ImportEntityDialog {
 
     //Excel
     private excelFromFile(arrayBuffer: any) {
+        console.log(this.policyId, 'policyId');
         this.loading = true;
         this.policyEngineService
-            .previewByXlsx(arrayBuffer)
+            .previewByXlsx(arrayBuffer, this.policyId)
             .subscribe((result) => {
                 this.loading = false;
                 this.setResult({

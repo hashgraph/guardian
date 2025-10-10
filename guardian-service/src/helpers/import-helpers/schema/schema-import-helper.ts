@@ -142,12 +142,13 @@ export class SchemaImportExportHelper {
             mode?: ImportMode
         },
         notifier: INotificationStep,
-        userId: string | null
+        userId: string | null,
+        schemasIds?: string[],
     ): Promise<ImportSchemaResult> {
         notifier.start();
         const helper = new SchemaImport(options.mode, notifier);
         helper.addExternalSchemas(options.outerSchemas);
-        const result = await helper.import(files, user, options, userId);
+        const result = await helper.import(files, user, options, userId, schemasIds);
         notifier.complete();
         return result;
     }
