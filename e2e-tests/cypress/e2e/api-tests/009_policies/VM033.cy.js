@@ -447,6 +447,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                             headers: {
                                 authorization
                             },
+                            timeout:120000,
                             failOnStatusCode: false,
                         }
                         Checks.whileRequestProccessing(waitReportCreating, "Waiting for Verification", "data.0.option.status")
