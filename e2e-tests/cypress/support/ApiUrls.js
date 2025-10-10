@@ -148,6 +148,7 @@ const API = {
     ValidationReportsVerra: "tag/validation_reports_verra/blocks",
     VerificationReportsVerra: "tag/verification_reports_verra/blocks",
     ApproveValidationReportBtn: "tag/approve_validation_report_btn/blocks",
+    RegWorkflowSteps: "tag/registrants_workflow_steps/blocks",
     Savepoint: "savepoints/",
 
     //Records

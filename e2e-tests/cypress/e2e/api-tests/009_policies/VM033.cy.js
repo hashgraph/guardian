@@ -463,7 +463,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridPP,
                 headers: {
                     authorization
-                }
+                },
+                timeout: 120000,
             }).then((response) => {
                 let reportAssignData = response.body.data[0];
                 reportAssignData.assignedTo = VVBDid;
