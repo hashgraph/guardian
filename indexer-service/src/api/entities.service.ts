@@ -2095,13 +2095,33 @@ export class EntityService {
     ): Promise<AnyResponse<any>> {
         try {
             const { messageId } = msg;
+            const targets = [messageId];
             const em = DataBaseHelper.getEntityManager();
+            const target = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.VC_DOCUMENT,
+            });
+            if (target?.options?.startMessage) {
+                const parents = await em.find(Message, {
+                    $or: [{
+                        'options.startMessage': target.options.startMessage,
+                    }, {
+                        consensusTimestamp: target.options.startMessage,
+                    }],
+                    type: MessageType.VC_DOCUMENT,
+                } as any);
+                for (const parent of parents) {
+                    targets.push(parent.consensusTimestamp)
+                }
+            }
+            console.log(targets);
+
             const discussions = await em.find(Message, {
-                'options.target': messageId,
+                'options.target': { $in: targets },
                 type: MessageType.POLICY_DISCUSSION,
             } as any);
             const comments = await em.find(Message, {
-                'options.target': messageId,
+                'options.target': { $in: targets },
                 type: MessageType.POLICY_COMMENT,
             } as any);
 

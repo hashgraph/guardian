@@ -220,6 +220,12 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     _encryptedDocumentFileId?: ObjectId;
 
     /**
+     * Edited
+     */
+    @Property({ nullable: true })
+    edited?: boolean;
+
+    /**
      * draft
      */
     @Property({ nullable: true })

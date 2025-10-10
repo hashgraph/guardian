@@ -505,6 +505,7 @@ export const BlockAbout = {
         'output': [
             'RunEvent',
             'RefreshEvent',
+            'ReferenceEvent',
             'DraftEvent'
         ],
         'defaultEvent': true

@@ -35,7 +35,9 @@ import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.
         ],
         output: [
             PolicyOutputEventType.RunEvent,
-            PolicyOutputEventType.RefreshEvent
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ReferenceEvent,
+            PolicyOutputEventType.DraftEvent
         ],
         defaultEvent: true
     },
@@ -240,7 +242,13 @@ export class RequestVcDocumentBlock {
             if (editType === 'edit') {
                 item.startMessageId = documentRef?.startMessageId;
             }
-            const state: IPolicyEventState = { data: item };
+
+            const state: IPolicyEventState = {
+                data: item
+            };
+            if (editType === 'edit') {
+                state.old = documentRef;
+            }
 
             //Validate
             if (!draft) {
@@ -256,7 +264,9 @@ export class RequestVcDocumentBlock {
             } else {
                 ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             }
-
+            if (draft) {
+                ref.triggerEvents(PolicyOutputEventType.ReferenceEvent, user, { data: documentRef });
+            }
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {

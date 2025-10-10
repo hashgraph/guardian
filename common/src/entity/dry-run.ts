@@ -757,6 +757,12 @@ export class DryRun extends BaseEntity {
     _contextFileId?: ObjectId;
 
     /**
+     * Edited
+     */
+    @Property({ nullable: true })
+    edited?: boolean;
+
+    /**
      * is draft
      */
     @Property({ nullable: true })

@@ -400,6 +400,7 @@ export class SendToGuardianBlock {
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
         );
         document.startMessageId = document.startMessageId || document.messageId;
+        document.edited = false;
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
         } else if (type === DocumentType.VerifiableCredential) {
@@ -569,6 +570,24 @@ export class SendToGuardianBlock {
     }
 
     /**
+     * Document sender
+     * @param document
+     * @param userId
+     */
+    private async updateVersion(
+        document: IPolicyDocument,
+        userId: string | null
+    ): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const old = await ref.databaseServer.getVcDocument(document.id);
+
+        if (old && old.policyId === ref.policyId) {
+            old.edited = true;
+            await PolicyUtils.updateVC(ref, old, userId);
+        }
+    }
+
+    /**
      * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
@@ -595,6 +614,15 @@ export class SendToGuardianBlock {
             event.data.data = newDocs;
         } else {
             event.data.data = await this.documentSender(docs, event?.user?.userId);
+        }
+
+        const olds: IPolicyDocument | IPolicyDocument[] = event.data.old;
+        if (Array.isArray(olds)) {
+            for (const old of olds) {
+                await this.updateVersion(old, event?.user?.userId);
+            }
+        } else if (olds) {
+            await this.updateVersion(olds, event?.user?.userId);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);

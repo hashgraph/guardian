@@ -48,6 +48,10 @@ export class Parser {
                     message.options.relationships = json.relationships;
                     message.options.documentStatus = json.documentStatus;
                     message.options.encodedData = json.encodedData || json.type === 'EVC-Document';
+                    message.options.tag = json.tag;
+                    message.options.startMessage = json.startMessage;
+                    message.options.entityType = json.entityType;
+                    message.options.option = json.option;
                     if (json.cid) {
                         message.files.push(json.cid);
                     }

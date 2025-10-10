@@ -983,6 +983,11 @@ export interface IPolicyDBDocument<T> {
     tokenId?: string;
 
     /**
+     * Is edited
+     */
+    edited?: boolean;
+
+    /**
      * Is Draft
      */
     draft?: boolean;
@@ -1033,6 +1038,11 @@ export interface IPolicyEventState {
      * Data
      */
     data: IPolicyDocument | IPolicyDocument[];
+
+    /**
+     * Result
+     */
+    old?: IPolicyDocument | IPolicyDocument[];
 
     /**
      * Result

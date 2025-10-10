@@ -34,6 +34,7 @@ export enum PolicyOutputEventType {
     ReleaseEvent = 'ReleaseEvent',
     GetDataEvent = 'GetDataEvent',
     DraftEvent = 'DraftEvent',
+    ReferenceEvent = 'ReferenceEvent',
 }
 
 /**

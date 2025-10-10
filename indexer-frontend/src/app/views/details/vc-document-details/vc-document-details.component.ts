@@ -26,6 +26,9 @@ import { ProjectLocationsComponent } from '@components/project-locations/project
 import { bytesToUtf8, decryptWithKeyDerivedFromString } from '@meeco/cryppo';
 import { DialogService } from 'primeng/dynamicdialog';
 import { VCFullscreenDialog } from '../../../dialogs/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputIconModule } from 'primeng/inputicon';
+import { IconFieldModule } from 'primeng/iconfield';
 
 @Component({
     selector: 'vc-document-details',
@@ -53,6 +56,9 @@ import { VCFullscreenDialog } from '../../../dialogs/vc-fullscreen-dialog/vc-ful
         ButtonModule,
         ProjectLocationsComponent,
         CommentsComponent,
+        IconFieldModule,
+        InputIconModule,
+        InputTextModule,
         VCFullscreenDialog
     ],
     providers: [DialogService],
@@ -64,6 +70,7 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     public discussionsCount: number = 0;
     public commentsCount: number = 0;
     public discussionsKey: Map<string, string> = new Map<string, string>();
+    public decryptedDiscussions: any[] = [];
 
     overviewFields: OverviewFormField[] = [
         {
@@ -161,7 +168,7 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
             title: 'details.hedera.name',
             field: '_name',
             type: ColumnType.TEXT,
-            width: 'calc(100vw - 1280px)',
+            width: 'calc(100vw - 1130px)',
         },
         {
             title: 'details.hedera.comments',
@@ -171,17 +178,17 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
             minWidth: '150px',
             maxWidth: '150px',
         },
-        {
-            title: 'details.hedera.status',
-            field: '_status',
-            type: ColumnType.CHIP,
-            width: '150px',
-            minWidth: '150px',
-            maxWidth: '150px',
-            severity: (row: any) => {
-                return row._status === 'decrypted' ? 'success' : 'secondary';
-            }
-        },
+        // {
+        //     title: 'details.hedera.status',
+        //     field: '_status',
+        //     type: ColumnType.CHIP,
+        //     width: '150px',
+        //     minWidth: '150px',
+        //     maxWidth: '150px',
+        //     severity: (row: any) => {
+        //         return row._status === 'decrypted' ? 'success' : 'secondary';
+        //     }
+        // },
         {
             type: ColumnType.BUTTON,
             title: 'grid.open',
@@ -246,6 +253,7 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
             width: '48px',
         },
     ];
+    discussionsSearch: string = '';
 
     constructor(
         entitiesService: EntitiesService,
@@ -363,10 +371,11 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
                 .subscribe({
                     next: (result) => {
                         this.discussions = result || [];
-                        this.updateDiscussions();
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
+                        this.updateDiscussions().then(() => {
+                            setTimeout(() => {
+                                this.loading = false;
+                            }, 500);
+                        });
                     },
                     error: ({ message }) => {
                         this.loading = false;
@@ -376,7 +385,7 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
         }
     }
 
-    private updateDiscussions() {
+    private async updateDiscussions() {
         this.discussionsCount = this.discussions.length;
         this.commentsCount = 0;
         for (const discussion of this.discussions) {
@@ -387,7 +396,13 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
                 discussion._comments = 0;
             }
             discussion._status = 'encrypted';
-            this.decryptDiscussions(discussion);
+            await this.decryptDiscussions(discussion);
+        }
+        this.decryptedDiscussions = [];
+        for (const discussion of this.discussions) {
+            if (discussion._status === 'decrypted') {
+                this.decryptedDiscussions.push(discussion);
+            }
         }
     }
 
@@ -416,15 +431,34 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
 
     public onDecryptDiscussion() {
         this.openFile((files) => {
+            this.loading = true;
             for (const file of files) {
                 if (file.text) {
                     this.addKey(file.text);
                 }
             }
-            for (const discussion of this.discussions) {
-                this.decryptDiscussions(discussion);
-            }
+            this.updateDiscussions().then(() => {
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            });
         })
+    }
+
+    public onDiscussionsSearch() {
+        const search = (this.discussionsSearch || '').toLowerCase();
+        this.decryptedDiscussions = [];
+        for (const discussion of this.discussions) {
+            if (discussion._status === 'decrypted') {
+                this.decryptedDiscussions.push(discussion);
+            }
+        }
+        if (search) {
+            this.decryptedDiscussions = this.decryptedDiscussions.filter((d) => {
+                const name = (d._name || '').toLowerCase();
+                return name.includes(search);
+            })
+        }
     }
 
     private openFile(callback: (files: any[]) => void) {
@@ -466,6 +500,10 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
                     complete();
                 }
             }
+            input.remove();
+        }
+        input.oncancel = (event) => {
+            callback([]);
             input.remove();
         }
         input.click();
