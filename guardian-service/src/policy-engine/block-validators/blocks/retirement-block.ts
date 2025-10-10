@@ -35,10 +35,12 @@ export class RetirementBlock {
                 }
             }
 
-            if (!ref.options.rule) {
-                validator.addError('Option "rule" is not set');
-            } else if (typeof ref.options.rule !== 'string') {
+            if (ref.options.rule && typeof ref.options.rule !== 'string') {
                 validator.addError('Option "rule" must be a string');
+            }
+
+            if (ref.options.serialNumbersExpression && typeof ref.options.serialNumbersExpression !== 'string') {
+                validator.addError('Option "serial numbers" must be a string');
             }
 
             const accountType = ['default', 'custom'];
