@@ -669,8 +669,14 @@ export class Guardians extends NatsService {
      * @param {string} topicId
      * @param {NewTask} task
      */
-    public async importSchemasByMessagesAsync(messageIds: string[], owner: IOwner, topicId: string, task: NewTask): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, { messageIds, owner, topicId, task });
+    public async importSchemasByMessagesAsync(
+        messageIds: string[],
+        owner: IOwner,
+        topicId: string,
+        task: NewTask,
+        schemasIds?: string[]
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, { messageIds, owner, topicId, task, schemasIds });
     }
 
     /**
@@ -710,9 +716,10 @@ export class Guardians extends NatsService {
         files: any,
         owner: IOwner,
         topicId: string,
-        task: NewTask
+        task: NewTask,
+        schemasIds?: string[]
     ): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, { files, owner, topicId, task });
+        return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, { files, owner, topicId, task, schemasIds });
     }
 
     /**
@@ -743,8 +750,21 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} Schema preview
      */
-    public async previewSchemasByFile(files: ISchema[]): Promise<ISchema[]> {
+    public async previewSchemasByFile(files: ISchema[]) {
         return files;
+    }
+
+    /**
+     * Check schemas dublicates
+     *
+     * @param {string[]} schemaNames
+     * @param {IOwner} owner
+     * @param {string[]} policyId
+     *
+     * @returns {ISchema[]} Schema preview
+     */
+    public async getSchemasDublicates(schemaNames: string[], owner?: IOwner, policyId?: string) {
+        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames, owner, policyId });
     }
 
     /**
@@ -2757,8 +2777,8 @@ export class Guardians extends NatsService {
      * @param versionOfTopicId
      * @param task
      */
-    public async importSchemasByXlsxAsync(owner: IOwner, topicId: string, xlsx: ArrayBuffer, task: NewTask) {
-        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX_ASYNC, { owner, xlsx, topicId, task });
+    public async importSchemasByXlsxAsync(owner: IOwner, topicId: string, xlsx: ArrayBuffer, task: NewTask, schemasIds?: string[]) {
+        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX_ASYNC, { owner, xlsx, topicId, task, schemasIds });
     }
 
     /**

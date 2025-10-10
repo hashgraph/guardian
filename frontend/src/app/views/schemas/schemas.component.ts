@@ -36,6 +36,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
 import { SchemaDeleteWarningDialogComponent } from 'src/app/modules/schema-engine/schema-delete-warning-dialog/schema-delete-warning-dialog.component';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
+import { ReplaceSchemasDialogComponent } from '../../modules/policy-engine/dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
 
 enum SchemaType {
     System = 'system',
@@ -887,7 +888,7 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private importByMessage(data: any, topicId: string): void {
+    private importByMessage(data: any, topicId: string, schemasForReplace?: string[]): void {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
@@ -901,7 +902,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Policy:
             default: {
                 const category = this.getCategory();
-                this.schemaService.pushImportByMessage(data, topicId).subscribe((result) => {
+                this.schemaService.pushImportByMessage(data, topicId, schemasForReplace).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
@@ -916,7 +917,7 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private importByFile(data: any, topicId: string): void {
+    private importByFile(data: any, topicId: string, schemasForReplace?: string[]): void {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
@@ -930,7 +931,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Policy:
             default: {
                 const category = this.getCategory();
-                this.schemaService.pushImportByFile(data, topicId).subscribe((result) => {
+                this.schemaService.pushImportByFile(data, topicId, schemasForReplace).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
@@ -945,7 +946,7 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private importByExcel(data: any, topicId: string): void {
+    private importByExcel(data: any, topicId: string, schemasForReplace?: string[]): void {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
@@ -959,7 +960,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Policy:
             default: {
                 const category = this.getCategory();
-                this.schemaService.pushImportByXlsx(data, topicId).subscribe((result) => {
+                this.schemaService.pushImportByXlsx(data, topicId, schemasForReplace).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
@@ -1296,13 +1297,105 @@ export class SchemaConfigComponent implements OnInit {
             }
             if (result && result.topicId) {
                 this.loading = true;
-                if (type == 'message') {
-                    this.importByMessage(data, result.topicId);
-                } else if (type == 'file') {
-                    this.importByFile(data, result.topicId);
-                } else if (type == 'xlsx') {
-                    this.importByExcel(data, result.topicId);
-                }
+                this.schemaService.checkForDublicates({
+                    policyId: result.topicId,
+                    schemaNames: schemas.map(({ name }: { name: string }) => name)
+                }).subscribe(
+                    (res) => {
+                        this.loading = false;
+                        if (res?.schemasCanBeReplaced?.length) {
+                            if (type == 'message') {
+                                this.importFromMessageReplace({
+                                    data,
+                                    ...result,
+                                    schemasCanBeReplaced: res.schemasCanBeReplaced,
+                                });
+                            } else if (type == 'file') {
+                                this.importFromFileReplace({
+                                    data,
+                                    ...result,
+                                    schemasCanBeReplaced: res.schemasCanBeReplaced,
+                                });
+                            } else if (type == 'xlsx') {
+                                this.importExcelReplace({
+                                    type: 'xlsx',
+                                    data,
+                                    ...result,
+                                    schemasCanBeReplaced: res.schemasCanBeReplaced,
+                                });
+                            }
+                        } else {
+                            if (type == 'message') {
+                                this.importByMessage(data, result.topicId);
+                            } else if (type == 'file') {
+                                this.importByFile(data, result.topicId);
+                            } else if (type == 'xlsx') {
+                                this.importByExcel(data, result.topicId);
+                            }
+                        }
+                    },
+                    (e) => {
+                        this.loading = false;
+                    }
+                );
+            }
+        });
+    }
+
+    private importFromMessageReplace(result: any) {
+        const { data, schemasCanBeReplaced } = result;
+        const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
+            header: 'Schemas for replace',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Schemas for replace',
+                schemasCanBeReplaced: schemasCanBeReplaced,
+            },
+        });
+        dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
+            if (resultWithSchemasForReplace) {
+                this.importByMessage(data, result.topicId, resultWithSchemasForReplace.selectedSchemaIds);
+            }
+        });
+    }
+
+    private importFromFileReplace(result: any) {
+        const { data, schemasCanBeReplaced } = result;
+        const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
+            header: 'Schemas for replace',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Schemas for replace',
+                schemasCanBeReplaced: schemasCanBeReplaced,
+            },
+        });
+        dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
+            if (resultWithSchemasForReplace) {
+                this.importByFile(data, result.topicId, resultWithSchemasForReplace.selectedSchemaIds);
+            }
+        });
+    }
+
+    private importExcelReplace(result: any) {
+        const { data, schemasCanBeReplaced } = result;
+        const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
+            header: 'Schemas for replace',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Schemas for replace',
+                schemasCanBeReplaced: schemasCanBeReplaced,
+            },
+        });
+        dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
+            if (resultWithSchemasForReplace) {
+                this.importByExcel(data, result.topicId, resultWithSchemasForReplace.selectedSchemaIds);
+
             }
         });
     }

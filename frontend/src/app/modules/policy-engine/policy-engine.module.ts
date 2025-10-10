@@ -83,6 +83,7 @@ import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-docu
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
 import { SavePolicyDialog } from './dialogs/save-policy-dialog/save-policy-dialog.component';
 import { PreviewPolicyDialog } from './dialogs/preview-policy-dialog/preview-policy-dialog.component';
+import { ReplaceSchemasDialogComponent } from './dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
 import { ExportPolicyDialog } from './dialogs/export-policy-dialog/export-policy-dialog.component';
 import { CronConfigDialog } from './dialogs/cron-config-dialog/cron-config-dialog.component';
 import { CodeEditorDialogComponent } from './dialogs/code-editor-dialog/code-editor-dialog.component';
@@ -197,6 +198,7 @@ import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-c
         HelpIcon,
         SavePolicyDialog,
         PreviewPolicyDialog,
+        ReplaceSchemasDialogComponent,
         ExportPolicyDialog,
         CalculateConfigComponent,
         CalculateMathConfigComponent,

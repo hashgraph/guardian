@@ -19,6 +19,7 @@ import { TokenService } from 'src/app/services/token.service';
 import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
 import { NewPolicyDialog } from '../dialogs/new-policy-dialog/new-policy-dialog.component';
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
+import { ReplaceSchemasDialogComponent } from '../dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { MultiPolicyDialogComponent } from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
@@ -1092,8 +1093,46 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    private importExcelDetails(result: IImportEntityResult, policyId: string) {
-        const { type, data, xlsx } = result;
+
+    private importExcelReplace(result: IImportEntityResult, policyId: string) {
+        const { data, schemasCanBeReplaced } = result;
+        const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
+            header: 'Schemas for replace',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Schemas for replace',
+                schemasCanBeReplaced,
+            },
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (resultWithSchemasForReplace) => {
+            if (resultWithSchemasForReplace) {
+                this.pushImportByXlsx(data, policyId, resultWithSchemasForReplace.selectedSchemaIds)
+            }
+        });
+    }
+
+    private pushImportByXlsx(data: any, policyId: string, schemasForReplace?: string[]) {
+        this.policyEngineService
+            .pushImportByXlsx(data, policyId, schemasForReplace)
+            .pipe(takeUntil(this._destroy$)).subscribe(
+                (result) => {
+                    const { taskId, expectation } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href),
+                        },
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
+    }
+
+    private importExcelDetails(result: IImportEntityResult, policyId: string, topicId: string) {
+        const { data, xlsx } = result;
         const dialogRef = this.dialogService.open(PreviewPolicyDialog, {
             header: 'Preview',
             width: '800px',
@@ -1104,23 +1143,28 @@ export class PoliciesComponent implements OnInit {
                 xlsx: xlsx,
             },
         });
-        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
-            if (result) {
-                this.policyEngineService
-                    .pushImportByXlsx(data, policyId)
-                    .pipe(takeUntil(this._destroy$)).subscribe(
-                        (result) => {
-                            const { taskId, expectation } = result;
-                            this.router.navigate(['task', taskId], {
-                                queryParams: {
-                                    last: btoa(location.href),
-                                },
-                            });
-                        },
-                        (e) => {
-                            this.loading = false;
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (res) => {
+            if (res) {
+                this.schemaService.checkForDublicates({
+                    policyId: topicId,
+                    schemaNames: xlsx.schemas.map(({ name }: { name: string }) => name)
+                }).subscribe(
+                    (res) => {
+                        this.loading = false;
+                        if (res?.schemasCanBeReplaced?.length) {
+                            this.importExcelReplace({
+                                ...result,
+                                schemasCanBeReplaced: res.schemasCanBeReplaced,
+                            }, policyId);
+                        } else {
+                            this.pushImportByXlsx(data, policyId)
                         }
-                    );
+
+                    },
+                    (e) => {
+                        this.loading = false;
+                    }
+                );
             }
         });
     }
@@ -1162,7 +1206,7 @@ export class PoliciesComponent implements OnInit {
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
-                this.importExcelDetails(result, policy?.id);
+                this.importExcelDetails(result, policy?.id, policy?.topicId);
             }
         });
     }
