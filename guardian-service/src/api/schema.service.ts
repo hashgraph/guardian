@@ -110,6 +110,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const { item, owner } = msg;
                 const id = item.id as string;
                 const row = await DatabaseServer.getSchema(id);
+                console.log(JSON.stringify(row), 'row 111')
                 if (!row || row.owner !== owner.owner) {
                     throw new Error('Invalid schema');
                 }
@@ -124,6 +125,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 row.errors = [];
                 SchemaHelper.setVersion(row, null, row.version);
                 SchemaHelper.updateIRI(row);
+                console.log(JSON.stringify(item), 'row 222');
+                // console.log(JSON.stringify(row), 'row');
+
                 await DatabaseServer.updateSchema(row.id, row);
                 await updateSchemaDefs(row.iri);
                 const schemas = await DatabaseServer.getSchemas({ owner: owner.owner }, { limit: 100 });
@@ -1512,9 +1516,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             owner: IOwner,
             topicId: string,
             xlsx: any,
-            task: any
+            task: any,
+            schemasIds?: string[],
         }) => {
-            const { owner, xlsx, topicId, task } = msg;
+            const { owner, xlsx, topicId, task, schemasIds } = msg;
             const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 // <-- Steps
@@ -1573,7 +1578,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         skipGenerateId: true
                     },
                     notifier.getStep(STEP_IMPORT_SCHEMAS),
-                    owner?.id
+                    owner?.id,
+                    schemasIds,
                 );
                 notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
@@ -1602,10 +1608,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.SCHEMA_IMPORT_XLSX_PREVIEW,
         async (msg: {
             owner: IOwner,
-            xlsx: any
+            xlsx: any,
+            policyId: string,
         }) => {
             try {
-                const { owner, xlsx } = msg;
+                const { owner, xlsx, policyId } = msg;
                 if (!xlsx) {
                     throw new Error('file in body is empty');
                 }
@@ -1625,7 +1632,35 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 xlsxResult.updateSchemas(false);
                 GenerateBlocks.generate(xlsxResult);
 
-                return new MessageResponse(xlsxResult.toJson());
+                console.log(xlsxResult.toJson(), 'xlsxResult.toJson()');
+
+                const xlsxResultJson = xlsxResult.toJson();
+                const existedSchemasNames = xlsxResultJson.schemas.map(({ name }) => name);
+
+                console.log(existedSchemasNames, 'existedSchemasNames');
+                console.log(policyId, 'topicId');
+                const shemas = existedSchemasNames.length ? await DatabaseServer.getSchemas({
+                    topicId: policyId,
+                    category: SchemaCategory.POLICY,
+                    readonly: false,
+                    system: false,
+                    name: {
+                        $in: existedSchemasNames
+                    }
+                }, {
+                    fields: [
+                        'name',
+                        'uuid',
+                        'id',
+                        'topicId',
+                        'iri'
+                    ]
+                }) : []
+
+                return new MessageResponse({
+                    ...xlsxResult.toJson(),
+                    shemas,
+                });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);

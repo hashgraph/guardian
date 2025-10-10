@@ -515,9 +515,10 @@ export class PolicyEngine extends NatsService {
         xlsx: ArrayBuffer,
         owner: IOwner,
         policyId: string,
+        schemasIds: string[],
         task: NewTask
     ) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_ASYNC, { xlsx, owner, policyId, task });
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_ASYNC, { xlsx, owner, policyId, task, schemasIds });
     }
 
     /**
@@ -527,9 +528,10 @@ export class PolicyEngine extends NatsService {
      */
     public async importXlsxPreview(
         xlsx: ArrayBuffer,
-        owner: IOwner
+        owner: IOwner,
+        policyId: string,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW, { owner, xlsx });
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW, { owner, xlsx, policyId });
     }
 
     /**

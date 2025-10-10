@@ -31,6 +31,7 @@ import { checkForCircularDependency, loadSchema } from '../common/load-helper.js
 import { SchemaImportExportHelper } from './schema-import-helper.js';
 import { ImportMode } from '../common/import.interface.js';
 import { importTag } from '../tag/tag-import-helper.js';
+import { updateSchemaDefs } from './schema-helper.js';
 
 export class SchemaImport {
     private readonly mode: ImportMode;
@@ -322,9 +323,13 @@ export class SchemaImport {
     private async saveSchemas(
         schemas: ISchema[],
         step: INotificationStep,
-        userId: string | null
+        userId: string | null,
+        schemasIds?: string[],
+        user?: IOwner,
     ): Promise<void> {
         step.start();
+        const schemasByIds = schemasIds?.length ? await DatabaseServer.getSchemasByIds(schemasIds) : [];
+
         let index = 0;
         for (const file of schemas) {
             const _step = step.addStep(`${file.name || '-'}`);
@@ -346,9 +351,88 @@ export class SchemaImport {
                 schemaObject.status = SchemaStatus.ERROR;
             }
 
-            const row = await DatabaseServer.saveSchema(schemaObject);
+            const schemaForUpdate = schemasByIds.find(({ name }) => name === schemaObject.name);
+            if (schemaForUpdate) {
+//                 const {
+//                     id,
+//                     _id,
+//                     iri,
+//                     uuid,
+//                     creator,
+//                     owner,
+//                     topicId,
+//                     contextURL
+//                 } = schemaForUpdate;
+//                 // {
+//                 //     ...schemaObject,
+//                 //     id,
+//                 //     _id,
+//                 //     iri,
+//                 //     uuid,
+//                 //     creator,
+//                 //     owner,
+//                 //     topicId,
+//                 //     contextURL,
+//                 // }
+//                 schemaObject.id = id;
+//                 schemaObject._id = _id;
+//                 schemaObject.iri = iri;
+//                 schemaObject.uuid = uuid;
+//                 schemaObject.creator = creator;
+//                 schemaObject.owner = owner;
+//                 schemaObject.topicId = topicId;
+//                 schemaObject.contextURL = contextURL;
+//                 schemaObject.context = '';
+// // 
+//                 const { context, ...other } = schemaObject;
+//                 // console.log(other, 'other');
+//                 console.log(JSON.stringify(schemaObject), 'schemaObject');
 
-            this.schemasMapping[index].newID = row.id.toString();
+//                 const row = await DatabaseServer.updateSchema(schemaForUpdate.id, schemaObject as unknown as any);
+//                 this.schemasMapping[index].newID = id;
+
+
+                            //                     SchemaUtils.fromOld(newSchema);
+                            SchemaHelper.checkSchemaKey(schemaObject);
+                
+                            SchemaHelper.updateOwner(schemaObject, user);
+                                // const { item, owner } = msg;
+                                const id = schemaForUpdate.id as string;
+                                // const row = await DatabaseServer.getSchema(id);
+                                const row = schemaForUpdate;
+                                console.log(row, 'row.owner');
+                                console.log(user?.owner, 'user.owner');
+                                console.log(user, 'user.owner');
+                                if (!row || row.owner !== user.owner) {
+                                    throw new Error('Invalid schema');
+                                }
+                                if (checkForCircularDependency(row)) {
+                                    throw new Error(`There is circular dependency in schema: ${row.iri}`);
+                                }
+                                row.name = schemaObject.name;
+                                row.description = schemaObject.description;
+                                row.entity = schemaObject.entity;
+                                row.document = schemaObject.document;
+                                row.status = SchemaStatus.DRAFT;
+                                row.errors = [];
+                                SchemaHelper.setVersion(row, null, row.version);
+                                SchemaHelper.updateIRI(row);
+                                await DatabaseServer.updateSchema(row.id, row);
+                                await updateSchemaDefs(row.iri);
+                            // SchemaHelper.updatePermission(schemas, user);
+                
+                            // const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+                
+                            // await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+                
+                            // return SchemaUtils.toOld(schemas);
+                            this.schemasMapping[index].newID = row.id;
+
+            } else {
+                const row = await DatabaseServer.saveSchema(schemaObject);
+                this.schemasMapping[index].newID = row.id.toString();
+            }
+
             _step.complete();
             index++;
         }
@@ -406,7 +490,8 @@ export class SchemaImport {
         components: ISchema[],
         user: IOwner,
         options: ImportSchemaOptions,
-        userId: string | null
+        userId: string | null,
+        schemasIds?: string[],
     ): Promise<ImportSchemaResult> {
         const { topicId, category } = options;
 
@@ -452,7 +537,9 @@ export class SchemaImport {
         await this.saveSchemas(
             components,
             this.notifier.getStep(STEP_SAVE),
-            userId
+            userId,
+            schemasIds,
+            user,
         );
 
         this.notifier.complete();

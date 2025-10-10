@@ -29,7 +29,7 @@ import {
     VcHelper,
     XlsxToJson
 } from '@guardian/common';
-import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType, PolicyActionStatus } from '@guardian/interfaces';
+import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType, PolicyActionStatus, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
@@ -43,7 +43,7 @@ import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
-import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
+import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper, updateSchemaDefs } from '../helpers/import-helpers/index.js';
 
 /**
  * PolicyEngineChannel
@@ -1647,13 +1647,14 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW,
-            async (msg: { xlsx: any, owner: IOwner }): Promise<IMessageResponse<any>> => {
+            async (msg: { xlsx: any, owner: IOwner, policyId: string; }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { xlsx, owner } = msg;
+                    const { xlsx, owner, policyId } = msg;
                     if (!xlsx) {
                         throw new Error('file in body is empty');
                     }
                     const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data), { preview: true });
+                    console.log(xlsxResult.getToolIds(), 'xlsxResult.getToolIds()');
                     for (const toolId of xlsxResult.getToolIds()) {
                         try {
                             const tool = await previewToolByMessage(toolId.messageId, owner?.id);
@@ -1668,7 +1669,35 @@ export class PolicyEngineService {
                     }
                     xlsxResult.updateSchemas(false);
                     GenerateBlocks.generate(xlsxResult);
-                    return new MessageResponse(xlsxResult.toJson());
+                    console.log(xlsxResult.toJson(), 'xlsxResult.toJson()');
+
+                    const xlsxResultJson = xlsxResult.toJson();
+                    const existedSchemasNames = xlsxResultJson.schemas.map(({ name }) => name);
+
+                    console.log(existedSchemasNames, 'existedSchemasNames');
+                    console.log(policyId, 'topicId');
+                    const shemas = existedSchemasNames.length ? await DatabaseServer.getSchemas({
+                        topicId: policyId,
+                        category: SchemaCategory.POLICY,
+                        readonly: false,
+                        system: false,
+                        name: {
+                            $in: existedSchemasNames
+                        }
+                    }, {
+                        fields: [
+                            'name',
+                            'uuid',
+                            'id',
+                            'topicId',
+                            'iri'
+                        ]
+                    }) : []
+
+                    return new MessageResponse({
+                        ...xlsxResult.toJson(),
+                        shemas,
+                    });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                     return new MessageError(error);
@@ -1726,9 +1755,10 @@ export class PolicyEngineService {
                 xlsx: any,
                 policyId: string,
                 owner: IOwner,
+                schemasIds: string[],
                 task: any
             }): Promise<IMessageResponse<any>> => {
-                const { xlsx, policyId, owner, task } = msg;
+                const { xlsx, policyId, owner, task, schemasIds } = msg;
                 const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
@@ -1777,7 +1807,8 @@ export class PolicyEngineService {
                             skipGenerateId: true
                         },
                         notifier,
-                        owner?.id
+                        owner?.id,
+                        schemasIds,
                     );
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
                     notifier.completeStep(STEP_IMPORT_SCHEMAS);

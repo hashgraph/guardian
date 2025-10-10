@@ -1,0 +1,50 @@
+<div class="dialog-header">
+  <div class="header-container">
+    <div class="header-text">{{ title }}</div>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
+</div>
+
+<div class="dialog-body">
+  <div class="group-container">
+    <div class="group-header">Schemas</div>
+
+    <div *ngIf="!schemas.length" class="field-container">
+      <div class="field-value">No schemas to display</div>
+    </div>
+
+    <div *ngIf="schemas.length" class="field-array">
+        <div class="field-array-item" *ngFor="let s of schemas; let i = index">
+            <label>
+            <p-checkbox
+                [binary]="true"
+                [formControl]="checks.at(i)"
+                inputId="schema-{{ i }}"
+            ></p-checkbox>
+            <span class="schema-name">{{ s.name }}</span>
+            </label>
+        </div>
+    </div>
+  </div>
+</div>
+
+<div class="dialog-footer">
+  <div class="action-buttons">
+    <div class="dialog-button cancel-button">
+      <button (click)="onClose()" class="guardian-button guardian-button-secondary">
+        Close
+      </button>
+    </div>
+    <div class="dialog-button">
+      <button
+        class="guardian-button guardian-button-primary"
+        (click)="onSubmit()"
+        [disabled]="schemas.length === 0"
+      >
+        Replace checked schemas
+      </button>
+    </div>
+  </div>
+</div>

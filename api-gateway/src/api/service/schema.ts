@@ -2432,6 +2432,7 @@ export class SchemaApi {
     async importPolicyFromXlsxAsync(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
+        @Query('schemas') schemas: string,
         @Body() file: ArrayBuffer,
         @Response() res: any,
         @Req() req
@@ -2444,7 +2445,8 @@ export class SchemaApi {
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            await guardians.importSchemasByXlsxAsync(owner, topicId, file, task);
+            const schemasIds = (schemas || '').split(',');
+            await guardians.importSchemasByXlsxAsync(owner, topicId, file, task, schemasIds);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
@@ -2487,7 +2489,8 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async importPolicyFromXlsxPreview(
         @AuthUser() user: IAuthUser,
-        @Body() file: ArrayBuffer
+        @Body() file: ArrayBuffer,
+        @Query('policyId') policyId?: string
     ) {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -2495,7 +2498,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            return await guardians.previewSchemasByFileXlsx(owner, file);
+            return await guardians.previewSchemasByFileXlsx(owner, file, policyId);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

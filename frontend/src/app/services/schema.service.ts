@@ -230,16 +230,18 @@ export class SchemaService {
         });
     }
 
-    public previewByXlsx(file: any): Observable<any> {
-        return this.http.post<any[]>(`${this.url}/import/xlsx/preview`, file, {
+    public previewByXlsx(file: any, policyId?: string): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/import/xlsx/preview?policyId=${policyId}`, file, {
             headers: {
                 'Content-Type': 'binary/octet-stream',
             },
         });
     }
 
-    public pushImportByXlsx(schemasFile: any, topicId: any): Observable<{ taskId: string, expectation: number }> {
-        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/xlsx`, schemasFile, {
+    public pushImportByXlsx(schemasFile: any, topicId: any, schemasForReplace?: string[]): Observable<{ taskId: string, expectation: number }> {
+        var query = schemasForReplace?.length ? `?schemas=${schemasForReplace.join(',')}` : '';
+
+        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/xlsx${query}`, schemasFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream',
             },

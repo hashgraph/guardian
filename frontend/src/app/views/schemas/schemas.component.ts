@@ -35,6 +35,7 @@ import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/s
 import { DialogService } from 'primeng/dynamicdialog';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { ReplaceSchemasDialogComponent } from '../../modules/policy-engine/dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
 
 enum SchemaType {
     System = 'system',
@@ -944,7 +945,7 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private importByExcel(data: any, topicId: string): void {
+    private importByExcel(data: any, topicId: string, schemasForReplace?: string[]): void {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
@@ -958,7 +959,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Policy:
             default: {
                 const category = this.getCategory();
-                this.schemaService.pushImportByXlsx(data, topicId).subscribe((result) => {
+                this.schemaService.pushImportByXlsx(data, topicId, schemasForReplace).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
@@ -1289,8 +1290,49 @@ export class SchemaConfigComponent implements OnInit {
                 } else if (type == 'file') {
                     this.importByFile(data, result.topicId);
                 } else if (type == 'xlsx') {
-                    this.importByExcel(data, result.topicId);
+                this.schemaService.previewByXlsx(data, result.topicId).subscribe(
+                    (result2) => {
+                        this.loading = false;
+                        console.log(result2, 'result2');
+                        if (result2?.shemas?.length) {
+                            this.importExcelReplace({
+                                type: 'xlsx',
+                                data,
+                                ...result,
+                                ...result2,
+                            }, result.topicId);
+                        } else {
+                            this.importByExcel(data, result.topicId);
+                        }
+
+                    },
+                    (e) => {
+                        this.loading = false;
+                    }
+                );
                 }
+            }
+        });
+    }
+
+    private importExcelReplace(result: any, policyId: string) {
+        const { type, data, shemas } = result;
+        console.log(shemas, 'xlsx.shemas');
+        const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
+            header: 'Schemas for replace',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Schemas for replace',
+                shemas: shemas,
+            },
+        });
+        dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
+            console.log(resultWithSchemasForReplace, 'resultWithSchemasForReplace');
+            if (resultWithSchemasForReplace) {
+                this.importByExcel(data, result.topicId, resultWithSchemasForReplace.selectedSchemaIds);
+
             }
         });
     }
