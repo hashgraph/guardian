@@ -147,6 +147,20 @@ export class PolicyUtils {
         return amount;
     }
 
+     /**
+     * Create Serial Numbers Array
+     * @param startRule
+     * @param endRule
+     */
+    public static aggregateSerialRange(startRule: number, endRule: number): number[] {
+        const from = Math.min(startRule, endRule);
+        const to = Math.max(startRule, endRule);
+        const len = to - from + 1;
+        const serialNumbers: number[]= Array.from({ length: len }, (_, i) => from + i);
+
+        return serialNumbers
+    }
+
     /**
      * Token amount
      * @param token

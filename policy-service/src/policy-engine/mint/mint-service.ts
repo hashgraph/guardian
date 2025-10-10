@@ -575,6 +575,7 @@ export class MintService {
      * @param targetAccount
      * @param uuid
      * @param userId
+     * @param serialNumbers
      */
     public static async wipe(
         ref: AnyBlockType,
@@ -583,7 +584,8 @@ export class MintService {
         root: IHederaCredentials,
         targetAccount: string,
         uuid: string,
-        userId: string | null
+        userId: string | null,
+        serialNumbers?: number[]
     ): Promise<void> {
         const workers = new Workers();
         if (token.wipeContractId) {
@@ -612,7 +614,7 @@ export class MintService {
                             {
                                 type: ContractParamType.INT64,
                                 value: tokenValue,
-                            },
+                            }
                         ],
                         payload: { userId }
                     },
@@ -640,6 +642,7 @@ export class MintService {
                         targetAccount,
                         tokenValue,
                         uuid,
+                        serialNumbers,
                         payload: { userId }
                     },
                 },
