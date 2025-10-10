@@ -7114,6 +7114,11 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
+        - name: schemas
+          required: true
+          in: query
+          schema:
+            type: string
       requestBody:
         required: true
         description: A xlsx file containing policy config.
@@ -7150,7 +7155,12 @@ paths:
         DB. Only users with the Standard Registry role are allowed to make the
         request.
       operationId: PolicyApi_importPolicyFromXlsxPreview
-      parameters: []
+      parameters:
+        - name: policyId
+          required: true
+          in: query
+          schema:
+            type: string
       requestBody:
         required: true
         description: A xlsx file containing policy config.
