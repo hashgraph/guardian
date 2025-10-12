@@ -2868,6 +2868,34 @@ paths:
       summary: Get file from ipfs.
       tags:
         - ipfs
+    delete:
+      description: Remove file from ipfs.
+      operationId: IpfsApi_deleteFile
+      parameters:
+        - name: cid
+          required: true
+          in: path
+          description: File cid
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Remove file from ipfs.
+      tags:
+        - ipfs
   /ipfs/file/{cid}/dry-run:
     get:
       description: Get file from ipfs for dry run mode.
@@ -2900,35 +2928,6 @@ paths:
       security:
         - bearer: []
       summary: Get file from ipfs for dry run mode.
-      tags:
-        - ipfs
-  /ipfs/{cid}:
-    delete:
-      description: Remove file from ipfs.
-      operationId: IpfsApi_deleteFile
-      parameters:
-        - name: cid
-          required: true
-          in: path
-          description: File cid
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      security:
-        - bearer: []
-      summary: Remove file from ipfs.
       tags:
         - ipfs
   /logs:
