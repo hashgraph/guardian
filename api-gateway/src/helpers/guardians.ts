@@ -1043,6 +1043,16 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Remove file from IPFS (unpin/garbage collect on node side)
+     * @param user                    Authenticated user
+     * @param cid
+     * @returns { fileId, filename }
+     */
+    public async deleteIpfsCid(user: IAuthUser, cid: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.IPFS_DELETE_CID, { user, cid });
+    }
+
+    /**
      * Add file to dry run storage
      * @param buffer File
      * @returns CID, URL
@@ -3828,5 +3838,14 @@ export class Guardians extends NatsService {
         user: IAuthUser
     ): Promise<{ fileId: string; filename: string; contentType: string }> {
         return await this.sendMessage(MessageAPI.UPSERT_FILE, { user, ...payload });
+    }
+
+    /**
+     * Delete file
+     * @param user
+     * @param fileId
+     */
+    public async deleteGridFile(user: IAuthUser, fileId: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_FILE, { user, fileId });
     }
 }

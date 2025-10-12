@@ -173,4 +173,28 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
             return new MessageResponse({ error: error.message });
         }
     })
+
+    ApiResponse(MessageAPI.IPFS_DELETE_CID, async (msg: {
+        user: IAuthUser,
+        cid: string
+    }) => {
+        try {
+            if (!msg) {
+                throw new Error('Invalid payload');
+            }
+            if (!msg.cid) {
+                throw new Error('Invalid cid');
+            }
+
+            const response: boolean = await IPFS.deleteCid(msg.cid, {
+                userId: msg.user?.id,
+                interception: null
+            });
+
+            return new MessageResponse(response);
+        } catch (error) {
+            await logger.error(error, ['IPFS_CLIENT'], msg?.user?.id);
+            return new MessageError(error);
+        }
+    });
 }

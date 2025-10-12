@@ -10,7 +10,7 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { audit, takeUntil } from 'rxjs/operators';
+import {audit, finalize, takeUntil} from 'rxjs/operators';
 import { interval, Subject, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
@@ -268,6 +268,50 @@ export class RequestDocumentBlockComponent
         return null;
     }
 
+    // public async onSubmit(draft?: boolean) {
+    //     if (this.disabled || this.loading) {
+    //         return;
+    //     }
+    //
+    //     if (this.dataForm.valid || draft) {
+    //         const data = this.dataForm.getRawValue();
+    //         this.loading = true;
+    //
+    //         await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+    //
+    //         prepareVcData(data);
+    //         this.policyEngineService
+    //             .setBlockData(this.id, this.policyId, {
+    //                 document: data,
+    //                 ref: this.ref,
+    //                 draft
+    //             })
+    //             .subscribe(() => {
+    //                 setTimeout(() => {
+    //                     this.loading = false;
+    //                     if (draft) {
+    //                         this.draftDocument = {
+    //                             policyId: this.policyId,
+    //                             user: this.user.did,
+    //                             blockId: this.id,
+    //                             data
+    //                         };
+    //
+    //                         this.toastr.success('The draft version of the document was saved successfully', '', {
+    //                             timeOut: 3000,
+    //                             closeButton: true,
+    //                             positionClass: 'toast-bottom-right',
+    //                             enableHtml: true,
+    //                         });
+    //                     }
+    //                 }, 1000);
+    //             }, (e) => {
+    //                 console.error(e.error);
+    //                 this.loading = false;
+    //             });
+    //     }
+    // }
+
     public async onSubmit(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
@@ -280,13 +324,29 @@ export class RequestDocumentBlockComponent
             await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
 
             prepareVcData(data);
+
+            let requestSucceeded = false;
+
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, {
                     document: data,
                     ref: this.ref,
                     draft
                 })
+                .pipe(
+                    finalize(async () => {
+                        try {
+                            if (!requestSucceeded) {
+                                await this.tablePersist.rollbackIpfsUploads();
+                            }
+                        } finally {
+                            this.loading = false;
+                        }
+                    })
+                )
                 .subscribe(() => {
+                    requestSucceeded = true;
+
                     setTimeout(() => {
                         this.loading = false;
                         if (draft) {
