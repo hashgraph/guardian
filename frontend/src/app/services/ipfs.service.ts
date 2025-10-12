@@ -109,6 +109,6 @@ export class IPFSService {
 
     public deleteCid(cid: string): Observable<void> {
         const encodedCid = encodeURIComponent(cid);
-        return this.http.delete<void>(`${this.url}/${encodedCid}`, {});
+        return this.http.delete<void>(`${this.url}/file/${encodedCid}`, {});
     }
 }

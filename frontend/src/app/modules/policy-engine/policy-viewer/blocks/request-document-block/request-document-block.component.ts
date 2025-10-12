@@ -268,50 +268,6 @@ export class RequestDocumentBlockComponent
         return null;
     }
 
-    // public async onSubmit(draft?: boolean) {
-    //     if (this.disabled || this.loading) {
-    //         return;
-    //     }
-    //
-    //     if (this.dataForm.valid || draft) {
-    //         const data = this.dataForm.getRawValue();
-    //         this.loading = true;
-    //
-    //         await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
-    //
-    //         prepareVcData(data);
-    //         this.policyEngineService
-    //             .setBlockData(this.id, this.policyId, {
-    //                 document: data,
-    //                 ref: this.ref,
-    //                 draft
-    //             })
-    //             .subscribe(() => {
-    //                 setTimeout(() => {
-    //                     this.loading = false;
-    //                     if (draft) {
-    //                         this.draftDocument = {
-    //                             policyId: this.policyId,
-    //                             user: this.user.did,
-    //                             blockId: this.id,
-    //                             data
-    //                         };
-    //
-    //                         this.toastr.success('The draft version of the document was saved successfully', '', {
-    //                             timeOut: 3000,
-    //                             closeButton: true,
-    //                             positionClass: 'toast-bottom-right',
-    //                             enableHtml: true,
-    //                         });
-    //                     }
-    //                 }, 1000);
-    //             }, (e) => {
-    //                 console.error(e.error);
-    //                 this.loading = false;
-    //             });
-    //     }
-    // }
-
     public async onSubmit(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;

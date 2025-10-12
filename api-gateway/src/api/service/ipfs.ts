@@ -296,7 +296,7 @@ export class IpfsApi {
         }
     }
 
-    @Delete('/:cid')
+    @Delete('/file/:cid')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_MANAGE
