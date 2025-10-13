@@ -1,6 +1,7 @@
 export const DB_NAME = {
     GUARDIAN: 'GUARDIAN',
     TABLES: 'TABLES',
+    COMMENTS: 'COMMENTS',
 }
 
 export const STORES_NAME = {
@@ -9,4 +10,5 @@ export const STORES_NAME = {
     FILES_STORE: 'FILES_STORE',
     DRAFT_STORE: 'DRAFT_STORE',
     FILES_VIEW_STORE: 'FILES_VIEW_STORE',
+    LAST_READ_COMMENTS: 'LAST_READ_COMMENTS',
 }

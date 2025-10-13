@@ -1,5 +1,5 @@
-import {Injectable} from '@angular/core';
-import {openDB, IDBPDatabase} from 'idb';
+import { Injectable } from '@angular/core';
+import { openDB, IDBPDatabase } from 'idb';
 
 interface StoreConfig {
     name: string;
@@ -12,7 +12,7 @@ interface DbMeta {
     dbPromise?: Promise<IDBPDatabase<unknown>>;
 }
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class IndexedDbRegistryService {
     private metas = new Map<string, DbMeta>();
 
@@ -62,11 +62,11 @@ export class IndexedDbRegistryService {
 
         const openWithListener = () =>
             this.open(dbName, meta).then((db: any) => {
-            db.addEventListener('versionchange', () => {
-                try { db.close(); } catch {}
-                const m = this.metas.get(dbName);
-                if (m) m.dbPromise = undefined;
-            });
+                db.addEventListener('versionchange', () => {
+                    try { db.close(); } catch { }
+                    const m = this.metas.get(dbName);
+                    if (m) m.dbPromise = undefined;
+                });
                 return db;
             });
 
@@ -110,16 +110,45 @@ export class IndexedDbRegistryService {
         }
     }
 
-    put<T = unknown>(db: string, store: string, value: T) {
+    public put<T = unknown>(db: string, store: string, value: T): Promise<IDBValidKey> {
         return this.getDB(db).then(conn => conn.put(store, value));
     }
 
-    get<T = unknown>(db: string, store: string, key: IDBValidKey) {
+    public get<T = unknown>(db: string, store: string, key: IDBValidKey): Promise<T> {
         return this.getDB(db).then(conn => conn.get(store, key));
     }
 
-    delete(db: string, store: string, key: IDBValidKey) {
+    public getAll<T = unknown>(db: string, store: string, range: IDBValidKey | IDBKeyRange): Promise<T[]> {
+        return this.getDB(db).then(conn => conn.getAll(store, range));
+    }
+
+    public delete(db: string, store: string, key: IDBValidKey): Promise<void> {
         return this.getDB(db).then(conn => conn.delete(store, key));
+    }
+
+    public getBatch<T = unknown>(db: string, store: string, keys: IDBValidKey[]): Promise<T[]> {
+        return new Promise<T[]>((resolve) => {
+            this.getDB(db).then((conn) => {
+                let index = 0;
+                const items: T[] = [];
+                for (const key of keys) {
+                    conn.get(store, key).then((value) => {
+                        if (value) {
+                            items.push(value);
+                        }
+                        index++;
+                        if (index >= keys.length) {
+                            resolve(items);
+                        }
+                    }).catch(() => {
+                        index++;
+                        if (index >= keys.length) {
+                            resolve(items);
+                        }
+                    })
+                }
+            });
+        });
     }
 
     private open(dbName: string, meta: DbMeta) {

@@ -1,29 +1,31 @@
-<div *ngIf="!collapse" class="container">
+<div *ngIf="!collapse" class="container" [attr.loading]="loading">
     <div class="header">
+        <button
+            (click)="onClose()"
+            class="guardian-icon-button big header-collapse">
+            <div class="guardian-button-icon">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/collapse-left-fill.svg"
+                    [svgClass]="'icon-color-primary'">
+                </svg-icon>
+            </div>
+        </button>
+
         <div *ngIf="currentTab === 'new-discussion'" class="header-container">
-            <svg-icon
-                class="icon-btn"
-                src="/assets/images/icons/new-chat.svg"
-                [svgClass]="'icon-color-primary'">
-            </svg-icon>
             <div class="component-name">Create New Discussion</div>
         </div>
 
         <div *ngIf="currentTab === 'discussions'" class="header-container">
-            <svg-icon
-                class="icon-btn"
-                src="/assets/images/icons/chat.svg"
-                [svgClass]="'icon-color-primary'">
-            </svg-icon>
             <div class="component-name">Comments</div>
         </div>
 
         <div *ngIf="currentTab === 'messages'" class="header-container back" (click)="selectDiscussion()">
-            <svg-icon
+            <!-- <svg-icon
                 class="icon-btn"
                 src="/assets/images/icons/left-arrow.svg"
                 [svgClass]="'icon-color-primary'">
-            </svg-icon>
+            </svg-icon> -->
             <div class="component-name">
                 {{currentDiscussion?.name}}
             </div>
@@ -46,11 +48,11 @@
                     svgClass="icon-color-grey-color-3">
                 </svg-icon>
             </button>
-            <div class="component-close" (click)="onClose()">
+            <!-- <div class="component-close" (click)="onClose()">
                 <svg-icon
                     src="/assets/images/icons/close.svg"
                     svgClass="icon-color-close"></svg-icon>
-            </div>
+            </div> -->
         </div>
         <div *ngIf="currentTab === 'messages' && currentDiscussion" class="header-toolbar">
             <button
@@ -71,6 +73,14 @@
                     svgClass="icon-color-grey-color-3">
                 </svg-icon>
             </button>
+            <button
+                class="guardian-icon-button group-btn big"
+                (click)="selectDiscussion()">
+                <svg-icon class="icon-btn svg-icon" 
+                    src="/assets/images/icons/close.svg"
+                    svgClass="icon-color-close">
+                </svg-icon>
+            </button>
             <p-overlayPanel #groupMenu styleClass="guardian-popup">
                 <div *ngFor="let item of currentDiscussion._users" class="discussion-user">
                     <svg-icon
@@ -85,9 +95,20 @@
             </p-overlayPanel>
         </div>
     </div>
-    <div *ngIf="loading" class="guardian-loading">
+    <!-- <div *ngIf="loading" class="guardian-loading">
         <div class="guardian-loading-image"></div>
-    </div>
+    </div> -->
+
+    <!-- <div *ngIf="currentTab === 'messages'" class="header-back" (click)="selectDiscussion()">
+        <svg-icon
+            class="icon-btn"
+            src="/assets/images/icons/left-arrow.svg"
+            [svgClass]="'icon-color-primary'">
+        </svg-icon>
+        <div class="component-name">
+            {{currentDiscussion?.name}}
+        </div>
+    </div> -->
 
     <ng-container *ngIf="currentTab === 'new-discussion'">
         <div class="new-discussion">
@@ -196,6 +217,9 @@
                 class="guardian-button guardian-button-secondery new-discussion-btn"
             >Cancel</button>
         </div>
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
     </ng-container>
 
     <ng-container *ngIf="currentTab === 'discussions'">
@@ -278,8 +302,8 @@
                                 *ngIf="discussion._icon"
                                 src="/assets/images/icons/{{discussion._icon}}.svg" 
                                 svgClass="icon-color-primary"></svg-icon>
-                            <div *ngIf="discussion.count" class="discussion-count">
-                                {{discussion.count}}
+                            <div *ngIf="discussion._unread" class="discussion-count">
+                                {{discussion._unread}}
                             </div>
                         </div>
                         <div class="discussion-body">
@@ -299,16 +323,28 @@
                     </div>
                 </div>
             </div>
+             <div *ngIf="loading" class="loading-placeholder">
+                <div *ngFor="let i of loadingItems" class="placeholder-item">
+                    <div class="placeholder-item-icon"></div>
+                    <div class="placeholder-item-body">
+                        <div class="placeholder-item-name"></div>
+                        <div class="placeholder-item-description"></div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div *ngIf="!readonly" class="toolbar">
             <button
                 (click)="onNewDiscussion()"
                 class="guardian-button guardian-button-primary new-discussion-btn"
+                [disabled]="loading"
             >
                 <div class="guardian-button-icon">
-                    <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/add.svg"
-                        svgClass="icon-color-secondary">
-                    </svg-icon>
+                    <svg-icon 
+                        class="icon-btn svg-icon" 
+                        src="/assets/images/icons/new-chat.svg"
+                        [svgClass]="loading ? 'icon-color-disabled' : 'icon-color-secondary'"
+                    ></svg-icon>
                 </div>
                 <div class="guardian-button-label">Create New Discussion</div>
             </button> 
@@ -434,6 +470,14 @@
                     <div class="guardian-button-label">More</div>
                 </button> 
             </div>
+            <!-- <div *ngIf="loading" class="loading-placeholder reverse">
+                <div *ngFor="let i of loadingItems" class="placeholder-item type-{{i.type}}">
+                    <div class="placeholder-item-body">
+                        <div class="placeholder-item-time"></div>
+                        <div class="placeholder-item-message size-{{i.size}}"></div>
+                    </div>
+                </div>
+            </div> -->
         </div>
         <div *ngIf="!readonly" class="toolbar" (drop)="onDrop($event)">
             <div class="guardian-textarea-container toolbar-textarea">
@@ -514,17 +558,44 @@
                 </button>
             </div>
         </div>
+        <div *ngIf="loading" class="guardian-loading message-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
     </ng-container>
     
 </div>
 
-<div *ngIf="collapse" class="collapse-container">
+<div *ngIf="collapse" class="collapse-container" [attr.loading]="loading">
     <div class="header">
-        <svg-icon
+        <!-- <svg-icon
             class="icon-btn svg-icon"
             src="/assets/images/icons/chat-1.svg"
             [svgClass]="'icon-color-primary'">
-        </svg-icon>
+        </svg-icon> -->
+        <button
+            (click)="onOpen()"
+            class="guardian-icon-button big header-collapse">
+            <div class="guardian-button-icon">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/collapse-right-fill.svg"
+                    [svgClass]="'icon-color-primary'">
+                </svg-icon>
+            </div>
+        </button>
+    </div>
+    <div class="discussion-filters">
+        <button
+            (click)="onOpen()"
+            class="guardian-icon-button big filters-btn">
+            <div class="guardian-button-icon">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/search.svg"
+                    [svgClass]="'icon-color-disabled'">
+                </svg-icon>
+            </div>
+        </button>
     </div>
     <div class="discussions">
         <div class="collapse-discussions">
@@ -534,21 +605,28 @@
                         *ngIf="discussion._icon"
                         src="/assets/images/icons/{{discussion._icon}}.svg" 
                         svgClass="icon-color-primary"></svg-icon>
-                    <div *ngIf="discussion.count" class="discussion-count">
-                        {{discussion.count}}
+                    <div *ngIf="discussion._unread" class="discussion-count">
+                        {{discussion._unread}}
                     </div>
                 </div>
+            </div>
+        </div>
+        <div *ngIf="loading" class="loading-placeholder">
+            <div *ngFor="let i of loadingItems" class="placeholder-item">
+                <div class="placeholder-item-icon"></div>
             </div>
         </div>
     </div>
     <div class="collapse-toolbar">
         <button
-            (click)="onOpen()"
-            class="guardian-button guardian-button-primary open-btn">
+            (click)="onNewDiscussion()"
+            class="guardian-button guardian-button-primary open-btn"
+            [disabled]="loading"
+        >
             <div class="guardian-button-icon">
                 <svg-icon
                     class="icon-btn"
-                    src="/assets/images/icons/left-arrow.svg"
+                    src="/assets/images/icons/new-chat.svg"
                     [svgClass]="'icon-color-secondary'">
                 </svg-icon>
             </div>

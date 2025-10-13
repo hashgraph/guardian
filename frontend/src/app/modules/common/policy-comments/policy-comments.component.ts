@@ -35,6 +35,8 @@ interface DiscussionItem {
     privacy?: string;
     roles?: string[];
     users?: string[];
+    _count?: number;
+    _unread?: number;
     _short?: string;
     _icon?: string;
     _users?: {
@@ -65,6 +67,42 @@ interface DiscussionGroup {
     collapsed: boolean,
     items: DiscussionItem[]
 }
+
+interface LastRead {
+    policyId: string;
+    documentId: string;
+    discussionId: string,
+    count: number,
+}
+
+const placeholderItems = [{
+    type: 'left',
+    size: 3
+}, {
+    type: 'left',
+    size: 2
+}, {
+    type: 'right',
+    size: 2
+}, {
+    type: 'left',
+    size: 3
+}, {
+    type: 'right',
+    size: 2
+}, {
+    type: 'right',
+    size: 1
+}, {
+    type: 'left',
+    size: 3
+}, {
+    type: 'left',
+    size: 2
+}, {
+    type: 'right',
+    size: 2
+}]
 
 /**
  * Dialog for icon preview.
@@ -107,6 +145,8 @@ export class PolicyComments {
     public schemas: Schema[] = [];
 
     public discussions: DiscussionItem[] = [];
+    public lastRead: LastRead[] = [];
+
     public discussionGroups: DiscussionGroup[] = [];
     public currentDiscussion: DiscussionItem | null | undefined = null;
     public searchField?: FieldItem = undefined;
@@ -141,6 +181,14 @@ export class PolicyComments {
     public documentsList: any[] = [];
     public fieldList: any[] = [];
 
+    public loadingItems = [
+        ...placeholderItems,
+        ...placeholderItems,
+        ...placeholderItems,
+        ...placeholderItems,
+        ...placeholderItems,
+    ];
+
     private _destroy$ = new Subject<void>();
     public _findChoices = this.findChoices.bind(this);
     public _getChoiceLabel = this.getChoiceLabel.bind(this);
@@ -174,10 +222,14 @@ export class PolicyComments {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.loading = true;
-        this.loadProfile();
-        this.updateTargets();
-        this.changeView();
+        if (changes.policyId || changes.documentId) {
+            this.loading = true;
+            this.loadProfile();
+            this.updateTargets();
+            this.changeView();
+        } else {
+            this.changeView();
+        }
     }
 
     ngOnDestroy(): void {
@@ -215,15 +267,12 @@ export class PolicyComments {
                 this.owner = this.user.did;
                 this.users = users;
                 this.documentsList = relationships;
-                this.discussions = discussions;
+                this.discussions = discussions || [];
                 this.schemas = schemas.map((s) => new Schema(s));
 
-                this.updateDiscussions();
                 this.updateTargets();
 
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
+                this.loadDiscussionMetadata();
             }, (e) => {
                 this.loading = false;
             });
@@ -232,21 +281,40 @@ export class PolicyComments {
     private loadDiscussions() {
         this.loading = true;
         const filters = this.getDiscussionFilters();
+
         this.commentsService.getDiscussions(this.policyId, this.documentId, filters, this.readonly)
             .pipe(takeUntil(this._destroy$))
             .subscribe((discussions) => {
-                this.discussions = discussions;
-
-                this.updateDiscussions();
-
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
+                this.discussions = discussions || [];
+                this.loadDiscussionMetadata();
             }, (e) => {
                 this.loading = false;
             });
     }
 
+    private loadDiscussionMetadata() {
+        this.loading = true;
+        const ids = this.discussions.map((d) => d.id);
+        this.commentsService.getLastReads(this.owner, ids)
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((lastRead) => {
+                this.lastRead = lastRead || [];
+
+                this.updateDiscussions();
+
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1000);
+            }, (e) => {
+                this.lastRead = [];
+
+                this.updateDiscussions();
+
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1000);
+            });
+    }
 
     private loadComments(
         type: 'load' | 'update' | 'more',
@@ -286,9 +354,17 @@ export class PolicyComments {
                     this.resetScroll();
                 }
 
+                this.commentsService.setLastRead(
+                    this.owner,
+                    this.policyId,
+                    this.documentId,
+                    this.currentDiscussion?.id,
+                    this.data.count
+                ).subscribe((response) => { }, (e) => { });
+
                 setTimeout(() => {
                     this.loading = false;
-                }, 500);
+                }, 1000);
             }, (e) => {
                 this.loading = false;
             });
@@ -308,6 +384,7 @@ export class PolicyComments {
                 this.discussionForm.value
             ).subscribe((response) => {
                 this.currentTab = 'messages';
+                this.updateDiscussion(response);
                 this.currentDiscussion = response;
                 this.loadComments('load');
             }, (e) => {
@@ -455,43 +532,12 @@ export class PolicyComments {
 
     private updateDiscussions() {
         for (const discussion of this.discussions) {
-            discussion._short = (discussion.name || '#').substring(0, 1);
-            discussion._icon = (
-                discussion.privacy === 'users' ||
-                discussion.privacy === 'roles'
-            ) ? 'chat-2' : 'chat-1';
-            discussion._users = [];
-            if (discussion.privacy === 'users' || discussion.privacy === 'roles') {
-                const map = new Map<string, any>();
-                if (discussion.roles) {
-                    for (const role of discussion.roles) {
-                        map.set(role, {
-                            icon: 'group',
-                            label: role,
-                            type: 'role'
-                        })
-                    }
-                }
-                if (discussion.users) {
-                    for (const user of discussion.users) {
-                        map.set(user, {
-                            icon: 'user-2',
-                            label: this.getUserName(user),
-                            type: 'user'
-                        })
-                    }
-                }
-                if (discussion.owner) {
-                    map.set(discussion.owner, {
-                        icon: 'user-2',
-                        label: this.getUserName(discussion.owner),
-                        type: 'user'
-                    })
-                }
-                for (const item of map.values()) {
-                    discussion._users.push(item);
-                }
-            }
+            this.updateDiscussion(discussion);
+        }
+
+        const lastMap = new Map<string, number>();
+        for (const item of this.lastRead) {
+            lastMap.set(item.discussionId, item.count);
         }
 
         const currentGroup: DiscussionGroup = { name: 'Current', items: [], collapsed: false };
@@ -511,6 +557,8 @@ export class PolicyComments {
                 relatedGroup.items.push(discussion);
                 discussion._hidden = relatedGroup.collapsed;
             }
+            discussion._count = lastMap.get(discussion.id) || 0;
+            discussion._unread = Math.max(discussion.count - discussion._count, 0);
         }
         if (this.discussions.length) {
             this.discussionGroups = [currentGroup];
@@ -520,6 +568,51 @@ export class PolicyComments {
         }
         if (historyGroup.items.length) {
             this.discussionGroups.push(historyGroup);
+        }
+    }
+
+    private updateDiscussion(discussion?: DiscussionItem) {
+        if (!discussion) {
+            return;
+        }
+        discussion._count = 0;
+        discussion._unread = discussion.count;
+        discussion._short = (discussion.name || '#').substring(0, 1);
+        discussion._icon = (
+            discussion.privacy === 'users' ||
+            discussion.privacy === 'roles'
+        ) ? 'chat-2' : 'chat-1';
+        discussion._users = [];
+        if (discussion.privacy === 'users' || discussion.privacy === 'roles') {
+            const map = new Map<string, any>();
+            if (discussion.roles) {
+                for (const role of discussion.roles) {
+                    map.set(role, {
+                        icon: 'group',
+                        label: role,
+                        type: 'role'
+                    })
+                }
+            }
+            if (discussion.users) {
+                for (const user of discussion.users) {
+                    map.set(user, {
+                        icon: 'user-2',
+                        label: this.getUserName(user),
+                        type: 'user'
+                    })
+                }
+            }
+            if (discussion.owner) {
+                map.set(discussion.owner, {
+                    icon: 'user-2',
+                    label: this.getUserName(discussion.owner),
+                    type: 'user'
+                })
+            }
+            for (const item of map.values()) {
+                discussion._users.push(item);
+            }
         }
     }
 
@@ -935,6 +1028,7 @@ export class PolicyComments {
     }
 
     public onNewDiscussion() {
+        this.onOpen();
         this.currentTab = 'new-discussion';
         this.discussionForm.setValue({
             name: '',
@@ -1080,4 +1174,12 @@ export class PolicyComments {
             });
     }
     //#endregion
+
+    public onCollapse() {
+        if (this.collapse) {
+            this.onOpen();
+        } else {
+            this.onClose();
+        }
+    }
 }

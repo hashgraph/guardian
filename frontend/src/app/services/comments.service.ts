@@ -2,8 +2,9 @@ import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MigrationConfig, PolicyAvailability, PolicyToolMetadata } from '@guardian/interfaces';
 import { Observable, firstValueFrom, of } from 'rxjs';
-import { headersV2 } from '../constants';
+import { DB_NAME, headersV2, STORES_NAME } from '../constants';
 import { API_BASE_URL } from './api';
+import { IndexedDbRegistryService } from './indexed-db-registry.service';
 
 /**
  * Services for working from policy and separate blocks.
@@ -12,7 +13,14 @@ import { API_BASE_URL } from './api';
 export class CommentsService {
     private readonly url: string = `${API_BASE_URL}/policy-comments`;
 
-    constructor(private http: HttpClient) {
+    constructor(
+        private http: HttpClient,
+        private idb: IndexedDbRegistryService,
+    ) {
+        this.idb.registerStores(
+            DB_NAME.COMMENTS,
+            [{ name: STORES_NAME.LAST_READ_COMMENTS, options: { keyPath: 'id' } }]
+        );
     }
 
     public parsePage(response: HttpResponse<any[]>) {
@@ -176,6 +184,52 @@ export class CommentsService {
         return this.http.get(`${this.url}/${policyId}/${documentId}/keys`, {
             params,
             responseType: 'arraybuffer',
+        });
+    }
+
+    public getLastReads(
+        userId: string,
+        discussionIds: string[]
+    ): Observable<any> {
+        return new Observable((subscriber) => {
+            this.idb.getBatch(
+                DB_NAME.COMMENTS,
+                STORES_NAME.LAST_READ_COMMENTS,
+                discussionIds.map((discussionId) => `${userId}_${discussionId}`)
+            ).then((value) => {
+                subscriber.next(value);
+            }).catch((error) => {
+                subscriber.error(error);
+            }).finally(() => {
+                subscriber.complete();
+            })
+        });
+    }
+
+    public setLastRead(
+        userId: string,
+        policyId?: string,
+        documentId?: string,
+        discussionId?: string,
+        count?: number
+    ): Observable<any> {
+        return new Observable((subscriber) => {
+            this.idb.put(
+                DB_NAME.COMMENTS,
+                STORES_NAME.LAST_READ_COMMENTS,
+                {
+                    id: `${userId}_${discussionId}`,
+                    policyId,
+                    documentId,
+                    discussionId,
+                    count
+                }).then((value) => {
+                    subscriber.next(value);
+                }).catch((error) => {
+                    subscriber.error(error);
+                }).finally(() => {
+                    subscriber.complete();
+                })
         });
     }
 }
