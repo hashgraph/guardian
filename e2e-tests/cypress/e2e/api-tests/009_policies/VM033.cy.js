@@ -272,6 +272,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                             authorization
                         },
                         failOnStatusCode: false,
+                        timeout: 60000
                     }
                     Checks.whileRequestProccessing(waitProjectAddStatus, "Waiting to be Added", "data.0.option.status")
                 })
@@ -308,6 +309,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                             authorization
                         },
                         failOnStatusCode: false,
+                        timeout: 60000
                     }
                     Checks.whileRequestProccessing(waitVVBApproved, "APPROVED", "data.0.option.status")
                 })
@@ -344,6 +346,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                             authorization
                         },
                         failOnStatusCode: false,
+                        timeout: 60000
                     }
                     Checks.whileRequestProccessing(waitProjValidate, "Waiting to Validate", "data.0.option.status")
                 })
@@ -447,7 +450,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                             headers: {
                                 authorization
                             },
-                            timeout:120000,
+                            timeout: 120000,
                             failOnStatusCode: false,
                         }
                         Checks.whileRequestProccessing(waitReportCreating, "Waiting for Verification", "data.0.option.status")
@@ -521,6 +524,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                             authorization
                         },
                         failOnStatusCode: false,
+                        timeout: 60000
                     }
                     Checks.whileRequestProccessing(waitReportIsVerifying, "Verified", "data.0.option.status")
                 })
