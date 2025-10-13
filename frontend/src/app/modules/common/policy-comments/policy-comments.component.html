@@ -353,15 +353,6 @@
 
     <ng-container *ngIf="currentTab === 'messages'">
         <div class="discussion-filters message-filters">
-            <div *ngIf="currentDiscussion?.field" class="field-filter" (click)="onLinkField(currentDiscussion?.field)">
-                <div class="field-filter-icon">
-                    <svg-icon 
-                        class="svg-icon-16" 
-                        src="/assets/images/icons/16/hashtag.svg" 
-                        svgClass="icon-color-primary"></svg-icon>
-                </div>
-                <div class="field-filter-name">{{currentDiscussion?.fieldName}}</div>
-            </div>
             <div class="search-filter">
                 <input
                     [(ngModel)]="searchMessage"
@@ -377,6 +368,15 @@
                         svgClass="icon-color-close">
                     </svg-icon>
                 </i>
+            </div>
+            <div *ngIf="currentDiscussion?.field" class="field-filter" (click)="onLinkField(currentDiscussion?.field)">
+                <div class="field-filter-icon">
+                    <svg-icon 
+                        class="svg-icon-16" 
+                        src="/assets/images/icons/16/hashtag.svg" 
+                        svgClass="icon-color-primary"></svg-icon>
+                </div>
+                <div class="field-filter-name">{{currentDiscussion?.fieldName}}</div>
             </div>
         </div>
         <div #messageContainer class="messages-container">

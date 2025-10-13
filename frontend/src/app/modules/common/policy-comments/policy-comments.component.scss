@@ -200,12 +200,13 @@
 
     .message-filters {
         .field-filter {
-            margin-top: 0px !important;
-            margin-bottom: 8px !important;
+            margin-top: 8px !important;
+            margin-bottom: 0px !important;
             cursor: pointer;
+            filter: grayscale(1);
 
             &:hover {
-                filter: brightness(0.95);
+                filter: grayscale(1) brightness(0.95);
             }
         }
     }
@@ -1332,5 +1333,6 @@ textarea {
 }
 
 .message-loading {
-    top: 130px;
+    top: 72px;
+    border-top: 1px solid #E1E7EF;
 }
