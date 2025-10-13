@@ -106,4 +106,9 @@ export class IPFSService {
         let cidMatches = link.match(this.cidPattern);
         return this.getJsonFile((cidMatches && cidMatches[0]) || '')
     }
+
+    public deleteCid(cid: string): Observable<void> {
+        const encodedCid = encodeURIComponent(cid);
+        return this.http.delete<void>(`${this.url}/file/${encodedCid}`, {});
+    }
 }

@@ -453,4 +453,36 @@ export class ArtifactApi {
             await InternalException(error, this.logger, user.id);
         }
     }
+
+    @Delete('/files/:fileId')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Delete file by id',
+        description: 'Deletes file from GridFS by _id'
+    })
+    @ApiParam({
+        name: 'fileId',
+        type: String, required: true,
+        description: 'File _id'
+    })
+    @HttpCode(HttpStatus.OK)
+    async deleteFile(
+        @AuthUser() user: IAuthUser,
+        @Param('fileId') fileId: string,
+        @Res({ passthrough: true }) res: FastifyReply
+    ) {
+        try {
+            if (!fileId?.trim()) {
+                res.code(HttpStatus.BAD_REQUEST);
+                return { message: 'fileId is required' };
+            }
+            const guardians = new Guardians();
+            return await guardians.deleteGridFile(user, fileId);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
 }

@@ -193,6 +193,14 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
     }
 
     /**
+     * Delete file
+     * @param id
+     */
+    public static async deleteFile(id: ObjectId): Promise<void> {
+        await DataBaseHelper.gridFS.delete(id);
+    }
+
+    /**
      * Load file
      * @param id
      *

@@ -4,21 +4,27 @@ import { ArtifactService } from './artifact.service';
 import { IPFSService } from './ipfs.service';
 import { IndexedDbRegistryService } from './indexed-db-registry.service';
 import { ITableField } from '@guardian/interfaces';
+import { GzipService } from './gzip.service';
 
 import {DB_NAME, STORES_NAME} from "../constants";
 
 @Injectable({ providedIn: 'root' })
 export class TablePersistenceService {
     private draftMode = false;
+    private pendingIpfsCids = new Set<string>();
+    private pendingGridFsFiles: { fileId: string; idbKey: string }[] = [];
 
     constructor(
         private artifactService: ArtifactService,
         private ipfsService: IPFSService,
-        private indexedDb: IndexedDbRegistryService
+        private indexedDb: IndexedDbRegistryService,
+        private gzip: GzipService
     ) {}
 
     public async persistTablesInDocument(root: unknown, isDryRun: boolean, policyId: string = '', blockId: string = '', draft: boolean = false): Promise<void> {
         this.draftMode = draft;
+        this.pendingIpfsCids.clear();
+        this.pendingGridFsFiles = [];
         await this.visitNode(root, isDryRun);
     }
 
@@ -74,9 +80,9 @@ export class TablePersistenceService {
             return input;
         }
 
-        const idbKey = (parsed.idbKey || '').trim();
-        const existingFileId = (parsed.fileId || '').trim();
-        const existingCid = (parsed.cid || '').trim();
+        const idbKey = parsed.idbKey?.trim();
+        const existingFileId = parsed.fileId?.trim();
+        const existingCid = parsed.cid?.trim();
 
         if (this.draftMode) {
             if (idbKey) {
@@ -92,7 +98,7 @@ export class TablePersistenceService {
         }
 
         if (fileFromIndexedDb) {
-            const fileId = await this.uploadToGridFs(fileFromIndexedDb, existingFileId || undefined);
+            const fileId = await this.uploadToGridFs(fileFromIndexedDb, idbKey ?? "", existingFileId);
             const cid = await this.uploadToIpfs(fileFromIndexedDb, isDryRun);
             await this.deleteFromIndexedDb(idbKey);
             return this.buildCompactTableJson(fileId, cid);
@@ -156,9 +162,17 @@ export class TablePersistenceService {
         } catch {}
     }
 
-    private async uploadToGridFs(file: File, existingFileId?: string): Promise<string> {
+    private async uploadToGridFs(file: File, idbKey: string, existingFileId?: string): Promise<string> {
         const response = await firstValueFrom(this.artifactService.upsertFile(file, existingFileId));
-        return response.fileId;
+
+        const fileId = response.fileId;
+
+        this.pendingGridFsFiles.push({
+            fileId,
+            idbKey,
+        });
+
+        return fileId;
     }
 
     private async uploadToIpfs(file: File, isDryRun: boolean): Promise<string | null> {
@@ -167,8 +181,13 @@ export class TablePersistenceService {
         }
 
         const cid = await firstValueFrom(this.ipfsService.addFileDirect(file));
+
         if (typeof cid === 'string' && cid.trim()) {
-            return cid.trim();
+            const normalizedCid = cid.trim();
+
+            this.pendingIpfsCids.add(normalizedCid);
+
+            return normalizedCid;
         }
 
         return null;
@@ -251,6 +270,67 @@ export class TablePersistenceService {
                 { ...draftRecord, id: normalizedKey }
             );
 
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    public async rollbackIpfsUploads(): Promise<void> {
+        const cids = Array.from(this.pendingIpfsCids);
+        this.pendingIpfsCids.clear();
+
+        for (const cid of cids) {
+            try {
+                await firstValueFrom(this.ipfsService.deleteCid(cid));
+            } catch {}
+        }
+
+        const gridFiles = [...this.pendingGridFsFiles];
+        this.pendingGridFsFiles = [];
+
+        for (const { fileId, idbKey } of gridFiles) {
+            try {
+                const blob = await firstValueFrom(this.artifactService.getFileBlob(fileId));
+
+                const csvText = await this.gzip.gunzipToText(blob);
+                const originalSize = new Blob([csvText]).size;
+
+                const record = {
+                    id: idbKey,
+                    originalName: `${fileId}.csv.gz`,
+                    originalSize,
+                    gzSize: blob.size,
+                    delimiter: ',',
+                    createdAt: Date.now(),
+                    blob
+                };
+
+                await Promise.all([
+                    this.saveToIndexedDb(DB_NAME.TABLES, STORES_NAME.FILES_STORE, record),
+                    this.saveToIndexedDb(DB_NAME.TABLES, STORES_NAME.DRAFT_STORE, record)
+                ]);
+
+                await firstValueFrom(this.artifactService.deleteFile(fileId));
+            } catch {}
+        }
+    }
+
+    public async saveToIndexedDb(
+        dbName: string,
+        storeName: string,
+        record: {
+            id: string,
+            originalName: string;
+            originalSize: number;
+            gzSize: number;
+            delimiter: string;
+            createdAt: number;
+            blob: Blob;
+        }
+    ): Promise<boolean> {
+        try {
+            await this.indexedDb.put(dbName, storeName, record);
             return true;
         } catch {
             return false;

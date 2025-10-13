@@ -340,4 +340,21 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
             return new MessageError(error?.message || 'File upsert error');
         }
     });
+
+    ApiResponse(MessageAPI.DELETE_FILE, async (msg: {
+        user: IAuthUser,
+        fileId: string
+    }) => {
+        try {
+            if (!msg?.fileId) {
+                return new MessageError('fileId is required');
+            }
+
+            await DatabaseServer.deleteGridFile(msg.fileId);
+            return new MessageResponse(true);
+        } catch (e) {
+            await logger.error(e, ['GUARDIAN_SERVICE'], msg?.user?.id);
+            return new MessageError(e?.message || 'File delete error');
+        }
+    });
 }
