@@ -42,6 +42,11 @@ export class RequestConfigComponent implements OnInit {
         {label: 'DIALOG', value: 'dialog'}
     ];
 
+    public uiMetaDataEditType = [
+        {label: 'New', value: 'new'},
+        {label: 'Edit', value: 'edit'}
+    ];
+
     constructor() {
         this.presetMap = [];
     }
