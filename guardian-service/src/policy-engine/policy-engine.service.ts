@@ -3590,32 +3590,32 @@ export class PolicyEngineService {
                         });
                     }
 
-                    // if (params?.field) {
-                    //     const comments = await DatabaseServer.getPolicyComments({
-                    //         policyId,
-                    //         relationshipIds: documentId,
-                    //         fields: params.field
-                    //     }, {
-                    //         fields: [
-                    //             'discussionId',
-                    //             'fields'
-                    //         ] as any
-                    //     });
-                    //     const discussionMap = new Set<string>();
-                    //     for (const comment of comments) {
-                    //         discussionMap.add(comment.discussionId);
-                    //     }
-                    //     const discussionIds = Array
-                    //         .from(discussionMap)
-                    //         .map((id) => DatabaseServer.dbID(id));
-                    //     filters.$and.push({
-                    //         $or: [{
-                    //             field: params.field
-                    //         }, {
-                    //             _id: { $in: discussionIds }
-                    //         }]
-                    //     });
-                    // }
+                    if (params?.field) {
+                        const comments = await DatabaseServer.getPolicyComments({
+                            policyId,
+                            relationshipIds: documentId,
+                            fields: params.field
+                        }, {
+                            fields: [
+                                'discussionId',
+                                'fields'
+                            ] as any
+                        });
+                        const discussionMap = new Set<string>();
+                        for (const comment of comments) {
+                            discussionMap.add(comment.discussionId);
+                        }
+                        const discussionIds = Array
+                            .from(discussionMap)
+                            .map((id) => DatabaseServer.dbID(id));
+                        filters.$and.push({
+                            $or: [{
+                                field: params.field
+                            }, {
+                                _id: { $in: discussionIds }
+                            }]
+                        });
+                    }
 
                     const otherOptions: any = {
                         orderBy: { updateDate: -1 }
@@ -3625,6 +3625,7 @@ export class PolicyEngineService {
                     for (const discussion of discussions) {
                         (discussion as any).historyIds = targets;
                     }
+
                     // const commonDiscussion = await PolicyCommentsUtils.getCommonDiscussion(policy, vc, params.audit);
                     // if (commonDiscussion) {
                     //     discussions = discussions.filter((d)=>d.id === commonDiscussion.id);
@@ -3773,6 +3774,7 @@ export class PolicyEngineService {
                         policyId,
                         discussionId: discussion.id,
                     })
+
                     await DatabaseServer.updatePolicyDiscussion(discussion);
 
                     return new MessageResponse(row);
