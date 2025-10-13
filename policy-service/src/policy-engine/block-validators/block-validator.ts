@@ -47,7 +47,15 @@ import { TagsManagerBlock } from './blocks/tag-manager.js';
 import { ExternalTopicBlock } from './blocks/external-topic-block.js';
 import { MessagesReportBlock } from './blocks/messages-report-block.js';
 import { NotificationBlock } from './blocks/notification.block.js';
-import { ISchema, SchemaEntity, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import {
+    ISchema,
+    SchemaEntity,
+    SchemaField,
+    SchemaHelper,
+    buildMessagesForValidator,
+    IgnoreRule,
+    PolicyMessage
+} from '@guardian/interfaces';
 import { ToolValidator } from './tool-validator.js';
 import { ToolBlock } from './blocks/tool.js';
 import { ExtractDataBlock } from './blocks/extract-data.js';
@@ -162,9 +170,16 @@ export class BlockValidator {
      */
     private readonly children: BlockValidator[];
 
+    /**
+     * Storage for structured messages and their string representations used for serialization.
+     */
+    private readonly warningMessagesText: string[] = [];
+    private readonly infoMessagesText: string[] = [];
+
     constructor(
         config: any,
-        validator: PolicyValidator | ModuleValidator | ToolValidator
+        validator: PolicyValidator | ModuleValidator | ToolValidator,
+        private readonly ignoreRules?: ReadonlyArray<IgnoreRule>,
     ) {
         this.errors = [];
         this.validator = validator;
@@ -238,6 +253,15 @@ export class BlockValidator {
      */
     public async validate(): Promise<void> {
         try {
+            const { warningsText, infosText } = buildMessagesForValidator(
+                this.blockType,
+                this.options,
+                this.ignoreRules
+            );
+
+            this.warningMessagesText.push(...warningsText);
+            this.infoMessagesText.push(...infosText);
+
             if (this.validator.tagCount(this.tag) > 1) {
                 this.addError(`Tag ${this.tag} already exist`);
             }
@@ -265,6 +289,8 @@ export class BlockValidator {
             id: this.uuid,
             name: this.blockType,
             errors: this.errors.slice(),
+            warnings: this.warningMessagesText.slice(),
+            infos: this.infoMessagesText.slice(),
             isValid: !this.errors.length
         };
     }

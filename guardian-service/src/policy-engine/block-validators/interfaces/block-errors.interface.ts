@@ -16,6 +16,14 @@ export interface IBlockErrors {
      */
     errors: string[];
     /**
+     * Warnings
+     */
+    warnings?: string[];
+    /**
+     * Infos
+     */
+    infos?: string[];
+    /**
      * Is valid
      */
     isValid: boolean;
