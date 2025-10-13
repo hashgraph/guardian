@@ -1,4 +1,4 @@
-import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType, DiscussionMessage, MessageAction } from '@guardian/common';
+import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType } from '@guardian/common';
 import { EntityOwner, GenerateUUIDv4, PolicyStatus, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 import { PrivateKey } from '@hashgraph/sdk';
@@ -158,7 +158,7 @@ export class PolicyCommentsUtils {
 
         if (target.startMessageId) {
             const documents = await DatabaseServer.getVCs({
-                policyId: policyId,
+                policyId,
                 startMessageId: target.startMessageId
             }, { fields: ['_id', 'id', 'messageId'] } as any);
             for (const item of documents) {
@@ -168,65 +168,6 @@ export class PolicyCommentsUtils {
 
         return Array.from(ids);
     }
-
-    // public static async getCommonDiscussion(
-    //     policy: Policy,
-    //     document: VcDocument,
-    //     audit: boolean
-    // ) {
-    //     try {
-    //         const commonDiscussion = await DatabaseServer.getPolicyDiscussion({
-    //             policyId: policy.id,
-    //             targetId: document.id,
-    //             system: true
-    //         })
-    //         if (commonDiscussion || audit) {
-    //             return commonDiscussion;
-    //         }
-
-    //         const users = new Users();
-    //         const user = await users.getUserById(document.owner, null);
-    //         const discussion: any = await PolicyCommentsUtils.createDiscussion(user, policy, document, {
-    //             name: 'Common',
-    //             privacy: 'public',
-    //             relationships: [document.id]
-    //         }, true);
-
-    //         const messageKey: string = PolicyCommentsUtils.generateKey();
-
-    //         const userAccount = await users.getHederaAccount(user.did, user.id);
-    //         const topic = await PolicyCommentsUtils.getTopic(policy);
-    //         const message = new DiscussionMessage(MessageAction.CreateDiscussion);
-    //         message.setDocument(discussion);
-    //         const messageStatus = await (new MessageServer({
-    //             operatorId: userAccount.hederaAccountId,
-    //             operatorKey: userAccount.hederaAccountKey,
-    //             signOptions: userAccount.signOptions,
-    //             encryptKey: messageKey,
-    //             dryRun: PolicyCommentsUtils.isDryRun(policy)
-    //         }))
-    //             .setTopicObject(topic)
-    //             .sendMessage(message, {
-    //                 sendToIPFS: true,
-    //                 memo: null,
-    //                 userId: user.id,
-    //                 interception: null
-    //             });
-    //         discussion.messageId = messageStatus.getId();
-
-    //         const row = await DatabaseServer.createPolicyDiscussion(discussion);
-
-    //         await PolicyCommentsUtils.saveKey(policy.owner, row.id, messageKey);
-
-    //         return row;
-    //     } catch (error) {
-    //         return await DatabaseServer.getPolicyDiscussion({
-    //             policyId: policy.id,
-    //             targetId: document.id,
-    //             system: true
-    //         })
-    //     }
-    // }
 
     /**
      * Check access
@@ -361,7 +302,7 @@ export class PolicyCommentsUtils {
         const privacy = data?.privacy || 'public';
         const roles = privacy === 'roles' && Array.isArray(data?.roles) ? data?.roles : [];
         const users = privacy === 'users' && Array.isArray(data?.users) ? data?.users : [];
-        const documents = await this.getRelationships(document, data?.relationships);
+        const documents = await PolicyCommentsUtils.getRelationships(document, data?.relationships);
 
         const relationshipIds = documents.map((d) => d.id);
         const relationships = documents
