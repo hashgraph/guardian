@@ -130,7 +130,6 @@
       * [Conditional and Visibility Logic](guardian/standard-registry/schemas/best-practices-to-implement-schema/conditional-and-visibility-logic.md)
       * [Reusability and Modularity](guardian/standard-registry/schemas/best-practices-to-implement-schema/reusability-and-modularity.md)
       * [Documentation and Metadata](guardian/standard-registry/schemas/best-practices-to-implement-schema/documentation-and-metadata.md)
-      * [Integration with Policy Workflow](guardian/standard-registry/schemas/best-practices-to-implement-schema/integration-with-policy-workflow.md)
     * [Creating Schema using UI](guardian/standard-registry/schemas/creating-system-schema-using-ui.md)
     * [Importing Schema using UI](guardian/standard-registry/schemas/importing-schema-using-ui.md)
     * [Schema APIs](guardian/standard-registry/schemas/schema-creation-using-apis/README.md)

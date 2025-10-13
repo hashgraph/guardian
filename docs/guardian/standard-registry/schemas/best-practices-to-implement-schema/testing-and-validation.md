@@ -22,8 +22,6 @@ Best practices for testing and validation of schemas in Hedera Guardian focus on
   Confirm that UUID field keys are correctly managed and that schema data cleanly integrates with policy workflows and credential issuance processes.
 * **Logical Field Organization**\
   Group related fields logically to simplify validation and to facilitate formula application for calculated fields. This organization supports comprehensive, maintainable schema validation.
-* **Automate Testing Where Possible**\
-  Incorporate automated tests for schema validation in continuous integration pipelines when supported, catching schema issues early in development cycles.
 * **Document Test Cases and Results**\
   Maintain records of validation test cases, pass/fail outcomes, and corrective actions. This documentation supports audit readiness and ongoing maintenance.
 * **User Experience (UX) Focus**\

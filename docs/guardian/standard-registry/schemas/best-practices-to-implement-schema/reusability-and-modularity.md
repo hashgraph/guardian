@@ -21,12 +21,7 @@ Best practices for reusability and modularity in Hedera Guardian schemas focus o
   Group related fields and logic into distinct schema modules that can be reused or replaced independently without impacting the entire ecosystem.
 * **Low Coupling, High Cohesion**\
   Minimize dependencies between modules so changes in one do not ripple across others. Use well-defined interfaces (field keys, enums) to connect modules cleanly.
-* **Support Modular Composition**\
-  Design schemas and modules to be combined flexibly, enabling the assembly of complex policies or project workflows from composable building blocks.
 * **Organize Code and Schema Files Logically**\
   Structure schema repository or project directories by logical modules, simplifying navigation, updates, and testing.
 * **Write Unit Tests for Modules**\
   Test schema modules independently to ensure their correctness and facilitate safe reuse.
-* **Continuous Documentation and Communication**\
-  Maintain clear, up-to-date documentation describing the purpose, usage, and interfaces of each schema/module to support users and developers.
-

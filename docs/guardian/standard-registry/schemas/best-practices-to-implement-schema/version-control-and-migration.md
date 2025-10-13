@@ -14,15 +14,11 @@ Best practices for version control and migration in Hedera Guardian schemas cent
   Avoid removing or modifying existing schema elements. Instead, add new fields or enums for new functionality so older schemas remain valid and usable by the Guardian Policy Engine indefinitely.
 * **Deprecation Notice and Grace Period**\
   When a schema version or element is deprecated, provide a minimum 2-month notice through metadata annotations and official release notes. Communicate end-of-life dates and issue revocation notices on Hedera Topics at expiry for transparency.
-* **Separate Rules for Existing vs. New Schemas**\
-  Support unlimited "read" backward compatibility for previously created schemas. For new schema creation, disallow obsolete elements to prevent continued use of unsupported schema parts.
 * **Maintain Schema Registry and Metadata**\
   Document all versions, status (active, deprecated, unsupported), and compatibility information in a centralized registry. This facilitates tracking and migration planning.
 
 ### Migration Best Practices
 
-* **Additive Migration Strategy**\
-  Favor adding new optional fields and enums rather than removing or changing existing ones to ensure smooth upgrades without breaking existing data or workflows.
 * **Versioned Migrations with Clear Documentation**\
   Maintain detailed change logs describing all schema modifications, reasons for change, and migration guides to assist consumers in adapting to newer schema versions.
 * **Testing Migration Paths**\

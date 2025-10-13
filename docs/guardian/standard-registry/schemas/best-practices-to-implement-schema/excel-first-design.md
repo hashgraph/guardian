@@ -31,5 +31,3 @@ Detailed best practices for Excel-first design in building Hedera Guardian schem
   After importing, rename default field keys in Guardian UI to meaningful, calculation-friendly names. This dramatically improves maintainability of formula/code logic referencing schema fields.
 * **Collaborate Closely with Domain Experts**\
   Excel-first enables domain experts (e.g., carbon scientists) to review, comment, and iterate schema designs before committing to implementation.
-* **Test Extensively Before Publishing**\
-  Validate schemas in Guardian using test data for all expected conditional scenarios, required fields, and autotriggers. Ensure workflows and quotations operate seamlessly.
