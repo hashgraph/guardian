@@ -62,8 +62,8 @@ export interface PolicyMessage {
 /**
  * Aliases for readability.
  */
-export type BlockTypeName = string;
-export type PropertyName = string;
+type BlockTypeName = string;
+type PropertyName = string;
 
 /**
  * Registries of universal messages.

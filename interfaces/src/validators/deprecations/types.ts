@@ -8,8 +8,8 @@ export interface DeprecationInfo {
     migrationGuideUrl?: string;
 }
 
-export type BlockTypeName = string;
-export type PropertyName = string;
+type BlockTypeName = string;
+type PropertyName = string;
 
 export type BlockDeprecationsMap = ReadonlyMap<BlockTypeName, DeprecationInfo>;
 
