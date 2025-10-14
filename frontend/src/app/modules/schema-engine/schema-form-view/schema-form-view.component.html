@@ -86,21 +86,10 @@
                         </button>
                     </div>
 
-                    <div
-                        *ngIf="isDiscussion(item) as messageCount; else elseDiscussion"
-                        class="form-field-discussion">
-                        <button
-                            class="guardian-icon-button"
-                            (click)="openDiscussion(item)">
-                            <svg-icon
-                                src="/assets/images/icons/chat.svg"
-                                svgClass="icon-color-grey-color-3"
-                            ></svg-icon>
-                        </button>
-                        <div class="icon-count">{{messageCount}}</div>
-                    </div>
-                    <ng-template #elseDiscussion>
-                        <div class="form-field-discussion">
+                    <ng-container *ngIf="isDiscussion(item)">
+                        <div
+                            *ngIf="isDiscussionCount(item) as messageCount; else elseDiscussion"
+                            class="form-field-discussion">
                             <button
                                 class="guardian-icon-button"
                                 (click)="openDiscussion(item)">
@@ -109,8 +98,21 @@
                                     svgClass="icon-color-grey-color-3"
                                 ></svg-icon>
                             </button>
+                            <div class="icon-count">{{messageCount}}</div>
                         </div>
-                    </ng-template>
+                        <ng-template #elseDiscussion>
+                            <div class="form-field-discussion">
+                                <button
+                                    class="guardian-icon-button"
+                                    (click)="openDiscussion(item)">
+                                    <svg-icon
+                                        src="/assets/images/icons/chat.svg"
+                                        svgClass="icon-color-grey-color-3"
+                                    ></svg-icon>
+                                </button>
+                            </div>
+                        </ng-template>
+                    </ng-container>
 
                     <div
                         *ngIf="discussionAction"

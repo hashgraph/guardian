@@ -375,6 +375,16 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     public isDiscussion(item: IFieldControl) {
+        return (
+            this.isInput(item) ||
+            this.isDateTime(item) ||
+            this.isDate(item) ||
+            this.isBoolean(item) ||
+            this.isInput(item)
+        )
+    }
+
+    public isDiscussionCount(item: IFieldControl) {
         // return 10;
         return this.discussionData ? this.discussionData[item.fullPath] : 0;
     }
