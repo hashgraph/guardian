@@ -130,6 +130,25 @@ export class RequestDocumentBlockComponent
         this.destroy();
     }
 
+    public __validate() {
+        const errors: string[] = [];
+        const dataForm = this.dialog?.dataForm || this.dataForm;
+        this.__findError(dataForm, errors, '');
+        console.log(errors);
+    }
+
+    private __findError(form: any, errors: any[], parent: string) {
+        Object.keys(form.controls).forEach(key => {
+            const control = form.get(key);
+            if (control && !control.valid) {
+                errors.push(`${parent}${key}`);
+                if (control.controls) {
+                    this.__findError(control, errors, `${parent}${key}.`);
+                }
+            }
+        });
+    }
+
     public initForm($event: any) {
         this.dataForm = $event;
         this.dataForm.valueChanges

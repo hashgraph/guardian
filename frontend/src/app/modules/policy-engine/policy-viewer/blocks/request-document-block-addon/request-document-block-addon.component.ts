@@ -104,6 +104,16 @@ export class RequestDocumentBlockAddonComponent
         this.destroy();
     }
 
+    public __validate() {
+        const errors: string[] = [];
+        Object.keys(this.dataForm.controls).forEach(key => {
+            if (!this.dataForm.get(key)?.valid) {
+                errors.push(key);
+            }
+        });
+        console.log(errors);
+    }
+
     override setData(data: IRequestDocumentAddonData) {
         if (data) {
             this.readonly = !!data.readonly;

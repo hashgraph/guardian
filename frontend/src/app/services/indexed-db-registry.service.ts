@@ -128,6 +128,10 @@ export class IndexedDbRegistryService {
 
     public getBatch<T = unknown>(db: string, store: string, keys: IDBValidKey[]): Promise<T[]> {
         return new Promise<T[]>((resolve) => {
+            if (!keys?.length) {
+                resolve([]);
+                return;
+            }
             this.getDB(db).then((conn) => {
                 let index = 0;
                 const items: T[] = [];
