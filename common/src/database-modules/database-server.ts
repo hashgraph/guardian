@@ -4251,11 +4251,24 @@ export class DatabaseServer extends AbstractDatabaseServer {
         }
     }
 
+    /**
+     * Get file
+     * @param fileId
+     */
     public static async getGridFile(fileId: string): Promise<{ buffer: Buffer; filename: string; contentType: string }> {
         const _id = new ObjectId(String(fileId));
         const buffer = await DataBaseHelper.loadFile(_id);
 
         return { buffer, filename: 'file', contentType: 'application/octet-stream' };
+    }
+
+    /**
+     * Save file
+     * @param fileId
+     */
+    public static async deleteGridFile(fileId: string): Promise<void> {
+        const _id = new ObjectId(String(fileId));
+        await DataBaseHelper.deleteFile(_id);
     }
 
     /**
