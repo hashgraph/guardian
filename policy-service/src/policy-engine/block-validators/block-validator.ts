@@ -53,8 +53,7 @@ import {
     SchemaField,
     SchemaHelper,
     buildMessagesForValidator,
-    IgnoreRule,
-    PolicyMessage
+    IgnoreRule
 } from '@guardian/interfaces';
 import { ToolValidator } from './tool-validator.js';
 import { ToolBlock } from './blocks/tool.js';
@@ -176,6 +175,12 @@ export class BlockValidator {
     private readonly warningMessagesText: string[] = [];
     private readonly infoMessagesText: string[] = [];
 
+    /**
+     * Parent id
+     * @private
+     */
+    private parentId?: string
+
     constructor(
         config: any,
         validator: PolicyValidator | ModuleValidator | ToolValidator,
@@ -246,6 +251,66 @@ export class BlockValidator {
      */
     public clear(): void {
         this.errors.length = 0;
+    }
+
+    /**
+     * Get id
+     */
+    public getId(): string {
+        return this.uuid;
+    }
+
+    /**
+     * Get tag
+     */
+    public getTag(): string {
+        return this.tag;
+    }
+
+    /**
+     * Get block type
+     */
+    public getBlockType(): string {
+        return this.blockType;
+    }
+
+    /**
+     * Get options
+     */
+    public getOptions(): any {
+        return this.options;
+    }
+
+    /**
+     * Get parent id
+     */
+    public getParentId(): string | undefined {
+        return this.parentId;
+    }
+
+    /**
+     * Get children ids
+     */
+    public getChildrenIds(): string[] {
+        return this.children.map(child => child.uuid);
+    }
+
+    /**
+     * Set parent id
+     */
+    public setParentId(parentId: string | undefined): void {
+        this.parentId = parentId;
+    }
+
+    /**
+     * Dividing messages by severity
+     */
+    public addPrecomputedMessagesAsText(messages: ReadonlyArray<string>, severity: 'warning' | 'info'): void {
+        if (severity === 'warning') {
+            this.warningMessagesText.push(...messages);
+        } else {
+            this.infoMessagesText.push(...messages);
+        }
     }
 
     /**

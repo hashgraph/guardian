@@ -5,6 +5,7 @@ import { ModuleValidator } from './module-validator.js';
 import { ISerializedErrors } from './interfaces/serialized-errors.interface.js';
 import { ToolValidator } from './tool-validator.js';
 import { SchemaValidator } from './schema-validator.js';
+import { IgnoreRule, computeReachabilityAndDistribute } from '@guardian/interfaces';
 
 /**
  * Policy Validator
@@ -76,7 +77,13 @@ export class PolicyValidator {
      */
     private readonly isDryRunMode: boolean;
 
-    constructor(policy: Policy, isDruRun: boolean = false) {
+    /**
+     * Ignore Rules
+     * @private
+     */
+    private readonly ignoreRules?: ReadonlyArray<IgnoreRule>;
+
+    constructor(policy: Policy, isDruRun: boolean = false, ignoreRules?: ReadonlyArray<IgnoreRule>) {
         this.blocks = new Map();
         this.modules = new Map();
         this.tools = new Map();
@@ -89,7 +96,8 @@ export class PolicyValidator {
         this.policyGroups = policy.policyGroups;
         this.schemas = new Map();
         this.schemasByEntity = new Map();
-        this.isDryRunMode = isDruRun
+        this.isDryRunMode = isDruRun;
+        this.ignoreRules = ignoreRules;
     }
 
     /**
@@ -115,6 +123,9 @@ export class PolicyValidator {
         // }
         this.addPermissions(policy.policyRoles);
         await this.registerBlock(policy.config);
+
+        computeReachabilityAndDistribute(Array.from(this.blocks.values()));
+
         await this.registerSchemas();
         return true;
     }
@@ -141,21 +152,27 @@ export class PolicyValidator {
     /**
      * Register new block
      * @param block
+     * @param parent
      */
-    private async registerBlock(block: any): Promise<BlockValidator> {
+    private async registerBlock(block: any, parent?: BlockValidator): Promise<BlockValidator> {
         let validator: BlockValidator;
         if (block.id) {
             if (this.blocks.has(block.id)) {
                 validator = this.blocks.get(block.id);
                 this.errors.push(`UUID ${block.id} already exist`);
             } else {
-                validator = new BlockValidator(block, this);
+                validator = new BlockValidator(block, this, this.ignoreRules);
                 this.blocks.set(block.id, validator);
             }
         } else {
-            validator = new BlockValidator(block, this);
+            validator = new BlockValidator(block, this, this.ignoreRules);
             this.errors.push(`UUID is not set`);
         }
+
+        if (parent) {
+            validator.setParentId(parent.getId());
+        }
+
         if (block.tag) {
             if (this.tags.has(block.tag)) {
                 this.tags.set(block.tag, 2);
@@ -179,7 +196,7 @@ export class PolicyValidator {
         } else {
             if (Array.isArray(block.children)) {
                 for (const child of block.children) {
-                    const v = await this.registerBlock(child);
+                    const v = await this.registerBlock(child, validator);
                     validator.addChild(v);
                 }
             }
@@ -284,6 +301,10 @@ export class PolicyValidator {
         const toolsErrors = [];
         const blocksErrors = [];
         const commonErrors = this.errors.slice();
+
+        const commonWarnings: string[] = [];
+        const commonInfos: string[] = [];
+
         /**
          * Schema errors
          */
@@ -316,6 +337,14 @@ export class PolicyValidator {
         for (const item of this.blocks.values()) {
             const result = item.getSerializedErrors();
             blocksErrors.push(result);
+
+            if (Array.isArray(result.warnings)) {
+                commonWarnings.push(...result.warnings);
+            }
+            if (Array.isArray(result.infos)) {
+                commonInfos.push(...result.infos);
+            }
+
             valid = valid && result.isValid;
         }
         /**
@@ -326,11 +355,15 @@ export class PolicyValidator {
                 id: null,
                 name: null,
                 errors: [item],
+                warnings: [],
+                infos: [],
                 isValid: false
             });
         }
         return {
             errors: commonErrors,
+            warnings: commonWarnings,
+            infos: commonInfos,
             blocks: blocksErrors,
             modules: modulesErrors,
             tools: toolsErrors,
