@@ -46,7 +46,7 @@ Also you can check “without approval” to set retirement tokens as immediate 
 
 Now, we should be able to configure Hedera and Token Identifier during creation oof Wipe requests.
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 8\) To execute the retirement Guardian users which hold USER role navigate to the ‘Retire’ tab and click on ‘Retire’ button, choose appropriate pool and set token count/serials
 
@@ -60,7 +60,7 @@ Now, we should be able to configure Hedera and Token Identifier during creation 
 
 10\) Contract owners can also see these requests and approve or reject (Requests operation on retirement contract).
 
-<figure><img src="../../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 11\) After approval or rejection of the requests _users_ which hold USER role can see retire VCs on ‘Retire’ tab
 
