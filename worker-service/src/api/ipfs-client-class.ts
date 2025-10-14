@@ -159,8 +159,11 @@ export class IpfsClientClass {
 
                 try {
                     const garbageCollector = this.client.repo.gc();
-                    for await (const _ of garbageCollector) {}
-                } catch {}
+                    // tslint:disable-next-line:no-empty
+                    for await (const _ of garbageCollector) { }
+                } catch {
+                    return true;
+                }
 
                 return true;
             }
