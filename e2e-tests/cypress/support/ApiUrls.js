@@ -69,6 +69,7 @@ const API = {
     SchemaImportFilePreview: "schemas/import/file/preview",
     SchemaImport: "schemas/import/",
     SchemasType: "schemas/type",
+    SchemasWithSubSchemas: "schema-with-sub-schemas/",
 
     //Tools
     Tools: "tools",
