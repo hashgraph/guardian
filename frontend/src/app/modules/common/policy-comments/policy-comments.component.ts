@@ -848,13 +848,15 @@ export class PolicyComments {
         const results: AttachedFile[] = [];
         if (files?.length) {
             for (const file of files) {
-                const result = AttachedFile.fromFile(
-                    this.policyId,
-                    this.currentDiscussion.targetId,
-                    this.currentDiscussion.id,
-                    file
-                );
-                results.push(result);
+                if (this.files.length + results.length < 20) {
+                    const result = AttachedFile.fromFile(
+                        this.policyId,
+                        this.currentDiscussion.targetId,
+                        this.currentDiscussion.id,
+                        file
+                    );
+                    results.push(result);
+                }
             }
         }
         for (const result of results) {
