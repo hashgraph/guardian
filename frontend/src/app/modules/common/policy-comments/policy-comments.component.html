@@ -380,7 +380,7 @@
             </div>
         </div>
         <div #messageContainer class="messages-container">
-            <div *ngIf="!data.data.length" class="messages">
+            <div *ngIf="!comments.data.length" class="messages">
                 <div class="not-exist">
                     <div class="not-exist-icon">
                         <svg-icon
@@ -390,8 +390,8 @@
                     <div class="not-exist-text">There are no comments added yet.</div>
                 </div>
             </div>
-            <div *ngIf="data.data.length" class="messages" >
-                <div *ngFor="let item of data.data" class="message" [attr.owner]="item.isOwner">
+            <div *ngIf="comments.data.length" class="messages" >
+                <div *ngFor="let item of comments.data" class="message" [attr.owner]="item.isOwner">
                     <div class="message-time">
                         {{getDate(item.timestamp)}}
                     </div>
@@ -462,7 +462,7 @@
                     </div>
                 </div>
                 <button
-                    *ngIf="!data.full"
+                    *ngIf="!comments.full"
                     (click)="onMore()"
                     class="guardian-button guardian-button-secondery"
                     style="min-height: 30px; margin-bottom: 16px;"

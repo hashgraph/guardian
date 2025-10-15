@@ -1,108 +1,13 @@
-import { Component, EventEmitter, Inject, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
-import { IPFSService } from 'src/app/services/ipfs.service';
 import moment from 'moment';
-import { DropdownChangeEvent } from 'primeng/dropdown';
 import { AttachedFile } from './attached-file';
 import { DataList } from './data-list';
 import { ProfileService } from 'src/app/services/profile.service';
 import { Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
 import { CommentsService } from 'src/app/services/comments.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-
-interface ListItem {
-    label: string;
-    value: string;
-    type: string;
-    search?: string;
-    roles?: string[];
-}
-
-interface DiscussionItem {
-    id: string;
-    name: string;
-    owner: string;
-    targetId: string;
-    historyIds: string[];
-    system: string;
-    count: number;
-    parent?: string;
-    documentId: string;
-    field?: string;
-    fieldName?: string;
-    policyId: string;
-    relationships?: string[];
-    privacy?: string;
-    roles?: string[];
-    users?: string[];
-    _count?: number;
-    _unread?: number;
-    _short?: string;
-    _icon?: string;
-    _users?: {
-        icon: string,
-        type: string,
-        label: string
-    }[];
-    _hidden?: boolean;
-}
-
-interface FieldItem {
-    field: string;
-    name: string;
-}
-
-type TextItemType = 'all' | 'tag' | 'role' | 'user' | 'field' | 'text';
-
-interface TextItem {
-    type: TextItemType,
-    text: string;
-    tag: string;
-    label?: string;
-    tooltip?: any;
-}
-
-interface DiscussionGroup {
-    name: string,
-    collapsed: boolean,
-    items: DiscussionItem[]
-}
-
-interface LastRead {
-    policyId: string;
-    documentId: string;
-    discussionId: string,
-    count: number,
-}
-
-const placeholderItems = [{
-    type: 'left',
-    size: 3
-}, {
-    type: 'left',
-    size: 2
-}, {
-    type: 'right',
-    size: 2
-}, {
-    type: 'left',
-    size: 3
-}, {
-    type: 'right',
-    size: 2
-}, {
-    type: 'right',
-    size: 1
-}, {
-    type: 'left',
-    size: 3
-}, {
-    type: 'left',
-    size: 2
-}, {
-    type: 'right',
-    size: 2
-}]
+import { DiscussionGroup, DiscussionItem, FieldItem, LastRead, ListItem, placeholderItems, TextItem, TextItemType } from './interfaces';
 
 /**
  * Dialog for icon preview.
@@ -129,8 +34,6 @@ export class PolicyComments {
     @Output('view') viewEvent = new EventEmitter<any>();
 
     public loading: boolean = true;
-    public data: DataList;
-
     public user: UserPermissions = new UserPermissions();
     public owner: string;
 
@@ -152,6 +55,8 @@ export class PolicyComments {
     public searchField?: FieldItem = undefined;
     public searchDiscussion: string = '';
     public searchMessage: string = '';
+
+    public comments: DataList;
 
     public triggerCharacter: string[] = ['@', '#'];
     public currentTab: 'new-discussion' | 'discussions' | 'messages' = 'discussions';
@@ -192,12 +97,13 @@ export class PolicyComments {
     private _destroy$ = new Subject<void>();
     public _findChoices = this.findChoices.bind(this);
     public _getChoiceLabel = this.getChoiceLabel.bind(this);
+    private interval: any;
 
     constructor(
         private profileService: ProfileService,
         private commentsService: CommentsService
     ) {
-        this.data = new DataList();
+        this.comments = new DataList();
         this.loading = true;
 
         this.textMessage = '';
@@ -216,6 +122,10 @@ export class PolicyComments {
             this.discussionForm.controls['roles'].updateValueAndValidity();
             this.discussionForm.controls['users'].updateValueAndValidity();
         });
+
+        this.interval = setInterval(() => {
+            this.checkComments();
+        }, 15000);
     }
 
     ngOnInit(): void {
@@ -235,6 +145,8 @@ export class PolicyComments {
     ngOnDestroy(): void {
         this._destroy$.next();
         this._destroy$.unsubscribe();
+        clearInterval(this.interval);
+        this.interval = null;
     }
 
     //#region API
@@ -317,18 +229,17 @@ export class PolicyComments {
     }
 
     private loadComments(
-        type: 'load' | 'update' | 'more',
+        type: 'load' | 'update' | 'more' | 'check',
         target?: string
     ) {
         if (!this.policyId || !this.currentDiscussion) {
             this.loading = false;
-            this.data.setData([], 0);
+            this.comments.setData([], 0);
             return;
         }
 
-        this.loading = true;
-        const filter = this.getFilters(type, target);
-
+        this.setCommentLoading(type, true);
+        const filter = this.getCommentFilters(type, target);
         this.commentsService
             .getPolicyComments(
                 this.policyId,
@@ -341,32 +252,12 @@ export class PolicyComments {
             .subscribe((response) => {
                 const { page, count } = this.commentsService.parsePage(response);
                 this.parsMessages(page);
-
-                if (type === 'load') {
-                    this.data.setData(page, count);
-                } else if (type === 'more') {
-                    this.data.after(page, count, target);
-                } else if (type === 'update') {
-                    this.data.before(page, count);
-                }
-
-                if (type === 'update') {
-                    this.resetScroll();
-                }
-
-                this.commentsService.setLastRead(
-                    this.owner,
-                    this.policyId,
-                    this.documentId,
-                    this.currentDiscussion?.id,
-                    this.data.count
-                ).subscribe((response) => { }, (e) => { });
-
-                setTimeout(() => {
-                    this.loading = false;
-                }, 1000);
+                this.setCommentData(type, page, count, target);
+                this.refreshCommentScroll(type, page, count);
+                this.updateLastRead();
+                this.setCommentLoading(type, false);
             }, (e) => {
-                this.loading = false;
+                this.setCommentLoading(type, false);
             });
     }
 
@@ -416,7 +307,7 @@ export class PolicyComments {
                 this.textMessage = '';
                 this.files = [];
                 this.sendDisabled = true;
-                const first = this.data.getFirst();
+                const first = this.comments.getFirst();
                 this.loadComments('update', first?.id);
             }, (e) => {
                 this.loading = false;
@@ -446,8 +337,25 @@ export class PolicyComments {
 
     //#region Filters
 
-    private getFilters(
-        type: 'load' | 'update' | 'more',
+    private setCommentLoading(
+        type: 'load' | 'update' | 'more' | 'check',
+        loading: boolean
+    ) {
+        if (loading) {
+            if (type !== 'check') {
+                this.loading = true;
+            }
+        } else {
+            if (type !== 'check') {
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1000);
+            }
+        }
+    }
+
+    private getCommentFilters(
+        type: 'load' | 'update' | 'more' | 'check',
         target?: string
     ): any {
         const filters: any = {
@@ -461,6 +369,40 @@ export class PolicyComments {
         } else if (type === 'update') {
             filters.gt = target;
             return filters;
+        } else if (type === 'check') {
+            filters.gt = target;
+            return filters;
+        }
+    }
+
+    private setCommentData(
+        type: 'load' | 'update' | 'more' | 'check',
+        page: any[],
+        count: number,
+        target?: string
+    ) {
+        if (type === 'load') {
+            this.comments.setData(page, count);
+        } else if (type === 'more') {
+            this.comments.after(page, count, target);
+        } else if (type === 'update') {
+            this.comments.before(page, count);
+        } else if (type === 'check') {
+            this.comments.before(page, count);
+        }
+    }
+
+    private refreshCommentScroll(
+        type: 'load' | 'update' | 'more' | 'check',
+        page: any[],
+        count: number
+    ) {
+        if (page?.length) {
+            if (type === 'update') {
+                this.resetScroll();
+            } else if (type === 'check') {
+                this.resetScroll();
+            }
         }
     }
 
@@ -469,6 +411,24 @@ export class PolicyComments {
             search: this.searchDiscussion,
             field: this.searchField?.field
         }
+    }
+
+    private updateLastRead() {
+        this.commentsService.setLastRead(
+            this.owner,
+            this.policyId,
+            this.documentId,
+            this.currentDiscussion?.id,
+            this.comments.count
+        ).subscribe((response) => { }, (e) => { });
+    }
+
+    private checkComments() {
+        if (this.currentTab !== 'messages' || !this.currentDiscussion) {
+            return;
+        }
+        const first = this.comments.getFirst();
+        this.loadComments('check', first?.id);
     }
 
     //#endregion
@@ -944,7 +904,7 @@ export class PolicyComments {
     }
 
     public onMore() {
-        const last = this.data.getLast();
+        const last = this.comments.getLast();
         this.loadComments('more', last?.id);
     }
 
