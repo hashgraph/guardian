@@ -16365,6 +16365,30 @@ components:
         - progress
         - resultId
         - result
+    IgnoreRuleDTO:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Stable message code, e.g. DEPRECATION_BLOCK
+        kind:
+          type: string
+          description: 'Kind: deprecation|performance|best-practice|other'
+        blockType:
+          type: string
+          description: Limit by block type
+        property:
+          type: string
+          description: Limit by property
+        contains:
+          type: string
+          description: Substring filter applied to message text
+      required:
+        - code
+        - kind
+        - blockType
+        - property
+        - contains
     PolicyDTO:
       type: object
       properties:
@@ -16519,6 +16543,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PolicyTestDTO'
+        ignoreRules:
+          description: >-
+            Validation-only rules to hide matching warnings/infos (not
+            persisted)
+          type: array
+          items:
+            $ref: '#/components/schemas/IgnoreRuleDTO'
       required:
         - id
         - uuid
