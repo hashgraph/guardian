@@ -14,7 +14,7 @@ jobs:
           - 6379:6379
     strategy:
       matrix:
-        node-version: [ 20.19.3 ]
+        node-version: [ 20.19.5 ]
         mongodb-version: [ 7.0.21 ]
     steps:
       - name: Harden Runner
@@ -28,7 +28,7 @@ jobs:
           ref: 'develop'
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 #v5.0.0
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 #v6.0.0
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -147,7 +147,7 @@ jobs:
           MIN_PASSWORD_LENGTH: 4
           PASSWORD_COMPLEXITY: easy
           INITIAL_BALANCE: 5
-          INITIAL_STANDARD_REGISTRY_BALANCE: 80
+          INITIAL_STANDARD_REGISTRY_BALANCE: 100
 
       - name: Build Cypress Docker image
         run: docker build -t cypress-runner ./e2e-tests

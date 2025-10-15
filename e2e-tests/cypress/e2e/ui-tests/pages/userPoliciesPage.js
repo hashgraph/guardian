@@ -39,6 +39,7 @@ const UserPoliciesPageLocators = {
     approveButton: 'div.btn-approve',
     createReportButton: "button:contains(' Add Report ')",
     monitoringReports: "p:contains('Monitoring reports')",
+    revokeButton: "button-block div:contains(' Revoke ')",
     waitingForValidation: "span[title = 'Waiting for Validation']",
     waitingForVerification: "span[title = 'Waiting for Verification']",
 
@@ -183,6 +184,12 @@ export class UserPoliciesPage {
 
     approveUserInPolicy() {
         this.approve()
+    }
+
+    checkRevokeButtonDisappear(){
+        cy.wait(2000);
+        Checks.waitForLoading();
+        cy.get(UserPoliciesPageLocators.revokeButton).should('not.exist')
     }
 
     approveDeviceInPolicy() {
