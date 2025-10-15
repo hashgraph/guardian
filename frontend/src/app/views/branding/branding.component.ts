@@ -265,12 +265,12 @@ export class BrandingComponent implements OnInit, OnDestroy {
         }
         this.initResetDialog = false;
         const payload = {
-            headerColor: '#0681EE',
-            headerColor1: '#0A467C',
-            primaryColor: '#0681EE',
+            headerColor: '#0031ff',
+            headerColor1: '#8259ef',
+            primaryColor: '#0031ff',
             companyName: 'GUARDIAN',
-            companyLogoUrl: '',
-            loginBannerUrl: '',
+            companyLogoUrl: '/assets/images/logo.png',
+            loginBannerUrl: '/assets/bg.jpg',
             faviconUrl: 'favicon.ico'
         };
 

@@ -23,6 +23,7 @@
         "@angular/router": "^17.3.0",
         "ag-grid-angular": "34.2.0",
         "ag-grid-community": "34.2.0",
+        "idb": "8.0.3",
         "@indexer/interfaces": "file:../indexer-interfaces",
         "@jsverse/transloco": "^7.2.1",
         "chart.js": "^4.4.3",

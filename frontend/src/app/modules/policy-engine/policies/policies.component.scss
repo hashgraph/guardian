@@ -670,7 +670,7 @@
 
 .compare-button {
     ::ng-deep .p-button-outlined {
-        color: #0681ee;
+        color: #0031ff;
         font-family: Inter, sans-serif;
         font-size: 14px;
         font-style: normal;
@@ -774,7 +774,7 @@
 }
 
 .dropdown-item-title {
-    color: #0681ee;
+    color: #0031ff;
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -808,7 +808,7 @@
 }
 
 .chip-color-blue {
-    color: var(--guardian-primary-color, #0681ee);
+    color: var(--guardian-primary-color, #0031ff);
     background: rgba(6, 129, 238, 0.16);
 }
 
@@ -833,7 +833,7 @@
     font-style: normal;
     font-weight: 500;
     line-height: 16px;
-    background: var(--guardian-primary-color, #0681ee) !important;
+    background: var(--guardian-primary-color, #0031ff) !important;
     color: var(--color-grey-white, #fff) !important;
 }
 
@@ -846,7 +846,7 @@
     border-radius: 6px;
     border: 1px solid var(--color-secondary, #cdddfd) !important;
     background: var(--color-grey-white, #fff) !important;
-    color: var(--guardian-primary-color, #0681ee) !important;
+    color: var(--guardian-primary-color, #0031ff) !important;
 }
 
 .loading {

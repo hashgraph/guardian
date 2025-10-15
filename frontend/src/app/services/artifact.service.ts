@@ -46,7 +46,8 @@ export class ArtifactService {
     ): Observable<{ fileId: string; filename: string; contentType: string }> {
         const fd = new FormData();
 
-        const name = (file as File)?.name || 'table.csv';
+        const name = (file as File)?.name || 'file.csv';
+
         fd.append('file', file, name);
         if (fileId) {
             fd.append('fileId', fileId);
@@ -68,5 +69,9 @@ export class ArtifactService {
         return this.http.get(`${this.url}/files/${encodeURIComponent(fileId)}`, {
             responseType: 'blob'
         });
+    }
+
+    deleteFile(fileId: string): Observable<boolean> {
+        return this.http.delete<boolean>(`${this.url}/files/${encodeURIComponent(fileId)}`);
     }
 }

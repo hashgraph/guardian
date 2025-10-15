@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Input, NgZone} from '@angular/core';
+import { ChangeDetectorRef, Component, Input, NgZone, OnChanges, OnDestroy } from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ColDef } from 'ag-grid-community';
 import { ArtifactService } from 'src/app/services/artifact.service';
@@ -7,6 +7,7 @@ import { TableDialogComponent } from '../../common/table-dialog/table-dialog.com
 import { firstValueFrom } from 'rxjs';
 import { IndexedDbRegistryService } from '../../../services/indexed-db-registry.service';
 import { GzipService } from '../../../services/gzip.service';
+import { DB_NAME, STORES_NAME } from '../../../constants';
 
 type TableRefLike = { type?: string; fileId?: string } | string | null | undefined;
 
@@ -16,12 +17,14 @@ type TableRefLike = { type?: string; fileId?: string } | string | null | undefin
     styleUrls: ['./table-viewer.component.scss'],
     providers: [DialogService]
 })
-export class TableViewerComponent {
+
+export class TableViewerComponent implements OnChanges, OnDestroy {
     @Input()
     public value: TableRefLike;
 
     @Input()
     public title?: string;
+    @Input() delimiter: string = ',';
 
     public isLoading: boolean = false;
     public isDownloading = false;
@@ -35,8 +38,6 @@ export class TableViewerComponent {
     private readonly PREVIEW_LIMIT = 10 * 1024 * 1024;
     private readonly PREVIEW_COLUMNS_LIMIT = 8;
     private readonly PREVIEW_ROWS_LIMIT = 4;
-    private readonly IDB_NAME = 'TABLES';
-    private readonly FILES_STORE = 'FILES';
 
     constructor(
         private readonly dialog: DialogService,
@@ -112,7 +113,6 @@ export class TableViewerComponent {
     private async withIdbRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
         for (let i = 0; i < attempts; i += 1) {
             try {
-                await this.ensureIdbStores();
                 return await this.queueIdb(fn);
             } catch (e) {
                 if (this.isIdbClosingError(e) && i < attempts - 1) {
@@ -143,9 +143,13 @@ export class TableViewerComponent {
 
     private ensureIdbStores(): Promise<void> {
         if (!this.storesReady) {
-            this.storesReady = this.idb.registerStore(
-                this.IDB_NAME,
-                { name: this.FILES_STORE, options: { keyPath: 'id' } }
+            this.storesReady = this.idb.registerStores(
+                DB_NAME.TABLES,
+                [
+                    { name: STORES_NAME.DRAFT_STORE, options: { keyPath: 'id' } },
+                    { name: STORES_NAME.FILES_STORE, options: { keyPath: 'id' } },
+                    { name: STORES_NAME.FILES_VIEW_STORE, options: { keyPath: 'id' } },
+                ]
             );
         }
         return this.storesReady;
@@ -169,13 +173,13 @@ export class TableViewerComponent {
             }
 
             await this.withIdbRetry(() =>
-                this.idb.put(this.IDB_NAME, this.FILES_STORE, {
+                this.idb.put(DB_NAME.TABLES, STORES_NAME.FILES_VIEW_STORE, {
                     id: fileId,
                     blob: gzBlobFromGridFs,
                     originalName: `${fileId}.csv.gz`,
                     originalSize: undefined,
                     gzSize: gzBlobFromGridFs.size,
-                    delimiter: ',',
+                    delimiter: this.delimiter,
                     createdAt: Date.now(),
                 })
             );
@@ -191,7 +195,7 @@ export class TableViewerComponent {
 
     private async getFromIdb(fileId: string): Promise<{ gz: Blob } | null> {
         const record: any = await this.withIdbRetry(() =>
-            this.idb.get(this.IDB_NAME, this.FILES_STORE, fileId)
+            this.idb.get(DB_NAME.TABLES, STORES_NAME.FILES_VIEW_STORE, fileId)
         );
 
         if (!record) {
@@ -253,9 +257,16 @@ export class TableViewerComponent {
     }
 
     ngOnChanges(): void {
-        this.initPreview().catch(() => {
+        (async () => {
+            await this.ensureIdbStores();
+            await this.initPreview();
+        })().catch(() => {
             //
         });
+    }
+
+    async ngOnDestroy(): Promise<void> {
+        await this.idb.clearStore(DB_NAME.TABLES, STORES_NAME.FILES_VIEW_STORE);
     }
 
     private handlePreviewLimit(byteLength: number): boolean {
@@ -283,8 +294,6 @@ export class TableViewerComponent {
         if (!fileId) {
             return;
         }
-
-        await this.ensureIdbStores();
 
         try {
             let cached = await this.getFromIdb(fileId);
@@ -356,8 +365,6 @@ export class TableViewerComponent {
         this.mark();
 
         try {
-            await this.ensureIdbStores();
-
             let cached = await this.getFromIdb(fileId);
 
             if (!cached) {
@@ -429,8 +436,6 @@ export class TableViewerComponent {
         this.mark();
 
         (async () => {
-            await this.ensureIdbStores();
-
             let cached = await this.getFromIdb(fileId);
 
             if (!cached) {

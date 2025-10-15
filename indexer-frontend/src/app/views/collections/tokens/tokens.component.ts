@@ -59,6 +59,13 @@ export class TokensComponent extends BaseGridComponent {
 
     columns: any[] = [
         {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+        {
             type: ColumnType.CHECK_BOX,
             title: 'grid.prioritize',
             checkField: 'tokenId',
@@ -74,11 +81,36 @@ export class TokensComponent extends BaseGridComponent {
             }
         },
         {
+            type: ColumnType.TEXT,
+            field: 'name',
+            title: 'grid.name',
+            width: '250px',
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'symbol',
+            title: 'grid.symbol',
+            width: '100px',
+        },
+        {
+            type: ColumnType.CHIP,
+            field: 'type',
+            title: 'grid.type',
+            width: '200px',
+        },
+        {
             type: ColumnType.HEDERA,
             field: 'tokenId',
             title: 'grid.token_id',
             width: '250px',
             hederaType: HederaType.TOKEN,
+        },
+        {
+            type: ColumnType.HEDERA,
+            field: 'treasury',
+            title: 'grid.treasury',
+            width: '200px',
+            hederaType: HederaType.ACCOUNT,
         },
         {
             type: ColumnType.TEXT,
@@ -108,38 +140,6 @@ export class TokensComponent extends BaseGridComponent {
                 }
             }
         },
-        {
-            type: ColumnType.TEXT,
-            field: 'name',
-            title: 'grid.name',
-            width: '250px',
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'symbol',
-            title: 'grid.symbol',
-            width: '100px',
-        },
-        {
-            type: ColumnType.CHIP,
-            field: 'type',
-            title: 'grid.name',
-            width: '200px',
-        },
-        {
-            type: ColumnType.HEDERA,
-            field: 'treasury',
-            title: 'grid.treasury',
-            width: '200px',
-            hederaType: HederaType.ACCOUNT,
-        },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
-        },
     ];
 
     constructor(
@@ -153,6 +153,10 @@ export class TokensComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'modifiedTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(new Filter({
             type: 'input',
             field: 'tokenId',
@@ -206,7 +210,7 @@ export class TokensComponent extends BaseGridComponent {
     public override onOpen(element: any) {
         this.router.navigate([`/tokens/${element.tokenId}`]);
     }
-    
+
     private onDataLoaded(data: RawToken[]): void {
         const tokenIds = data.map(item => item.tokenId);
 

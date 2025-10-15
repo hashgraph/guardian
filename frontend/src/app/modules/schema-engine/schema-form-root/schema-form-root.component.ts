@@ -37,6 +37,7 @@ export class SchemaFormRootComponent implements OnInit {
     @Input() dryRun: boolean = false;
     @Input() likeDryRun: boolean = false;
     @Input() policyId: string = '';
+    @Input() blockId: string = '';
     @Input() rules: SchemaRuleValidateResult;
     @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
