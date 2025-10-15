@@ -179,7 +179,7 @@ export class BlockValidator {
      * Parent id
      * @private
      */
-    private parentId?: string
+    private parentId?: string;
 
     constructor(
         config: any,
@@ -277,7 +277,7 @@ export class BlockValidator {
     /**
      * Get options
      */
-    public getOptions(): any {
+    public getOptions(): unknown {
         return this.options;
     }
 
@@ -292,7 +292,7 @@ export class BlockValidator {
      * Get children ids
      */
     public getChildrenIds(): string[] {
-        return this.children.map(child => child.uuid);
+        return this.children.map(child => child.getId());
     }
 
     /**
