@@ -23,7 +23,7 @@ context("Export Module as File", { tags: ['modules', 'thirdPool', 'all'] }, () =
         })
     });
 
-    it("Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs", () => {
+    it("Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs", { tags: ['smoke', 'analytics'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
