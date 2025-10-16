@@ -77,6 +77,16 @@
                     <div *ngIf="errorsCount>0" class="error-count">{{ errorsCount }}</div>
                 </div>
 
+                <div
+                    (click)="setIgnoreRules()"
+                    class="top-toolbar-btn all-status"
+                    [attr.active]="ignoreRules.length ? true : null"
+                    title="Configure ignore rules"
+                >
+                    <i class="pi" [ngClass]="ignoreRules.length ? 'pi-filter-fill' : 'pi-filter'"></i>
+                    <span>Ignore Rules</span>
+                </div>
+
                 <div *ngIf="policyTemplate.isRun" [routerLink]="['/policy-viewer', policyId]"
                     class="top-toolbar-btn all-status">
                     <i class="pi pi-angle-double-right"></i>

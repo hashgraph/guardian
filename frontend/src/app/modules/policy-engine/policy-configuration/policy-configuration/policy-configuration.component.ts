@@ -33,6 +33,8 @@ import { TestCodeDialog } from '../../dialogs/test-code-dialog/test-code-dialog.
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
+import { IgnoreRule } from '@guardian/interfaces';
+import { IgnoreRulesDialog } from "../../dialogs/ignore-rules-dialog/ignore-rules-dialog.component";
 
 /**
  * The page for editing the policy and blocks.
@@ -138,6 +140,8 @@ export class PolicyConfigurationComponent implements OnInit {
     private _destroy$ = new Subject<void>();
     private indexedDb: IndexedDbRegistryService;
 
+    public ignoreRules: IgnoreRule[] = [];
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -234,6 +238,21 @@ export class PolicyConfigurationComponent implements OnInit {
         this.policyId = this.route.snapshot.queryParams.policyId;
         this.moduleId = this.route.snapshot.queryParams.moduleId;
         this.toolId = this.route.snapshot.queryParams.toolId;
+
+        this.ensureStore(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE)
+            .then(() => {
+                return this.indexedDb.get<IgnoreRule[] | undefined>(
+                    DB_NAME.POLICY_WARNINGS,
+                    STORES_NAME.IGNORE_RULES_STORE,
+                    this.policyId
+                );
+            })
+            .then((rules) => {
+                this.ignoreRules = Array.isArray(rules) ? rules : [];
+            })
+            .catch(() => {
+                this.ignoreRules = [];
+            });
 
         if (this._configurationErrors.has(this.policyId)) {
             this.setErrors(this._configurationErrors.get(this.policyId), 'policy');
@@ -930,6 +949,13 @@ export class PolicyConfigurationComponent implements OnInit {
             storeNames,
             keyPrefix
         );
+
+        this.indexedDb
+            .delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, this.policyId)
+            .then(() => { this.ignoreRules = []; })
+            .catch(() => {
+                //
+            });
     }
 
     private dryRunPolicy() {
@@ -1505,6 +1531,11 @@ export class PolicyConfigurationComponent implements OnInit {
     public validationPolicy() {
         this.loading = true;
         const json = this.policyTemplate.getJSON();
+
+        const ignoreRules = this.ignoreRules && this.ignoreRules.length > 0
+            ? this.ignoreRules
+            : undefined
+
         const object = {
             topicId: this.policyTemplate.topicId,
             policyRoles: json?.policyRoles,
@@ -1512,8 +1543,10 @@ export class PolicyConfigurationComponent implements OnInit {
             policyTopics: json?.policyTopics,
             policyTokens: json?.policyTokens,
             categories: json?.categories,
-            config: json?.config
+            config: json?.config,
+            ignoreRules
         }
+
         this.policyEngineService.validate(object).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
             const { policy, results } = data;
             const config = policy.config;
@@ -1999,5 +2032,55 @@ export class PolicyConfigurationComponent implements OnInit {
                 });
             }
         });
+    }
+
+    private ensureStore(dbName: string, storeName: string, options?: IDBObjectStoreParameters): Promise<void> {
+        return this.indexedDb.registerStore(dbName, { name: storeName, options });
+    }
+
+    public async setIgnoreRules(): Promise<void> {
+        const databaseConnection = await this.indexedDb.getDB(DB_NAME.POLICY_WARNINGS);
+
+        const existingRules =
+            (await databaseConnection.get(
+                STORES_NAME.IGNORE_RULES_STORE,
+                this.policyId
+            )) as IgnoreRule[] | undefined;
+
+        const dialogRef = this.dialog.open(IgnoreRulesDialog, {
+            showHeader: false,
+            width: '700px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policyId: this.policyId,
+                rules: Array.isArray(existingRules) ? existingRules : [],
+            },
+        });
+
+        dialogRef.onClose
+            .pipe(takeUntil(this._destroy$))
+            .subscribe(async (result: IgnoreRule[] | 'clear' | null) => {
+                if (result === null) {
+                    return;
+                }
+
+                if (result === 'clear') {
+                    await databaseConnection.delete(
+                        STORES_NAME.IGNORE_RULES_STORE,
+                        this.policyId
+                    );
+
+                    this.ignoreRules = [];
+                    return;
+                }
+
+                await databaseConnection.put(
+                    STORES_NAME.IGNORE_RULES_STORE,
+                    result,
+                    this.policyId
+                );
+
+                this.ignoreRules = result;
+            });
     }
 }

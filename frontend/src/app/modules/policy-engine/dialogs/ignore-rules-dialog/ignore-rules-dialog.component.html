@@ -1,0 +1,79 @@
+<div class="dialog-container" [formGroup]="form">
+    <div class="dialog-header">
+        Ignore Rules
+    </div>
+
+    <div class="rules">
+        <div
+            class="rule"
+            *ngFor="let option of presetRuleOptions; trackBy: trackByOptionKey"
+        >
+            <div class="rule-text">
+                <div class="rule-label">
+                    {{ option.label }}
+                </div>
+
+                <div
+                    class="rule-hint"
+                    *ngIf="option.hint"
+                >
+                    {{ option.hint }}
+                </div>
+            </div>
+
+            <div class="rule-controls">
+                <p-radioButton
+                    [inputId]="option.key + '_no'"
+                    [value]="false"
+                    [formControlName]="option.key"
+                    name="{{ option.key }}"
+                    (onClick)="setOptionValue(option.key, false)"
+                >
+                </p-radioButton>
+                <label [for]="option.key + '_no'">
+                    No
+                </label>
+
+                <p-radioButton
+                    [inputId]="option.key + '_yes'"
+                    [value]="true"
+                    [formControlName]="option.key"
+                    name="{{ option.key }}"
+                    (onClick)="setOptionValue(option.key, true)"
+                >
+                </p-radioButton>
+                <label [for]="option.key + '_yes'">
+                    Yes
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions-row">
+        <span class="spacer"></span>
+
+        <button
+            type="button"
+            class="p-button p-button-text"
+            (click)="clearAll()"
+        >
+            Clear
+        </button>
+
+        <button
+            type="button"
+            class="p-button p-button-text"
+            (click)="close()"
+        >
+            Cancel
+        </button>
+
+        <button
+            type="button"
+            class="p-button p-button-primary"
+            (click)="save()"
+        >
+            Save
+        </button>
+    </div>
+</div>
