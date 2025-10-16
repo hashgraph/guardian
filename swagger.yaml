@@ -3828,11 +3828,11 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Tool configuration.
+        description: Tool version.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ToolDTO'
+              $ref: '#/components/schemas/ToolVersionDTO'
       responses:
         '200':
           description: Successful operation.
@@ -3873,11 +3873,11 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Tool configuration.
+        description: Tool version.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ToolDTO'
+              $ref: '#/components/schemas/ToolVersionDTO'
       responses:
         '200':
           description: Successful operation.
@@ -3898,6 +3898,79 @@ paths:
       security:
         - bearer: []
       summary: Publishes the tool onto IPFS.
+      tags:
+        - tools
+  /tools/{id}/dry-run:
+    put:
+      description: >-
+        Run policy without making any persistent changes or executing
+        transaction. Only users with the Standard Registry role are allowed to
+        make the request.
+      operationId: ToolsApi_dryRunPolicy
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Tool ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolValidationDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Dry Run policy.
+      tags:
+        - tools
+  /tools/{id}/draft:
+    put:
+      description: >-
+        Return policy to editing. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: ToolsApi_draftPolicy
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Tool ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolValidationDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Return policy to editing.
       tags:
         - tools
   /tools/validate:
@@ -17713,6 +17786,9 @@ components:
           example: '1900-01-01T00:00:00.000Z'
         config:
           $ref: '#/components/schemas/BlockDTO'
+        version:
+          type: string
+          example: 1.0.0
       required:
         - id
         - uuid
@@ -17726,6 +17802,7 @@ components:
         - codeVersion
         - createDate
         - config
+        - version
     ToolValidationDTO:
       type: object
       properties:
@@ -17736,6 +17813,14 @@ components:
       required:
         - tool
         - results
+    ToolVersionDTO:
+      type: object
+      properties:
+        toolVersion:
+          type: string
+          example: 1.0.0
+      required:
+        - toolVersion
     ToolPreviewDTO:
       type: object
       properties:
