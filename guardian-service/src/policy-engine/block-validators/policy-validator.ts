@@ -160,7 +160,7 @@ export class PolicyValidator {
         } else if (block.blockType === 'tool') {
             const tool = new ToolValidator(block);
             const policyTool = await DatabaseServer.getTool({
-                status: ModuleStatus.PUBLISHED,
+                status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN]},
                 messageId: block.messageId,
                 hash: block.hash
             });

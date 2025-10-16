@@ -19,6 +19,7 @@ import { SuggestionsService } from '../../../../services/suggestions.service';
 import { ThemeService } from '../../../../services/theme.service';
 import { NewModuleDialog } from '../../dialogs/new-module-dialog/new-module-dialog.component';
 import { PublishPolicyDialog } from '../../dialogs/publish-policy-dialog/publish-policy-dialog.component';
+import { PublishToolDialog } from '../../dialogs/publish-tool-dialog/publish-tool-dialog.component';
 import { PolicyAction, SavePolicyDialog } from '../../dialogs/save-policy-dialog/save-policy-dialog.component';
 import { StopResizingEvent } from '../../directives/resizing.directive';
 import { CONFIGURATION_ERRORS } from '../../injectors/configuration.errors.injector';
@@ -1816,18 +1817,42 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    public tryPublishTool() {
+    public draftTool() {
         this.loading = true;
-        this.toolsService.pushPublish(this.toolId).pipe(takeUntil(this._destroy$)).subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.router.navigate(['task', taskId], {
-                queryParams: {
-                    last: btoa(location.href)
-                }
-            });
+        this.toolsService.draft(this.toolId).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
+            this.clearState();
+            this.loadData();
         }, (e) => {
-            console.error(e.error);
             this.loading = false;
+        });
+    }
+
+    public tryPublishTool() {
+        this.setToolVersion();
+    }
+
+    public setToolVersion() {
+        const dialogRef = this.dialogService.open(PublishToolDialog, {
+            showHeader: false,
+            header: 'Publish Tool',
+            width: '600px',
+            styleClass: 'guardian-dialog'
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
+            if (options) {
+                this.loading = true;
+                this.toolsService.pushPublish(this.toolId, options).pipe(takeUntil(this._destroy$)).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
         });
     }
 
@@ -1842,6 +1867,27 @@ export class PolicyConfigurationComponent implements OnInit {
             this.onSelect(this.openFolder.root);
             this.loading = false;
         }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    public async tryRunTool() {
+        this.dryRunTool();
+    }
+
+    private dryRunTool() {
+        this.loading = true;
+        this.toolsService.dryRun(this.toolId).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            if (isValid) {
+                this.clearState();
+                this.loadData();
+            } else {
+                this.setErrors(errors, 'tool');
+                this.loading = false;
+            }
+        }, (e) => {
+            console.error(e.error);
             this.loading = false;
         });
     }

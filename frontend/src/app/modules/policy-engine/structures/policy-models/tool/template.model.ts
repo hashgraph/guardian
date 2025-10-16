@@ -20,6 +20,7 @@ export class ToolTemplate {
     public readonly topicId!: string;
 
     public readonly isDraft: boolean = false;
+    public readonly isDryRun: boolean = false;
     public readonly isPublished: boolean = false;
     public readonly isPublishError: boolean = false;
     public readonly readonly: boolean = false;
@@ -53,10 +54,11 @@ export class ToolTemplate {
         this._config.setLocalTagSilently(this._config.localTag || 'Tool');
 
         this.isDraft = (this.status === PolicyStatus.DRAFT) || (this.status === ModuleStatus.DRAFT);
+        this.isDryRun = (this.status === PolicyStatus.DRY_RUN) || (this.status === ModuleStatus.DRY_RUN);
         this.isPublished = (this.status === PolicyStatus.PUBLISH) || (this.status === ModuleStatus.PUBLISHED);
         this.isPublishError = this.status === PolicyStatus.PUBLISH_ERROR;
-        this.readonly = this.isPublished || this.isPublishError;
-        this.isTest = this.isDraft;
+        this.readonly = this.isPublished || this.isPublishError || this.isDryRun;
+        this.isTest = this.isDraft || this.isDryRun;
     }
 
     public get name(): string {

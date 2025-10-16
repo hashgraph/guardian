@@ -1,12 +1,12 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, Hashing, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, NewNotifier, PinoLogger, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
-import { IOwner, IRootConfig, MessageAPI, ModuleStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { BinaryMessageResponse, DatabaseServer, Hashing, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, NewNotifier, PinoLogger, Policy, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import * as crypto from 'crypto';
 import { FilterObject } from '@mikro-orm/core';
-import { deleteSchema, importToolByFile, importToolByMessage, importToolErrors, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
+import { deleteSchema, findAndDryRunSchema, importToolByFile, importToolByMessage, importToolErrors, PolicyImportExportHelper, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
 
 /**
  * Sha256
@@ -104,6 +104,7 @@ export async function preparePreviewMessage(
  */
 export async function validateAndPublish(
     id: string,
+    version: string,
     user: IOwner,
     notifier: INotificationStep,
     logger: PinoLogger
@@ -128,6 +129,20 @@ export async function validateAndPublish(
     if (item.status === ModuleStatus.PUBLISHED) {
         throw new Error(`Tool already published`);
     }
+    if (!ModelHelper.checkVersionFormat(version)) {
+        throw new Error('Invalid version format');
+    }
+    if (ModelHelper.versionCompare(version, item.previousVersion) <= 0) {
+        throw new Error('Version must be greater than ' + item.previousVersion);
+    }
+
+    const countModels = await DatabaseServer.getTools({
+        version,
+        uuid: item.uuid
+    });
+    if (countModels?.length > 0) {
+        throw new Error('Tool with current version already was published'); // todo previous version
+    }
 
     const errors = await validateTool(item);
     const isValid = !errors.blocks.some(block => !block.isValid);
@@ -138,6 +153,7 @@ export async function validateAndPublish(
         const newTool = await publishTool(
             item,
             user,
+            version,
             notifier.getStep(STEP_PUBLISH_TOOL),
             logger
         );
@@ -174,6 +190,7 @@ export async function validateTool(tool: PolicyTool): Promise<ISerializedErrors>
 export async function publishTool(
     tool: PolicyTool,
     user: IOwner,
+    version: string,
     notifier: INotificationStep,
     logger: PinoLogger
 ): Promise<PolicyTool> {
@@ -214,6 +231,8 @@ export async function publishTool(
             signOptions: root.signOptions
         }).setTopicObject(topic);
         notifier.completeStep(STEP_RESOLVE_TOPIC);
+
+        tool.version = version;
 
         notifier.startStep(STEP_PUBLISH_SCHEMAS);
         tool = await publishSchemas(
@@ -482,6 +501,137 @@ export async function createTool(
     }
 }
 
+
+
+/**
+ * Dry Run tool
+ * @param model
+ * @param user
+ * @param version
+ * @param demo
+ * @param logger
+ */
+export async function dryRunTool(
+        tool: PolicyTool,
+        user: IOwner,
+        version: string,
+        logger: PinoLogger
+    ): Promise<PolicyTool> {
+
+    try {
+        await logger.info('Dry-run tool', ['GUARDIAN_SERVICE'], user.id);
+
+        const dryRunId = tool.id.toString();
+        const databaseServer = new DatabaseServer(dryRunId);
+
+        const users = new Users();
+        const root = await users.getHederaAccount(user.creator, user.id);
+
+        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true, user.id);
+        const messageServer = new MessageServer({
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            signOptions: root.signOptions,
+            dryRun: dryRunId
+        }).setTopicObject(topic);
+
+        tool = await dryRunSchemas(tool, user);
+
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId);
+
+        // const tagsTopic = await topicHelper.create({
+        //     type: TopicType.TagsTopic,
+        //     name: tool.name || TopicType.TagsTopic,
+        //     description: tool.description || TopicType.TagsTopic,
+        //     owner: user.owner,
+        //     policyId: tool.id.toString(),
+        //     policyUUID: tool.uuid
+        // }, user.id, { admin: true, submit: false });
+        // await tagsTopic.saveKeys(user.id);
+        // await databaseServer.saveTopic(tagsTopic.toObject());
+        // tool.tagsTopicId = tagsTopic.topicId;
+
+        const oldToolHash = tool.hash;
+
+        tool = await updateToolConfig(tool);
+        const zip = await ToolImportExport.generate(tool);
+        const buffer = await zip.generateAsync({
+            type: 'arraybuffer',
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 3
+            }
+        });
+        tool.hash = sha256(buffer);
+
+        const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
+        message.setDocument(tool, buffer);
+        const result = await messageServer
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: user.id,
+                interception: null
+            });
+
+        // todo ??
+        // await topicHelper.twoWayLink(tagsTopic, topic, result.getId(), user.id);
+
+        if (tool.messageId) {
+            const policies = await DatabaseServer.getPolicies({
+                tools: { $elemMatch: { messageId: tool.messageId } }
+            })
+
+
+            for (const policy of policies) {
+                if (policy.status === PolicyStatus.DRAFT) {
+                    replaceAllEntities(policy.config, ['hash'], oldToolHash, tool.hash);
+                    replaceAllEntities(policy.config, ['messageId'], tool.messageId, result.getId());
+                    
+                    console.log(oldToolHash, tool.hash);
+                    console.log(tool.messageId, result.getId());
+                    const policy2 = PolicyConverterUtils.PolicyConverter(policy);
+                    
+                    await databaseServer.save(Policy, policy2);
+                    await PolicyImportExportHelper.updatePolicyComponents(policy2, logger, user.id);
+                }
+            }
+        }
+
+        tool.status = ModuleStatus.DRY_RUN;
+        tool.messageId = result.getId();
+        tool.version = version;
+        const retVal = await DatabaseServer.updateTool(tool);
+
+        await logger.info('Dry-run mode for tool enabled', ['GUARDIAN_SERVICE'], user.id);
+
+        return retVal
+    } catch (error) {
+        tool.status = ModuleStatus.PUBLISH_ERROR;
+        await DatabaseServer.updateTool(tool);
+        throw error;
+    }
+}
+
+/**
+ * Dry run Policy schemas
+ * @param model
+ * @param user
+ */
+export async function dryRunSchemas(
+    model: PolicyTool,
+    user: IOwner
+): Promise<PolicyTool> {
+    const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
+    for (const schema of schemas) {
+        if (schema.status === SchemaStatus.PUBLISHED) {
+            continue;
+        }
+        await findAndDryRunSchema(schema, schema.version, user);
+    }
+    return model;
+}
+
 /**
  * Connect to the message broker methods of working with tools.
  */
@@ -571,7 +721,9 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     'topicId',
                     'messageId',
                     'hash',
-                    'status'
+                    'status',
+                    'version',
+                    'previousVersion'
                 ];
                 const [items, count] = await DatabaseServer.getToolsAndCount({
                     $or: [{
@@ -671,7 +823,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const tools: any[] = await DatabaseServer.getTools({
-                    status: ModuleStatus.PUBLISHED
+                    status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN] }
                 }, {
                     fields: [
                         'id',
@@ -717,6 +869,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                         map.get(schema.topicId).schemas.push(schema);
                     }
                 }
+                
                 return new MessageResponse(tools);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1005,11 +1158,14 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             id: string,
             owner: IOwner,
-            tool: PolicyTool
+            body: { toolVersion: string },
         }) => {
             try {
-                const { id, owner } = msg;
-                const result = await validateAndPublish(id, owner, NewNotifier.empty(), logger);
+                const { id, owner, body } = msg;
+                if (!body || !body.toolVersion) {
+                    throw new Error('Tool version in body is empty');
+                }
+                const result = await validateAndPublish(id, body.toolVersion, owner, NewNotifier.empty(), logger);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1021,15 +1177,18 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             id: string,
             owner: IOwner,
-            tool: PolicyTool,
+            body: { toolVersion: string },
             task: any
         }) => {
-            const { id, owner, task } = msg;
+            const { id, owner, body, task } = msg;
             try {
                 const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
-                    const result = await validateAndPublish(id, owner, notifier, logger);
+                    if (!body || !body.toolVersion) {
+                        throw new Error('Tool version in body is empty');
+                    }
+                    const result = await validateAndPublish(id, body.toolVersion, owner, notifier, logger);
                     notifier.result(result);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
@@ -1037,6 +1196,85 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 });
 
                 return new MessageResponse(task);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.DRY_RUN_TOOL,
+        async (msg: {
+            id: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { id, owner } = msg;
+                const model = await DatabaseServer.getToolById(id);
+
+                if (!model.config) {
+                    throw new Error('The tool is empty');
+                }
+                if (model.status === ModuleStatus.PUBLISHED) {
+                    throw new Error(`Tool published`);
+                }
+                if (model.status === ModuleStatus.DRY_RUN) {
+                    throw new Error(`Tool already in Dry Run`);
+                }
+                if (model.status === ModuleStatus.PUBLISH_ERROR) {
+                    throw new Error(`Failed tool cannot be started in dry run mode`);
+                }
+
+                const errors = await validateTool(model);
+                const isValid = !errors.blocks.some(block => !block.isValid);
+                if (isValid) {
+                    await dryRunTool(model, owner, 'Dry Run', logger);
+                }
+
+                return new MessageResponse({
+                    isValid,
+                    errors
+                });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.DRAFT_TOOL,
+        async (msg: {
+            id: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { id, owner } = msg;
+                const model = await DatabaseServer.getToolById(id);
+
+                if (!model.config) {
+                    throw new Error('The tool is empty');
+                }
+                if (model.status === ModuleStatus.PUBLISHED) {
+                    throw new Error(`Tool published`);
+                }
+                if (model.status === ModuleStatus.DRAFT) {
+                    throw new Error(`Tool already in draft`);
+                }
+
+                if (model.messageId) {
+                    const policies = await DatabaseServer.getPolicies({
+                        tools: { $elemMatch: { messageId: model.messageId } }
+                    })
+
+                    if (policies.length > 0 && policies.find(policy => policy.status === PolicyStatus.DRY_RUN)) {
+                        throw new Error(`Tool used in running policy`);
+                    }
+                }
+
+                model.status = ModuleStatus.DRAFT;
+                model.version = '';
+
+                await DatabaseServer.updateTool(model);
+
+                return new MessageResponse(true);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);

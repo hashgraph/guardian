@@ -13,6 +13,7 @@ import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-po
 import { DialogService } from 'primeng/dynamicdialog';
 import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { PublishToolDialog } from '../dialogs/publish-tool-dialog/publish-tool-dialog.component';
 
 enum OperationMode {
     None,
@@ -348,16 +349,31 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     }
 
     public publishTool(element: any) {
-        this.loading = true;
-        this.toolsService.pushPublish(element.id).subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.router.navigate(['task', taskId], {
-                queryParams: {
-                    last: btoa(location.href)
-                }
-            });
-        }, (e) => {
-            this.loading = false;
+        this.setToolVersion(element);
+    }
+    
+    public setToolVersion(tool: any) {
+        const dialogRef = this.dialogService.open(PublishToolDialog, {
+            showHeader: false,
+            header: 'Publish Tool',
+            width: '600px',
+            styleClass: 'guardian-dialog'
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
+            if (options) {
+                this.loading = true;
+                this.toolsService.pushPublish(tool.id, options).pipe(takeUntil(this._destroy$)).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
         });
     }
 }

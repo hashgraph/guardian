@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader } from '#middlewares';
+import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader, ToolVersionDTO } from '#middlewares';
 import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, EntityOwner, getCacheKey, CacheService } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 import {CACHE_PREFIXES, PREFIXES, TOOL_REQUIRED_PROPS} from '#constants';
@@ -408,8 +408,8 @@ export class ToolsApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Tool configuration.',
-        type: ToolDTO,
+        description: 'Tool version.',
+        type: ToolVersionDTO,
         required: true
     })
     @ApiOkResponse({
@@ -420,12 +420,12 @@ export class ToolsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(ToolValidationDTO, ToolDTO, InternalServerErrorDTO)
+    @ApiExtraModels(ToolValidationDTO, ToolVersionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async publishTool(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string,
-        @Body() tool: ToolDTO,
+        @Body() body: ToolVersionDTO,
         @Req() req
     ): Promise<ToolValidationDTO> {
         try {
@@ -438,7 +438,7 @@ export class ToolsApi {
             const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
             await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
 
-            return await guardian.publishTool(id, owner, tool);
+            return await guardian.publishTool(id, owner, body);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -464,8 +464,8 @@ export class ToolsApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Tool configuration.',
-        type: ToolDTO,
+        description: 'Tool version.',
+        type: ToolVersionDTO,
         required: true
     })
     @ApiOkResponse({
@@ -476,12 +476,12 @@ export class ToolsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(ToolDTO, TaskDTO, InternalServerErrorDTO)
+    @ApiExtraModels(ToolVersionDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async publishToolAsync(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string,
-        @Body() tool: ToolDTO,
+        @Body() body: ToolVersionDTO,
         @Req() req
     ): Promise<TaskDTO> {
         if (!id) {
@@ -492,7 +492,7 @@ export class ToolsApi {
         const task = taskManager.start(TaskAction.PUBLISH_TOOL, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardian = new Guardians();
-            await guardian.publishToolAsync(id, owner, tool, task);
+            await guardian.publishToolAsync(id, owner, body, task);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message || error });
@@ -502,6 +502,106 @@ export class ToolsApi {
         await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
 
         return task;
+    }
+
+    /**
+     * Go to dry-run tool
+     */
+    @Put('/:id/dry-run')
+    @Auth(
+        Permissions.TOOLS_TOOL_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Dry Run policy.',
+        description: 'Run policy without making any persistent changes or executing transaction.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'id',
+        type: String,
+        description: 'Tool ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: ToolValidationDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(ToolDTO, TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async dryRunPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Req() req
+    ): Promise<TaskDTO> {
+        try {
+            if (!id) {
+                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
+
+            return await guardian.dryRunTool(id, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Go to dry-run draft
+     */
+    @Put('/:id/draft')
+    @Auth(
+        Permissions.TOOLS_TOOL_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return policy to editing.',
+        description: 'Return policy to editing.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'id',
+        type: String,
+        description: 'Tool ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: ToolValidationDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(ToolDTO, TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async draftPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Req() req
+    ): Promise<TaskDTO[]> {
+        try {
+            if (!id) {
+                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+
+            const prefixInvalidatedCacheTags = [`${CACHE_PREFIXES.TAG}/tools`];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
+
+            return await guardian.draftTool(id, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
     }
 
     /**

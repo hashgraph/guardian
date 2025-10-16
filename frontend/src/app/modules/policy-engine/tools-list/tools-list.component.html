@@ -147,6 +147,12 @@
                             </th>
                             <th
                                 class="header-cell-text"
+                                style="min-width: 140px;"
+                            >
+                                Version
+                            </th>
+                            <th
+                                class="header-cell-text"
                                 style="min-width: 165px;"
                             >
                                 Tags
@@ -215,6 +221,14 @@
                                 <hedera-explorer [params]="tool.topicId" type="topics">
                                     {{ tool.topicId }}
                                 </hedera-explorer>
+                            </td>
+                            <td
+                                class="text-truncate"
+                                pTooltip="{{ tool.version}}"
+                                style="min-width: 140px; max-width: 150px;"
+                                tooltipPosition="top"
+                            >
+                                {{ tool.version || '–' }}
                             </td>
                             <td
                                 style="min-width: 165px;"
