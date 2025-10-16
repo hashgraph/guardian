@@ -15995,7 +15995,9 @@ paths:
         - policy-labels
   /policy-comments/{policyId}/{documentId}/users:
     get:
-      description: ''
+      description: >-
+        Returns the list of user names which are present in the target policy
+        and have access to the target document.
       operationId: PolicyCommentsApi_getUsers
       parameters:
         - name: policyId
@@ -16033,12 +16035,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: >-
+        Returns the list of user names which are present in the target policy
+        and have access to the target document.
       tags:
         - policy-comments
   /policy-comments/{policyId}/{documentId}/relationships:
     get:
-      description: ''
+      description: Returns the list of documents linked with the target document
       operationId: PolicyCommentsApi_getRelationships
       parameters:
         - name: policyId
@@ -16076,12 +16080,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Returns the list of documents linked with the target document
       tags:
         - policy-comments
   /policy-comments/{policyId}/{documentId}/schemas:
     get:
-      description: ''
+      description: Returns the list of schemas for the target document
       operationId: PolicyCommentsApi_getSchemas
       parameters:
         - name: policyId
@@ -16119,12 +16123,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Returns the list of schemas for the target document
       tags:
         - policy-comments
   /policy-comments/{policyId}/{documentId}/discussions:
     get:
-      description: ''
+      description: Returns the list of discussions for the target document
       operationId: PolicyCommentsApi_getDiscussions
       parameters:
         - name: policyId
@@ -16144,21 +16148,21 @@ paths:
         - name: search
           required: false
           in: query
-          description: .
+          description: Text
           schema:
-            example: test
+            example: Text
             type: string
         - name: field
           required: false
           in: query
-          description: .
+          description: Field path
           schema:
-            example: test
+            example: Field path
             type: string
         - name: readonly
           required: false
           in: query
-          description: .
+          description: Readonly
           schema:
             example: false
             type: boolean
@@ -16183,11 +16187,11 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Returns the list of discussions for the target document
       tags:
         - policy-comments
     post:
-      description: ''
+      description: Creates a new discussion linked to the target document
       operationId: PolicyCommentsApi_createDiscussion
       parameters:
         - name: policyId
@@ -16206,11 +16210,11 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Data
+        description: Config
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Object'
+              $ref: '#/components/schemas/NewPolicyDiscussionDTO'
       responses:
         '200':
           description: Successful operation.
@@ -16230,12 +16234,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: .
+      summary: Creates a new discussion linked to the target document
       tags:
         - policy-comments
   /policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments:
     post:
-      description: Create policy comment
+      description: Creates a new message in the target discussion
       operationId: PolicyCommentsApi_createPolicyComment
       parameters:
         - name: policyId
@@ -16261,11 +16265,11 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Data
+        description: Message
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Object'
+              $ref: '#/components/schemas/NewPolicyCommentDTO'
       responses:
         '200':
           description: Successful operation.
@@ -16291,12 +16295,12 @@ paths:
                 $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
       security:
         - bearer: []
-      summary: Create policy comment.
+      summary: Creates a new message in the target discussion.
       tags:
         - policy-comments
   /policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments/search:
     post:
-      description: Returns comments.
+      description: Returns the list of messages for the target discussion
       operationId: PolicyCommentsApi_getPolicyComments
       parameters:
         - name: policyId
@@ -16323,10 +16327,17 @@ paths:
         - name: readonly
           required: false
           in: query
-          description: .
+          description: Readonly.
           schema:
             example: false
             type: boolean
+      requestBody:
+        required: true
+        description: Search params
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyCommentSearchDTO'
       responses:
         '200':
           description: Successful operation.
@@ -16353,12 +16364,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Return a list of comments.
+      summary: Returns the list of messages for the target discussion
       tags:
         - policy-comments
   /policy-comments/{policyId}/{documentId}/comments/count:
     get:
-      description: ''
+      description: Returns the count of the messages in the target discussion
       operationId: PolicyCommentsApi_getPolicyCommentsCount
       parameters:
         - name: policyId
@@ -16400,12 +16411,12 @@ paths:
                 $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
       security:
         - bearer: []
-      summary: .
+      summary: Returns the count of the messages in the target discussion
       tags:
         - policy-comments
   /policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments/file:
     post:
-      description: Add file from ipfs.
+      description: Encrypts and loads the file into IPFS linked to the target discussion
       operationId: PolicyCommentsApi_postFile
       parameters:
         - name: policyId
@@ -16455,12 +16466,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Add file from ipfs.
+      summary: Encrypts and loads the file into IPFS linked to the target discussion
       tags:
         - policy-comments
   /policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments/file/{cid}:
     get:
-      description: Get file from ipfs.
+      description: Retrieves and decrypts the file associated with the discussion from IPFS
       operationId: PolicyCommentsApi_getFile
       parameters:
         - name: policyId
@@ -16510,12 +16521,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Get file from ipfs.
+      summary: Retrieves and decrypts the file associated with the discussion from IPFS
       tags:
         - policy-comments
   /policy-comments/{policyId}/{documentId}/keys:
     get:
-      description: .
+      description: Returns the list of private keys for the target document
       operationId: PolicyCommentsApi_getKey
       parameters:
         - name: policyId
@@ -16559,12 +16570,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: .
+      summary: Returns the list of private keys for the target document
       tags:
         - policy-comments
   /policy-repository/{policyId}/users:
     get:
-      description: ''
+      description: Returns the list of user names which are present in the policy
       operationId: PolicyRepositoryApi_getUsers
       parameters:
         - name: policyId
@@ -16580,7 +16591,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  type: object
         '401':
           description: Unauthorized.
         '403':
@@ -16593,12 +16606,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Returns the list of user names which are present in the policy
       tags:
         - policy-repository
   /policy-repository/{policyId}/schemas:
     get:
-      description: ''
+      description: Returns the list of schemas present in the target policy
       operationId: PolicyRepositoryApi_getSchemas
       parameters:
         - name: policyId
@@ -16614,7 +16627,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -16627,12 +16642,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Returns the list of schemas present in the target policy
       tags:
         - policy-repository
   /policy-repository/{policyId}/documents:
     get:
-      description: ''
+      description: Returns the list of documents in the target policy
       operationId: PolicyRepositoryApi_getDocuments
       parameters:
         - name: policyId
@@ -16668,28 +16683,38 @@ paths:
         - name: owner
           required: false
           in: query
-          description: ''
+          description: Document owner
           schema:
+            example: >-
+              #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
             type: string
         - name: schema
           required: false
           in: query
-          description: ''
+          description: Document schema
           schema:
+            example: 00000000-0000-0000-0000-000000000000
             type: string
         - name: comments
           required: false
           in: query
-          description: ''
+          description: Load comments
           schema:
             type: boolean
       responses:
         '200':
           description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/VcDocumentDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -16702,7 +16727,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Returns the list of documents in the target policy
       tags:
         - policy-repository
   /worker-tasks:
@@ -21117,11 +21142,20 @@ components:
         messageId:
           type: string
           example: '0000000000.000000001'
+        parent:
+          type: string
+          example: '0000000000.000000001'
         hash:
           type: string
         name:
           type: string
           example: Common
+        field:
+          type: string
+          example: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+        fieldName:
+          type: string
+          example: Field name
         relationships:
           example:
             - '0000000000.000000001'
@@ -21162,6 +21196,42 @@ components:
       required:
         - id
         - document
+    NewPolicyDiscussionDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Common
+        field:
+          type: string
+          example: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+        fieldName:
+          type: string
+          example: Field name
+        parent:
+          type: string
+          example: '0000000000.000000001'
+        privacy:
+          type: string
+          enum:
+            - public
+            - roles
+            - users
+          example: public
+        roles:
+          type: array
+          items:
+            type: string
+        users:
+          type: array
+          items:
+            type: string
+        relationships:
+          example:
+            - '0000000000.000000001'
+          type: array
+          items:
+            type: string
     PolicyCommentDTO:
       type: object
       properties:
@@ -21244,6 +21314,50 @@ components:
       required:
         - id
         - document
+    NewPolicyCommentDTO:
+      type: object
+      properties:
+        anchor:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        recipients:
+          example:
+            - >-
+              #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+          type: array
+          items:
+            type: string
+        fields:
+          example:
+            - '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+          type: array
+          items:
+            type: string
+        text:
+          type: string
+          example: text
+        files:
+          example:
+            - text
+          type: array
+          items:
+            type: string
+    PolicyCommentSearchDTO:
+      type: object
+      properties:
+        search:
+          type: string
+          example: text
+        field:
+          type: string
+          example: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+        lt:
+          type: string
+          example: '000000000000000000000001'
+        gt:
+          type: string
+          example: '000000000000000000000001'
     PolicyCommentCountDTO:
       type: object
       properties:
