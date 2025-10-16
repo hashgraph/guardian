@@ -1375,14 +1375,14 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         documentId: string,
         data: {
-            name: string,
-            parent: string,
-            field: string,
-            fieldName: string,
-            privacy: string,
-            roles: string[],
-            users: string[],
-            relationships: string[]
+            name?: string,
+            parent?: string,
+            field?: string,
+            fieldName?: string,
+            privacy?: string,
+            roles?: string[],
+            users?: string[],
+            relationships?: string[]
         }
     ): Promise<PolicyDiscussionDTO> {
         return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_DISCUSSION, { user, policyId, documentId, data });
@@ -1424,16 +1424,15 @@ export class PolicyEngine extends NatsService {
         documentId: string,
         discussionId: string,
         params: {
-            anchor?: string,
-            sender?: string,
-            senderRole?: string,
-            private?: boolean,
+            search?: string,
+            field?: string,
             lt?: string,
             gt?: string,
             audit?: boolean,
         }
     ): Promise<{ comments: PolicyCommentDTO[], count: number }> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENTS, { user, policyId, documentId, discussionId, params });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENTS,
+            { user, policyId, documentId, discussionId, params });
     }
 
     /**

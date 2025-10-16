@@ -6,7 +6,11 @@ import { Controller, Get, HttpCode, HttpException, HttpStatus, Param, Query, Res
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
     Examples,
-    InternalServerErrorDTO
+    InternalServerErrorDTO,
+    pageHeader,
+    PolicyCommentUserDTO,
+    SchemaDTO,
+    VcDocumentDTO
 } from '#middlewares';
 
 @Controller('policy-repository')
@@ -23,8 +27,8 @@ export class PolicyRepositoryApi {
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Returns the list of user names which are present in the policy',
+        description: 'Returns the list of user names which are present in the policy'
     })
     @ApiParam({
         name: 'policyId',
@@ -35,18 +39,19 @@ export class PolicyRepositoryApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        isArray: true,
         type: Object
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(PolicyCommentUserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getUsers(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-    ): Promise<any> {
+    ): Promise<PolicyCommentUserDTO[]> {
         try {
             if (!policyId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -66,8 +71,8 @@ export class PolicyRepositoryApi {
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Returns the list of schemas present in the target policy',
+        description: 'Returns the list of schemas present in the target policy'
     })
     @ApiParam({
         name: 'policyId',
@@ -78,18 +83,19 @@ export class PolicyRepositoryApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        isArray: true,
+        type: SchemaDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getSchemas(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-    ): Promise<any> {
+    ): Promise<SchemaDTO[]> {
         try {
             if (!policyId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -109,8 +115,8 @@ export class PolicyRepositoryApi {
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Returns the list of documents in the target policy',
+        description: 'Returns the list of documents in the target policy'
     })
     @ApiParam({
         name: 'policyId',
@@ -143,24 +149,28 @@ export class PolicyRepositoryApi {
     @ApiQuery({
         name: 'owner',
         type: String,
-        description: '',
-        required: false
+        description: 'Document owner',
+        required: false,
+        example: Examples.DID
     })
     @ApiQuery({
         name: 'schema',
         type: String,
-        description: '',
-        required: false
+        description: 'Document schema',
+        required: false,
+        example: Examples.UUID
     })
     @ApiQuery({
         name: 'comments',
         type: Boolean,
-        description: '',
+        description: 'Load comments',
         required: false
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        isArray: true,
+        headers: pageHeader,
+        type: VcDocumentDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -178,7 +188,7 @@ export class PolicyRepositoryApi {
         @Query('owner') owner?: string,
         @Query('schema') schema?: string,
         @Query('comments') comments?: boolean,
-    ): Promise<any> {
+    ): Promise<VcDocumentDTO[]> {
         try {
             if (!policyId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);

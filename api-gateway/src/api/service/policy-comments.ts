@@ -8,10 +8,13 @@ import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse,
 import {
     Examples,
     InternalServerErrorDTO,
+    NewPolicyCommentDTO,
+    NewPolicyDiscussionDTO,
     pageHeader,
     PolicyCommentCountDTO,
     PolicyCommentDTO,
     PolicyCommentRelationshipDTO,
+    PolicyCommentSearchDTO,
     PolicyCommentUserDTO,
     PolicyDiscussionDTO,
     SchemaDTO,
@@ -34,8 +37,8 @@ export class PolicyCommentsApi {
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Returns the list of user names which are present in the target policy and have access to the target document.',
+        description: 'Returns the list of user names which are present in the target policy and have access to the target document.'
     })
     @ApiParam({
         name: 'policyId',
@@ -88,8 +91,8 @@ export class PolicyCommentsApi {
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Returns the list of documents linked with the target document',
+        description: 'Returns the list of documents linked with the target document'
     })
     @ApiParam({
         name: 'policyId',
@@ -142,8 +145,8 @@ export class PolicyCommentsApi {
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Returns the list of schemas for the target document',
+        description: 'Returns the list of schemas for the target document'
     })
     @ApiParam({
         name: 'policyId',
@@ -168,7 +171,7 @@ export class PolicyCommentsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getSchemas(
         @AuthUser() user: IAuthUser,
@@ -196,8 +199,8 @@ export class PolicyCommentsApi {
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Returns the list of discussions for the target document',
+        description: 'Returns the list of discussions for the target document'
     })
     @ApiParam({
         name: 'policyId',
@@ -216,21 +219,21 @@ export class PolicyCommentsApi {
     @ApiQuery({
         name: 'search',
         type: String,
-        description: '.',
+        description: 'Text',
         required: false,
-        example: 'test'
+        example: 'Text'
     })
     @ApiQuery({
         name: 'field',
         type: String,
-        description: '.',
+        description: 'Field path',
         required: false,
-        example: 'test'
+        example: 'Field path'
     })
     @ApiQuery({
         name: 'readonly',
         type: Boolean,
-        description: '.',
+        description: 'Readonly',
         required: false,
         example: false
     })
@@ -279,8 +282,8 @@ export class PolicyCommentsApi {
         Permissions.POLICIES_POLICY_MANAGE
     )
     @ApiOperation({
-        summary: '.',
-        description: '',
+        summary: 'Creates a new discussion linked to the target document',
+        description: 'Creates a new discussion linked to the target document',
     })
     @ApiParam({
         name: 'policyId',
@@ -297,8 +300,8 @@ export class PolicyCommentsApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Data',
-        type: Object
+        description: 'Config',
+        type: NewPolicyDiscussionDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -314,16 +317,7 @@ export class PolicyCommentsApi {
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
-        @Body() body: {
-            name: string,
-            parent: string,
-            field: string,
-            fieldName: string,
-            privacy: string,
-            roles: string[],
-            users: string[],
-            relationships: string[]
-        }
+        @Body() body: NewPolicyDiscussionDTO
     ): Promise<PolicyDiscussionDTO> {
         try {
             const engineService = new PolicyEngine();
@@ -343,8 +337,8 @@ export class PolicyCommentsApi {
         Permissions.POLICIES_POLICY_MANAGE
     )
     @ApiOperation({
-        summary: 'Create policy comment.',
-        description: 'Create policy comment',
+        summary: 'Creates a new message in the target discussion.',
+        description: 'Creates a new message in the target discussion',
     })
     @ApiParam({
         name: 'policyId',
@@ -368,8 +362,8 @@ export class PolicyCommentsApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Data',
-        type: Object
+        description: 'Message',
+        type: NewPolicyCommentDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -390,13 +384,7 @@ export class PolicyCommentsApi {
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
         @Param('discussionId') discussionId: string,
-        @Body() body: {
-            anchor?: string;
-            recipients?: string[];
-            fields?: string[];
-            text?: string;
-            files?: string[];
-        }
+        @Body() body: NewPolicyCommentDTO
     ): Promise<PolicyCommentDTO> {
         try {
             const engineService = new PolicyEngine();
@@ -417,8 +405,8 @@ export class PolicyCommentsApi {
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: 'Return a list of comments.',
-        description: 'Returns comments.',
+        summary: 'Returns the list of messages for the target discussion',
+        description: 'Returns the list of messages for the target discussion',
     })
     @ApiParam({
         name: 'policyId',
@@ -444,9 +432,13 @@ export class PolicyCommentsApi {
     @ApiQuery({
         name: 'readonly',
         type: Boolean,
-        description: '.',
+        description: 'Readonly.',
         required: false,
         example: false
+    })
+    @ApiBody({
+        description: 'Search params',
+        type: PolicyCommentSearchDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -465,14 +457,7 @@ export class PolicyCommentsApi {
         @Param('policyId') policyId: string,
         @Param('documentId') documentId: string,
         @Param('discussionId') discussionId: string,
-        @Body() body: {
-            anchor?: string,
-            sender?: string,
-            senderRole?: string,
-            private?: boolean,
-            lt?: string,
-            gt?: string
-        },
+        @Body() body: PolicyCommentSearchDTO,
         @Response() res: any,
         @Query('readonly') readonly?: boolean
     ): Promise<PolicyCommentDTO[]> {
@@ -487,7 +472,7 @@ export class PolicyCommentsApi {
     }
 
     /**
-     * Create policy comment count
+     * Get policy comment count
      */
     @Get('/:policyId/:documentId/comments/count')
     @Auth(
@@ -495,8 +480,8 @@ export class PolicyCommentsApi {
         Permissions.POLICIES_POLICY_MANAGE
     )
     @ApiOperation({
-        summary: '.',
-        description: '',
+        summary: 'Returns the count of the messages in the target discussion',
+        description: 'Returns the count of the messages in the target discussion',
     })
     @ApiParam({
         name: 'policyId',
@@ -549,8 +534,8 @@ export class PolicyCommentsApi {
         Permissions.POLICIES_POLICY_MANAGE
     )
     @ApiOperation({
-        summary: 'Add file from ipfs.',
-        description: 'Add file from ipfs.',
+        summary: 'Encrypts and loads the file into IPFS linked to the target discussion',
+        description: 'Encrypts and loads the file into IPFS linked to the target discussion',
     })
     @ApiParam({
         name: 'policyId',
@@ -625,8 +610,8 @@ export class PolicyCommentsApi {
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: 'Get file from ipfs.',
-        description: 'Get file from ipfs.',
+        summary: 'Retrieves and decrypts the file associated with the discussion from IPFS',
+        description: 'Retrieves and decrypts the file associated with the discussion from IPFS',
     })
     @ApiParam({
         name: 'policyId',
@@ -696,8 +681,8 @@ export class PolicyCommentsApi {
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: '.',
-        description: '.',
+        summary: 'Returns the list of private keys for the target document',
+        description: 'Returns the list of private keys for the target document',
     })
     @ApiParam({
         name: 'policyId',
