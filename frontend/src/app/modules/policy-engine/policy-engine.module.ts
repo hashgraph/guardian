@@ -159,6 +159,7 @@ import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoin
 import { AddSavepointDialog } from "./policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component";
 import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
 import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
+import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 
 @NgModule({
     declarations: [
@@ -194,6 +195,7 @@ import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-di
         FiltersAddonBlockComponent,
         HelpIcon,
         SavePolicyDialog,
+        SaveToolDialog,
         PreviewPolicyDialog,
         ExportPolicyDialog,
         CalculateConfigComponent,

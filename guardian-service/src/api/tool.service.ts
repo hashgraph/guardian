@@ -138,10 +138,11 @@ export async function validateAndPublish(
 
     const countModels = await DatabaseServer.getTools({
         version,
-        uuid: item.uuid
+        topicId: item.topicId,
+        owner: user.owner
     });
     if (countModels?.length > 0) {
-        throw new Error('Tool with current version already was published'); // todo previous version
+        throw new Error('Tool with current version already was published');
     }
 
     const errors = await validateTool(item);
@@ -590,10 +591,10 @@ export async function dryRunTool(
                     
                     console.log(oldToolHash, tool.hash);
                     console.log(tool.messageId, result.getId());
-                    const policy2 = PolicyConverterUtils.PolicyConverter(policy);
+                    // const policy2 = PolicyConverterUtils.PolicyConverter(policy);
                     
-                    await databaseServer.save(Policy, policy2);
-                    await PolicyImportExportHelper.updatePolicyComponents(policy2, logger, user.id);
+                    await databaseServer.save(Policy, policy);
+                    // await PolicyImportExportHelper.updatePolicyComponents(policy2, logger, user.id);
                 }
             }
         }

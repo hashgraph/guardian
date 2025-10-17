@@ -18,6 +18,8 @@ export class ToolTemplate {
     public readonly status!: string;
     public readonly messageId!: string;
     public readonly topicId!: string;
+    public readonly version!: string;
+    public readonly previousVersion!: string;
 
     public readonly isDraft: boolean = false;
     public readonly isDryRun: boolean = false;
@@ -47,6 +49,8 @@ export class ToolTemplate {
         this.status = template.status;
         this.messageId = template.messageId;
         this.topicId = template.topicId;
+        this.version = template.version;
+        this.previousVersion = template.previousVersion;
 
         this.buildBlock(template.config);
         this._config.setNameSilently(template.name);
@@ -155,6 +159,8 @@ export class ToolTemplate {
             codeVersion: this.codeVersion,
             createDate: this.createDate,
             config: this._config.getJSON(),
+            version: this.version,
+            previousVersion: this.previousVersion,
         };
         return json;
     }

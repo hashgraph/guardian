@@ -33,6 +33,7 @@ import {takeUntil} from 'rxjs/operators';
 import { TestCodeDialog } from '../../dialogs/test-code-dialog/test-code-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
+import { SaveToolDialog, ToolSaveAction } from '../../dialogs/save-tool-dialog/save-tool-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -1774,33 +1775,57 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public saveAsTool() {
-        const tool = this.toolTemplate.getJSON();
-        delete tool.id;
-        delete tool.uuid;
-        const dialogRef = this.dialogService.open(NewModuleDialog, {
-            width: '650px',
-            styleClass: 'custom-dialog',
-            header: 'New Tool',
-            closable: true,
+        const dialogRef = this.dialog.open(SaveToolDialog, {
+            showHeader: false,
+            width: '550px',
+            styleClass: 'guardian-dialog',
             data: {
-                type: 'tool'
+                tool: this.toolTemplate,
+                action: this.toolTemplate.status === 'DRAFT'
+                    ? ToolSaveAction.CREATE_NEW_TOOL
+                    : null
             }
-            // data: { ...tool, type: 'tool' }
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
-            if (!result) {
-                return;
+            if (result && this.toolTemplate) {
+                this.loading = true;
+
+                const json = this.toolTemplate.getJSON();
+                const tool = Object.assign({}, json, result.tool);
+                
+                if (result.action === ToolSaveAction.CREATE_NEW_TOOL) {
+                    delete tool._id;
+                    delete tool.id;
+                    delete tool.uuid;
+                    delete tool.topicId;
+                    delete tool.status;
+                    delete tool.owner;
+                    delete tool.version;
+                    this.toolsService.create(tool).pipe(takeUntil(this._destroy$)).subscribe((result) => {
+                        this.router.navigate(['/tool-configuration'], {
+                            queryParams: { toolId: result.id }
+                        });
+                    }, (e) => {
+                        this.loading = false;
+                    });
+                } else if (result.action === ToolSaveAction.CREATE_NEW_VERSION) {
+                    delete tool._id;
+                    delete tool.id;
+                    delete tool.uuid;
+                    delete tool.status;
+                    delete tool.owner;
+                    delete tool.version;
+                    tool.previousVersion = json.version;
+
+                    this.toolsService.create(tool).pipe(takeUntil(this._destroy$)).subscribe((result) => {
+                        this.router.navigate(['/tool-configuration'], {
+                            queryParams: { toolId: result.id }
+                        });
+                    }, (e) => {
+                        this.loading = false;
+                    });
+                }
             }
-            tool.name = result.name;
-            tool.description = result.description;
-            this.loading = true;
-            this.toolsService.create(tool).pipe(takeUntil(this._destroy$)).subscribe((result) => {
-                this.router.navigate(['/tool-configuration'], {
-                    queryParams: { toolId: result.id }
-                });
-            }, (e) => {
-                this.loading = false;
-            });
         });
     }
 

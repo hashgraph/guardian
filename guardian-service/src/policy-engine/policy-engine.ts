@@ -1556,7 +1556,8 @@ export class PolicyEngine extends NatsService {
 
         const countModels = await DatabaseServer.getPolicyCount({
             version,
-            uuid: policy.uuid
+            topicId: policy.topicId,
+            owner: owner.owner
         });
         if (countModels > 0) {
             throw new Error('Policy with current version already was published');
