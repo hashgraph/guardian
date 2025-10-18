@@ -159,8 +159,12 @@ export class IpfsClientClass {
 
                 try {
                     const garbageCollector = this.client.repo.gc();
-                    for await (const _ of garbageCollector) {}
-                } catch {}
+                    for await (const _ of garbageCollector) {
+                        //
+                    }
+                } catch {
+                    //
+                }
 
                 return true;
             }
