@@ -1,4 +1,4 @@
-import { ITableField } from "@guardian/interfaces";
+import { ITableField } from '@guardian/interfaces';
 
 /**
  * Returns true if the value is a plain object (i.e., created via object literal or Object).
