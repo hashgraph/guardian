@@ -1,5 +1,5 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
-import {IsArray, IsBoolean, IsNumber, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
+import {IsArray, IsBoolean, IsIn, IsNumber, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
 import { PolicyAvailability, PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
 import { Examples } from '../examples.js';
 import { ValidationErrorsDTO } from './blocks.js';
@@ -674,4 +674,8 @@ export class IgnoreRuleDTO {
     @IsOptional()
     @IsString()
     contains?: string;
+
+    @IsOptional()
+    @IsIn(['warning','info'])
+    severity?: 'warning' | 'info';
 }

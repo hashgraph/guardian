@@ -1,10 +1,20 @@
+import {PolicyMessage} from './types.js';
+import {IgnoreRule} from './ignore.js';
+import {applyIgnoreRules} from './provider.js';
+
 export interface ReachabilitySource {
     getId(): string;
+
     getTag(): string | undefined;
+
     getBlockType(): string;
+
     getParentId(): string | undefined;
+
     getChildrenIds(): string[];
+
     getOptions(): unknown;
+
     addPrecomputedMessagesAsText?(
         msgs: ReadonlyArray<string>,
         severity: 'warning' | 'info'
@@ -58,7 +68,8 @@ export function collectTagReferences(
  *  - tag-based links from options (strings matching another block’s tag)
  */
 export function computeReachabilityAndDistribute(
-    sources: ReadonlyArray<ReachabilitySource>
+    sources: ReadonlyArray<ReachabilitySource>,
+    ignoreRules?: ReadonlyArray<IgnoreRule>
 ): void {
     /**
      * Tag indices.
@@ -70,7 +81,7 @@ export function computeReachabilityAndDistribute(
 
     for (const source of sources) {
         const tag = source.getTag();
-        const id  = source.getId();
+        const id = source.getId();
 
         if (tag && id) {
             idByTag.set(tag, id);
@@ -113,14 +124,14 @@ export function computeReachabilityAndDistribute(
      * Tag-based links from options: any string matching a known tag.
      */
     for (const source of sources) {
-        const fromId  = source.getId();
+        const fromId = source.getId();
         const options = source.getOptions();
 
         const referencedTags = collectTagReferences(options, knownTags);
 
         for (const tag of referencedTags) {
             const toId = idByTag.get(tag);
-            if (toId) {
+            if (toId && toId !== fromId) {
                 incrementCount(outgoingLinksCountById, fromId);
                 incrementCount(incomingLinksCountById, toId);
             }
@@ -133,32 +144,41 @@ export function computeReachabilityAndDistribute(
      *  - “no outgoing links”: no children and no tag-based references from the node.
      */
     for (const source of sources) {
-        const id       = source.getId();
-        const tag      = source.getTag();
-        const type     = source.getBlockType();
+        const id = source.getId();
+        const tag = source.getTag();
+        const type = source.getBlockType();
         const parentId = source.getParentId();
 
-        const incomingCount = incomingLinksCountById.get(id)  ?? 0;
+        const incomingCount = incomingLinksCountById.get(id) ?? 0;
         const outgoingCount = outgoingLinksCountById.get(id) ?? 0;
 
-        const messages: string[] = [];
+        const structuredMessages: PolicyMessage[] = [];
+        const label = tag ?? id;
 
         if (incomingCount === 0 && !parentId) {
-            messages.push(
-                `Block "${type}" (${tag ?? id}) has no incoming links ` +
-                `(no parent and no tag-based references).`
-            );
+            structuredMessages.push({
+                severity: 'warning',
+                code: 'REACHABILITY_NO_IN',
+                kind: 'best-practice',
+                text: `Block "${type}" (${label}) has no incoming links (no parent and no tag-based references).`,
+                blockType: type
+            });
         }
 
         if (outgoingCount === 0) {
-            messages.push(
-                `Block "${type}" (${tag ?? id}) has no outgoing links ` +
-                `(no children and no tag-based references).`
-            );
+            structuredMessages.push({
+                severity: 'warning',
+                code: 'REACHABILITY_NO_OUT',
+                kind: 'best-practice',
+                text: `Block "${type}" (${label}) has no outgoing links (no children and no tag-based references).`,
+                blockType: type
+            });
         }
 
-        if (messages.length) {
-            source.addPrecomputedMessagesAsText?.(messages, 'warning');
+        const filtered = applyIgnoreRules(structuredMessages, ignoreRules);
+        if (filtered.length) {
+            const texts = filtered.map(m => m.text);
+            source.addPrecomputedMessagesAsText?.(texts, 'warning');
         }
     }
 }

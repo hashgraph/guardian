@@ -35,4 +35,9 @@ export interface IgnoreRule {
      * Helps to ignore messages even more precisely if needed.
      */
     contains?: string;
+
+    /**
+     * Type of message
+     */
+    severity?: 'warning' | 'info';
 }

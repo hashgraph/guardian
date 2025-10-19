@@ -9,6 +9,22 @@ import {
 } from './types.js';
 
 /**
+ * Safely resolves a nested value from a plain object using a dot-delimited path.
+ *
+ * @param obj   Source object to read from.
+ * @param path  Dot-delimited path (e.g., "uiMetaData.title").
+ * @returns     The resolved value or `undefined` if not found.
+ */
+function getByPath(obj: unknown, path: string): unknown {
+    if (!obj || typeof obj !== 'object') return undefined;
+    return path.split('.').reduce((acc: any, key) => {
+        if (acc == null) return undefined;
+        return acc[key];
+    }, obj as any);
+}
+
+
+/**
  * Builds a human-readable deprecation text based on DeprecationInfo.
  * Supports both a whole block and a specific property (via the optional `property` parameter).
  */
@@ -99,7 +115,7 @@ export function getDeprecationMessagesForProperties(
     const messages: PolicyMessage[] = [];
 
     for (const [propertyName, deprecationInfo] of propertiesMap.entries()) {
-        const isPropertyUsed = usedProperties[propertyName] !== undefined;
+        const isPropertyUsed = getByPath(usedProperties, propertyName) !== undefined
 
         if (isPropertyUsed) {
             const message: PolicyMessage = {

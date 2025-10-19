@@ -29,34 +29,43 @@ export class IgnoreRulesDialog implements OnInit {
 
     /**
      * Available presets to enable.
-     * To add a new item — extend this array.
      */
     public readonly presetRuleOptions: PresetRuleOption[] = [
         {
-            key: 'suppressWarnings',
-            label: 'Hide warnings (kind = "warning")',
-            rule: { kind: 'warning' },
+            key: 'hideAllWarnings',
+            label: 'Hide all warnings',
+            hint: 'Remove every non-fatal warning from the validation results.',
+            rule: { severity: 'warning' },
         },
         {
-            key: 'skipEmptyProperties',
-            label: 'Ignore empty properties',
-            hint: 'Drop validations for empty/absent values',
-            rule: { property: 'empty' },
+            key: 'hideAllInfos',
+            label: 'Hide all infos',
+            hint: 'Remove all informational messages; keep warnings and errors only.',
+            rule: { severity: 'info' },
         },
         {
-            key: 'skipUiBlocks',
-            label: 'Ignore UI blocks',
-            rule: { blockType: 'UI' },
+            key: 'hideDeprecatedBlocks',
+            label: 'Hide deprecated blocks',
+            hint: 'Suppress messages about whole block types being deprecated.',
+            rule: { code: 'DEPRECATION_BLOCK' },
         },
         {
-            key: 'skipServerBlocks',
-            label: 'Ignore server blocks',
-            rule: { blockType: 'Server' },
+            key: 'hideDeprecatedProps',
+            label: 'Hide deprecated properties',
+            hint: 'Suppress messages about specific properties being deprecated.',
+            rule: { code: 'DEPRECATION_PROP' },
         },
         {
-            key: 'excludeDeprecated',
-            label: 'Exclude deprecated items',
-            rule: { contains: 'deprecated' },
+            key: 'hideNoIncoming',
+            label: 'Hide “no incoming links”',
+            hint: 'Suppress reachability warnings for blocks with no incoming links.',
+            rule: { code: 'REACHABILITY_NO_IN' },
+        },
+        {
+            key: 'hideNoOutgoing',
+            label: 'Hide “no outgoing links”',
+            hint: 'Suppress reachability warnings for blocks with no outgoing links.',
+            rule: { code: 'REACHABILITY_NO_OUT' },
         },
     ];
 

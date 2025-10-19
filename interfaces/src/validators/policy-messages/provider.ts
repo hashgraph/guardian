@@ -41,10 +41,11 @@ function isIgnoredByRule(message: PolicyMessage, rule: IgnoreRule): boolean {
     const blockTypeMatches = !rule.blockType || rule.blockType === message.blockType;
     const propertyMatches = !rule.property || rule.property === message.property;
     const containsMatches = !rule.contains || message.text.includes(rule.contains);
-    return codeMatches && kindMatches && blockTypeMatches && propertyMatches && containsMatches;
+    const severityMatches = !rule.severity || rule.severity === message.severity;
+    return codeMatches && kindMatches && blockTypeMatches && propertyMatches && containsMatches && severityMatches;
 }
 
-function applyIgnoreRules(
+export function applyIgnoreRules(
     messages: ReadonlyArray<PolicyMessage>,
     ignoreRules?: ReadonlyArray<IgnoreRule>
 ): PolicyMessage[] {
