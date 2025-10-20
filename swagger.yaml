@@ -3763,6 +3763,13 @@ paths:
           schema:
             example: 20
             type: number
+        - name: search
+          required: false
+          in: query
+          description: Search
+          schema:
+            example: text
+            type: string
       responses:
         '200':
           description: Successful operation.
