@@ -52,7 +52,7 @@ export class RequestDocumentBlockDialog {
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
     private buttonNames: { [id: string]: string } = {
-        save: "Save",
+        save: "Save Draft",
         cancel: "Cancel",
         prev: "Previous",
         next: "Next",
@@ -187,7 +187,7 @@ export class RequestDocumentBlockDialog {
                 const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
                     showHeader: false,
                     width: '640px',
-                    styleClass: 'guardian-dialog draft-dialog',
+                    styleClass: 'guardian-dialog without-saving-dialog',
                     data: {
                         header: 'Leave without saving?',
                         text: 'You’re trying to leave the page without saving your changes. \n\nAre you sure you want to discard them and exit the creation process?',

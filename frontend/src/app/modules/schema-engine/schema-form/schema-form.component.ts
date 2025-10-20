@@ -185,7 +185,7 @@ export class SchemaFormComponent implements OnInit {
             },
             text: this.saveText,
             class: 'p-button-outlined',
-            type: 'secondary',
+            type: 'primary',
             iconPath: '/assets/images/icons/save.svg',
             fn: () => {
                 this.onSaveBtnClick(this.formModel?.controls);

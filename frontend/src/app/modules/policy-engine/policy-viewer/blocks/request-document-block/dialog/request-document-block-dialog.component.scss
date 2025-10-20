@@ -88,6 +88,8 @@ form {
         button {
             display: flex;
             gap: 8px;
+            padding-left: 16px;
+            padding-right: 16px;
         }
     }
 }
@@ -106,8 +108,8 @@ form {
 }
 
 .save-icon-color {
-    fill: var(--color-primary);
-    color: var(--color-primary);
+    fill: var(--color-grey-white);
+    color: var(--color-grey-white);
 }
 
 @media (max-width: 810px) {
