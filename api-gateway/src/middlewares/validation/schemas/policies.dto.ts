@@ -1,4 +1,4 @@
-import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
+import {ApiExtraModels, ApiProperty, ApiPropertyOptional} from '@nestjs/swagger';
 import {IsArray, IsBoolean, IsIn, IsNumber, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
 import { PolicyAvailability, PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
 import { Examples } from '../examples.js';
@@ -650,30 +650,29 @@ export class DebugBlockHistoryDTO {
 }
 
 export class IgnoreRuleDTO {
-    @ApiProperty({ description: 'Stable message code, e.g. DEPRECATION_BLOCK' })
+    @ApiPropertyOptional({ description: 'Stable message code, e.g. DEPRECATION_BLOCK' })
     @IsOptional()
     @IsString()
     code?: string;
 
-    @ApiProperty({ description: 'Limit by block type' })
+    @ApiPropertyOptional({ description: 'Limit by block type' })
     @IsOptional()
     @IsString()
     blockType?: string;
 
-    @ApiProperty({ description: 'Limit by property' })
+    @ApiPropertyOptional({ description: 'Limit by property' })
     @IsOptional()
     @IsString()
     property?: string;
 
-    @ApiProperty({ description: 'Substring filter applied to message text' })
+    @ApiPropertyOptional({ description: 'Substring filter applied to message text' })
     @IsOptional()
     @IsString()
     contains?: string;
 
-    @ApiProperty({
+    @ApiPropertyOptional({
         description: 'Type of message',
         enum: ['warning', 'info'],
-        required: false
     })
     @IsOptional()
     @IsIn(['warning','info'])
