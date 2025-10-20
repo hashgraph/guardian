@@ -16371,9 +16371,6 @@ components:
         code:
           type: string
           description: Stable message code, e.g. DEPRECATION_BLOCK
-        kind:
-          type: string
-          description: 'Kind: deprecation|performance|best-practice|other'
         blockType:
           type: string
           description: Limit by block type
@@ -16383,9 +16380,14 @@ components:
         contains:
           type: string
           description: Substring filter applied to message text
+        severity:
+          type: string
+          description: Type of message
+          enum:
+            - warning
+            - info
       required:
         - code
-        - kind
         - blockType
         - property
         - contains
@@ -17731,6 +17733,14 @@ components:
           type: array
           items:
             type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        infos:
+          type: array
+          items:
+            type: string
         isValid:
           type: boolean
       required:
@@ -17748,6 +17758,14 @@ components:
             $ref: '#/components/schemas/BlockErrorsDTO'
         errors:
           nullable: true
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        infos:
           type: array
           items:
             type: string
