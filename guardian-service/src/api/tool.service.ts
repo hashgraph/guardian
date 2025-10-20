@@ -513,11 +513,11 @@ export async function createTool(
  * @param logger
  */
 export async function dryRunTool(
-        tool: PolicyTool,
-        user: IOwner,
-        version: string,
-        logger: PinoLogger
-    ): Promise<PolicyTool> {
+    tool: PolicyTool,
+    user: IOwner,
+    version: string,
+    logger: PinoLogger
+): Promise<PolicyTool> {
 
     try {
         await logger.info('Dry-run tool', ['GUARDIAN_SERVICE'], user.id);
@@ -588,11 +588,11 @@ export async function dryRunTool(
                 if (policy.status === PolicyStatus.DRAFT) {
                     replaceAllEntities(policy.config, ['hash'], oldToolHash, tool.hash);
                     replaceAllEntities(policy.config, ['messageId'], tool.messageId, result.getId());
-                    
+
                     console.log(oldToolHash, tool.hash);
                     console.log(tool.messageId, result.getId());
                     // const policy2 = PolicyConverterUtils.PolicyConverter(policy);
-                    
+
                     await databaseServer.save(Policy, policy);
                     // await PolicyImportExportHelper.updatePolicyComponents(policy2, logger, user.id);
                 }
@@ -754,9 +754,24 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid load tools parameter');
                 }
                 const { fields, filters, owner } = msg;
-                const { pageIndex, pageSize } = filters;
+                const { pageIndex, pageSize, search } = filters;
 
                 const otherOptions: any = { fields };
+
+                const filter: any = {
+                    $or: [
+                        {
+                            owner: owner.owner
+                        },
+                        {
+                            status: ModuleStatus.PUBLISHED
+                        }
+                    ]
+                }
+
+                if (search) {
+                    filter.name = search;
+                }
 
                 const _pageSize = parseInt(pageSize, 10);
                 const _pageIndex = parseInt(pageIndex, 10);
@@ -769,13 +784,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     otherOptions.limit = 100;
                 }
 
-                const [items, count] = await DatabaseServer.getToolsAndCount({
-                    $or: [{
-                        owner: owner.owner
-                    }, {
-                        status: ModuleStatus.PUBLISHED
-                    }]
-                } as FilterObject<PolicyTool>, otherOptions);
+                const [items, count] = await DatabaseServer.getToolsAndCount(filter, otherOptions);
 
                 return new MessageResponse({ items, count });
             } catch (error) {
@@ -870,7 +879,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                         map.get(schema.topicId).schemas.push(schema);
                     }
                 }
-                
+
                 return new MessageResponse(tools);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

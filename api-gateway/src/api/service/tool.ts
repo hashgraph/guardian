@@ -199,6 +199,13 @@ export class ToolsApi {
         required: false,
         example: 20
     })
+    @ApiQuery({
+        name: 'search',
+        type: String,
+        description: 'Search',
+        required: false,
+        example: 'text'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -216,7 +223,8 @@ export class ToolsApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number
+        @Query('pageSize') pageSize?: number,
+        @Query('search') search?: string
     ): Promise<ToolDTO[]> {
         try {
             const owner = new EntityOwner(user);
@@ -226,6 +234,7 @@ export class ToolsApi {
             const { items, count } = await guardians.getToolsV2(fields, {
                 pageIndex,
                 pageSize,
+                search,
             }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {

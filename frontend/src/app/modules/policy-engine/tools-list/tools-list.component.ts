@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GenerateUUIDv4, IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { InformService } from 'src/app/services/inform.service';
@@ -53,10 +53,13 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     public mode: OperationMode = OperationMode.None;
     public taskId: string | undefined = undefined;
     public expectedTaskMessages: number = 0;
-    public tagEntity = TagType.Tool;
     public owner: any;
+    public tagEntity = TagType.Tool;
     public tagSchemas: any[] = [];
+    public tagOptions: string[] = [];
     public canPublishAnyTool: boolean = false;
+
+    public textSearch: string = '';
 
     private _destroy$ = new Subject<void>();
 
@@ -66,6 +69,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         private toolsService: ToolsService,
         private dialog: DialogService,
         private dialogService: DialogService,
+        private route: ActivatedRoute,
         private informService: InformService,
         private router: Router,
     ) {
@@ -76,6 +80,8 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.textSearch = this.route.snapshot.queryParams['search'] || '';
+
         this.loading = true;
         this.loadTools();
     }
@@ -115,7 +121,8 @@ export class ToolsListComponent implements OnInit, OnDestroy {
 
     private loadAllTools() {
         this.loading = true;
-        this.toolsService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
+        this.tagOptions = [];
+        this.toolsService.page(this.pageIndex, this.pageSize, this.textSearch).subscribe((policiesResponse) => {
             this.tools = policiesResponse.body || [];
             this.toolsCount = policiesResponse.headers.get('X-Total-Count') || this.tools.length;
             this.canPublishAnyTool = this.tools.some(tool => tool.status === 'DRAFT');
@@ -130,8 +137,17 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             const ids = this.tools?.map(e => e.id) || [];
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 if (this.tools) {
-                    for (const policy of this.tools) {
-                        (policy as any)._tags = data[policy.id];
+                    for (const tool of this.tools) {
+                        (tool as any)._tags = data[tool.id];
+                        data[tool.id]?.tags.forEach((tag: any) => {
+                            const totalTagOptions = [
+                                ...this.tagOptions,
+                                tag.name,
+                            ];
+                            this.tagOptions = [
+                                ...new Set(totalTagOptions),
+                            ];
+                        });
                     }
                 }
                 setTimeout(() => {
@@ -375,5 +391,26 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                 });
             }
         });
+    }
+
+    public applyFilters(): void {
+        this.pageIndex = 0;
+        this.router.navigate(['/tools'], {
+            queryParams: {
+                search: this.textSearch || null,
+            },
+        });
+        this.loadTools();
+    }
+
+    public clearFilters(): void {
+        this.textSearch = '';
+        this.pageIndex = 0;
+        this.router.navigate(['/tools'], {
+            queryParams: {
+                search: null,
+            },
+        });
+        this.loadTools();
     }
 }
