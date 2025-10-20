@@ -655,11 +655,6 @@ export class IgnoreRuleDTO {
     @IsString()
     code?: string;
 
-    @ApiProperty({ description: 'Kind: deprecation|performance|best-practice|other' })
-    @IsOptional()
-    @IsString()
-    kind?: string;
-
     @ApiProperty({ description: 'Limit by block type' })
     @IsOptional()
     @IsString()
@@ -675,6 +670,11 @@ export class IgnoreRuleDTO {
     @IsString()
     contains?: string;
 
+    @ApiProperty({
+        description: 'Type of message',
+        enum: ['warning', 'info'],
+        required: false
+    })
     @IsOptional()
     @IsIn(['warning','info'])
     severity?: 'warning' | 'info';

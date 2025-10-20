@@ -1,11 +1,10 @@
 export interface DeprecationInfo {
-    deprecated: true;
+    severity?: 'warning' | 'info';
     since?: string;
     removalPlanned?: string;
     reason?: string;
     alternative?: string;
     alternativeBlockType?: string;
-    migrationGuideUrl?: string;
 }
 
 type BlockTypeName = string;

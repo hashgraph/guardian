@@ -5,6 +5,7 @@ import {
 } from '../deprecations/index.js';
 
 import {
+    MSG_DEPRECATION_BLOCK, MSG_DEPRECATION_PROP,
     PolicyMessage
 } from './types.js';
 
@@ -16,13 +17,20 @@ import {
  * @returns     The resolved value or `undefined` if not found.
  */
 function getByPath(obj: unknown, path: string): unknown {
-    if (!obj || typeof obj !== 'object') return undefined;
-    return path.split('.').reduce((acc: any, key) => {
-        if (acc == null) return undefined;
-        return acc[key];
+    if (!obj || typeof obj !== 'object') {
+        return undefined;
+    }
+
+    const normalized = path.replace(/\[(\d+)\]/g, '.$1');
+
+    return normalized.split('.').reduce((acc: any, key) => {
+        if (acc == null) {
+            return undefined;
+        }
+
+        return acc[key as keyof typeof acc];
     }, obj as any);
 }
-
 
 /**
  * Builds a human-readable deprecation text based on DeprecationInfo.
@@ -61,10 +69,6 @@ function buildDeprecationText(
         textParts.push(`Reason: ${info.reason}`);
     }
 
-    if (info.migrationGuideUrl) {
-        textParts.push(`Guide: ${info.migrationGuideUrl}`);
-    }
-
     return textParts.join('. ');
 }
 
@@ -81,14 +85,12 @@ export function getDeprecationMessagesForBlock(
     }
 
     const message: PolicyMessage = {
-        severity: 'warning',
-        code: 'DEPRECATION_BLOCK',
-        kind: 'deprecation',
+        severity: deprecationInfo.severity ?? 'warning',
+        code: MSG_DEPRECATION_BLOCK,
         text: buildDeprecationText(blockType, deprecationInfo),
         blockType,
         since: deprecationInfo.since,
         removalPlanned: deprecationInfo.removalPlanned,
-        migrationGuideUrl: deprecationInfo.migrationGuideUrl
     };
 
     return [message];
@@ -119,15 +121,13 @@ export function getDeprecationMessagesForProperties(
 
         if (isPropertyUsed) {
             const message: PolicyMessage = {
-                severity: 'warning',
-                code: 'DEPRECATION_PROP',
-                kind: 'deprecation',
+                severity: deprecationInfo.severity ?? 'warning',
+                code: MSG_DEPRECATION_PROP,
                 text: buildDeprecationText(blockType, deprecationInfo, propertyName),
                 blockType,
                 property: propertyName,
                 since: deprecationInfo.since,
                 removalPlanned: deprecationInfo.removalPlanned,
-                migrationGuideUrl: deprecationInfo.migrationGuideUrl
             };
 
             messages.push(message);

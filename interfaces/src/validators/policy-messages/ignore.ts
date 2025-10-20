@@ -1,6 +1,6 @@
 /**
  * Rules for ignoring messages.
- * You can ignore “all messages of a given type” (by `code` or `kind`),
+ * You can ignore “all messages of a given type” (by `code`),
  * or a specific message within a scope (`blockType` + `property`).
  */
 export interface IgnoreRule {
@@ -11,14 +11,6 @@ export interface IgnoreRule {
      * - 'PERFORMANCE_HINT_BATCH'
      */
     code?: string;
-
-    /**
-     * A high-level category. Examples:
-     * - 'deprecation'
-     * - 'performance'
-     * - 'best-practice'
-     */
-    kind?: string;
 
     /**
      * Scope by block type.

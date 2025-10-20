@@ -2,14 +2,16 @@ export type MessageSeverity =
     | 'warning'
     | 'info';
 
-export type MessageKind =
-    | 'deprecation'
-    | 'upcoming-deprecation'
-    | 'compatibility'
-    | 'performance'
-    | 'migration'
-    | 'best-practice'
-    | 'other';
+export const MSG_DEPRECATION_BLOCK = 'DEPRECATION_BLOCK' as const;
+export const MSG_DEPRECATION_PROP  = 'DEPRECATION_PROP'  as const;
+export const MSG_REACH_NO_IN       = 'REACHABILITY_NO_IN'  as const;
+export const MSG_REACH_NO_OUT      = 'REACHABILITY_NO_OUT' as const;
+
+export type MessageCode =
+    | typeof MSG_DEPRECATION_BLOCK
+    | typeof MSG_DEPRECATION_PROP
+    | typeof MSG_REACH_NO_IN
+    | typeof MSG_REACH_NO_OUT;
 
 /**
  * A universal message that the validator can show to the user.
@@ -28,13 +30,7 @@ export interface PolicyMessage {
      * Stable message code (for example, 'DEPRECATION_BLOCK', 'DEPRECATION_PROP', 'PERF_HINT').
      * Used for ignoring specific classes of messages on both the frontend and backend.
      */
-    code: string;
-
-    /**
-     * High-level message kind so the frontend can group/filter and render appropriate icons
-     * (deprecation, performance, compatibility, etc.).
-     */
-    kind: MessageKind;
+    code: MessageCode;
 
     /**
      * Human-readable message text.

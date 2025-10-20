@@ -17,7 +17,6 @@ import {
 function getMessageKey(message: PolicyMessage): string {
     return [
         `code:${message.code}`,
-        `kind:${message.kind}`,
         `block:${message.blockType ?? ''}`,
         `prop:${message.property ?? ''}`,
         `text:${message.text}`
@@ -37,12 +36,11 @@ function deduplicateMessages(messages: ReadonlyArray<PolicyMessage>): PolicyMess
 
 function isIgnoredByRule(message: PolicyMessage, rule: IgnoreRule): boolean {
     const codeMatches = !rule.code || rule.code === message.code;
-    const kindMatches = !rule.kind || rule.kind === message.kind;
     const blockTypeMatches = !rule.blockType || rule.blockType === message.blockType;
     const propertyMatches = !rule.property || rule.property === message.property;
     const containsMatches = !rule.contains || message.text.includes(rule.contains);
     const severityMatches = !rule.severity || rule.severity === message.severity;
-    return codeMatches && kindMatches && blockTypeMatches && propertyMatches && containsMatches && severityMatches;
+    return codeMatches && blockTypeMatches && propertyMatches && containsMatches && severityMatches;
 }
 
 export function applyIgnoreRules(

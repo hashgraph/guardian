@@ -1,4 +1,4 @@
-import {PolicyMessage} from './types.js';
+import {MSG_REACH_NO_IN, MSG_REACH_NO_OUT, PolicyMessage} from './types.js';
 import {IgnoreRule} from './ignore.js';
 import {applyIgnoreRules} from './provider.js';
 
@@ -158,8 +158,7 @@ export function computeReachabilityAndDistribute(
         if (incomingCount === 0 && !parentId) {
             structuredMessages.push({
                 severity: 'warning',
-                code: 'REACHABILITY_NO_IN',
-                kind: 'best-practice',
+                code: MSG_REACH_NO_IN,
                 text: `Block "${type}" (${label}) has no incoming links (no parent and no tag-based references).`,
                 blockType: type
             });
@@ -168,8 +167,7 @@ export function computeReachabilityAndDistribute(
         if (outgoingCount === 0) {
             structuredMessages.push({
                 severity: 'warning',
-                code: 'REACHABILITY_NO_OUT',
-                kind: 'best-practice',
+                code: MSG_REACH_NO_OUT,
                 text: `Block "${type}" (${label}) has no outgoing links (no children and no tag-based references).`,
                 blockType: type
             });
