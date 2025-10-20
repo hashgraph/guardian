@@ -68,6 +68,7 @@ import { StandardRegistryCardComponent } from './components/standard-registry-ca
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
 import { NotificationComponent } from './components/notification/notification.component';
 import { TokenDialogComponent } from './components/token-dialog/token-dialog.component';
+import { NewProjectWalletDialog } from './components/new-project-wallets-dialog/new-project-wallets-dialog.component';
 //Modules
 import { MaterialModule } from './modules/common/material.module';
 import { PolicyEngineModule } from './modules/policy-engine/policy-engine.module';
@@ -134,6 +135,8 @@ import { ExternalPoliciesService } from './services/external-policy.service';
 import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.component';
 import { GeoJsonService } from './services/geo-json.service';
 import { PolicyRepositoryService } from './services/policy-repository.service';
+import { ProjectWalletService } from './services/project-wallet.service';
+import { ProjectWalletsComponent } from './views/project-wallets/project-wallets.component';
 
 @NgModule({
     declarations: [
@@ -174,9 +177,11 @@ import { PolicyRepositoryService } from './services/policy-repository.service';
         ForgotPasswordDialogComponent,
         OnlyForDemoDirective,
         TokenDialogComponent,
+        NewProjectWalletDialog,
         UseWithServiceDirective,
         RolesViewComponent,
         UsersManagementComponent,
+        ProjectWalletsComponent,
         UsersManagementDetailComponent,
         WorkerTasksComponent,
         UserKeysDialog
@@ -263,6 +268,7 @@ import { PolicyRepositoryService } from './services/policy-repository.service';
         PermissionsService,
         PermissionsGuard,
         CommentsService,
+        ProjectWalletService,
         PolicyRepositoryService,
         {
             provide: GET_SCHEMA_NAME,

@@ -486,6 +486,12 @@ export class Worker extends NatsService {
                     break;
                 }
 
+                case WorkerTaskType.GET_ACCOUNT_TOKENS_REST: {
+                    const {hederaAccountId} = task.data;
+                    result.data = await HederaSDKHelper.accountTokensInfo(hederaAccountId);
+                    break;
+                }
+
                 case WorkerTaskType.GET_ACCOUNT_INFO_REST: {
                     const {hederaAccountId} = task.data;
                     result.data = await HederaSDKHelper.accountInfo(hederaAccountId);

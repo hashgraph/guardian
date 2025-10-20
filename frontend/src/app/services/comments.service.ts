@@ -1,8 +1,7 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { MigrationConfig, PolicyAvailability, PolicyToolMetadata } from '@guardian/interfaces';
-import { Observable, firstValueFrom, of } from 'rxjs';
-import { DB_NAME, headersV2, STORES_NAME } from '../constants';
+import { Observable, of } from 'rxjs';
+import { DB_NAME, STORES_NAME } from '../constants';
 import { API_BASE_URL } from './api';
 import { IndexedDbRegistryService } from './indexed-db-registry.service';
 

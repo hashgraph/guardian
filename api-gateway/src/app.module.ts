@@ -46,6 +46,7 @@ import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/ind
 import { PolicyLabelsApi } from './api/service/policy-labels.js';
 import { PolicyCommentsApi } from './api/service/policy-comments.js';
 import { PolicyRepositoryApi } from './api/service/policy-repository.js';
+import { ProjectWalletApi } from './api/service/project-wallet.js';
 import { FormulasApi } from './api/service/formulas.js';
 import { ExternalPoliciesApi } from './api/service/external-policy.js';
 
@@ -106,6 +107,7 @@ import { ExternalPoliciesApi } from './api/service/external-policy.js';
         PolicyLabelsApi,
         PolicyCommentsApi,
         PolicyRepositoryApi,
+        ProjectWalletApi,
         WorkerTasksController
     ],
     providers: [

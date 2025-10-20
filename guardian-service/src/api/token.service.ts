@@ -1071,7 +1071,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const workers = new Workers();
                 const [info, serials] = await Promise.all([
                     workers.addNonRetryableTask({
-                        type: WorkerTaskType.GET_ACCOUNT_INFO_REST,
+                        type: WorkerTaskType.GET_ACCOUNT_TOKENS_REST,
                         data: {
                             hederaAccountId: user.hederaAccountId,
                             payload: { userId: owner?.id }

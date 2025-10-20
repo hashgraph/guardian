@@ -2007,10 +2007,16 @@ export class HederaSDKHelper {
      *
      * @param {string} accountId - Account Id
      *
-     * @returns {string} - balance
+     * @returns {any} - balances
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
-    public static async accountInfo(accountId: string): Promise<any> {
+    public static async accountTokensInfo(accountId: string): Promise<any> {
+        try {
+            AccountId.fromString(accountId);
+        } catch (error) {
+            throw new Error(`Invalid account '${accountId}'`);
+        }
+
         const res = await axios.get(
             `${Environment.HEDERA_ACCOUNT_API}${accountId}/tokens`,
             { responseType: 'json' }
@@ -2029,6 +2035,36 @@ export class HederaSDKHelper {
             }
         }
         return result;
+    }
+
+    /**
+     * Get account (Rest API)
+     *
+     * @param {string} accountId - Account Id
+     *
+     * @returns {string} - balance
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
+    public static async accountInfo(accountId: string): Promise<any> {
+        try {
+            AccountId.fromString(accountId);
+        } catch (error) {
+            throw new Error(`Invalid account '${accountId}'`);
+        }
+
+        const res = await axios.get(
+            `${Environment.HEDERA_ACCOUNT_API}${accountId}`,
+            { responseType: 'json' }
+        );
+        if (!res || !res.data) {
+            throw new Error(`Invalid account '${accountId}'`);
+        }
+        return {
+            account: res.data.account,
+            balance: res.data.balance?.balance,
+            key: res.data.key,
+
+        };
     }
 
     /**

@@ -1,0 +1,38 @@
+import { BeforeCreate, Entity, Index, Property } from '@mikro-orm/core';
+import { BaseEntity } from '@guardian/common';
+
+/**
+ * ProjectWallet collection
+ */
+@Entity()
+@Index({ name: 'account_idx', properties: ['account', 'owner'] })
+@Index({ name: 'owner_idx', properties: ['owner'] })
+export class ProjectWallet extends BaseEntity {
+    /**
+     * Name
+     */
+    @Property()
+    name: string;
+
+    /**
+     * Owner
+     */
+    @Property()
+    owner: string;
+
+    /**
+     * Account
+     */
+    @Property()
+    account: string;
+
+    /**
+     * Set defaults
+     */
+    @BeforeCreate()
+    setInitState() {
+        this.name = this.name || '';
+        this.owner = this.owner || '';
+        this.account = this.account || '';
+    }
+}

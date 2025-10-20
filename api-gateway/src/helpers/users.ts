@@ -361,6 +361,74 @@ export class Users extends NatsService {
     public async refreshUserPermissions(id: string, owner: string, userId: string | null): Promise<any[]> {
         return await this.sendMessage(AuthEvents.REFRESH_USER_PERMISSIONS, { id, owner, userId });
     }
+
+
+
+
+
+
+
+
+
+
+    /**
+     * Get project wallet balance
+     * @param user
+     */
+    public async getProjectWalletBalance(
+        user: IAuthUser,
+        account: string
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.GET_PROJECT_WALLET_BALANCE, { user, account });
+    }
+
+    /**
+     * Get current wallet
+     * @param user
+     */
+    public async getCurrentWallet(
+        user: IAuthUser
+    ): Promise<any[]> {
+        return await this.sendMessage(AuthEvents.GET_CURRENT_WALLET, { user });
+    }
+
+    /**
+     * Get project wallets
+     * @param user
+     */
+    public async getProjectWallets(
+        user: IAuthUser
+    ): Promise<any[]> {
+        return await this.sendMessage(AuthEvents.GET_PROJECT_WALLETS, { user });
+    }
+
+    /**
+     * Create project wallet
+     * @param user
+     */
+    public async createProjectWallet(
+        user: IAuthUser,
+        config: {
+            name?: string
+            account?: string,
+            key?: string,
+        }
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.CREATE_PROJECT_WALLET, { user, config });
+    }
+
+    /**
+     * Generate project wallet
+     * @param user
+     */
+    public async generateProjectWallet(
+        user: IAuthUser,
+        config: {
+            name?: string
+        }
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.GENERATE_PROJECT_WALLET, { user, config });
+    }
 }
 
 @Injectable()

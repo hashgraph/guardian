@@ -62,6 +62,7 @@ import { FormulaConfigurationComponent } from './modules/formulas/formula-config
 import { ExternalPolicyComponent } from './modules/policy-engine/external-policies/external-policies.component';
 import { PolicyRequestsComponent } from './modules/policy-engine/requests/requests.component';
 import { PolicyRepositoryComponent } from './modules/policy-engine/policy-repository/policy-repository.component';
+import { ProjectWalletsComponent } from './views/project-wallets/project-wallets.component';
 
 
 @Injectable({
@@ -753,6 +754,17 @@ const routes: Routes = [
                 Permissions.POLICIES_POLICY_READ,
                 Permissions.POLICIES_POLICY_EXECUTE,
                 Permissions.POLICIES_POLICY_MANAGE,
+            ]
+        }
+    },
+    {
+        path: 'project-wallets',
+        component: ProjectWalletsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
             ]
         }
     },
