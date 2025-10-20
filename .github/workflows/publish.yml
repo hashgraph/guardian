@@ -33,7 +33,7 @@ jobs:
 
       - name: get-npm-version
         id: package-version
-        uses: step-security/npm-get-version-action@2021528c02c8913e6c8673430af77a1a1fc118b1 # v1.3.2
+        uses: step-security/npm-get-version-action@f39973dcb0213ee66ce68c57bd29ebd364f4741f # v1.3.3
         with:
           path: guardian-service
 
