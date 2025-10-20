@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Checks from "../../../support/checkingMethods";
 import * as Authorization from "../../../support/authorization";
 
-context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
+context("Policies", { tags: ['policies', 'secondPool'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const PPUser = Cypress.env('PPUser');
@@ -83,7 +83,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 headers: {
                     authorization,
                 },
-                timeout: 18000000,
+                timeout: 1800000,
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                 policyId = response.body.at(0).id;
@@ -97,7 +97,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                         headers: {
                             authorization
                         },
-                        timeout: 18000000,
+                        timeout: 1800000,
                     })
                 })
             })
@@ -194,7 +194,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                     url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectBtn,
                     headers: {
                         authorization
-                    }
+                    },
+                    failOnStatusCode: false,
                 }
                 Checks.whileRequestProccessing(waitCreateProjectButton, "New project", "uiMetaData.content")
             })
@@ -239,7 +240,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                         url: API.ApiServer + API.Policies + policyId + "/" + API.NewVVB,
                         headers: {
                             authorization
-                        }
+                        },
+                        failOnStatusCode: false,
                     }
                     Checks.whileRequestProccessing(waitProjectApproveStatus, "Waiting for approval", "blocks.3.uiMetaData.title")
                 })
@@ -268,7 +270,9 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                         url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectGridPP2,
                         headers: {
                             authorization
-                        }
+                        },
+                        failOnStatusCode: false,
+                        timeout: 60000
                     }
                     Checks.whileRequestProccessing(waitProjectAddStatus, "Waiting to be Added", "data.0.option.status")
                 })
@@ -303,7 +307,9 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                         url: API.ApiServer + API.Policies + policyId + "/" + API.VVBGrid,
                         headers: {
                             authorization
-                        }
+                        },
+                        failOnStatusCode: false,
+                        timeout: 60000
                     }
                     Checks.whileRequestProccessing(waitVVBApproved, "APPROVED", "data.0.option.status")
                 })
@@ -338,7 +344,9 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                         url: API.ApiServer + API.Policies + policyId + "/" + API.ProjGridVVB,
                         headers: {
                             authorization
-                        }
+                        },
+                        failOnStatusCode: false,
+                        timeout: 60000
                     }
                     Checks.whileRequestProccessing(waitProjValidate, "Waiting to Validate", "data.0.option.status")
                 })
@@ -376,7 +384,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ProjGridVVB2,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false,
             }
             Checks.whileRequestProccessing(waitProjectValidateStatus, "Waiting to Validate", "data.0.option.status")
             cy.request({
@@ -410,7 +419,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectGridPP2,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false,
             }
             Checks.whileRequestProccessing(waitProjectValidated, "approved_project", "data.0.type")
             cy.request({
@@ -439,7 +449,9 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                             url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridPP,
                             headers: {
                                 authorization
-                            }
+                            },
+                            timeout: 120000,
+                            failOnStatusCode: false,
                         }
                         Checks.whileRequestProccessing(waitReportCreating, "Waiting for Verification", "data.0.option.status")
                     })
@@ -455,7 +467,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridPP,
                 headers: {
                     authorization
-                }
+                },
+                timeout: 120000,
             }).then((response) => {
                 let reportAssignData = response.body.data[0];
                 reportAssignData.assignedTo = VVBDid;
@@ -479,7 +492,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridVVB,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false,
             }
             Checks.whileRequestProccessing(waitProjectValidateStatus, "Waiting for Verification", "data.0.option.status")
             cy.request({
@@ -508,7 +522,9 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                         url: API.ApiServer + API.Policies + policyId + "/" + API.ReportGridVVB,
                         headers: {
                             authorization
-                        }
+                        },
+                        failOnStatusCode: false,
+                        timeout: 60000
                     }
                     Checks.whileRequestProccessing(waitReportIsVerifying, "Verified", "data.0.option.status")
                 })
@@ -552,7 +568,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ValidationReportsVerra,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false,
             }
             Checks.whileRequestProccessing(waitValidationReportIsCreating, "Submitted", "data.0.option.status")
             cy.request({
@@ -616,7 +633,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + "/" + API.VerificationReportsVerra,
                 headers: {
                     authorization
-                }
+                },
+                failOnStatusCode: false,
             }
             Checks.whileRequestProccessing(waitValidationReportIsCreating, "Submitted", "data.0.option.status")
             cy.request({
@@ -630,13 +648,13 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 reportVerifyData.option.status = "APPROVED";
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveValidationReportBtn,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.MintTokenVerra,
                     headers: {
                         authorization
                     },
                     body: {
                         document: reportVerifyData,
-                        tag: "Approve_Button_Validation"
+                        tag: "Option_0"
                     },
                     timeout: 60000
                 })

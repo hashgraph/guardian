@@ -133,6 +133,7 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     };
     formulas?: FormulasTree | null;
     formulasResults?: any | null;
+    analytics: any | null
 
     mapTabs: any[] = ['json', 'table'];
     mapTabIndex: number = 0;
@@ -174,11 +175,12 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
 
     protected override setResult(result?: any) {
         super.setResult(result);
-        
+
         try {
             if (result?.schema) {
                 this.schema = new Schema(result?.schema, '');
                 this.documentViewOption = 'document';
+                this.analytics = result?.item?.analytics
 
                 if (result?.item?.documents?.length >= 0) {
                     this.mapPoints = [];
@@ -427,4 +429,6 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
                 break;
         }
     }
+
+    protected readonly document = document;
 }

@@ -28,6 +28,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyOutputEventType } from '../interfaces/policy-event-type.js';
 import deepEqual from 'deep-equal';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import {hydrateTablesInObject, loadFileTextById} from '../helpers/table-field.js';
 
 /**
  * Request VC document block addon with UI
@@ -176,7 +177,16 @@ export class RequestVcDocumentBlockAddon {
                     );
                 }
                 const document = _data.document;
+
+                const disposeTables = await hydrateTablesInObject(
+                    document,
+                    async (fileId: string) => loadFileTextById(ref, fileId),
+                );
+
                 PolicyUtils.setAutoCalculateFields(this._schema, document);
+
+                disposeTables();
+
                 const presetCheck = await this.checkPreset(
                     ref,
                     document,

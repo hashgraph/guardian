@@ -82,6 +82,7 @@ export class SchemaFormComponent implements OnInit {
     @Input() comesFromDialog: boolean = false;
     @Input() dryRun?: boolean = false;
     @Input() policyId?: string = '';
+    @Input() blockId: string = '';
     @Input() rules?: SchemaRuleValidateResult;
     @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
@@ -192,7 +193,6 @@ export class SchemaFormComponent implements OnInit {
         private ipfs: IPFSService,
         protected changeDetectorRef: ChangeDetectorRef
     ) { }
-
 
     ngOnInit(): void {
     }
@@ -314,6 +314,7 @@ export class SchemaFormComponent implements OnInit {
                 item.format !== 'time' &&
                 item.format !== 'date-time'
             ) && !item.remoteLink && !item.enum
+            && item.customType !== 'table'
         );
     }
 

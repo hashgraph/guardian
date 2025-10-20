@@ -53,23 +53,53 @@ export const whileRequestAppear = (authorization, attempts = 0) => {
             timeout: 180000,
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.OK);
-            if (response.body.length != 0)
-                cy.request({
-                    method: METHOD.PUT,
-                    url: API.ApiServer + API.ExternalPolicyRequests + response.body[0].messageId + '/' + API.Approve,
-                    headers: {
-                        authorization,
-                    },
-                    timeout: 180000,
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.OK);
-                    cy.task('log', "Request approved")
-                })
+            if (response.body.length != 0) {
+                if (response.body[0].loaded == false) {
+                    cy.request({
+                        method: METHOD.PUT,
+                        url: API.ApiServer + API.ExternalPolicyRequests + response.body[0].messageId + '/' + API.Reload,
+                        headers: {
+                            authorization,
+                        },
+                        timeout: 180000,
+                    }).then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.OK);
+                        whileRequestAppear(authorization, attempts)
+                    })
+                }
+                else {
+                    cy.request({
+                        method: METHOD.PUT,
+                        url: API.ApiServer + API.ExternalPolicyRequests + response.body[0].messageId + '/' + API.Approve,
+                        headers: {
+                            authorization,
+                        },
+                        timeout: 180000,
+                    }).then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.OK);
+                        cy.task('log', "Request approved")
+                    })
+                }
+            }
             else whileRequestAppear(authorization, attempts)
         })
     }
     else {
         throw new Error(`Failed after ${attempts}`)
+    }
+}
+
+export const whileIPFSProcessingFile = (request, attempts = 0) => {
+    if (attempts < 100) {
+        attempts++
+        cy.wait(10000)
+        cy.request(request).then((response) => {
+            if (response.status != 200)
+                whileIPFSProcessingFile(request, attempts)
+        })
+    }
+    else {
+        throw new Error(`IPFS check failed after ${attempts}`)
     }
 }
 

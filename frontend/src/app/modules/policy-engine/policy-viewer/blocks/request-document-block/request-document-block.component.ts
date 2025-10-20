@@ -10,13 +10,15 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { audit, takeUntil } from 'rxjs/operators';
-import { interval, Subject } from 'rxjs';
+import {audit, finalize, takeUntil} from 'rxjs/operators';
+import { interval, Subject, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { MergeUtils } from 'src/app/utils';
 import { ToastrService } from 'ngx-toastr';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
+import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { PolicyStatus } from '@guardian/interfaces';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -36,6 +38,7 @@ interface IRequestDocumentData {
         buttonClass: string;
         dialogContent: string;
         dialogClass: string;
+        hideWhenDiscontinued?: boolean;
     }
 }
 
@@ -56,6 +59,7 @@ export class RequestDocumentBlockComponent
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
     @Input('savepointIds') savepointIds?: string[] | null = null;
+    @Input('policyStatus') policyStatus!: string;
 
     @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
 
@@ -76,6 +80,7 @@ export class RequestDocumentBlockComponent
     public presetReadonlyFields: any;
     public dialogTitle: any;
     public dialogClass: any;
+    public hideWhenDiscontinued: any;
     public dialogRef: any;
     public buttonClass: any;
     public restoreData: any;
@@ -98,6 +103,7 @@ export class RequestDocumentBlockComponent
         private changeDetectorRef: ChangeDetectorRef,
         private toastr: ToastrService,
         private savepointFlow: SavepointFlowService,
+        private tablePersist: TablePersistenceService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -178,6 +184,7 @@ export class RequestDocumentBlockComponent
                 this.buttonClass = uiMetaData.buttonClass;
                 this.dialogTitle = uiMetaData.dialogContent;
                 this.dialogClass = uiMetaData.dialogClass;
+                this.hideWhenDiscontinued = !!uiMetaData.hideWhenDiscontinued;
                 this.description = uiMetaData.description;
             }
             if (this.type == 'page') {
@@ -203,6 +210,14 @@ export class RequestDocumentBlockComponent
             this.disabled = false;
             this.isExist = false;
         }
+    }
+
+    isBtnVisible() {
+        if (this.policyStatus === PolicyStatus.DISCONTINUED && this.hideWhenDiscontinued) {
+            return false;
+        }
+
+        return true;
     }
 
     private loadRules() {
@@ -253,21 +268,41 @@ export class RequestDocumentBlockComponent
         return null;
     }
 
-    public onSubmit(draft?: boolean) {
+    public async onSubmit(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
+
         if (this.dataForm.valid || draft) {
             const data = this.dataForm.getRawValue();
             this.loading = true;
+
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+
             prepareVcData(data);
+
+            let requestSucceeded = false;
+
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, {
                     document: data,
                     ref: this.ref,
                     draft
                 })
+                .pipe(
+                    finalize(async () => {
+                        try {
+                            if (!requestSucceeded) {
+                                await this.tablePersist.rollbackIpfsUploads();
+                            }
+                        } finally {
+                            this.loading = false;
+                        }
+                    })
+                )
                 .subscribe(() => {
+                    requestSucceeded = true;
+
                     setTimeout(() => {
                         this.loading = false;
                         if (draft) {
@@ -385,9 +420,11 @@ export class RequestDocumentBlockComponent
             },
         });
 
-        dialogOptionRef.onClose.subscribe((result: string) => {
+        dialogOptionRef.onClose.subscribe(async (result: string) => {
             if (result != 'Cancel') {
                 if (result === 'Continue with Draft') {
+                    await this.tablePersist.restoreTablesFromDraft(this.draftDocument?.data);
+
                     this.draftRestore();
                     this.savepointFlow.setSkipOnce();
                 }

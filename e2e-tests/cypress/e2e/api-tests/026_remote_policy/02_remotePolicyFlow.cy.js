@@ -142,7 +142,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                 },
                 failOnStatusCode: false
             }
-            Checks.whileRequestProccessing(waitDeviceAddStatus, "Approved", "data.0.option.status")
+            Checks.whileRequestProccessing(waitDeviceAddStatus, "Approved", "data.option.status")
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies + policyId + "/" + API.CreateDevice,

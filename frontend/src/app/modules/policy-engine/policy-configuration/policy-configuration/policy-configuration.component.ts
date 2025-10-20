@@ -33,7 +33,7 @@ import {takeUntil} from 'rxjs/operators';
 import { TestCodeDialog } from '../../dialogs/test-code-dialog/test-code-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
-import { SaveToolDialog, ToolSaveAction } from '../../dialogs/save-tool-dialog/save-tool-dialog.component';
+import { DB_NAME, STORES_NAME } from 'src/app/constants';
 
 /**
  * The page for editing the policy and blocks.
@@ -136,9 +136,8 @@ export class PolicyConfigurationComponent implements OnInit {
         body: null
     }
 
-    private savepointsWarnShown = false;
-
     private _destroy$ = new Subject<void>();
+    private indexedDb: IndexedDbRegistryService;
 
     constructor(
         private route: ActivatedRoute,
@@ -165,6 +164,7 @@ export class PolicyConfigurationComponent implements OnInit {
     ) {
         this.options = new Options();
         this.storage = new PolicyStorage(storage);
+        this.indexedDb = storage;
 
         this.policyTemplate = new PolicyTemplate();
         this.openFolder = this.policyTemplate;
@@ -918,6 +918,19 @@ export class PolicyConfigurationComponent implements OnInit {
             console.error(e.error);
             this.loading = false;
         });
+
+        const databaseName = DB_NAME.TABLES;
+        const storeNames = [
+            STORES_NAME.FILES_STORE,
+            STORES_NAME.DRAFT_STORE
+        ];
+        const keyPrefix = `${this.policyId}__`;
+
+        this.indexedDb.clearByKeyPrefixAcrossStores(
+            databaseName,
+            storeNames,
+            keyPrefix
+        );
     }
 
     private dryRunPolicy() {
@@ -1540,6 +1553,19 @@ export class PolicyConfigurationComponent implements OnInit {
         }, (e) => {
             this.loading = false;
         });
+
+        const databaseName = DB_NAME.TABLES;
+        const storeNames = [
+            STORES_NAME.FILES_STORE,
+            STORES_NAME.DRAFT_STORE
+        ];
+        const keyPrefix = `${this.policyId}__`;
+
+        this.indexedDb.clearByKeyPrefixAcrossStores(
+            databaseName,
+            storeNames,
+            keyPrefix
+        );
     }
 
     public async tryPublishPolicy() {
@@ -2044,5 +2070,4 @@ export class PolicyConfigurationComponent implements OnInit {
             }
         });
     }
-
 }

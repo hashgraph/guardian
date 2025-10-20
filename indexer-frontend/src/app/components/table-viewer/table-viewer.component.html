@@ -1,0 +1,71 @@
+<div class="table-viewer">
+    <div class="module-actions-buttons-container table-viewer__actions">
+        <button
+                class="p-button p-component"
+                type="button"
+                (click)="openDialog()"
+                [disabled]="!fileId || isLoading || !!tooLargeMessage"
+                [attr.title]="tooLargeMessage ? 'File is too large for preview. Use Download CSV instead.' : null">
+                      <span class="p-button-label">
+                        {{ isLoading ? 'Loading…' : 'Open Table' }}
+                      </span>
+        </button>
+
+        <button
+                class="p-button p-component p-button-outlined"
+                type="button"
+                (click)="downloadCsv()"
+                [disabled]="!fileId || isDownloading">
+      <span class="p-button-label">
+        {{ isDownloading ? 'Downloading…' : 'Download CSV' }}
+      </span>
+        </button>
+    </div>
+
+    <div *ngIf="tooLargeMessage || loadError" class="table-viewer__errors">
+        <div *ngIf="tooLargeMessage" class="table-viewer__error">
+            {{ tooLargeMessage }}
+        </div>
+
+        <div *ngIf="loadError" class="table-viewer__error">
+            {{ loadError }}
+        </div>
+    </div>
+
+    <div *ngIf="!hasData" class="table-viewer__placeholder">
+        <div class="table-viewer__placeholder-box">
+            <i class="pi pi-table table-viewer__placeholder-icon"></i>
+            <div class="table-viewer__placeholder-title">No data provided</div>
+        </div>
+    </div>
+
+    <div *ngIf="hasData" class="table-viewer__preview">
+        <div class="table-viewer__preview-title">Preview</div>
+
+        <div class="table-viewer__grid" role="table" aria-label="CSV preview 8x4">
+            <div class="table-viewer__row table-viewer__row--header" role="row">
+                <div class="table-viewer__cell table-viewer__cell--rownum">№</div>
+                <div
+                    class="table-viewer__cell table-viewer__cell--head"
+                    *ngFor="let columnKey of previewHeaderKeysLimited; let columnIndex = index"
+                    [title]="columnKey"
+                    role="columnheader">
+                    {{ buildColumnHeader(columnIndex) }}
+                </div>
+            </div>
+
+            <div
+                    class="table-viewer__row"
+                    *ngFor="let row of previewRowsLimited; let rowIndex = index"
+                    role="row">
+                <div class="table-viewer__cell table-viewer__cell--rownum">{{ rowIndex + 1 }}</div>
+                <div
+                    class="table-viewer__cell table-viewer__cell--data"
+                    *ngFor="let columnKey of previewHeaderKeysLimited"
+                    [title]="row[columnKey] || ''">
+                    {{ row[columnKey] || '' }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

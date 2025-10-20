@@ -1,5 +1,6 @@
 import { workerData, parentPort } from 'node:worker_threads';
 import { loadPyodide } from 'pyodide'
+import { buildTableHelper } from '../helpers/table-field-core.js';
 
 /**
  * Execute function
@@ -39,7 +40,7 @@ async function execute() {
         }
     }
 
-    const { execFunc, user, documents, artifacts, sources } = workerData;
+    const { execFunc, user, documents, artifacts, sources, tablesPack } = workerData;
 
     pyodide.setStdout({ batched: console.log });
     pyodide.setStderr({ batched: console.error })
@@ -50,6 +51,9 @@ async function execute() {
     pyodide.globals.set('sources', sources);
     pyodide.globals.set('done', done);
     pyodide.globals.set('debug', debug);
+
+    const table = buildTableHelper(tablesPack);
+    pyodide.globals.set('table', table);
 
     await pyodide.loadPackage('micropip');
     const micropip = pyodide.pyimport('micropip');

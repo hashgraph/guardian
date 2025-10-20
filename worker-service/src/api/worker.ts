@@ -313,6 +313,21 @@ export class Worker extends NatsService {
                     break;
                 }
 
+                case WorkerTaskType.DELETE_CID: {
+                    const { cid } = task.data.payload || {};
+                    try {
+                        if (!cid) {
+                            throw new Error('Invalid CID');
+                        }
+
+                        result.data = await this.ipfsClient.deleteCid(cid);
+                        break;;
+                    } catch (e) {
+                        result.error = e.message;
+                    }
+                    break;
+                }
+
                 case WorkerTaskType.GET_FILE: {
                     if (!task.data.payload || !task.data.payload.cid || !task.data.payload.responseType) {
                         result.error = 'Invalid CID';

@@ -69,6 +69,7 @@ const API = {
     SchemaImportFilePreview: "schemas/import/file/preview",
     SchemaImport: "schemas/import/",
     SchemasType: "schemas/type",
+    SchemasWithSubSchemas: "schema-with-sub-schemas/",
 
     //Tools
     Tools: "tools",
@@ -105,6 +106,7 @@ const API = {
     DryRun: "dry-run/",
     DryRunUser: "dry-run/user/",
     DryRunLogin: "dry-run/login/",
+    DryRunRestart: "dry-run/restart/",
     ChooseRegistrantRole: "tag/choose_role/blocks/",
     ChooseRole: "tag/Choose_Roles/blocks/",
     CreateApplication: "tag/create_application/blocks",
@@ -147,6 +149,8 @@ const API = {
     ValidationReportsVerra: "tag/validation_reports_verra/blocks",
     VerificationReportsVerra: "tag/verification_reports_verra/blocks",
     ApproveValidationReportBtn: "tag/approve_validation_report_btn/blocks",
+    RegWorkflowSteps: "tag/registrants_workflow_steps/blocks",
+    Savepoint: "savepoints/",
 
     //Records
     Record: "record/",
@@ -184,6 +188,7 @@ const API = {
     Publish: "publish/",
     Blocks: "blocks/",
     Approve: "approve/",
+    Reload: "reload/",
     Reject: "reject/",
     Cancel: "cancel/",
     Requests: "requests/",

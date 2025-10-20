@@ -1,4 +1,16 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, StreamableFile } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Post,
+    Req,
+    StreamableFile
+} from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
 import { Auth, AuthUser } from '#auth';
@@ -53,6 +65,60 @@ export class IpfsApi {
 
             const guardians = new Guardians();
             const { cid } = await guardians.addFileIpfs(user, body);
+            if (!cid) {
+                throw new HttpException('File is not uploaded', HttpStatus.BAD_REQUEST);
+            }
+
+            const invalidedCacheTags = [
+                `${PREFIXES.IPFS}file/${cid}`,
+                `${PREFIXES.IPFS}file/${cid}/dry-run`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
+
+            return JSON.stringify(cid);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Add file to ipfs directly
+     */
+    @Post('/file/direct')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Add file to ipfs directly.',
+        description: 'Add file to ipfs directly.',
+    })
+    @ApiBody({
+        description: 'Binary data.',
+        required: true,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async postFileDirect(
+        @Body() body: any,
+        @AuthUser() user: IAuthUser,
+        @Req() req
+    ): Promise<string> {
+        try {
+            if (!Object.values(body).length) {
+                throw new HttpException('Body content in request is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+            }
+
+            const guardians = new Guardians();
+            const { cid } = await guardians.addFileIpfsDirect(user, body);
             if (!cid) {
                 throw new HttpException('File is not uploaded', HttpStatus.BAD_REQUEST);
             }
@@ -225,6 +291,49 @@ export class IpfsApi {
                 throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
             }
             return new StreamableFile(Buffer.from(result));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    @Delete('/file/:cid')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE
+    )
+    @ApiOperation({
+        summary: 'Remove file from ipfs.',
+        description: 'Remove file from ipfs.',
+    })
+    @ApiParam({
+        name: 'cid',
+        type: String,
+        description: 'File cid',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async deleteFile(
+        @Param('cid') cid: string,
+        @AuthUser() user: IAuthUser,
+        @Req() req
+    ): Promise<void> {
+        try {
+            const guardians = new Guardians();
+            await guardians.deleteIpfsCid(user, cid);
+
+            const invalidedCacheTags = [
+                `${PREFIXES.IPFS}file/${cid}`,
+                `${PREFIXES.IPFS}file/${cid}/dry-run`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
