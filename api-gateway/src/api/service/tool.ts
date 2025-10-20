@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader } from '#middlewares';
+import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader, ToolVersionDTO } from '#middlewares';
 import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, EntityOwner, CacheService } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 import {CACHE_PREFIXES, TOOL_REQUIRED_PROPS} from '#constants';

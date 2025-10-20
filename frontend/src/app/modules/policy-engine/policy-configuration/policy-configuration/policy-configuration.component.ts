@@ -34,6 +34,7 @@ import { TestCodeDialog } from '../../dialogs/test-code-dialog/test-code-dialog.
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
+import { SaveToolDialog, ToolSaveAction } from '../../dialogs/save-tool-dialog/save-tool-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
