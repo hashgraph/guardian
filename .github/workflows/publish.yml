@@ -21,7 +21,7 @@ jobs:
           egress-policy: audit
 
       - name: Conditional values for Github Action
-        uses: step-security/action-cond@21827f9eb9418c1bba908c539d6b941cf907beee # v1.2.3
+        uses: step-security/action-cond@45aa5a709bd075f11c74285d8b0ca4d527e5fbcf # v1.2.4
         id: latestTag
         with:
           cond: ${{ github.event.release.target_commitish == 'main' }}
@@ -33,7 +33,7 @@ jobs:
 
       - name: get-npm-version
         id: package-version
-        uses: step-security/npm-get-version-action@2021528c02c8913e6c8673430af77a1a1fc118b1 # v1.3.2
+        uses: step-security/npm-get-version-action@f39973dcb0213ee66ce68c57bd29ebd364f4741f # v1.3.3
         with:
           path: guardian-service
 
@@ -53,7 +53,7 @@ jobs:
           token_format: 'access_token'
 
       - name: Docker Login
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           registry: 'gcr.io' # or REGION-docker.pkg.dev
           username: 'oauth2accesstoken'

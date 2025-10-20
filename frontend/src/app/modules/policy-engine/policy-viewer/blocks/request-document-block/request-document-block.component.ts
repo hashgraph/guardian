@@ -10,7 +10,7 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { audit, takeUntil } from 'rxjs/operators';
+import {audit, finalize, takeUntil} from 'rxjs/operators';
 import { interval, Subject, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
@@ -280,13 +280,29 @@ export class RequestDocumentBlockComponent
             await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
 
             prepareVcData(data);
+
+            let requestSucceeded = false;
+
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, {
                     document: data,
                     ref: this.ref,
                     draft
                 })
+                .pipe(
+                    finalize(async () => {
+                        try {
+                            if (!requestSucceeded) {
+                                await this.tablePersist.rollbackIpfsUploads();
+                            }
+                        } finally {
+                            this.loading = false;
+                        }
+                    })
+                )
                 .subscribe(() => {
+                    requestSucceeded = true;
+
                     setTimeout(() => {
                         this.loading = false;
                         if (draft) {

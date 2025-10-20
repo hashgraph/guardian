@@ -70,4 +70,8 @@ export class ArtifactService {
             responseType: 'blob'
         });
     }
+
+    deleteFile(fileId: string): Observable<boolean> {
+        return this.http.delete<boolean>(`${this.url}/files/${encodeURIComponent(fileId)}`);
+    }
 }

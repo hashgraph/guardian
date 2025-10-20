@@ -4,6 +4,7 @@
 export enum WorkerTaskType {
     GET_FILE = 'get-file',
     ADD_FILE = 'add-file',
+    DELETE_CID = 'delete-cid',
     SEND_HEDERA = 'send-hedera',
     CREATE_ACCOUNT = 'create-account',
     GET_USER_BALANCE = 'get-user-balance',
