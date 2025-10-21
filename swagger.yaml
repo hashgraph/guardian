@@ -9769,6 +9769,11 @@ paths:
           schema:
             example: 0.0.1
             type: string
+        - name: schemas
+          required: true
+          in: query
+          schema:
+            type: string
       requestBody:
         required: true
         description: A xlsx file containing schema config.
@@ -9804,7 +9809,12 @@ paths:
         Previews the schema from a xlsx file. Only users with the Standard
         Registry role are allowed to make the request.
       operationId: SchemaApi_importPolicyFromXlsxPreview
-      parameters: []
+      parameters:
+        - name: policyId
+          required: true
+          in: query
+          schema:
+            type: string
       requestBody:
         required: true
         description: A xlsx file containing schema config.
