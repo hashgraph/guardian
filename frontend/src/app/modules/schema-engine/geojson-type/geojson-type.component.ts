@@ -495,11 +495,13 @@ export class GeojsonTypeComponent implements OnChanges {
             this.formModel.build();
         }
         this.applyAvailableOptionsFilter();
+        this.formModel.setAvailableTypes(this.typeOptions.map(({ value }) => value));
     }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes?.availableOptions) {
             this.applyAvailableOptionsFilter();
+            this.formModel.setAvailableTypes(this.typeOptions.map(({ value }) => value));
         }
         if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
             this.onViewTypeChange();
