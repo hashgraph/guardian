@@ -75,7 +75,7 @@
 
 
         <div
-                [class.current]="activeLink.startsWith('/notifications')"
+            [class.current]="activeLink.startsWith('/notifications')"
             [routerLink]="'/notifications'"
             class="item cursor-pointer"
         >
@@ -131,7 +131,9 @@
 
         <div
             [class.collapsed-item]="menuCollapsed"
-            class="item balance-item">
+            [routerLink]="'/project-wallets'"
+            class="item balance-item"
+        >
             <img alt="" src="assets/images/icons/money.svg">
             <span> Balance <span *ngIf="balance">{{ balance }}</span></span>
             <div *ngIf="!balance" class="preloader">
