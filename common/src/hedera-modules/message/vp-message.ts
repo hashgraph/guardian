@@ -161,7 +161,7 @@ export class VPMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         const json = JSON.stringify(this.document);
         const buffer = Buffer.from(json);
         return [buffer];

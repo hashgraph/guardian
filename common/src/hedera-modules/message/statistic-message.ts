@@ -89,7 +89,7 @@ export class StatisticMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         const document = JSON.stringify(this.config);
         const buffer = Buffer.from(document);
         return [buffer];

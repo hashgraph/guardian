@@ -5,6 +5,9 @@
         "lib": [
             "esnext"
         ],
+        "types": [
+            "node"
+        ],
         "moduleResolution": "node",
         "sourceMap": true,
         "outDir": "dist/",

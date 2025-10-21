@@ -13,7 +13,7 @@ export class ToolMessage extends Message {
     /**
      * Document
      */
-    public document: ArrayBuffer;
+    public document: Buffer;
     /**
      * UUID
      */
@@ -61,7 +61,7 @@ export class ToolMessage extends Message {
         this.description = model.description;
         this.owner = model.owner;
         this.hash = model.hash;
-        this.document = zip;
+        this.document = Buffer.from(zip);
         this.toolTopicId = model.topicId;
         this.tagsTopicId = model.tagsTopicId;
     }
@@ -69,7 +69,7 @@ export class ToolMessage extends Message {
     /**
      * Get document
      */
-    public getDocument(): ArrayBuffer {
+    public getDocument(): Buffer {
         return this.document;
     }
 
@@ -98,7 +98,7 @@ export class ToolMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (this.document) {
             return [this.document];
         }

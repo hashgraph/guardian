@@ -121,7 +121,7 @@ export class SchemaMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (
             this.action === MessageAction.PublishSchema ||
             this.action === MessageAction.PublishSystemSchema

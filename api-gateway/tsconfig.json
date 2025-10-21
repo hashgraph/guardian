@@ -12,6 +12,9 @@
             "es5",
             "es6"
         ],
+        "types": [
+            "node"
+        ],
         "module": "ESNext",
         "moduleResolution": "node",
         "outDir": "dist/",
@@ -27,7 +30,7 @@
                 "auth/index.js"
             ],
             "#constants": [
-              "constants/index.js"
+                "constants/index.js"
             ]
         }
     },

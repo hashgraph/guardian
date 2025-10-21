@@ -38,7 +38,7 @@ export class FormulaMessage extends Message {
     /**
      * Document
      */
-    public config: ArrayBuffer;
+    public config: Buffer;
 
     constructor(action: MessageAction) {
         super(action, MessageType.Formula);
@@ -55,13 +55,13 @@ export class FormulaMessage extends Message {
         this.uuid = item.uuid;
         this.policyTopicId = item.policyTopicId;
         this.policyInstanceTopicId = item.policyInstanceTopicId;
-        this.config = zip;
+        this.config = Buffer.from(zip);
     }
 
     /**
      * Get document
      */
-    public getDocument(): ArrayBuffer {
+    public getDocument(): Buffer {
         return this.config;
     }
 
@@ -89,7 +89,7 @@ export class FormulaMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (this.config) {
             return [this.config];
         }

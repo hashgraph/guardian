@@ -13,7 +13,7 @@ export class ModuleMessage extends Message {
     /**
      * Document
      */
-    public document: ArrayBuffer;
+    public document: Buffer;
 
     /**
      * UUID
@@ -53,14 +53,14 @@ export class ModuleMessage extends Message {
         this.name = model.name;
         this.description = model.description;
         this.owner = model.owner;
-        this.document = zip;
+        this.document = Buffer.from(zip);
         this.moduleTopicId = model.topicId;
     }
 
     /**
      * Get document
      */
-    public getDocument(): ArrayBuffer {
+    public getDocument(): Buffer {
         return this.document;
     }
 
@@ -87,7 +87,7 @@ export class ModuleMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (this.document) {
             return [this.document];
         }

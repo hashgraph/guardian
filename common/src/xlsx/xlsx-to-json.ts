@@ -26,7 +26,7 @@ export class XlsxToJson {
         const xlsxResult = new XlsxResult();
         try {
             const workbook = new Workbook();
-            await workbook.read(buffer)
+            await workbook.read(buffer as any);
             const worksheets = workbook.getWorksheets();
 
             for (const worksheet of worksheets) {

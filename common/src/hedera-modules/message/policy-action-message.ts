@@ -98,7 +98,7 @@ export class PolicyActionMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(key: string): Promise<ArrayBuffer[]> {
+    public async toDocuments(key: string): Promise<Buffer[]> {
         const json = JSON.stringify(this.document);
         const encryptedDocument = await encryptWithKeyDerivedFromString({
             passphrase: key,

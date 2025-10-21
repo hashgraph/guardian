@@ -84,7 +84,7 @@ export class Workbook {
         return new Worksheet(sheetName, worksheet);
     }
 
-    public async read(buffer: Buffer): Promise<void> {
+    public async read(buffer: ExcelJS.Buffer): Promise<void> {
         await this.workbook.xlsx.load(buffer);
     }
 

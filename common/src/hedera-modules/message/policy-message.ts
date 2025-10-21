@@ -13,7 +13,7 @@ export class PolicyMessage extends Message {
     /**
      * Document
      */
-    public document: ArrayBuffer;
+    public document: Buffer;
 
     /**
      * UUID
@@ -103,13 +103,13 @@ export class PolicyMessage extends Message {
         this.restoreTopicId = model.restoreTopicId;
         this.actionsTopicId = model.actionsTopicId;
         this.commentsTopicId = model.commentsTopicId;
-        this.document = zip;
+        this.document = Buffer.from(zip);
     }
 
     /**
      * Get document
      */
-    public getDocument(): ArrayBuffer {
+    public getDocument(): Buffer {
         return this.document;
     }
 
@@ -174,7 +174,7 @@ export class PolicyMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (this.action !== MessageAction.PublishPolicy) {
             return [];
         }

@@ -12,7 +12,7 @@ export class PolicyDiffMessage extends Message {
     /**
      * Document
      */
-    public document: ArrayBuffer;
+    public document: Buffer;
     /**
      * UUID
      */
@@ -60,13 +60,13 @@ export class PolicyDiffMessage extends Message {
         this.diffIndex = diff.diffIndex;
         this.policyTopicId = diff.policyTopicId;
         this.instanceTopicId = diff.instanceTopicId;
-        this.document = zip;
+        this.document = Buffer.from(zip);
     }
 
     /**
      * Get document
      */
-    public getDocument(): ArrayBuffer {
+    public getDocument(): Buffer {
         return this.document;
     }
 
@@ -95,7 +95,7 @@ export class PolicyDiffMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (this.document) {
             return [this.document];
         }
