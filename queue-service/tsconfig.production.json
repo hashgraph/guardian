@@ -5,6 +5,9 @@
         "lib": [
             "esnext"
         ],
+        "types": [
+            "node"
+        ],
         "moduleResolution": "node",
         "sourceMap": false,
         "outDir": "dist/",
@@ -13,8 +16,7 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "baseUrl": "./src",
-        "paths": {
-        }
+        "paths": {}
     },
     "include": [
         "src/**/*",
