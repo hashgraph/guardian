@@ -69,6 +69,8 @@ export class IgnoreRulesDialog implements OnInit {
         },
     ];
 
+    public header = 'Policy Warnings'
+
     constructor(
         private readonly formBuilder: FormBuilder,
         public readonly dialogRef: DynamicDialogRef,
@@ -108,10 +110,10 @@ export class IgnoreRulesDialog implements OnInit {
     }
 
     /**
-     * Clear — recognized by the outer code via the 'clear' marker.
+     * Clear — sets all toggles in the form to `false`.
      */
     public clearAll(): void {
-        this.dialogRef.close('clear');
+        Object.keys(this.form.controls).forEach(key => this.form.get(key)?.setValue(false));
     }
 
     /**

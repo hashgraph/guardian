@@ -1,9 +1,14 @@
-<div class="dialog-container" [formGroup]="form">
-    <div class="dialog-header">
-        Ignore Rules
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{header}}</div>
     </div>
+    <div class="header-icon" (click)="close()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
 
-    <div class="rules">
+<div class="dialog-body">
+    <div class="rules" [formGroup]="form">
         <div
             class="rule"
             *ngFor="let option of presetRuleOptions; trackBy: trackByOptionKey"
@@ -13,67 +18,58 @@
                     {{ option.label }}
                 </div>
 
-                <div
-                    class="rule-hint"
-                    *ngIf="option.hint"
-                >
+                <div class="rule-hint" *ngIf="option.hint">
                     {{ option.hint }}
                 </div>
             </div>
 
             <div class="rule-controls">
-                <p-radioButton
-                    [inputId]="option.key + '_no'"
-                    [value]="false"
-                    [formControlName]="option.key"
-                    name="{{ option.key }}"
-                    (onClick)="setOptionValue(option.key, false)"
-                >
-                </p-radioButton>
-                <label [for]="option.key + '_no'">
-                    No
-                </label>
-
-                <p-radioButton
-                    [inputId]="option.key + '_yes'"
-                    [value]="true"
-                    [formControlName]="option.key"
-                    name="{{ option.key }}"
-                    (onClick)="setOptionValue(option.key, true)"
-                >
-                </p-radioButton>
-                <label [for]="option.key + '_yes'">
-                    Yes
-                </label>
+                <p-inputSwitch
+                    [inputId]="option.key + '_switch'"
+                    [formControlName]="option.key">
+                </p-inputSwitch>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="actions-row">
-        <span class="spacer"></span>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="create-policy-button">
+            <div class="dialog-button">
+                <button
+                    type="button"
+                    pButton
+                    class="guardian-button guardian-button-secondary p-button-outlined"
+                    (click)="clearAll()"
+                >
+                    Clear Selection
+                </button>
+            </div>
+        </div>
 
-        <button
-            type="button"
-            class="p-button p-button-text"
-            (click)="clearAll()"
-        >
-            Clear
-        </button>
+        <div class="navigation-buttons">
+            <div class="dialog-button">
+                <button
+                    type="button"
+                    pButton
+                    class="prev-button guardian-button guardian-button-secondary p-button-text"
+                    (click)="close()"
+                >
+                    Cancel
+                </button>
+            </div>
 
-        <button
-            type="button"
-            class="p-button p-button-text"
-            (click)="close()"
-        >
-            Cancel
-        </button>
-
-        <button
-            type="button"
-            class="p-button p-button-primary"
-            (click)="save()"
-        >
-            Save
-        </button>
+            <div class="dialog-button">
+                <button
+                    type="button"
+                    pButton
+                    class="next-button guardian-button guardian-button-primary"
+                    (click)="save()"
+                >
+                    Save
+                </button>
+            </div>
+        </div>
     </div>
 </div>

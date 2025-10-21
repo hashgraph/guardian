@@ -2041,36 +2041,20 @@ export class PolicyConfigurationComponent implements OnInit {
     public async setIgnoreRules(): Promise<void> {
         const databaseConnection = await this.indexedDb.getDB(DB_NAME.POLICY_WARNINGS);
 
-        const existingRules =
-            (await databaseConnection.get(
-                STORES_NAME.IGNORE_RULES_STORE,
-                this.policyId
-            )) as IgnoreRule[] | undefined;
-
         const dialogRef = this.dialog.open(IgnoreRulesDialog, {
             showHeader: false,
-            width: '700px',
-            styleClass: 'guardian-dialog',
+            width: '640px',
+            styleClass: 'ignore-rule-dialog',
             data: {
                 policyId: this.policyId,
-                rules: Array.isArray(existingRules) ? existingRules : [],
+                rules: this.ignoreRules ?? [],
             },
         });
 
         dialogRef.onClose
             .pipe(takeUntil(this._destroy$))
-            .subscribe(async (result: IgnoreRule[] | 'clear' | null) => {
+            .subscribe(async (result: IgnoreRule[] | null) => {
                 if (result === null) {
-                    return;
-                }
-
-                if (result === 'clear') {
-                    await databaseConnection.delete(
-                        STORES_NAME.IGNORE_RULES_STORE,
-                        this.policyId
-                    );
-
-                    this.ignoreRules = [];
                     return;
                 }
 

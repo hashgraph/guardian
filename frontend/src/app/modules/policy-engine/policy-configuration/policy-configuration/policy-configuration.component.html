@@ -70,32 +70,30 @@
 
                 <div class="delimiter"></div>
 
-                <div (click)="validationPolicy()" *ngIf="policyTemplate.isDraft" [attr.errors-count]="errorsCount"
-                    [attr.readonly]="!isTree" class="top-toolbar-btn all-status" title="Validation Policy">
+                <div
+                    *ngIf="policyTemplate.isDraft"
+                    class="top-toolbar-btn top-toolbar-group all-status validation"
+                    [attr.readonly]="!isTree"
+                    [attr.errors-count]="errorsCount"
+                    (click)="validationPolicy()"
+                    title="Validation"
+                    #validationBtn
+                >
                     <i class="pi pi-check-circle"></i>
                     <span>Validation</span>
-                    <div *ngIf="errorsCount>0" class="error-count">{{ errorsCount }}</div>
-                </div>
 
-                <div
-                    (click)="setIgnoreRules()"
-                    class="top-toolbar-btn all-status"
-                    [attr.active]="ignoreRules.length ? true : null"
-                    title="Configure ignore rules"
-                >
-                    <i class="pi" [ngClass]="ignoreRules.length ? 'pi-filter-fill' : 'pi-filter'"></i>
-                    <span>Ignore Rules</span>
-                </div>
+                    <div *ngIf="errorsCount > 0" class="error-count">{{ errorsCount }}</div>
 
-                <div *ngIf="policyTemplate.isRun" [routerLink]="['/policy-viewer', policyId]"
-                    class="top-toolbar-btn all-status">
-                    <i class="pi pi-angle-double-right"></i>
-                    <span>Go</span>
+                    <div
+                        class="expand-group"
+                        (click)="$event.stopPropagation(); validationMenu.toggle($event, validationBtn)"
+                    >
+                        <i class="pi pi-sort-down-fill"></i>
+                    </div>
                 </div>
 
                 <div class="delimiter"></div>
             </ng-container>
-
 
             <ng-container *ngIf="rootType === 'Module'">
                 <!--                <div (click)="backToModules()" class="top-toolbar-btn all-status" title="Back">-->
@@ -1078,6 +1076,19 @@
         title="Return to editing.">
         <i class="pi pi-pencil edit-color"></i>
         <span class="edit-color">Stop</span>
+    </div>
+</p-overlayPanel>
+
+<p-overlayPanel #validationMenu
+    (onShow)="publishMenu?.hide(); publishMenu2?.hide(); publishMenu3?.hide();
+    dryRunMenu?.hide(); eventMenu?.hide(); viewMenu?.hide(); themesMenu?.hide()"
+>
+    <div class="toolbar-menu all-status"
+         (click)="setIgnoreRules(); validationMenu.hide()"
+         title="Configure ignore rules"
+         [attr.active]="ignoreRules.length ? true : null">
+        <i class="pi" [ngClass]="ignoreRules.length ? 'pi-filter-fill' : 'pi-filter'"></i>
+        <span>Configure ignore rules</span>
     </div>
 </p-overlayPanel>
 

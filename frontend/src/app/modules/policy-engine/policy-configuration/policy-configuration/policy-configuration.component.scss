@@ -1349,3 +1349,26 @@
         border-bottom: 3px solid rgba(0, 0, 0, 0);
     }
 }
+
+.top-toolbar {
+    .top-toolbar-group.validation {
+        &[errors-count]       {
+            color: var(--pc-error-color);
+        }
+        &[errors-count="-1"]  {
+            color: var(--pc-active-icon-color);
+        }
+        &[errors-count="0"]   { color: var(--pc-valid-color); }
+
+        > .error-count {
+            right: 20px;
+            top: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .expand-group .pi {
+           color: var(--pc-active-icon-color) !important;
+        }
+    }
+}
