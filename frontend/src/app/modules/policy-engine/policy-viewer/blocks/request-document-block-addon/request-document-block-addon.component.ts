@@ -75,6 +75,8 @@ export class RequestDocumentBlockAddonComponent
     public hideFields: any;
     public readonly: boolean = false;
     public dialog: RequestDocumentBlockDialog;
+    public edit: boolean;
+    public draft: boolean;
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -100,6 +102,16 @@ export class RequestDocumentBlockAddonComponent
 
     ngOnDestroy(): void {
         this.destroy();
+    }
+
+    public __validate() {
+        const errors: string[] = [];
+        Object.keys(this.dataForm.controls).forEach(key => {
+            if (!this.dataForm.get(key)?.valid) {
+                errors.push(key);
+            }
+        });
+        console.log(errors);
     }
 
     override setData(data: IRequestDocumentAddonData) {
@@ -219,6 +231,10 @@ export class RequestDocumentBlockAddonComponent
 
     public getRef() {
         return this.ref.id;
+    }
+
+    public getAutosaveId() {
+        return this.ref?.id ?? `${this.policyId}_${this.id}_${this?.user?.id}`;
     }
 
     public onDialog() {

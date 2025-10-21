@@ -100,6 +100,7 @@ export class ReassigningBlock {
         item.assignedTo = document.assignedTo;
         item.assignedToGroup = document.assignedToGroup;
         item.option = Object.assign({}, document.option);
+        item.startMessageId = document.startMessageId;
         item = PolicyUtils.setDocumentRef(item, document);
 
         return { item, actor };

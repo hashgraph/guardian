@@ -28,6 +28,19 @@ form {
 
 .guardian-loading {
     border-radius: 0 !important;
+    background: #fff;
+    opacity: 0.5;
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
 }
 
 .dialog-body {
@@ -47,32 +60,63 @@ form {
 
 .action-buttons {
     display: flex;
-    justify-content: flex-end;
     user-select: none;
+    justify-content: flex-start !important;
 
     &>div {
-        margin-left: 15px;
-        margin-right: 0px;
+        margin-left: 0px;
+        margin-right: 16px;
     }
 
     .dialog-button {
         display: none;
     }
+
     .dialog-button[id="cancel"] {
         display: block;
     }
+
     .dialog-button[id="submit"] {
         display: block;
+
+        button {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
     }
+
     .dialog-button[id="save"] {
         display: block;
-        margin-right: auto;
+        margin-left: auto;
+        margin-right: 0px;
+
+        &[visible="false"] {
+            display: none !important;
+        }
 
         button {
             display: flex;
             gap: 8px;
+            padding-left: 16px;
+            padding-right: 16px;
         }
     }
+
+    .dialog-button[id="save"][visible="false"]+.last-autosave {
+        right: 20px;
+    }
+
+    .dialog-button[id="save"][visible="true"]+.last-autosave {
+        right: 150px;
+    }
+}
+
+.last-autosave {
+    position: absolute;
+    right: 150px;
+    bottom: 42px;
+    font-size: 14px;
+    color: #8E8E8E;
 }
 
 .close-icon-color {
@@ -81,8 +125,8 @@ form {
 }
 
 .save-icon-color {
-    fill: var(--color-primary);
-    color: var(--color-primary);
+    fill: var(--color-grey-white);
+    color: var(--color-grey-white);
 }
 
 @media (max-width: 810px) {
@@ -90,6 +134,7 @@ form {
         .dialog-button[visible="false"] {
             display: none !important;
         }
+
         .dialog-button[visible="true"] {
             display: block !important;
         }

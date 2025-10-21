@@ -105,6 +105,9 @@ export class DocumentsSourceAddon {
         if (ref.options.onlyAssignByGroupDocuments) {
             filters.assignedToGroup = user.group;
         }
+        if (ref.options.hidePreviousVersions) {
+            filters.edited = { $ne: true };
+        }
 
         if (ref.options.schema) {
             filters.schema = ref.options.schema;
@@ -237,6 +240,9 @@ export class DocumentsSourceAddon {
         }
         if (ref.options.onlyAssignByGroupDocuments) {
             filters.push({ $eq: [user.group, '$assignedToGroup'] });
+        }
+        if (ref.options.hidePreviousVersions) {
+            filters.push({ $ne: [true, '$assignedToGroup'] });
         }
 
         if (ref.options.schema) {

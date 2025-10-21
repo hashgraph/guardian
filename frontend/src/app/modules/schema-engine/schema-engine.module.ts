@@ -19,7 +19,8 @@ import { SchemaFormViewComponent } from './schema-form-view/schema-form-view.com
 import { DocumentViewComponent } from './document-view/document-view.component';
 import { SetVersionDialog } from './set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
-import { GeoImageComponent } from './vc-dialog/components/geo-image.component';
+import { VCFullscreenDialog } from './vc-fullscreen-dialog/vc-fullscreen-dialog.component';
+import { GeoImageComponent } from './geo-image/geo-image.component';
 import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.component';
 import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.component';
 import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
@@ -61,6 +62,7 @@ import {TableViewerComponent} from "./table-viewer/table-viewer.component";
         DocumentViewComponent,
         SetVersionDialog,
         VCViewerDialog,
+        VCFullscreenDialog,
         GeoImageComponent,
         SchemaViewDialog,
         ExportSchemaDialog,
@@ -110,6 +112,7 @@ import {TableViewerComponent} from "./table-viewer/table-viewer.component";
         DocumentViewComponent,
         SetVersionDialog,
         VCViewerDialog,
+        VCFullscreenDialog,
         GeoImageComponent,
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,

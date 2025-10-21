@@ -136,9 +136,8 @@ export const actionIndexes = new Map<PermissionActions, number>([
     [PermissionActions.REVIEW, 4],
     [PermissionActions.EXECUTE, 5],
     [PermissionActions.MANAGE, 6],
-
+    [PermissionActions.AUDIT, 7],
     [PermissionActions.ALL, -1],
-    [PermissionActions.AUDIT, -1],
 ])
 
 export const accessIndexes = new Map<PermissionActions, number>([
@@ -184,13 +183,23 @@ export const actionName = [
     'Manage'
 ]
 
+export const actionPolicyName = [
+    'Read',
+    'Create',
+    'Edit',
+    'Delete',
+    'Review',
+    'Execute',
+    'Manage',
+    'Audit'
+]
+
 export const actionAccessName = [
     'Assigned',
     'Published',
     'Assigned & Published',
     'All'
 ]
-
 
 export const delegateAccessName = [
     'Delegate',

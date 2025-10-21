@@ -43,7 +43,11 @@ import { MenuButton } from './menu-button/menu-button.component';
 import { CheckboxButton } from './checkbox-button/checkbox-button.component';
 import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
 import {TableDialogComponent} from './table-dialog/table-dialog.component';
-import {AgGridModule} from "ag-grid-angular";
+import {AgGridModule} from 'ag-grid-angular';
+import { PolicyComments } from './policy-comments/policy-comments.component';
+import { TextInputAutocompleteDirective } from './angular-text-input-autocomplete/text-input-autocomplete.directive';
+import { TextInputAutocompleteContainerComponent } from './angular-text-input-autocomplete/text-input-autocomplete-container.component';
+import { TextInputAutocompleteMenuComponent } from './angular-text-input-autocomplete/text-input-autocomplete-menu.component';
 
 @NgModule({
     declarations: [
@@ -75,7 +79,11 @@ import {AgGridModule} from "ag-grid-angular";
         MenuButton,
         CheckboxButton,
         IPFSLinkComponent,
-        TableDialogComponent
+	TableDialogComponent,
+        PolicyComments,
+        TextInputAutocompleteDirective,
+        TextInputAutocompleteContainerComponent,
+        TextInputAutocompleteMenuComponent
     ],
     imports: [
         CommonModule,
@@ -129,7 +137,11 @@ import {AgGridModule} from "ag-grid-angular";
         MenuButton,
         CheckboxButton,
         IPFSLinkComponent,
-        TableDialogComponent
+	TableDialogComponent,
+        PolicyComments,
+        TextInputAutocompleteDirective,
+        TextInputAutocompleteContainerComponent,
+        TextInputAutocompleteMenuComponent
     ]
 })
 export class CommonComponentsModule {

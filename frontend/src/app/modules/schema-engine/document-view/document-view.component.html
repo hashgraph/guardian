@@ -3,7 +3,7 @@
         <div class="guardian-loading-image"></div>
     </div>
 
-    <div *ngIf="document">
+    <div *ngIf="document" class="form-body">
 
         <div class="guardian-accordion-container">
             <p-accordion [activeIndex]="0" class="guardian-accordion">
@@ -108,7 +108,11 @@
                             [dryRun]="dryRun" 
                             [values]="item"
                             [rules]="rulesResults"
-                            [formulas]="formulasResults">
+                            [formulas]="formulasResults"
+                            [link]="link"
+                            [discussion]="discussionData"
+                            [discussion-action]="discussionAction"
+                            (discussion-action)="onDiscussionAction($event)">
                         </app-schema-form-view>
                     </p-accordionTab>
                 </p-accordion>
@@ -134,7 +138,10 @@
                             [formulas]="formulas"
                             [dryRun]="dryRun" 
                             [hide-fields]="hideFields"
-                            type="VC">
+                            type="VC"
+                            [discussion]="discussionData"
+                            [discussion-action]="discussionAction"
+                            (discussion-action)="onDiscussionAction($event)">
                         </app-document-view>
                     </p-accordionTab>
                 </p-accordion>

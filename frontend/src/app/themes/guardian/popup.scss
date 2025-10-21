@@ -1,0 +1,16 @@
+.guardian-popup {
+    margin-top: 0px;
+    box-shadow: none;
+    border-radius: 8px;
+    outline: none;
+    border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.075);
+
+    &::after {
+        display: none !important;
+    }
+
+    &::before {
+        display: none !important;
+    }
+}

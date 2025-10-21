@@ -504,7 +504,9 @@ export const BlockAbout = {
         ],
         'output': [
             'RunEvent',
-            'RefreshEvent'
+            'RefreshEvent',
+            'ReferenceEvent',
+            'DraftEvent'
         ],
         'defaultEvent': true
     },
@@ -809,8 +811,16 @@ export const BlockAbout = {
         'get': true,
         'children': 'Special',
         'control': 'UI',
-        'input': null,
-        'output': null,
+        'input': [
+            'RunEvent',
+            'RefreshEvent',
+            'RestoreEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent',
+            'DraftEvent'
+        ],
         'defaultEvent': false,
     },
     'tokenActionBlock': {

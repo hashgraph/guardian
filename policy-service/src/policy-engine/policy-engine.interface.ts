@@ -981,6 +981,31 @@ export interface IPolicyDBDocument<T> {
      * Token identifier
      */
     tokenId?: string;
+
+    /**
+     * Is edited
+     */
+    edited?: boolean;
+
+    /**
+     * Is Draft
+     */
+    draft?: boolean;
+
+    /**
+     * Draft ID
+     */
+    draftId?: string;
+
+    /**
+     * Parent document
+     */
+    draftRef?: string;
+
+    /**
+     * Parent message
+     */
+    startMessageId?: string;
 }
 
 /**
@@ -1003,8 +1028,6 @@ export interface IPolicyDocument extends IPolicyDBDocument<any> {
      * sourceTag
      */
     __sourceTag__?: string;
-
-    draft?: boolean;
 }
 
 /**
@@ -1015,6 +1038,11 @@ export interface IPolicyEventState {
      * Data
      */
     data: IPolicyDocument | IPolicyDocument[];
+
+    /**
+     * Result
+     */
+    old?: IPolicyDocument | IPolicyDocument[];
 
     /**
      * Result

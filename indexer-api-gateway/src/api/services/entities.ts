@@ -68,6 +68,29 @@ import {
 @Controller('entities')
 @ApiTags('entities')
 export class EntityApi extends ApiClient {
+    @ApiOperation({
+        summary: 'Get file',
+        description: 'Returns file',
+    })
+    @ApiOkResponse({
+        description: 'File',
+        type: String,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/ipfs/:cid')
+    @ApiParam({
+        name: 'cid',
+        description: 'CID',
+        example: 'bafybe...3w5sk3m',
+    })
+    @HttpCode(HttpStatus.OK)
+    async loadFile(@Param('cid') cid: string) {
+        return await this.send(IndexerMessageAPI.GET_IPFS_FILE, { cid });
+    }
+
     //#region ACCOUNTS
     //#region STANDARD REGISTRIES
     @ApiOperation({
@@ -1749,6 +1772,69 @@ export class EntityApi extends ApiClient {
     async getVcRelationships(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_VC_RELATIONSHIPS, {
             messageId,
+        });
+    }
+
+    @ApiOperation({
+        summary: 'Get VC comments',
+        description: 'Returns VC comments',
+    })
+    @ApiOkResponse({
+        description: 'VC comments',
+        type: RelationshipsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/vc-documents/:messageId/discussions')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @HttpCode(HttpStatus.OK)
+    async getDiscussions(@Param('messageId') messageId: string) {
+        return await this.send(IndexerMessageAPI.GET_DISCUSSIONS, {
+            messageId,
+        });
+    }
+
+    @ApiOperation({
+        summary: 'Get VC comments',
+        description: 'Returns VC comments',
+    })
+    @ApiOkResponse({
+        description: 'VC comments',
+        type: RelationshipsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/vc-documents/:messageId/discussions/:discussionId/comments')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @ApiParam({
+        name: 'discussionId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @HttpCode(HttpStatus.OK)
+    async getVcComments(
+        @Param('messageId') messageId: string,
+        @Param('discussionId') discussionId: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+    ) {
+        return await this.send(IndexerMessageAPI.GET_COMMENTS, {
+            messageId,
+            discussionId,
+            pageIndex,
+            pageSize,
         });
     }
     //#endregion

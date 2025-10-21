@@ -39,6 +39,7 @@ import { WorkerTasksService } from './services/worker-tasks.service';
 import { SchemaRulesService } from './services/schema-rules.service';
 import { PolicyLabelsService } from './services/policy-labels.service';
 import { FormulasService } from './services/formulas.service';
+import { CommentsService } from './services/comments.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
@@ -132,6 +133,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
 import { ExternalPoliciesService } from './services/external-policy.service';
 import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.component';
 import { GeoJsonService } from './services/geo-json.service';
+import { PolicyRepositoryService } from './services/policy-repository.service';
 
 @NgModule({
     declarations: [
@@ -260,6 +262,8 @@ import { GeoJsonService } from './services/geo-json.service';
         ExternalPoliciesService,
         PermissionsService,
         PermissionsGuard,
+        CommentsService,
+        PolicyRepositoryService,
         {
             provide: GET_SCHEMA_NAME,
             useValue: SchemaHelper.getSchemaName

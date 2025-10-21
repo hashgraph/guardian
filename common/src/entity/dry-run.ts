@@ -121,6 +121,12 @@ export class DryRun extends BaseEntity {
     messageId?: any;
 
     /**
+     * Parent message id
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    startMessageId?: any;
+
+    /**
      * Topic id
      */
     @Property({ nullable: true, type: 'unknown' })
@@ -750,6 +756,29 @@ export class DryRun extends BaseEntity {
     @Property({ persist: false, nullable: true })
     _contextFileId?: ObjectId;
 
+    /**
+     * Edited
+     */
+    @Property({ nullable: true })
+    edited?: boolean;
+
+    /**
+     * is draft
+     */
+    @Property({ nullable: true })
+    draft?: boolean;
+
+    /**
+     * draft id
+     */
+    @Property({ nullable: true })
+    draftId?: string;
+
+    /**
+     * draft ref
+     */
+    @Property({ nullable: true })
+    draftRef?: string;
     /**
      * old file id
      */

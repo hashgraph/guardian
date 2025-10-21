@@ -23,6 +23,9 @@ export enum ColumnType {
 export interface BaseColumn {
     title: string;
     width?: string;
+    minWidth?: string;
+    maxWidth?: string;
+    visibility?: (row?:any) => boolean;
 }
 
 export interface TextColumn extends BaseColumn {
@@ -47,6 +50,7 @@ export interface ChipColumn extends BaseColumn {
 export interface ButtonColumn extends BaseColumn {
     type: ColumnType.BUTTON;
     callback: (row: any) => void;
+    disabled?: (row?:any) => boolean;
     field?: string;
     btn_label: string;
     icon?: string;

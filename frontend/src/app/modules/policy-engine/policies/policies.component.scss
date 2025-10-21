@@ -419,15 +419,29 @@
     align-items: center;
     justify-content: flex-end;
     padding-right: 12px;
+
+    &>* {
+        margin-left: 0px;
+    }
+
+    &>*:not(:first-child) {
+        margin-left: 12px;
+    }
 }
 
+.instances {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    justify-content: flex-start;
 
-.commands-line>* {
-    margin-left: 0px;
-}
+    &>* {
+        margin-left: 0px;
+    }
 
-.commands-line>*:not(:first-child) {
-    margin-left: 12px;
+    &>*:not(:first-child) {
+        margin-left: 12px;
+    }
 }
 
 .btn-icon-import[status="Main"],
@@ -936,6 +950,15 @@
     height: 30px;
     gap: 6px;
     width: 110px;
+    min-width: 110px;
+}
+
+.repository-btn {
+    padding: 2px 20px 2px 12px;
+    height: 30px;
+    gap: 6px;
+    width: 185px;
+    min-width: 185px;
 }
 
 .DRAFT-status,

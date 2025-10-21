@@ -1,0 +1,17 @@
+<ul 
+    *ngIf="choices.length > 0"
+    #dropdownMenu
+    class="dropdown-menu {{position?.position}}"
+    [style.top.px]="position?.top"
+    [style.left.px]="position?.left">
+    <li
+        *ngFor="let choice of choices; trackBy:trackById"
+        [class.active]="activeChoice === choice">
+        <div *ngIf="itemTemplate" (click)="selectChoice.next(choice)">
+            <ng-container *ngTemplateOutlet="itemTemplate; context: { $implicit: choice }"></ng-container>
+        </div>
+        <div *ngIf="!itemTemplate" (click)="selectChoice.next(choice)" class="item">
+            {{ choice.label }}
+        </div>
+    </li>
+</ul>

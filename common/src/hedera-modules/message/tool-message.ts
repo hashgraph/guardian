@@ -111,7 +111,7 @@ export class ToolMessage extends Message {
      */
     public loadDocuments(documents: any[]): ToolMessage {
         if (documents && documents.length === 1) {
-            this.document = Buffer.from(documents[0]);
+            this.document = Buffer.from(documents[0]) as any;
         }
         return this;
     }

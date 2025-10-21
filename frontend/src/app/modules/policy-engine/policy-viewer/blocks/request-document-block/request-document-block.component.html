@@ -1,7 +1,7 @@
 <div [hidden]="!isExist" class="content-{{ type }}" [attr.readonly-block]="readonly">
     <ng-container *ngIf="type == 'dialog'">
         <div *ngIf="isBtnVisible()" class="create-button-container">
-            <p-button (click)="onDialog()" class="btn-block-{{ buttonClass }}">
+            <p-button (click)="onDialogOpen()" class="btn-block-{{ buttonClass }}">
                 {{ content }}
             </p-button>
         </div>
@@ -65,10 +65,10 @@
                     [preset]="presetDocument"
                     [private-fields]="hideFields"
                     [readonly-fields]="presetReadonlyFields"
-                    submitText="Create"
+                    submitText="Validate & Create"
                     [rules]="rulesResults"
                     [paginationHidden]="false"
-                    [saveShown]="true"
+                    [saveShown]="false"
                     [isFormForRequestBlock]="true"
                     (form)="initForm($event)"
                     (buttons)="onChangeButtons($event)"

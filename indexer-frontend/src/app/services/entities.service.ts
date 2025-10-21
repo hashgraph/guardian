@@ -54,6 +54,10 @@ export class EntitiesService {
 
     constructor(private http: HttpClient) { }
 
+    public loadFile(cid: string): Observable<string> {
+        return this.http.get(`${this.url}/ipfs/${cid}`, { responseType: 'text' });
+    }
+
     //#region ACCOUNTS
     //#region REGISTRIES
     public getRegistries(filters: PageFilters): Observable<Page<Registry>> {
@@ -297,6 +301,26 @@ export class EntitiesService {
         const entity = 'vc-documents';
         return this.http.get<Relationships>(
             `${this.url}/${entity}/${messageId}/relationships`
+        ) as any;
+    }
+
+    public getVcDiscussions(messageId: string): Observable<any> {
+        const entity = 'vc-documents';
+        return this.http.get<any>(
+            `${this.url}/${entity}/${messageId}/discussions`
+        ) as any;
+    }
+
+    public getVcComments(
+        messageId: string,
+        discussionId: string,
+        filters: PageFilters
+    ): Observable<any> {
+        const options = ApiUtils.getOptions(filters);
+        const entity = 'vc-documents';
+        return this.http.get<any>(
+            `${this.url}/${entity}/${messageId}/discussions/${discussionId}/comments`,
+            options
         ) as any;
     }
     //#endregion

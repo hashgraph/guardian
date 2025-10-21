@@ -90,4 +90,20 @@ export enum PolicyEngineEvents {
     GET_REMOTE_REQUESTS = 'policy-engine-get-remote-requests',
     GET_REMOTE_REQUESTS_COUNT = 'policy-engine-get-remote-requests-count',
     GET_REMOTE_REQUEST_DOCUMENT = 'policy-engine-get-remote-request-document',
+
+    CREATE_POLICY_COMMENT = 'policy-engine-create-policy-comment',
+    GET_POLICY_COMMENTS = 'policy-engine-get-policy-comments',
+    GET_POLICY_DISCUSSIONS = 'policy-engine-get-policy-discussions',
+    CREATE_POLICY_DISCUSSION = 'policy-engine-create-policy-discussion',
+    GET_POLICY_USERS = 'policy-engine-get-policy-users',
+    GET_DOCUMENT_RELATIONSHIPS = 'policy-engine-get-policy-relationships',
+    GET_DOCUMENT_SCHEMAS = 'policy-engine-get-policy-schemas',
+    GET_POLICY_COMMENT_COUNT = 'policy-engine-get-policy-comments-count',
+    IPFS_ADD_FILE = 'policy-engine-ipfs-add-file',
+    IPFS_GET_FILE = 'policy-engine-ipfs-get-file',
+    GET_POLICY_DISCUSSION_KEY = 'policy-engine-get-policy-discussion-key',
+
+    GET_POLICY_REPOSITORY_USERS = 'policy-engine-policy-repository-users',
+    GET_POLICY_REPOSITORY_DOCUMENTS = 'policy-engine-policy-repository-documents',
+    GET_POLICY_REPOSITORY_SCHEMAS = 'policy-engine-policy-repository-schemas',
 }

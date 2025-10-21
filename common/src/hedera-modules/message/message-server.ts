@@ -31,6 +31,8 @@ import { PolicyActionMessage } from './policy-action-message.js';
 import { ContractMessage } from './contract-message.js';
 import { INotificationStep, NewNotifier } from '../../notification/index.js';
 import { SchemaPackageMessage } from './schema-package-message.js';
+import { CommentMessage } from './comment-message.js';
+import { DiscussionMessage } from './discussion-message.js';
 
 interface LoadMessageOptions {
     messageId: string,
@@ -461,6 +463,13 @@ export class MessageServer {
             case MessageType.PolicyAction:
                 message = PolicyActionMessage.fromMessageObject(json);
                 break;
+            case MessageType.PolicyComment:
+                message = CommentMessage.fromMessageObject(json);
+                break;
+            case MessageType.PolicyDiscussion:
+                message = DiscussionMessage.fromMessageObject(json);
+                break;
+
             // Default schemas
             case 'schema-document':
                 message = SchemaMessage.fromMessageObject(json);
@@ -548,6 +557,12 @@ export class MessageServer {
                 break;
             case MessageType.PolicyAction:
                 message = PolicyActionMessage.fromJson(json);
+                break;
+            case MessageType.PolicyComment:
+                message = CommentMessage.fromJson(json);
+                break;
+            case MessageType.PolicyDiscussion:
+                message = DiscussionMessage.fromJson(json);
                 break;
             // Default schemas
             case 'schema-document':

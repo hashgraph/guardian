@@ -61,6 +61,7 @@ import { FormulasComponent } from './modules/formulas/formulas/formulas.componen
 import { FormulaConfigurationComponent } from './modules/formulas/formula-configuration/formula-configuration.component';
 import { ExternalPolicyComponent } from './modules/policy-engine/external-policies/external-policies.component';
 import { PolicyRequestsComponent } from './modules/policy-engine/requests/requests.component';
+import { PolicyRepositoryComponent } from './modules/policy-engine/policy-repository/policy-repository.component';
 
 
 @Injectable({
@@ -343,6 +344,17 @@ const routes: Routes = [
             ],
             permissions: [
                 Permissions.POLICIES_POLICY_UPDATE
+            ]
+        }
+    },
+    {
+        path: 'policy-repository/:id',
+        component: PolicyRepositoryComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.USER],
+            permissions: [
+                Permissions.POLICIES_POLICY_AUDIT
             ]
         }
     },
