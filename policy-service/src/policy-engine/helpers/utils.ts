@@ -8,7 +8,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
 import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
 import { guardianVersion } from '../../version.js';
-import { buildTableHelper } from '../helpers/table-field.js';
+import { buildTableHelper } from '../helpers/table-field-core.js';
 
 export enum QueryType {
     eq = 'equal',

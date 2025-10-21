@@ -14,7 +14,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { fileURLToPath } from 'url';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { BlockActionError } from '../errors/index.js';
-import {collectTablesPack, hydrateTablesInObject, loadFileTextById} from '../helpers/table-field.js';
+import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 
 const filename = fileURLToPath(import.meta.url);
 
