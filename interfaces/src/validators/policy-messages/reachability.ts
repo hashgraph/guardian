@@ -107,18 +107,18 @@ export function computeReachabilityAndDistribute(
         outgoingLinksCountById.set(id, 0);
     }
 
-    /**
-     * Treat hierarchical parent → child relations as links.
-     */
-    for (const source of sources) {
-        const parentId = source.getId();
-        const childrenIds = source.getChildrenIds() ?? [];
-
-        for (const childId of childrenIds) {
-            incrementCount(outgoingLinksCountById, parentId);
-            incrementCount(incomingLinksCountById, childId);
-        }
-    }
+    // /**
+    //  * Treat hierarchical parent → child relations as links.
+    //  */
+    // for (const source of sources) {
+    //     const parentId = source.getId();
+    //     const childrenIds = source.getChildrenIds() ?? [];
+    //
+    //     for (const childId of childrenIds) {
+    //         incrementCount(outgoingLinksCountById, parentId);
+    //         incrementCount(incomingLinksCountById, childId);
+    //     }
+    // }
 
     /**
      * Tag-based links from options: any string matching a known tag.
@@ -140,14 +140,14 @@ export function computeReachabilityAndDistribute(
 
     /**
      * Distribute warnings:
-     *  - “no incoming links”: no parent and no tag-based references pointing to the node.
-     *  - “no outgoing links”: no children and no tag-based references from the node.
+     *  - NO_IN: no tag-based references pointing to the node.
+     *  - NO_OUT: no tag-based references originating from the node.
      */
     for (const source of sources) {
         const id = source.getId();
         const tag = source.getTag();
         const type = source.getBlockType();
-        const parentId = source.getParentId();
+        // const parentId = source.getParentId();
 
         const incomingCount = incomingLinksCountById.get(id) ?? 0;
         const outgoingCount = outgoingLinksCountById.get(id) ?? 0;
@@ -155,11 +155,11 @@ export function computeReachabilityAndDistribute(
         const structuredMessages: PolicyMessage[] = [];
         const label = tag ?? id;
 
-        if (incomingCount === 0 && !parentId) {
+        if (incomingCount === 0) {
             structuredMessages.push({
                 severity: 'warning',
                 code: MSG_REACH_NO_IN,
-                text: `Block "${type}" (${label}) has no incoming links (no parent and no tag-based references).`,
+                text: `Block "${type}" (${label}) has no incoming events (no tag-based references).`,
                 blockType: type
             });
         }
@@ -168,7 +168,7 @@ export function computeReachabilityAndDistribute(
             structuredMessages.push({
                 severity: 'warning',
                 code: MSG_REACH_NO_OUT,
-                text: `Block "${type}" (${label}) has no outgoing links (no children and no tag-based references).`,
+                text: `Block "${type}" (${label}) as no outgoing events (no tag-based references).`,
                 blockType: type
             });
         }
