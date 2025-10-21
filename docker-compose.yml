@@ -223,6 +223,7 @@ services:
       - 5007
 
   application-events:
+    <<: *service-template
     image: gcr.io/hedera-registry/application-events:${GUARDIAN_VERSION:-latest}
     init: true
     depends_on:
