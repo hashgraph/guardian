@@ -770,7 +770,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 if (search) {
-                    filter.name = search;
+                    filter.name = { $regex: `.*${search.trim()}.*`, $options: 'i' };
                 }
 
                 const _pageSize = parseInt(pageSize, 10);
