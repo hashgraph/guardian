@@ -54,6 +54,13 @@ import { HederaType } from '@components/hedera-explorer/hedera-explorer.componen
 export class SchemasPackagesComponent extends BaseGridComponent {
     columns: any[] = [
         {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+        {
             type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
@@ -105,13 +112,6 @@ export class SchemasPackagesComponent extends BaseGridComponent {
             title: 'grid.name',
             width: '200px',
         },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
-        },
     ];
 
     constructor(
@@ -121,6 +121,10 @@ export class SchemasPackagesComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(
             new Filter({
                 type: 'input',

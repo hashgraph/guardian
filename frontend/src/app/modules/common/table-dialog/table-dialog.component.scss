@@ -1,0 +1,117 @@
+:host {
+  display: block;
+}
+
+.grid-modal {
+  display: flex;
+  flex-direction: column;
+  height: 70vh;
+  min-height: 320px;
+}
+.grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+:host ::ng-deep .ag-root .ag-cell {
+  border-right: 1px solid var(--ag-border-color, rgba(0,0,0,.12));
+}
+:host ::ng-deep .ag-root .ag-row .ag-cell:last-child {
+  border-right: none;
+}
+
+:host ::ng-deep .row-number-header {
+  background: var(--ag-header-background-color, #f5f7f9);
+  color: var(--ag-header-foreground-color, #5f6b7a);
+  border-right: 1px solid var(--ag-border-color, rgba(0,0,0,.12));
+}
+:host ::ng-deep .row-number-header .ag-header-cell-label {
+  justify-content: center;
+}
+
+:host ::ng-deep .ag-header .ag-header-cell .ag-header-cell-label,
+:host ::ng-deep .ag-pinned-left-header .ag-header-cell .ag-header-cell-label {
+  justify-content: center;
+}
+
+:host ::ng-deep .ag-header .ag-header-row .ag-header-cell,
+:host ::ng-deep .ag-pinned-left-header .ag-header-row .ag-header-cell,
+:host ::ng-deep .ag-pinned-right-header .ag-header-row .ag-header-cell {
+  border-right: 1px solid var(--ag-border-color, rgba(0,0,0,.12));
+}
+:host ::ng-deep .ag-header .ag-header-row .ag-header-cell:last-child {
+  border-right: none;
+}
+
+:host ::ng-deep .row-number-header {
+  background: var(--ag-header-background-color, #f5f7f9);
+  color: var(--ag-header-foreground-color, #5f6b7a);
+  border-right: 1px solid var(--ag-border-color, rgba(0,0,0,.12));
+}
+:host ::ng-deep .row-number-header .ag-header-cell-label {
+  justify-content: center;
+}
+
+:host ::ng-deep .row-number-cell {
+  text-align: center;
+  background: var(--ag-header-background-color, #f5f7f9);
+  color: var(--ag-header-foreground-color, #5f6b7a);
+  border-right: 1px solid var(--ag-border-color, rgba(0,0,0,.12));
+}
+
+:host ::ng-deep .ag-root .ag-cell {
+  border-right: 1px solid var(--ag-border-color, rgba(0,0,0,.12));
+}
+:host ::ng-deep .ag-root .ag-row .ag-cell:last-child {
+  border-right: none;
+}
+
+.modal__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 8px 16px;
+    background: #ffffff;
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    margin-top: 16px;
+}
+
+.modal__footer .p-button {
+    min-width: 96px;
+    border-radius: 8px;
+}
+
+.grid-modal {
+    display: flex;
+    flex-direction: column;
+    height: 70vh;
+    min-height: 320px;
+}
+
+.grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+}
+
+:host ::ng-deep .p-button {
+    display: grid;
+}
+
+:host ::ng-deep .p-button-outlined {
+    background: var(--color-background);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+:host ::ng-deep .p-button-primary {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: var(--color-background);
+}

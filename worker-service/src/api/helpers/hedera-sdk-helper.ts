@@ -699,7 +699,7 @@ export class HederaSDKHelper {
         const transactionStatus = receipt.status;
 
         if (transactionStatus === Status.Success) {
-            return receipt.serials.map(e => e.toNumber())
+            return receipt.serials ? receipt.serials.map(e => e.toNumber()) : []
         } else {
             return null;
         }
@@ -713,6 +713,8 @@ export class HederaSDKHelper {
      * @param {string | PrivateKey} wipeKey - Token Wipe key
      * @param {number} amount - amount
      * @param userId
+     * @param {string} tokenType - token type
+     * @param {number[]} [serialNumbers] - serial numbers
      * @param {string} [transactionMemo] - Memo field
      *
      * @returns {boolean} - Status
@@ -724,18 +726,32 @@ export class HederaSDKHelper {
         wipeKey: string | PrivateKey,
         amount: number,
         userId: string | null,
+        tokenType: string,
+        serialNumbers?: number[],
         transactionMemo?: string
     ): Promise<boolean> {
         const client = this.client;
 
         const _wipeKey = HederaUtils.parsPrivateKey(wipeKey, true, 'Wipe Key');
-        const transaction = new TokenWipeTransaction()
+        let transaction = new TokenWipeTransaction()
             .setAccountId(targetId)
             .setTokenId(tokenId)
-            .setAmount(amount)
             .setTransactionMemo(transactionMemo)
-            .setMaxTransactionFee(MAX_FEE)
-            .freezeWith(client);
+            .setMaxTransactionFee(MAX_FEE);
+
+        if (tokenType === 'non-fungible') {
+            if (serialNumbers && serialNumbers.length > 0) {
+                transaction = transaction.setSerials(serialNumbers);
+            } else {
+                throw new Error('Serial numbers are required for non-fungible token wipe operations');
+            }
+        }
+        else {
+            transaction = transaction.setAmount(amount);
+        }
+
+        transaction = transaction.freezeWith(client);
+
         const signTx = await transaction.sign(_wipeKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenWipeTransaction', userId);
         const transactionStatus = receipt.status;

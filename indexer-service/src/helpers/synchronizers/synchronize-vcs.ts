@@ -1,9 +1,10 @@
 import { DataBaseHelper, Message } from '@indexer/common';
-import { MessageType, MessageAction, IPFS_CID_PATTERN } from '@indexer/interfaces';
+import { MessageType, MessageAction } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';
 import { SchemaFileHelper } from '../../helpers/schema-file-helper.js';
+import { TableFieldHelper } from '../../helpers/table-field-helper.js';
 
 export class SynchronizationVCs extends SynchronizationTask {
     public readonly name: string = 'vcs';
@@ -75,10 +76,15 @@ export class SynchronizationVCs extends SynchronizationTask {
         console.log(`Sync VCs: load files`)
         const fileMap = await loadFiles(fileIds, false);
 
+        const tableHelper = new TableFieldHelper();
+
         console.log(`Sync VCs: update data`);
         for (const document of allDocuments) {
             const row = em.getReference(Message, document._id);
             row.analytics = this.createAnalytics(document, policyMap, topicMap, schemaMap, fileMap);
+
+            await tableHelper.attachTableFilesAnalytics(row, document, fileMap);
+
             row.analyticsUpdate = Date.now();
             em.persist(row);
         }
@@ -167,6 +173,12 @@ export class SynchronizationVCs extends SynchronizationTask {
                 {
                     'analytics.schemaId': null,
                 },
+                {
+                    'analytics.tableFiles': { $exists: false }
+                },
+                {
+                    'analytics.tableFiles': null
+                }
             ],
         };
     }

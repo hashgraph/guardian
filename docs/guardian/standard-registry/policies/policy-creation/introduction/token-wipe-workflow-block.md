@@ -1,5 +1,11 @@
 # wipeDocumentBlock
 
+### Description
+This block allows to wipe tokens. 
+* **Fungible (FT):** Wipes the amount computed by **Rule**.
+* **Non-Fungible (NFT):** Wipes one or more serial numbers defined by a flexible Serial Numbers Expression. If the block is configured with **fixed serial numbers** (e.g., 1,2-5,10), the wipe operation will always target that same serial range. This effectively makes the run **single-use for those serials**. To keep the policy **reusable across documents**, configure serial numbers to be derived from the selected document.
+
+
 ### Properties
 
 | Block Property   | Definition                                                                        | Example Input                             | Status |
@@ -12,10 +18,11 @@
 
 ### UI Properties
 
-| UI Property | Definition                                                                 |
-| ----------- | -------------------------------------------------------------------------- |
-| Token       | Select which token to wipe. The token must exist in the Guardian instance. |
-| Rule        | Enter any wiping calculations.                                             |
+| UI Property         | Definition                                                                                      | Examples                                              |
+| ------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Token       | Select which token to wipe. The token must exist in the Guardian instance. | specific token                        |
+| Rule        | **FT required.** Enter any FT wiping calculations.                                             | `field0`, `10` |
+| Serial Numbers        | **NFT required.** Enter serials and ranges for NFT wiping. Supports comma-separated and range formats.                                             | `field0,field1-field2,field3`, `1,2-5,10`        |
 
 ### Events
 

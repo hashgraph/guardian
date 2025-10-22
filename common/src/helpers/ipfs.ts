@@ -120,4 +120,69 @@ export class IPFS {
         }
         return res;
     }
+
+    public static async addFileDirect(file: ArrayBuffer, options?: IPFSOptions): Promise<{ cid: string, url: string }> {
+        const res = await new Workers().addRetryableTaskDirect({
+            type: WorkerTaskType.ADD_FILE,
+            data: {
+                payload: {
+                    content: Buffer.from(file).toString('base64'),
+                    userId: options?.userId
+                }
+            }
+        }, {
+            priority: 10,
+            attempts: 3,
+            registerCallback: true,
+            interception: options?.interception,
+            userId: options?.userId
+        });
+
+        if (!res) {
+            throw new Error('Add File: Invalid response');
+        }
+
+        return {
+            cid: res,
+            url: IPFS.IPFS_PROTOCOL + res
+        };
+    }
+
+    /**
+     * Unpin/GC CID
+     * @param cid IPFS CID
+     * @param options
+     * @returns true
+     */
+    public static async deleteCid(cid: string, options?: IPFSOptions): Promise<boolean> {
+        const cleaned = cid?.replace(/^ipfs:\/\//, '');
+        if (!cleaned) {
+            throw new Error('Delete CID: Empty cid');
+        }
+
+        if (!IPFS.CID_PATTERN.test(cleaned)) {
+            throw new Error('Delete CID: Invalid cid format');
+        }
+
+        const res = await new Workers().addNonRetryableTask({
+            type: WorkerTaskType.DELETE_CID,
+            data: {
+                target: [IPFS.target, MessageAPI.IPFS_DELETE_CID].join('.'),
+                payload: {
+                    cid: cleaned,
+                    userId: options?.userId
+                }
+            }
+        }, {
+            priority: 10,
+            registerCallback: true,
+            interception: options?.interception,
+            userId: options?.userId
+        });
+
+        if (res === undefined || res === null) {
+            throw new Error('Delete CID: Invalid response');
+        }
+        return Boolean(res);
+    }
 }

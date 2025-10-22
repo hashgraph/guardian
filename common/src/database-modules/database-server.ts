@@ -259,10 +259,16 @@ export class DatabaseServer extends AbstractDatabaseServer {
         const {name, savepointPath = []} = savepointProps
 
         const dryRunSavepoint = new DataBaseHelper(DryRunSavepoint);
+        await dryRunSavepoint.updateManyRaw(
+            { policyId, isCurrent: true },
+            { $set: { isCurrent: false } }
+        );
+
         const savepoint = dryRunSavepoint.create({
             policyId,
             name,
             savepointPath: [...savepointPath],
+            isCurrent: true
         });
         await dryRunSavepoint.save(savepoint);
 
@@ -4060,6 +4066,48 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return DataBaseHelper.saveFile(uuid, buffer);
     }
 
+    public static async upsertGridFile(params: {
+        buffer: Buffer,
+        fileId?: string,
+        filename?: string,
+        contentType?: string
+    }): Promise<{ fileId: string; filename: string; contentType: string }> {
+        const { buffer, fileId, filename, contentType } = params;
+
+        const uuid = GenerateUUIDv4();
+        const name = (filename || 'file').trim();
+        const type = contentType || 'application/octet-stream';
+
+        if (fileId) {
+            const _id = new ObjectId(String(fileId));
+            await DataBaseHelper.overwriteFile(_id, uuid, buffer);
+            return { fileId: _id.toString(), filename: name, contentType: type };
+        } else {
+            const id = await DataBaseHelper.saveFile(uuid, buffer);
+            return { fileId: id.toString(), filename: name, contentType: type };
+        }
+    }
+
+    /**
+     * Get file
+     * @param fileId
+     */
+    public static async getGridFile(fileId: string): Promise<{ buffer: Buffer; filename: string; contentType: string }> {
+        const _id = new ObjectId(String(fileId));
+        const buffer = await DataBaseHelper.loadFile(_id);
+
+        return { buffer, filename: 'file', contentType: 'application/octet-stream' };
+    }
+
+    /**
+     * Save file
+     * @param fileId
+     */
+    public static async deleteGridFile(fileId: string): Promise<void> {
+        const _id = new ObjectId(String(fileId));
+        await DataBaseHelper.deleteFile(_id);
+    }
+
     /**
      * Save many
      * @param entityClass
@@ -4857,7 +4905,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
             throw new Error('Can not be granted kyc');
         }
         if (item.tokenMap[tokenId].kyc === true) {
-            // throw new Error('Token already granted kyc');
+            throw new Error('Token already granted kyc');
         }
         item.tokenMap[tokenId].kyc = true;
         await new DataBaseHelper(DryRun).update(item);

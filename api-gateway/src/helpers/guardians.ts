@@ -1033,6 +1033,35 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Add file to IPFS directly
+     * @param user
+     * @param buffer File
+     * @returns CID, URL
+     */
+    public async addFileIpfsDirect(user: IAuthUser, buffer: ArrayBuffer | string): Promise<{
+        /**
+         * CID
+         */
+        cid: string,
+        /**
+         * URL
+         */
+        url: string
+    }> {
+        return await this.sendMessage(MessageAPI.IPFS_ADD_FILE_DIRECT, { user, buffer });
+    }
+
+    /**
+     * Remove file from IPFS (unpin/garbage collect on node side)
+     * @param user                    Authenticated user
+     * @param cid
+     * @returns { fileId, filename }
+     */
+    public async deleteIpfsCid(user: IAuthUser, cid: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.IPFS_DELETE_CID, { user, cid });
+    }
+
+    /**
      * Add file to dry run storage
      * @param buffer File
      * @returns CID, URL
@@ -3788,5 +3817,44 @@ export class Guardians extends NatsService {
      */
     public async deleteKey(user: IAuthUser, id: string): Promise<boolean> {
         return await this.sendMessage(MessageAPI.DELETE_USER_KEYS, { user, id });
+    }
+
+    /**
+     * Get file by id
+     * @param fileId  File identifier
+     * @param user    Authenticated user
+     * @returns { buffer, filename, contentType }
+     */
+    public async csvGetFile(
+        fileId: string,
+        user: IAuthUser
+    ): Promise<{ buffer: Buffer; filename: string; contentType: string }> {
+        return await this.sendMessage(MessageAPI.GET_FILE, { user, fileId });
+    }
+
+    /**
+     * Save file (create or overwrite)
+     * @param payload.file.buffer     File bytes
+     * @param payload.file.originalname Original filename (optional)
+     * @param payload.file.mimetype   Mime type (optional)
+     * @param payload.fileId          Existing file id to overwrite (optional)
+     * @param payload
+     * @param user                    Authenticated user
+     * @returns { fileId, filename }
+     */
+    public async upsertFile(
+        payload: { file: { buffer: Buffer; originalname?: string; mimetype?: string }, fileId?: string },
+        user: IAuthUser
+    ): Promise<{ fileId: string; filename: string; contentType: string }> {
+        return await this.sendMessage(MessageAPI.UPSERT_FILE, { user, ...payload });
+    }
+
+    /**
+     * Delete file
+     * @param user
+     * @param fileId
+     */
+    public async deleteGridFile(user: IAuthUser, fileId: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_FILE, { user, fileId });
     }
 }

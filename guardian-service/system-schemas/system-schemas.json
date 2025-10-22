@@ -577,6 +577,13 @@
                     "description": "tokenId",
                     "type": "string",
                     "readOnly": false
+                },
+                "serialNumbers": {
+                    "$comment": "{\"term\": \"serialNumbers\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "serialNumbers",
+                    "description": "serialNumbers",
+                    "type": "string",
+                    "readOnly": false
                 }
             },
             "required": [

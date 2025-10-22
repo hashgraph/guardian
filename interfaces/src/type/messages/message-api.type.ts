@@ -31,6 +31,8 @@ export enum MessageAPI {
     PREVIEW_SCHEMA = 'preview-schema',
     PREVIEW_SCHEMA_ASYNC = 'preview-schema-async',
     IPFS_ADD_FILE = 'ipfs-add-file',
+    IPFS_ADD_FILE_DIRECT = 'ipfs-add-file-direct',
+    IPFS_DELETE_CID = 'ipfs-delete-cid',
     IPFS_ADD_FILE_ASYNC = 'ipfs-add-file-async',
     IPFS_GET_FILE = 'ipfs-get-file',
     IPFS_GET_FILE_ASYNC = 'ipfs-get-file-async',
@@ -289,7 +291,10 @@ export enum MessageAPI {
     GROUP_EXTERNAL_POLICY_REQUESTS = 'GROUP_EXTERNAL_POLICY_REQUESTS',
     GET_USER_KEYS = 'GET_USER_KEYS',
     GENERATE_USER_KEYS = 'GENERATE_USER_KEYS',
-    DELETE_USER_KEYS = 'DELETE_USER_KEYS'
+    DELETE_USER_KEYS = 'DELETE_USER_KEYS',
+    UPSERT_FILE = 'UPSERT_FILE',
+    GET_FILE = 'GET_FILE',
+    DELETE_FILE = 'DELETE_FILE',
 }
 
 /**

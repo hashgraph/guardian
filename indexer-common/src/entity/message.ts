@@ -83,10 +83,14 @@ export class Message implements IMessage {
         labelName?: string;
         dynamicTopics?: string[];
         unpacked?: boolean;
+        tableFiles?: Record<string, string>;
     };
 
     @Property({ nullable: true })
     analyticsUpdate?: number;
+
+    @Property({ nullable: true })
+    coordUpdate?: number;
 
     @Property({ nullable: true })
     files: string[];

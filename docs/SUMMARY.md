@@ -181,6 +181,7 @@
         * [Create a new rule from the file](guardian/standard-registry/schemas/schema-rules/apis-related-to-schema-rules/create-a-new-rule-from-the-file.md)
         * [Load the file and return its preview](guardian/standard-registry/schemas/schema-rules/apis-related-to-schema-rules/load-the-file-and-return-its-preview.md)
         * [Export the selected rule (by ID) into the file](guardian/standard-registry/schemas/schema-rules/apis-related-to-schema-rules/export-the-selected-rule-by-id-into-the-file.md)
+    * [How to handle large location files?](guardian/standard-registry/schemas/how-to-handle-large-location-files.md)
   * [Policies](guardian/standard-registry/policies/README.md)
     * [Policy Glossary](guardian/standard-registry/policies/policy-glossary.md)
     * [Versioning and Deprecation Policy](guardian/standard-registry/policies/versioning-and-deprecation-policy/README.md)
@@ -841,7 +842,7 @@
     * [Verra Redd VM0007 Demo UI Guide](guardian/demo-guide/carbon-offsets/verra-redd+-demo-guide.md)
     * [Verra Redd\_3 User Journey Demo UI Guide](guardian/demo-guide/carbon-offsets/verra-redd_3-user-journey-demo-ui-guide.md)
     * [VM0017 Adoption of Sustainable Agricultural Land Management, v1.0](guardian/demo-guide/carbon-offsets/verra-vm0017-redd+-methodology.md)
-    * [VM0042 Methodology for Improved Agricultural Land Management](guardian/demo-guide/carbon-offsets/verra-vm0042-redd+-methodology.md)
+    * [Verra's VM0042 1.0 Methodology for Improved Agricultural Land Management](guardian/demo-guide/carbon-offsets/verra-vm0042-redd+-methodology.md)
     * [Verra VM0047 - Afforestation, Reforestation, and Revegetation (ARR) v0.1](guardian/demo-guide/carbon-offsets/verra-afforestation-reforestation-and-revegetation-arr-v0.1.md)
     * [Gold Standard Afforestation and Reforestation (AR) v2.0](guardian/demo-guide/carbon-offsets/gold-standard-afforestation-and-reforestation-ar-v2.0.md)
     * [Dovu Methodologies](guardian/demo-guide/carbon-offsets/dovu-methodologies.md)
@@ -899,9 +900,9 @@
 
 ## Methodology Digitization
 
-* [рџ“љ Methodology Digitization Handbook](methodology-digitization-handbook/README.md)
-  * [рџ“‹ Table of Contents](methodology-digitization-handbook/table-of-contents.md)
-  * [рџ“ќ Chapter Outlines](methodology-digitization-handbook/chapter-outlines.md)
+* [📚 рџ“љ Methodology Digitization Handbook](methodology-digitization-handbook/README.md)
+  * [📋 рџ“‹ Table of Contents](methodology-digitization-handbook/table-of-contents.md)
+  * [📝 рџ“ќ Chapter Outlines](methodology-digitization-handbook/chapter-outlines.md)
   * [рџЏ—пёЏ Part I: Foundation and Preparation](methodology-digitization-handbook/part-1/README.md)
     * [Chapter 1: Introduction to Methodology Digitization](methodology-digitization-handbook/part-1/chapter-1/README.md)
     * [Chapter 2: Understanding VM0033 Methodology](methodology-digitization-handbook/part-1/chapter-2/README.md)

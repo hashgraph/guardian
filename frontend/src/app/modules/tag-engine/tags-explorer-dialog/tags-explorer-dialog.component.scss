@@ -99,11 +99,11 @@
         cursor: pointer;
 
         .tag-icon {
-            fill: var(--color-primary, #0681EE);
+            fill: var(--color-primary, #0031ff);
         }
 
         .name {
-            color: var(--color-primary, #0681EE);
+            color: var(--color-primary, #0031ff);
             font-family: Inter, sans-serif;
             font-size: 14px;
             font-style: normal;
@@ -379,8 +379,8 @@
 }
 
 .tab-item[selected="true"] {
-    color: var(--color-primary, #0681EE);
-    border-bottom: 2px solid var(--color-primary, #0681EE);
+    color: var(--color-primary, #0031ff);
+    border-bottom: 2px solid var(--color-primary, #0031ff);
 }
 
 .white-color {
@@ -389,8 +389,8 @@
 }
 
 .primary-color {
-    fill: var(--color-primary, #0681EE);
-    color: var(--color-primary, #0681EE);
+    fill: var(--color-primary, #0031ff);
+    color: var(--color-primary, #0031ff);
 }
 
 .collapse-color {

@@ -2100,7 +2100,7 @@ export class PolicyEngineService {
 
                     const MAX_SAVEPOINTS = 5;
 
-                    if (count > MAX_SAVEPOINTS) {
+                    if (count >= MAX_SAVEPOINTS) {
                         throw new Error(`Savepoints limit reached (${MAX_SAVEPOINTS}). Delete existing savepoints to create a new one.`);
                     }
 

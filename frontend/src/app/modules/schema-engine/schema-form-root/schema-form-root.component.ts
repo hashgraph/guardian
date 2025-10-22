@@ -35,7 +35,9 @@ export class SchemaFormRootComponent implements OnInit {
     @Input() isChildSchema: boolean = false;
     @Input() comesFromDialog: boolean = false;
     @Input() dryRun: boolean = false;
+    @Input() likeDryRun: boolean = false;
     @Input() policyId: string = '';
+    @Input() blockId: string = '';
     @Input() rules: SchemaRuleValidateResult;
     @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
@@ -93,7 +95,7 @@ export class SchemaFormRootComponent implements OnInit {
             this.model = null;
         }
         this.group = this.fb.group({});
-        this.model = new FieldForm(this.group);
+        this.model = new FieldForm(this.group, 0, this.likeDryRun || this.dryRun);
         this.model.setData({
             preset: this.presetDocument,
             privateFields: this.hide,

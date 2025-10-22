@@ -8,6 +8,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
 import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
 import { guardianVersion } from '../../version.js';
+import { buildTableHelper } from '../helpers/table-field-core.js';
 
 export enum QueryType {
     eq = 'equal',
@@ -145,6 +146,20 @@ export class PolicyUtils {
             amount += value;
         }
         return amount;
+    }
+
+     /**
+     * Create Serial Numbers Array
+     * @param startRule
+     * @param endRule
+     */
+    public static aggregateSerialRange(startRule: number, endRule: number): number[] {
+        const from = Math.min(startRule, endRule);
+        const to = Math.max(startRule, endRule);
+        const len = to - from + 1;
+        const serialNumbers: number[]= Array.from({ length: len }, (_, i) => from + i);
+
+        return serialNumbers
     }
 
     /**
@@ -1710,9 +1725,11 @@ export class PolicyUtils {
 
     private static autoCalculateField(field: SchemaField, document: any): any {
         try {
-            const func = Function(`with (this) { return ${field.expression} }`);
-            const calcValue = func.apply(document);
-            return calcValue;
+            const func = Function('table', `with (this) { return ${field.expression} }`);
+
+            const table = buildTableHelper();
+
+            return func.apply(document, [table]);
         } catch (error) {
             throw Error(`Invalid expression: ${field.path}`);
         }

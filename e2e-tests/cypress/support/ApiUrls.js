@@ -69,6 +69,7 @@ const API = {
     SchemaImportFilePreview: "schemas/import/file/preview",
     SchemaImport: "schemas/import/",
     SchemasType: "schemas/type",
+    SchemasWithSubSchemas: "schema-with-sub-schemas/",
 
     //Tools
     Tools: "tools",
@@ -105,7 +106,9 @@ const API = {
     DryRun: "dry-run/",
     DryRunUser: "dry-run/user/",
     DryRunLogin: "dry-run/login/",
+    DryRunRestart: "dry-run/restart/",
     ChooseRegistrantRole: "tag/choose_role/blocks/",
+    ChooseRole: "tag/Choose_Roles/blocks/",
     CreateApplication: "tag/create_application/blocks",
     WaitForApproveApplication: "tag/wait_for_approve",
     DeviceGrid: "tag/devices_grid",
@@ -120,7 +123,34 @@ const API = {
     GetIssues: "tag/issue_requests_grid(evident)/blocks",
     ApproveIssueRequestsBtn: "tag/approve_issue_requests_btn/blocks",
     CreateIssue: "tag/create_issue_request_form/blocks",
+    ProjectBtn: "tag/add_project_bnt/blocks",
+    AddProj: "tag/add_project/blocks",
+    ProjectGridPP: "tag/project_grid_pp/blocks",
+    ProjectGridPP2: "tag/project_grid_pp_2/blocks",
+    WaitForApproveVVB: "tag/wait_for_approve/blocks",
+    CreateVVB: "tag/create_new_vvb/blocks",
+    NewVVB: "tag/new_VVB/blocks",
+    VVBGrid: "tag/vvb_grid_verra/blocks",
+    ProjGridVVB: "tag/project_grid_verra/blocks",
+    ApproveDocs: "tag/approve_documents_btn/blocks",
+    AssignVVB: "tag/assign_vvb/blocks",
+    ProjGridVVB2: "tag/project_grid_vvb/blocks",
+    ApproveProjBtn: "tag/approve_project_btn/blocks",
+    AddReportBtn: "tag/add_report_bnt/blocks",
+    ReportGridPP: "tag/report_grid_pp/blocks",
+    ReportGridVVB: "tag/report_grid_vvb/blocks",
+    ApproveReportBtn: "tag/approve_report_btn/blocks",
+    ReportGridVerra: "tag/report_grid_verra/blocks",
+    AssignVVBMR: "tag/assign_vvb_mr/blocks",
+    MintTokenVerra: "tag/mint_token_verra/blocks",
     Categories: "methodologies/categories/",
+    AddValidationReport: "tag/add_new_validation_report/blocks",
+    AddVerificationReport: "tag/add_verification_report/blocks",
+    ValidationReportsVerra: "tag/validation_reports_verra/blocks",
+    VerificationReportsVerra: "tag/verification_reports_verra/blocks",
+    ApproveValidationReportBtn: "tag/approve_validation_report_btn/blocks",
+    RegWorkflowSteps: "tag/registrants_workflow_steps/blocks",
+    Savepoint: "savepoints/",
 
     //Records
     Record: "record/",
@@ -158,6 +188,7 @@ const API = {
     Publish: "publish/",
     Blocks: "blocks/",
     Approve: "approve/",
+    Reload: "reload/",
     Reject: "reject/",
     Cancel: "cancel/",
     Requests: "requests/",
@@ -239,6 +270,7 @@ const API = {
     //MGS
     //Tenants
     TenantsUser: "tenants/user",
+    TenantsDelete: "tenants/delete",
     TenantsInvite: "tenants/invite",
     TermsAgree: "accounts/terms/agree"
     

@@ -15,6 +15,7 @@ export class RenderBlockComponent {
     @Input('block') block!: IBlock<any>;
     @Input('static') static!: any;
     @Input('policyId') policyId!: any;
+    @Input('policyStatus') policyStatus!: any;
     @Input('dryRun') dryRun!: any;
     @Input('savepointIds') savepointIds?: string[] | null = null;
 
@@ -89,6 +90,7 @@ export class RenderBlockComponent {
             this.componentRef.instance.id = this.id;
             this.componentRef.instance.static = this.static;
             this.componentRef.instance.policyId = this.policyId;
+            this.componentRef.instance.policyStatus = this.policyStatus;
             this.componentRef.instance.dryRun = this.dryRun;
             this.componentRef.instance.savepointIds = this.savepointIds;
 

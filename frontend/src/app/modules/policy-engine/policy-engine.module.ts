@@ -158,6 +158,7 @@ import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integrat
 import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
 import { AddSavepointDialog } from "./policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component";
 import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
+import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
 
 @NgModule({
     declarations: [
@@ -170,6 +171,7 @@ import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint
         RequestConfigComponent,
         PolicyPropertiesComponent,
         MintConfigComponent,
+        WipeConfigComponent,
         SendConfigComponent,
         ExternalDataConfigComponent,
         AggregateConfigComponent,
