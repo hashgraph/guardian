@@ -140,7 +140,7 @@ export class UserProfileComponent implements OnInit {
     public walletPageIndex: number;
     public walletPageSize: number;
     public walletColumns: IColumn[];
-    public searchWallet:string;
+    public searchWallet: string;
 
     public location: LocationType | undefined;
 
@@ -404,7 +404,13 @@ export class UserProfileComponent implements OnInit {
             id: 'account',
             title: 'Account',
             type: 'text',
-            size: '150',
+            size: '200',
+            tooltip: false
+        }, {
+            id: 'balance',
+            title: 'Balance',
+            type: 'text',
+            size: '200',
             tooltip: false
         }, {
             id: 'name',
@@ -412,12 +418,6 @@ export class UserProfileComponent implements OnInit {
             type: 'text',
             size: 'auto',
             tooltip: true
-        }, {
-            id: 'balance',
-            title: 'Balance',
-            type: 'text',
-            size: '180',
-            tooltip: false
         }, {
             id: 'options',
             title: '',
@@ -1208,6 +1208,6 @@ export class UserProfileComponent implements OnInit {
     }
 
     public onSetWalletSearch() {
-         this.loadWallets();
+        this.loadWallets();
     }
 }

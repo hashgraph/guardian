@@ -56,7 +56,11 @@ form {
         position: absolute;
         left: 0;
         top: 0;
-        margin-left: 0px;
+        margin-left: 0px !important;
+
+        button {
+            padding: 1px 16px !important;
+        }
     }
 }
 

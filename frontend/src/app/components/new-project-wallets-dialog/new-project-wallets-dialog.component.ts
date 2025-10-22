@@ -12,9 +12,8 @@ export class NewProjectWalletDialog {
     public loading = true;
     public dataForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
-        account: new FormControl<string>(''),
-        key: new FormControl<string>(''),
-        generate: new FormControl<string>('')
+        account: new FormControl<string>('', Validators.required),
+        key: new FormControl<string>('', Validators.required),
     });
     public title: string;
     public readonly: boolean;
@@ -45,13 +44,11 @@ export class NewProjectWalletDialog {
                 name,
                 account,
                 key,
-                generate
             } = this.dataForm.value;
             this.ref.close({
                 name: name?.trim(),
                 account: account?.trim(),
                 key: key?.trim(),
-                generate
             });
         }
     }
@@ -61,7 +58,12 @@ export class NewProjectWalletDialog {
         this.projectWalletService
             .generateProjectWallet()
             .subscribe((account) => {
-                debugger;
+                const data = this.dataForm.value;
+                this.dataForm.setValue({
+                    name: data.name || '',
+                    account: account.id || '',
+                    key: account.key || ''
+                })
                 this.loading = false;
             }, (e) => {
                 this.loading = false;
