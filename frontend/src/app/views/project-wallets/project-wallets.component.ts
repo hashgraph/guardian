@@ -108,7 +108,7 @@ export class ProjectWalletsComponent implements OnInit {
             this.currentWallet = currentWallet;
 
             if (this.isConfirmed) {
-                this.loadData();
+                this.loadWallets();
             } else {
                 setTimeout(() => {
                     this.loading = false;
@@ -119,7 +119,7 @@ export class ProjectWalletsComponent implements OnInit {
         });
     }
 
-    private loadData() {
+    private loadWallets() {
         const filters: any = {};
         this.loading = true;
         this.projectWalletService
@@ -148,12 +148,12 @@ export class ProjectWalletsComponent implements OnInit {
             this.pageIndex = event.pageIndex;
             this.pageSize = event.pageSize;
         }
-        this.loadData();
+        this.loadWallets();
     }
 
     public onFilter(event: any) {
         // this.router.navigate(['/policy-labels'], { queryParams: { topic } });
-        this.loadData();
+        this.loadWallets();
     }
 
     public onCreate() {
@@ -172,7 +172,7 @@ export class ProjectWalletsComponent implements OnInit {
                 this.projectWalletService
                     .createProjectWallet(result)
                     .subscribe((newItem) => {
-                        this.loadData();
+                        this.loadWallets();
                     }, (e) => {
                         this.loading = false;
                     });

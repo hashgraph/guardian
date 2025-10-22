@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { IPolicy, IStandardRegistryResponse, IUser, LocationType, Schema, SchemaEntity, UserPermissions, } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 //services
@@ -19,6 +19,8 @@ import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
 import { ChangePasswordComponent } from '../login/change-password/change-password.component';
 import { UserKeysDialog } from 'src/app/components/user-keys-dialog/user-keys-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { ProjectWalletService } from 'src/app/services/project-wallet.service';
+import { NewProjectWalletDialog } from 'src/app/components/new-project-wallets-dialog/new-project-wallets-dialog.component';
 
 enum OperationMode {
     None,
@@ -58,6 +60,7 @@ interface IColumn {
 })
 export class UserProfileComponent implements OnInit {
     public loading: boolean = true;
+    public subLoading: boolean = false;
     public taskId: string | undefined = undefined;
     public isConfirmed: boolean = false;
     public isFailed: boolean = false;
@@ -122,12 +125,22 @@ export class UserProfileComponent implements OnInit {
     public remoteDidDocumentForm!: UntypedFormControl;
     public didKeys: any[] = [];
 
-    public tab: 'general' | 'keys' = 'general';
-    public pageIndex: number;
-    public pageSize: number;
-    public pageCount: number;
-    public columns: IColumn[];
-    public keys: any[];
+    public tab: 'general' | 'keys' | 'wallets' = 'general';
+    public tabIndex = 0;
+    public tabs: ['general', 'wallets', 'keys'] = ['general', 'wallets', 'keys'];
+
+    public keyPage: any[];
+    public keyCount: number;
+    public keyPageIndex: number;
+    public keyPageSize: number;
+    public keyColumns: IColumn[];
+
+    public walletPage: any[];
+    public walletCount: number;
+    public walletPageIndex: number;
+    public walletPageSize: number;
+    public walletColumns: IColumn[];
+    public searchWallet:string;
 
     public location: LocationType | undefined;
 
@@ -136,9 +149,12 @@ export class UserProfileComponent implements OnInit {
     private standardRegistries: IStandardRegistryResponse[] = [];
     private filteredRegistries: IStandardRegistryResponse[] = [];
 
+    private subscription = new Subscription();
+
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
+        private projectWalletService: ProjectWalletService,
         private otherService: DemoService,
         private schemaService: SchemaService,
         private informService: InformService,
@@ -159,9 +175,7 @@ export class UserProfileComponent implements OnInit {
             fireBlocksApiKey: new UntypedFormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
             fireBlocksPrivateiKey: new UntypedFormControl('', [
                 ValidateIfFieldEqual('useFireblocksSigning', true,
-                    [
-                        Validators.pattern(/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----$/gm)
-                    ]
+                    [Validators.pattern(/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----$/gm)]
                 )
             ])
         });
@@ -350,11 +364,12 @@ export class UserProfileComponent implements OnInit {
             vcDocumentStep,
         ];
         this.currentStep = this.steps[0];
-        this.pageIndex = 0;
-        this.pageSize = 10;
 
-
-        this.columns = [{
+        this.keyPage = [];
+        this.keyCount = 0;
+        this.keyPageIndex = 0;
+        this.keyPageSize = 10;
+        this.keyColumns = [{
             id: 'createDate',
             title: 'Date',
             type: 'text',
@@ -379,15 +394,73 @@ export class UserProfileComponent implements OnInit {
             size: '64',
             tooltip: false
         }];
+
+
+        this.walletPage = [];
+        this.walletCount = 0;
+        this.walletPageIndex = 0;
+        this.walletPageSize = 10;
+        this.walletColumns = [{
+            id: 'account',
+            title: 'Account',
+            type: 'text',
+            size: '150',
+            tooltip: false
+        }, {
+            id: 'name',
+            title: 'Name',
+            type: 'text',
+            size: 'auto',
+            tooltip: true
+        }, {
+            id: 'balance',
+            title: 'Balance',
+            type: 'text',
+            size: '180',
+            tooltip: false
+        }, {
+            id: 'options',
+            title: '',
+            type: 'text',
+            size: '210',
+            tooltip: false
+        }, {
+            id: 'delete',
+            title: '',
+            type: 'text',
+            size: '64',
+            tooltip: false
+        }];
     }
 
     ngOnInit() {
         this.loading = true;
+
+        this.keyPage = [];
+        this.keyPageIndex = 0;
+        this.keyPageSize = 10;
+        this.keyCount = 0;
+
+        this.walletPage = [];
+        this.walletPageIndex = 0;
+        this.walletPageSize = 10;
+        this.walletCount = 0;
+
+        this.subscription.add(
+            this.route.queryParams.subscribe((queryParams) => {
+                const tab = this.route.snapshot.queryParams['tab'];
+                this.tabIndex = Math.max(this.tabs.indexOf(tab), 0);
+                this.tab = this.tabs[this.tabIndex] || 'general';
+                this.changeTab();
+                this.cdRef.detectChanges();
+            })
+        );
         this.loadDate();
         this.update();
     }
 
     ngOnDestroy(): void {
+        this.subscription.unsubscribe();
         clearInterval(this.interval);
     }
 
@@ -932,37 +1005,48 @@ export class UserProfileComponent implements OnInit {
     }
 
     public onChangeTab(tab: any) {
-        this.tab = tab.index === 0 ? 'general' : 'keys';
-        this.pageIndex = 0;
+        this.tabIndex = tab.index;
+        this.tab = this.tabs[tab.index] || 'general';
         this.router.navigate([], {
             queryParams: { tab: this.tab }
         });
+    }
+
+    private changeTab() {
+        if (this.tab === 'general') {
+            this.loadDate();
+        }
+        if (this.tab === 'wallets') {
+            this.walletPageIndex = 0;
+            this.loadWallets();
+        }
         if (this.tab === 'keys') {
+            this.keyPageIndex = 0;
             this.loadKeys();
         }
     }
 
     public loadKeys() {
-        this.loading = true;
+        this.subLoading = true;
         this.profileService
-            .keys(this.pageIndex, this.pageSize)
+            .keys(this.keyPageIndex, this.keyPageSize)
             .subscribe((response) => {
                 const { page, count } = this.profileService.parsePage(response);
-                this.keys = page;
-                this.pageCount = count;
-                this.loading = false;
+                this.keyPage = page;
+                this.keyCount = count;
+                this.subLoading = false;
             }, (e) => {
-                this.loading = false;
+                this.subLoading = false;
             });
     }
 
-    public onPage(event: any): void {
-        if (this.pageSize != event.pageSize) {
-            this.pageIndex = 0;
-            this.pageSize = event.pageSize;
+    public onKeyPage(event: any): void {
+        if (this.keyPageSize != event.pageSize) {
+            this.keyPageIndex = 0;
+            this.keyPageSize = event.pageSize;
         } else {
-            this.pageIndex = event.pageIndex;
-            this.pageSize = event.pageSize;
+            this.keyPageIndex = event.pageIndex;
+            this.keyPageSize = event.pageSize;
         }
         this.loadKeys();
     }
@@ -999,7 +1083,7 @@ export class UserProfileComponent implements OnInit {
         });
     }
 
-    public preview(key: string): void {
+    public previewKey(key: string): void {
         const dialogRef = this.dialogService.open(UserKeysDialog, {
             duplicate: true,
             showHeader: false,
@@ -1038,14 +1122,14 @@ export class UserProfileComponent implements OnInit {
     }
 
     public deleteKey(id: string): void {
-        this.loading = true;
+        this.subLoading = true;
         this.profileService
             .deleteKey(id)
             .subscribe(() => {
-                this.loading = false;
+                this.subLoading = false;
                 this.loadKeys();
             }, (e) => {
-                this.loading = false;
+                this.subLoading = false;
             });
     }
 
@@ -1059,13 +1143,71 @@ export class UserProfileComponent implements OnInit {
                 key,
             })
             .subscribe((item) => {
-                this.loading = false;
+                this.subLoading = false;
                 this.loadKeys();
                 if (!key) {
-                    this.preview(item.key);
+                    this.previewKey(item.key);
                 }
             }, (e) => {
-                this.loading = false;
+                this.subLoading = false;
             });
+    }
+
+    private loadWallets() {
+        const filters: any = {
+            search: this.searchWallet
+        };
+        this.subLoading = true;
+        this.projectWalletService
+            .getProjectWallets(
+                this.walletPageIndex,
+                this.walletPageSize,
+                filters
+            )
+            .subscribe((response) => {
+                const { page, count } = this.projectWalletService.parsePage(response);
+                this.walletPage = page;
+                this.walletCount = count;
+                setTimeout(() => {
+                    this.subLoading = false;
+                }, 500);
+            }, (e) => {
+                this.subLoading = false;
+            });
+    }
+
+    public onCreateWallet() {
+        const dialogRef = this.dialogService.open(NewProjectWalletDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Add Wallet'
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+                this.subLoading = true;
+                this.projectWalletService
+                    .createProjectWallet(result)
+                    .subscribe((newItem) => {
+                        this.loadWallets();
+                    }, (e) => {
+                        this.subLoading = false;
+                    });
+            }
+        });
+    }
+
+    public onOpenWallet(item: any) {
+
+    }
+
+    public onDeleteWallet(item: any) {
+
+    }
+
+    public onSetWalletSearch() {
+         this.loadWallets();
     }
 }

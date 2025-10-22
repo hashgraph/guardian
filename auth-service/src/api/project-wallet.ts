@@ -213,19 +213,15 @@ export class ProjectWalletService extends NatsService {
         /**
          * Generate project wallet
          * @param user - user
-         * @param config - config
          *
-         * @returns {any} wallet
+         * @returns {any} account
          */
         this.getMessages(AuthEvents.GENERATE_PROJECT_WALLET,
             async (msg: {
-                user: IAuthUser,
-                config: {
-                    name?: string
-                }
+                user: IAuthUser
             }) => {
                 try {
-                    const { user, config } = msg;
+                    const { user } = msg;
 
                     const entityRepository = new DatabaseServer();
                     const target = await entityRepository.findOne(User, {
@@ -234,33 +230,9 @@ export class ProjectWalletService extends NatsService {
                     if (!target && target.did) {
                         return new MessageError('User does not exist.');
                     }
-                    if (!config) {
-                        return new MessageError('Invalid config.');
-                    }
 
                     const account = await UserUtils.generateAccount(target, user.id);
-                    const projectWallet = {
-                        name: config.name,
-                        account: account.id,
-                        owner: target.did
-                    }
-                    const key = account.key;
-
-                    const old = await entityRepository.findOne(ProjectWallet, {
-                        account: projectWallet.account,
-                        owner: projectWallet.owner
-                    });
-                    if (old) {
-                        return new MessageError('Wallet already exist.');
-                    }
-
-                    const wallet = new Wallet();
-                    await wallet.setKey(user.walletToken, KeyType.PROJECT_WALLET, `${projectWallet.owner}/${projectWallet.account}`, key);
-
-                    let item = entityRepository.create(ProjectWallet, projectWallet);
-                    item = await entityRepository.save(ProjectWallet, item);
-                    (item as any).key = key;
-                    return new MessageResponse(item);
+                    return new MessageResponse(account);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);

@@ -422,12 +422,9 @@ export class Users extends NatsService {
      * @param user
      */
     public async generateProjectWallet(
-        user: IAuthUser,
-        config: {
-            name?: string
-        }
+        user: IAuthUser
     ): Promise<any> {
-        return await this.sendMessage(AuthEvents.GENERATE_PROJECT_WALLET, { user, config });
+        return await this.sendMessage(AuthEvents.GENERATE_PROJECT_WALLET, { user });
     }
 }
 

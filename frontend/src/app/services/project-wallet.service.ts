@@ -67,4 +67,8 @@ export class ProjectWalletService {
     ): Observable<any> {
         return this.http.post<any[]>(`${this.url}`, data) as any;
     }
+
+    public generateProjectWallet(): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/generate`, null) as any;
+    }
 }

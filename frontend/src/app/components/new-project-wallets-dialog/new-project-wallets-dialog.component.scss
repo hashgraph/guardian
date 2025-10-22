@@ -45,10 +45,18 @@ form {
     display: flex;
     justify-content: flex-end;
     user-select: none;
+    position: relative;
 
     &>div {
         margin-left: 15px;
         margin-right: 0px;
+    }
+
+    .dialog-button.left {
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin-left: 0px;
     }
 }
 

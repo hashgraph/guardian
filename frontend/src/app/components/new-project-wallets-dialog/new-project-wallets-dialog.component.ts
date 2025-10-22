@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ProjectWalletService } from 'src/app/services/project-wallet.service';
 
 @Component({
     selector: 'new-project-wallets-dialog',
@@ -16,16 +17,15 @@ export class NewProjectWalletDialog {
         generate: new FormControl<string>('')
     });
     public title: string;
-    public action: string;
     public readonly: boolean;
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
+        private projectWalletService: ProjectWalletService,
         private dialogService: DialogService,
     ) {
         this.title = this.config.data?.title || '';
-        this.action = this.config.data?.action || '';
     }
 
     ngOnInit() {
@@ -54,5 +54,17 @@ export class NewProjectWalletDialog {
                 generate
             });
         }
+    }
+
+    public onGenerate() {
+        this.loading = true;
+        this.projectWalletService
+            .generateProjectWallet()
+            .subscribe((account) => {
+                debugger;
+                this.loading = false;
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

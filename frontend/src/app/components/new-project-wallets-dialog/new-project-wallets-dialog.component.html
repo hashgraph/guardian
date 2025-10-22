@@ -14,16 +14,16 @@
 
         <form [formGroup]="dataForm">
             <div class="guardian-input-container">
-                <label class="form-label" htmlFor="name">* Name</label>
+                <label class="form-label" htmlFor="name">* Wallet Name</label>
                 <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
             </div>
 
             <div class="guardian-input-container">
-                <label class="form-label" htmlFor="account">* Account</label>
+                <label class="form-label" htmlFor="account">* Account ID</label>
                 <input formControlName="account" id="account" pInputText type="text" [readonly]="readonly"/>
             </div>
             <div class="guardian-input-container">
-                <label class="form-label" htmlFor="key">* Key</label>
+                <label class="form-label" htmlFor="key">* Wallet Key</label>
                 <input formControlName="key" id="key" pInputText type="text" [readonly]="readonly"/>
             </div>
         </form>
@@ -31,6 +31,11 @@
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
+        <div class="dialog-button left">
+            <button 
+                (click)="onGenerate()" 
+                class="guardian-button guardian-button-secondary">Generate New Account & Key</button>
+        </div>
         <div class="dialog-button">
             <button 
                 (click)="onClose()" 
@@ -40,7 +45,7 @@
             <button 
                 (click)="onSubmit()" 
                 class="guardian-button guardian-button-primary"
-                [disabled]="dataForm.invalid">{{action}}</button>
+                [disabled]="dataForm.invalid">Add Wallet</button>
         </div>
     </div>
 </div>

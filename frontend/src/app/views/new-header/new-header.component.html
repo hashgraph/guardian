@@ -131,11 +131,12 @@
 
         <div
             [class.collapsed-item]="menuCollapsed"
-            [routerLink]="'/project-wallets'"
+            [routerLink]="'/user-profile'"
+            [queryParams]="{tab: 'wallets'}"
             class="item balance-item"
         >
             <img alt="" src="assets/images/icons/money.svg">
-            <span> Balance <span *ngIf="balance">{{ balance }}</span></span>
+            <span> Wallets <span *ngIf="balance">{{ balance }}</span></span>
             <div *ngIf="!balance" class="preloader">
                 <div class="preloader-image"></div>
             </div>

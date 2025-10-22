@@ -1082,6 +1082,23 @@ mat-radio-button {
     height: 40px;
     justify-content: flex-end;
     margin-bottom: 18px;
+
+    .guardian-user-page-filters {
+        width: 100%;
+
+        .search-filter {
+            max-width: 400px;
+            position: relative;
+
+            .search-icon {
+                position: absolute;
+                right: 12px;
+                top: 12px;
+                pointer-events: none;
+            }
+
+        }
+    }
 }
 
 .guardian-user-not-data {

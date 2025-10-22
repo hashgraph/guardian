@@ -79,16 +79,11 @@ export class ProjectWalletApi {
             name?: string,
             account?: string,
             key?: string,
-            generate?: boolean
         }
     ): Promise<any> {
         try {
             const users = new Users();
-            if (body?.generate) {
-                return await users.generateProjectWallet(user, body);
-            } else {
-                return await users.createProjectWallet(user, body);
-            }
+            return await users.createProjectWallet(user, body);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger, user.id);
@@ -161,6 +156,37 @@ export class ProjectWalletApi {
             const users = new Users();
             return await users.getProjectWalletBalance(user, account);
         } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * 
+     */
+    @Post('/generate')
+    @Auth()
+    @ApiOperation({
+        summary: '',
+        description: '',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Object
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async generateProjectWallet(
+        @AuthUser() user: IAuthUser,
+    ): Promise<any> {
+        try {
+            const users = new Users();
+            return await users.generateProjectWallet(user);
+        } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger, user.id);
         }
     }
