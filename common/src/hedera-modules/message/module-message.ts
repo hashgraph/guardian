@@ -4,7 +4,7 @@ import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { PolicyModule } from '../../entity/index.js';
 import { ModuleMessageBody } from './message-body.interface.js';
-import { IPFS } from '../../helpers/index.js';
+import { IPFS, toBuffer } from '../../helpers/index.js';
 
 /**
  * Module message
@@ -48,12 +48,12 @@ export class ModuleMessage extends Message {
      * @param model
      * @param zip
      */
-    public setDocument(model: PolicyModule, zip?: ArrayBuffer): void {
+    public setDocument(model: PolicyModule, zip?: ArrayBuffer | Buffer): void {
         this.uuid = model.uuid;
         this.name = model.name;
         this.description = model.description;
         this.owner = model.owner;
-        this.document = Buffer.from(zip);
+        this.document = toBuffer(zip);
         this.moduleTopicId = model.topicId;
     }
 

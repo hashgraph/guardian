@@ -4,7 +4,7 @@ import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { FormulaMessageBody } from './message-body.interface.js';
 import { Formula } from '../../entity/index.js';
-import { IPFS } from '../../helpers/index.js';
+import { IPFS, toBuffer } from '../../helpers/index.js';
 
 /**
  * Formula message
@@ -48,14 +48,14 @@ export class FormulaMessage extends Message {
      * Set document
      * @param item
      */
-    public setDocument(item: Formula, zip: ArrayBuffer): void {
+    public setDocument(item: Formula, zip: ArrayBuffer | Buffer): void {
         this.name = item.name;
         this.description = item.description;
         this.owner = item.owner;
         this.uuid = item.uuid;
         this.policyTopicId = item.policyTopicId;
         this.policyInstanceTopicId = item.policyInstanceTopicId;
-        this.config = Buffer.from(zip);
+        this.config = toBuffer(zip);
     }
 
     /**

@@ -4,7 +4,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { PolicyMessageBody } from './message-body.interface.js';
-import { IPFS } from '../../helpers/index.js';
+import { IPFS, toBuffer } from '../../helpers/index.js';
 
 /**
  * Policy message
@@ -87,7 +87,7 @@ export class PolicyMessage extends Message {
      * @param model
      * @param zip
      */
-    public setDocument(model: Policy, zip?: ArrayBuffer): void {
+    public setDocument(model: Policy, zip?: ArrayBuffer | Buffer): void {
         this.uuid = model.uuid;
         this.name = model.name;
         this.description = model.description;
@@ -103,7 +103,7 @@ export class PolicyMessage extends Message {
         this.restoreTopicId = model.restoreTopicId;
         this.actionsTopicId = model.actionsTopicId;
         this.commentsTopicId = model.commentsTopicId;
-        this.document = Buffer.from(zip);
+        this.document = toBuffer(zip);
     }
 
     /**

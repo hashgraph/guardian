@@ -3,7 +3,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { PolicyDiffMessageBody } from './message-body.interface.js';
-import { IPFS } from '../../helpers/index.js';
+import { IPFS, toBuffer } from '../../helpers/index.js';
 
 /**
  * Policy diff message
@@ -53,14 +53,14 @@ export class PolicyDiffMessage extends Message {
      * @param model
      * @param zip
      */
-    public setDocument(diff: any, zip?: ArrayBuffer): void {
+    public setDocument(diff: any, zip?: ArrayBuffer | Buffer): void {
         this.uuid = diff.uuid;
         this.owner = diff.owner;
         this.diffType = diff.diffType;
         this.diffIndex = diff.diffIndex;
         this.policyTopicId = diff.policyTopicId;
         this.instanceTopicId = diff.instanceTopicId;
-        this.document = Buffer.from(zip);
+        this.document = toBuffer(zip);
     }
 
     /**
