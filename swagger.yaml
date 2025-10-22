@@ -16851,6 +16851,33 @@ paths:
       summary: ''
       tags:
         - project-wallet
+  /project-wallet/generate:
+    post:
+      description: ''
+      operationId: ProjectWalletApi_generateProjectWallet
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: ''
+      tags:
+        - project-wallet
   /worker-tasks:
     get:
       description: Returns all worker tasks.
