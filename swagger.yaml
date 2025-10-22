@@ -16434,11 +16434,6 @@ components:
           enum:
             - warning
             - info
-      required:
-        - code
-        - blockType
-        - property
-        - contains
     PolicyDTO:
       type: object
       properties:
