@@ -612,7 +612,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         readonly: false,
                         topicId: { $in: topicIds },
                         category: SchemaCategory.TOOL,
-                        status: SchemaStatus.PUBLISHED
+                        status: { $in: [SchemaStatus.PUBLISHED, SchemaStatus.DRAFT] }
                     }]
                 } as FilterObject<SchemaCollection>);
                 for (const schema of schemas) {
