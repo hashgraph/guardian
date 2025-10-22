@@ -16748,6 +16748,14 @@ components:
           minimum: 0
           maximum: 100
           example: 0
+        toolName:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        toolVersion:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
     SearchPolicyDTO:
       type: object
       properties:
