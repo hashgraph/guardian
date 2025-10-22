@@ -845,12 +845,14 @@ export class HederaSDKHelper {
         key: PrivateKey;
     }> {
         const client = this.client;
-
+        if (!Number.isFinite(initialBalance) || initialBalance < 0) {
+            initialBalance = INITIAL_BALANCE;
+        }
         const newPrivateKey = PrivateKey.generate();
         const transaction = new AccountCreateTransaction()
             .setKey(newPrivateKey.publicKey)
             .setMaxTransactionFee(MAX_FEE)
-            .setInitialBalance(new Hbar(initialBalance || INITIAL_BALANCE));
+            .setInitialBalance(new Hbar(initialBalance));
         const receipt = await this.executeAndReceipt(client, transaction, 'AccountCreateTransaction', userId);
         const newAccountId = receipt.accountId;
 

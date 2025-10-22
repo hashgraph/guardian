@@ -167,7 +167,28 @@
                                             <th
                                                 *ngIf="!column.canDisplay || column.canDisplay()"
                                                 class="header-cell-{{column.type}} col-{{column.size}}"
-                                                >{{column.title}}</th>
+                                                [ngSwitch]="column.id"
+                                            >
+                                                <ng-container *ngSwitchCase="'balance'">
+                                                    <div class="balance-header">
+                                                        <div class="balance-container">
+                                                             {{column.title}}
+                                                        </div>
+                                                        <div 
+                                                            class="guardian-icon-button big balance-button" 
+                                                            (click)="updateAllBalance()">
+                                                            <svg-icon 
+                                                                class="svg-icon-16"
+                                                                src="/assets/images/icons/16/refresh.svg"
+                                                                [svgClass]="'icon-color-primary'">
+                                                            </svg-icon>
+                                                        </div>
+                                                    </div>
+                                                </ng-container>
+                                                <ng-container *ngSwitchDefault>
+                                                    {{column.title}}
+                                                </ng-container>
+                                            </th>
                                         </ng-container>
                                     </tr>
                                 </ng-template>
@@ -184,7 +205,23 @@
                                                 [ngSwitch]="column.id"
                                             >
                                                 <ng-container *ngSwitchCase="'balance'">
-                                                    <span class="text-truncate">{{row[column.id]}}</span>
+                                                    <div class="balance-cell">
+                                                        <div *ngIf="row.__loading" class="balance-container">
+                                                            <div class="balance-loading"></div>
+                                                        </div>
+                                                        <div *ngIf="!row.__loading" class="balance-container">
+                                                            {{getBalance(row)}}
+                                                        </div>
+                                                        <div 
+                                                            class="guardian-icon-button big balance-button" 
+                                                            (click)="updateBalance(row)">
+                                                            <svg-icon 
+                                                                class="svg-icon-16"
+                                                                src="/assets/images/icons/16/refresh.svg"
+                                                                [svgClass]="'icon-color-primary'">
+                                                            </svg-icon>
+                                                        </div>
+                                                    </div>
                                                 </ng-container>
                                                 <ng-container *ngSwitchCase="'account'">
                                                     <hedera-explorer [params]="row[column.id] || ''" type="accounts">
@@ -329,7 +366,7 @@
                                     [pageIndex]="keyPageIndex"
                                     [pageSize]="keyPageSize"
                                     [length]="keyCount"
-                                    (page)="onKeyPage($event)"
+                                    (page)="onWalletPage($event)"
                                 ></app-paginator>
                             </div>
                         </div>

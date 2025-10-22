@@ -4,22 +4,34 @@ import { AuthService } from '../../services/auth.service';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from '../../services/profile.service';
 import { SchemaService } from '../../services/schema.service';
-import { IUser, Schema, SchemaEntity } from '@guardian/interfaces';
+import { IUser, Schema, SchemaEntity, UserPermissions } from '@guardian/interfaces';
 import { DemoService } from '../../services/demo.service';
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { HeaderPropsService } from '../../services/header-props.service';
 import { InformService } from '../../services/inform.service';
 import { TasksService } from '../../services/tasks.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
 import { ChangePasswordComponent } from '../login/change-password/change-password.component';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
+import { ProjectWalletService } from 'src/app/services/project-wallet.service';
+import { NewProjectWalletDialog } from 'src/app/components/new-project-wallets-dialog/new-project-wallets-dialog.component';
 
 enum OperationMode {
     None,
     Generate,
     GetAllUserTopics,
+}
+
+interface IColumn {
+    id: string;
+    title: string;
+    type: string;
+    size: string;
+    tooltip: boolean;
+    permissions?: (user: UserPermissions) => boolean;
+    canDisplay?: () => boolean;
 }
 
 /**
@@ -34,6 +46,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     @ViewChild('actionMenu') actionMenu: any;
 
     public loading: boolean = true;
+    public subLoading: boolean = false;
     public taskId: string | undefined = undefined;
     public isConfirmed: boolean = false;
     public profile: IUser | null;
@@ -76,21 +89,72 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     private subscriptions = new Subscription()
     public isRestore = false;
 
+    public tab: 'general' | 'wallets' = 'general';
+    public tabIndex = 0;
+    public tabs: ['general', 'wallets'] = ['general', 'wallets'];
+
+    public walletPage: any[];
+    public walletCount: number;
+    public walletPageIndex: number;
+    public walletPageSize: number;
+    public walletColumns: IColumn[];
+    public searchWallet: string;
+    public balances: Map<string, string>;
+
     constructor(
-        private router: Router,
         private auth: AuthService,
         private fb: UntypedFormBuilder,
         private profileService: ProfileService,
+        private projectWalletService: ProjectWalletService,
         private schemaService: SchemaService,
         private otherService: DemoService,
         private informService: InformService,
         private taskService: TasksService,
         private headerProps: HeaderPropsService,
         private dialogService: DialogService,
+        private route: ActivatedRoute,
+        private router: Router,
         private cdRef: ChangeDetectorRef
     ) {
         this.profile = null;
         this.balance = null;
+        this.balances = new Map<string, string>();
+
+        this.walletPage = [];
+        this.walletCount = 0;
+        this.walletPageIndex = 0;
+        this.walletPageSize = 10;
+        this.walletColumns = [{
+            id: 'account',
+            title: 'Account',
+            type: 'text',
+            size: '200',
+            tooltip: false
+        }, {
+            id: 'balance',
+            title: 'Balance',
+            type: 'text',
+            size: '200',
+            tooltip: false
+        }, {
+            id: 'name',
+            title: 'Name',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'options',
+            title: '',
+            type: 'text',
+            size: '210',
+            tooltip: false
+        }, {
+            id: 'delete',
+            title: '',
+            type: 'text',
+            size: '64',
+            tooltip: false
+        }];
         this.initForm(this.vcForm);
     }
 
@@ -105,6 +169,15 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             fireBlocksApiKey: '',
             fireBlocksPrivateiKey: ''
         });
+        this.subscriptions.add(
+            this.route.queryParams.subscribe((queryParams) => {
+                const tab = this.route.snapshot.queryParams['tab'];
+                this.tabIndex = Math.max(this.tabs.indexOf(tab), 0);
+                this.tab = this.tabs[this.tabIndex] || 'general';
+                this.changeTab();
+                this.cdRef.detectChanges();
+            })
+        );
         this.loadProfile();
         this.step = 'HEDERA';
     }
@@ -641,5 +714,115 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         }).onClose.subscribe((data) => {
             this.loadProfile();
         });
+    }
+
+    public onChangeTab(tab: any) {
+        this.tabIndex = tab.index;
+        this.tab = this.tabs[tab.index] || 'general';
+        this.router.navigate([], {
+            queryParams: { tab: this.tab }
+        });
+    }
+
+    private changeTab() {
+        if (this.tab === 'general') {
+            this.loadProfile();
+        }
+        if (this.tab === 'wallets') {
+            this.walletPageIndex = 0;
+            this.loadWallets();
+        }
+    }
+
+    private loadWallets() {
+        const filters: any = {
+            search: this.searchWallet
+        };
+        this.subLoading = true;
+        this.projectWalletService
+            .getProjectWallets(
+                this.walletPageIndex,
+                this.walletPageSize,
+                filters
+            )
+            .subscribe((response) => {
+                const { page, count } = this.projectWalletService.parsePage(response);
+                this.walletPage = page;
+                this.walletCount = count;
+                setTimeout(() => {
+                    this.subLoading = false;
+                }, 500);
+            }, (e) => {
+                this.subLoading = false;
+            });
+    }
+
+    public onWalletPage(event: any): void {
+        if (this.walletPageSize != event.pageSize) {
+            this.walletPageIndex = 0;
+            this.walletPageSize = event.pageSize;
+        } else {
+            this.walletPageIndex = event.pageIndex;
+            this.walletPageSize = event.pageSize;
+        }
+        this.loadWallets();
+    }
+
+    public onCreateWallet() {
+        const dialogRef = this.dialogService.open(NewProjectWalletDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Add Wallet'
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+                this.subLoading = true;
+                this.projectWalletService
+                    .createProjectWallet(result)
+                    .subscribe((newItem) => {
+                        this.loadWallets();
+                    }, (e) => {
+                        this.subLoading = false;
+                    });
+            }
+        });
+    }
+
+    public onOpenWallet(item: any) {
+
+    }
+
+    public onDeleteWallet(item: any) {
+
+    }
+
+    public onSetWalletSearch() {
+        this.loadWallets();
+    }
+
+    public getBalance(row: any) {
+        return this.balances.get(row.account) || '-';
+    }
+
+    public updateBalance(row: any) {
+        row.__loading = true;
+        this.projectWalletService
+            .getProjectWalletBalance(row.account)
+            .subscribe((balance) => {
+                this.balances.set(row.account, balance);
+                row.__loading = false;
+            }, (e) => {
+                row.__balance = '-';
+                row.__loading = false;
+            });
+    }
+
+    public updateAllBalance() {
+        for (const row of this.walletPage) {
+            this.updateBalance(row);
+        }
     }
 }

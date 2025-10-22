@@ -141,6 +141,7 @@ export class UserProfileComponent implements OnInit {
     public walletPageSize: number;
     public walletColumns: IColumn[];
     public searchWallet: string;
+    public balances: Map<string, string>;
 
     public location: LocationType | undefined;
 
@@ -165,6 +166,7 @@ export class UserProfileComponent implements OnInit {
         private headerProps: HeaderPropsService,
         private cdRef: ChangeDetectorRef
     ) {
+        this.balances = new Map<string, string>();
         this.standardRegistryForm = new UntypedFormControl('', [Validators.required]);
         this.hederaCredentialsForm = new UntypedFormGroup({
             id: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
@@ -417,7 +419,7 @@ export class UserProfileComponent implements OnInit {
             title: 'Name',
             type: 'text',
             size: 'auto',
-            tooltip: true
+            tooltip: false
         }, {
             id: 'options',
             title: '',
@@ -1176,6 +1178,17 @@ export class UserProfileComponent implements OnInit {
             });
     }
 
+    public onWalletPage(event: any): void {
+        if (this.walletPageSize != event.pageSize) {
+            this.walletPageIndex = 0;
+            this.walletPageSize = event.pageSize;
+        } else {
+            this.walletPageIndex = event.pageIndex;
+            this.walletPageSize = event.pageSize;
+        }
+        this.loadWallets();
+    }
+
     public onCreateWallet() {
         const dialogRef = this.dialogService.open(NewProjectWalletDialog, {
             showHeader: false,
@@ -1209,5 +1222,28 @@ export class UserProfileComponent implements OnInit {
 
     public onSetWalletSearch() {
         this.loadWallets();
+    }
+
+    public getBalance(row: any) {
+        return this.balances.get(row.account) || '-';
+    }
+
+    public updateBalance(row: any) {
+        row.__loading = true;
+        this.projectWalletService
+            .getProjectWalletBalance(row.account)
+            .subscribe((balance) => {
+                this.balances.set(row.account, balance);
+                row.__loading = false;
+            }, (e) => {
+                row.__balance = '-';
+                row.__loading = false;
+            });
+    }
+
+    public updateAllBalance() {
+        for (const row of this.walletPage) {
+            this.updateBalance(row);
+        }
     }
 }

@@ -53,8 +53,8 @@ export class ProjectWalletService {
         return this.http.get<any>(`${this.url}`, { observe: 'response', params });
     }
 
-    public getProjectWalletBalance(account: string): Observable<any> {
-        return this.http.get<any[]>(`${this.url}/${account}/balance`) as any;
+    public getProjectWalletBalance(account: string): Observable<string> {
+        return this.http.get(`${this.url}/${account}/balance`, { responseType: 'text' });
     }
 
     public createProjectWallet(

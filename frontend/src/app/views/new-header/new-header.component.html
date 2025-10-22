@@ -131,7 +131,7 @@
 
         <div
             [class.collapsed-item]="menuCollapsed"
-            [routerLink]="'/user-profile'"
+            [routerLink]="(user.STANDARD_REGISTRY) ? '/config' : 'user-profile'"
             [queryParams]="{tab: 'wallets'}"
             class="item balance-item"
         >

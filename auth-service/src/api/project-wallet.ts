@@ -71,10 +71,7 @@ export class ProjectWalletService extends NatsService {
                         userId: user.id,
                         interception: null
                     });
-                    return new MessageResponse({
-                        balance,
-                        unit: 'Hbar',
-                    });
+                    return new MessageResponse(balance);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
