@@ -77,22 +77,44 @@ export class FileDragNDropComponent implements OnInit {
         }
     }
 
-    private isFileAllowed(fileName: string) {
-        if (this.fileExtension === '*') {
+    private isFileAllowed(fileName: string): boolean {
+        const raw = this.fileExtension;
+
+        if (raw === '*' || (Array.isArray(raw) && raw.includes('*'))) {
             return true;
         }
 
-        let isFileAllowed = false;
-        const allowedFiles = [`.${this.fileExtension}`];
-        const regex = /(?:\.([^.]+))?$/;
-        const extension = regex.exec(fileName);
-        if (extension) {
-            for (const ext of allowedFiles) {
-                if (ext === extension[0]) {
-                    isFileAllowed = true;
-                }
+        const toList = (val: unknown): string[] => {
+            if (Array.isArray(val)) {
+                return val as string[];
             }
+
+            if (typeof val === 'string') {
+                return val.split(',');
+            }
+
+            return [];
+        };
+
+        const allowedSet = new Set(
+            toList(raw)
+            .map(s => s.trim())
+            .filter(Boolean)
+            .map(s => (s.startsWith('.') ? s.toLowerCase() : `.${s.toLowerCase()}`))
+        );
+
+        if (allowedSet.size === 0) {
+            return false;
         }
-        return isFileAllowed;
+
+        const dotIndex = fileName.lastIndexOf('.');
+
+        if (dotIndex < 0) {
+            return false;
+        }
+
+        const fileExt = fileName.slice(dotIndex).toLowerCase();
+
+        return allowedSet.has(fileExt);
     }
 }
