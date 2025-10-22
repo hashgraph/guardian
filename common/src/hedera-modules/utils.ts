@@ -1,4 +1,4 @@
-import { PrivateKey, PublicKey } from "@hashgraph/sdk";
+import { PrivateKey, PublicKey } from '@hashgraph/sdk';
 
 /**
  * Timeout decorator

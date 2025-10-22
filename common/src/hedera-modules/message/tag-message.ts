@@ -105,7 +105,7 @@ export class TagMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (this.document) {
             const json = JSON.stringify(this.document);
             const buffer = Buffer.from(json) as any;

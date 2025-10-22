@@ -11,9 +11,20 @@
         "isolatedModules": true,
         "moduleResolution": "node",
         "paths": {
-          "#constants": ["constants/index.js"]
-        }
+            "#constants": [
+                "constants/index.js"
+            ]
+        },
+        "types": [
+            "node"
+        ]
     },
-    "include": ["./src/**/*", "./tests/**/*.ts"],
-    "exclude": ["node_modules", "**/*.spec.ts"]
+    "include": [
+        "./src/**/*",
+        "./tests/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts"
+    ]
 }

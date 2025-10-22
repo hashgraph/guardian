@@ -274,7 +274,7 @@ export class MessageServer {
      * @param options
      * @private
      */
-    private async addFile(file: ArrayBuffer, options?: MessageOptions) {
+    private async addFile(file: Buffer, options?: MessageOptions) {
         const notifier = options?.notifier || NewNotifier.empty();
         if (this.dryRun) {
             const id = GenerateUUIDv4();

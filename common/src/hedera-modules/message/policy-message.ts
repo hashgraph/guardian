@@ -4,7 +4,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { PolicyMessageBody } from './message-body.interface.js';
-import { IPFS } from '../../helpers/index.js';
+import { IPFS, toBuffer } from '../../helpers/index.js';
 
 /**
  * Policy message
@@ -13,7 +13,7 @@ export class PolicyMessage extends Message {
     /**
      * Document
      */
-    public document: ArrayBuffer;
+    public document: Buffer;
 
     /**
      * UUID
@@ -87,7 +87,7 @@ export class PolicyMessage extends Message {
      * @param model
      * @param zip
      */
-    public setDocument(model: Policy, zip?: ArrayBuffer): void {
+    public setDocument(model: Policy, zip?: ArrayBuffer | Buffer): void {
         this.uuid = model.uuid;
         this.name = model.name;
         this.description = model.description;
@@ -103,13 +103,13 @@ export class PolicyMessage extends Message {
         this.restoreTopicId = model.restoreTopicId;
         this.actionsTopicId = model.actionsTopicId;
         this.commentsTopicId = model.commentsTopicId;
-        this.document = zip;
+        this.document = toBuffer(zip);
     }
 
     /**
      * Get document
      */
-    public getDocument(): ArrayBuffer {
+    public getDocument(): Buffer {
         return this.document;
     }
 
@@ -174,7 +174,7 @@ export class PolicyMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (this.action !== MessageAction.PublishPolicy) {
             return [];
         }

@@ -12,6 +12,9 @@
         "lib": [
             "esnext"
         ],
+        "types": [
+            "node"
+        ],
         "module": "ESNext",
         "moduleResolution": "node",
         "outDir": "dist/",

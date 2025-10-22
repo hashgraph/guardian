@@ -231,7 +231,7 @@ export class VCMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(key: string): Promise<ArrayBuffer[]> {
+    public async toDocuments(key: string): Promise<Buffer[]> {
         let document = JSON.stringify(this.document);
         if (this.encodedData || this.type === MessageType.EVCDocument) {
             if (!key) {

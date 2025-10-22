@@ -81,7 +81,7 @@ export class DiscussionMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(key: string): Promise<ArrayBuffer[]> {
+    public async toDocuments(key: string): Promise<Buffer[]> {
         let document = JSON.stringify(this.document);
         if (!key) {
             throw new Error(

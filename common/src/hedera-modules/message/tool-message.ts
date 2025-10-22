@@ -3,7 +3,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { ToolMessageBody } from './message-body.interface.js';
-import { IPFS } from '../../helpers/index.js';
+import { IPFS, toBuffer } from '../../helpers/index.js';
 import { PolicyTool } from '../../entity/tool.js';
 
 /**
@@ -13,7 +13,7 @@ export class ToolMessage extends Message {
     /**
      * Document
      */
-    public document: ArrayBuffer;
+    public document: Buffer;
     /**
      * UUID
      */
@@ -55,13 +55,13 @@ export class ToolMessage extends Message {
      * @param model
      * @param zip
      */
-    public setDocument(model: PolicyTool, zip?: ArrayBuffer): void {
+    public setDocument(model: PolicyTool, zip?: ArrayBuffer | Buffer): void {
         this.uuid = model.uuid;
         this.name = model.name;
         this.description = model.description;
         this.owner = model.owner;
         this.hash = model.hash;
-        this.document = zip;
+        this.document = toBuffer(zip);
         this.toolTopicId = model.topicId;
         this.tagsTopicId = model.tagsTopicId;
     }
@@ -69,7 +69,7 @@ export class ToolMessage extends Message {
     /**
      * Get document
      */
-    public getDocument(): ArrayBuffer {
+    public getDocument(): Buffer {
         return this.document;
     }
 
@@ -98,7 +98,7 @@ export class ToolMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (this.document) {
             return [this.document];
         }

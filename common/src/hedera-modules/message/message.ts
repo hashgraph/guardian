@@ -128,7 +128,7 @@ export abstract class Message {
     /**
      * To document
      */
-    public abstract toDocuments(key?: string): Promise<ArrayBuffer[]>;
+    public abstract toDocuments(key?: string): Promise<Buffer[]>;
 
     /**
      * Load documents
