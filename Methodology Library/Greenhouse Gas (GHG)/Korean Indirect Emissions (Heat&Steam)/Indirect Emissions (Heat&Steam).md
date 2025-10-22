@@ -1,4 +1,4 @@
-﻿## **Indirect Emission (Heat and Steam) Methodology in Korea**
+## **Indirect Emission (Heat and Steam) Methodology in Korea**
 
 Policy by WinCL (Verified by the Korean Foundation for Quality, a third-party emission verifier)
 
@@ -17,38 +17,40 @@ Heat and steam energy are generally supplied by Korea District Heating Corporati
 
 **User Input**
 
-- The priority order for input data is as follows:
-
-1. Heat (steam) supply volume or consumption by facility (TJ).
-1. If the above data is not available, the following should be entered: usage cost (paid amount), contract type, and contract capacity → consumption is then estimated based on costs.
-
-**Emission Calculation**
-
-![](image2_2.png)
-
-- Information such as heat/steam consumption, payment amount, contract type, and contract capacity can be obtained via the KDHC website (requires membership and customer number):
-
-- <https://www.kdhc.co.kr/cyb/heat/post/charg/heatChargeForm.do>
+- Branch type
+- Applicable reporting year
+- Heat/Steam Consumption (amount) (Mcal)
+  - Can be obtained via the KDHC website (requires membership and customer number):
+  - https://www.kdhc.co.kr/cyb/heat/post/charg/heatChargeForm.do
 
 **Applied Emission Factors**
 
-- Emission factors for heat/steam provided by the supplier.
-  - If unavailable, emission factors published by the Greenhouse Gas Inventory and Research Center of Korea (GIR) should be used.
+- Branch-specific emission factors published annually by each site shall be applied to calculate emissions
 
-<div align="left" width="100%">
+**2024 GHG Emission Factor for Heat (Steam)**
 
-<!-- | Installation Type |                 Emission Factors                 |                                                   |                                                   |                          |
-| :---------------: | :----------------------------------------------: | :-----------------------------------------------: | :------------------------------------------------ | :----------------------- |
-|                   | <p>CO<sub>2</sub></p><p>(tCO<sub>2</sub>/TJ)</p> | <p>CH<sub>4</sub></p><p>(kgCH<sub>4</sub>/TJ)</p> | <p>N<sub>2</sub>O</p><p>(kgN<sub>2</sub>O/TJ)</p> | kgCO<sub>2-eq..</sub>/TJ |
-|     Heat only     |                      56,373                      |                      1\.278                       | 0\.166                                            | 56,452                   |
-|     Combined      |                      60,760                      |                      2\.053                       | 0\.549                                            | 60,974                   |
-|       Avg.        |                      59,510                      |                      1\.832                       | 0\.440                                            | 59,685                   | -->
+| **Branch**      | **CO₂ (kgCO₂/TJ)** | **CH₄ (kgCH₄/TJ)** | **N₂O (kgN₂O/TJ)** |
+| --------------- | ------------------ | ------------------ | ------------------ |
+| Capital\*       | 35,058             | 0.6340             | 0.0640             |
+| Pyeongtaek      | 15,717             | 0.3793             | 0.0301             |
+| Cheongju        | 56,642             | 1.4574             | 0.2295             |
+| Sejong          | 42,672             | 0.7667             | 0.0767             |
+| Daegu           | 48,249             | 2.5138             | 0.3705             |
+| Yangsan         | 35,444             | 0.6346             | 0.0635             |
+| Gimhae          | 35,747             | 0.6372             | 0.0637             |
+| Gwangju-Jeonnam | 34,068             | 16.9847            | 2.2506             |
 
-![](image2_1.png)
+\*Capital Branch: Paju, Samsong, Goyang, Jungang, Gangnam, Pangyo, Yongin, Gwanggyo, Suwon, Hwaseong, Dongtan, Bundang
+
+Source: Korea District Heating Corporation
 
 ### Emission Calculation
 
-![](image2_3.png)
+> **GHG Emissions = Q × EFⱼ × 4.184 × 10⁻⁶**
+
+- **GHG Emissions:** Total greenhouse gas (j) emissions (kgGHG) from heat/steam use
+- **Q:** Heat/Steam consumption (Mcal)
+- **EFⱼ:** Greenhouse gas (j) emission factor (kgGHG/TJ)
 
 ## Use case: Calculation of Heat and Steam Emissions for General Companies
 
@@ -58,41 +60,35 @@ Company A operates multiple buildings including offices, production plants, and 
 
 **1) Data Collection**
 
-Priority 1 — Consumption data
+Heat/Steam consumption data
 
-- Heat and steam supply volume (TJ)
+- • Heat and steam supply volume (Mcal)
 - Supplier (e.g., KDHC) Customer Portal, monthly bills, or usage meters)
-
-Priority 2 — Estimate based on costs
-
-- If usage data is unavailable, obtain monthly payment, contract type, and contract capacity.
-- Apply conversion formula:
-- Q = (0.9 × Total cost – Contract Capacity × Basic Fee) / Using Fee × 0.000004184
 
 **2) Emission Factor Application**
 
-- Use annual emission factors provided by the supplier (preferred).
-- If not available, use national emission factors provided by GIR.
+- Use branch specific emission factor in reporting year
 
 **3) Emission Calculation Procedure**
 
-1. Calculate monthly or annual heat/steam consumption (TJ).
-1. Select the appropriate emission factor (Heat only / Combined / Avg.).
-1. Apply formula: GHG Emissions = Q × EFj
-   1. Q: Consumption (TJ)
-   1. EFj: Emission factor (tGHG/TJ)
+1. Calculate heat/steam consumption (Mcal).
+2. Apply the appropriate emission factor by choosing a branch and applicable reporting year.
+3. Apply formula: GHG Emissions = Q × EFⱼ × 4.184 × 10⁻⁶
+   - Q: Heat/Steam Consumption (Mcal)
+   - EFⱼ: Emission factor (kgGHG/TJ)
 
 Calculation Example:
 
-- Annual consumption: 120 TJ
-- EF: 60.974 tCO₂-eq./TJ
-- Annual emissions: 120 × 60.974 = 7,316.88 tCO₂-eq.
+- Branch: Gangnam
+- Applicable reporting year: 2024
+- Annual consumption: 300,000 Mcal
+- EF: 35,058 kgCO₂/TJ
+- Annual emissions: 300,000 × 35,058 × 4.184 × 10⁻⁶ = 44,004.80 kgCO₂ ≈ 44 tCO₂.
 
 **4) Result Application**
 
 - Sustainability reporting / ESG disclosure: Reflect in Scope 2 emissions
 - Internal management: Monitor emissions by site/department and set reduction target
-- Regulatory Compliance: Use for mandatory reporting such as Emissions Trading Scheme.
 - Cost Analysis: Manage energy costs and emissions together to establish efficiency strategies.
 
-![텍스트, 스크린샷, 도표, 라인이(가) 표시된 사진자동 생성된 설명](image_2.png)
+![텍스트, 스크린샷, 도표, 라인이(가) 표시된 사진자동 생성된 설명](./image_2.jpg)
