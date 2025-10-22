@@ -74,7 +74,8 @@
                     *ngIf="policyTemplate.isDraft"
                     class="top-toolbar-btn top-toolbar-group all-status validation"
                     [attr.readonly]="!isTree"
-                    [attr.errors-count]="errorsCount"
+                    [attr.errors-count]="validationCount"
+                    [attr.validation-level]="validationLevel"
                     (click)="validationPolicy()"
                     title="Validation"
                     #validationBtn
@@ -82,7 +83,7 @@
                     <i class="pi pi-check-circle"></i>
                     <span>Validation</span>
 
-                    <div *ngIf="errorsCount > 0" class="error-count">{{ errorsCount }}</div>
+                    <div *ngIf="validationCount > 0" class="error-count">{{ validationCount }}</div>
 
                     <div
                         class="expand-group"
@@ -762,6 +763,8 @@
                                 [blocks]="openFolder.dataSource"
                                 [connector]="dropListConnector"
                                 [errors]="errorsMap"
+                                [warnings]="warningsMap"
+                                [infos]="infosMap"
                                 [module]="openFolder"
                                 [nestedBlock]="nestedBlock"
                                 [nextBlock]="nextBlock"
@@ -968,6 +971,19 @@
                                                 <span>{{ item }}</span>
                                             </div>
                                         </div>
+
+                                        <div *ngIf="warningsListMap[currentBlock.id]" class="warnings-properties">
+                                            <div *ngFor="let item of warningsListMap[currentBlock.id]" class="warnings-property">
+                                                <span>{{ item }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div *ngIf="infosListMap[currentBlock.id]" class="infos-properties">
+                                            <div *ngFor="let item of infosListMap[currentBlock.id]" class="infos-property">
+                                                <span>{{ item }}</span>
+                                            </div>
+                                        </div>
+
                                         <common-properties
                                             [block]="currentBlock"
                                             [module]="openFolder"

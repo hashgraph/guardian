@@ -76,7 +76,16 @@ export class PolicyConfigurationComponent implements OnInit {
     public selectType: 'Block' | 'Module' = 'Block';
     public errors: any[] = [];
     public errorsCount: number = -1;
+    public warningsCount: number = -1;
+    public infosCount: number = -1;
     public errorsMap: any;
+
+    public warningsMap: Record<string, true> = {};
+    public infosMap: Record<string, true> = {};
+    public warningsListMap: Record<string, string[]> = {};
+    public infosListMap: Record<string, string[]> = {};
+    public validationLevel: 'error' | 'warning' | 'info' | 'ok' = 'ok';
+
     public currentView: string = 'blocks';
     public search: string = '';
     public searchModule: string = '';
@@ -177,6 +186,19 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private get hasChanges() {
         return this.storage.isUndo;
+    }
+
+    public get validationCount(): number {
+        if (this.validationLevel === 'error') {
+            return Math.max(0, this.errorsCount);
+        }
+        if (this.validationLevel === 'warning') {
+            return Math.max(0, this.warningsCount);
+        }
+        if (this.validationLevel === 'info') {
+            return Math.max(0, this.infosCount);
+        }
+        return 0;
     }
 
     private _disableComponentMenu: boolean = true;
@@ -836,10 +858,57 @@ export class PolicyConfigurationComponent implements OnInit {
         }
         this.errorsCount = this.errors.length + commonErrors.length;
         this.errorsMap = {};
+        this.warningsMap = {};
+        this.infosMap    = {};
+        this.warningsListMap = {};
+        this.infosListMap = {};
         for (const element of this.errors) {
             this.errorsMap[element.id] = element.errors;
         }
+
+        const collect = (
+            arr: any[],
+            prop: 'warnings' | 'infos',
+            flagsTarget: Record<string, true>,
+            listTarget: Record<string, string[]>
+        ) => {
+            for (const item of arr || []) {
+                if (Array.isArray(item[prop]) && item[prop].length) {
+                    flagsTarget[item.id] = true;
+                    listTarget[item.id] = (listTarget[item.id] || []).concat(item[prop]);
+                }
+                for (const b of (item.blocks || [])) {
+                    if (Array.isArray(b[prop]) && b[prop].length) {
+                        flagsTarget[b.id] = true;
+                        listTarget[b.id] = (listTarget[b.id] || []).concat(b[prop]);
+                    }
+                }
+            }
+        };
+
+        collect(blocks,  'warnings', this.warningsMap, this.warningsListMap);
+        collect(blocks,  'infos',    this.infosMap,    this.infosListMap);
+
+        collect(modules, 'warnings', this.warningsMap, this.warningsListMap);
+        collect(modules, 'infos',    this.infosMap,    this.infosListMap);
+
+        collect(tools,   'warnings', this.warningsMap, this.warningsListMap);
+        collect(tools,   'infos',    this.infosMap,    this.infosListMap);
+
         this.errorMessage(commonErrors, type);
+
+        this.warningsCount = Object.keys(this.warningsMap || {}).length;
+        this.infosCount = Object.keys(this.infosMap || {}).length;
+
+        if ((this.errorsCount ?? 0) > 0) {
+            this.validationLevel = 'error';
+        } else if (this.warningsCount > 0) {
+            this.validationLevel = 'warning';
+        } else if (this.infosCount > 0) {
+            this.validationLevel = 'info';
+        } else {
+            this.validationLevel = 'ok';
+        }
     }
 
     private jsonToObject(json: string): any {

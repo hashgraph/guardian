@@ -1351,15 +1351,21 @@
 }
 
 .top-toolbar {
-    .top-toolbar-group.validation {
-        &[errors-count]       {
+    .top-toolbar-btn:not(.validation) {
+        &[errors-count] {
             color: var(--pc-error-color);
         }
-        &[errors-count="-1"]  {
+
+        &[errors-count="-1"] {
             color: var(--pc-active-icon-color);
         }
-        &[errors-count="0"]   { color: var(--pc-valid-color); }
 
+        &[errors-count="0"] {
+            color: var(--pc-valid-color);
+        }
+    }
+
+    .top-toolbar-group.validation {
         > .error-count {
             right: 20px;
             top: 0;
@@ -1368,7 +1374,77 @@
         }
 
         .expand-group .pi {
-           color: var(--pc-active-icon-color) !important;
+            color: var(--pc-active-icon-color) !important;
         }
     }
+
+    .top-toolbar-btn.validation {
+        > .error-count {
+            background: var(--pc-active-icon-color);
+        }
+    }
+
+    .top-toolbar-btn.validation[validation-level="error"] > .error-count {
+        background: var(--pc-error-color);
+    }
+
+    .top-toolbar-btn.validation[validation-level="warning"] > .error-count {
+        background: var(--pc-event-color);
+    }
+
+    .top-toolbar-btn.validation[validation-level="info"] > .error-count {
+        background: var(--pc-valid-color);
+    }
+
+    .top-toolbar-btn.validation[validation-level="error"] {
+        color: var(--pc-error-color);
+    }
+
+    .top-toolbar-btn.validation[validation-level="warning"] {
+        color: var(--pc-event-color);
+    }
+
+    .top-toolbar-btn.validation[validation-level="info"] {
+        color: var(--pc-valid-color);
+    }
+
+    .top-toolbar-btn.validation[validation-level="ok"] {
+        color: var(--pc-active-icon-color);
+    }
+}
+
+.warnings-properties {
+    max-height: 200px;
+    overflow: auto;
+    margin-top: 6px;
+}
+
+.warnings-property {
+    border-radius: 3px;
+    border: 1px solid var(--pc-event-color);
+    padding: 5px;
+    color: var(--pc-event-color);
+    background: #fff8e6;
+    position: relative;
+    padding-left: 10px;
+    margin: 5px 5px 5px 5px;
+    box-sizing: border-box;
+}
+
+.infos-properties {
+    max-height: 200px;
+    overflow: auto;
+    margin-top: 6px;
+}
+
+.infos-property {
+    border-radius: 3px;
+    border: 1px solid var(--pc-valid-color);
+    padding: 5px;
+    color: var(--pc-valid-color);
+    background: #eefbf0;
+    position: relative;
+    padding-left: 10px;
+    margin: 5px 5px 5px 5px;
+    box-sizing: border-box;
 }
