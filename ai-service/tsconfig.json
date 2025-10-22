@@ -10,9 +10,6 @@
         "lib": [
             "es6"
         ],
-        "types": [
-            "node"
-        ],
         "module": "ESNext",
         "moduleResolution": "node",
         "outDir": "dist/",

@@ -23,6 +23,7 @@
     "description": "",
     "devDependencies": {
         "@types/node": "^22.15.19",
+        "@types/glob": "^8.1.0",
         "nodemon": "^2.0.12",
         "tslint": "^6.1.3",
         "typescript": "^5.8.3"

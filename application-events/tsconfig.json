@@ -14,10 +14,7 @@
             "#constants": [
                 "constants/index.js"
             ]
-        },
-        "types": [
-            "node"
-        ]
+        }
     },
     "include": [
         "./src/**/*",

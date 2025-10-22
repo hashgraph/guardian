@@ -17,6 +17,7 @@
     "description": "",
     "devDependencies": {
         "@types/express": "^5.0.1",
+        "@types/glob": "^8.1.0",
         "nodemon": "^2.0.12",
         "typescript": "^5.8.3"
     },

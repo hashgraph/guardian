@@ -25,6 +25,7 @@
         "@types/gulp": "^4",
         "@types/gulp-rename": "^2",
         "@types/node": "^22.15.19",
+        "@types/glob": "^8.1.0",
         "chai": "4.3.4",
         "gulp": "^5.0.0",
         "gulp-copy": "^4.0.1",

@@ -6,9 +6,6 @@
         "lib": [
             "es6"
         ],
-        "types": [
-            "node"
-        ],
         "emitDecoratorMetadata": true,
         "moduleResolution": "node",
         "sourceMap": false,

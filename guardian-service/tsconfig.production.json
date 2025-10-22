@@ -7,9 +7,6 @@
             "es6",
             "ES2021.String"
         ],
-        "types": [
-            "node"
-        ],
         "moduleResolution": "node",
         "sourceMap": false,
         "outDir": "dist/",

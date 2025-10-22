@@ -6,9 +6,6 @@
             "es5",
             "es6"
         ],
-        "types": [
-            "node"
-        ],
         "moduleResolution": "node",
         "sourceMap": false,
         "skipLibCheck": true,
