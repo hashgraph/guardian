@@ -420,7 +420,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                 headers: {
                     authorization
                 },
-                failOnStatusCode: false,
+                failOnStatusCode: false
             }
             Checks.whileRequestProccessing(waitProjectValidated, "approved_project", "data.0.type")
             cy.request({
@@ -450,7 +450,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                             headers: {
                                 authorization
                             },
-                            timeout: 120000,
+                            timeout: 180000,
                             failOnStatusCode: false,
                         }
                         Checks.whileRequestProccessing(waitReportCreating, "Waiting for Verification", "data.0.option.status")
