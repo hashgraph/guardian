@@ -41,7 +41,7 @@ export class ProjectWalletService {
     }
 
     public getCurrentWallet(): Observable<any> {
-        return this.http.get<any[]>(`${this.url}/current`) as any;
+        return this.http.get<any>(`${this.url}/current`);
     }
 
     public getProjectWallets(
@@ -57,6 +57,10 @@ export class ProjectWalletService {
         return this.http.get(`${this.url}/${account}/balance`, { responseType: 'text' });
     }
 
+    public getProjectWalletsAll(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/all`);
+    }
+
     public createProjectWallet(
         data: {
             name?: string,
@@ -65,10 +69,10 @@ export class ProjectWalletService {
             generate?: boolean
         }
     ): Observable<any> {
-        return this.http.post<any[]>(`${this.url}`, data) as any;
+        return this.http.post<any>(`${this.url}`, data);
     }
 
     public generateProjectWallet(): Observable<any> {
-        return this.http.post<any[]>(`${this.url}/generate`, null) as any;
+        return this.http.post<any>(`${this.url}/generate`, null);
     }
 }

@@ -12,19 +12,19 @@
             <div class="guardian-loading-image"></div>
         </div>
 
-        <form [formGroup]="dataForm">
+        <form [formGroup]="dataForm" autocomplete="off">
             <div class="guardian-input-container">
                 <label class="form-label" htmlFor="name">* Wallet Name</label>
-                <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
+                <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly" autocomplete="off"/>
             </div>
 
             <div class="guardian-input-container">
                 <label class="form-label" htmlFor="account">* Account ID</label>
-                <input formControlName="account" id="account" pInputText type="text" [readonly]="readonly"/>
+                <input formControlName="account" id="account" pInputText type="text" [readonly]="readonly" autocomplete="off"/>
             </div>
             <div class="guardian-input-container">
                 <label class="form-label" htmlFor="key">* Wallet Key</label>
-                <input formControlName="key" id="key" pInputText type="text" [readonly]="readonly"/>
+                <p-password formControlName="key" id="key" [toggleMask]="true" autocomplete="off" [feedback]="false" />
             </div>
         </form>
     </div>

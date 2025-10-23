@@ -148,6 +148,7 @@ export class RequestVcDocumentBlock {
             presetSchema: options.presetSchema,
             presetFields: options.presetFields,
             editType: options.editType || 'new',
+            wallet: !!options.wallet,
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || [],
             data: sources && sources.length && sources[0] || null,

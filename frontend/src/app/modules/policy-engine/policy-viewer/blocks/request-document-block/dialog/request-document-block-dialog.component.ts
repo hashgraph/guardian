@@ -4,7 +4,7 @@ import { RequestDocumentBlockComponent } from '../request-document-block.compone
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { RequestDocumentBlockAddonComponent } from '../../request-document-block-addon/request-document-block-addon.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject, Subscription } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
@@ -15,6 +15,7 @@ import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.s
 import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structures';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { autosaveValueChanged, getMinutesAgoStream } from 'src/app/utils/autosave-utils';
+import { ProjectWalletService } from 'src/app/services/project-wallet.service';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -39,6 +40,7 @@ export class RequestDocumentBlockDialog {
     public get autosaveId() { return this.parent?.getAutosaveId(); }
     public get edit() { return this.parent?.edit; }
     public get draft() { return this.parent?.draft; }
+    public get wallet() { return this.parent?.wallet; }
 
     public buttons: any = [];
     public rules: DocumentValidators;
@@ -50,6 +52,10 @@ export class RequestDocumentBlockDialog {
     private sub?: Subscription;
     private readonly AUTOSAVE_INTERVAL = 120000;
     private dataSaved: boolean = false;
+    private stepper = [true, false, false];
+    public walletType: string = 'account';
+    public currentWallet: string;
+    public wallets: any[] = [];
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
     private buttonNames: { [id: string]: string } = {
@@ -57,8 +63,15 @@ export class RequestDocumentBlockDialog {
         cancel: "Cancel",
         prev: "Previous",
         next: "Next",
+        wallet: "Select Wallet",
         submit: "Validate & Create"
     }
+
+    public walletForm = new FormGroup({
+        name: new FormControl<string>('', Validators.required),
+        account: new FormControl<string>('', Validators.required),
+        key: new FormControl<string>('', Validators.required),
+    });
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -66,6 +79,7 @@ export class RequestDocumentBlockDialog {
         private dialogService: DialogService,
         private policyEngineService: PolicyEngineService,
         private schemaRulesService: SchemaRulesService,
+        private projectWalletService: ProjectWalletService,
         private fb: UntypedFormBuilder,
         private toastr: ToastrService,
         private changeDetectorRef: ChangeDetectorRef,
@@ -121,8 +135,24 @@ export class RequestDocumentBlockDialog {
                 schemaId: this.schema?.iri,
                 parentId: this.docRef?.id
             })
+            .pipe(takeUntil(this.destroy$))
             .subscribe((rules: any[]) => {
                 this.rules = new DocumentValidators(rules);
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    private loadWallets() {
+        this.loading = true;
+        this.projectWalletService
+            .getProjectWalletsAll()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((wallets: any[]) => {
+                this.wallets = wallets;
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -140,47 +170,77 @@ export class RequestDocumentBlockDialog {
     }
 
     public onClose(): void {
-        if(this.dataForm.dirty && !this.dataSaved) {
+        if (this.dataForm.dirty && !this.dataSaved) {
             this.showUnsavedChangesDialog();
         } else {
             this.dialogRef.close(null);
         }
     }
 
-    public async onSubmit(draft?: boolean) {
+    private getWallet() {
+        if (this.wallet) {
+            if (this.walletType === 'account') {
+                return null;
+            } else if (this.walletType === 'wallet') {
+                return this.currentWallet;
+            } else if (this.walletType === 'new') {
+                return this.walletForm.value;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private async onSubmit(draft?: boolean) {
+        const data = this.dataForm.getRawValue();
+        this.loading = true;
+
+        await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+
+        prepareVcData(data);
+        const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;
+        this.storage.delete(this.autosaveId);
+
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                document: data,
+                ref: this.docRef,
+                draft: draft,
+                draftId: draftId,
+                wallet: this.getWallet()
+            })
+            .subscribe(() => {
+                setTimeout(() => {
+                    this.loading = false;
+                    if (!draft) {
+                        this.dialogRef.close(null);
+                    } else {
+                        this.dataSaved = true;
+                    }
+                }, 1000);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+    }
+
+    public async onStep(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
         if (this.dataForm.valid || draft) {
-            const data = this.dataForm.getRawValue();
-            this.loading = true;
-
-            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
-
-            prepareVcData(data);
-            const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;
-            this.storage.delete(this.autosaveId);
-
-            this.policyEngineService
-                .setBlockData(this.id, this.policyId, {
-                    document: data,
-                    ref: this.docRef,
-                    draft: draft,
-                    draftId: draftId,
-                })
-                .subscribe(() => {
-                    setTimeout(() => {
-                        this.loading = false;
-                        if (!draft) {
-                            this.dialogRef.close(null);
-                        } else {
-                            this.dataSaved = true;
-                        }
-                    }, 1000);
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                });
+            if (this.wallet) {
+                if (this.isStep(0)) {
+                    this.setStep(1);
+                    this.loadWallets();
+                } else {
+                    await this.onSubmit(draft);
+                }
+            } else {
+                await this.onSubmit(draft);
+            }
         }
     }
 
@@ -225,14 +285,25 @@ export class RequestDocumentBlockDialog {
 
     public handleSubmitBtnEvent($event: any, data: RequestDocumentBlockDialog) {
         if (data.dataForm.valid || !this.loading) {
-            data.onSubmit();
+            data.onStep();
         }
     }
 
     public handleSaveBtnEvent($event: any, data: RequestDocumentBlockDialog) {
         if (!this.loading) {
-            data.onSubmit(true);
+            data.onStep(true);
         }
+    }
+
+    public getButtonName(item: any) {
+        if (this.wallet && item.id === 'submit') {
+            if (this.isStep(0)) {
+                return this.buttonNames['wallet'];
+            } else {
+                return this.buttonNames['submit'];
+            }
+        }
+        return this.buttonNames[item.id] || item.text;
     }
 
     public onChangeButtons($event: any) {
@@ -240,18 +311,35 @@ export class RequestDocumentBlockDialog {
             this.buttons = [];
             if (Array.isArray($event)) {
                 for (const item of $event) {
-                    this.buttons.push({
-                        ...item,
-                        text: this.buttonNames[item.id] || item.text
-                    })
+                    this.buttons.push({ ...item });
                 }
             }
         }, 0);
     }
 
+    public ifWalletDisabled() {
+        if (this.wallet) {
+            if (this.isStep(1)) {
+                if (this.walletType === 'account') {
+                    return false;
+                } else if (this.walletType === 'wallet') {
+                    return !this.currentWallet;
+                } else if (this.walletType === 'new') {
+                    return this.walletForm.invalid;
+                } else {
+                    return null;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
     public ifDisabledBtn(config: any) {
         if (config.id === 'submit') {
-            return !this.dataForm.valid || this.loading;
+            return !this.dataForm.valid || this.loading || this.ifWalletDisabled();
         } else {
             return false;
         }
@@ -259,5 +347,37 @@ export class RequestDocumentBlockDialog {
 
     public detectChanges() {
         this.changeDetectorRef.detectChanges();
+    }
+
+    public isStep(index: number) {
+        return this.stepper[index];
+    }
+
+    public setStep(index: number) {
+        for (let i = 0; i < this.stepper.length; i++) {
+            this.stepper[i] = false;
+        }
+        this.stepper[index] = true;
+    }
+
+    public isActionStep(index: number): boolean {
+        return this.stepper[index];
+    }
+
+    public onGenerateWallet() {
+        this.loading = true;
+        this.projectWalletService
+            .generateProjectWallet()
+            .subscribe((account) => {
+                const data = this.walletForm.value;
+                this.walletForm.setValue({
+                    name: data.name || '',
+                    account: account.id || '',
+                    key: account.key || ''
+                })
+                this.loading = false;
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

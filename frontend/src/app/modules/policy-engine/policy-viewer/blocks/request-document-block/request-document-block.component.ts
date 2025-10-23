@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { DocumentGenerator, DocumentValidators, ISchema, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -20,6 +20,7 @@ import { DocumentAutosaveStorage } from '../../../structures';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { PolicyStatus } from '@guardian/interfaces';
+import { ProjectWalletService } from 'src/app/services/project-wallet.service';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -29,6 +30,7 @@ interface IRequestDocumentData {
     presetFields: any[];
     restoreData: any;
     data: any;
+    wallet: boolean;
     draft: boolean;
     editType: 'new' | 'edit';
     uiMetaData: {
@@ -91,10 +93,20 @@ export class RequestDocumentBlockComponent
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public readonly: boolean = false;
     public draft: boolean;
+    public wallet: boolean;
     public draftId?: string;
     public dialog: RequestDocumentBlockDialog;
     public edit: boolean;
     private storage: DocumentAutosaveStorage;
+    private stepper = [true, false, false];
+    public walletType: string = 'account';
+    public currentWallet: string;
+    public wallets: any[] = [];
+    public walletForm = new FormGroup({
+        name: new FormControl<string>('', Validators.required),
+        account: new FormControl<string>('', Validators.required),
+        key: new FormControl<string>('', Validators.required),
+    });
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -102,6 +114,7 @@ export class RequestDocumentBlockComponent
         profile: ProfileService,
         policyHelper: PolicyHelper,
         private schemaRulesService: SchemaRulesService,
+        private projectWalletService: ProjectWalletService,
         private fb: UntypedFormBuilder,
         private dialogService: DialogService,
         private router: Router,
@@ -205,6 +218,7 @@ export class RequestDocumentBlockComponent
             this.edit = data.editType === 'edit';
             this.schema = new Schema(schema);
             this.hideFields = {};
+            this.wallet = !!data.wallet;
             this.draft = isDraft;
             this.draftId = (isDraft && row) ? row.id : null;
             if (uiMetaData.privateFields) {
@@ -275,6 +289,22 @@ export class RequestDocumentBlockComponent
             });
     }
 
+
+    private loadWallets() {
+        this.loading = true;
+        this.projectWalletService
+            .getProjectWalletsAll()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((wallets: any[]) => {
+                this.wallets = wallets;
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
     private getJson(data: any, presetFields: any[]) {
         try {
             if (data) {
@@ -306,59 +336,89 @@ export class RequestDocumentBlockComponent
         return null;
     }
 
-    public async onSubmit(draft?: boolean) {
+    public async onStep(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
-
         if (this.dataForm.valid || draft) {
-            const data = this.dataForm.getRawValue();
-            this.loading = true;
-            this.storage.delete(this.getAutosaveId());
-
-            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
-
-            prepareVcData(data);
-
-            let requestSucceeded = false;
-
-            this.policyEngineService
-                .setBlockData(this.id, this.policyId, {
-                    document: data,
-                    ref: this.ref,
-                    draft,
-                    draftId: this.draftId
-                })
-                .pipe(
-                    finalize(async () => {
-                        try {
-                            if (!requestSucceeded) {
-                                await this.tablePersist.rollbackIpfsUploads();
-                            }
-                        } finally {
-                            this.loading = false;
-                        }
-                    })
-                )
-                .subscribe(() => {
-                    requestSucceeded = true;
-
-                    setTimeout(() => {
-                        this.loading = false;
-                        if (!draft) {
-                            this.dialogRef.close(null);
-                        }
-                    }, 1000);
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                });;
+            if (this.wallet) {
+                if (this.isStep(0)) {
+                    this.setStep(1);
+                    this.loadWallets();
+                } else {
+                    await this.onSubmit(draft);
+                }
+            } else {
+                await this.onSubmit(draft);
+            }
         }
+    }
+
+    private getWallet() {
+        if (this.wallet) {
+            if (this.walletType === 'account') {
+                return null;
+            } else if (this.walletType === 'wallet') {
+                return this.currentWallet;
+            } else if (this.walletType === 'new') {
+                return this.walletForm.value;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private async onSubmit(draft?: boolean) {
+        const data = this.dataForm.getRawValue();
+        this.loading = true;
+        this.storage.delete(this.getAutosaveId());
+
+        await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+
+        prepareVcData(data);
+
+        let requestSucceeded = false;
+
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                document: data,
+                ref: this.ref,
+                draft,
+                draftId: this.draftId,
+                wallet: this.getWallet()
+            })
+            .pipe(
+                finalize(async () => {
+                    try {
+                        if (!requestSucceeded) {
+                            await this.tablePersist.rollbackIpfsUploads();
+                        }
+                    } finally {
+                        this.loading = false;
+                    }
+                })
+            )
+            .subscribe(() => {
+                requestSucceeded = true;
+
+                setTimeout(() => {
+                    this.loading = false;
+                    if (!draft && this.dialogRef) {
+                        this.dialogRef.close(null);
+
+                    }
+                }, 1000);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 
     public handleSaveBtnEvent($event: any) {
         if (!this.loading) {
-            this.onSubmit(true);
+            this.onStep(true);
         }
     }
 
@@ -417,14 +477,14 @@ export class RequestDocumentBlockComponent
     }
 
     private showDocumentDialog() {
-        const dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
+        this.dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
             showHeader: false,
             width: '1000px',
-            styleClass: 'guardian-dialog',
+            styleClass: 'guardian-dialog without-padding',
             data: this
         });
 
-        dialogRef && dialogRef.onClose.subscribe(async (result) => { });
+        this.dialogRef && this.dialogRef.onClose.subscribe(async (result: any) => { });
     }
 
     private showAutosaveDialog(autosaveDocument: string, callback?: any) {
@@ -539,5 +599,61 @@ export class RequestDocumentBlockComponent
                 }
             }
         }
+    }
+
+    public isStep(index: number) {
+        return this.stepper[index];
+    }
+
+    public setStep(index: number) {
+        for (let i = 0; i < this.stepper.length; i++) {
+            this.stepper[i] = false;
+        }
+        this.stepper[index] = true;
+    }
+
+    public isActionStep(index: number): boolean {
+        return this.stepper[index];
+    }
+
+    public onGenerateWallet() {
+        this.loading = true;
+        this.projectWalletService
+            .generateProjectWallet()
+            .subscribe((account) => {
+                const data = this.walletForm.value;
+                this.walletForm.setValue({
+                    name: data.name || '',
+                    account: account.id || '',
+                    key: account.key || ''
+                })
+                this.loading = false;
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public ifWalletDisabled() {
+        if (this.wallet) {
+            if (this.isStep(1)) {
+                if (this.walletType === 'account') {
+                    return false;
+                } else if (this.walletType === 'wallet') {
+                    return !this.currentWallet;
+                } else if (this.walletType === 'new') {
+                    return this.walletForm.invalid;
+                } else {
+                    return null;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    public ifDisabledBtn() {
+        return !this.dataForm.valid || this.loading || this.ifWalletDisabled();
     }
 }

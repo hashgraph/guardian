@@ -137,6 +137,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { PasswordModule } from 'primeng/password';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
 import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
@@ -302,6 +303,7 @@ import { PolicyRepositoryComponent } from './policy-repository/policy-repository
         SplitButtonModule,
         TabViewModule,
         RadioButtonModule,
+        PasswordModule,
         InputSwitchModule,
         AppRoutingModule,
         DialogModule,

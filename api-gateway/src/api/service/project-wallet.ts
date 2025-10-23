@@ -29,6 +29,27 @@ export class ProjectWalletApi {
         summary: '',
         description: ''
     })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiQuery({
+        name: 'search',
+        type: String,
+        description: '',
+        required: false,
+        example: 'search'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Object
@@ -41,10 +62,18 @@ export class ProjectWalletApi {
     @HttpCode(HttpStatus.OK)
     async getProjectWallets(
         @AuthUser() user: IAuthUser,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('search') search?: string,
     ): Promise<any> {
         try {
             const users = new Users();
-            return await users.getProjectWallets(user);
+            const filters = {
+                search,
+                pageIndex,
+                pageSize
+            }
+            return await users.getProjectWallets(user, filters);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -116,6 +145,37 @@ export class ProjectWalletApi {
         try {
             const users = new Users();
             return await users.getCurrentWallet(user);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * 
+     */
+    @Get('/all')
+    @Auth(
+    )
+    @ApiOperation({
+        summary: '',
+        description: ''
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Object
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getProjectWalletsAll(
+        @AuthUser() user: IAuthUser,
+    ): Promise<any> {
+        try {
+            const users = new Users();
+            return await users.getProjectWalletsAll(user);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

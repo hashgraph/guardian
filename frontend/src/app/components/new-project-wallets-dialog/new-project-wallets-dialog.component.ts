@@ -25,10 +25,18 @@ export class NewProjectWalletDialog {
         private dialogService: DialogService,
     ) {
         this.title = this.config.data?.title || '';
+        this.readonly = true;
+        this.dataForm.get('key')?.disable();
     }
 
     ngOnInit() {
-        this.loading = false;
+        setTimeout(() => {
+            this.readonly = false;
+            this.dataForm.get('key')?.enable();
+        }, 1000);
+        setTimeout(() => {
+            this.loading = false;
+        }, 1100);
     }
 
     ngOnDestroy(): void {

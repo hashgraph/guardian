@@ -107,6 +107,12 @@
     }
 }
 
+.guardian-dialog.without-padding {
+    .p-dialog-content {
+        padding: 0 !important;
+    }
+}
+
 .draft-dialog {
     .action-buttons button {
         padding: 5px 24px;

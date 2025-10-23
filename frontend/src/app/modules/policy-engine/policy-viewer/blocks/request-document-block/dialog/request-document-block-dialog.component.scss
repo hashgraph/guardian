@@ -10,6 +10,8 @@
 }
 
 .dialog-header {
+    padding: 32px 32px 24px 32px !important;
+
     .header-item {
         padding: 6px 12px;
         margin: 0px 16px;
@@ -49,13 +51,26 @@ form {
     position: relative;
     display: flex;
     flex-direction: column;
+    padding-left: 32px;
 
     .dialog-body-container {
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .body-dialog-template {
         overflow: auto;
-        padding-right: 8px;
+        margin-right: 12px;
+        padding-right: 12px;
+        scrollbar-gutter: stable;
     }
 
     margin-bottom: 16px;
+}
+
+.dialog-footer {
+    padding: 20px 32px 32px 32px !important;
 }
 
 .action-buttons {
@@ -103,17 +118,17 @@ form {
     }
 
     .dialog-button[id="save"][visible="false"]+.last-autosave {
-        right: 20px;
+        right: 52px;
     }
 
     .dialog-button[id="save"][visible="true"]+.last-autosave {
-        right: 150px;
+        right: 182px;
     }
 }
 
 .last-autosave {
     position: absolute;
-    right: 150px;
+    right: 182px;
     bottom: 42px;
     font-size: 14px;
     color: #8E8E8E;
@@ -148,9 +163,11 @@ form {
     color: var(--primary-color);
     background: #F9FAFC;
     border: 1px solid #C4D0E1;
-    height: 65px;
+    height: 52px;
+    min-height: 52px;
     border-radius: 8px;
     margin-bottom: 16px;
+    margin-right: 32px;
 
     svg-icon {
         height: 30px;
@@ -168,4 +185,106 @@ form {
         height: 30px;
         padding: 0px 30px 0px 12px;
     }
+}
+
+.wallet-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    min-height: 48px;
+    margin-bottom: 16px;
+    margin-right: 32px;
+}
+
+.guardian-step-container {
+    width: 100%;
+
+    .guardian-step {
+        margin: 0 !important;
+    }
+
+    .guardian-step-separator {
+        min-height: 34px !important;
+        width: 100%;
+    }
+
+    .guardian-stepper {
+        .guardian-step:first-child {
+            padding-left: 0px;
+        }
+
+        .guardian-step:last-child {
+            padding-right: 0px;
+        }
+    }
+}
+
+* [visibility="false"] {
+    height: 0px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    overflow: hidden;
+}
+
+
+.wallet-container {
+    .wallet-type-values {
+        display: flex;
+        flex-direction: column;
+        width: fit-content;
+        width: 100%;
+
+        .wallet-type-value {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 40px;
+            align-items: center;
+            cursor: pointer;
+            margin-right: 24px;
+
+            .wallet-type-value-select {
+                width: 24px;
+                height: 24px;
+            }
+
+            .wallet-type-value-name {
+                padding: 4px 0 4px 8px;
+                height: 24px;
+                text-align: left;
+                color: var(--guardian-font-color, #23252E);
+                cursor: pointer;
+                font-family: Poppins;
+                font-weight: 600;
+                font-size: 16px;
+                line-height: 20px;
+                vertical-align: middle;
+            }
+        }
+    }
+}
+
+.wallet-type-config {
+    width: 100%;
+    padding: 24px 16px 24px 32px;
+
+    &[selected="false"] {
+        filter: grayscale(1);
+        opacity: 0.7;
+        pointer-events: none;
+    }
+}
+
+.wallet-form {
+    margin-bottom: 24px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 50% 50%;
+    gap: 16px;
+}
+
+.guardian-button {
+    height: 40px;
+    padding: 1px 16px;
 }

@@ -23,6 +23,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { TooltipModule } from 'primeng/tooltip';
 import { TreeModule } from 'primeng/tree';
 import { MenuModule } from 'primeng/menu';
+import { PasswordModule } from 'primeng/password';
 
 @NgModule({
     declarations: [],
@@ -47,7 +48,8 @@ import { MenuModule } from 'primeng/menu';
         TooltipModule,
         DragDropModule,
         CdkTableModule,
-        MenuModule
+        MenuModule,
+        PasswordModule
     ],
     exports: [
         TabViewModule,

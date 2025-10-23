@@ -119,6 +119,61 @@ export class ProjectWalletService extends NatsService {
          */
         this.getMessages(AuthEvents.GET_PROJECT_WALLETS,
             async (msg: {
+                user: IAuthUser,
+                filters: {
+                    search?: string,
+                    pageIndex?: number | string,
+                    pageSize?: number | string
+                }
+            }) => {
+                try {
+                    const { user, filters } = msg;
+                    const { search, pageIndex, pageSize } = filters;
+
+                    const entityRepository = new DatabaseServer();
+                    const target = await entityRepository.findOne(User, {
+                        did: user.did
+                    });
+                    if (!target && target.did) {
+                        return new MessageError('User does not exist.');
+                    }
+
+                    const otherOptions: any = {};
+                    const _pageSize = parseInt(String(pageSize), 10);
+                    const _pageIndex = parseInt(String(pageIndex), 10);
+                    if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.limit = _pageSize;
+                        otherOptions.offset = _pageIndex * _pageSize;
+                    } else {
+                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.limit = 100;
+                    }
+
+                    const query: any = {
+                        owner: user.did
+                    };
+                    if (search) {
+                        query.name = { $regex: '.*' + search + '.*' }
+                    }
+
+                    const wallets = await entityRepository.find(ProjectWallet, query, otherOptions);
+
+                    return new MessageResponse(wallets);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Get project wallets
+         * @param user - user
+         *
+         * @returns {any[]} wallets
+         */
+        this.getMessages(AuthEvents.GET_PROJECT_WALLETS_ALL,
+            async (msg: {
                 user: IAuthUser
             }) => {
                 try {
