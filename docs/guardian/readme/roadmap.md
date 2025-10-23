@@ -209,10 +209,6 @@ A clear and concise description of what you expected to happen.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4507](https://github.com/hashgraph/guardian/issues/4507)
 
-Nested schemas for complex conditions
-
-### ---November---
-
 **Option to delete all schemas for a particular policy in Draft stage​**
 
 There may be another solution/improvement to the excel where it checks for duplicates and provides with an option to replace. Similar to the file system in macOS for example where it doesnt allow 2 folders with the same name at a particular destination. Issue for that created here: [#4754](https://github.com/hashgraph/guardian/issues/4754)
@@ -224,6 +220,34 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4753](https://githu
 But I believe there is one more check which the guardian can do when the excel is imported and that is to check for duplicates and provide the user with an option to either replace the schema or keep both the files.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4754](https://github.com/hashgraph/guardian/issues/4754)
+
+#### Nested schemas for complex conditions
+
+* Cross-sub-schema referencing:\
+  \- Conditions should be able to reference fields located in other sub-schemas or sections.\
+  \- Example: A “Parameters for Validation” field’s visibility or requirement should depend on the “Application of Methodology” field located in a different sub-schema.
+* Multi-field logic:\
+  \- A single condition should support evaluation of multiple fields simultaneously.\
+  \- Example: A field becomes visible or required only when both “GHG Sources/Carbon Pools” and “Temporal Boundary” fields meet specific values.
+* Chained conditional logic (presentation order):\
+  \- Conditional fields should be able to reference other conditional fields, allowing a sequential display order.\
+  \- Example:\
+  \- If Field 1 is true → show Field 2.\
+  \- If Field 2 is true → show Field 3.
+* Dynamic updates:\
+  \- When a user changes a field value, all dependent conditions across the entire schema should re-evaluate in real time.\
+  \- This ensures immediate UI updates for visibility and requirement changes.
+* Automatic data reset:\
+  \- If a field becomes hidden due to a condition change, all data previously entered in that field should automatically clear.\
+  \- This avoids invalid or inconsistent state retention.
+* User guidance and clarity:\
+  \- Sequential logic and real-time updates should create a natural flow for users.\
+  \- Only relevant questions are displayed based on prior responses, improving data accuracy and reducing confusion.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/5344](https://github.com/hashgraph/guardian/issues/5344)\
+
+
+### ---November---
 
 **Deterministic compression​**
 
