@@ -16734,7 +16734,30 @@ paths:
     get:
       description: ''
       operationId: ProjectWalletApi_getProjectWallets
-      parameters: []
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+        - name: search
+          required: false
+          in: query
+          description: ''
+          schema:
+            example: search
+            type: string
       responses:
         '200':
           description: Successful operation.
@@ -16794,6 +16817,33 @@ paths:
     get:
       description: ''
       operationId: ProjectWalletApi_getCurrentWallet
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: ''
+      tags:
+        - project-wallet
+  /project-wallet/all:
+    get:
+      description: ''
+      operationId: ProjectWalletApi_getProjectWalletsAll
       parameters: []
       responses:
         '200':
