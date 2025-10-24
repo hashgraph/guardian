@@ -18,7 +18,7 @@
         "ajv-formats": "^3.0.1",
         "angular-svg-icon": "^18.0.2",
         "angularx-qrcode": "^18.0.2",
-        "codemirror": "^5.65.0",
+        "codemirror": "^6.0.0",
         "cronstrue": "^2.59.0",
         "file-saver": "^2.0.5",
         "idb": "^8.0.3",
