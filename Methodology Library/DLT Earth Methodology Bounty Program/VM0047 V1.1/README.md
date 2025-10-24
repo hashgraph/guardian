@@ -3,13 +3,6 @@
 ## Introduction
 The VM0047 methodology provides a standardized approach for quantifying and verifying greenhouse gas (GHG) emission reductions and removals from afforestation, reforestation, and revegetation (ARR) projects. It establishes eligibility criteria, baseline determination methods, and monitoring procedures to ensure accurate carbon credit issuance. This methodology enhances transparency, ensures additionality, and promotes sustainable land-use practices, supporting global climate change mitigation efforts.
 
-## Documentation
-
-This is a brief description of methodology and policy. You can find detailed version with formulas and screenshots here:
-
-![PDF version](https://evercity-public.s3.eu-central-1.amazonaws.com/public/VM0047+guardian+userflow+description.pdf)
-![Google doc](https://docs.google.com/document/d/1WnAN0Ky8IFssgpUe3_P22eK6_h2Wel1TGhxVctazC_c/edit?usp=drivesdk)
-
 ## Need and Use
 VM0047 is essential for projects aiming to restore vegetation cover and sequester atmospheric carbon. It offers structured guidelines for project developers, ensuring measurable and verifiable GHG reductions. The methodology applies to a wide range of ARR activities, including forest restoration, agroforestry, and urban greening. By incorporating advanced remote sensing and dynamic performance benchmarks, VM0047 increases credibility and enables accurate assessment of carbon sequestration benefits.
 
@@ -67,6 +60,13 @@ To **quantify the actual GHG removals** that occurred, based on **measured or mo
 VM0047 supports the issuance of carbon forward contracts, allowing project developers to sell future carbon credits before they are officially verified. These contracts help secure funding for afforestation, reforestation, and revegetation projects by locking in buyers at a predetermined price. However, since credits are issued only after verification by Verra, project developers must manage delivery risks and ensure compliance with baseline and additionality requirements.
 
 ## Policy Guide
+
+## Documentation
+
+This is a brief description of methodology and policy. You can find detailed version with formulas and screenshots here:
+
+[PDF version](https://evercity-public.s3.eu-central-1.amazonaws.com/public/VM0047+guardian+userflow+description.pdf)
+[Google doc](https://docs.google.com/document/d/1WnAN0Ky8IFssgpUe3_P22eK6_h2Wel1TGhxVctazC_c)
 
 ### Roles
 
