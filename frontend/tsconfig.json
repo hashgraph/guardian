@@ -20,6 +20,7 @@
     "module": "es2020",
     "lib": [
       "es2018",
+      "ES2022",
       "dom",
       "dom.iterable",
       "WebWorker"

@@ -1,0 +1,75 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{header}}</div>
+    </div>
+    <div class="header-icon" (click)="close()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+
+<div class="dialog-body">
+    <div class="rules" [formGroup]="form">
+        <div
+            class="rule"
+            *ngFor="let option of presetRuleOptions; trackBy: trackByOptionKey"
+        >
+            <div class="rule-text">
+                <div class="rule-label">
+                    {{ option.label }}
+                </div>
+
+                <div class="rule-hint" *ngIf="option.hint">
+                    {{ option.hint }}
+                </div>
+            </div>
+
+            <div class="rule-controls">
+                <p-inputSwitch
+                    [inputId]="option.key + '_switch'"
+                    [formControlName]="option.key">
+                </p-inputSwitch>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="create-policy-button">
+            <div class="dialog-button">
+                <button
+                    type="button"
+                    pButton
+                    class="guardian-button guardian-button-secondary p-button-outlined"
+                    (click)="clearAll()"
+                >
+                    Clear Selection
+                </button>
+            </div>
+        </div>
+
+        <div class="navigation-buttons">
+            <div class="dialog-button">
+                <button
+                    type="button"
+                    pButton
+                    class="prev-button guardian-button guardian-button-secondary p-button-text"
+                    (click)="close()"
+                >
+                    Cancel
+                </button>
+            </div>
+
+            <div class="dialog-button">
+                <button
+                    type="button"
+                    pButton
+                    class="next-button guardian-button guardian-button-primary"
+                    (click)="save()"
+                >
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -21,6 +21,12 @@ export class BlockErrorsDTO {
     @ApiProperty({ type: 'string', isArray: true })
     errors: string[];
 
+    @ApiProperty({ type: 'string', isArray: true, required: false })
+    warnings?: string[];
+
+    @ApiProperty({ type: 'string', isArray: true, required: false })
+    infos?: string[];
+
     @ApiProperty({ type: 'boolean' })
     isValid: boolean;
 }
@@ -31,4 +37,10 @@ export class ValidationErrorsDTO {
 
     @ApiProperty({ type: 'string', isArray: true, nullable: true })
     errors?: string[];
+
+    @ApiProperty({ type: 'string', isArray: true, required: false })
+    warnings?: string[];
+
+    @ApiProperty({ type: 'string', isArray: true, required: false })
+    infos?: string[];
 }

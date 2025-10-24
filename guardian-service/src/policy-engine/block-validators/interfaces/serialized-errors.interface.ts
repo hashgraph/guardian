@@ -16,6 +16,16 @@ export interface ISerializedErrors {
     errors?: string[];
 
     /**
+     * Common warnings
+     */
+    warnings?: string[];
+
+    /**
+     * Infos
+     */
+    infos?: string[];
+
+    /**
      * Modules
      */
     modules?: IModulesErrors[];

@@ -20,6 +20,8 @@ export class FlatBlockNode {
     public prevNode!: FlatBlockNode;
     public data!: any;
     public error!: boolean;
+    public warning!: boolean;
+    public info!: boolean;
     public deprecated!: boolean;
     public style!: string;
     public canAddModules!: boolean;
