@@ -1,5 +1,5 @@
 import { DatabaseServer, Policy } from '@guardian/common';
-import { ISchema, ModuleStatus, SchemaEntity, IgnoreRule, computeReachabilityAndDistribute } from '@guardian/interfaces';
+import { ISchema, ModuleStatus, SchemaEntity, IgnoreRule } from '@guardian/interfaces';
 import { BlockValidator } from './block-validator.js';
 import { ModuleValidator } from './module-validator.js';
 import { ISerializedErrors } from './interfaces/serialized-errors.interface.js';
@@ -122,8 +122,6 @@ export class PolicyValidator {
         // }
         this.addPermissions(policy.policyRoles);
         await this.registerBlock(policy.config);
-
-        computeReachabilityAndDistribute(Array.from(this.blocks.values()), this.ignoreRules);
 
         await this.registerSchemas();
         return true;
