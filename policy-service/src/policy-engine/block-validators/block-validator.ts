@@ -47,14 +47,7 @@ import { TagsManagerBlock } from './blocks/tag-manager.js';
 import { ExternalTopicBlock } from './blocks/external-topic-block.js';
 import { MessagesReportBlock } from './blocks/messages-report-block.js';
 import { NotificationBlock } from './blocks/notification.block.js';
-import {
-    ISchema,
-    SchemaEntity,
-    SchemaField,
-    SchemaHelper,
-    buildMessagesForValidator,
-    IgnoreRule
-} from '@guardian/interfaces';
+import { ISchema, SchemaEntity, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { ToolValidator } from './tool-validator.js';
 import { ToolBlock } from './blocks/tool.js';
 import { ExtractDataBlock } from './blocks/extract-data.js';
@@ -184,7 +177,6 @@ export class BlockValidator {
     constructor(
         config: any,
         validator: PolicyValidator | ModuleValidator | ToolValidator,
-        private readonly ignoreRules?: ReadonlyArray<IgnoreRule>,
     ) {
         this.errors = [];
         this.validator = validator;
@@ -318,15 +310,6 @@ export class BlockValidator {
      */
     public async validate(): Promise<void> {
         try {
-            const { warningsText, infosText } = buildMessagesForValidator(
-                this.blockType,
-                this.options,
-                this.ignoreRules
-            );
-
-            this.warningMessagesText.push(...warningsText);
-            this.infoMessagesText.push(...infosText);
-
             if (this.validator.tagCount(this.tag) > 1) {
                 this.addError(`Tag ${this.tag} already exist`);
             }

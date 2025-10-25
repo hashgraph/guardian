@@ -1,5 +1,5 @@
 import { DatabaseServer, Policy } from '@guardian/common';
-import { ISchema, ModuleStatus, SchemaEntity, IgnoreRule } from '@guardian/interfaces';
+import {ISchema, ModuleStatus, SchemaEntity, IgnoreRule, buildMessagesForValidator} from '@guardian/interfaces';
 import { BlockValidator } from './block-validator.js';
 import { ModuleValidator } from './module-validator.js';
 import { ISerializedErrors } from './interfaces/serialized-errors.interface.js';
@@ -118,6 +118,22 @@ export class PolicyValidator {
             this.addPermissions(policy.policyRoles);
             await this.registerBlock(policy.config);
 
+            for (const block of this.blocks.values()) {
+                const blockType = block.getBlockType();
+
+                const raw = (block as any).getRawConfig?.();
+                const usedProps = raw?.options ?? (block as any).getOptions?.();
+
+                const {warningsText, infosText} = buildMessagesForValidator(
+                    blockType,
+                    usedProps,
+                    this.ignoreRules,
+                );
+
+                block.addPrecomputedMessagesAsText(warningsText, 'warning');
+                block.addPrecomputedMessagesAsText(infosText, 'info');
+            }
+
             await this.registerSchemas();
             return true;
         }
@@ -154,11 +170,11 @@ export class PolicyValidator {
                 validator = this.blocks.get(block.id);
                 this.errors.push(`UUID ${block.id} already exist`);
             } else {
-                validator = new BlockValidator(block, this, this.ignoreRules);
+                validator = new BlockValidator(block, this);
                 this.blocks.set(block.id, validator);
             }
         } else {
-            validator = new BlockValidator(block, this, this.ignoreRules);
+            validator = new BlockValidator(block, this);
             this.errors.push(`UUID is not set`);
         }
 

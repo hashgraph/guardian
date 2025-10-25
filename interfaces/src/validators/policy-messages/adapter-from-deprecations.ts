@@ -5,7 +5,8 @@ import {
 } from '../deprecations/index.js';
 
 import {
-    MSG_DEPRECATION_BLOCK, MSG_DEPRECATION_PROP,
+    MSG_DEPRECATION_BLOCK,
+    MSG_DEPRECATION_PROP,
     PolicyMessage
 } from './types.js';
 

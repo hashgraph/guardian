@@ -52,8 +52,8 @@ import {
     SchemaEntity,
     SchemaField,
     SchemaHelper,
-    buildMessagesForValidator,
-    IgnoreRule
+    RawNodeView,
+    projectRawNode
 } from '@guardian/interfaces';
 import { ToolValidator } from './tool-validator.js';
 import { ToolBlock } from './blocks/tool.js';
@@ -181,10 +181,15 @@ export class BlockValidator {
      */
     private parentId?: string;
 
+    /**
+     * Raw Node View
+     * @private
+     */
+    private readonly rawNodeView: RawNodeView;
+
     constructor(
         config: any,
         validator: PolicyValidator | ModuleValidator | ToolValidator,
-        private readonly ignoreRules?: ReadonlyArray<IgnoreRule>,
     ) {
         this.errors = [];
         this.validator = validator;
@@ -200,6 +205,8 @@ export class BlockValidator {
         }
         this.options = options;
         this.children = [];
+
+        this.rawNodeView = projectRawNode(config);
     }
 
     /**
@@ -275,24 +282,10 @@ export class BlockValidator {
     }
 
     /**
-     * Get options
-     */
-    public getOptions(): unknown {
-        return this.options;
-    }
-
-    /**
      * Get parent id
      */
     public getParentId(): string | undefined {
         return this.parentId;
-    }
-
-    /**
-     * Get children ids
-     */
-    public getChildrenIds(): string[] {
-        return this.children.map(child => child.getId());
     }
 
     /**
@@ -314,20 +307,17 @@ export class BlockValidator {
     }
 
     /**
+     * Get Raw Config
+     */
+    public getRawConfig(): RawNodeView {
+        return this.rawNodeView;
+    }
+
+    /**
      * Validate
      */
     public async validate(): Promise<void> {
         try {
-
-            const { warningsText, infosText } = buildMessagesForValidator(
-                this.blockType,
-                this.options,
-                this.ignoreRules
-            );
-
-            this.warningMessagesText.push(...warningsText);
-            this.infoMessagesText.push(...infosText);
-
             if (this.validator.tagCount(this.tag) > 1) {
                 this.addError(`Tag ${this.tag} already exist`);
             }

@@ -6,12 +6,14 @@ export const MSG_DEPRECATION_BLOCK = 'DEPRECATION_BLOCK' as const;
 export const MSG_DEPRECATION_PROP  = 'DEPRECATION_PROP'  as const;
 export const MSG_REACH_NO_IN       = 'REACHABILITY_NO_IN'  as const;
 export const MSG_REACH_NO_OUT      = 'REACHABILITY_NO_OUT' as const;
+export const MSG_REACH_ISOLATED    = 'REACHABILITY_ISOLATED' as const;
 
 export type MessageCode =
     | typeof MSG_DEPRECATION_BLOCK
     | typeof MSG_DEPRECATION_PROP
     | typeof MSG_REACH_NO_IN
-    | typeof MSG_REACH_NO_OUT;
+    | typeof MSG_REACH_NO_OUT
+    | typeof MSG_REACH_ISOLATED;
 
 /**
  * A universal message that the validator can show to the user.

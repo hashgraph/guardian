@@ -1,15 +1,7 @@
-import {
-    getDeprecationMessagesForBlock,
-    getDeprecationMessagesForProperties
-} from './adapter-from-deprecations.js';
-
-import {
-    PolicyMessage
-} from './types.js';
-
-import {
-    IgnoreRule,
-} from './ignore.js';
+import {getDeprecationMessagesForBlock, getDeprecationMessagesForProperties} from './adapter-from-deprecations.js';
+import {PolicyMessage} from './types.js';
+import {IgnoreRule,} from './ignore.js';
+import {collapseReachabilityMessages} from "./reachability.js";
 
 /**
  * Builds a deduplication key for a message.
@@ -66,13 +58,12 @@ export function applyIgnoreRules(
 /**
  * A single entry point: collect all messages for a block from domain registries
  * and return a flat list of PolicyMessage.
- *
- * Currently only the “deprecations” source is connected.
- * In the future, performance/best-practice adapters can be added here as well.
  */
 export function getPolicyMessagesForBlock(
     blockType: string,
-    usedProperties: Record<string, unknown> | undefined
+    usedProperties: Record<string, unknown> | undefined,
+    currentBlockId?: string,
+    reachabilityPerBlock?: Map<string, PolicyMessage[]>
 ): PolicyMessage[] {
     const messages: PolicyMessage[] = [];
 
@@ -82,6 +73,14 @@ export function getPolicyMessagesForBlock(
 
     for (const message of getDeprecationMessagesForProperties(blockType, usedProperties)) {
         messages.push(message);
+    }
+
+    if (currentBlockId && reachabilityPerBlock) {
+        const reachMsgs = reachabilityPerBlock.get(currentBlockId);
+
+        if (reachMsgs?.length) {
+            messages.push(...reachMsgs);
+        }
     }
 
     return deduplicateMessages(messages);
@@ -96,19 +95,22 @@ export function getPolicyMessagesForBlock(
 export function buildMessagesForValidator(
     blockType: string,
     usedProperties: Record<string, unknown> | undefined,
-    ignoreRules?: ReadonlyArray<IgnoreRule>
+    ignoreRules?: ReadonlyArray<IgnoreRule>,
+    reachabilityPerBlock?: Map<string, PolicyMessage[]>,
+    currentBlockId?: string
 ): {
     messages: PolicyMessage[];
     warningsText: string[];
     infosText: string[];
 } {
-    const allMessages = getPolicyMessagesForBlock(blockType, usedProperties);
+    const allMessages = getPolicyMessagesForBlock(blockType, usedProperties, currentBlockId, reachabilityPerBlock);
     const filtered = applyIgnoreRules(allMessages, ignoreRules);
+    const collapsed = collapseReachabilityMessages(filtered);
 
     const warningsText: string[] = [];
     const infosText: string[] = [];
 
-    for (const message of filtered) {
+    for (const message of collapsed) {
         if (message.severity === 'warning') {
             warningsText.push(message.text);
         } else {
@@ -117,7 +119,7 @@ export function buildMessagesForValidator(
     }
 
     return {
-        messages: filtered,
+        messages: collapsed,
         warningsText,
         infosText
     };
