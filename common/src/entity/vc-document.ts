@@ -314,6 +314,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         prop.signature = this.signature;
         prop.schema = this.schema;
         prop.relationships = this.relationships;
+        prop.wallet = this.wallet;
         prop.processingStatus = this.processingStatus;
         prop.policyId = this.policyId;
         return prop;
