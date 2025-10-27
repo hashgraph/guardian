@@ -282,16 +282,32 @@ export class Users extends NatsService {
         }
         const userID = userFull.hederaAccountId;
         const userDID = userFull.did;
+        const id = userFull.id;
         if (!userDID || !userID) {
             throw new Error('Hedera Account not found');
         }
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
         const signOptions = await this.wallet.getUserSignOptions(userFull);
         return {
+            id,
             did: userDID,
             hederaAccountId: userID,
             hederaAccountKey: userKey,
             signOptions
         }
+    }
+
+    /**
+     * Return user wallet
+     * @param did
+     * @param wallet
+     * @param userId
+     */
+    public async getUserWallet(
+        did: string,
+        wallet: string,
+        userId: string | null
+    ): Promise<string> {
+        return await this.sendMessage(AuthEvents.GET_USER_WALLET, { did, wallet, userId });
     }
 }

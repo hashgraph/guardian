@@ -20,6 +20,7 @@ const filename = fileURLToPath(import.meta.url);
 
 interface IMetadata {
     owner: PolicyUser;
+    wallet: string;
     id: string;
     reference: string;
     accounts: any;
@@ -346,6 +347,7 @@ export class CustomLogicBlock {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
         const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
+        const wallet = await PolicyUtils.getDocumentWallet(ref, firstDocument, userId);
         const relationships = [];
         let accounts: any = {};
         let tokens: any = {};
@@ -400,7 +402,7 @@ export class CustomLogicBlock {
                 break;
         }
 
-        return { owner, id, reference, accounts, tokens, relationships, issuer };
+        return { owner, wallet, id, reference, accounts, tokens, relationships, issuer };
     }
 
     /**
@@ -417,6 +419,7 @@ export class CustomLogicBlock {
     ): Promise<IPolicyDocument> {
         const {
             owner,
+            wallet,
             id,
             reference,
             accounts,
@@ -451,12 +454,25 @@ export class CustomLogicBlock {
 
         const uuid = await ref.components.generateUUID();
 
-        const newId = await PolicyActionsUtils.generateId(ref, ref.options.idType, owner, userId);
+        const newId = await PolicyActionsUtils.generateId({
+            ref,
+            type: ref.options.idType,
+            user: owner,
+            wallet,
+            userId
+        });
         if (newId) {
             vcSubject.id = newId;
         }
 
-        const newVC = await PolicyActionsUtils.signVC(ref, vcSubject, issuer, { uuid }, userId);
+        const newVC = await PolicyActionsUtils.signVC({
+            ref,
+            subject: vcSubject,
+            issuer,
+            wallet,
+            options: { uuid },
+            userId
+        });
 
         const item = PolicyUtils.createVC(ref, owner, newVC);
         item.type = outputSchema.iri;
@@ -464,6 +480,7 @@ export class CustomLogicBlock {
         item.relationships = relationships.length ? relationships : null;
         item.accounts = accounts && Object.keys(accounts).length ? accounts : null;
         item.tokens = tokens && Object.keys(tokens).length ? tokens : null;
+        item.wallet = wallet;
         // -->
 
         return item;

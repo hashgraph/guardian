@@ -84,6 +84,15 @@ export class PolicyAction extends BaseEntity {
     /**
      * Hedera account id
      */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    wallet?: string;
+
+    /**
+     * Hedera account id
+     */
     @Property({ nullable: true })
     sender?: string;
 

@@ -61,6 +61,7 @@ export class ContractMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             contractId: this.contractId,
             description: this.description,
             contractType: this.contractType,

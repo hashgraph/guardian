@@ -103,6 +103,7 @@ export class SchemaMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             name: this.name,
             description: this.description,
             entity: this.entity,

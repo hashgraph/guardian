@@ -242,6 +242,13 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
      */
     @Property({ nullable: true })
     draftRef?: string;
+
+    /**
+     * Wallet
+     */
+    @Property({ nullable: true })
+    wallet?: string;
+
     /**
      * Table File Ids
      */

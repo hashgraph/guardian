@@ -148,7 +148,16 @@ export class RevokeBlock {
             }
         }
 
-        await PolicyActionsUtils.sendMessages(ref, needUpdate, event.user.did, false, userId);
+        const wallet = await PolicyUtils.getDocumentWallet(ref, doc, userId);
+
+        await PolicyActionsUtils.sendMessages({
+            ref,
+            messages: needUpdate,
+            owner: event.user.did,
+            wallet,
+            updateIpfs: false,
+            userId
+        });
 
         const documents = await this.findDocumentByMessageIds(
             relatedMessages.map((item) => item.id)

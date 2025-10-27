@@ -133,7 +133,7 @@ export class RestoreDataFromHedera {
         for (const m of messages) {
             try {
                 const r = MessageServer.fromMessage<Message>(m.message, userId);
-                r.setAccount(m.payer_account_id);
+                r.setPayer(m.payer_account_id);
                 r.setTopicId(topicId);
                 r.setId(m.id);
                 result.push(r);

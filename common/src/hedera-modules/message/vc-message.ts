@@ -214,6 +214,7 @@ export class VCMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             issuer: this.issuer,
             relationships: this.relationships,
             encodedData: this.encodedData,

@@ -28,6 +28,10 @@ export interface MessageBody {
      */
     lang: string;
     /**
+     * Account
+     */
+    account: string;
+    /**
      * Revoke message
      */
     revokeMessage?: string;

@@ -339,7 +339,15 @@ export class PolicyRolesBlock {
             vcSubject.groupLabel = group.groupLabel;
         }
 
-        const { vc, message } = await PolicyActionsUtils.signAndSendRole(ref, vcSubject, group, uuid, user.userId);
+        const wallet = await PolicyUtils.getUserWallet(ref, user.did, null, user.userId);
+        const { vc, message } = await PolicyActionsUtils.signAndSendRole({
+            ref,
+            subject: vcSubject,
+            group,
+            uuid,
+            wallet,
+            userId: user.userId
+        });
 
         const vcDocument = PolicyUtils.createVC(ref, user, vc);
         vcDocument.type = DocumentCategoryType.USER_ROLE;
@@ -347,6 +355,7 @@ export class PolicyRolesBlock {
         vcDocument.messageId = message.getId();
         vcDocument.topicId = message.getTopicId();
         vcDocument.relationships = null;
+        vcDocument.wallet = null;
         await ref.databaseServer.saveVC(vcDocument);
         return message.getId();
     }

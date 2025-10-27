@@ -124,25 +124,30 @@ export class MintBlock {
      * @param userId
      * @private
      */
-    private async getAccount(ref: AnyBlockType, docs: IPolicyDocument[], accounts: string[], userId: string | null): Promise<string> {
-        let targetAccountId: string;
+    private async getAccount(
+        ref: AnyBlockType,
+        docs: IPolicyDocument[],
+        accounts: string[],
+        userId: string | null
+    ): Promise<string> {
+        let wallet: string;
         if (ref.options.accountType !== 'custom-value') {
             const firstAccounts = accounts[0];
             if (accounts.find(a => a !== firstAccounts)) {
                 ref.error(`More than one account found! Transfer made on the first (${firstAccounts})`);
             }
             if (ref.options.accountId) {
-                targetAccountId = firstAccounts;
+                wallet = firstAccounts;
             } else {
-                targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner, userId);
+                wallet = await PolicyUtils.getDocumentWallet(ref, docs[0], userId);
             }
-            if (!targetAccountId) {
+            if (!wallet) {
                 throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
             }
         } else {
-            targetAccountId = ref.options.accountIdValue;
+            wallet = ref.options.accountIdValue;
         }
-        return targetAccountId;
+        return wallet;
     }
 
     /**
@@ -270,7 +275,7 @@ export class MintBlock {
         token: TokenCollection,
         topicId: string,
         user: PolicyUser,
-        accountId: string,
+        wallet: string,
         documents: VcDocument[],
         messages: string[],
         additionalMessages: string[],
@@ -334,6 +339,7 @@ export class MintBlock {
         mintVcDocument.messageId = vcMessageResult.getId();
         mintVcDocument.topicId = vcMessageResult.getTopicId();
         mintVcDocument.relationships = messages;
+        mintVcDocument.wallet = wallet;
         mintVcDocument.documentFields = Array.from(
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
         );
@@ -364,10 +370,9 @@ export class MintBlock {
         vpDocument.type = DocumentCategoryType.MINT;
         vpDocument.messageId = vpMessageId;
         vpDocument.topicId = vpMessageResult.getTopicId();
-        vpDocument.documentFields = Array.from(
-            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
-        );
+        vpDocument.documentFields = Array.from(PolicyComponentsUtils.getDocumentCacheFields(ref.policyId));
         vpDocument.relationships = messages;
+        vpDocument.wallet = wallet;
         const savedVp = await ref.databaseServer.saveVP(vpDocument);
         // #endregion
 
@@ -378,7 +383,7 @@ export class MintBlock {
             tokenValue,
             user,
             policyOwnerHederaCred,
-            accountId,
+            wallet,
             vpMessageId,
             transactionMemo,
             documents,
@@ -490,9 +495,18 @@ export class MintBlock {
         const additionalMessages = this.getAdditionalMessages(additionalDocs);
         const topicId = topics[0];
 
-        const accountId = await this.getAccount(ref, docs, accounts, userId);
+        const wallet = await this.getAccount(ref, docs, accounts, userId);
 
-        const [vp, amount] = await this.mintProcessing(token, topicId, user, accountId, vcs, messages, additionalMessages, userId);
+        const [vp, amount] = await this.mintProcessing(
+            token,
+            topicId,
+            user,
+            wallet,
+            vcs,
+            messages,
+            additionalMessages,
+            userId
+        );
 
         const state: IPolicyEventState = event.data;
         state.result = vp;
@@ -502,7 +516,7 @@ export class MintBlock {
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             tokenId: token.tokenId,
-            accountId,
+            accountId: wallet,
             amount,
             documents: ExternalDocuments(docs),
             result: ExternalDocuments(vp),

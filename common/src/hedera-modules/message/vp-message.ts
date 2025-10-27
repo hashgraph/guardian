@@ -148,6 +148,7 @@ export class VPMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             issuer: this.issuer,
             relationships: this.relationships,
             tag: this.tag,
@@ -190,7 +191,7 @@ export class VPMessage extends Message {
 
         const json = JSON.parse(data.message);
         const message = VPMessage.fromMessageObject(json);
-        message.setAccount(data.owner);
+        message.setPayer(data.owner);
         message.setIndex(data.sequenceNumber);
         message.setId(data.consensusTimestamp);
         message.setTopicId(data.topicId);

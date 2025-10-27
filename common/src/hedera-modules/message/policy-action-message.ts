@@ -84,6 +84,7 @@ export class PolicyActionMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             uuid: this.uuid,
             owner: this.owner,
             policyId: this.policyId,
@@ -152,7 +153,7 @@ export class PolicyActionMessage extends Message {
 
         const json = JSON.parse(data.message);
         const message = PolicyActionMessage.fromMessageObject(json);
-        message.setAccount(data.owner);
+        message.setPayer(data.owner);
         message.setIndex(data.sequenceNumber);
         message.setId(data.consensusTimestamp);
         message.setTopicId(data.topicId);

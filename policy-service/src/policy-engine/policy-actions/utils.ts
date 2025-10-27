@@ -73,36 +73,37 @@ export class PolicyActionsUtils {
         }
     }
 
-    public static async response(
+    public static async response(options: {
         row: PolicyAction,
         user: PolicyUser,
+        wallet: string,
         userId: string | null
-    ) {
-        const type = row?.document?.type;
+    }) {
+        const type = options?.row?.document?.type;
         switch (type) {
             case PolicyActionType.SignAndSendRole: {
-                return await SignAndSendRole.response(row, user, userId);
+                return await SignAndSendRole.response(options);
             }
             case PolicyActionType.GenerateDID: {
-                return await GenerateDID.response(row, user, userId);
+                return await GenerateDID.response(options);
             }
             case PolicyActionType.SignVC: {
-                return await SignVC.response(row, user, userId);
+                return await SignVC.response(options);
             }
             case PolicyActionType.SendMessage: {
-                return await SendMessage.response(row, user, userId);
+                return await SendMessage.response(options);
             }
             case PolicyActionType.SendMessages: {
-                return await SendMessages.response(row, user, userId);
+                return await SendMessages.response(options);
             }
             case PolicyActionType.CreateTopic: {
-                return await CreateTopic.response(row, user, userId);
+                return await CreateTopic.response(options);
             }
             case PolicyActionType.AssociateToken: {
-                return await AssociateToken.response(row, user, userId);
+                return await AssociateToken.response(options);
             }
             case PolicyActionType.DissociateToken: {
-                return await DissociateToken.response(row, user, userId);
+                return await DissociateToken.response(options);
             }
             default:
                 throw new Error('Invalid command');
@@ -112,23 +113,25 @@ export class PolicyActionsUtils {
     /**
      * policy-roles
      */
-    public static async signAndSendRole(
+    public static async signAndSendRole(options: {
         ref: AnyBlockType,
         subject: any,
         group: any,
         uuid: string,
+        wallet: string,
         userId: string | null
-    ): Promise<{
+    }): Promise<{
         vc: VcDocumentDefinition,
         message: RoleMessage
     }> {
+        const { ref, group, userId } = options;
         const did = group.owner;
         const userCred = await PolicyUtils.getUserCredentials(ref, did, userId);
 
         if (userCred.location === LocationType.LOCAL) {
-            return await SignAndSendRole.local(ref, subject, group, uuid, userId);
+            return await SignAndSendRole.local(options);
         } else {
-            const data = await SignAndSendRole.request(ref, subject, group, uuid, userId);
+            const data = await SignAndSendRole.request(options);
             return new Promise((resolve, reject) => {
                 const callback = async (action: PolicyAction) => {
                     if (action.status === PolicyActionStatus.COMPLETED) {
@@ -170,12 +173,14 @@ export class PolicyActionsUtils {
     /**
      * custom-logic-block
      */
-    public static async generateId(
+    public static async generateId(options: {
         ref: AnyBlockType,
         type: string,
         user: PolicyUser,
+        wallet: string,
         userId: string | null
-    ): Promise<string> {
+    }): Promise<string> {
+        const { ref, type, user, userId } = options;
         try {
             if (type === 'UUID') {
                 return await ref.components.generateUUID();
@@ -189,9 +194,9 @@ export class PolicyActionsUtils {
             if (type === 'DID') {
                 const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
                 if (userCred.location === LocationType.LOCAL) {
-                    return await GenerateDID.local(ref, user, userId);
+                    return await GenerateDID.local(options);
                 } else {
-                    const data = await GenerateDID.request(ref, user, userId);
+                    const data = await GenerateDID.request(options);
                     return new Promise((resolve, reject) => {
                         const callback = async (action: PolicyAction) => {
                             if (action.status === PolicyActionStatus.COMPLETED) {
@@ -221,18 +226,20 @@ export class PolicyActionsUtils {
      * tag-manager
      * multi-sign-block
      */
-    public static async signVC(
+    public static async signVC(options: {
         ref: AnyBlockType,
         subject: any,
         issuer: string,
+        wallet: string,
         options: IDocumentOptions,
         userId: string | null
-    ): Promise<VcDocumentDefinition> {
+    }): Promise<VcDocumentDefinition> {
+        const { ref, issuer, userId } = options;
         const userCred = await PolicyUtils.getUserCredentials(ref, issuer, userId);
         if (userCred.location === LocationType.LOCAL) {
-            return await SignVC.local(ref, subject, issuer, options, userId);
+            return await SignVC.local(options);
         } else {
-            const data = await SignVC.request(ref, subject, issuer, options, userId);
+            const data = await SignVC.request(options);
             return new Promise((resolve, reject) => {
                 const callback = async (action: PolicyAction) => {
                     if (action.status === PolicyActionStatus.COMPLETED) {
@@ -253,19 +260,21 @@ export class PolicyActionsUtils {
      * tag-manager
      * multi-sign-block
      */
-    public static async sendMessage(
+    public static async sendMessage(options: {
         ref: AnyBlockType,
         topic: TopicConfig,
         message: Message,
         owner: string,
+        wallet: string,
         updateIpfs: boolean,
         userId: string | null
-    ): Promise<Message> {
+    }): Promise<Message> {
+        const { ref, owner, userId } = options;
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
         if (userCred.location === LocationType.LOCAL) {
-            return await SendMessage.local(ref, topic, message, owner, updateIpfs, userId);
+            return await SendMessage.local(options);
         } else {
-            const data = await SendMessage.request(ref, topic, message, owner, updateIpfs, userId);
+            const data = await SendMessage.request(options);
             return new Promise((resolve, reject) => {
                 const callback = async (action: PolicyAction) => {
                     if (action.status === PolicyActionStatus.COMPLETED) {
@@ -285,18 +294,20 @@ export class PolicyActionsUtils {
      * revocation-block
      * revoke-block
      */
-    public static async sendMessages(
+    public static async sendMessages(options: {
         ref: AnyBlockType,
         messages: Message[],
         owner: string,
+        wallet: string,
         updateIpfs: boolean,
         userId: string | null
-    ): Promise<Message[]> {
+    }): Promise<Message[]> {
+        const { ref, owner, userId } = options;
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
         if (userCred.location === LocationType.LOCAL) {
-            return await SendMessages.local(ref, messages, owner, updateIpfs, userId);
+            return await SendMessages.local(options);
         } else {
-            const data = await SendMessages.request(ref, messages, owner, updateIpfs, userId);
+            const data = await SendMessages.request(options);
             return new Promise((resolve, reject) => {
                 const callback = async (action: PolicyAction) => {
                     if (action.status === PolicyActionStatus.COMPLETED) {
@@ -315,17 +326,19 @@ export class PolicyActionsUtils {
     /**
      * token-action-block
      */
-    public static async associateToken(
+    public static async associateToken(options: {
         ref: AnyBlockType,
         token: Token,
         user: string,
+        wallet: string,
         userId: string | null
-    ): Promise<boolean> {
+    }): Promise<boolean> {
+        const { ref, user, userId } = options;
         const userCred = await PolicyUtils.getUserCredentials(ref, user, userId);
         if (userCred.location === LocationType.LOCAL) {
-            return await AssociateToken.local(ref, token, user, userId);
+            return await AssociateToken.local(options);
         } else {
-            const data = await AssociateToken.request(ref, token, user, userId);
+            const data = await AssociateToken.request(options);
             return new Promise((resolve, reject) => {
                 const callback = async (action: PolicyAction) => {
                     if (action.status === PolicyActionStatus.COMPLETED) {
@@ -344,17 +357,19 @@ export class PolicyActionsUtils {
     /**
      * token-action-block
      */
-    public static async dissociateToken(
+    public static async dissociateToken(options: {
         ref: AnyBlockType,
         token: Token,
         user: string,
+        wallet: string,
         userId: string | null
-    ): Promise<boolean> {
+    }): Promise<boolean> {
+        const { ref, user, userId } = options;
         const userCred = await PolicyUtils.getUserCredentials(ref, user, userId);
         if (userCred.location === LocationType.LOCAL) {
-            return await DissociateToken.local(ref, token, user, userId);
+            return await DissociateToken.local(options);
         } else {
-            const data = await DissociateToken.request(ref, token, user, userId);
+            const data = await DissociateToken.request(options);
             return new Promise((resolve, reject) => {
                 const callback = async (action: PolicyAction) => {
                     if (action.status === PolicyActionStatus.COMPLETED) {
@@ -373,14 +388,16 @@ export class PolicyActionsUtils {
     /**
      * send-to-guardian-block
      */
-    public static async getOrCreateTopic(
+    public static async getOrCreateTopic(options: {
         ref: AnyBlockType,
         name: string,
         owner: string,
+        wallet: string,
         memoObj: any,
         userId: string | null
-    ): Promise<TopicConfig> {
+    }): Promise<TopicConfig> {
         // Root topic
+        const { ref, name, owner, wallet, memoObj, userId } = options;
         if (!name || name === 'root') {
             return await PolicyActionsUtils.getRootTopic(ref, userId);
         }
@@ -400,7 +417,15 @@ export class PolicyActionsUtils {
             return topic;
         }
 
-        return await PolicyActionsUtils.createTopic(ref, TopicType.DynamicTopic, config, topicOwner, memoObj, userId);
+        return await PolicyActionsUtils.createTopic({
+            ref,
+            type: TopicType.DynamicTopic,
+            config,
+            owner: topicOwner,
+            memoObj,
+            wallet,
+            userId
+        });
     }
 
     public static async getRootTopic(
@@ -447,20 +472,22 @@ export class PolicyActionsUtils {
         return topic;
     }
 
-    public static async createTopic(
+    public static async createTopic(options: {
         ref: AnyBlockType,
         type: TopicType,
         config: any,
         owner: string,
+        wallet: string,
         memoObj: any,
         userId: string | null
-    ): Promise<TopicConfig> {
+    }): Promise<TopicConfig> {
+        const { ref, owner, userId } = options;
         const needKey = PolicyActionsUtils.needKey(ref.policyStatus, ref.policyAvailability);
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
         if (userCred.location === LocationType.LOCAL) {
-            return await CreateTopic.local(ref, type, config, owner, memoObj, needKey, userId);
+            return await CreateTopic.local({ ...options, needKey });
         } else {
-            const data = await CreateTopic.request(ref, type, config, owner, memoObj, userId);
+            const data = await CreateTopic.request(options);
             return new Promise((resolve, reject) => {
                 const callback = async (action: PolicyAction) => {
                     if (action.status === PolicyActionStatus.COMPLETED) {

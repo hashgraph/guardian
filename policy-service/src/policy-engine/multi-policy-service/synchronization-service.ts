@@ -238,7 +238,14 @@ export class SynchronizationService {
                 const notifier = NotificationHelper.init([userAccount?.id, policyOwner?.id]);
                 const token = await DatabaseServer.getToken(transaction.tokenId);
                 const messageIds = await this.completeTransaction(
-                    messageServer, root, token, transaction, policies, vpMap, policyOwnerId, notifier
+                    messageServer,
+                    root,
+                    token,
+                    transaction,
+                    policies,
+                    vpMap,
+                    policyOwnerId,
+                    notifier
                 );
                 if (messageIds) {
                     min -= transaction.amount;

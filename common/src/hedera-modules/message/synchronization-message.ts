@@ -82,7 +82,8 @@ export class SynchronizationMessage extends Message {
             status: null,
             type: this.type,
             action: this.action,
-            lang: this.lang
+            lang: this.lang,
+            account: this.account
         };
         if (this.action === MessageAction.CreateMultiPolicy) {
             result.user = this.user;
@@ -149,6 +150,7 @@ export class SynchronizationMessage extends Message {
         message._id = json.id;
         message._status = json.status;
         message.lang = json.lang;
+        message.account = json.account;
         message.user = json.user;
         message.policy = json.policy;
         message.policyType = json.policyType;

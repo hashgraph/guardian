@@ -99,6 +99,7 @@ export class LabelDocumentMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             issuer: this.issuer,
             relationships: this.relationships,
             target: this.target,

@@ -114,6 +114,7 @@ export class GroupManagerBlock {
         }
 
         if (member.messageId) {
+            const wallet = await PolicyUtils.getUserWallet(ref, user.did, null, userId);
             const message = await MessageServer
                 .getMessage({
                     dryRun: ref.dryRun,
@@ -125,7 +126,15 @@ export class GroupManagerBlock {
             const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
             message.setMessageStatus(MessageStatus.WITHDRAW, text);
             await PolicyActionsUtils
-                .sendMessage(ref, topic, message, user.did, false, userId);
+                .sendMessage({
+                    ref,
+                    topic,
+                    message,
+                    owner: user.did,
+                    wallet,
+                    updateIpfs: false,
+                    userId
+                });
         }
 
         const target = await PolicyComponentsUtils.GetPolicyUserByGroup(member, ref, userId);

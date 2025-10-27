@@ -660,7 +660,7 @@ export class MessageServer {
             const json = JSON.parse(message.message);
             if (json.type === MessageType.Topic) {
                 const item = TopicMessage.fromMessageObject(json);
-                item.setAccount(message.payer_account_id);
+                item.setPayer(message.payer_account_id);
                 item.setIndex(message.sequence_number);
                 item.setId(message.id);
                 item.setMemo(message.memo);
@@ -864,7 +864,7 @@ export class MessageServer {
         });
 
         const item = MessageServer.fromMessage<T>(message, options.userId, type);
-        item.setAccount(payer_account_id);
+        item.setPayer(payer_account_id);
         item.setIndex(sequence_number);
         item.setId(id);
         item.setTopicId(topicId);
@@ -906,7 +906,7 @@ export class MessageServer {
         });
 
         const item = MessageServer.fromMessage<T>(message, options.userId, type);
-        item.setAccount(payer_account_id);
+        item.setPayer(payer_account_id);
         item.setIndex(sequence_number);
         item.setId(id);
         item.setTopicId(topicId);
@@ -928,7 +928,7 @@ export class MessageServer {
     ): Promise<T> {
         const message = await DatabaseServer.getVirtualMessage(this.dryRun, timeStamp);
         const item = MessageServer.fromMessage<T>(message.document, userId, type);
-        item.setAccount(null);
+        item.setPayer(null);
         item.setIndex(null);
         item.setId(message.messageId);
         item.setTopicId(message.topicId);
@@ -951,7 +951,7 @@ export class MessageServer {
     ): Promise<T> {
         const message = await DatabaseServer.getVirtualMessage(dryRun, timeStamp);
         const item = MessageServer.fromMessage<T>(message.document, userId, type);
-        item.setAccount(null);
+        item.setPayer(null);
         item.setIndex(null);
         item.setId(message.messageId);
         item.setTopicId(message.topicId);
@@ -1059,7 +1059,7 @@ export class MessageServer {
                     filter = filter && item.action === action;
                 }
                 if (filter) {
-                    item.setAccount(message.payer_account_id);
+                    item.setPayer(message.payer_account_id);
                     item.setIndex(message.sequence_number);
                     item.setId(message.id);
                     item.setTopicId(topic);
@@ -1190,7 +1190,7 @@ export class MessageServer {
                     filter = filter && item.action === action;
                 }
                 if (filter) {
-                    item.setAccount(message.payer_account_id);
+                    item.setPayer(message.payer_account_id);
                     item.setIndex(message.sequence_number);
                     item.setId(message.id);
                     item.setTopicId(topic);

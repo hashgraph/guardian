@@ -1006,6 +1006,11 @@ export interface IPolicyDBDocument<T> {
      * Parent message
      */
     startMessageId?: string;
+
+    /**
+     * Wallet
+     */
+    wallet?: string;
 }
 
 /**

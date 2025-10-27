@@ -74,6 +74,7 @@ export class ModuleMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             uuid: this.uuid,
             name: this.name,
             description: this.description,

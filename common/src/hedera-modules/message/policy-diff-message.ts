@@ -80,6 +80,7 @@ export class PolicyDiffMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             uuid: this.uuid,
             owner: this.owner,
             diffType: this.diffType,

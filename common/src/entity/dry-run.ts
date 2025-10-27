@@ -779,6 +779,13 @@ export class DryRun extends BaseEntity {
      */
     @Property({ nullable: true })
     draftRef?: string;
+
+    /**
+     * Wallet
+     */
+    @Property({ nullable: true })
+    wallet?: string;
+
     /**
      * old file id
      */

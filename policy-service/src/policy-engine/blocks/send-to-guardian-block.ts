@@ -453,8 +453,23 @@ export class SendToGuardianBlock {
             message.setMemo(memo);
 
             const topicOwner = this.getTopicOwner(ref, document, ref.options.topicOwner);
-            const topic = await PolicyActionsUtils.getOrCreateTopic(ref, ref.options.topic, topicOwner, document, userId);
-            const vcMessageResult = await PolicyActionsUtils.sendMessage(ref, topic, message, document.owner, true, userId);
+            const topic = await PolicyActionsUtils.getOrCreateTopic({
+                ref,
+                name: ref.options.topic,
+                owner: topicOwner,
+                wallet: document.wallet,
+                memoObj: document,
+                userId
+            });
+            const vcMessageResult = await PolicyActionsUtils.sendMessage({
+                ref,
+                topic,
+                message,
+                owner: document.owner,
+                wallet: document.wallet,
+                updateIpfs: true,
+                userId
+            });
 
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
@@ -478,7 +493,8 @@ export class SendToGuardianBlock {
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
-
+        const wallet = await PolicyUtils.getDocumentWallet(ref, document, userId);
+        const owner = await PolicyUtils.getUserByIssuer(ref, document, userId);
         //
         // Create Message
         //
@@ -489,10 +505,10 @@ export class SendToGuardianBlock {
             const didMessage = new DIDMessage(MessageAction.CreateDID);
             didMessage.setDocument(did);
             didMessage.setRelationships(document.relationships);
+            didMessage.setOwnerAccount(owner.hederaAccountId);
             message = didMessage;
             docObject = did;
         } else if (type === DocumentType.VerifiableCredential) {
-            const owner = await PolicyUtils.getUserByIssuer(ref, document, userId);
             const vc = VcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
             vcMessage.setDocument(vc);
@@ -503,10 +519,10 @@ export class SendToGuardianBlock {
             vcMessage.setOption(document, ref);
             vcMessage.setUser(owner.roleMessage);
             vcMessage.setRef(document.startMessageId);
+            vcMessage.setOwnerAccount(owner.hederaAccountId);
             message = vcMessage;
             docObject = vc;
         } else if (type === DocumentType.VerifiablePresentation) {
-            const owner = await PolicyUtils.getUserByIssuer(ref, document, userId);
             const vp = VpDocument.fromJsonTree(document.document);
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
@@ -515,6 +531,7 @@ export class SendToGuardianBlock {
             vpMessage.setEntityType(ref);
             vpMessage.setOption(document, ref);
             vpMessage.setUser(owner.roleMessage);
+            vpMessage.setOwnerAccount(owner.hederaAccountId);
             message = vpMessage;
             docObject = vp;
         }
@@ -525,6 +542,7 @@ export class SendToGuardianBlock {
         document.document = docObject.toJsonTree();
         document.policyId = ref.policyId;
         document.tag = ref.tag;
+        document.wallet = wallet;
         document.option = Object.assign({}, document.option);
         if (ref.options.options) {
             for (const option of ref.options.options) {

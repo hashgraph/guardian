@@ -7,6 +7,10 @@ import { AnyBlockType, IPolicyDocument, IPolicyInstance } from './policy-engine.
  */
 export interface IHederaCredentials {
     /**
+     * User id
+     */
+    readonly id?: string;
+    /**
      * Hedera account id
      */
     readonly hederaAccountId: string;
@@ -14,6 +18,28 @@ export interface IHederaCredentials {
      * Hedera account key
      */
     readonly hederaAccountKey: string;
+}
+
+/**
+ * User wallet
+ */
+export interface IWallet {
+    /**
+     * User id
+     */
+    readonly id?: string;
+    /**
+     * Hedera account id
+     */
+    readonly hederaAccountId: string;
+    /**
+     * Hedera account key
+     */
+    readonly hederaAccountKey: string;
+    /**
+     * Hedera sign options
+     */
+    readonly signOptions: ISignOptions;
 }
 
 /**
@@ -244,6 +270,10 @@ export class UserCredentials {
      */
     private readonly _owner: string;
     /**
+     * User ID
+     */
+    private _id: string;
+    /**
      * User DID
      */
     private _did: string;
@@ -265,6 +295,10 @@ export class UserCredentials {
         return this._userId;
     }
 
+    public get id(): string {
+        return this._id;
+    }
+
     public get did(): string {
         return this._did;
     }
@@ -277,14 +311,14 @@ export class UserCredentials {
         return this._location;
     }
 
-    constructor(ref: AnyBlockType, userDid: string) {
+    private constructor(ref: AnyBlockType, userDid: string) {
         this._dryRun = !!ref.dryRun;
         this._did = userDid;
         this._owner = ref.policyOwner;
         this._location = LocationType.LOCAL;
     }
 
-    public async load(ref: AnyBlockType, userId: string | null): Promise<UserCredentials> {
+    private async load(ref: AnyBlockType, userId: string | null): Promise<UserCredentials> {
         let userFull: IAuthUser;
         if (this._dryRun) {
             userFull = await ref.components.getVirtualUser(this._did);
@@ -298,13 +332,14 @@ export class UserCredentials {
         this._location = userFull.location || LocationType.LOCAL;
         this._hederaAccountId = userFull.hederaAccountId;
         this._did = userFull.did;
+        this._id = userFull.id;
         if (!this._did || !this._hederaAccountId) {
             throw new Error('Hedera Account not found.');
         }
         return this;
     }
 
-    public async loadByAccount(ref: AnyBlockType, accountId: string, userId: string | null): Promise<UserCredentials> {
+    private async loadByAccount(ref: AnyBlockType, accountId: string, userId: string | null): Promise<UserCredentials> {
         let userFull: IAuthUser;
         if (this._dryRun) {
             userFull = await ref.databaseServer.getVirtualUserByAccount(accountId);
@@ -318,6 +353,7 @@ export class UserCredentials {
         this._location = userFull.location || LocationType.LOCAL;
         this._hederaAccountId = userFull.hederaAccountId;
         this._did = userFull.did;
+        this._id = userFull.id;
         if (!this._did || !this._hederaAccountId) {
             throw new Error('Hedera Account not found.');
         }
@@ -349,11 +385,44 @@ export class UserCredentials {
         }
     }
 
+    public async loadWalletKey(ref: AnyBlockType, wallet: string, userId: string | null): Promise<string | null> {
+        if (this._dryRun) {
+            return await ref.databaseServer.getVirtualKey(this._did, `${this._did}/${wallet}`);
+        } else {
+            const wallet = new Wallet();
+            return await wallet.getUserKey(this._did, KeyType.PROJECT_WALLET, `${this._did}/${wallet}`, userId);
+        }
+    }
+
     public async loadHederaCredentials(ref: AnyBlockType, userId: string | null): Promise<IHederaCredentials> {
         const hederaKey = await this.loadHederaKey(ref, userId);
         return {
+            id: this._id,
             hederaAccountId: this._hederaAccountId,
             hederaAccountKey: hederaKey
+        }
+    }
+
+    public async loadWallet(ref: AnyBlockType, wallet: string, userId: string | null): Promise<IWallet> {
+        if (wallet && wallet !== this._hederaAccountId) {
+            const walletKey = await this.loadWalletKey(ref, wallet, userId);
+            return {
+                id: this._id,
+                hederaAccountId: wallet,
+                hederaAccountKey: walletKey,
+                signOptions: {
+                    signType: SignType.INTERNAL
+                }
+            }
+        } else {
+            const hederaKey = await this.loadHederaKey(ref, userId);
+            const userSignOptions = await this.loadSignOptions(ref, userId);
+            return {
+                id: this._id,
+                hederaAccountId: this._hederaAccountId,
+                hederaAccountKey: hederaKey,
+                signOptions: userSignOptions,
+            }
         }
     }
 

@@ -626,8 +626,10 @@ export class ExternalTopicBlock {
             return;
         }
 
+        const wallet = await PolicyUtils.getRefWallet(ref, user.did, null, documentRef, user.userId);
         const result: IPolicyDocument = PolicyUtils.createPolicyDocument(ref, user, document);
         result.schema = ref.options.schema;
+        result.wallet = wallet;
         if (documentRef) {
             PolicyUtils.setDocumentRef(result, documentRef);
         }

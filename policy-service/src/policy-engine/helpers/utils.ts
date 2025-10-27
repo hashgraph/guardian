@@ -6,7 +6,7 @@ import * as mathjs from 'mathjs';
 import { DocumentType } from '../interfaces/document.type.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
-import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
+import { IHederaCredentials, IWallet, PolicyUser, UserCredentials } from '../policy-user.js';
 import { guardianVersion } from '../../version.js';
 import { buildTableHelper } from '../helpers/table-field-core.js';
 
@@ -243,7 +243,11 @@ export class PolicyUtils {
      * @param defaultAccount
      * @param schema
      */
-    public static getHederaAccounts(vc: HVcDocument, defaultAccount: string, schema: Schema): { [x: string]: string } {
+    public static getHederaAccounts(
+        vc: HVcDocument,
+        defaultAccount: string,
+        schema: Schema
+    ): { [x: string]: string } {
         const result: { [x: string]: string } = {};
         if (schema) {
             const fields = schema.searchFields((f) => f.customType === 'hederaAccount');
@@ -478,7 +482,7 @@ export class PolicyUtils {
     public static async associate(
         ref: AnyBlockType,
         token: Token,
-        user: IHederaCredentials,
+        user: IHederaCredentials | IWallet,
         userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
@@ -498,11 +502,10 @@ export class PolicyUtils {
             }, {
                 priority: 20
             });
-            const userProfile = await new Users().getUserByAccount(user.hederaAccountId, userId);
             await NotificationHelper.info(
                 `Associate token`,
                 `${token.tokenName} associated`,
-                userProfile?.id
+                user?.id
             );
             return result;
         }
@@ -518,7 +521,7 @@ export class PolicyUtils {
     public static async dissociate(
         ref: AnyBlockType,
         token: Token,
-        user: IHederaCredentials,
+        user: IHederaCredentials | IWallet,
         userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
@@ -538,11 +541,10 @@ export class PolicyUtils {
             }, {
                 priority: 20
             });
-            const userProfile = await new Users().getUserByAccount(user.hederaAccountId, userId);
             await NotificationHelper.info(
                 `Dissociate token`,
                 `${token.tokenName} dissociated`,
-                userProfile?.id
+                user?.id
             );
             return result
         }
@@ -966,6 +968,57 @@ export class PolicyUtils {
     }
 
     /**
+     * Get Document Wallet
+     * @param ref
+     * @param document
+     * @param userId
+     */
+    public static async getDocumentWallet(
+        ref: AnyBlockType,
+        document: IPolicyDocument,
+        userId: string | null
+    ): Promise<string> {
+        return PolicyUtils.getUserWallet(ref, document?.owner, document?.wallet, userId);
+    }
+
+    /**
+     * Get User Wallet
+     * @param ref
+     * @param did
+     * @param wallet
+     * @param userId
+     */
+    public static async getUserWallet(
+        ref: AnyBlockType,
+        did: string,
+        wallet: string,
+        userId: string | null
+    ): Promise<string> {
+        return await PolicyUtils.users.getUserWallet(did, wallet, userId);
+    }
+
+    /**
+     * Get User Wallet
+     * @param ref
+     * @param did
+     * @param wallet
+     * @param userId
+     */
+    public static async getRefWallet(
+        ref: AnyBlockType,
+        did: string,
+        wallet: string,
+        documentRef: IPolicyDocument | null,
+        userId: string | null
+    ): Promise<string> {
+        if (documentRef && !wallet) {
+            return PolicyUtils.getDocumentWallet(ref, documentRef, userId);
+        } else {
+            return PolicyUtils.getUserWallet(ref, did, wallet, userId);
+        }
+    }
+
+    /**
      * Get Policy User
      * @param ref
      * @param document
@@ -1046,9 +1099,10 @@ export class PolicyUtils {
      */
     public static createHederaCredentials(
         hederaAccountId: string,
-        hederaAccountKey: string = null
+        hederaAccountKey: string = null,
+        id: string = null,
     ): IHederaCredentials {
-        return { hederaAccountId, hederaAccountKey }
+        return { hederaAccountId, hederaAccountKey, id }
     }
 
     /**

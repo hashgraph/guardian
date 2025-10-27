@@ -64,6 +64,7 @@ export class ReassigningBlock {
     }> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const owner: PolicyUser = await PolicyUtils.getDocumentOwner(ref, document, userId);
+        const wallet = await PolicyUtils.getDocumentWallet(ref, document, user.userId);
 
         let groupContext: any;
         let issuer: string;
@@ -92,7 +93,14 @@ export class ReassigningBlock {
 
         const uuid = await ref.components.generateUUID();
         const credentialSubject = document.document.credentialSubject[0];
-        const vc = await PolicyActionsUtils.signVC(ref, credentialSubject, issuer, { uuid, group: groupContext }, user.userId);
+        const vc = await PolicyActionsUtils.signVC({
+            ref,
+            subject: credentialSubject,
+            issuer,
+            wallet,
+            options: { uuid, group: groupContext },
+            userId: user.userId
+        });
 
         let item = PolicyUtils.createVC(ref, owner, vc);
         item.type = document.type;
@@ -101,6 +109,7 @@ export class ReassigningBlock {
         item.assignedToGroup = document.assignedToGroup;
         item.option = Object.assign({}, document.option);
         item.startMessageId = document.startMessageId;
+        item.wallet = wallet;
         item = PolicyUtils.setDocumentRef(item, document);
 
         return { item, actor };

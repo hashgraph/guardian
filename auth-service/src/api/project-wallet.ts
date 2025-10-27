@@ -290,5 +290,38 @@ export class ProjectWalletService extends NatsService {
                     return new MessageError(error);
                 }
             });
+
+        /**
+         * Get user wallet
+         * @param did - DID
+         */
+        this.getMessages(AuthEvents.GET_USER_WALLET,
+            async (msg: {
+                did: string,
+                wallet: string,
+                userId: string | null
+            }) => {
+                const { did, wallet, userId } = msg;
+                try {
+                    const entityRepository = new DatabaseServer();
+                    const user = await entityRepository.findOne(User, { did });
+                    if (wallet) {
+                        const projectWallet = await entityRepository.findOne(ProjectWallet, {
+                            account: wallet,
+                            owner: user.did
+                        });
+                        if(projectWallet) {
+                            return new MessageResponse(projectWallet.account);
+                        } else {
+                            return new MessageError('Wallet not found.');
+                        }
+                    } else {
+                        return new MessageResponse(user.hederaAccountId);
+                    }
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
+                    return new MessageError(error);
+                }
+            });
     }
 }

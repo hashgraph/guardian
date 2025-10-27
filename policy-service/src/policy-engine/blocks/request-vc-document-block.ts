@@ -199,11 +199,13 @@ export class RequestVcDocumentBlock {
             const draftId = data.draftId;
             const editType = ref.options.editType;
 
+            const documentRef = await this.getRelationships(ref, data.ref);
+            const wallet = await PolicyUtils.getRefWallet(ref, user.did, data.wallet, documentRef, user.userId);
+
             //Prepare Credential Subject
-            const credentialSubject = await this.createCredentialSubject(user, document);
+            const credentialSubject = await this.createCredentialSubject(user, wallet, document);
 
             //Get relationships
-            const documentRef = await this.getRelationships(ref, data.ref);
             if (documentRef) {
                 credentialSubject.ref = PolicyUtils.getSubjectId(documentRef);
                 if (!credentialSubject.ref) {
@@ -231,7 +233,7 @@ export class RequestVcDocumentBlock {
             }
 
             //Create Verifiable Credential
-            const item = await this.createVerifiableCredential(user, credentialSubject);
+            const item = await this.createVerifiableCredential(user, wallet, credentialSubject);
             PolicyUtils.setDocumentRef(item, documentRef);
 
             //Update metadata
@@ -384,6 +386,7 @@ export class RequestVcDocumentBlock {
 
     private async createCredentialSubject(
         user: PolicyUser,
+        wallet: string,
         document: any
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
@@ -398,7 +401,13 @@ export class RequestVcDocumentBlock {
 
         PolicyUtils.setGuardianVersion(credentialSubject, this._schema);
 
-        const newId = await PolicyActionsUtils.generateId(ref, idType, user, user.userId);
+        const newId = await PolicyActionsUtils.generateId({
+            ref,
+            type: idType,
+            user: user,
+            wallet,
+            userId: user.userId
+        });
         if (newId) {
             credentialSubject.id = newId;
         }
@@ -412,6 +421,7 @@ export class RequestVcDocumentBlock {
 
     private async createVerifiableCredential(
         user: PolicyUser,
+        wallet: string,
         credentialSubject: any
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
@@ -419,15 +429,22 @@ export class RequestVcDocumentBlock {
         const groupContext = await PolicyUtils.getGroupContext(ref, user);
         const uuid = await ref.components.generateUUID();
 
-        const vc = await PolicyActionsUtils.signVC(ref, credentialSubject, user.did, { uuid, group: groupContext }, user.userId);
+        const vc = await PolicyActionsUtils.signVC({
+            ref,
+            subject: credentialSubject,
+            issuer: user.did,
+            wallet,
+            options: { uuid, group: groupContext },
+            userId: user.userId
+        });
         const item = PolicyUtils.createVC(ref, user, vc);
 
-        const userAccountId = await PolicyUtils.getHederaAccountId(ref, user.did, user.userId);
-        const accounts = PolicyUtils.getHederaAccounts(vc, userAccountId, this._schema);
+        const accounts = PolicyUtils.getHederaAccounts(vc, wallet, this._schema);
         const schemaIRI = ref.options.schema;
         item.type = schemaIRI;
         item.schema = schemaIRI;
         item.accounts = accounts;
+        item.wallet = wallet;
         return item;
     }
 }

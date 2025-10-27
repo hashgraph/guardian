@@ -70,6 +70,7 @@ export class DiscussionMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             hash: this.hash,
             target: this.target,
             relationships: this.relationships,

@@ -256,7 +256,12 @@ export class PolicyActionsService {
             throw new Error('Request not found');
         }
 
-        const data = await PolicyActionsUtils.response(row, user, user.userId);
+        const data = await PolicyActionsUtils.response({
+            row,
+            user,
+            wallet: row.wallet,
+            userId: user.userId
+        });
 
         const userCred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did, user.userId);
         const userHederaCred = await userCred.loadHederaCredentials(this.policyInstance, user.userId);

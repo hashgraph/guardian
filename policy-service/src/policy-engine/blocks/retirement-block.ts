@@ -109,7 +109,7 @@ export class RetirementBlock {
         topicId: string,
         policyOwner: UserCredentials,
         user: PolicyUser,
-        targetAccountId: string,
+        wallet: string,
         userId: string | null
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -156,6 +156,7 @@ export class RetirementBlock {
         vcDocument.messageId = vcMessageResult.getId();
         vcDocument.topicId = vcMessageResult.getTopicId();
         vcDocument.relationships = relationships;
+        vcDocument.wallet = wallet;
 
         await ref.databaseServer.saveVC(vcDocument);
 
@@ -182,9 +183,17 @@ export class RetirementBlock {
         vpDocument.messageId = vpMessageResult.getId();
         vpDocument.topicId = vpMessageResult.getTopicId();
         vpDocument.relationships = relationships;
+        vpDocument.wallet = wallet;
         await ref.databaseServer.saveVP(vpDocument);
 
-        await MintService.wipe(ref, token, tokenValue, policyOwnerHederaCred, targetAccountId, vpMessageResult.getId(), userId);
+        await MintService.wipe(
+            ref,
+            token,
+            tokenValue,
+            policyOwnerHederaCred,
+            wallet,
+            vpMessageResult.getId(),
+            userId);
 
         return [vpDocument, tokenValue];
     }
@@ -270,13 +279,14 @@ export class RetirementBlock {
         }
         const topicId = topicIds[0];
 
-        let targetAccountId: string;
+        let wallet: string;
         if (ref.options.accountId) {
-            targetAccountId = firstAccounts;
+            wallet = firstAccounts;
         } else {
-            targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner, event?.user?.userId);
+            wallet = await PolicyUtils.getDocumentWallet(ref, docs[0], event?.user?.userId);
         }
-        if (!targetAccountId) {
+
+        if (!wallet) {
             throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
         }
 
@@ -289,7 +299,7 @@ export class RetirementBlock {
             topicId,
             policyOwner,
             docOwner,
-            targetAccountId,
+            wallet,
             event?.user?.userId
         );
 
@@ -299,7 +309,7 @@ export class RetirementBlock {
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, docOwner, {
             tokenId: token.tokenId,
-            accountId: targetAccountId,
+            accountId: wallet,
             amount: tokenValue,
             documents: ExternalDocuments(docs),
             result: ExternalDocuments(vp),
