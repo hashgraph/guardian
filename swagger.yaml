@@ -8379,10 +8379,10 @@ paths:
       summary: Returns schema tree.
       tags:
         - schema
-  /schema/{schemaId}/children:
+  /schema/{schemaId}/deletionPreview:
     get:
       description: Returns all child schemas.
-      operationId: SingleSchemaApi_getSchemaChildren
+      operationId: SingleSchemaApi_getSchemaDeletionPreview
       parameters:
         - name: schemaId
           required: true
@@ -8398,13 +8398,13 @@ paths:
             type: string
       responses:
         '200':
-          description: Successful operation.
+          description: Schema deletion preview.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SchemaDTO'
+                  $ref: '#/components/schemas/SchemaDeletionPreviewDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -18510,6 +18510,36 @@ components:
         - id
         - name
         - type
+    ChildSchemaDeletionBlockDTO:
+      type: object
+      properties:
+        schema:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SchemaDTO'
+        blockingSchemas:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SchemaDTO'
+      required:
+        - schema
+        - blockingSchemas
+    SchemaDeletionPreviewDTO:
+      type: object
+      properties:
+        deletableChildren:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+        blockedChildren:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/ChildSchemaDeletionBlockDTO'
+      required:
+        - deletableChildren
+        - blockedChildren
     VersionSchemaDTO:
       type: object
       properties:
