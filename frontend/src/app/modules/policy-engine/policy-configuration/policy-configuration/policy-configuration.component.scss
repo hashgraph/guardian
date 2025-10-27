@@ -1404,7 +1404,8 @@
         color: var(--pc-event-color);
     }
 
-    .top-toolbar-btn.validation[validation-level="info"] {
+    .top-toolbar-btn.validation[validation-level="info"],
+    .top-toolbar-btn.validation[validation-level="success"]{
         color: var(--pc-valid-color);
     }
 

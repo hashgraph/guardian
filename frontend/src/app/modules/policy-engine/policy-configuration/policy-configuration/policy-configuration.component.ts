@@ -84,7 +84,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public infosMap: Record<string, true> = {};
     public warningsListMap: Record<string, string[]> = {};
     public infosListMap: Record<string, string[]> = {};
-    public validationLevel: 'error' | 'warning' | 'info' | 'ok' = 'ok';
+    public validationLevel: 'error' | 'warning' | 'info' | 'success' | 'ok' = 'ok';
 
     public currentView: string = 'blocks';
     public search: string = '';
@@ -252,6 +252,18 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.openType === 'Sub' || this.rootType === 'Module' || this.rootType === 'Tool';
     }
 
+    private emptyWarningsStates(): void {
+        this.warningsMap = {};
+        this.warningsListMap = {};
+        this.warningsCount = -1;
+    }
+
+    public emptyInfosStates(): void {
+        this.infosMap = {};
+        this.infosListMap = {};
+        this.infosCount = -1;
+    }
+
     private loadData(): void {
         this.errors = [];
         this.errorsCount = -1;
@@ -279,6 +291,9 @@ export class PolicyConfigurationComponent implements OnInit {
         if (this._configurationErrors.has(this.policyId)) {
             this.setErrors(this._configurationErrors.get(this.policyId), 'policy');
             this._configurationErrors.delete(this.policyId);
+
+            this.emptyWarningsStates()
+            this.emptyInfosStates()
         }
         if (this._configurationErrors.has(this.moduleId)) {
             this.setErrors(this._configurationErrors.get(this.moduleId), 'module');
@@ -857,10 +872,10 @@ export class PolicyConfigurationComponent implements OnInit {
             }
         }
         this.errorsCount = this.errors.length + commonErrors.length;
-        this.errorsMap = {};
-        this.warningsMap = {};
-        this.infosMap    = {};
-        this.warningsListMap = {};
+
+        this.emptyWarningsStates()
+        this.emptyInfosStates()
+
         this.infosListMap = {};
         for (const element of this.errors) {
             this.errorsMap[element.id] = element.errors;
@@ -907,7 +922,7 @@ export class PolicyConfigurationComponent implements OnInit {
         } else if (this.infosCount > 0) {
             this.validationLevel = 'info';
         } else {
-            this.validationLevel = 'ok';
+            this.validationLevel = 'success';
         }
     }
 
@@ -1036,6 +1051,10 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.loadData();
             } else {
                 this.setErrors(errors, 'policy');
+
+                this.emptyWarningsStates()
+                this.emptyInfosStates()
+
                 this.loading = false;
             }
         }, (e) => {
@@ -1054,6 +1073,11 @@ export class PolicyConfigurationComponent implements OnInit {
         this.errors = [];
         this.errorsCount = -1;
         this.errorsMap = {};
+
+        this.emptyWarningsStates()
+        this.emptyInfosStates()
+
+        this.validationLevel = 'ok'
 
         this.clearState();
         this.onOpenRoot(this.policyTemplate);
