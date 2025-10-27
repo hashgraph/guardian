@@ -7508,20 +7508,17 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
-      requestBody:
-        required: true
-        description: '{ savepointIds: string[] }'
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                savepointIds:
-                  type: array
-                  items:
-                    type: string
-              required:
-                - savepointIds
+        - name: savepointIds
+          required: true
+          in: query
+          description: JSON array of IDs
+          schema:
+            type: string
+        - name: skipCurrentSavepointGuard
+          required: false
+          in: query
+          schema:
+            type: boolean
       responses:
         '200':
           description: Successful operation.
