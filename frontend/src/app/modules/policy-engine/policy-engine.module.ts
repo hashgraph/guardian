@@ -159,6 +159,7 @@ import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoin
 import { AddSavepointDialog } from "./policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component";
 import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
 import { PolicyRepositoryComponent } from './policy-repository/policy-repository.component';
+import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
 
 @NgModule({
     declarations: [
@@ -171,6 +172,7 @@ import { PolicyRepositoryComponent } from './policy-repository/policy-repository
         RequestConfigComponent,
         PolicyPropertiesComponent,
         MintConfigComponent,
+        WipeConfigComponent,
         SendConfigComponent,
         ExternalDataConfigComponent,
         AggregateConfigComponent,
