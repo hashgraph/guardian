@@ -230,7 +230,9 @@ export class ProjectWalletService extends NatsService {
                     const projectWallet = {
                         name: config.name,
                         account: config.account,
-                        owner: target.did
+                        owner: target.did,
+                        parent: target.parent,
+                        username: target.username
                     }
                     const key = config.key;
 
@@ -318,6 +320,155 @@ export class ProjectWalletService extends NatsService {
                     } else {
                         return new MessageResponse(user.hederaAccountId);
                     }
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Get project wallets
+         * @param user - user
+         *
+         * @returns {any[]} wallets
+         */
+        this.getMessages(AuthEvents.GET_USER_WALLETS,
+            async (msg: {
+                user: IAuthUser,
+                filters: {
+                    search?: string,
+                    pageIndex?: number | string,
+                    pageSize?: number | string
+                }
+            }) => {
+                try {
+                    const { user, filters } = msg;
+                    const { search, pageIndex, pageSize } = filters;
+
+                    const entityRepository = new DatabaseServer();
+                    const target = await entityRepository.findOne(User, {
+                        did: user.did
+                    });
+                    if (!target && target.did) {
+                        return new MessageError('User does not exist.');
+                    }
+
+                    const otherOptions: any = {};
+                    const _pageSize = parseInt(String(pageSize), 10);
+                    const _pageIndex = parseInt(String(pageIndex), 10);
+                    if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.limit = _pageSize;
+                        otherOptions.offset = _pageIndex * _pageSize;
+                    } else {
+                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.limit = 100;
+                    }
+
+                    const aggregate: any[] = [{
+                        $match: {
+                            $or: [{
+                                parent: user.did
+                            }, {
+                                did: user.did
+                            }]
+                        }
+                    }, {
+                        $lookup: {
+                            from: "project_wallet",
+                            localField: "did",
+                            foreignField: "owner",
+                            as: "wallets"
+                        }
+                    }, {
+                        $project: {
+                            username: "$username",
+                            did: "$did",
+                            parent: "$parent",
+                            hederaAccountId: "$hederaAccountId",
+                            wallets: {
+                                $concatArrays: [[null], "$wallets"]
+                            }
+                        }
+                    }, {
+                        $unwind: {
+                            path: "$wallets",
+                            preserveNullAndEmptyArrays: true
+                        }
+                    }, {
+                        $project: {
+                            username: "$username",
+                            did: "$did",
+                            parent: "$parent",
+                            hederaAccountId: "$hederaAccountId",
+                            walletAccountId: "$wallets.account",
+                            walletName: "$wallets.name"
+                        }
+                    }];
+
+                    if (otherOptions.offset) {
+                        aggregate.push({
+                            $skip: otherOptions.offset
+                        })
+                    }
+
+                    if (otherOptions.limit) {
+                        aggregate.push({
+                            $limit: otherOptions.limit
+                        })
+                    }
+
+                    if (search) {
+                        aggregate.push({
+                            $match: {
+                                $or: [{
+                                    username: { $regex: '.*' + search + '.*' },
+                                }, {
+                                    walletName: { $regex: '.*' + search + '.*' }
+                                }]
+                            }
+                        })
+                    }
+
+                    // console.debug(JSON.stringify(aggregate, null, 4))
+
+                    const wallets = await entityRepository.aggregate(User, aggregate);
+
+                    return new MessageResponse(wallets);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Get user wallet
+         * @param did - DID
+         */
+        this.getMessages(AuthEvents.GET_WALLET,
+            async (msg: {
+                wallet: string,
+                userId: string | null
+            }) => {
+                const { wallet, userId } = msg;
+                try {
+                    const entityRepository = new DatabaseServer();
+
+                    const user = await entityRepository.findOne(User, { hederaAccountId: wallet });
+                    if (user) {
+                        return new MessageResponse({
+                            name: 'Default',
+                            account: user.hederaAccountId
+                        });
+                    }
+                    const projectWallet = await entityRepository.findOne(ProjectWallet, { account: wallet });
+                    if (projectWallet) {
+                        return new MessageResponse({
+                            name: projectWallet.name,
+                            account: projectWallet.account
+                        });
+                    }
+                    return new MessageResponse(null);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);

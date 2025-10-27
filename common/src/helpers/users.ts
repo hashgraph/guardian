@@ -310,4 +310,16 @@ export class Users extends NatsService {
     ): Promise<string> {
         return await this.sendMessage(AuthEvents.GET_USER_WALLET, { did, wallet, userId });
     }
+
+    /**
+     * Return user wallet
+     * @param wallet
+     * @param userId
+     */
+    public async getWallet(
+        wallet: string,
+        userId: string | null
+    ): Promise<{ account: string, name: string }> {
+        return await this.sendMessage(AuthEvents.GET_WALLET, { wallet, userId });
+    }
 }

@@ -458,6 +458,24 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Get token info
+     * @param tokenId
+     * @param username
+     * @param owner
+     */
+    public async getWalletToken(
+        tokenId: string, 
+        walletId: string, 
+        owner: IOwner
+    ): Promise<ITokenInfo> {
+        return await this.sendMessage(MessageAPI.GET_WALLET_TOKEN_INFO, {
+            tokenId,
+            walletId,
+            owner
+        });
+    }
+
+    /**
      * Get token serials
      * @param tokenId Token identifier
      * @param did DID

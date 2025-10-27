@@ -1038,6 +1038,46 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             }
         })
 
+    ApiResponse(MessageAPI.GET_WALLET_TOKEN_INFO,
+        async (msg: {
+            tokenId: string,
+            walletId: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { tokenId, walletId, owner } = msg;
+
+                const users = new Users();
+                const wallet = await users.getWallet(walletId, owner?.id);
+                if (!wallet) {
+                    throw new Error('Wallet not found');
+                }
+
+                const token = await dataBaseServer.findOne(Token, { tokenId });
+                if (!token) {
+                    throw new Error('Token not found');
+                }
+
+                const workers = new Workers();
+                const info = await workers.addNonRetryableTask({
+                    type: WorkerTaskType.GET_ACCOUNT_TOKENS_REST,
+                    data: {
+                        hederaAccountId: walletId,
+                        payload: { userId: owner?.id }
+                    }
+                }, {
+                    priority: 20
+                });
+
+                const result = getTokenInfo(info, token);
+
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error, 400);
+            }
+        })
+
     ApiResponse(MessageAPI.GET_ASSOCIATED_TOKENS,
         async (msg: {
             owner: IOwner,

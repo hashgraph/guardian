@@ -122,6 +122,10 @@ export class TokenService {
         return this.http.get<ITokenInfo>(`${this.url}/${tokenId}/${username}/info`);
     }
 
+    public walletInfo(tokenId: string, wallet: string): Observable<ITokenInfo> {
+        return this.http.get<ITokenInfo>(`${this.url}/${tokenId}/wallets/${wallet}/info`);
+    }
+
     public serials(tokenId: string): Observable<any> {
         return this.http.get<any>(`${this.url}/${tokenId}/serials`);
     }

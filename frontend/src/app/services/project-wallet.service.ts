@@ -53,6 +53,15 @@ export class ProjectWalletService {
         return this.http.get<any>(`${this.url}`, { observe: 'response', params });
     }
 
+    public getUserWallets(
+        pageIndex?: number,
+        pageSize?: number,
+        filters?: any
+    ): Observable<HttpResponse<any[]>> {
+        const params = ProjectWalletService.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/accounts`, { observe: 'response', params });
+    }
+
     public getProjectWalletBalance(account: string): Observable<string> {
         return this.http.get(`${this.url}/${account}/balance`, { responseType: 'text' });
     }

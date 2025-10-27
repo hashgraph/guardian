@@ -13,10 +13,22 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { UntypedFormGroup } from '@angular/forms';
 import { ContractService } from 'src/app/services/contract.service';
 import { TokenDialogComponent } from 'src/app/components/token-dialog/token-dialog.component';
+import { ProjectWalletService } from 'src/app/services/project-wallet.service';
 
 enum OperationMode {
     None, Kyc, Freeze
 }
+
+interface IColumn {
+    id: string;
+    title: string;
+    type: string;
+    size: string;
+    tooltip: boolean;
+    permissions?: (user: UserPermissions) => boolean;
+    canDisplay?: () => boolean;
+}
+
 
 /**
  * Page for creating tokens.
@@ -35,14 +47,6 @@ export class TokenConfigComponent implements OnInit {
     public tokenId: string = '';
     public tokenUrl: string = '';
     public users: any[] = [];
-    public usersColumns: string[] = [
-        'username',
-        'associated',
-        'tokenBalance',
-        'frozen',
-        'kyc',
-        'refresh'
-    ];
     public taskId: string | undefined = undefined;
     public expectedTaskMessages: number = 0;
     public operationMode: OperationMode = OperationMode.None;
@@ -59,12 +63,17 @@ export class TokenConfigComponent implements OnInit {
     public pageIndex: number;
     public pageSize: number;
     public contracts: any[] = [];
+    public columns: IColumn[];
+    public usersColumns: IColumn[];
+    public userPageCount: any;
+    public userPageIndex: number;
+    public userPageSize: number;
 
     private selectedUser: any;
 
     constructor(
         public tagsService: TagsService,
-        private auth: AuthService,
+        private projectWalletService: ProjectWalletService,
         private profileService: ProfileService,
         private tokenService: TokenService,
         private informService: InformService,
@@ -78,6 +87,92 @@ export class TokenConfigComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 10;
         this.tokensCount = 0;
+
+        this.userPageIndex = 0;
+        this.userPageSize = 10;
+        this.userPageCount = 0;
+
+        this.columns = [{
+            id: 'id',
+            title: 'TOKEN ID',
+            type: 'text',
+            size: '150',
+            tooltip: false
+        }, {
+            id: 'symbol',
+            title: 'TOKEN SYMBOL',
+            type: 'text',
+            size: '180',
+            tooltip: false
+        }, {
+            id: 'name',
+            title: 'TOKEN NAME',
+            type: 'text',
+            size: 'auto',
+            tooltip: true
+        }, {
+            id: 'policies',
+            title: 'POLICIES',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'tags',
+            title: 'TAGS',
+            type: 'text',
+            size: '230',
+            tooltip: false
+        }, {
+            id: 'options',
+            title: 'OPERATIONS',
+            type: 'text',
+            size: '170',
+            tooltip: false
+        }]
+
+        this.usersColumns = [{
+            id: 'username',
+            title: 'USERNAME',
+            type: 'text',
+            size: '200',
+            tooltip: false
+        }, {
+            id: 'id',
+            title: 'WALLET ID',
+            type: 'text',
+            size: '150',
+            tooltip: false
+        }, {
+            id: 'name',
+            title: 'WALLET NAME',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'balance',
+            title: 'BALANCE',
+            type: 'text',
+            size: '200',
+            tooltip: false
+        }, {
+            id: 'freeze',
+            title: 'FROZEN',
+            type: 'text',
+            size: '150',
+            tooltip: false
+        }, {
+            id: 'kyc',
+            title: 'KYCD',
+            type: 'text',
+            size: '150',
+            tooltip: false
+        }, {
+            id: 'refresh',
+            title: 'REFRESH',
+            type: 'text',
+            size: '120',
+            tooltip: false
+        }]
     }
 
     ngOnInit() {
@@ -148,16 +243,7 @@ export class TokenConfigComponent implements OnInit {
             return;
         }
         if (this.tokenId) {
-            this.auth.getUsers().subscribe((users) => {
-                this.users = users;
-                this.refreshAll(this.users);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 1500);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.loadWallets();
         } else {
             this.loadTokens();
         }
@@ -180,6 +266,33 @@ export class TokenConfigComponent implements OnInit {
             this.loading = false;
             console.error(message);
         });
+    }
+
+    private loadWallets() {
+        this.projectWalletService
+            .getUserWallets(
+                this.pageIndex,
+                this.pageSize,
+            )
+            .subscribe((response) => {
+                const { page, count } = this.projectWalletService.parsePage(response);
+                this.users = page || [];
+                this.userPageCount = count || this.users.length;
+                for (const item of this.users) {
+                    if (!item.walletAccountId) {
+                        item.walletAccountId = item.hederaAccountId;
+                        item.walletName = 'Default';
+                    }
+                }
+
+                this.refreshAll(this.users);
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 
     private loadTagsData() {
@@ -305,20 +418,26 @@ export class TokenConfigComponent implements OnInit {
 
     public refresh(user: any) {
         user.loading = true;
-        this.tokenService.info(this.tokenId, user.username).subscribe((res) => {
-            this.refreshUser(user, res);
-            user.loading = false;
-        }, (e) => {
-            console.error(e.error);
-            user.loading = false;
-        });
+        this.tokenService
+            .walletInfo(this.tokenId, user.walletAccountId)
+            .subscribe((res) => {
+                this.refreshUser(user, res);
+                user.loading = false;
+            }, (e) => {
+                console.error(e.error);
+                user.loading = false;
+            });
     }
 
     public refreshAll(users: any[]) {
-        for (let index = 0; index < users.length; index++) {
-            const user = users[index];
-            this.refresh(user);
+        for (const item of users) {
+            item.loading = true;
         }
+        setTimeout(() => {
+            for (const item of users) {
+                this.refresh(item);
+            }
+        }, 1000);
     }
 
     public getColor(status: string, reverseLogic: boolean) {
@@ -496,5 +615,16 @@ export class TokenConfigComponent implements OnInit {
             this.pageSize = event.pageSize;
         }
         this.loadTokens();
+    }
+
+    public onUserPage(event: any): void {
+        if (this.userPageSize != event.pageSize) {
+            this.userPageIndex = 0;
+            this.userPageSize = event.pageSize;
+        } else {
+            this.userPageIndex = event.pageIndex;
+            this.userPageSize = event.pageSize;
+        }
+        this.loadWallets();
     }
 }

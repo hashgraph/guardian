@@ -27,6 +27,18 @@ export class ProjectWallet extends BaseEntity {
     account: string;
 
     /**
+     * Parent
+     */
+    @Property()
+    parent: string;
+
+    /**
+     * Username
+     */
+    @Property()
+    username: string;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

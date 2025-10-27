@@ -1431,4 +1431,66 @@ export class TokensApi {
             await InternalException(error, this.logger, user.id);
         }
     }
+
+
+    /**
+     * User info
+     */
+    @Get('/:tokenId/wallets/:walletId/info')
+    @Auth(
+        Permissions.TOKENS_TOKEN_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns user information for the selected token.',
+        description: 'Returns user information for the selected token.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'walletId',
+        type: String,
+        description: 'Wallet Account Id',
+        required: true,
+        example: Examples.ACCOUNT_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TokenInfoDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getWalletInfo(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('walletId') walletId: string
+    ): Promise<TokenInfoDTO> {
+        try {
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.getWalletToken(tokenId, walletId, owner);
+        } catch (error) {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            if (error?.message?.toLowerCase().includes('user not found')) {
+                throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
+            }
+            if (error?.message?.toLowerCase().includes('token not found')) {
+                throw new HttpException('Token not registered.', HttpStatus.NOT_FOUND);
+            }
+            throw error;
+        }
+    }
+
 }

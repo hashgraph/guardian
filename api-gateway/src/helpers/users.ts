@@ -411,6 +411,21 @@ export class Users extends NatsService {
      * Get project wallets
      * @param user
      */
+    public async getUserWallets(
+        user: IAuthUser,
+        filters: {
+            search?: string,
+            pageIndex?: number | string,
+            pageSize?: number | string
+        }
+    ): Promise<any[]> {
+        return await this.sendMessage(AuthEvents.GET_USER_WALLETS, { user, filters });
+    }
+
+    /**
+     * Get project wallets
+     * @param user
+     */
     public async getProjectWalletsAll(
         user: IAuthUser
     ): Promise<any[]> {
