@@ -1,7 +1,7 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { Controller } from '@nestjs/common';
 import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, IAuthUser, JsonToXlsx, MessageError, MessageResponse, NewNotifier, PinoLogger, RunFunctionAsync, Schema as SchemaCollection, Users, XlsxToJson } from '@guardian/common';
-import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { IOwner, ISchema, IChildSchemaDeletionBlock, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
 import {
     checkForCircularDependency,
     copySchemaAsync,
@@ -230,9 +230,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      *
      * @param {Object} [msg] - payload
      *
-     * @returns {ISchema[]} - Parent schemas
+     * @returns {ISchemaDeletionPreview} - Schema deletion preview
      */
-    ApiResponse(MessageAPI.GET_SCHEMA_CHILDREN,
+    ApiResponse(MessageAPI.GET_SCHEMA_DELETION_PREVIEW,
         async (msg: {
             id: string,
             topicId: string,
@@ -259,9 +259,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Schema is not found');
                 }
 
-
-                
-
                 const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
                 const defsIds = defs.map(id => id.startsWith('#') ? id.slice(1) : id);
 
@@ -277,56 +274,51 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     ]
                 })
 
-                const childSchemasCantDelete = new Set<SchemaCollection>();
-                const childSchemasCantDeleteIds = new Set<string>();
-
+                const blockedChildren: IChildSchemaDeletionBlock[] = [];
+                const blockedChildrenIds = new Set<string>();
 
                 if (topicId) {
-                    console.log(topicId);
-                
                     const filter: any = {
+                        topicId,
                         readonly: false,
                         system: false,
-                        topicId
+                        status: ModuleStatus.DRAFT,
+                        category: SchemaCategory.POLICY
                     }
-                    filter.category = SchemaCategory.POLICY;
 
                     const allPolicySchemas = await DatabaseServer.getSchemas(filter);
-                    console.log(childSchemas);
                     
                     if (allPolicySchemas?.length > 0) {
                         allPolicySchemas.forEach(item => {
-                            if (schema.uuid !== item.uuid) {
+                            if (schema.uuid !== item.uuid && !childSchemas.some(child => child.uuid === item.uuid)) {
                                 const schemaDefs = Array.isArray(item.defs) ? item.defs : [item.defs];
                                 const schemaDefsIds = schemaDefs.map(id => id.startsWith('#') ? id.slice(1) : id);
 
                                 const childSchemaUsedInAnotherSchema = childSchemas.find(child => schemaDefsIds.includes(child.uuid));
-                                console.log(item.name);
-                                console.log(item.uuid);
-                                console.log(schemaDefsIds);
-                                console.log(!!childSchemaUsedInAnotherSchema);
                                 if (childSchemaUsedInAnotherSchema) {
-                                    childSchemasCantDelete.add(childSchemaUsedInAnotherSchema);
-                                    childSchemasCantDeleteIds.add(childSchemaUsedInAnotherSchema.uuid);
+                                    const alreadyExist = blockedChildren.find(x => x.schema.uuid === childSchemaUsedInAnotherSchema.uuid);
+                                    
+                                    if (alreadyExist) {
+                                        alreadyExist.blockingSchemas.push(item);
+                                    } else {
+                                        blockedChildren.push({
+                                            schema: childSchemaUsedInAnotherSchema,
+                                            blockingSchemas: [item]
+                                        });
+
+                                        blockedChildrenIds.add(childSchemaUsedInAnotherSchema.uuid);
+                                    }
                                 }
                             }
                         })
                     }
                 }
 
-                const schemasToDelete = childSchemas.filter(item => !childSchemasCantDeleteIds.has(item.uuid))
-
-                console.log('childSchemas');
-                console.log(childSchemas);
-                console.log('schemasToDelete');
-                console.log(schemasToDelete);
-                console.log('childSchemasCantDelete');
-                console.log(childSchemasCantDelete);
-                
+                const deletableChildren = childSchemas.filter(item => !blockedChildrenIds.has(item.uuid))
 
                 return new MessageResponse({
-                    schemasToDelete,
-                    childSchemasCantDelete: Array.from(childSchemasCantDelete)
+                    deletableChildren,
+                    blockedChildren
                 });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -826,14 +818,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             id: string,
             owner: IOwner,
-            needResult: boolean
+            needResult: boolean,
+            includeChildren: boolean
         }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid delete schema parameter');
                 }
 
-                const { id, owner, needResult } = msg;
+                const { id, owner, needResult, includeChildren } = msg;
                 if (!id) {
                     return new MessageError('Invalid schema id');
                 }
@@ -870,6 +863,54 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                             )
                         ).join('\r\n')}`
                     );
+                }
+
+                if (includeChildren) {
+                    const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
+                    const defsIds = defs.map(id => id.startsWith('#') ? id.slice(1) : id);
+
+                    const childSchemas = await DatabaseServer.getSchemas({
+                        uuid: { $in: defsIds },
+                    }, {
+                        fields: [
+                            'uuid',
+                            'name',
+                            'version',
+                            'sourceVersion',
+                            'status'
+                        ]
+                    })
+
+                    const blockedChildrenIds = new Set<string>();
+
+                    const filter: any = {
+                        readonly: false,
+                        system: false,
+                        topicId: schema.topicId
+                    }
+                    filter.category = SchemaCategory.POLICY;
+
+                    const allPolicySchemas = await DatabaseServer.getSchemas(filter);
+                    
+                    if (allPolicySchemas?.length > 0) {
+                        allPolicySchemas.forEach(item => {
+                            if (schema.uuid !== item.uuid && !childSchemas.some(child => child.uuid === item.uuid)) {
+                                const schemaDefs = Array.isArray(item.defs) ? item.defs : [item.defs];
+                                const schemaDefsIds = schemaDefs.map(id => id.startsWith('#') ? id.slice(1) : id);
+
+                                const childSchemaUsedInAnotherSchema = childSchemas.find(child => schemaDefsIds.includes(child.uuid));
+                                if (childSchemaUsedInAnotherSchema) {
+                                    blockedChildrenIds.add(childSchemaUsedInAnotherSchema.uuid);
+                                }
+                            }
+                        })
+                    }
+
+                    const deletableChildren = childSchemas.filter(item => !blockedChildrenIds.has(item.uuid))
+
+                    for (const element of deletableChildren) {
+                        await deleteSchema(element.id, owner, NewNotifier.empty());
+                    }
                 }
 
                 await deleteSchema(id, owner, NewNotifier.empty());

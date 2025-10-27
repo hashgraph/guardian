@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ISchema, SchemaCategory, SchemaEntity, SchemaNode } from '@guardian/interfaces';
+import { ISchema, ISchemaDeletionPreview, SchemaCategory, SchemaEntity, SchemaNode } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { AuthService } from './auth.service';
@@ -218,9 +218,9 @@ export class SchemaService {
         return this.http.get<SchemaNode>(`${this.singleSchemaUrl}/${id}/tree`);
     }
 
-    public getSchemaChildren(id: string, topicId?: string): Observable<ISchema[]> {
+    public getSchemaDeletionPreview(id: string, topicId?: string): Observable<ISchemaDeletionPreview> {
         const options = topicId ? { params: { topicId } } : {};
-        return this.http.get<ISchema[]>(`${this.singleSchemaUrl}/${id}/children`, options);
+        return this.http.get<ISchemaDeletionPreview>(`${this.singleSchemaUrl}/${id}/deletionPreview`, options);
     }
 
     public properties(): Observable<any[]> {

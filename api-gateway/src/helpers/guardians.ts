@@ -13,6 +13,7 @@ import {
     IRetirePool,
     IRetireRequest,
     ISchema,
+    ISchemaDeletionPreview,
     IToken,
     ITokenInfo,
     IUser,
@@ -633,8 +634,8 @@ export class Guardians extends NatsService {
      * @param id Schema identifier
      * @returns Schemas
      */
-    public async getSchemaChildren(id: string, topicId: string, owner: IOwner): Promise<ISchema[]> {
-        return await this.sendMessage(MessageAPI.GET_SCHEMA_CHILDREN, { id, topicId, owner });
+    public async getSchemaDeletionPreview(id: string, topicId: string, owner: IOwner): Promise<ISchemaDeletionPreview> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_DELETION_PREVIEW, { id, topicId, owner });
     }
 
     /**
@@ -806,8 +807,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async deleteSchema(id: string, owner: IOwner, needResult = false): Promise<ISchema[] | boolean> {
-        return await this.sendMessage(MessageAPI.DELETE_SCHEMA, { id, owner, needResult });
+    public async deleteSchema(id: string, owner: IOwner, needResult = false, includeChildren = false): Promise<ISchema[] | boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMA, { id, owner, needResult, includeChildren });
     }
 
     /**
