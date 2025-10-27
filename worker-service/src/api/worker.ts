@@ -775,6 +775,7 @@ export class Worker extends NatsService {
                         hederaAccountKey,
                         targetAccount,
                         tokenValue,
+                        serialNumbers,
                         dryRun,
                         token,
                         wipeKey,
@@ -782,13 +783,47 @@ export class Worker extends NatsService {
                         payload: {userId}
                     } = task.data;
                     client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
-                    if (token.tokenType === 'non-fungible') {
-                        result.error = 'unsupported operation';
-                    } else {
-                        await client.wipe(token.tokenId, targetAccount, wipeKey, tokenValue, userId, uuid);
-                        result.data = {}
+                    try {
+                        await client.wipe(token.tokenId, targetAccount, wipeKey, tokenValue, userId, token.tokenType, serialNumbers, uuid);
+                    } catch (error) {
+                        if (token.tokenType === "non-fungible") {
+                            const plural =
+                                Array.isArray(serialNumbers) &&
+                                serialNumbers.length !== 1
+                                    ? "s"
+                                    : "";
+                            if (error.message.includes("INVALID_NFT_ID")) {
+                                await this.logger.error(
+                                    `Task error: ${this.currentTaskId}, ${error.message}`,
+                                    ["WORKER"],
+                                    userId
+                                );
+                                await NotificationHelper.error(
+                                    `Wipe Operation Failed`,
+                                    `Entered Serial number${plural}: "[${serialNumbers}]" is invalid`,
+                                    userId
+                                );
+                                break;
+                            } else if (
+                                error.message.includes("INVALID_WIPING_AMOUNT")
+                            ) {
+                                await this.logger.error(
+                                    `Task error: ${this.currentTaskId}, ${error.message}`,
+                                    ["WORKER"],
+                                    userId
+                                );
+                                await NotificationHelper.error(
+                                    `Wipe Operation Failed`,
+                                    `Wiping amount exceeds the tokens owned for serial number${plural} [${serialNumbers}].`,
+                                    userId
+                                );
+                                break;
+                            }
+                        }
+                        result.error = error.message;
+                        break;
                     }
-
+                    result.data = {}
                     break;
                 }
 

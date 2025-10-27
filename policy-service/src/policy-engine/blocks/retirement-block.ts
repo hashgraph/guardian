@@ -1,13 +1,13 @@
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
-import { DocumentCategoryType, DocumentSignature, LocationType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentCategoryType, DocumentSignature, LocationType, SchemaEntity, SchemaHelper, TokenType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage, HederaDidDocument } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
@@ -38,6 +38,7 @@ import { MintService } from '../mint/mint-service.js';
     },
     variables: [
         { path: 'options.tokenId', alias: 'token', type: 'Token' },
+        { path: 'options.serialNumbersExpression', alias: 'serialNumbersExpression', type: 'String' },
         { path: 'options.template', alias: 'template', type: 'TokenTemplate' }
     ]
 })
@@ -48,13 +49,15 @@ export class RetirementBlock {
      * @param token
      * @param data
      * @param ref
+     * @param serialNumbers
      * @private
      */
     private async createWipeVC(
         didDocument: HederaDidDocument,
         token: any,
         data: any,
-        ref: AnyBlockType
+        ref: AnyBlockType,
+        serialNumbers?: number[]
     ): Promise<VcDocument> {
         const vcHelper = new VcHelper();
         const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.WIPE_TOKEN);
@@ -63,7 +66,8 @@ export class RetirementBlock {
             ...SchemaHelper.getContext(policySchema),
             date: (new Date()).toISOString(),
             tokenId: token.tokenId,
-            amount: amount.toString()
+            amount: amount.toString(),
+            ...(serialNumbers && { serialNumbers: serialNumbers.join(',') })
         }
         const uuid = await ref.components.generateUUID();
         const wipeVC = await vcHelper.createVerifiableCredential(
@@ -119,9 +123,73 @@ export class RetirementBlock {
         const policyOwnerSignOptions = await policyOwner.loadSignOptions(ref, userId);
 
         const uuid: string = await ref.components.generateUUID();
-        const amount = PolicyUtils.aggregate(ref.options.rule, documents);
-        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
-        const wipeVC = await this.createWipeVC(policyOwnerDidDocument, token, tokenAmount, ref);
+
+        let serialNumbers: number[] = []
+        let tokenValue: number = 0;
+        let tokenAmount: string = '0';
+        if (token.tokenType === TokenType.NON_FUNGIBLE) {
+            const exprOpt = ref.options.serialNumbersExpression;
+            if (!exprOpt || !String(exprOpt).trim()) {
+                throw new Error('For NON_FUNGIBLE tokens, Serial numbers is required');
+            }
+            const wipeTokens = String(exprOpt).split(',').map(t => t.trim()).filter(Boolean);
+            const out = new Set<number>();
+
+            for (const tok of wipeTokens) {
+                const dash = tok.indexOf('-');
+                if (dash > 0) {
+                    const leftRaw = tok.slice(0, dash).trim();
+                    const rightRaw = tok.slice(dash + 1).trim();
+
+                    const startRule = PolicyUtils.aggregate(String(leftRaw), documents);
+                    const endRule = PolicyUtils.aggregate(String(rightRaw), documents);
+
+                    if (!Number.isInteger(startRule) || !Number.isInteger(endRule)) {
+                        throw new Error(`Serial numbers must be integers.`);
+                    }
+                    if (startRule < 1 || endRule < 1) {
+                        throw new Error('Serial numbers must be greater than or equal to 1');
+                    }
+                    if (startRule > endRule) {
+                        throw new Error(`End serial number must be greater than or equal to start serial number.`);
+                    }
+                    for (const n of PolicyUtils.aggregateSerialRange(startRule, endRule)) out.add(n);
+                } else {
+                    const valRule = PolicyUtils.aggregate(
+                        String(tok),
+                        documents
+                    );
+                    if (!Number.isInteger(valRule)) {
+                        throw new Error(
+                            `Serial numbers must be integers.`
+                        );
+                    }
+                    if (valRule < 1) {
+                        throw new Error(
+                            "Serial numbers must be greater than or equal to 1."
+                        );
+                    }
+                    out.add(valRule);
+                }
+            }
+            serialNumbers = Array.from(out).sort((a, b) => a - b);
+            if (serialNumbers.length === 0) {
+                throw new Error('No valid Serial Numbers found');
+            }
+        }
+        else if (token.tokenType === TokenType.FUNGIBLE) {
+            const ruleOpt = ref.options.rule
+            const hasRule =
+                ruleOpt !== null && ruleOpt !== undefined &&
+                (typeof ruleOpt !== 'string' || ruleOpt.trim() !== '');
+            if (!hasRule) {
+                throw new Error('For FUNGIBLE tokens, Rule is required');
+            }
+            const amount = PolicyUtils.aggregate(ref.options.rule, documents);
+            [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
+        }
+
+        const wipeVC = await this.createWipeVC(policyOwnerDidDocument, token, tokenAmount, ref, serialNumbers);
         const vcs = [].concat(documents, wipeVC);
         const vp = await this.createVP(policyOwnerDidDocument, uuid, vcs);
 
@@ -186,14 +254,16 @@ export class RetirementBlock {
         vpDocument.wallet = wallet;
         await ref.databaseServer.saveVP(vpDocument);
 
-        await MintService.wipe(
+        await MintService.wipe({
             ref,
             token,
             tokenValue,
-            policyOwnerHederaCred,
-            wallet,
-            vpMessageResult.getId(),
-            userId);
+            root: policyOwnerHederaCred,
+            targetAccount: wallet,
+            uuid: vpMessageResult.getId(),
+            userId,
+            serialNumbers
+        });
 
         return [vpDocument, tokenValue];
     }
@@ -235,6 +305,7 @@ export class RetirementBlock {
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+
         const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);

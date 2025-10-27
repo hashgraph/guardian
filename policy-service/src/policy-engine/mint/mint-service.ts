@@ -575,16 +575,19 @@ export class MintService {
      * @param targetAccount
      * @param uuid
      * @param userId
+     * @param serialNumbers
      */
-    public static async wipe(
+    public static async wipe(options: {
         ref: AnyBlockType,
         token: Token,
         tokenValue: number,
         root: IHederaCredentials,
         targetAccount: string,
         uuid: string,
-        userId: string | null
-    ): Promise<void> {
+        userId: string | null,
+        serialNumbers?: number[]
+    }): Promise<void> {
+        const { ref, token, tokenValue, root, targetAccount, uuid, userId, serialNumbers } = options;
         const workers = new Workers();
         if (token.wipeContractId) {
             await workers.addNonRetryableTask(
@@ -612,7 +615,7 @@ export class MintService {
                             {
                                 type: ContractParamType.INT64,
                                 value: tokenValue,
-                            },
+                            }
                         ],
                         payload: { userId }
                     },
@@ -640,6 +643,7 @@ export class MintService {
                         targetAccount,
                         tokenValue,
                         uuid,
+                        serialNumbers,
                         payload: { userId }
                     },
                 },
