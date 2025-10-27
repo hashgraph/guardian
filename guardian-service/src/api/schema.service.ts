@@ -262,9 +262,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
                 const defsIds = defs.map(id => id.startsWith('#') ? id.slice(1) : id);
 
-                const childSchemas = await DatabaseServer.getSchemas({
+                const childSchemasFilter: any = {
                     uuid: { $in: defsIds },
-                }, {
+                    status: ModuleStatus.DRAFT,
+                }
+                const childSchemas = await DatabaseServer.getSchemas(childSchemasFilter, {
                     fields: [
                         'uuid',
                         'name',
@@ -278,15 +280,14 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const blockedChildrenIds = new Set<string>();
 
                 if (topicId) {
-                    const filter: any = {
+                    const policySchemasFilter: any = {
                         topicId,
                         readonly: false,
                         system: false,
                         status: ModuleStatus.DRAFT,
                         category: SchemaCategory.POLICY
                     }
-
-                    const allPolicySchemas = await DatabaseServer.getSchemas(filter);
+                    const allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
                     
                     if (allPolicySchemas?.length > 0) {
                         allPolicySchemas.forEach(item => {
@@ -869,9 +870,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
                     const defsIds = defs.map(id => id.startsWith('#') ? id.slice(1) : id);
 
-                    const childSchemas = await DatabaseServer.getSchemas({
+                    const childSchemasFilter: any = {
                         uuid: { $in: defsIds },
-                    }, {
+                        status: ModuleStatus.DRAFT,
+                    }
+                    const childSchemas = await DatabaseServer.getSchemas(childSchemasFilter, {
                         fields: [
                             'uuid',
                             'name',
@@ -883,14 +886,14 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                     const blockedChildrenIds = new Set<string>();
 
-                    const filter: any = {
+                    const policySchemasFilter: any = {
+                        topicId: schema.topicId,
                         readonly: false,
                         system: false,
-                        topicId: schema.topicId
+                        status: ModuleStatus.DRAFT,
+                        category: SchemaCategory.POLICY
                     }
-                    filter.category = SchemaCategory.POLICY;
-
-                    const allPolicySchemas = await DatabaseServer.getSchemas(filter);
+                    const allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
                     
                     if (allPolicySchemas?.length > 0) {
                         allPolicySchemas.forEach(item => {
