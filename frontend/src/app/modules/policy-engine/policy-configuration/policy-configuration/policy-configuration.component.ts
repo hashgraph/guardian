@@ -151,6 +151,54 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public ignoreRules: IgnoreRule[] = [];
 
+    /**
+     * Available presets to validation.
+     */
+    public readonly validationRuleOptions = [
+        {
+            key: 'hideAllWarnings',
+            label: 'Warnings',
+            hint: 'Non-critical warnings in validation results.',
+            rule: { severity: 'warning' },
+        },
+        {
+            key: 'hideAllInfos',
+            label: 'Information',
+            hint: 'Informational items in validation results.',
+            rule: { severity: 'info' },
+        },
+        {
+            key: 'hideDeprecatedBlocks',
+            label: 'Deprecated blocks',
+            hint: 'Warnings about deprecated blocks.',
+            rule: { code: 'DEPRECATION_BLOCK' },
+        },
+        {
+            key: 'hideDeprecatedProps',
+            label: 'Deprecated properties',
+            hint: 'Notifications about deprecated block properties.',
+            rule: { code: 'DEPRECATION_PROP' },
+        },
+        {
+            key: 'hideNoIncoming',
+            label: 'Incoming events',
+            hint: 'Reachability warnings for blocks with 0 incoming events.',
+            rule: { code: 'REACHABILITY_NO_IN' },
+        },
+        {
+            key: 'hideNoOutgoing',
+            label: 'Outgoing events',
+            hint: 'Reachability warnings for blocks with 0 outgoing events.',
+            rule: { code: 'REACHABILITY_NO_OUT' },
+        },
+        {
+            key: 'hideIsolated',
+            label: 'Isolated blocks',
+            hint: 'Reachability warnings for blocks without connecting events.',
+            rule: { code: 'REACHABILITY_ISOLATED' }
+        },
+    ];
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -199,6 +247,11 @@ export class PolicyConfigurationComponent implements OnInit {
             return Math.max(0, this.infosCount);
         }
         return 0;
+    }
+
+    public get hasActiveRules(): boolean {
+        const ignoredCount = this.ignoreRules?.length || 0;
+        return ignoredCount < this.validationRuleOptions.length;
     }
 
     private _disableComponentMenu: boolean = true;
@@ -872,6 +925,7 @@ export class PolicyConfigurationComponent implements OnInit {
             }
         }
         this.errorsCount = this.errors.length + commonErrors.length;
+        this.errorsMap = {};
 
         this.emptyWarningsStates()
         this.emptyInfosStates()
@@ -2141,6 +2195,7 @@ export class PolicyConfigurationComponent implements OnInit {
             data: {
                 policyId: this.policyId,
                 rules: this.ignoreRules ?? [],
+                presetRuleOptions: this.validationRuleOptions,
             },
         });
 

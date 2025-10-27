@@ -27,55 +27,9 @@ interface PresetRuleOption {
 export class IgnoreRulesDialog implements OnInit {
     public form!: FormGroup;
 
-    /**
-     * Available presets to enable.
-     */
-    public readonly presetRuleOptions: PresetRuleOption[] = [
-        {
-            key: 'hideAllWarnings',
-            label: 'Hide all warnings',
-            hint: 'Remove every non-fatal warning from the validation results.',
-            rule: { severity: 'warning' },
-        },
-        {
-            key: 'hideAllInfos',
-            label: 'Hide all infos',
-            hint: 'Remove all informational messages; keep warnings and errors only.',
-            rule: { severity: 'info' },
-        },
-        {
-            key: 'hideDeprecatedBlocks',
-            label: 'Hide deprecated blocks',
-            hint: 'Suppress messages about whole block types being deprecated.',
-            rule: { code: 'DEPRECATION_BLOCK' },
-        },
-        {
-            key: 'hideDeprecatedProps',
-            label: 'Hide deprecated properties',
-            hint: 'Suppress messages about specific properties being deprecated.',
-            rule: { code: 'DEPRECATION_PROP' },
-        },
-        {
-            key: 'hideNoIncoming',
-            label: 'Hide “no incoming links”',
-            hint: 'Suppress reachability warnings for blocks with no incoming links.',
-            rule: { code: 'REACHABILITY_NO_IN' },
-        },
-        {
-            key: 'hideNoOutgoing',
-            label: 'Hide “no outgoing links”',
-            hint: 'Suppress reachability warnings for blocks with no outgoing links.',
-            rule: { code: 'REACHABILITY_NO_OUT' },
-        },
-        {
-            key: 'hideIsolated',
-            label: 'Hide “isolated block”',
-            hint: 'Suppress warnings when a block has no inbound and no outbound links.',
-            rule: { code: 'REACHABILITY_ISOLATED' }
-        },
-    ];
-
     public header = 'Policy Warnings'
+
+    public presetRuleOptions: any[] = [];
 
     constructor(
         private readonly formBuilder: FormBuilder,
@@ -90,8 +44,12 @@ export class IgnoreRulesDialog implements OnInit {
 
         const initialControlState: Record<string, boolean> = {};
 
+        this.presetRuleOptions = Array.isArray(this.dialogConfig.data?.presetRuleOptions)
+            ? this.dialogConfig.data.presetRuleOptions
+            : [];
+
         for (const option of this.presetRuleOptions) {
-            initialControlState[option.key] = this.containsRule(initialRules, option.rule);
+            initialControlState[option.key] = !this.containsRule(initialRules, option.rule);
         }
 
         this.form = this.formBuilder.group(initialControlState);
@@ -109,7 +67,7 @@ export class IgnoreRulesDialog implements OnInit {
             .filter((key) => Boolean(formValue[key]));
 
         const resultRules: IgnoreRule[] = this.presetRuleOptions
-            .filter((option) => enabledKeys.includes(option.key))
+            .filter((option) => !enabledKeys.includes(option.key))
             .map((option) => option.rule);
 
         this.dialogRef.close(resultRules);

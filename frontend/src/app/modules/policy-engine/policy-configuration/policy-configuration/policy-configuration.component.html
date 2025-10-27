@@ -1112,8 +1112,8 @@
     <div class="toolbar-menu all-status"
          (click)="setIgnoreRules(); validationMenu.hide()"
          title="Configuration"
-         [attr.active]="ignoreRules.length ? true : null">
-        <i class="pi" [ngClass]="ignoreRules.length ? 'pi-filter-fill' : 'pi-filter'"></i>
+         [attr.active]="hasActiveRules ? true : null">
+        <i class="pi" [ngClass]="hasActiveRules ? 'pi-filter-fill' : 'pi-filter'"></i>
         <span>Configuration</span>
     </div>
 </p-overlayPanel>
