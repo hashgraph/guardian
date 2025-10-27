@@ -229,25 +229,6 @@ export class PolicyTreeComponent implements OnInit {
         }
     }
 
-    // private scroll() {
-    //     if (this.data) {
-    //         for (let i = 0; i < this.data.length; i++) {
-    //             const node = this.data[i];
-    //             if (node.error) {
-    //                 const top = 54 * (i - 5);
-    //                 if (
-    //                     this.element &&
-    //                     this.element.nativeElement &&
-    //                     this.element.nativeElement.parentElement
-    //                 ) {
-    //                     this.element.nativeElement.parentElement.scrollTop = top;
-    //                 }
-    //                 return;
-    //             }
-    //         }
-    //     }
-    // }
-
     private scroll() {
         if (!this.data) {
           return;
@@ -409,7 +390,7 @@ export class PolicyTreeComponent implements OnInit {
             result.push(node);
             this.collapsedMap.set(node.id, node.collapsed);
 
-            if (this.errorsTree[block.id]) {
+            if (this.errorsTree[block.id] || this.warningsTree[block.id] || this.infosTree[block.id]) {
                 node.collapsed = false;
                 this.collapsedMap.set(node.id, node.collapsed);
             }
@@ -590,7 +571,7 @@ export class PolicyTreeComponent implements OnInit {
 
         const id = node.node.id;
 
-        return !!(this.warnings?.[id] || this.warningsTree?.[id]);
+        return !!this.warnings?.[id];
     }
 
     public isInfo(node: FlatBlockNode): boolean {
@@ -603,7 +584,7 @@ export class PolicyTreeComponent implements OnInit {
         }
         const id = node.node.id;
 
-        return !!(this.infos?.[id] || this.infosTree?.[id]);
+        return !!this.infos?.[id];
     }
 
     public blockStyle(node: FlatBlockNode): any {

@@ -67,6 +67,12 @@ export class IgnoreRulesDialog implements OnInit {
             hint: 'Suppress reachability warnings for blocks with no outgoing links.',
             rule: { code: 'REACHABILITY_NO_OUT' },
         },
+        {
+            key: 'hideIsolated',
+            label: 'Hide “isolated block”',
+            hint: 'Suppress warnings when a block has no inbound and no outbound links.',
+            rule: { code: 'REACHABILITY_ISOLATED' }
+        },
     ];
 
     public header = 'Policy Warnings'
