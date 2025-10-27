@@ -35,42 +35,44 @@ function getByPath(obj: unknown, path: string): unknown {
 
 /**
  * Builds a human-readable deprecation text based on DeprecationInfo.
- * Supports both a whole block and a specific property (via the optional `property` parameter).
+ * Supports both a whole block and a specific property.
  */
 function buildDeprecationText(
-    blockType: string,
-    info: DeprecationInfo,
-    property?: string
+    itemName: string,
+    info: DeprecationInfo
 ): string {
-    const textParts: string[] = [];
+    const BASE_DEPRECATION_PHRASE = 'was deprecated.';
 
-    if (property) {
-        textParts.push(`Property "${property}" in block "${blockType}" is deprecated`);
-    } else {
-        textParts.push(`Block "${blockType}" is deprecated`);
+    const messageParts: string[] = [];
+
+    const hasNonEmptyString = (
+        value: unknown
+    ): boolean => {
+        if (typeof value !== 'string') {
+            return false;
+        }
+        return value.trim().length > 0;
+    };
+
+    if (hasNonEmptyString(itemName)) {
+        messageParts.push(`"${itemName}" ${BASE_DEPRECATION_PHRASE}`);
     }
 
-    if (info.since) {
-        textParts.push(`since ${info.since}`);
+    const fields = [
+        info.alternative,
+        info.alternativeBlockType,
+        info.reason,
+        info.since,
+        info.removalPlanned
+    ];
+
+    for (const field of fields) {
+        if (hasNonEmptyString(field)) {
+            messageParts.push((field as string).trim());
+        }
     }
 
-    if (info.alternative) {
-        textParts.push(info.alternative);
-    }
-
-    if (info.alternativeBlockType) {
-        textParts.push(`Use "${info.alternativeBlockType}"`);
-    }
-
-    if (info.removalPlanned) {
-        textParts.push(`removal planned in ${info.removalPlanned}`);
-    }
-
-    if (info.reason) {
-        textParts.push(`Reason: ${info.reason}`);
-    }
-
-    return textParts.join('. ');
+    return messageParts.join(' ');
 }
 
 /**
@@ -124,7 +126,7 @@ export function getDeprecationMessagesForProperties(
             const message: PolicyMessage = {
                 severity: deprecationInfo.severity ?? 'warning',
                 code: MSG_DEPRECATION_PROP,
-                text: buildDeprecationText(blockType, deprecationInfo, propertyName),
+                text: buildDeprecationText(propertyName, deprecationInfo),
                 blockType,
                 property: propertyName,
                 since: deprecationInfo.since,

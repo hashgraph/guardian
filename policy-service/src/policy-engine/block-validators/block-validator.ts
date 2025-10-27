@@ -47,7 +47,7 @@ import { TagsManagerBlock } from './blocks/tag-manager.js';
 import { ExternalTopicBlock } from './blocks/external-topic-block.js';
 import { MessagesReportBlock } from './blocks/messages-report-block.js';
 import { NotificationBlock } from './blocks/notification.block.js';
-import { ISchema, SchemaEntity, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import {ISchema, projectRawNode, RawNodeView, SchemaEntity, SchemaField, SchemaHelper} from '@guardian/interfaces';
 import { ToolValidator } from './tool-validator.js';
 import { ToolBlock } from './blocks/tool.js';
 import { ExtractDataBlock } from './blocks/extract-data.js';
@@ -174,6 +174,12 @@ export class BlockValidator {
      */
     private parentId?: string;
 
+    /**
+     * Raw Node View
+     * @private
+     */
+    private readonly rawNodeView: RawNodeView;
+
     constructor(
         config: any,
         validator: PolicyValidator | ModuleValidator | ToolValidator,
@@ -192,6 +198,8 @@ export class BlockValidator {
         }
         this.options = options;
         this.children = [];
+
+        this.rawNodeView = projectRawNode(config);
     }
 
     /**
@@ -303,6 +311,13 @@ export class BlockValidator {
         } else {
             this.infoMessagesText.push(...messages);
         }
+    }
+
+    /**
+     * Get Raw Config
+     */
+    public getRawConfig(): RawNodeView {
+        return this.rawNodeView;
     }
 
     /**

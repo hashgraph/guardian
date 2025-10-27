@@ -20,6 +20,7 @@ export type RawNodeView = {
     properties?: { stopPropagation?: boolean } | Record<string, unknown>;
     events?: any[];
     options?: { events?: any[] } | Record<string, unknown>;
+    uiMetaData?: Record<string, unknown>;
 };
 
 /**
@@ -34,6 +35,7 @@ export function projectRawNode(source: any): RawNodeView {
         properties: source?.properties,
         events: source?.events,
         options: source?.options,
+        uiMetaData: source?.uiMetaData,
     };
 }
 

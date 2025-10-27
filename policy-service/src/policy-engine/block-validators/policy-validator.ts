@@ -121,8 +121,8 @@ export class PolicyValidator {
             for (const block of this.blocks.values()) {
                 const blockType = block.getBlockType();
 
-                const raw = (block as any).getRawConfig?.();
-                const usedProps = raw?.options ?? (block as any).getOptions?.();
+                const raw = block.getRawConfig?.();
+                const usedProps = (raw ?? {}) as unknown as Record<string, unknown>;
 
                 const {warningsText, infosText} = buildMessagesForValidator(
                     blockType,
