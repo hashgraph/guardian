@@ -389,8 +389,7 @@ export class UserCredentials {
         if (this._dryRun) {
             return await ref.databaseServer.getVirtualKey(this._did, `${this._did}/${wallet}`);
         } else {
-            const wallet = new Wallet();
-            return await wallet.getUserKey(this._did, KeyType.PROJECT_WALLET, `${this._did}/${wallet}`, userId);
+            return await (new Wallet()).getUserKey(this._did, KeyType.PROJECT_WALLET, `${this._did}/${wallet}`, userId);
         }
     }
 

@@ -144,8 +144,8 @@ export class TagsManagerBlock {
 
                 const wallet = await PolicyUtils.getUserWallet(ref, user.did, null, user.userId);
 
-                const uuid: string = await ref.components.generateUUID();
-                tag.uuid = tag.uuid || uuid;
+                const tagUUID: string = await ref.components.generateUUID();
+                tag.uuid = tag.uuid || tagUUID;
                 tag.operation = 'Create';
                 tag.entity = TagType.PolicyDocument;
                 tag.target = null;
@@ -176,7 +176,6 @@ export class TagsManagerBlock {
                         vcHelper.addDryRunContext(credentialSubject);
                     }
                     const uuid = await ref.components.generateUUID();
-
 
                     const vcObject = await PolicyActionsUtils.signVC({
                         ref,

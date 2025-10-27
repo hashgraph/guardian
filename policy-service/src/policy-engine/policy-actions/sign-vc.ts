@@ -53,7 +53,7 @@ export class SignVC {
             uuid: GenerateUUIDv4(),
             owner: issuer,
             accountId: userAccount,
-            wallet: wallet,
+            wallet,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.SignVC,

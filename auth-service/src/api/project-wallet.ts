@@ -89,7 +89,6 @@ export class ProjectWalletService extends NatsService {
                 user: IAuthUser
             }) => {
                 try {
-                    console.debug('GET_CURRENT_WALLET')
                     const { user } = msg;
 
                     const entityRepository = new DatabaseServer();
@@ -249,7 +248,8 @@ export class ProjectWalletService extends NatsService {
                     }
 
                     const wallet = new Wallet();
-                    await wallet.setKey(user.walletToken, KeyType.PROJECT_WALLET, `${projectWallet.owner}/${projectWallet.account}`, key);
+                    const userFull = await entityRepository.findOne(User, { did: user.did });
+                    await wallet.setKey(userFull.walletToken, KeyType.PROJECT_WALLET, `${projectWallet.owner}/${projectWallet.account}`, key);
 
                     let item = entityRepository.create(ProjectWallet, projectWallet);
                     item = await entityRepository.save(ProjectWallet, item);

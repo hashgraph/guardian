@@ -40,6 +40,7 @@ export class VCFullscreenDialog {
     public schemaId?: string;
     public schema?: any;
     public document: any;
+    public wallet?: string;
     public json: string = '';
     public fileSize: number = 0;
     public collapse: boolean = false;
@@ -106,6 +107,7 @@ export class VCFullscreenDialog {
             this.policyId = row.policyId;
             this.messageId = row.messageId;
             this.schemaId = row.schema;
+            this.wallet = row.wallet;
         }
 
         this.id = id;

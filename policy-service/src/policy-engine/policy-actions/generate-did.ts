@@ -61,7 +61,7 @@ export class GenerateDID {
             owner: user.did,
             topicId: topic.topicId,
             accountId: userAccount,
-            wallet: wallet,
+            wallet,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.GenerateDID,

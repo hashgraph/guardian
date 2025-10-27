@@ -20,6 +20,7 @@ export enum KeyEntity {
     KEY = 'KEY',
     MESSAGE = 'MESSAGE',
     DISCUSSION = 'DISCUSSION',
+    PROJECT_WALLET = 'PROJECT_WALLET',
 }
 
 /**
@@ -58,6 +59,7 @@ export const KEY_TYPE_KEY_ENTITY: Map<KeyType, KeyEntity> = new Map([
     [KeyType.DID_KEYS, KeyEntity.DID],
     [KeyType.KEY, KeyEntity.KEY],
     [KeyType.DISCUSSION, KeyEntity.DISCUSSION],
+    [KeyType.PROJECT_WALLET, KeyEntity.PROJECT_WALLET],
 ]);
 
 /**

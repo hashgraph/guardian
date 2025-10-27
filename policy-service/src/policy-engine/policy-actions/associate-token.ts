@@ -33,7 +33,7 @@ export class AssociateToken {
             uuid: GenerateUUIDv4(),
             owner: user,
             accountId: userAccount,
-            wallet: wallet,
+            wallet,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.AssociateToken,

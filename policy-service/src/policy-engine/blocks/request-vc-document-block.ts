@@ -404,7 +404,7 @@ export class RequestVcDocumentBlock {
         const newId = await PolicyActionsUtils.generateId({
             ref,
             type: idType,
-            user: user,
+            user,
             wallet,
             userId: user.userId
         });

@@ -55,7 +55,7 @@ export class SendMessage {
             uuid: GenerateUUIDv4(),
             owner,
             accountId: userAccount,
-            wallet: wallet,
+            wallet,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.SendMessage,

@@ -33,7 +33,7 @@ export class DissociateToken {
             uuid: GenerateUUIDv4(),
             owner: user,
             accountId: userAccount,
-            wallet: wallet,
+            wallet,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.DissociateToken,

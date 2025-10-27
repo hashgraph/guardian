@@ -290,6 +290,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 const { did, keyType, entityId } = msg;
 
                 const entity = KEY_TYPE_KEY_ENTITY.get(keyType);
+
                 if (!entity) {
                     return new MessageResponse(false);
                 }
@@ -321,6 +322,8 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                         );
                     case KeyEntity.DISCUSSION:
                         return new MessageResponse(true);
+                    case KeyEntity.PROJECT_WALLET:
+                        return new MessageResponse(entityId?.startsWith(did));
                     default:
                         return new MessageResponse(false);
                 }

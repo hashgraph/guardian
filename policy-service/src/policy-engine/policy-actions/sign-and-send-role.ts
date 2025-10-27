@@ -86,7 +86,7 @@ export class SignAndSendRole {
             owner: did,
             topicId: rootTopic.topicId,
             accountId: userAccount,
-            wallet: wallet,
+            wallet,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.SignAndSendRole,
@@ -105,7 +105,7 @@ export class SignAndSendRole {
         wallet: string,
         userId: string | null
     }) {
-        const { row, user, wallet, userId } = options;
+        const { row, user, userId } = options;
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
 
