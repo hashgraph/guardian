@@ -305,12 +305,12 @@ export class ProjectWalletService extends NatsService {
                 try {
                     const entityRepository = new DatabaseServer();
                     const user = await entityRepository.findOne(User, { did });
-                    if (wallet) {
+                    if (wallet && wallet !== user.hederaAccountId) {
                         const projectWallet = await entityRepository.findOne(ProjectWallet, {
                             account: wallet,
                             owner: user.did
                         });
-                        if(projectWallet) {
+                        if (projectWallet) {
                             return new MessageResponse(projectWallet.account);
                         } else {
                             return new MessageError('Wallet not found.');
