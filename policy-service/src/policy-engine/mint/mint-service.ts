@@ -91,7 +91,7 @@ export class MintService {
      * @param signOptions
      * @param userId
      */
-    public static async mint(
+    public static async mint(options: {
         ref: AnyBlockType,
         token: Token,
         tokenValue: number,
@@ -102,12 +102,25 @@ export class MintService {
         transactionMemo: string,
         documents: VcDocument[],
         policyOwnerSignOptions: ISignOptions,
+        wallet: string,
         userId: string | null
-    ): Promise<void> {
-        const multipleConfig = await MintService.getMultipleConfig(
+    }): Promise<void> {
+        const {
             ref,
-            documentOwner
-        );
+            token,
+            tokenValue,
+            documentOwner,
+            policyOwnerHederaCred,
+            targetAccount,
+            vpMessageId,
+            transactionMemo,
+            documents,
+            policyOwnerSignOptions,
+            wallet,
+            userId
+        } = options;
+
+        const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
         const users = new Users();
         const documentOwnerUser = await users.getUserById(documentOwner.did, userId);
         const policyOwner = await users.getUserById(ref.policyOwner, userId);
@@ -146,6 +159,7 @@ export class MintService {
                     tokenId: token.tokenId,
                     amount: tokenValue,
                     target: targetAccount,
+                    wallet,
                     status: 'Waiting',
                 } as FilterObject<MultiPolicyTransaction>);
             }
@@ -170,7 +184,9 @@ export class MintService {
                         tokenType: token.tokenType,
                         decimals: token.decimals,
                         memo: transactionMemo,
-                        policyId: ref.policyId
+                        policyId: ref.policyId,
+                        owner: documentOwner.did,
+                        wallet
                     },
                     policyOwnerHederaCred,
                     tokenConfig,
@@ -201,7 +217,9 @@ export class MintService {
                         tokenType: token.tokenType,
                         decimals: token.decimals,
                         memo: transactionMemo,
-                        policyId: ref.policyId
+                        policyId: ref.policyId,
+                        owner: documentOwner.did,
+                        wallet
                     },
                     policyOwnerHederaCred,
                     tokenConfig,
@@ -453,7 +471,7 @@ export class MintService {
      * @param userId
      * @param notifier
      */
-    public static async multiMint(
+    public static async multiMint(options: {
         root: IHederaCredentials,
         token: Token,
         tokenValue: number,
@@ -461,9 +479,24 @@ export class MintService {
         ids: string[],
         vpMessageId: string,
         policyId: string,
+        owner: string;
+        wallet: string;
         userId: string | null,
         notifier?: NotificationHelper
-    ): Promise<void> {
+    }): Promise<void> {
+        const {
+            root,
+            token,
+            tokenValue,
+            targetAccount,
+            ids,
+            vpMessageId,
+            policyId,
+            userId,
+            owner,
+            wallet,
+            notifier
+        } = options;
         const messageIds = ids.join(',');
         const memo = messageIds;
         const tokenConfig: TokenConfig = {
@@ -502,7 +535,9 @@ export class MintService {
                     tokenId: token.tokenId,
                     tokenType: token.tokenType,
                     decimals: token.decimals,
-                    policyId
+                    policyId,
+                    owner,
+                    wallet
                 },
                 root,
                 tokenConfig,
@@ -534,7 +569,9 @@ export class MintService {
                     tokenId: token.tokenId,
                     tokenType: token.tokenType,
                     decimals: token.decimals,
-                    policyId
+                    policyId,
+                    owner,
+                    wallet
                 },
                 root,
                 tokenConfig,
@@ -583,6 +620,7 @@ export class MintService {
         tokenValue: number,
         root: IHederaCredentials,
         targetAccount: string,
+        wallet: string,
         uuid: string,
         userId: string | null,
         serialNumbers?: number[]

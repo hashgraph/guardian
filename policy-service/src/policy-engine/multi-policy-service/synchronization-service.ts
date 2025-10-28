@@ -249,17 +249,19 @@ export class SynchronizationService {
                 );
                 if (messageIds) {
                     min -= transaction.amount;
-                    MintService.multiMint(
+                    MintService.multiMint({
                         root,
                         token,
-                        transaction.amount,
-                        transaction.target,
-                        messageIds,
-                        transaction.vpMessageId,
-                        policy.id?.toString(),
-                        policyOwner?.id,
+                        tokenValue: transaction.amount,
+                        targetAccount: transaction.target,
+                        ids: messageIds,
+                        vpMessageId: transaction.vpMessageId,
+                        policyId: policy.id?.toString(),
+                        userId: policyOwner?.id,
+                        owner: transaction.owner,
+                        wallet: transaction.wallet,
                         notifier
-                    ).catch(error => {
+                    }).catch(error => {
                         this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE'], policyOwnerId);
                     });
                 }

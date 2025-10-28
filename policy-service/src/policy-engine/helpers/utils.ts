@@ -157,7 +157,7 @@ export class PolicyUtils {
         const from = Math.min(startRule, endRule);
         const to = Math.max(startRule, endRule);
         const len = to - from + 1;
-        const serialNumbers: number[]= Array.from({ length: len }, (_, i) => from + i);
+        const serialNumbers: number[] = Array.from({ length: len }, (_, i) => from + i);
 
         return serialNumbers
     }
@@ -451,38 +451,6 @@ export class PolicyUtils {
             return item.ref;
         } else {
             return null;
-        }
-    }
-
-    /**
-     * Get Hedera Account Info
-     * @param ref Block Ref
-     * @param hederaAccountId Hedera Account Identifier
-     * @param user Client User
-     * @param userId
-     * @returns Token's map
-     */
-    public static async getHederaAccountInfo(
-        ref: AnyBlockType,
-        hederaAccountId: string,
-        user: IHederaCredentials,
-        userId: string | null
-    ): Promise<any> {
-        if (ref.dryRun) {
-            return await ref.databaseServer.getVirtualHederaAccountInfo(hederaAccountId);
-        } else {
-            const workers = new Workers();
-            return await workers.addNonRetryableTask({
-                type: WorkerTaskType.GET_ACCOUNT_INFO,
-                data: {
-                    userID: user.hederaAccountId,
-                    userKey: user.hederaAccountKey,
-                    hederaAccountId,
-                    payload: { userId }
-                }
-            }, {
-                priority: 20
-            });
         }
     }
 
@@ -808,24 +776,6 @@ export class PolicyUtils {
     }
 
     /**
-     * revokeKyc
-     * @param account
-     * @param userId
-     */
-    public static async checkAccountId(hederaAccountId: string, userId: string | null): Promise<void> {
-        const workers = new Workers();
-        return await workers.addNonRetryableTask({
-            type: WorkerTaskType.CHECK_ACCOUNT,
-            data: {
-                hederaAccountId,
-                payload: { userId }
-            }
-        }, {
-            priority: 20
-        });
-    }
-
-    /**
      * Get topic
      * @param ref
      * @param topicName
@@ -881,7 +831,10 @@ export class PolicyUtils {
                 ? (await root.loadSignOptions(ref, userId))
                 : (await user.loadSignOptions(ref, userId));
             const topicHelper = new TopicHelper(
-                hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun,
+                hederaCred.hederaAccountId,
+                hederaCred.hederaAccountKey,
+                signOptions,
+                ref.dryRun,
             );
             topic = await topicHelper.create({
                 type: TopicType.DynamicTopic,
@@ -1786,6 +1739,66 @@ export class PolicyUtils {
             return func.apply(document, [table]);
         } catch (error) {
             throw Error(`Invalid expression: ${field.path}`);
+        }
+    }
+
+    private static async loadUser(
+        did: string,
+        ref: AnyBlockType | null,
+        userId: string | null
+    ): Promise<IAuthUser> {
+        if (ref && ref.dryRun) {
+            return ref.components.getVirtualUser(did);
+        } else {
+            return PolicyUtils.users.getUserById(did, userId);
+        }
+    }
+
+    private static async loadWalletKey(
+        did: string,
+        wallet: string,
+        ref: AnyBlockType | null,
+        userId: string | null
+    ): Promise<string | null> {
+        if (ref && ref.dryRun) {
+            return ref.databaseServer.getVirtualKey(did, `${did}/${wallet}`);
+        } else {
+            return PolicyUtils.wallet.getUserKey(did, KeyType.PROJECT_WALLET, `${did}/${wallet}`, userId);
+        }
+    }
+
+    private static async loadHederaKey(
+        did: string,
+        ref: AnyBlockType | null,
+        userId: string | null
+    ): Promise<string | null> {
+        if (ref && ref.dryRun) {
+            return ref.databaseServer.getVirtualKey(did, did);
+        } else {
+            return PolicyUtils.wallet.getUserKey(did, KeyType.KEY, did, userId);
+        }
+    }
+
+    public static async loadWallet(
+        did: string,
+        wallet: string,
+        ref: AnyBlockType | null,
+        userId: string | null
+    ) {
+        const userFull = await PolicyUtils.loadUser(did, ref, userId);
+        const hederaAccountId: string = userFull?.hederaAccountId;
+        if (wallet && wallet !== hederaAccountId) {
+            const walletKey = await PolicyUtils.loadWalletKey(did, wallet, ref, userId);
+            return {
+                hederaAccountId: wallet,
+                hederaAccountKey: walletKey
+            }
+        } else {
+            const hederaKey = await PolicyUtils.loadHederaKey(did, ref, userId);
+            return {
+                hederaAccountId: hederaAccountId,
+                hederaAccountKey: hederaKey,
+            }
         }
     }
 }

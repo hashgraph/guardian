@@ -124,30 +124,31 @@ export class MintBlock {
      * @param userId
      * @private
      */
-    private async getAccount(
+    private getAccount(
         ref: AnyBlockType,
         docs: IPolicyDocument[],
         accounts: string[],
+        wallet: string,
         userId: string | null
-    ): Promise<string> {
-        let wallet: string;
+    ): string {
+        let targetAccount: string;
         if (ref.options.accountType !== 'custom-value') {
             const firstAccounts = accounts[0];
             if (accounts.find(a => a !== firstAccounts)) {
                 ref.error(`More than one account found! Transfer made on the first (${firstAccounts})`);
             }
             if (ref.options.accountId) {
-                wallet = firstAccounts;
+                targetAccount = firstAccounts;
             } else {
-                wallet = await PolicyUtils.getDocumentWallet(ref, docs[0], userId);
+                targetAccount = wallet;
             }
-            if (!wallet) {
+            if (!targetAccount) {
                 throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
             }
         } else {
-            wallet = ref.options.accountIdValue;
+            targetAccount = ref.options.accountIdValue;
         }
-        return wallet;
+        return targetAccount;
     }
 
     /**
@@ -276,6 +277,7 @@ export class MintBlock {
         topicId: string,
         user: PolicyUser,
         wallet: string,
+        targetAccount: string,
         documents: VcDocument[],
         messages: string[],
         additionalMessages: string[],
@@ -377,19 +379,20 @@ export class MintBlock {
         // #endregion
 
         const transactionMemo = `${vpMessageId} ${MessageMemo.parseMemo(true, ref.options.memo, savedVp)}`.trimEnd();
-        await MintService.mint(
+        await MintService.mint({
             ref,
             token,
             tokenValue,
-            user,
+            documentOwner: user,
             policyOwnerHederaCred,
-            wallet,
+            targetAccount,
             vpMessageId,
             transactionMemo,
             documents,
             policyOwnerSignOptions,
+            wallet,
             userId
-        );
+        });
 
         return [savedVp, tokenValue];
     }
@@ -495,13 +498,15 @@ export class MintBlock {
         const additionalMessages = this.getAdditionalMessages(additionalDocs);
         const topicId = topics[0];
 
-        const wallet = await this.getAccount(ref, docs, accounts, userId);
+        const wallet = await PolicyUtils.getDocumentWallet(ref, docs[0], userId);
+        const targetAccount = this.getAccount(ref, docs, accounts, wallet, userId);
 
         const [vp, amount] = await this.mintProcessing(
             token,
             topicId,
             user,
             wallet,
+            targetAccount,
             vcs,
             messages,
             additionalMessages,

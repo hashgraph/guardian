@@ -91,6 +91,8 @@ export abstract class TypedMint {
             tokenType: TokenType;
             decimals: number;
             policyId: string;
+            owner: string;
+            wallet: string;
             metadata?: string;
         },
         root: IHederaCredentials,
@@ -236,7 +238,27 @@ export abstract class TypedMint {
         }
         return notification;
     }
-    ь
+
+    protected async getWallet() {
+        if (this._mintRequest?.wallet) {
+            const userWallet = await PolicyUtils.loadWallet(
+                this._mintRequest.owner,
+                this._mintRequest.wallet,
+                this._ref,
+                this.userId
+            );
+            return {
+                hederaAccountId: userWallet.hederaAccountId,
+                hederaAccountKey: userWallet.hederaAccountKey,
+            }
+        } else {
+            return {
+                hederaAccountId: this._root.hederaAccountId,
+                hederaAccountKey: this._root.hederaAccountKey,
+            }
+        }
+    }
+
     /**
      * Mint tokens
      * @param isProgressNeeded Is progress needed

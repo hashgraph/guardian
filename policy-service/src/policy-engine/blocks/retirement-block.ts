@@ -113,6 +113,7 @@ export class RetirementBlock {
         topicId: string,
         policyOwner: UserCredentials,
         user: PolicyUser,
+        targetAccount: string,
         wallet: string,
         userId: string | null
     ): Promise<[IPolicyDocument, number]> {
@@ -261,7 +262,8 @@ export class RetirementBlock {
             token,
             tokenValue,
             root: policyOwnerHederaCred,
-            targetAccount: wallet,
+            targetAccount: targetAccount,
+            wallet,
             uuid: vpMessageResult.getId(),
             userId,
             serialNumbers
@@ -352,14 +354,15 @@ export class RetirementBlock {
         }
         const topicId = topicIds[0];
 
-        let wallet: string;
+        const wallet = await PolicyUtils.getDocumentWallet(ref, docs[0], event?.user?.userId);
+        let targetAccount: string;
         if (ref.options.accountId) {
-            wallet = firstAccounts;
+            targetAccount = firstAccounts;
         } else {
-            wallet = await PolicyUtils.getDocumentWallet(ref, docs[0], event?.user?.userId);
+            targetAccount = wallet;
         }
 
-        if (!wallet) {
+        if (!targetAccount) {
             throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
         }
 
@@ -372,6 +375,7 @@ export class RetirementBlock {
             topicId,
             policyOwner,
             docOwner,
+            targetAccount,
             wallet,
             event?.user?.userId
         );
