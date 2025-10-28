@@ -190,7 +190,7 @@ export class MintNFT extends TypedMint {
                             type: WorkerTaskType.MINT_NFT,
                             data: {
                                 hederaAccountId: wallet.hederaAccountId,
-                                hederaAccountKey: wallet.hederaAccountId,
+                                hederaAccountKey: wallet.hederaAccountKey,
                                 dryRun: this._db.getDryRun(),
                                 tokenId: this._token.tokenId,
                                 supplyKey: this._token.supplyKey,
@@ -290,7 +290,7 @@ export class MintNFT extends TypedMint {
                             type: WorkerTaskType.TRANSFER_NFT,
                             data: {
                                 hederaAccountId: wallet.hederaAccountId,
-                                hederaAccountKey: wallet.hederaAccountId,
+                                hederaAccountKey: wallet.hederaAccountKey,
                                 dryRun: this._ref && this._ref.dryRun,
                                 tokenId: this._token.tokenId,
                                 targetAccount: this._mintRequest.target,
