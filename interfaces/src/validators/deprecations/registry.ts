@@ -6,7 +6,7 @@ import {
 
 const _blocks = new Map<string, DeprecationInfo>([
     ['interfaceActionBlock', {
-        severity: "warning",
+        severity: 'warning',
         since: '',
         alternative: '',
         alternativeBlockType: '',
@@ -18,7 +18,7 @@ const _blocks = new Map<string, DeprecationInfo>([
 const _properties = new Map<string, ReadonlyMap<string, DeprecationInfo>>([
     ['interfaceActionBlock', new Map<string, DeprecationInfo>([
         ['uiMetaData.title', {
-            severity: "warning",
+            severity: 'warning',
             since: '',
             alternative: '',
             alternativeBlockType: '',

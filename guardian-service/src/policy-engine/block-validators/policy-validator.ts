@@ -122,7 +122,6 @@ export class PolicyValidator {
         return this.isDryRunMode;
     }
 
-
     /**
      * Get Reachability Per Block
      */

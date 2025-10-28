@@ -25,7 +25,7 @@ function getByPath(obj: unknown, path: string): unknown {
     const normalized = path.replace(/\[(\d+)\]/g, '.$1');
 
     return normalized.split('.').reduce((acc: any, key) => {
-        if (acc == null) {
+        if (acc === null) {
             return undefined;
         }
 

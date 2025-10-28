@@ -1,7 +1,7 @@
 import {getDeprecationMessagesForBlock, getDeprecationMessagesForProperties} from './adapter-from-deprecations.js';
 import {PolicyMessage} from './types.js';
 import {IgnoreRule,} from './ignore.js';
-import {collapseReachabilityMessages} from "./reachability.js";
+import {collapseReachabilityMessages} from './reachability.js';
 
 /**
  * Builds a deduplication key for a message.

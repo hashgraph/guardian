@@ -3,7 +3,7 @@ import {IsArray, IsBoolean, IsIn, IsNumber, IsObject, IsOptional, IsString, Vali
 import { PolicyAvailability, PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
 import { Examples } from '../examples.js';
 import { ValidationErrorsDTO } from './blocks.js';
-import {Type} from "class-transformer";
+import {Type} from 'class-transformer';
 
 export class PolicyTestDTO {
     @ApiProperty({
