@@ -961,7 +961,8 @@ export class PolicyUtils {
         wallet: string,
         userId: string | null
     ): Promise<string> {
-        return await PolicyUtils.users.getUserWallet(did, wallet, userId);
+        const config = await PolicyUtils.users.getUserWallet(did, wallet, userId);
+        return config?.account;
     }
 
     /**
@@ -1799,6 +1800,69 @@ export class PolicyUtils {
                 hederaAccountId: hederaAccountId,
                 hederaAccountKey: hederaKey,
             }
+        }
+    }
+
+    public static async getOrCreateWallet(
+        ref: AnyBlockType,
+        did: string,
+        walletConfig: {
+            name: string | null;
+            account: string | null;
+            key: string | null;
+        } | string | null | undefined,
+        documentRef: IPolicyDocument,
+        userId: string | null
+    ) {
+        try {
+            let walletAccount: string;
+            let wallet: { account: string; name: string; default: boolean; };
+            if (walletConfig) {
+                if (typeof walletConfig === 'string') {
+                    wallet = await PolicyUtils.users.getUserWallet(did, walletConfig, userId);
+                } else {
+                    wallet = await PolicyUtils.users.createWallet({ did, id: userId }, walletConfig, userId);
+                }
+                if (!(await PolicyUtils.checkWalletBalance(wallet, userId))) {
+                    throw new Error('The wallet account has insufficient balance.');
+                }
+                walletAccount = wallet.account;
+            } else if (documentRef) {
+                walletAccount = await PolicyUtils.getDocumentWallet(ref, documentRef, userId);
+            } else {
+                walletAccount = await PolicyUtils.getUserWallet(ref, did, null, userId);
+            }
+            return { walletAccount, wallet };
+        } catch (error) {
+            throw Error(`Invalid wallet.`);
+        }
+    }
+
+    public static async checkWalletBalance(
+        wallet?: {
+            account: string;
+            name: string;
+            default: boolean;
+        },
+        userId?: string
+    ) {
+        try {
+            if (wallet) {
+                const workers = new Workers();
+                const info = await workers.addNonRetryableTask({
+                    type: WorkerTaskType.GET_ACCOUNT_INFO_REST,
+                    data: {
+                        hederaAccountId: wallet.account,
+                        payload: { userId }
+                    }
+                }, {
+                    priority: 20
+                });
+                return (info.balance.balance / 100000000) > 1;
+            }
+            return true;
+        } catch (error) {
+            return false;
         }
     }
 }

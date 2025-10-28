@@ -41,6 +41,7 @@ export class RequestDocumentBlockDialog {
     public get edit() { return this.parent?.edit; }
     public get draft() { return this.parent?.draft; }
     public get wallet() { return this.parent?.wallet; }
+    public get user() { return this.parent?.user; }
 
     public buttons: any = [];
     public rules: DocumentValidators;

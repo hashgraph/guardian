@@ -510,4 +510,13 @@ export class PolicyActionsUtils {
     /**
      * group-manager
      */
+
+    public static async setWallet(options: {
+        ref: AnyBlockType,
+        owner: string,
+        wallet: any
+        userId: string | null
+    }): Promise<void> {
+        return;
+    }
 }

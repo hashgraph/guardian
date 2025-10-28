@@ -236,8 +236,8 @@ export class ProjectWalletService extends NatsService {
                     }
                     const key = config.key;
 
-                    const correctAccount = await UserUtils.checkAccount(config.account, config.key);
-                    if (!correctAccount) {
+                    const accountBalance = await UserUtils.checkAccount(config.account, config.key);
+                    if (accountBalance === null) {
                         return new MessageError('Invalid account.');
                     }
 
@@ -306,20 +306,28 @@ export class ProjectWalletService extends NatsService {
                 const { did, wallet, userId } = msg;
                 try {
                     const entityRepository = new DatabaseServer();
-                    const user = await entityRepository.findOne(User, { did });
-                    if (wallet && wallet !== user.hederaAccountId) {
+                    if (wallet) {
                         const projectWallet = await entityRepository.findOne(ProjectWallet, {
                             account: wallet,
-                            owner: user.did
+                            owner: did
                         });
                         if (projectWallet) {
-                            return new MessageResponse(projectWallet.account);
-                        } else {
-                            return new MessageError('Wallet not found.');
+                            return new MessageResponse({
+                                account: projectWallet.account,
+                                name: projectWallet.name,
+                                default: false
+                            });
                         }
-                    } else {
-                        return new MessageResponse(user.hederaAccountId);
                     }
+                    const user = await entityRepository.findOne(User, { did });
+                    if (!wallet || wallet === user.hederaAccountId) {
+                        return new MessageResponse({
+                            name: 'Default',
+                            account: user.hederaAccountId,
+                            default: true
+                        });
+                    }
+                    return new MessageError('Wallet not found.');
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
@@ -458,14 +466,18 @@ export class ProjectWalletService extends NatsService {
                     if (user) {
                         return new MessageResponse({
                             name: 'Default',
-                            account: user.hederaAccountId
+                            account: user.hederaAccountId,
+                            owner: user.did,
+                            default: true
                         });
                     }
                     const projectWallet = await entityRepository.findOne(ProjectWallet, { account: wallet });
                     if (projectWallet) {
                         return new MessageResponse({
                             name: projectWallet.name,
-                            account: projectWallet.account
+                            account: projectWallet.account,
+                            owner: projectWallet.owner,
+                            default: false
                         });
                     }
                     return new MessageResponse(null);

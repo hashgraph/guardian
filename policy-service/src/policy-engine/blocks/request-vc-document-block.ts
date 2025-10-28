@@ -200,10 +200,15 @@ export class RequestVcDocumentBlock {
             const editType = ref.options.editType;
 
             const documentRef = await this.getRelationships(ref, data.ref);
-            const wallet = await PolicyUtils.getRefWallet(ref, user.did, data.wallet, documentRef, user.userId);
+
+            //Wallet
+            const { walletAccount, wallet } = await PolicyUtils.getOrCreateWallet(ref, user.did, data.wallet, documentRef, user.userId);
+            if (wallet) {
+                await PolicyActionsUtils.setWallet({ ref, owner: user.did, wallet, userId: user.userId });
+            }
 
             //Prepare Credential Subject
-            const credentialSubject = await this.createCredentialSubject(user, wallet, document);
+            const credentialSubject = await this.createCredentialSubject(user, walletAccount, document);
 
             //Get relationships
             if (documentRef) {
@@ -233,7 +238,7 @@ export class RequestVcDocumentBlock {
             }
 
             //Create Verifiable Credential
-            const item = await this.createVerifiableCredential(user, wallet, credentialSubject);
+            const item = await this.createVerifiableCredential(user, walletAccount, credentialSubject);
             PolicyUtils.setDocumentRef(item, documentRef);
 
             //Update metadata

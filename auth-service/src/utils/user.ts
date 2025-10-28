@@ -172,7 +172,11 @@ export class UserUtils {
         return result;
     }
 
-    public static async checkAccount(account?: string, key?: string, userId?: string): Promise<boolean> {
+    public static async checkAccount(
+        account?: string,
+        key?: string,
+        userId?: string
+    ): Promise<number> {
         try {
             const workers = new Workers();
             const info = await workers.addNonRetryableTask({
@@ -185,9 +189,13 @@ export class UserUtils {
                 priority: 20
             });
 
-            return checkHederaKey(key, info.key.key);
+            if (checkHederaKey(key, info.key.key)) {
+                return (info.balance.balance / 100000000);
+            } else {
+                return null;
+            }
         } catch (error) {
-            return false;
+            return null;
         }
     }
 }

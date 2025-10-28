@@ -14,6 +14,7 @@ import {
     VcHelper,
 } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
 /**
  * External data block
@@ -163,14 +164,20 @@ export class ExternalDataBlock {
         const documentRef = await this.getRelationships(ref, data.ref);
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);
-        const wallet = await PolicyUtils.getRefWallet(ref, data.owner, data.wallet, documentRef, user.userId);
-        const accounts = PolicyUtils.getHederaAccounts(vc, wallet, schema);
+
+        //Wallet
+        const { walletAccount, wallet } = await PolicyUtils.getOrCreateWallet(ref, user.did, data.wallet, documentRef, user.userId);
+        if (wallet) {
+            await PolicyActionsUtils.setWallet({ ref, owner: user.did, wallet, userId: user.userId });
+        }
+
+        const accounts = PolicyUtils.getHederaAccounts(vc, walletAccount, schema);
 
         let doc = PolicyUtils.createVC(ref, user, vc);
         doc.type = ref.options.entityType;
         doc.schema = ref.options.schema;
         doc.accounts = accounts;
-        doc.wallet = wallet;
+        doc.wallet = walletAccount;
         doc.signature = (verify ?
             DocumentSignature.VERIFIED :
             DocumentSignature.INVALID);

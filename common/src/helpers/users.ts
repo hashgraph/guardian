@@ -307,7 +307,7 @@ export class Users extends NatsService {
         did: string,
         wallet: string,
         userId: string | null
-    ): Promise<string> {
+    ): Promise<{ account: string, name: string, default: boolean }> {
         return await this.sendMessage(AuthEvents.GET_USER_WALLET, { did, wallet, userId });
     }
 
@@ -319,7 +319,27 @@ export class Users extends NatsService {
     public async getWallet(
         wallet: string,
         userId: string | null
-    ): Promise<{ account: string, name: string }> {
+    ): Promise<{ account: string, name: string, owner: string, default: boolean }> {
         return await this.sendMessage(AuthEvents.GET_WALLET, { wallet, userId });
+    }
+
+    /**
+     * Return user wallet
+     * @param wallet
+     * @param userId
+     */
+    public async createWallet(
+        user: {
+            did: string,
+            id: string
+        },
+        config: {
+            name?: string,
+            account?: string,
+            key?: string
+        },
+        userId: string | null
+    ): Promise<{ account: string, name: string, owner: string, default: boolean }> {
+        return await this.sendMessage(AuthEvents.CREATE_PROJECT_WALLET, { user, config, userId });
     }
 }
