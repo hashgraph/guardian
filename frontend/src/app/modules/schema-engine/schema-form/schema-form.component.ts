@@ -97,101 +97,12 @@ export class SchemaFormComponent implements OnInit {
     @Output() saveBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() buttons = new EventEmitter<any>();
 
-    public minutesAgo$ =  getMinutesAgoStream(() => this.lastSavedAt);
+    public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
 
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public isShown: boolean[] = [true];
     public currentIndex: number = 0;
-    public buttonsConfig: IButton[] = [
-        {
-            id: 'cancel',
-            visible: () => {
-                if (!this.formModel?.controls || this.isChildSchema) {
-                    return false;
-                }
-                return this.currentIndex === 0 && !this.cancelHidden;
-            },
-            disabled: () => {
-                return false;
-            },
-            text: this.cancelText,
-            class: 'p-button-outlined',
-            type: 'secondary',
-            fn: () => {
-                this.onCancelBtnClick();
-            },
-        },
-        {
-            id: 'prev',
-            visible: () => {
-                if (!this.formModel?.controls || this.isChildSchema) {
-                    return false;
-                }
-                return this.currentIndex !== 0;
-            },
-            disabled: () => {
-                return false;
-            },
-            text: 'Previous',
-            class: 'p-button-outlined',
-            type: 'secondary',
-            fn: () => {
-                this.getPrevShownFields(this.formModel?.controls);
-            },
-        },
-        {
-            id: 'next',
-            visible: () => {
-                if (!this.formModel?.controls || this.isChildSchema) {
-                    return false;
-                }
-                return !this.isShown[this.formModel.controls.length - 1];
-            },
-            disabled: () => {
-                return false;
-            },
-            text: 'Next',
-            class: 'p-button',
-            type: 'primary',
-            fn: () => {
-                this.getNextShownFields(this.formModel?.controls);
-            },
-        },
-        {
-            id: 'submit',
-            visible: () => {
-                if (!this.formModel?.controls || this.isChildSchema) {
-                    return false;
-                }
-                return !!this.isShown[this.formModel.controls.length - 1] && !this.submitHidden;
-            },
-            disabled: () => {
-                return false;
-            },
-            text: this.submitText,
-            class: 'p-button',
-            type: 'primary',
-            fn: () => {
-                this.onSubmitBtnClick(this.formModel?.controls);
-            },
-        },
-        {
-            id: 'save',
-            visible: () => {
-                return this.saveShown;
-            },
-            disabled: () => {
-                return false;
-            },
-            text: this.saveText,
-            class: 'p-button-outlined',
-            type: 'primary',
-            iconPath: '/assets/images/icons/save.svg',
-            fn: () => {
-                this.onSaveBtnClick(this.formModel?.controls);
-            },
-        },
-    ]
+    public buttonsConfig: IButton[] = [];
 
     constructor(
         private ipfs: IPFSService,
@@ -224,13 +135,101 @@ export class SchemaFormComponent implements OnInit {
 
             }
         }
-        this.buttons.emit(this.buttonsConfig);
+        this.createButtons();
     }
 
     ngOnDestroy() {
         this.destroy.emit();
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
+    }
+
+    public createButtons() {
+        this.buttonsConfig = [{
+            id: 'cancel',
+            visible: () => {
+                if (!this.formModel?.controls || this.isChildSchema) {
+                    return false;
+                }
+                return this.currentIndex === 0 && !this.cancelHidden;
+            },
+            disabled: () => {
+                return false;
+            },
+            text: this.cancelText,
+            class: 'p-button-outlined',
+            type: 'secondary',
+            fn: () => {
+                this.onCancelBtnClick();
+            },
+        }, {
+            id: 'prev',
+            visible: () => {
+                if (!this.formModel?.controls || this.isChildSchema) {
+                    return false;
+                }
+                return this.currentIndex !== 0;
+            },
+            disabled: () => {
+                return false;
+            },
+            text: 'Previous',
+            class: 'p-button-outlined',
+            type: 'secondary',
+            fn: () => {
+                this.getPrevShownFields(this.formModel?.controls);
+            },
+        }, {
+            id: 'next',
+            visible: () => {
+                if (!this.formModel?.controls || this.isChildSchema) {
+                    return false;
+                }
+                return !this.isShown[this.formModel.controls.length - 1];
+            },
+            disabled: () => {
+                return false;
+            },
+            text: 'Next',
+            class: 'p-button',
+            type: 'primary',
+            fn: () => {
+                this.getNextShownFields(this.formModel?.controls);
+            },
+        }, {
+            id: 'submit',
+            visible: () => {
+                if (!this.formModel?.controls || this.isChildSchema) {
+                    return false;
+                }
+                return !!this.isShown[this.formModel.controls.length - 1] && !this.submitHidden;
+            },
+            disabled: () => {
+                return false;
+            },
+            text: this.submitText,
+            class: 'p-button',
+            type: 'primary',
+            fn: () => {
+                this.onSubmitBtnClick(this.formModel?.controls);
+            },
+        }, {
+            id: 'save',
+            visible: () => {
+                return this.saveShown;
+            },
+            disabled: () => {
+                return false;
+            },
+            text: this.saveText,
+            class: 'p-button-outlined',
+            type: 'primary',
+            iconPath: '/assets/images/icons/save.svg',
+            fn: () => {
+                this.onSaveBtnClick(this.formModel?.controls);
+            },
+        }]
+        this.buttons.emit(this.buttonsConfig);
     }
 
     public addGroup(item: IFieldControl<any>) {

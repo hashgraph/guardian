@@ -65,7 +65,7 @@ export class RequestDocumentBlockComponent
     @Input('savepointIds') savepointIds?: string[] | null = null;
     @Input('policyStatus') policyStatus!: string;
 
-    @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
+    @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
 
     public isExist = false;
     public disabled = false;
@@ -107,6 +107,7 @@ export class RequestDocumentBlockComponent
         account: new FormControl<string>('', Validators.required),
         key: new FormControl<string>('', Validators.required),
     });
+    public submitText: string = 'Validate & Create';
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -261,6 +262,11 @@ export class RequestDocumentBlockComponent
             this.hideFields = null;
             this.disabled = false;
             this.isExist = false;
+        }
+        if (this.wallet) {
+            this.submitText = 'Select Wallet';
+        } else {
+            this.submitText = (this.edit && !this.draft) ? 'Validate & Update' : 'Validate & Create';
         }
     }
 

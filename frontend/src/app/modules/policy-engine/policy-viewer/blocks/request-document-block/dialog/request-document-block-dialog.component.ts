@@ -59,12 +59,12 @@ export class RequestDocumentBlockDialog {
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
     private buttonNames: { [id: string]: string } = {
-        save: "Save Draft",
-        cancel: "Cancel",
-        prev: "Previous",
-        next: "Next",
-        wallet: "Select Wallet",
-        submit: "Validate & Create"
+        save: 'Save Draft',
+        cancel: 'Cancel',
+        prev: 'Previous',
+        next: 'Next',
+        wallet: 'Select Wallet',
+        submit: 'Validate & Create'
     }
 
     public walletForm = new FormGroup({
