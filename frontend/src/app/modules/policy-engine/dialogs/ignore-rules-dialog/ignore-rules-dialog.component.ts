@@ -29,7 +29,7 @@ export class IgnoreRulesDialog implements OnInit {
 
     public header = 'Policy Warnings'
 
-    public presetRuleOptions: any[] = [];
+    public presetRuleOptions: PresetRuleOption[] = [];
 
     constructor(
         private readonly formBuilder: FormBuilder,
