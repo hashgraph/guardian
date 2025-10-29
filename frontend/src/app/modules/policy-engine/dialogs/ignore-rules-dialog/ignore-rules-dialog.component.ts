@@ -48,9 +48,14 @@ export class IgnoreRulesDialog implements OnInit {
             ? this.dialogConfig.data.presetRuleOptions
             : [];
 
-        for (const option of this.presetRuleOptions) {
-            initialControlState[option.key] = !this.containsRule(initialRules, option.rule);
-        }
+        const hasSavedRules = initialRules.length > 0;
+            for (const option of this.presetRuleOptions) {
+                if (!hasSavedRules) {
+                     initialControlState[option.key] = false;
+                } else {
+                     initialControlState[option.key] = !this.containsRule(initialRules, option.rule);
+                }
+            }
 
         this.form = this.formBuilder.group(initialControlState);
     }
