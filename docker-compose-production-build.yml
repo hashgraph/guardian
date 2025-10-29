@@ -231,6 +231,7 @@ services:
       - 5007
 
   application-events:
+    <<: *service-template
     build:
       context: .
       dockerfile: application-events/Dockerfile
