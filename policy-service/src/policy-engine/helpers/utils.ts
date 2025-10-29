@@ -1808,45 +1808,25 @@ export class PolicyUtils {
         }
     }
 
-    public static async getOrCreateWallet(
+    public static async getWallet(
         ref: AnyBlockType,
         did: string,
-        walletConfig: {
-            name: string | null;
-            account: string | null;
-            key: string | null;
-        } | string | null | undefined,
+        wallet: string | null | undefined,
         documentRef: IPolicyDocument,
         userId: string | null
     ) {
         try {
             let walletAccount: string;
-            let wallet: {
-                account: string;
-                name: string;
-                key?: string;
-                default: boolean;
-            };
             if (ref.dryRun) {
                 walletAccount = await PolicyUtils.getUserWallet(ref, did, null, userId);
-            } else if (walletConfig) {
-                if (typeof walletConfig === 'string') {
-                    wallet = await PolicyUtils.users.getUserWallet(did, walletConfig, userId);
-                } else {
-                    wallet = await PolicyUtils.users.createWallet({ did, id: userId }, walletConfig, userId);
-                }
-                if (!(await PolicyUtils.checkWalletBalance(wallet, userId))) {
-                    throw new Error('The wallet account has insufficient balance.');
-                }
-                const walletKey = await PolicyUtils.loadWalletKey(did, wallet.account, ref, userId);
-                wallet.key = walletKey;
-                walletAccount = wallet.account;
+            } else if (wallet) {
+                walletAccount = wallet;
             } else if (documentRef) {
                 walletAccount = await PolicyUtils.getDocumentWallet(ref, documentRef, userId);
             } else {
                 walletAccount = await PolicyUtils.getUserWallet(ref, did, null, userId);
             }
-            return { walletAccount, wallet };
+            return walletAccount;
         } catch (error) {
             throw Error(`Invalid wallet.`);
         }
@@ -1872,11 +1852,13 @@ export class PolicyUtils {
                 }, {
                     priority: 20
                 });
-                return (info.balance.balance / 100000000) > 1;
+                console.debug(info)
+                return (info.balance / 100000000) > 1;
             }
             return true;
         } catch (error) {
-            return false;
+            console.debug(error)
+            return null;
         }
     }
 }

@@ -1,5 +1,5 @@
 import { Auth, AuthUser } from '#auth';
-import { InternalException, PolicyEngine, Users } from '#helpers';
+import { InternalException, Guardians, Users } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Permissions } from '@guardian/interfaces';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Query, Response } from '@nestjs/common';
@@ -306,6 +306,65 @@ export class ProjectWalletApi {
                 pageSize
             }
             return await users.getUserWallets(user, filters);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * 
+     */
+    @Get('/:wallet/relationships')
+    @Auth(
+    )
+    @ApiOperation({
+        summary: '',
+        description: ''
+    })
+    @ApiParam({
+        name: 'wallet',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Object
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getRelationships(
+        @AuthUser() user: IAuthUser,
+        @Param('wallet') wallet: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+    ): Promise<any> {
+        try {
+            const filters = {
+                pageIndex,
+                pageSize
+            }
+            const guardian = new Guardians();
+            return await guardian.getWalletRelationships(wallet, user, filters);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

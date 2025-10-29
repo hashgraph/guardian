@@ -1,0 +1,54 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+
+
+        <div class="dialog-grid-container">
+            <div *ngIf="page.length" class="dialog-grid-header">
+                <div class="col-auto">Description</div>
+                <div class="col-120">Value</div>
+                <div class="col-44"></div>
+            </div>
+            <div *ngIf="page.length" class="dialog-grid-body vertical-border">
+                <ng-container *ngFor="let item of page" >
+                    <div class="dialog-grid-row row-52">
+                        <div class="col-120">
+                            {{item.id}}
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+            <div *ngIf="!page.length" class="dialog-grid-empty">
+                <div>
+                    <svg-icon
+                        class="icon-btn"
+                        src="/assets/images/icons/list.svg"
+                        svgClass="icon-color-disabled">
+                    </svg-icon>
+                </div>
+                <div>There are no documents</div>
+            </div>
+        </div>
+
+        
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+    </div>
+</div>

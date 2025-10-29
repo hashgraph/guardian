@@ -96,4 +96,37 @@ export async function documentsAPI(
             return new MessageResponse({ items, count });
         }
     });
+
+    /**
+     * Return VC Documents
+     *
+     * @param {Object} [payload] - filters
+     * @param {string} [payload.type] - filter by type
+     * @param {string} [payload.owner] - filter by owner
+     *
+     * @returns {IVCDocument[]} - VC Documents
+     */
+    ApiResponse(MessageAPI.GET_WALLET_RELATIONSHIPS, async (msg: {
+        user: IAuthUser,
+        wallet: string,
+        filters: {
+            pageIndex?: number | string,
+            pageSize?: number | string
+        }
+    }) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid parameters.');
+            }
+            const { user, wallet, filters } = msg;
+            const vcDocuments: IVCDocument[] = await dataBaseServer.find(VcDocument, {
+                owner: user.did,
+                wallet
+            });
+            return new MessageResponse(vcDocuments);
+        }
+        catch (error) {
+            return new MessageError(error);
+        }
+    });
 }

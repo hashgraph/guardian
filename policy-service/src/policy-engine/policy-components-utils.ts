@@ -33,6 +33,8 @@ import { PolicyNavigationMap } from './interfaces/block-state.js';
 import { ComponentsService } from './helpers/components-service.js';
 import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
 import { PolicyActionsService } from './actions-service.js';
+import { PolicyActionsUtils } from './policy-actions/utils.js';
+import { PolicyUtils } from './helpers/utils.js';
 
 /**
  * Policy tag helper
@@ -1563,6 +1565,7 @@ export class PolicyComponentsUtils {
             return new MessageError('Invalid policy controller', 500);
         }
     }
+
     private static async _blockSetDataCustom(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
@@ -1578,11 +1581,61 @@ export class PolicyComponentsUtils {
         }
     }
 
+    private static async _checkWallet(
+        ref: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        data: any
+    ): Promise<string> {
+        if (!data.wallet || ref.dryRun) {
+            return;
+        }
+        const walletConfig = data.wallet;
+        let wallet: any;
+        if (typeof walletConfig === 'string') {
+            wallet = await (new Users()).getUserWallet(user.did, walletConfig, user.userId);
+        } else {
+            wallet = await (new Users()).createWallet({ did: user.did, id: user.userId }, walletConfig, user.userId);
+        }
+        if (!wallet) {
+            return `Invalid wallet.`;
+        }
+        console.debug('checkWalletBalance', wallet);
+
+        const balance = await PolicyUtils.checkWalletBalance(wallet, user.userId);
+        console.debug('balance', balance);
+        if (balance === false) {
+            return 'The wallet account has insufficient balance.';
+        }
+
+        if (balance === null) {
+            return `Invalid wallet.`;
+        }
+
+        await PolicyComponentsUtils._sendWallet(ref, user, wallet);
+
+        data.wallet = wallet.account;
+    }
+
+    private static async _sendWallet(
+        ref: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        wallet: any
+    ): Promise<void> {
+        const userId = user.userId;
+        const walletKey = await PolicyUtils.loadWallet(user.did, wallet.account, ref, userId);
+        wallet.key = walletKey.hederaAccountKey;
+        await PolicyActionsUtils.setWallet({ ref, user, wallet, userId });
+    }
+
     public static async blockSetData(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
         data: any
     ): Promise<MessageResponse<any> | MessageError<any>> {
+        const error = await PolicyComponentsUtils._checkWallet(block, user, data);
+        if (error) {
+            return new MessageError(error, 500);
+        }
         if (block.actionType === LocationType.LOCAL) {
             //Action - local, policy - local|remote, user - local|remote
             return await PolicyComponentsUtils._blockSetDataLocal(block, user, data);

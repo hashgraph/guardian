@@ -84,4 +84,14 @@ export class ProjectWalletService {
     public generateProjectWallet(): Observable<any> {
         return this.http.post<any>(`${this.url}/generate`, null);
     }
+
+    public getRelationships(
+        wallet: string,
+        pageIndex?: number,
+        pageSize?: number,
+        filters?: any
+    ): Observable<HttpResponse<any[]>> {
+        const params = ProjectWalletService.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/${wallet}/relationships`, { observe: 'response', params });
+    }
 }

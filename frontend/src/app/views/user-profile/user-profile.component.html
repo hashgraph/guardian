@@ -140,6 +140,18 @@
                     </div>
                     <div class="guardian-user-page-buttons">
                         <button
+                            (click)="updateAllBalance()"
+                            class="guardian-button guardian-button-secondary">
+                            <div class="guardian-button-icon">
+                                <svg-icon
+                                    class="icon-btn"
+                                    src="/assets/images/icons/refresh-2.svg"
+                                    svgClass="icon-color-primary">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-button-label">Update All Wallets</div>
+                        </button>
+                        <button
                             (click)="onCreateWallet()"
                             class="guardian-button guardian-button-primary">
                             <div class="guardian-button-icon">
@@ -167,28 +179,7 @@
                                             <th
                                                 *ngIf="!column.canDisplay || column.canDisplay()"
                                                 class="header-cell-{{column.type}} col-{{column.size}}"
-                                                [ngSwitch]="column.id"
-                                            >
-                                                <ng-container *ngSwitchCase="'balance'">
-                                                    <div class="balance-header">
-                                                        <div class="balance-container">
-                                                             {{column.title}}
-                                                        </div>
-                                                        <div 
-                                                            class="guardian-icon-button big balance-button" 
-                                                            (click)="updateAllBalance()">
-                                                            <svg-icon 
-                                                                class="svg-icon-16"
-                                                                src="/assets/images/icons/16/refresh.svg"
-                                                                [svgClass]="'icon-color-primary'">
-                                                            </svg-icon>
-                                                        </div>
-                                                    </div>
-                                                </ng-container>
-                                                <ng-container *ngSwitchDefault>
-                                                    {{column.title}}
-                                                </ng-container>
-                                            </th>
+                                            >{{column.title}}</th>
                                         </ng-container>
                                     </tr>
                                 </ng-template>
@@ -212,15 +203,21 @@
                                                         <div *ngIf="!row.__loading" class="balance-container">
                                                             {{getBalance(row)}}
                                                         </div>
+                                                    </div>
+                                                </ng-container>
+                                                <ng-container *ngSwitchCase="'refresh'">
+                                                    <div class="balance-cell">
                                                         <div 
                                                             class="guardian-icon-button big balance-button" 
+                                                            [attr.disabled]="row.__loading"
                                                             (click)="updateBalance(row)">
                                                             <svg-icon 
-                                                                class="svg-icon-16"
-                                                                src="/assets/images/icons/16/refresh.svg"
+                                                                class="svg-icon"
+                                                                src="/assets/images/icons/refresh-2.svg"
                                                                 [svgClass]="'icon-color-primary'">
                                                             </svg-icon>
                                                         </div>
+                                                        <div class="last-update">{{row.__lastUpdate}}</div>
                                                     </div>
                                                 </ng-container>
                                                 <ng-container *ngSwitchCase="'account'">

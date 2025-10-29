@@ -1,0 +1,70 @@
+.context {
+    position: relative;
+    overflow-y: auto;
+    padding: 14px 0 20px 0;
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    font-family: Inter, serif;
+    font-style: normal;
+}
+
+.dialog-header {
+    .header-item {
+        padding: 6px 12px;
+        margin: 0px 16px;
+        border-radius: 6px;
+        font-size: var(--guardian-primary-font-size);
+        color: var(--guardian-dry-run-color);
+        background: var(--guardian-dry-run-background);
+        user-select: none;
+        cursor: default;
+    }
+}
+
+form {
+    width: 100%;
+
+    .guardian-input-container {
+        input[readonly] {
+            border: none;
+            padding-left: 0;
+        }
+    }
+}
+
+.guardian-input-container {
+    margin-bottom: 24px;
+}
+
+.dialog-body {
+    height: 300px;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    user-select: none;
+    position: relative;
+
+    &>div {
+        margin-left: 15px;
+        margin-right: 0px;
+    }
+
+    .dialog-button.left {
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin-left: 0px !important;
+
+        button {
+            padding: 1px 16px !important;
+        }
+    }
+}
+
+.close-icon-color {
+    fill: #848FA9;
+    color: #848FA9;
+}

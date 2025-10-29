@@ -664,6 +664,15 @@ mat-radio-button {
     position: relative;
 }
 
+.guardian-user-page-buttons {
+    display: flex;
+    flex-direction: row;
+
+    button {
+        padding: 0px 16px;
+    }
+}
+
 .balance-cell {
     display: flex;
 
@@ -674,6 +683,15 @@ mat-radio-button {
         overflow: hidden;
         text-overflow: ellipsis;
         margin-right: 8px;
+    }
+
+    .last-update {
+        width: 132px;
+        height: 24px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-left: 8px;
     }
 }
 
@@ -698,8 +716,8 @@ mat-radio-button {
 }
 
 .balance-button {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     margin: 4px;
     border-radius: 2px;
 }
@@ -734,4 +752,10 @@ mat-radio-button {
     100% {
         background-position: 300px;
     }
+}
+
+.grid-btn {
+    margin: 0px !important;
+    height: 32px !important;
+    min-width: 110px !important;
 }

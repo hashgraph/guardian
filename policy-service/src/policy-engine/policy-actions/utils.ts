@@ -534,14 +534,10 @@ export class PolicyActionsUtils {
         userId: string | null
     }): Promise<void> {
         const { ref, user } = options;
-        if (options.ref.locationType === LocationType.REMOTE) {
-            const data = await WalletAction.request(options);
-            return new Promise((resolve, reject) => {
-                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
-                controller.sendRemoteAction(user, data).catch(reject).then(resolve);
-            });
-        } else {
-            return WalletAction.local(options);
-        }
+        const data = await WalletAction.request(options);
+        return new Promise((resolve, reject) => {
+            const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
+            controller.sendRemoteAction(user, data).catch(reject).then(resolve);
+        });
     }
 }

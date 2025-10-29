@@ -69,6 +69,7 @@ import { SuggestionsConfigurationComponent } from './views/suggestions-configura
 import { NotificationComponent } from './components/notification/notification.component';
 import { TokenDialogComponent } from './components/token-dialog/token-dialog.component';
 import { NewProjectWalletDialog } from './components/new-project-wallets-dialog/new-project-wallets-dialog.component';
+import { ProjectWalletDetailsDialog } from './components/project-wallet-details-dialog/project-wallet-details-dialog.component';
 //Modules
 import { MaterialModule } from './modules/common/material.module';
 import { PolicyEngineModule } from './modules/policy-engine/policy-engine.module';
@@ -178,6 +179,7 @@ import { ProjectWalletsComponent } from './views/project-wallets/project-wallets
         OnlyForDemoDirective,
         TokenDialogComponent,
         NewProjectWalletDialog,
+        ProjectWalletDetailsDialog,
         UseWithServiceDirective,
         RolesViewComponent,
         UsersManagementComponent,

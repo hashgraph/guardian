@@ -17,6 +17,8 @@ import { ChangePasswordComponent } from '../login/change-password/change-passwor
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { ProjectWalletService } from 'src/app/services/project-wallet.service';
 import { NewProjectWalletDialog } from 'src/app/components/new-project-wallets-dialog/new-project-wallets-dialog.component';
+import { ProjectWalletDetailsDialog } from 'src/app/components/project-wallet-details-dialog/project-wallet-details-dialog.component';
+import moment from 'moment';
 
 enum OperationMode {
     None,
@@ -137,6 +139,12 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             size: '200',
             tooltip: false
         }, {
+            id: 'refresh',
+            title: 'Update date',
+            type: 'text',
+            size: '200',
+            tooltip: false
+        }, {
             id: 'name',
             title: 'Name',
             type: 'text',
@@ -144,15 +152,9 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             tooltip: false
         }, {
             id: 'options',
-            title: '',
+            title: 'Actions',
             type: 'text',
-            size: '210',
-            tooltip: false
-        }, {
-            id: 'delete',
-            title: '',
-            type: 'text',
-            size: '64',
+            size: '170',
             tooltip: false
         }];
         this.initForm(this.vcForm);
@@ -749,6 +751,9 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 const { page, count } = this.projectWalletService.parsePage(response);
                 this.walletPage = page;
                 this.walletCount = count;
+                for (const row of page) {
+                    row.__lastUpdate = '-';
+                }
                 setTimeout(() => {
                     this.subLoading = false;
                 }, 500);
@@ -792,7 +797,15 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     }
 
     public onOpenWallet(item: any) {
-
+        const dialogRef = this.dialogService.open(ProjectWalletDetailsDialog, {
+            showHeader: false,
+            width: '1100px',
+            styleClass: 'guardian-dialog',
+            data: {
+                wallet: item
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     public onDeleteWallet(item: any) {
@@ -814,6 +827,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             .subscribe((balance) => {
                 this.balances.set(row.account, balance);
                 row.__loading = false;
+                row.__lastUpdate = moment(Date.now()).format("YYYY-MM-DD, HH:mm");
             }, (e) => {
                 row.__balance = '-';
                 row.__loading = false;

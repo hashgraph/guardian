@@ -464,8 +464,8 @@ export class Guardians extends NatsService {
      * @param owner
      */
     public async getWalletToken(
-        tokenId: string, 
-        walletId: string, 
+        tokenId: string,
+        walletId: string,
         owner: IOwner
     ): Promise<ITokenInfo> {
         return await this.sendMessage(MessageAPI.GET_WALLET_TOKEN_INFO, {
@@ -3865,5 +3865,21 @@ export class Guardians extends NatsService {
      */
     public async deleteGridFile(user: IAuthUser, fileId: string): Promise<boolean> {
         return await this.sendMessage(MessageAPI.DELETE_FILE, { user, fileId });
+    }
+
+
+    /**
+     * Get project wallets
+     * @param user
+     */
+    public async getWalletRelationships(
+        wallet: string,
+        user: IAuthUser,
+        filters: {
+            pageIndex?: number | string,
+            pageSize?: number | string
+        }
+    ): Promise<any[]> {
+        return await this.sendMessage(MessageAPI.GET_WALLET_RELATIONSHIPS, { wallet, user, filters });
     }
 }
