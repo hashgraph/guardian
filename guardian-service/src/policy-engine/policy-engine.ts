@@ -1548,7 +1548,7 @@ export class PolicyEngine extends NatsService {
                 messageId: { $in: toolMessageIds}
             });
             const toolNotPublished = tools.find(tool => tool.status !== ModuleStatus.PUBLISHED);
-            
+
             if (toolNotPublished) {
                 throw new Error('Policy has tools that are not published');
             }

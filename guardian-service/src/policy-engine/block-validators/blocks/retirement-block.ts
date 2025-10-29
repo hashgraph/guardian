@@ -41,22 +41,22 @@ export class RetirementBlock {
 
             if (
                 ref.options.serialNumbersExpression &&
-                typeof ref.options.serialNumbersExpression !== "string"
+                typeof ref.options.serialNumbersExpression !== 'string'
             ) {
                 validator.addError('Option "serial numbers" must be a string');
             } else if (
                 ref.options.serialNumbersExpression &&
-                typeof ref.options.serialNumbersExpression === "string"
+                typeof ref.options.serialNumbersExpression === 'string'
             ) {
                 const wipeTokens = ref.options.serialNumbersExpression
-                    .split(",")
+                    .split(',')
                     .map((s) => s.trim())
                     .filter(Boolean);
                 const numRe = /^\d+$/;
 
                 for (const tok of wipeTokens) {
-                    const firstDash = tok.indexOf("-");
-                    const lastDash = tok.lastIndexOf("-");
+                    const firstDash = tok.indexOf('-');
+                    const lastDash = tok.lastIndexOf('-');
 
                     if (/[^A-Za-z0-9-]/.test(tok)) {
                         const bad = tok.match(/[^A-Za-z0-9-]/)![0];

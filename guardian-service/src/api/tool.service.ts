@@ -6,7 +6,7 @@ import { ToolValidator } from '../policy-engine/block-validators/tool-validator.
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import * as crypto from 'crypto';
 import { FilterObject } from '@mikro-orm/core';
-import { deleteSchema, findAndDryRunSchema, importToolByFile, importToolByMessage, importToolErrors, PolicyImportExportHelper, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
+import { deleteSchema, findAndDryRunSchema, importToolByFile, importToolByMessage, importToolErrors, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
 
 /**
  * Sha256
@@ -502,8 +502,6 @@ export async function createTool(
     }
 }
 
-
-
 /**
  * Dry Run tool
  * @param model
@@ -538,20 +536,6 @@ export async function dryRunTool(
 
         tool = await dryRunSchemas(tool, user);
 
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId);
-
-        // const tagsTopic = await topicHelper.create({
-        //     type: TopicType.TagsTopic,
-        //     name: tool.name || TopicType.TagsTopic,
-        //     description: tool.description || TopicType.TagsTopic,
-        //     owner: user.owner,
-        //     policyId: tool.id.toString(),
-        //     policyUUID: tool.uuid
-        // }, user.id, { admin: true, submit: false });
-        // await tagsTopic.saveKeys(user.id);
-        // await databaseServer.saveTopic(tagsTopic.toObject());
-        // tool.tagsTopicId = tagsTopic.topicId;
-
         const oldToolHash = tool.hash;
 
         tool = await updateToolConfig(tool);
@@ -575,22 +559,18 @@ export async function dryRunTool(
                 interception: null
             });
 
-        // todo ??
-        // await topicHelper.twoWayLink(tagsTopic, topic, result.getId(), user.id);
-
         if (tool.messageId) {
             const policies = await DatabaseServer.getPolicies({
                 tools: { $elemMatch: { messageId: tool.messageId } }
             })
-
 
             for (const policy of policies) {
                 if (policy.status === PolicyStatus.DRAFT) {
                     replaceAllEntities(policy.config, ['hash'], oldToolHash, tool.hash);
                     replaceAllEntities(policy.config, ['messageId'], tool.messageId, result.getId());
 
-                    console.log(oldToolHash, tool.hash);
-                    console.log(tool.messageId, result.getId());
+                    // console.log(oldToolHash, tool.hash);
+                    // console.log(tool.messageId, result.getId());
                     // const policy2 = PolicyConverterUtils.PolicyConverter(policy);
 
                     await databaseServer.save(Policy, policy);
@@ -1256,7 +1236,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
             owner: IOwner
         }) => {
             try {
-                const { id, owner } = msg;
+                const { id } = msg;
                 const model = await DatabaseServer.getToolById(id);
 
                 if (!model.config) {
