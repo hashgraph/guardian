@@ -68,12 +68,10 @@
             </div>
         </div>
         <div *ngIf="schema" class="body-dialog-template">
-            <ng-template #preloader>
-                <div class="preloader-image"></div>
-            </ng-template>
             <form (ngSubmit)="onStep()" [formGroup]="dataForm" [attr.visibility]="isStep(0)">
                 <div class="form-dialog" [attr.dry-run]="!!dryRun" [attr.restore]="!!restoreData">
                     <app-schema-form-root
+                        tabindex="0"
                         [schema]="schema"
                         [preset]="presetDocument"
                         [private-fields]="hideFields"
@@ -183,6 +181,9 @@
                 </div>
             </div>
             <div class="result-container" [attr.visibility]="isStep(2)"></div>
+            <ng-template #preloader>
+                <div class="preloader-image"></div>
+            </ng-template>
         </div>
     </div>
 </div>
