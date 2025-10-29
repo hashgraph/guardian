@@ -130,7 +130,7 @@ export class RequestDocumentBlockAddonComponent
             this.dialogTitle = data.dialogTitle;
             this.disabled = active === false;
             this.isExist = true;
-            this.wallet = !!data.wallet;
+            this.wallet = !!data.wallet && !this.dryRun;
             this.needPreset = data.preset;
             this.presetFields = data.presetFields || [];
             this.restoreData = data.restoreData;

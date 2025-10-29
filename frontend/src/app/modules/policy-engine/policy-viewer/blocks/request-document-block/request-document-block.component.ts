@@ -219,7 +219,7 @@ export class RequestDocumentBlockComponent
             this.edit = data.editType === 'edit';
             this.schema = new Schema(schema);
             this.hideFields = {};
-            this.wallet = !!data.wallet;
+            this.wallet = !!data.wallet && !this.dryRun;
             this.draft = isDraft;
             this.draftId = (isDraft && row) ? row.id : null;
             if (uiMetaData.privateFields) {

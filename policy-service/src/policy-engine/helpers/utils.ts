@@ -961,8 +961,13 @@ export class PolicyUtils {
         wallet: string,
         userId: string | null
     ): Promise<string> {
-        const config = await PolicyUtils.users.getUserWallet(did, wallet, userId);
-        return config?.account;
+        if (ref.dryRun) {
+            const userFull = await ref.components.getVirtualUser(did);
+            return userFull.hederaAccountId;
+        } else {
+            const config = await PolicyUtils.users.getUserWallet(did, wallet, userId);
+            return config?.account;
+        }
     }
 
     /**
@@ -1817,7 +1822,9 @@ export class PolicyUtils {
         try {
             let walletAccount: string;
             let wallet: { account: string; name: string; default: boolean; };
-            if (walletConfig) {
+            if (ref.dryRun) {
+                walletAccount = await PolicyUtils.getUserWallet(ref, did, null, userId);
+            } else if (walletConfig) {
                 if (typeof walletConfig === 'string') {
                     wallet = await PolicyUtils.users.getUserWallet(did, walletConfig, userId);
                 } else {
