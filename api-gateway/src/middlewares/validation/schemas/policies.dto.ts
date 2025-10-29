@@ -1,5 +1,5 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
+import {ArrayNotEmpty, IsArray, IsBoolean, IsNumber, IsObject, IsOptional, IsString} from 'class-validator';
 import { PolicyAvailability, PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
 import { Examples } from '../examples.js';
 import { ValidationErrorsDTO } from './blocks.js';
@@ -634,4 +634,45 @@ export class DebugBlockHistoryDTO {
     @IsOptional()
     @IsObject()
     document?: any;
+}
+
+/**
+ * Delete savepoints request body
+ */
+export class DeleteSavepointsDTO {
+    @ApiProperty({
+        type: 'string',
+        isArray: true,
+        required: true,
+        example: [Examples.DB_ID]
+    })
+    @IsArray()
+    @ArrayNotEmpty()
+    @IsString({ each: true })
+    savepointIds!: string[];
+
+    @ApiProperty({
+        type: 'boolean',
+        required: false,
+        example: false,
+        description: 'Skip protection for currently selected savepoint'
+    })
+    @IsOptional()
+    @IsBoolean()
+    skipCurrentSavepointGuard?: boolean;
+}
+
+/**
+ * Delete savepoints response
+ */
+export class DeleteSavepointsResultDTO {
+    @ApiProperty({
+        type: 'string',
+        isArray: true,
+        required: true,
+        example: [Examples.DB_ID]
+    })
+    @IsArray()
+    @IsString({ each: true })
+    hardDeletedIds!: string[];
 }
