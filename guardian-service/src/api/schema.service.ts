@@ -24,7 +24,6 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import process from 'process';
 import { FilterObject } from '@mikro-orm/core';
-import { ObjectId } from 'mongodb';
 
 @Controller()
 export class SchemaService { }
@@ -260,7 +259,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
-                const defsIds = defs.map(id => id.startsWith('#') ? id.slice(1) : id);
+                const defsIds = defs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
 
                 const childSchemasFilter: any = {
                     uuid: { $in: defsIds },
@@ -288,17 +287,17 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         category: SchemaCategory.POLICY
                     }
                     const allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
-                    
+
                     if (allPolicySchemas?.length > 0) {
                         allPolicySchemas.forEach(item => {
                             if (schema.uuid !== item.uuid && !childSchemas.some(child => child.uuid === item.uuid)) {
                                 const schemaDefs = Array.isArray(item.defs) ? item.defs : [item.defs];
-                                const schemaDefsIds = schemaDefs.map(id => id.startsWith('#') ? id.slice(1) : id);
+                                const schemaDefsIds = schemaDefs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
 
                                 const childSchemaUsedInAnotherSchema = childSchemas.find(child => schemaDefsIds.includes(child.uuid));
                                 if (childSchemaUsedInAnotherSchema) {
                                     const alreadyExist = blockedChildren.find(x => x.schema.uuid === childSchemaUsedInAnotherSchema.uuid);
-                                    
+
                                     if (alreadyExist) {
                                         alreadyExist.blockingSchemas.push(item);
                                     } else {
@@ -868,7 +867,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 if (includeChildren) {
                     const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
-                    const defsIds = defs.map(id => id.startsWith('#') ? id.slice(1) : id);
+                    const defsIds = defs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
 
                     const childSchemasFilter: any = {
                         uuid: { $in: defsIds },
@@ -894,12 +893,12 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         category: SchemaCategory.POLICY
                     }
                     const allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
-                    
+
                     if (allPolicySchemas?.length > 0) {
                         allPolicySchemas.forEach(item => {
                             if (schema.uuid !== item.uuid && !childSchemas.some(child => child.uuid === item.uuid)) {
                                 const schemaDefs = Array.isArray(item.defs) ? item.defs : [item.defs];
-                                const schemaDefsIds = schemaDefs.map(id => id.startsWith('#') ? id.slice(1) : id);
+                                const schemaDefsIds = schemaDefs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
 
                                 const childSchemaUsedInAnotherSchema = childSchemas.find(child => schemaDefsIds.includes(child.uuid));
                                 if (childSchemaUsedInAnotherSchema) {
