@@ -21115,6 +21115,7 @@ components:
           enum:
             - ACTION
             - REQUEST
+            - REMOTE_ACTION
           example: ACTION
         messageId:
           type: string
