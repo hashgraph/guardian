@@ -3556,36 +3556,25 @@ export class PolicyApi {
         summary: 'Delete dry-run savepoints.',
         description: 'Deletes the specified savepoints for the policy (Dry Run only).',
     })
-    @ApiParam({
-        name: 'policyId',
-        type: String,
-        required: true,
-        example: Examples.DB_ID
+    @ApiParam({ name: 'policyId', type: String, required: true, example: Examples.DB_ID })
+    @ApiBody({
+        description: '{ savepointIds: string[] }',
+        schema: {
+            type: 'object',
+            properties: {
+                savepointIds: { type: 'array', items: { type: 'string' } }
+            },
+            required: ['savepointIds']
+        }
     })
-    @ApiQuery({
-        name: 'savepointIds',
-        required: true,
-        type: String,
-        description: 'JSON array of IDs'
-    })
-    @ApiQuery({
-        name: 'skipCurrentSavepointGuard',
-        required: false,
-        type: Boolean })
-    @ApiOkResponse({
-        description: 'Successful operation.'
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO
-    })
+    @ApiOkResponse({ description: 'Successful operation.' })
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSavepoints(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Query('savepointIds') savepointIds: string,
-        @Query('skipCurrentSavepointGuard') skipCurrentSavepointGuard: string,
+        @Body() body: { savepointIds: string[], skipCurrentSavepointGuard: boolean },
         @Req() req
     ) {
         const engineService = new PolicyEngine();
@@ -3596,14 +3585,11 @@ export class PolicyApi {
             throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
         }
 
-        const ids = JSON.parse(savepointIds || '[]');
-        const skipGuard = skipCurrentSavepointGuard === 'true';
-
         const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
         try {
-            return await engineService.deleteSavepoints(policyId, owner, ids, skipGuard);
+            return await engineService.deleteSavepoints(policyId, owner, body.savepointIds, body.skipCurrentSavepointGuard);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

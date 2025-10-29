@@ -342,14 +342,11 @@ export class PolicyEngineService {
         savepointIds: string[],
         skipCurrentSavepointGuard = false
     ): Observable<{ hardDeletedIds: string[] }> {
-        const params = new HttpParams()
-            .set('savepointIds', JSON.stringify(savepointIds))
-            .set('skipCurrentSavepointGuard', String(skipCurrentSavepointGuard));
-
-        return this.http.delete<{ hardDeletedIds: string[] }>(
+        return this.http.request(
+            'DELETE',
             `${this.url}/${policyId}/savepoints`,
-            { params }
-        );
+            { body: { savepointIds, skipCurrentSavepointGuard } }
+        ) as any;
     }
 
     public loadDocuments(
