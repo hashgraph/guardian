@@ -168,6 +168,7 @@ const API = {
 
     //Artifacts
     Artifacts: "artifacts/",
+    ArtifactsFiles: "artifacts/files/",
 
     //Tags
     Tags: "tags/",
