@@ -51,6 +51,7 @@ import { OverlayPanel } from 'primeng/overlaypanel';
 import { takeUntil } from 'rxjs/operators';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
+import { ToastrService } from 'ngx-toastr';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -554,6 +555,22 @@ export class PoliciesComponent implements OnInit {
                 visible: true,
                 buttons: [
                     new MenuButton({
+                        visible: this.user.SCHEMAS_SCHEMA_DELETE,
+                        disabled: !(
+                            policy.status === PolicyStatus.DRAFT ||
+                            policy.status === PolicyStatus.DEMO
+                        ),
+                        tooltip: 'Delete All Schemas',
+                        icon: 'delete',
+                        click: () => this.deleteAllSchemas(policy)
+                    })
+                ]
+            }, {
+                tooltip: 'Delete',
+                group: false,
+                visible: true,
+                buttons: [
+                    new MenuButton({
                         visible: this.user.POLICIES_POLICY_DELETE,
                         disabled: !(
                             policy.status === PolicyStatus.DRAFT ||
@@ -603,6 +620,7 @@ export class PoliciesComponent implements OnInit {
         private schemaService: SchemaService,
         private wizardService: WizardService,
         private tokenService: TokenService,
+        private toastr: ToastrService,
         private analyticsService: AnalyticsService,
         private contractSerivce: ContractService,
         private wsService: WebSocketService,
@@ -906,12 +924,45 @@ export class PoliciesComponent implements OnInit {
             this.policyEngineService.pushDelete(policy?.id).pipe(takeUntil(this._destroy$)).subscribe(
                 async (result) => {
                     await this.indexedDb.delete(DB_NAME.GUARDIAN, STORES_NAME.POLICY_STORAGE, policy?.id);
-
+                    
                     const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href),
                         },
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
+        });
+    }
+
+    public deleteAllSchemas(policy?: any) {
+        const dialogRef = this.dialogService.open(DeletePolicyDialogComponent, {
+            header: 'Delete Schemas',
+            width: '720px',
+            styleClass: 'custom-dialog',
+            data: {
+                notificationText: 'Are you sure want to delete all schemas for this policy?'
+            },
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
+            if (!result) {
+                return;
+            }
+
+            this.loading = true;
+            
+            this.schemaService.deleteSchemasByTopicId(policy?.topicId).pipe(takeUntil(this._destroy$)).subscribe(
+                async (result) => {
+                    this.loading = false;
+                    this.toastr.success(`All schemas of topic ${policy.topicId} was successfully deleted`, '', {
+                        timeOut: 3000,
+                        closeButton: true,
+                        positionClass: 'toast-bottom-right',
+                        enableHtml: true,
                     });
                 },
                 (e) => {

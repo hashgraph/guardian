@@ -776,6 +776,55 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
+     * Delete policy schemas.
+     *
+     * @param {Object} payload - filters
+     * @param {string} payload.topicId - topic id
+     *
+     * @returns {any} - result
+     */
+    ApiResponse<any>(MessageAPI.DELETE_SCHEMAS,
+        async (msg: {
+            topicId: string,
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid delete schema parameter');
+                }
+
+                const { topicId, owner } = msg;
+
+                if (!topicId) {
+                    return new MessageError('Invalid topic id');
+                }
+                if (!owner) {
+                    return new MessageError('Invalid schema owner');
+                }
+
+                const schemasToDelete = await DatabaseServer.getSchemas({
+                    topicId,
+                    readonly: false,
+                    status: SchemaStatus.DRAFT
+                });
+                if (schemasToDelete?.length <= 0) {
+                    return new MessageError('Schemas not found', 404);
+                }
+                for (const schema of schemasToDelete) {
+                    await deleteSchema(
+                        schema.id,
+                        owner,
+                        NewNotifier.empty()
+                    );
+                }
+
+                return new MessageResponse(true);
+            } catch (error) {
+                return new MessageError(error);
+            }
+        });
+
+    /**
      * Load schema by message identifier
      *
      * @param {string} [payload.messageId] Message identifier

@@ -28,6 +28,7 @@ export enum MessageAPI {
     PUBLISH_SCHEMA_ASYNC = 'publish-schema-async',
     UNPUBLISHED_SCHEMA = 'unpublished-schema',
     DELETE_SCHEMA = 'delete-schema',
+    DELETE_SCHEMAS = "delete-schemas",
     PREVIEW_SCHEMA = 'preview-schema',
     PREVIEW_SCHEMA_ASYNC = 'preview-schema-async',
     IPFS_ADD_FILE = 'ipfs-add-file',

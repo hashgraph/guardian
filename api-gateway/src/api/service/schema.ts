@@ -2548,4 +2548,57 @@ export class SchemaApi {
             await InternalException(error, this.logger, user.id);
         }
     }
+
+    /**
+     * Deletes All Schemas by TopicId
+     */
+    @Delete('/topic/:topicId')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Deletes all schemas by topic id.',
+        description: 'Deletes all schemas by topic id.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: true,
+        example: '0.0.1'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: SchemaDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async deleteSchemasByTopicId(
+        @AuthUser() user: IAuthUser,
+        @Param('topicId') topicId: string,
+        @Req() req
+    ): Promise<any> {
+        const guardians = new Guardians();
+        const owner = new EntityOwner(user);
+
+        try {
+            await guardians.deleteSchemas(topicId, owner) as ISchema[];
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
+            return true;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+
+        return false;
+    }
 }
