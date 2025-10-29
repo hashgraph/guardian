@@ -9854,6 +9854,44 @@ paths:
       summary: Returns a list of schemas.
       tags:
         - schemas
+  /schemas/topic/{topicId}:
+    delete:
+      description: >-
+        Deletes all schemas by topic id. Only users with the Standard Registry
+        role are allowed to make the request.
+      operationId: SchemaApi_deleteSchemasByTopicId
+      parameters:
+        - name: topicId
+          required: true
+          in: path
+          description: Topic Id
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Deletes all schemas by topic id.
+      tags:
+        - schemas
   /settings:
     post:
       description: Set settings. For users with the Standard Registry role only.
