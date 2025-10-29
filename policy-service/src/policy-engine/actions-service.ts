@@ -534,6 +534,7 @@ export class PolicyActionsService {
                 owner: message.owner,
                 creator: message.owner,
                 accountId: message.accountId,
+                wallet: message.wallet,
                 sender: message.payer,
                 blockTag: message.blockTag,
                 messageId: message.id,
@@ -553,6 +554,7 @@ export class PolicyActionsService {
             row.owner = message.owner;
             row.creator = message.owner;
             row.accountId = message.accountId;
+            row.wallet = message.wallet;
             row.sender = message.payer;
             row.topicId = message.topicId?.toString();
             row.blockTag = message.blockTag;

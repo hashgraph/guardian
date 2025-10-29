@@ -851,6 +851,10 @@ export interface PolicyActionMessageBody extends MessageBody {
      */
     accountId: string;
     /**
+     * User account
+     */
+    wallet: string;
+    /**
      * Block
      */
     blockTag: string;
