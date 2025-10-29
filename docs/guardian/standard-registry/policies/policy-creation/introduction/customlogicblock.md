@@ -14,4 +14,4 @@ This block supports two types of artifacts : JSON (.json) and Executable Code (.
 
 **Executable Code** : will be executed before main function.
 
-To access table data in customlogic block, please check [Custom Logic Block & Tables](../../../schemas/available-schema-types/custom-logic-block-and-tables.md) for more details.
+To access table data in customlogic block, please check [Custom Logic Block & Tables](../../../schemas/available-schema-types/table-data-input-field/custom-logic-block-and-tables.md) for more details.
