@@ -14,6 +14,7 @@ import { CreateTopic } from './create-topic.js';
 import { AssociateToken } from './associate-token.js';
 import { DissociateToken } from './dissociate-token.js';
 import { SendMessages } from './send-messages.js';
+import { WalletAction } from './wallet.js';
 
 export class PolicyActionsUtils {
     private static needKey(status: PolicyStatus, availability: PolicyAvailability): boolean {
@@ -67,6 +68,21 @@ export class PolicyActionsUtils {
             }
             case PolicyActionType.DissociateToken: {
                 return await DissociateToken.validate(request, response, userId);
+            }
+            default:
+                return false;
+        }
+    }
+
+    public static async complete(
+        remoteAction: PolicyAction,
+        user: PolicyUser,
+        userId: string | null
+    ) {
+        const type = remoteAction?.document?.type;
+        switch (type) {
+            case PolicyActionType.AddWallet: {
+                return await WalletAction.complete(remoteAction, user, userId);
             }
             default:
                 return false;
@@ -513,10 +529,19 @@ export class PolicyActionsUtils {
 
     public static async setWallet(options: {
         ref: AnyBlockType,
-        owner: string,
+        user: PolicyUser,
         wallet: any
         userId: string | null
     }): Promise<void> {
-        return;
+        const { ref, user } = options;
+        if (options.ref.locationType === LocationType.REMOTE) {
+            const data = await WalletAction.request(options);
+            return new Promise((resolve, reject) => {
+                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
+                controller.sendRemoteAction(user, data).catch(reject).then(resolve);
+            });
+        } else {
+            return WalletAction.local(options);
+        }
     }
 }

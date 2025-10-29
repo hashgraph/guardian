@@ -1821,7 +1821,12 @@ export class PolicyUtils {
     ) {
         try {
             let walletAccount: string;
-            let wallet: { account: string; name: string; default: boolean; };
+            let wallet: {
+                account: string;
+                name: string;
+                key?: string;
+                default: boolean;
+            };
             if (ref.dryRun) {
                 walletAccount = await PolicyUtils.getUserWallet(ref, did, null, userId);
             } else if (walletConfig) {
@@ -1833,6 +1838,8 @@ export class PolicyUtils {
                 if (!(await PolicyUtils.checkWalletBalance(wallet, userId))) {
                     throw new Error('The wallet account has insufficient balance.');
                 }
+                const walletKey = await PolicyUtils.loadWalletKey(did, wallet.account, ref, userId);
+                wallet.key = walletKey;
                 walletAccount = wallet.account;
             } else if (documentRef) {
                 walletAccount = await PolicyUtils.getDocumentWallet(ref, documentRef, userId);

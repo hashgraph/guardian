@@ -204,7 +204,7 @@ export class RequestVcDocumentBlock {
             //Wallet
             const { walletAccount, wallet } = await PolicyUtils.getOrCreateWallet(ref, user.did, data.wallet, documentRef, user.userId);
             if (wallet) {
-                await PolicyActionsUtils.setWallet({ ref, owner: user.did, wallet, userId: user.userId });
+                await PolicyActionsUtils.setWallet({ ref, user, wallet, userId: user.userId });
             }
 
             //Prepare Credential Subject
