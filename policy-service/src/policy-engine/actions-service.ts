@@ -220,7 +220,7 @@ export class PolicyActionsService {
             lastStatus: PolicyActionStatus.NEW,
             loaded: true
         };
-        const message = new PolicyActionMessage(MessageAction.CreatePolicyAction);
+        const message = new PolicyActionMessage(MessageAction.CreateRemotePolicyAction);
         message.setDocument(row, data);
 
         const messageResult = await messageServer
@@ -404,6 +404,15 @@ export class PolicyActionsService {
             const message = PolicyActionMessage.from(data);
 
             switch (message.action) {
+                case MessageAction.CreateRemotePolicyAction: {
+                    const row = await this.savePolicyAction(message, PolicyActionType.REMOTE_ACTION, PolicyActionStatus.NEW);
+                    if (this.isLocal) {
+                        await this.executeAction(row);
+                    } else {
+                        await this.sentNotification(row);
+                    }
+                    break;
+                }
                 case MessageAction.CreatePolicyAction: {
                     const row = await this.savePolicyAction(message, PolicyActionType.ACTION, PolicyActionStatus.NEW);
                     if (this.isLocal) {
@@ -470,7 +479,11 @@ export class PolicyActionsService {
         return true;
     }
 
-    private async savePolicyAction(message: PolicyActionMessage, type: PolicyActionType, status: PolicyActionStatus) {
+    private async savePolicyAction(
+        message: PolicyActionMessage,
+        type: PolicyActionType,
+        status: PolicyActionStatus
+    ) {
         const collection = new DataBaseHelper(PolicyAction);
         let document: any;
         let loaded: boolean = false;

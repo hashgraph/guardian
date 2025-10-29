@@ -1599,10 +1599,9 @@ export class PolicyComponentsUtils {
         if (!wallet) {
             return `Invalid wallet.`;
         }
-        console.debug('checkWalletBalance', wallet);
 
         const balance = await PolicyUtils.checkWalletBalance(wallet, user.userId);
-        console.debug('balance', balance);
+
         if (balance === false) {
             return 'The wallet account has insufficient balance.';
         }

@@ -1852,12 +1852,10 @@ export class PolicyUtils {
                 }, {
                     priority: 20
                 });
-                console.debug(info)
                 return (info.balance / 100000000) > 1;
             }
             return true;
         } catch (error) {
-            console.debug(error)
             return null;
         }
     }
