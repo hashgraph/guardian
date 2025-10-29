@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GenerateUUIDv4, IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
+import { GenerateUUIDv4, IUser, ModuleStatus, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { InformService } from 'src/app/services/inform.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -24,8 +24,8 @@ enum OperationMode {
 }
 
 /**
- * Component for choosing a policy and
- * display blocks of the selected policy
+ * Component for choosing a tool and
+ * display blocks of the selected tool
  */
 @Component({
     selector: 'app-tools-list',
@@ -57,9 +57,48 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     public tagEntity = TagType.Tool;
     public tagSchemas: any[] = [];
     public tagOptions: string[] = [];
-    public canPublishAnyTool: boolean = false;
 
     public textSearch: string = '';
+
+    public publishMenuSelector: any = null;
+
+    private draftMenuOption = [
+        {
+            id: 'Publish',
+            title: 'Publish',
+            description: 'Release version into public domain.',
+            color: '#4caf50',
+        },
+        {
+            id: 'Dry-run',
+            title: 'Dry Run',
+            description: 'Run without making any persistent \n changes or executing transaction.',
+            color: '#3f51b5',
+        },
+    ];
+
+    private dryRunMenuOption = [
+        {
+            id: 'Draft',
+            title: 'Stop',
+            description: 'Return to editing.',
+            color: '#9c27b0',
+        },
+        {
+            id: 'Publish',
+            title: 'Publish',
+            description: 'Release version into public domain.',
+            color: '#4caf50',
+        },
+    ];
+    private publishErrorMenuOption = [
+        {
+            id: 'Publish',
+            title: 'Publish',
+            description: 'Release version into public domain.',
+            color: '#4caf50',
+        },
+    ];
 
     private _destroy$ = new Subject<void>();
 
@@ -125,7 +164,6 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         this.toolsService.page(this.pageIndex, this.pageSize, this.textSearch).subscribe((policiesResponse) => {
             this.tools = policiesResponse.body || [];
             this.toolsCount = policiesResponse.headers.get('X-Total-Count') || this.tools.length;
-            this.canPublishAnyTool = this.tools.some(tool => tool.status === 'DRAFT');
             this.loadTagsData();
         }, (e) => {
             this.loading = false;
@@ -393,6 +431,50 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         });
     }
 
+    private dryRunTool(tool: any) {
+        this.loading = true;
+        this.toolsService.dryRun(tool.id).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            if (isValid) {
+                this.loadAllTools();
+            } else {
+                let text = [];
+                const blocks = errors.blocks;
+                const invalidBlocks = blocks.filter(
+                    (block: any) => !block.isValid
+                );
+                for (let i = 0; i < invalidBlocks.length; i++) {
+                    const block = invalidBlocks[i];
+                    for (let j = 0; j < block.errors.length; j++) {
+                        const error = block.errors[j];
+                        if (block.id) {
+                            text.push(`<div>${block.id}: ${error}</div>`);
+                        } else {
+                            text.push(`<div>${error}</div>`);
+                        }
+                    }
+                }
+                this.informService.errorMessage(
+                    text.join(''),
+                    'The tool is invalid'
+                );
+                this.loading = false;
+            }
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    public draftTool(tool: any) {
+        this.loading = true;
+        this.toolsService.draft(tool.id).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
+            this.loadAllTools();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
     public applyFilters(): void {
         this.pageIndex = 0;
         this.router.navigate(['/tools'], {
@@ -412,5 +494,110 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             },
         });
         this.loadTools();
+    }
+    
+    public getColor(status: string) {
+        switch (status) {
+            case ModuleStatus.DRAFT:
+                return 'grey';
+            case ModuleStatus.DRY_RUN:
+                return 'grey';
+            case ModuleStatus.PUBLISH_ERROR:
+                return 'red';
+            case ModuleStatus.PUBLISHED:
+                return 'green';
+            default:
+                return 'grey';
+        }
+    }
+
+    public getLabelStatus(status: string) {
+        switch (status) {
+            case ModuleStatus.DRAFT:
+                return 'Draft';
+            case ModuleStatus.DRY_RUN:
+                return 'Dry Run';
+            case ModuleStatus.PUBLISH_ERROR:
+                return 'Publish Error';
+            case ModuleStatus.PUBLISHED:
+                return 'Published';
+            default:
+                return 'Incorrect status';
+        }
+    }
+    
+    public showStatus(tool: any): boolean {
+        return (
+            tool.status === ModuleStatus.DRAFT ||
+            tool.status === ModuleStatus.DRY_RUN ||
+            tool.status === ModuleStatus.PUBLISH_ERROR
+        )
+    }
+    
+    public getStatusOptions(tool: any) {
+        if (tool.status === ModuleStatus.DRAFT) {
+            return this.draftMenuOption;
+        }
+        if (tool.status === ModuleStatus.DRY_RUN) {
+            return this.dryRunMenuOption;
+        } else {
+            return this.publishErrorMenuOption;
+        }
+    }
+    
+    public getStatusName(tool: any): string {
+        if (tool.status === ModuleStatus.DRAFT) {
+            return 'Draft';
+        }
+        if (tool.status === ModuleStatus.DRY_RUN) {
+            return 'In Dry Run';
+        }
+        if (tool.status === ModuleStatus.PUBLISHED) {
+            return 'Published';
+        }
+        if (tool.status === ModuleStatus.PUBLISH_ERROR) {
+            return 'Not published';
+        }
+        return 'Not published';
+    }
+    
+    public onChangeStatus(event: any, tool: any): void {
+        switch (tool.status) {
+            case ModuleStatus.DRAFT:
+                this.onDraftMenuAction(event, tool);
+                break;
+            case ModuleStatus.DRY_RUN:
+                this.onDryRunMenuAction(event, tool);
+                break;
+            default:
+                this.onPublishErrorAction(event, tool);
+        }
+    }
+
+    private onDraftMenuAction(event: any, element: any) {
+        if (event.value.id === 'Publish') {
+            this.setToolVersion(element);
+        } else if (event.value.id === 'Dry-run') {
+            this.dryRunTool(element);
+        }
+
+        setTimeout(() => this.publishMenuSelector = null, 0);
+    }
+
+    private onDryRunMenuAction(event: any, element: any) {
+        if (event.value.id === 'Publish') {
+            this.setToolVersion(element);
+        } else if (event.value.id === 'Draft') {
+            this.draftTool(element);
+        }
+
+        setTimeout(() => this.publishMenuSelector = null, 0);
+    }
+
+    private onPublishErrorAction(event: any, element: any) {
+        if (event.value.id === 'Publish') {
+            this.setToolVersion(element);
+        }
+        setTimeout(() => this.publishMenuSelector = null, 0);
     }
 }
