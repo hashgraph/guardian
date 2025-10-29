@@ -44,8 +44,12 @@ export class WalletAction {
         user: PolicyUser,
         userId: string | null
     ): Promise<void> {
-        const data = row?.document;
-        const wallet = data?.wallet;
-        await (new Users()).createWallet({ did: user.did, id: userId }, wallet, userId);
+        try {
+            const data = row?.document;
+            const wallet = data?.wallet;
+            await (new Users()).createWallet({ did: user.did, id: userId }, wallet, userId);
+        } catch (error) {
+            return;
+        }
     }
 }

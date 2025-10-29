@@ -239,10 +239,6 @@ export class PolicyActionsService {
         await collection.insertOrUpdate([newRow], 'messageId');
         await this.updateLastStatus(row);
         await this.sentNotification(row);
-
-        return new Promise<any>((resolve, reject) => {
-            this.actions.set(row.startMessageId, { resolve, reject });
-        });
     }
 
     public async sendRequest(
@@ -268,6 +264,7 @@ export class PolicyActionsService {
             owner: data.owner,
             creator: data.owner,
             accountId: data.accountId,
+            wallet: data.wallet,
             blockTag: data.blockTag,
             topicId: data.topicId,
             policyId: this.policyId,
@@ -344,6 +341,7 @@ export class PolicyActionsService {
             owner: row.owner,
             creator: row.owner,
             accountId: row.accountId,
+            wallet: row.wallet,
             blockTag: row.blockTag,
             messageId: null,
             sender: null,

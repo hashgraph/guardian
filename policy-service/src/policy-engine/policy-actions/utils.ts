@@ -535,9 +535,7 @@ export class PolicyActionsUtils {
     }): Promise<void> {
         const { ref, user } = options;
         const data = await WalletAction.request(options);
-        return new Promise((resolve, reject) => {
-            const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
-            controller.sendRemoteAction(user, data).catch(reject).then(resolve);
-        });
+        const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
+        await controller.sendRemoteAction(user, data)
     }
 }
