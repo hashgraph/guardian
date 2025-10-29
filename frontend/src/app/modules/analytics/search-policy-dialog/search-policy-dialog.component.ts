@@ -26,8 +26,7 @@ export class SearchPolicyDialog {
         tokensCount: new UntypedFormControl(1),
         vcDocumentsCount: new UntypedFormControl(1),
         vpDocumentsCount: new UntypedFormControl(1),
-        toolName: new UntypedFormControl(''),
-        toolVersion: new UntypedFormControl(''),
+        toolName: new UntypedFormControl('')
     });
     public types = [{
         name: 'Search only imported',
@@ -106,10 +105,6 @@ export class SearchPolicyDialog {
         }
         if (filters.toolName) {
             options.toolName = filters.toolName;
-            this.filtersCount++;
-        }
-        if (filters.toolVersion) {
-            options.toolVersion = filters.toolVersion;
             this.filtersCount++;
         }
         this.error = null;
