@@ -216,7 +216,7 @@ export class SingleSchemaApi {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
             const result = await guardians.getSchemaDeletionPreview(schemaId, topicId, owner);
-            
+
             return result;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
