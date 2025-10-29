@@ -423,7 +423,7 @@ export class PolicyActionsUtils {
             config,
             owner: topicOwner,
             memoObj,
-            wallet,
+            wallet: owner === topicOwner ? wallet : null,
             userId
         });
     }

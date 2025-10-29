@@ -342,4 +342,17 @@ export class Users extends NatsService {
     ): Promise<{ account: string, name: string, owner: string, default: boolean }> {
         return await this.sendMessage(AuthEvents.CREATE_PROJECT_WALLET, { user, config, userId });
     }
+
+    /**
+     * Return user wallet
+     * @param wallet
+     * @param userId
+     */
+    public async walletExist(
+        did: string,
+        wallet: string,
+        userId: string | null
+    ): Promise<boolean> {
+        return await this.sendMessage(AuthEvents.WALLET_EXIST, { did, wallet, userId });
+    }
 }

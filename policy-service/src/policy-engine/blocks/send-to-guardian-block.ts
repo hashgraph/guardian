@@ -453,11 +453,12 @@ export class SendToGuardianBlock {
             message.setMemo(memo);
 
             const topicOwner = this.getTopicOwner(ref, document, ref.options.topicOwner);
+            const wallet = document.owner === topicOwner ? document.wallet : null;
             const topic = await PolicyActionsUtils.getOrCreateTopic({
                 ref,
                 name: ref.options.topic,
                 owner: topicOwner,
-                wallet: document.wallet,
+                wallet: wallet,
                 memoObj: document,
                 userId
             });

@@ -402,8 +402,15 @@ export class UserCredentials {
         }
     }
 
-    public async loadWallet(ref: AnyBlockType, wallet: string, userId: string | null): Promise<IWallet> {
+    private async isWallet(wallet: string, userId: string | null): Promise<boolean> {
         if (wallet && wallet !== this._hederaAccountId) {
+            return true;
+        }
+        return (new Users()).walletExist(this._did, wallet, userId);
+    }
+
+    public async loadWallet(ref: AnyBlockType, wallet: string, userId: string | null): Promise<IWallet> {
+        if (await this.isWallet(wallet, userId)) {
             const walletKey = await this.loadWalletKey(ref, wallet, userId);
             return {
                 id: this._id,
