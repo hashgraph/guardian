@@ -196,25 +196,7 @@ export class PolicyConfigurationComponent implements OnInit {
             label: 'Isolated blocks',
             hint: 'Reachability warnings for blocks without connecting events.',
             rule: { code: 'REACHABILITY_ISOLATED' }
-        },
-        // {
-        //     key: 'hideGeneralNoIncoming',
-        //     label: 'Incoming (general)',
-        //     hint: 'General reachability: blocks with no inbound paths.',
-        //     rule: { code: 'REACHABILITY_GENERAL_NO_IN' },
-        // },
-        // {
-        //     key: 'hideGeneralNoOutgoing',
-        //     label: 'Outgoing (general)',
-        //     hint: 'General reachability: blocks with no outbound paths.',
-        //     rule: { code: 'REACHABILITY_GENERAL_NO_OUT' },
-        // },
-        // {
-        //     key: 'hideGeneralIsolated',
-        //     label: 'Isolated (general)',
-        //     hint: 'General reachability: no inbound and no outbound paths.',
-        //     rule: { code: 'REACHABILITY_GENERAL_ISOLATED' },
-        // },
+        }
     ];
 
     constructor(

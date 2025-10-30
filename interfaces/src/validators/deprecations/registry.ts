@@ -2,30 +2,30 @@ import {
     DeprecationInfo,
     BlockDeprecationsMap,
     PropertyDeprecationsMap
-} from './types';
+} from './types.js';
 
 const _blocks = new Map<string, DeprecationInfo>([
-    ['interfaceActionBlock', {
-        severity: 'warning',
-        since: '',
-        alternative: '',
-        alternativeBlockType: '',
-        reason: '',
-        removalPlanned: '',
-    }]
+    // ['interfaceActionBlock', {
+    //     severity: 'warning',
+    //     since: '',
+    //     alternative: '',
+    //     alternativeBlockType: '',
+    //     reason: '',
+    //     removalPlanned: '',
+    // }]
 ]);
 
 const _properties = new Map<string, ReadonlyMap<string, DeprecationInfo>>([
-    ['interfaceActionBlock', new Map<string, DeprecationInfo>([
-        ['uiMetaData.title', {
-            severity: 'warning',
-            since: '',
-            alternative: '',
-            alternativeBlockType: '',
-            reason: '',
-            removalPlanned: '',
-        }]
-    ])]
+    // ['interfaceActionBlock', new Map<string, DeprecationInfo>([
+    //     ['uiMetaData.title', {
+    //         severity: 'warning',
+    //         since: '',
+    //         alternative: '',
+    //         alternativeBlockType: '',
+    //         reason: '',
+    //         removalPlanned: '',
+    //     }]
+    // ])]
 ]);
 
 export const DEPRECATED_BLOCKS: BlockDeprecationsMap = _blocks;

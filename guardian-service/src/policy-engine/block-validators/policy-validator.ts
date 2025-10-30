@@ -4,9 +4,7 @@ import {
     ModuleStatus,
     SchemaEntity,
     IgnoreRule,
-    ReachabilityContext,
     computeReachability,
-    PolicyMessage,
     buildMessagesForValidator
 } from '@guardian/interfaces';
 import { BlockValidator } from './block-validator.js';
@@ -92,12 +90,6 @@ export class PolicyValidator {
      */
     private readonly ignoreRules?: ReadonlyArray<IgnoreRule>;
 
-    /**
-     * Reachability Per Block
-     * @private
-     */
-    private reachabilityPerBlock?: Map<string, PolicyMessage[]>;
-
     constructor(policy: Policy, isDruRun: boolean = false, ignoreRules?: ReadonlyArray<IgnoreRule>) {
         this.blocks = new Map();
         this.modules = new Map();
@@ -123,13 +115,6 @@ export class PolicyValidator {
     }
 
     /**
-     * Get Reachability Per Block
-     */
-     public getReachabilityPerBlock(): Map<string, PolicyMessage[]> | undefined {
-        return this.reachabilityPerBlock;
-     }
-
-    /**
      * Register components
      * @param policy
      */
@@ -146,12 +131,12 @@ export class PolicyValidator {
         this.addPermissions(policy.policyRoles);
         await this.registerBlock(policy.config);
 
-        const ctx: ReachabilityContext = {
+        const ctx = {
             sources: Array.from(this.blocks.values()),
             blockAboutRegistry: BlockAbout
         };
 
-        this.reachabilityPerBlock = computeReachability(ctx);
+        const reachabilityPerBlock = computeReachability(ctx);
 
         for (const block of this.blocks.values()) {
             const blockId = block.getId();
@@ -164,7 +149,7 @@ export class PolicyValidator {
                 blockType,
                 usedProps,
                 this.ignoreRules,
-                this.reachabilityPerBlock,
+                reachabilityPerBlock,
                 blockId
             );
 
