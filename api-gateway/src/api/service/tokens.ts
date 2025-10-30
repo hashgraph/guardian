@@ -1439,6 +1439,7 @@ export class TokensApi {
     @Get('/:tokenId/wallets/:walletId/info')
     @Auth(
         Permissions.TOKENS_TOKEN_MANAGE,
+        Permissions.TOKENS_TOKEN_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1478,9 +1479,13 @@ export class TokensApi {
             if (!user.did) {
                 throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.getWalletToken(tokenId, walletId, owner);
+            if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_MANAGE)) {
+                return await guardians.getWalletToken(tokenId, walletId, null, user);
+            } else {
+                const owner = new EntityOwner(user);
+                return await guardians.getWalletToken(tokenId, walletId, owner, user);
+            }
         } catch (error) {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {

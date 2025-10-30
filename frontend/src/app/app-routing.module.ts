@@ -725,8 +725,6 @@ const routes: Routes = [
         }
     },
 
-
-
     {
         path: 'external-policies',
         component: ExternalPolicyComponent,

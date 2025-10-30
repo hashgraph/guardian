@@ -466,12 +466,14 @@ export class Guardians extends NatsService {
     public async getWalletToken(
         tokenId: string,
         walletId: string,
-        owner: IOwner
+        owner: IOwner,
+        user: IAuthUser,
     ): Promise<ITokenInfo> {
         return await this.sendMessage(MessageAPI.GET_WALLET_TOKEN_INFO, {
             tokenId,
             walletId,
-            owner
+            owner,
+            user,
         });
     }
 

@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { ArrayMessageResponse, DatabaseServer, INotificationStep, KeyType, MessageError, MessageResponse, NewNotifier, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
+import { ArrayMessageResponse, DatabaseServer, IAuthUser, INotificationStep, KeyType, MessageError, MessageResponse, NewNotifier, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';
 import { publishTokenTags } from '../helpers/import-helpers/index.js'
@@ -1042,20 +1042,28 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         async (msg: {
             tokenId: string,
             walletId: string,
-            owner: IOwner
+            owner: IOwner,
+            user: IAuthUser
         }) => {
             try {
-                const { tokenId, walletId, owner } = msg;
+                const { tokenId, walletId, owner, user } = msg;
 
                 const users = new Users();
-                const wallet = await users.getWallet(walletId, owner?.id);
-                if (!wallet) {
-                    throw new Error('Wallet not found');
+                if (owner) {
+                    const wallet = await users.getUserWallet(owner.creator, walletId, user?.id);
+                    if (!wallet) {
+                        return new MessageError('Wallet not found.', 500);
+                    }
+                } else {
+                    const wallet = await users.getWallet(walletId, user?.id);
+                    if (!wallet) {
+                        return new MessageError('Wallet not found.', 500);
+                    }
                 }
 
                 const token = await dataBaseServer.findOne(Token, { tokenId });
                 if (!token) {
-                    throw new Error('Token not found');
+                    return new MessageError('Wallet not found.', 500);
                 }
 
                 const workers = new Workers();
@@ -1063,7 +1071,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     type: WorkerTaskType.GET_ACCOUNT_TOKENS_REST,
                     data: {
                         hederaAccountId: walletId,
-                        payload: { userId: owner?.id }
+                        payload: { userId: user?.id }
                     }
                 }, {
                     priority: 20
@@ -1073,7 +1081,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error, 400);
             }
         })

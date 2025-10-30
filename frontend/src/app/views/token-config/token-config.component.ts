@@ -120,7 +120,7 @@ export class TokenConfigComponent implements OnInit {
             id: 'tags',
             title: 'TAGS',
             type: 'text',
-            size: '230',
+            size: '220',
             tooltip: false
         }, {
             id: 'options',
@@ -259,8 +259,7 @@ export class TokenConfigComponent implements OnInit {
         ).subscribe((tokensResponse) => {
             const data = tokensResponse?.body || [];
             this.tokens = data.map((e: any) => new Token(e));
-            this.tokensCount = tokensResponse?.headers.get('X-Total-Count') ||
-                this.tokens.length;
+            this.tokensCount = tokensResponse?.headers.get('X-Total-Count') || this.tokens.length;
             this.loadTagsData();
         }, ({ message }) => {
             this.loading = false;
