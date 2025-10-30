@@ -11274,12 +11274,12 @@ paths:
       summary: Return a list of tokens.
       tags:
         - tokens
-  /tokens/{tokenId}/wallets/{walletId}/info:
+  /tokens/{tokenId}/relayer-accounts/{relayerAccountId}/info:
     get:
       description: >-
         Returns user information for the selected token. Only users with the
         Standard Registry role are allowed to make the request.
-      operationId: TokensApi_getWalletInfo
+      operationId: TokensApi_getRelayerAccountInfo
       parameters:
         - name: tokenId
           required: true
@@ -11288,10 +11288,10 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
-        - name: walletId
+        - name: relayerAccountId
           required: true
           in: path
-          description: Wallet Account Id
+          description: Relayer Account Id
           schema:
             example: 0.0.1
             type: string
@@ -16770,10 +16770,10 @@ paths:
       summary: Returns the list of documents in the target policy
       tags:
         - policy-repository
-  /project-wallet:
+  /relayer-accounts:
     get:
       description: ''
-      operationId: ProjectWalletApi_getProjectWallets
+      operationId: RelayerAccountsApi_getRelayerAccounts
       parameters:
         - name: pageIndex
           required: false
@@ -16819,10 +16819,10 @@ paths:
         - bearer: []
       summary: ''
       tags:
-        - project-wallet
+        - relayer-accounts
     post:
       description: ''
-      operationId: ProjectWalletApi_createProjectWallet
+      operationId: RelayerAccountsApi_createRelayerAccount
       parameters: []
       requestBody:
         required: true
@@ -16852,11 +16852,11 @@ paths:
         - bearer: []
       summary: ''
       tags:
-        - project-wallet
-  /project-wallet/current:
+        - relayer-accounts
+  /relayer-accounts/current:
     get:
       description: ''
-      operationId: ProjectWalletApi_getCurrentWallet
+      operationId: RelayerAccountsApi_getCurrentRelayerAccount
       parameters: []
       responses:
         '200':
@@ -16879,11 +16879,11 @@ paths:
         - bearer: []
       summary: ''
       tags:
-        - project-wallet
-  /project-wallet/all:
+        - relayer-accounts
+  /relayer-accounts/all:
     get:
       description: ''
-      operationId: ProjectWalletApi_getProjectWalletsAll
+      operationId: RelayerAccountsApi_getRelayerAccountsAll
       parameters: []
       responses:
         '200':
@@ -16906,11 +16906,11 @@ paths:
         - bearer: []
       summary: ''
       tags:
-        - project-wallet
-  /project-wallet/{account}/balance:
+        - relayer-accounts
+  /relayer-accounts/{account}/balance:
     get:
       description: ''
-      operationId: ProjectWalletApi_getProjectWalletBalance
+      operationId: RelayerAccountsApi_getRelayerAccountBalance
       parameters:
         - name: account
           required: true
@@ -16940,11 +16940,11 @@ paths:
         - bearer: []
       summary: ''
       tags:
-        - project-wallet
-  /project-wallet/generate:
+        - relayer-accounts
+  /relayer-accounts/generate:
     post:
       description: ''
-      operationId: ProjectWalletApi_generateProjectWallet
+      operationId: RelayerAccountsApi_generateRelayerAccount
       parameters: []
       responses:
         '200':
@@ -16967,11 +16967,11 @@ paths:
         - bearer: []
       summary: ''
       tags:
-        - project-wallet
-  /project-wallet/accounts:
+        - relayer-accounts
+  /relayer-accounts/accounts:
     get:
       description: ''
-      operationId: ProjectWalletApi_getUserWallets
+      operationId: RelayerAccountsApi_getUserRelayerAccounts
       parameters:
         - name: pageIndex
           required: false
@@ -17017,16 +17017,16 @@ paths:
         - bearer: []
       summary: ''
       tags:
-        - project-wallet
-  /project-wallet/{wallet}/relationships:
+        - relayer-accounts
+  /relayer-accounts/{relayerAccount}/relationships:
     get:
       description: ''
-      operationId: ProjectWalletApi_getRelationships
+      operationId: RelayerAccountsApi_getRelayerAccountRelationships
       parameters:
-        - name: wallet
+        - name: relayerAccountId
           required: true
           in: path
-          description: Policy Id
+          description: Relayer Account Id
           schema:
             example: '000000000000000000000001'
             type: string
@@ -17067,7 +17067,7 @@ paths:
         - bearer: []
       summary: ''
       tags:
-        - project-wallet
+        - relayer-accounts
   /worker-tasks:
     get:
       description: Returns all worker tasks.
