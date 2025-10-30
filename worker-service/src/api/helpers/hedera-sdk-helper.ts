@@ -2020,6 +2020,25 @@ export class HederaSDKHelper {
         return hbars.toString();
     }
 
+    private static async loadData(
+        url: string,
+        next: string,
+        result: any[],
+        error: string
+    ) {
+        const res = await axios.get(`${url}${next}`, { responseType: 'json' });
+        if (!res || !res.data) {
+            throw new Error(error);
+        }
+        if (res?.data?.links?.next) {
+            const _next = res.data.links.next.split('?')[1];
+            if (_next) {
+                await HederaSDKHelper.loadData(url, `?${_next}`, result, error);
+            }
+        }
+        return result;
+    }
+
     /**
      * Get balance account (Rest API)
      *
@@ -2035,21 +2054,18 @@ export class HederaSDKHelper {
             throw new Error(`Invalid account '${accountId}'`);
         }
 
-        const res = await axios.get(
-            `${Environment.HEDERA_ACCOUNT_API}${accountId}/tokens`,
-            { responseType: 'json' }
-        );
-        if (!res || !res.data) {
-            throw new Error(`Invalid account '${accountId}'`);
-        }
-        const tokens: any[] = res.data.tokens;
+        const error = `Invalid account '${accountId}'`;
+        const responses = await HederaSDKHelper.loadData(`${Environment.HEDERA_ACCOUNT_API}${accountId}/tokens`, '', [], error);
         const result: { [tokenId: string]: any } = {};
-        for (const token of tokens) {
-            result[token.token_id] = {
-                tokenId: token.token_id,
-                balance: token.balance?.toString(),
-                frozen: token.freeze_status === 'FROZEN',
-                kyc: token.kyc_status === 'GRANTED',
+        for (const response of responses) {
+            const tokens: any[] = response.tokens;
+            for (const token of tokens) {
+                result[token.token_id] = {
+                    tokenId: token.token_id,
+                    balance: token.balance?.toString(),
+                    frozen: token.freeze_status === 'FROZEN',
+                    kyc: token.kyc_status === 'GRANTED',
+                }
             }
         }
         return result;

@@ -105,9 +105,9 @@ export class ListOfTokensUserComponent implements OnInit {
             tooltip: false
         }, {
             id: 'options',
-            title: 'RELAYER ACCOUNTS',
+            title: 'ACCOUNTS',
             type: 'text',
-            size: '100',
+            size: '120',
             tooltip: false
         }]
 
