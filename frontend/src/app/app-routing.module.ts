@@ -763,8 +763,7 @@ const routes: Routes = [
         canActivate: [PermissionsGuard],
         data: {
             roles: [
-                UserRole.STANDARD_REGISTRY,
-                UserRole.USER
+                UserRole.STANDARD_REGISTRY
             ]
         }
     },

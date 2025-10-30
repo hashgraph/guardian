@@ -6,6 +6,8 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ProjectWalletService } from 'src/app/services/project-wallet.service';
 import { NewProjectWalletDialog } from 'src/app/components/new-project-wallets-dialog/new-project-wallets-dialog.component';
+import { ProjectWalletDetailsDialog } from 'src/app/components/project-wallet-details-dialog/project-wallet-details-dialog.component';
+import moment from 'moment';
 
 interface IColumn {
     id: string;
@@ -35,6 +37,8 @@ export class ProjectWalletsComponent implements OnInit {
     public pageCount: number;
     public columns: IColumn[];
     public currentWallet: any;
+    public balances: Map<string, string>;
+    public searchWallet: string;
 
     private subscription = new Subscription();
 
@@ -45,37 +49,44 @@ export class ProjectWalletsComponent implements OnInit {
         private router: Router,
         private route: ActivatedRoute
     ) {
+        this.balances = new Map<string, string>();
         this.columns = [{
+            id: 'username',
+            title: 'User Name',
+            type: 'text',
+            size: '200',
+            tooltip: false
+        }, {
             id: 'account',
             title: 'Account',
             type: 'text',
-            size: '150',
+            size: '200',
+            tooltip: false
+        }, {
+            id: 'balance',
+            title: 'Balance',
+            type: 'text',
+            size: '200',
+            tooltip: false
+        }, {
+            id: 'refresh',
+            title: 'Update date',
+            type: 'text',
+            size: '200',
             tooltip: false
         }, {
             id: 'name',
             title: 'Name',
             type: 'text',
             size: 'auto',
-            tooltip: true
-        }, {
-            id: 'balance',
-            title: 'Balance',
-            type: 'text',
-            size: '180',
             tooltip: false
         }, {
             id: 'options',
-            title: '',
+            title: 'Actions',
             type: 'text',
-            size: '210',
+            size: '170',
             tooltip: false
-        }, {
-            id: 'delete',
-            title: '',
-            type: 'text',
-            size: '64',
-            tooltip: false
-        }]
+        }];
     }
 
     ngOnInit() {
@@ -95,7 +106,6 @@ export class ProjectWalletsComponent implements OnInit {
     }
 
     private loadProfile() {
-        debugger;
         this.isConfirmed = false;
         this.loading = true;
         forkJoin([
@@ -123,7 +133,7 @@ export class ProjectWalletsComponent implements OnInit {
         const filters: any = {};
         this.loading = true;
         this.projectWalletService
-            .getProjectWallets(
+            .getUserWallets(
                 this.pageIndex,
                 this.pageSize,
                 filters
@@ -132,6 +142,10 @@ export class ProjectWalletsComponent implements OnInit {
                 const { page, count } = this.projectWalletService.parsePage(response);
                 this.page = page;
                 this.pageCount = count;
+                for (const row of this.page) {
+                    row.account = this.getAccount(row) || '';
+                    row.name = this.getAccountName(row);
+                }
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -151,40 +165,58 @@ export class ProjectWalletsComponent implements OnInit {
         this.loadWallets();
     }
 
-    public onFilter(event: any) {
-        // this.router.navigate(['/policy-labels'], { queryParams: { topic } });
+    public onSetWalletSearch() {
         this.loadWallets();
     }
 
-    public onCreate() {
-        const dialogRef = this.dialogService.open(NewProjectWalletDialog, {
+    public onOpenWallet(item: any) {
+        const dialogRef = this.dialogService.open(ProjectWalletDetailsDialog, {
             showHeader: false,
-            width: '720px',
+            width: '1100px',
             styleClass: 'guardian-dialog',
             data: {
-                title: 'Create New',
-                action: 'Create'
+                wallet: item
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-            if (result) {
-                this.loading = true;
-                this.projectWalletService
-                    .createProjectWallet(result)
-                    .subscribe((newItem) => {
-                        this.loadWallets();
-                    }, (e) => {
-                        this.loading = false;
-                    });
-            }
-        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
-    public onDelete(item: any) {
-
+    public getBalance(row: any) {
+        return this.balances.get(row.account) || '-';
     }
 
-    public onOpen(item: any) {
+    public updateBalance(row: any) {
+        row.__loading = true;
+        this.projectWalletService
+            .getProjectWalletBalance(row.account)
+            .subscribe((balance) => {
+                this.balances.set(row.account, balance);
+                row.__loading = false;
+                row.__lastUpdate = moment(Date.now()).format("YYYY-MM-DD, HH:mm");
+            }, (e) => {
+                row.__balance = '-';
+                row.__loading = false;
+            });
+    }
 
+    public updateAllBalance() {
+        for (const row of this.page) {
+            this.updateBalance(row);
+        }
+    }
+
+    public getAccountName(row: any) {
+        if (row.walletAccountId) {
+            return row.walletName;
+        } else {
+            return 'Default';
+        }
+    }
+    public getAccount(row: any) {
+        if (row.walletAccountId) {
+            return row.walletAccountId;
+        } else {
+            return row.hederaAccountId;
+        }
     }
 }

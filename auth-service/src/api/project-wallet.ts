@@ -39,31 +39,34 @@ export class ProjectWalletService extends NatsService {
                     const { user, account } = msg;
 
                     const entityRepository = new DatabaseServer();
-                    const target = await entityRepository.findOne(User, {
-                        did: user.did
-                    });
-                    if (!target && target.did) {
-                        return new MessageError('User does not exist.');
-                    }
+                    const projectWallet = await entityRepository.findOne(ProjectWallet, { account });
 
-                    let wallet: any;
-                    if (!account) {
-                        return new MessageError('Wallet does not exist.');
-                    }
-                    if (account === user.hederaAccountId) {
-                        wallet = { account };
+                    let wallet: string;
+                    if (projectWallet) {
+                        if (projectWallet.owner === user.did) {
+                            wallet = projectWallet.account;
+                        } else {
+                            const owner = await entityRepository.findOne(User, { did: projectWallet.owner });
+                            if (owner && (owner.did === user.did || owner.parent === user.did)) {
+                                wallet = projectWallet.account;
+                            } else {
+                                return new MessageError('Wallet does not exist.');
+                            }
+                        }
                     } else {
-                        wallet = await entityRepository.findOne(ProjectWallet, { account, owner: user.did });
-                    }
-                    if (!wallet) {
-                        return new MessageError('Wallet does not exist.');
+                        const userWallet = await entityRepository.findOne(User, { hederaAccountId: account });
+                        if (userWallet && (userWallet.did === user.did || userWallet.parent === user.did)) {
+                            wallet = userWallet.hederaAccountId;
+                        } else {
+                            return new MessageError('Wallet does not exist.');
+                        }
                     }
 
                     const workers = new Workers();
                     const balance = await workers.addNonRetryableTask({
                         type: WorkerTaskType.GET_USER_BALANCE_REST,
                         data: {
-                            hederaAccountId: wallet.account
+                            hederaAccountId: wallet
                         }
                     }, {
                         priority: 20,

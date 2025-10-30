@@ -14,19 +14,35 @@
 
     <div class="guardian-user-page-toolbar">
         <div class="guardian-user-page-filters">
-
+            <div class="search-filter">
+                <input
+                    [(ngModel)]="searchWallet"
+                    class="guardian-input search-policy-input"
+                    pInputText
+                    placeholder="Search by keyword"
+                    type="text" 
+                    (change)="onSetWalletSearch()"/>
+                <i class="search-icon">
+                    <svg-icon 
+                        class="svg-icon-16" 
+                        src="/assets/images/icons/16/search.svg" 
+                        svgClass="icon-color-close">
+                    </svg-icon>
+                </i>
+            </div>
         </div>
         <div class="guardian-user-page-buttons">
             <button
-                (click)="onCreate()"
-                class="guardian-button guardian-button-primary">
+                (click)="updateAllBalance()"
+                class="guardian-button guardian-button-secondary">
                 <div class="guardian-button-icon">
-                    <svg-icon class="icon-btn svg-icon"
-                        src="/assets/images/icons/add.svg"
-                        svgClass="icon-color-secondary">
+                    <svg-icon
+                        class="icon-btn"
+                        src="/assets/images/icons/refresh-2.svg"
+                        svgClass="icon-color-primary">
                     </svg-icon>
                 </div>
-                <div class="guardian-button-label">Create New</div>
+                <div class="guardian-button-label">Update All Wallets</div>
             </button>
         </div>
     </div>
@@ -62,7 +78,29 @@
                                     [ngSwitch]="column.id"
                                 >
                                     <ng-container *ngSwitchCase="'balance'">
-                                        <span class="text-truncate">{{row[column.id]}}</span>
+                                        <div class="balance-cell">
+                                            <div *ngIf="row.__loading" class="balance-container">
+                                                <div class="balance-loading"></div>
+                                            </div>
+                                            <div *ngIf="!row.__loading" class="balance-container">
+                                                {{getBalance(row)}}
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="'refresh'">
+                                        <div class="balance-cell">
+                                            <div 
+                                                class="guardian-icon-button big balance-button" 
+                                                [attr.disabled]="row.__loading"
+                                                (click)="updateBalance(row)">
+                                                <svg-icon 
+                                                    class="svg-icon"
+                                                    src="/assets/images/icons/refresh-2.svg"
+                                                    [svgClass]="'icon-color-primary'">
+                                                </svg-icon>
+                                            </div>
+                                            <div class="last-update">{{row.__lastUpdate}}</div>
+                                        </div>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'account'">
                                         <hedera-explorer [params]="row[column.id] || ''" type="accounts">
@@ -71,22 +109,9 @@
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
                                         <button
-                                            (click)="onOpen(row)"
-                                            class="guardian-button guardian-button-secondary grid-btn">
-                                            Open
-                                        </button>
-                                    </ng-container>
-                                    <ng-container *ngSwitchCase="'delete'">
-                                        <div
-                                            [attr.disabled]="row.status === 'PUBLISHED'"
-                                            class="guardian-icon-button big"
-                                            (click)="onDelete(row)">
-                                            <svg-icon
-                                                class="icon-btn"
-                                                src="/assets/images/icons/delete.svg"
-                                                [svgClass]="row.status === 'PUBLISHED' ? 'icon-color-disabled' : 'icon-color-delete'">
-                                            </svg-icon>
-                                        </div>
+                                            (click)="onOpenWallet(row)"
+                                            class="guardian-button guardian-button-secondary grid-btn"
+                                        >Details</button>
                                     </ng-container>
                                     <ng-container *ngSwitchDefault>
                                         <span class="text-truncate">{{row[column.id]}}</span>
