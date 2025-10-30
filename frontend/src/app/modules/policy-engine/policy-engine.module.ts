@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MaterialModule } from 'src/app/modules/common/material.module';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 //Modules
@@ -159,6 +159,7 @@ import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integrat
 import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
 import { AddSavepointDialog } from "./policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component";
 import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
+import { IgnoreRulesDialog } from "./dialogs/ignore-rules-dialog/ignore-rules-dialog.component";
 import { PolicyRepositoryComponent } from './policy-repository/policy-repository.component';
 import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
 
@@ -278,12 +279,14 @@ import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-c
         SearchToolDialog,
         RestoreSavepointDialog,
         AddSavepointDialog,
+        IgnoreRulesDialog,
         OnLoadSavepointDialog,
         PolicyRepositoryComponent
     ],
     imports: [
         CommonModule,
         FormsModule,
+        ReactiveFormsModule,
         MaterialModule,
         CodemirrorModule,
         DragDropModule,

@@ -7498,48 +7498,6 @@ paths:
       summary: Create dry-run savepoint.
       tags:
         - policies
-    delete:
-      description: Deletes the specified savepoints for the policy (Dry Run only).
-      operationId: PolicyApi_deleteSavepoints
-      parameters:
-        - name: policyId
-          required: true
-          in: path
-          schema:
-            example: '000000000000000000000001'
-            type: string
-      requestBody:
-        required: true
-        description: '{ savepointIds: string[] }'
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                savepointIds:
-                  type: array
-                  items:
-                    type: string
-              required:
-                - savepointIds
-      responses:
-        '200':
-          description: Successful operation.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      security:
-        - bearer: []
-      summary: Delete dry-run savepoints.
-      tags:
-        - policies
   /policies/{policyId}/savepoints/count:
     get:
       description: Returns the number of savepoints for the policy (Dry Run only).
@@ -7653,6 +7611,45 @@ paths:
       security:
         - bearer: []
       summary: Rename dry-run savepoint.
+      tags:
+        - policies
+  /policies/{policyId}/savepoints/delete:
+    post:
+      description: Deletes the specified savepoints for the policy (Dry Run only).
+      operationId: PolicyApi_deleteSavepoints
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteSavepointsDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSavepointsResultDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Delete dry-run savepoints.
       tags:
         - policies
   /policies/{policyId}/dry-run/restart:
@@ -17491,6 +17488,27 @@ components:
         - progress
         - resultId
         - result
+    IgnoreRuleDTO:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Stable message code, e.g. DEPRECATION_BLOCK
+        blockType:
+          type: string
+          description: Limit by block type
+        property:
+          type: string
+          description: Limit by property
+        contains:
+          type: string
+          description: Substring filter applied to message text
+        severity:
+          type: string
+          description: Type of message
+          enum:
+            - warning
+            - info
     PolicyDTO:
       type: object
       properties:
@@ -17645,6 +17663,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PolicyTestDTO'
+        ignoreRules:
+          description: >-
+            Validation-only rules to hide matching warnings/infos (not
+            persisted)
+          type: array
+          items:
+            $ref: '#/components/schemas/IgnoreRuleDTO'
       required:
         - id
         - uuid
@@ -18828,6 +18853,14 @@ components:
           type: array
           items:
             type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        infos:
+          type: array
+          items:
+            type: string
         isValid:
           type: boolean
       required:
@@ -18845,6 +18878,14 @@ components:
             $ref: '#/components/schemas/BlockErrorsDTO'
         errors:
           nullable: true
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        infos:
           type: array
           items:
             type: string
@@ -19511,6 +19552,32 @@ components:
         - id
         - createDate
         - document
+    DeleteSavepointsDTO:
+      type: object
+      properties:
+        savepointIds:
+          example:
+            - '000000000000000000000001'
+          type: array
+          items:
+            type: string
+        skipCurrentSavepointGuard:
+          type: boolean
+          example: false
+          description: Skip protection for currently selected savepoint
+      required:
+        - savepointIds
+    DeleteSavepointsResultDTO:
+      type: object
+      properties:
+        hardDeletedIds:
+          example:
+            - '000000000000000000000001'
+          type: array
+          items:
+            type: string
+      required:
+        - hardDeletedIds
     RunningDetailsDTO:
       type: object
       properties:
