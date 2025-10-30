@@ -110,8 +110,8 @@ export async function documentsAPI(
         user: IAuthUser,
         wallet: string,
         filters: {
-            pageIndex?: number | string,
-            pageSize?: number | string
+            pageIndex?: any,
+            pageSize?: any
         }
     }) => {
         try {
@@ -119,11 +119,33 @@ export async function documentsAPI(
                 return new MessageError('Invalid parameters.');
             }
             const { user, wallet, filters } = msg;
-            const vcDocuments: IVCDocument[] = await dataBaseServer.find(VcDocument, {
+            const { pageIndex, pageSize } = filters;
+            const otherOptions: any = {};
+            const _pageSize = parseInt(pageSize, 10);
+            const _pageIndex = parseInt(pageIndex, 10);
+            if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = _pageSize;
+                otherOptions.offset = _pageIndex * _pageSize;
+            } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = 100;
+            }
+            const [items, count] = await dataBaseServer.findAndCount(VcDocument, {
                 owner: user.did,
                 wallet
-            });
-            return new MessageResponse(vcDocuments);
+            }, otherOptions);
+
+            for (const item of items) {
+                const policy = await dataBaseServer.getPolicy(item.policyId, { fields: ['name'] } as any);
+                (item as any).policyName = policy?.name;
+                (item as any).policyVersion = policy?.version;
+
+                const schema = await dataBaseServer.getSchemaByIRI(item.schema, policy?.topicId, { fields: ['name'] } as any);
+                (item as any).schemaName = schema?.name;
+            }
+
+            return new MessageResponse({ items, count });
         }
         catch (error) {
             return new MessageError(error);

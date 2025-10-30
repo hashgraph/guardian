@@ -354,6 +354,7 @@ export class ProjectWalletApi {
     @HttpCode(HttpStatus.OK)
     async getRelationships(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Param('wallet') wallet: string,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
@@ -364,7 +365,8 @@ export class ProjectWalletApi {
                 pageSize
             }
             const guardian = new Guardians();
-            return await guardian.getWalletRelationships(wallet, user, filters);
+            const { items, count } = await guardian.getWalletRelationships(wallet, user, filters);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

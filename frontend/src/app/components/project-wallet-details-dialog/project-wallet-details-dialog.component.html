@@ -15,15 +15,24 @@
 
         <div class="dialog-grid-container">
             <div *ngIf="page.length" class="dialog-grid-header">
-                <div class="col-auto">Description</div>
-                <div class="col-120">Value</div>
-                <div class="col-44"></div>
+                <div class="col-auto">Policy name</div>
+                <div class="col-auto">Project name</div>
+                <div class="col-150">Actions</div>
             </div>
             <div *ngIf="page.length" class="dialog-grid-body vertical-border">
                 <ng-container *ngFor="let item of page" >
                     <div class="dialog-grid-row row-52">
-                        <div class="col-120">
-                            {{item.id}}
+                        <div class="col-auto">
+                            {{item.policyName}}
+                        </div>
+                        <div class="col-auto">
+                            {{item.schemaName}}
+                        </div>
+                        <div class="col-150">
+                            <button
+                                (click)="onOpenDocument(item)"
+                                class="guardian-button guardian-button-secondary grid-btn"
+                            >View Document</button>
                         </div>
                     </div>
                 </ng-container>
@@ -37,6 +46,15 @@
                     </svg-icon>
                 </div>
                 <div>There are no documents</div>
+            </div>
+            <div *ngIf="page.length" class="guardian-grid-paginator">
+                <app-paginator
+                    class="guardian-grid-paginator"
+                    [pageIndex]="pageIndex"
+                    [pageSize]="pageSize"
+                    [length]="count"
+                    (page)="onPage($event)"
+                ></app-paginator>
             </div>
         </div>
 

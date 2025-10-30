@@ -2802,8 +2802,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public async getPolicy(policyId: string | null): Promise<Policy | null> {
-        return await new DataBaseHelper(Policy).findOne(policyId);
+    public async getPolicy(policyId: string | null, options?: FindOptions<object>): Promise<Policy | null> {
+        return await new DataBaseHelper(Policy).findOne(policyId, options);
     }
 
     /**
@@ -2987,11 +2987,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param iri
      * @param topicId
      */
-    public async getSchemaByIRI(iri: string, topicId?: string): Promise<SchemaCollection | null> {
+    public async getSchemaByIRI(
+        iri: string,
+        topicId?: string,
+        options?: FindOptions<SchemaCollection>
+    ): Promise<SchemaCollection | null> {
         if (topicId) {
-            return await new DataBaseHelper(SchemaCollection).findOne({ iri, topicId });
+            return await new DataBaseHelper(SchemaCollection).findOne({ iri, topicId }, options);
         } else {
-            return await new DataBaseHelper(SchemaCollection).findOne({ iri });
+            return await new DataBaseHelper(SchemaCollection).findOne({ iri }, options);
         }
     }
 

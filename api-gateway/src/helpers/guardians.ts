@@ -3879,7 +3879,7 @@ export class Guardians extends NatsService {
             pageIndex?: number | string,
             pageSize?: number | string
         }
-    ): Promise<any[]> {
+    ): Promise<ResponseAndCount<any>> {
         return await this.sendMessage(MessageAPI.GET_WALLET_RELATIONSHIPS, { wallet, user, filters });
     }
 }

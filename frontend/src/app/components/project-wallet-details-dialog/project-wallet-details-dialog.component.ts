@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { ProjectWalletService } from 'src/app/services/project-wallet.service';
 
 @Component({
@@ -35,7 +36,6 @@ export class ProjectWalletDetailsDialog {
         this.count = 0;
         this.pageIndex = 0;
         this.pageSize = 10;
-        debugger;
     }
 
     ngOnInit() {
@@ -70,5 +70,35 @@ export class ProjectWalletDetailsDialog {
             }, (e) => {
                 this.loading = false;
             });
+    }
+
+    public onOpenDocument(document: any) {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
+            data: {
+                id: document.id,
+                row: document,
+                dryRun: !!document.dryRunId,
+                document: document.document,
+                title: 'VC Document',
+                type: 'VC',
+                viewDocument: true,
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
+    }
+
+    public onPage(event: any): void {
+        if (this.pageSize != event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
+        }
+        this.loadDocuments();
     }
 }
