@@ -1,8 +1,9 @@
-import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
-import {ArrayNotEmpty, IsArray, IsBoolean, IsNumber, IsObject, IsOptional, IsString} from 'class-validator';
+import { ApiExtraModels, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {ArrayNotEmpty, IsArray, IsBoolean, IsIn, IsNumber, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
 import { PolicyAvailability, PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
 import { Examples } from '../examples.js';
 import { ValidationErrorsDTO } from './blocks.js';
+import {Type} from 'class-transformer';
 
 export class PolicyTestDTO {
     @ApiProperty({
@@ -378,6 +379,18 @@ export class PolicyDTO {
     @IsOptional()
     @IsArray()
     tests?: PolicyTestDTO[];
+
+    @ApiProperty({
+        type: () => IgnoreRuleDTO,
+        isArray: true,
+        required: false,
+        description: 'Validation-only rules to hide matching warnings/infos (not persisted)'
+    })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => IgnoreRuleDTO)
+    ignoreRules?: IgnoreRuleDTO[];
 }
 
 @ApiExtraModels(PolicyDTO)
@@ -634,6 +647,36 @@ export class DebugBlockHistoryDTO {
     @IsOptional()
     @IsObject()
     document?: any;
+}
+
+export class IgnoreRuleDTO {
+    @ApiPropertyOptional({description: 'Stable message code, e.g. DEPRECATION_BLOCK'})
+    @IsOptional()
+    @IsString()
+    code?: string;
+
+    @ApiPropertyOptional({description: 'Limit by block type'})
+    @IsOptional()
+    @IsString()
+    blockType?: string;
+
+    @ApiPropertyOptional({description: 'Limit by property'})
+    @IsOptional()
+    @IsString()
+    property?: string;
+
+    @ApiPropertyOptional({description: 'Substring filter applied to message text'})
+    @IsOptional()
+    @IsString()
+    contains?: string;
+
+    @ApiPropertyOptional({
+        description: 'Type of message',
+        enum: ['warning', 'info'],
+    })
+    @IsOptional()
+    @IsIn(['warning', 'info'])
+    severity?: 'warning' | 'info';
 }
 
 /**

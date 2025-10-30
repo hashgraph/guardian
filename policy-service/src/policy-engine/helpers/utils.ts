@@ -148,7 +148,7 @@ export class PolicyUtils {
         return amount;
     }
 
-     /**
+    /**
      * Create Serial Numbers Array
      * @param startRule
      * @param endRule
