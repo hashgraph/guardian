@@ -441,6 +441,19 @@ export class FilterSearchPoliciesDTO {
 
     @ApiProperty({
         type: 'string',
+        isArray: true,
+        required: false,
+        example: [
+            Examples.DB_ID,
+            Examples.DB_ID
+        ]
+    })
+    @IsOptional()
+    @IsArray()
+    toolMessageIds?: string[];
+
+    @ApiProperty({
+        type: 'string',
         required: false,
         example: Examples.DID
     })

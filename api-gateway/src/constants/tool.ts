@@ -4,6 +4,7 @@ export const REQUIRED_PROPS = {
     STATUS: 'status',
     TOPIC_ID: 'topicId',
     VERSION: 'version',
+    MESSAGE_ID: 'messageId',
     _ID: '_id',
 };
 

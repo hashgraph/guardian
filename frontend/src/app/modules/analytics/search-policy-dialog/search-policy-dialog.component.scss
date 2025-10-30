@@ -53,20 +53,13 @@
 
             .filter-row {
                 margin-bottom: 16px;
+                gap: 16px;
             }
 
             .filter {
                 width: 50%;
                 display: flex;
                 flex-direction: row;
-
-                &:first-of-type {
-                    padding-right: 8px;
-                }
-
-                &:last-of-type {
-                    padding-left: 8px;
-                }
 
                 & > *:nth-child(1) {
                     width: 100%;
