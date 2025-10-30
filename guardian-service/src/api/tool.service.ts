@@ -6,7 +6,7 @@ import { ToolValidator } from '../policy-engine/block-validators/tool-validator.
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import * as crypto from 'crypto';
 import { FilterObject } from '@mikro-orm/core';
-import { deleteSchema, findAndDryRunSchema, importToolByFile, importToolByMessage, importToolErrors, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
+import { deleteSchema, findAndDryRunSchema, importToolByFile, importToolByMessage, importToolErrors, PolicyImportExportHelper, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
 
 /**
  * Sha256
@@ -564,17 +564,15 @@ export async function dryRunTool(
                 tools: { $elemMatch: { messageId: tool.messageId } }
             })
 
-            for (const policy of policies) {
-                if (policy.status === PolicyStatus.DRAFT) {
-                    replaceAllEntities(policy.config, ['hash'], oldToolHash, tool.hash);
-                    replaceAllEntities(policy.config, ['messageId'], tool.messageId, result.getId());
+            for (const item of policies) {
+                if (item.status === PolicyStatus.DRAFT) {
+                    replaceAllEntities(item.config, ['hash'], oldToolHash, tool.hash);
+                    replaceAllEntities(item.config, ['messageId'], tool.messageId, result.getId());
 
-                    // console.log(oldToolHash, tool.hash);
-                    // console.log(tool.messageId, result.getId());
-                    // const policy2 = PolicyConverterUtils.PolicyConverter(policy);
+                    const policy = PolicyConverterUtils.PolicyConverter(item);
 
                     await databaseServer.save(Policy, policy);
-                    // await PolicyImportExportHelper.updatePolicyComponents(policy2, logger, user.id);
+                    await PolicyImportExportHelper.updatePolicyComponents(policy, logger, user.id);
                 }
             }
         }
