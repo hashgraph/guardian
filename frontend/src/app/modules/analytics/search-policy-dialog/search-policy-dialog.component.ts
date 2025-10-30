@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { FormControl, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { concatMap, debounceTime, distinctUntilChanged, finalize, map, scan, startWith, Subject, switchMap, takeUntil, takeWhile, tap } from 'rxjs';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ToolsService } from 'src/app/services/tools.service';
 
 /**
  * Search policy dialog.
@@ -26,7 +28,7 @@ export class SearchPolicyDialog {
         tokensCount: new UntypedFormControl(1),
         vcDocumentsCount: new UntypedFormControl(1),
         vpDocumentsCount: new UntypedFormControl(1),
-        toolName: new UntypedFormControl('')
+        toolMessageIds: new UntypedFormControl([])
     });
     public types = [{
         name: 'Search only imported',
@@ -56,18 +58,119 @@ export class SearchPolicyDialog {
         return this.filtersForm.value.type === 'Global';
     }
 
+    tools: ToolOption[] = [];
+    query = '';
+    page = 0;
+    pageSize = 50;
+    total = 0;
+    loadingms = false;             // вместо loadingms
+    private search$ = new Subject<string>();
+    private destroy$ = new Subject<void>();
+    private loadingMore = false;
+    private loadMore$ = new Subject<void>();
+    searchCtrl = new FormControl<string>('', { nonNullable: true });
+
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private analyticsService: AnalyticsService,
         private policyEngineService: PolicyEngineService,
+        private toolsService: ToolsService,
         private router: Router
     ) {
         this.policy = this.config.data.policy;
+
+        const searchStream$ = this.search$.pipe(
+            debounceTime(250),
+            distinctUntilChanged(),
+            map(q => (q ?? '').trim()),
+            startWith('') // первая загрузка
+        );
+        
+        this.searchCtrl.valueChanges
+            .pipe(debounceTime(250), distinctUntilChanged())
+            .subscribe(q => this.onSearchChange(q));
+
+        searchStream$
+            .pipe(
+            switchMap(query => {
+                return this.fetchPage(query, 0).pipe(
+                tap((first: any) => {
+                    this.tools = this.getToolOptions(first?.items);
+                    this.total = first.total;
+                    this.page = 0;
+                }),
+                switchMap(() =>
+                    this.loadMore$.pipe(
+                    scan(acc => acc + 1, 0),
+                    concatMap(nextPage =>
+                        this.fetchPage(query, nextPage).pipe(
+                        tap(res => {
+                            this.tools = this.getToolOptions([...this.tools, ...res.items]);
+                            this.page = nextPage;
+                        })
+                        )
+                    ),
+                    takeWhile(() => this.tools.length < this.total, true)
+                    )
+                )
+                );
+            }),
+            takeUntil(this.destroy$)
+            )
+            .subscribe();
     }
+
+    private getToolOptions(tools: any) {
+        if (tools?.length > 0) {
+            console.log(tools);
+            
+            return tools.map((tool: any) => ({
+                id: tool.messageId,
+                label: tool.name
+            }))
+        }
+        return [];
+    }
+
+    onSearchChange(value: string) {
+        this.search$.next(value);
+    }
+
+    onLazyLoad(e: any) {
+        const nearEnd = e?.last >= this.tools.length - 10;
+        const hasMore = this.tools.length < this.total;
+        if (nearEnd && hasMore && !this.loadingMore) this.loadMore$.next();
+    }
+
+    private fetchPage(query: string, page: number) {
+        const firstPage = page === 0;
+        this.loading = firstPage;
+        this.loadingMore = !firstPage;
+
+        return this.toolsService.page(page, this.pageSize, query).pipe(
+            map((resp: any) => {
+            const items = resp.body || [];
+            const total =
+                Number(resp.headers?.get?.('X-Total-Count')) ?? this.total ?? items.length;
+            return { items, total };
+            }),
+            finalize(() => {
+            this.loading = false;
+            this.loadingMore = false;
+            })
+        );
+    }
+
+
 
     ngOnInit() {
         this.load();
+    }
+
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 
     public load() {
@@ -103,8 +206,8 @@ export class SearchPolicyDialog {
             options.minVpCount = filters.vpDocumentsCount || 1;
             this.filtersCount++;
         }
-        if (filters.toolName) {
-            options.toolName = filters.toolName;
+        if (filters.toolMessageIds) {
+            options.toolMessageIds = filters.toolMessageIds;
             this.filtersCount++;
         }
         this.error = null;
@@ -265,4 +368,9 @@ export class SearchPolicyDialog {
                 this.loading = false;
             });
     }
+}
+
+class ToolOption {
+    id: string;
+    label: string;
 }

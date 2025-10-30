@@ -79,6 +79,7 @@ async function localSearch(
             hashMap: any;
             threshold: number;
         },
+        toolMessageIds?: string[],
         toolName?: string,
         toolVersion?: string
     }
@@ -120,6 +121,13 @@ async function localSearch(
             owner: options.owner
         });
     }
+    if (options.toolMessageIds) {
+        filter.$and.push({
+            ['tools.messageId']: { $in: options.toolMessageIds }
+        });
+    }
+    console.log(JSON.stringify(filter, null, 4));
+    
     if (options.toolName) {
         filter.$and.push({
             ['tools.name']: { $regex: `.*${options.toolName.trim()}.*`, $options: 'i' }
@@ -408,6 +416,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 text?: string;
                 owner?: string;
                 threshold?: number;
+                toolMessageIds?: string[];
                 toolName?: string;
                 toolVersion?: string;
             },
@@ -425,6 +434,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     minVpCount,
                     minTokensCount,
                     threshold,
+                    toolMessageIds,
                     toolName,
                     toolVersion
                 } = filters;
@@ -435,9 +445,11 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     minVpCount,
                     minTokensCount,
                     blocks: undefined,
+                    toolMessageIds,
                     toolName,
                     toolVersion
                 }
+    console.log(toolMessageIds);
                 const result: any = {
                     target: null,
                     result: []
