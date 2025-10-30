@@ -11317,6 +11317,178 @@ paths:
       summary: Returns user information for the selected token.
       tags:
         - tokens
+  /tokens/{tokenId}/associate/{accountId}:
+    put:
+      description: >-
+        Associates the user with the provided Hedera token. Only users with the
+        Installer role are allowed to make the request.
+      operationId: TokensApi_associateWithAccountToken
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: accountId
+          required: true
+          in: path
+          description: Account ID
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInfoDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Associates the user with the provided Hedera token.
+      tags:
+        - tokens
+  /tokens/push/{tokenId}/associate/{accountId}:
+    put:
+      description: >-
+        Associates the user with the provided Hedera token. Only users with the
+        Installer role are allowed to make the request.
+      operationId: TokensApi_associateTokenWithAccountAsync
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: accountId
+          required: true
+          in: path
+          description: Account ID
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Associates the user with the provided Hedera token.
+      tags:
+        - tokens
+  /tokens/{tokenId}/dissociate/{accountId}:
+    put:
+      description: >-
+        Disassociates the user with the provided Hedera token. Only users with
+        the Installer role are allowed to make the request.
+      operationId: TokensApi_dissociateWithAccountToken
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: accountId
+          required: true
+          in: path
+          description: Account ID
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInfoDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Associate the user with the provided Hedera token.
+      tags:
+        - tokens
+  /tokens/push/{tokenId}/dissociate/{accountId}:
+    put:
+      description: >-
+        Disassociates the user with the provided Hedera token. Only users with
+        the Installer role are allowed to make the request.
+      operationId: TokensApi_dissociateTokenWithAccountAsync
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: accountId
+          required: true
+          in: path
+          description: Account ID
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Associate the user with the provided Hedera token.
+      tags:
+        - tokens
   /themes:
     post:
       description: >-
