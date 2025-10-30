@@ -386,7 +386,7 @@ export class RelayerAccountsService extends NatsService {
                         }
                     }, {
                         $lookup: {
-                            from: 'relayer-account',
+                            from: 'relayer_account',
                             localField: 'did',
                             foreignField: 'owner',
                             as: 'relayerAccounts'
