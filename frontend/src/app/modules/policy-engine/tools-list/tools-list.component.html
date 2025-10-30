@@ -166,12 +166,6 @@
                                 class="header-cell-text"
                                 style="min-width: 140px;"
                             >
-                                Status
-                            </th>
-                            <th
-                                class="header-cell-text"
-                                style="min-width: 140px;"
-                            >
                                 Hedera Topic Id
                             </th>
                             <th
@@ -179,6 +173,12 @@
                                 style="min-width: 140px;"
                             >
                                 Version
+                            </th>
+                            <th
+                                class="header-cell-text"
+                                style="min-width: 140px;"
+                            >
+                                Status
                             </th>
                             <th
                                 class="header-cell-text"
@@ -226,13 +226,26 @@
                                     topic: tool.topicId
                                 }" [routerLink]="['/schemas']">Schemas</a>
                             </td>
+                            <td style="min-width: 140px;">
+                                <hedera-explorer [params]="tool.topicId" type="topics">
+                                    {{ tool.topicId }}
+                                </hedera-explorer>
+                            </td>
+                            <td
+                                class="text-truncate"
+                                pTooltip="{{ tool.version}}"
+                                style="min-width: 140px; max-width: 150px;"
+                                tooltipPosition="top"
+                            >
+                                {{ tool.version || '–' }}
+                            </td>
                             <td style="min-width: 180px;">
                                 <div *ngIf="!user.TOOLS_TOOL_REVIEW"
                                         class="chip chip-color-{{getColor(tool.status)}}"
                                 >{{ getLabelStatus(tool.status) }}
                                 </div>
 
-                                <div *ngIf="user.POLICIES_POLICY_REVIEW">
+                                <div *ngIf="user.TOOLS_TOOL_REVIEW">
                                     <ng-container *ngIf="showStatus(tool)">
                                         <p-dropdown
                                             class="status-actions-dropdown {{tool.status}}-dropdown"
@@ -264,19 +277,6 @@
                                         </div>
                                     </ng-container>
                                 </div>
-                            </td>
-                            <td style="min-width: 140px;">
-                                <hedera-explorer [params]="tool.topicId" type="topics">
-                                    {{ tool.topicId }}
-                                </hedera-explorer>
-                            </td>
-                            <td
-                                class="text-truncate"
-                                pTooltip="{{ tool.version}}"
-                                style="min-width: 140px; max-width: 150px;"
-                                tooltipPosition="top"
-                            >
-                                {{ tool.version || '–' }}
                             </td>
                             <td
                                 style="min-width: 165px;"
