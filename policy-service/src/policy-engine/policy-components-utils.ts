@@ -1552,6 +1552,7 @@ export class PolicyComponentsUtils {
         const result = await block.setData(user, data, ActionType.COMMON);
         return new MessageResponse(result);
     }
+
     private static async _blockSetDataRemote(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
@@ -1610,7 +1611,9 @@ export class PolicyComponentsUtils {
             return `Invalid wallet.`;
         }
 
-        await PolicyComponentsUtils._sendWallet(ref, user, wallet);
+        if (ref.locationType === LocationType.REMOTE) {
+            await PolicyComponentsUtils._sendWallet(ref, user, wallet);
+        }
 
         data.wallet = wallet.account;
     }
