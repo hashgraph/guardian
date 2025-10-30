@@ -8,5 +8,5 @@ export enum PolicyActionType {
     CreateTopic = 'create-topic',
     AssociateToken = 'associate-token',
     DissociateToken = 'dissociate-token',
-    AddWallet = 'add-wallet'
+    AddRelayerAccount = 'add-relayer-account'
 }

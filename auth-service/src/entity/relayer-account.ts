@@ -2,12 +2,12 @@ import { BeforeCreate, Entity, Index, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
 /**
- * ProjectWallet collection
+ * RelayerAccount collection
  */
 @Entity()
 @Index({ name: 'account_idx', properties: ['account', 'owner'] })
 @Index({ name: 'owner_idx', properties: ['owner'] })
-export class ProjectWallet extends BaseEntity {
+export class RelayerAccount extends BaseEntity {
     /**
      * Name
      */

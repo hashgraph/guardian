@@ -1,36 +1,37 @@
 import { DatabaseServer, IAuthUser, KeyType, MessageError, MessageResponse, NatsService, PinoLogger, Singleton, Wallet, Workers } from '@guardian/common';
-import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray, WorkerTaskType } from '@guardian/interfaces';
-import { ProjectWallet } from '../entity/project-wallet.js';
+import { AuthEvents, GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
+import { RelayerAccount } from '../entity/relayer-account.js';
 import { User } from '../entity/user.js';
-import { UserProp, UserUtils } from '#utils';
+import { UserUtils } from '#utils';
 
 /**
- * Project wallet service
+ * Relayer account service
  */
 @Singleton
-export class ProjectWalletService extends NatsService {
+export class RelayerAccountsService extends NatsService {
     /**
      * Message queue name
      */
-    public messageQueueName = 'auth-wallets-queue';
+    public messageQueueName = 'auth-relayer-accounts-queue';
 
     /**
      * Reply subject
      * @private
      */
-    public replySubject = 'auth-wallets-queue-reply-' + GenerateUUIDv4();
+    public replySubject = 'auth-relayer-accounts-queue-reply-' + GenerateUUIDv4();
 
     /**
      * Register listeners
      */
     registerListeners(logger: PinoLogger): void {
         /**
-         * Get project wallet balance
+         * Get relayer account balance
          * @param user - user
+         * @param account - account
          *
-         * @returns {any[]} wallets
+         * @returns {any[]} balance
          */
-        this.getMessages(AuthEvents.GET_PROJECT_WALLET_BALANCE,
+        this.getMessages(AuthEvents.GET_RELAYER_ACCOUNT_BALANCE,
             async (msg: {
                 user: IAuthUser,
                 account: string
@@ -39,26 +40,26 @@ export class ProjectWalletService extends NatsService {
                     const { user, account } = msg;
 
                     const entityRepository = new DatabaseServer();
-                    const projectWallet = await entityRepository.findOne(ProjectWallet, { account });
+                    const relayerAccountRow = await entityRepository.findOne(RelayerAccount, { account });
 
-                    let wallet: string;
-                    if (projectWallet) {
-                        if (projectWallet.owner === user.did) {
-                            wallet = projectWallet.account;
+                    let relayerAccount: string;
+                    if (relayerAccountRow) {
+                        if (relayerAccountRow.owner === user.did) {
+                            relayerAccount = relayerAccountRow.account;
                         } else {
-                            const owner = await entityRepository.findOne(User, { did: projectWallet.owner });
+                            const owner = await entityRepository.findOne(User, { did: relayerAccountRow.owner });
                             if (owner && (owner.did === user.did || owner.parent === user.did)) {
-                                wallet = projectWallet.account;
+                                relayerAccount = relayerAccountRow.account;
                             } else {
-                                return new MessageError('Wallet does not exist.');
+                                return new MessageError('Relayer account does not exist.');
                             }
                         }
                     } else {
-                        const userWallet = await entityRepository.findOne(User, { hederaAccountId: account });
-                        if (userWallet && (userWallet.did === user.did || userWallet.parent === user.did)) {
-                            wallet = userWallet.hederaAccountId;
+                        const userAccount = await entityRepository.findOne(User, { hederaAccountId: account });
+                        if (userAccount && (userAccount.did === user.did || userAccount.parent === user.did)) {
+                            relayerAccount = userAccount.hederaAccountId;
                         } else {
-                            return new MessageError('Wallet does not exist.');
+                            return new MessageError('Relayer account does not exist.');
                         }
                     }
 
@@ -66,7 +67,7 @@ export class ProjectWalletService extends NatsService {
                     const balance = await workers.addNonRetryableTask({
                         type: WorkerTaskType.GET_USER_BALANCE_REST,
                         data: {
-                            hederaAccountId: wallet
+                            hederaAccountId: relayerAccount
                         }
                     }, {
                         priority: 20,
@@ -82,12 +83,12 @@ export class ProjectWalletService extends NatsService {
             });
 
         /**
-         * Get current wallet
+         * Get current relayer account
          * @param user - user
          *
-         * @returns {any} wallet
+         * @returns {any} relayer account
          */
-        this.getMessages(AuthEvents.GET_CURRENT_WALLET,
+        this.getMessages(AuthEvents.GET_CURRENT_RELAYER_ACCOUNT,
             async (msg: {
                 user: IAuthUser
             }) => {
@@ -114,12 +115,12 @@ export class ProjectWalletService extends NatsService {
             });
 
         /**
-         * Get project wallets
+         * Get relayer accounts
          * @param user - user
          *
-         * @returns {any[]} wallets
+         * @returns {any[]} relayer accounts
          */
-        this.getMessages(AuthEvents.GET_PROJECT_WALLETS,
+        this.getMessages(AuthEvents.GET_RELAYER_ACCOUNTS,
             async (msg: {
                 user: IAuthUser,
                 filters: {
@@ -159,9 +160,9 @@ export class ProjectWalletService extends NatsService {
                         query.name = { $regex: '.*' + search + '.*' }
                     }
 
-                    const wallets = await entityRepository.find(ProjectWallet, query, otherOptions);
+                    const results = await entityRepository.find(RelayerAccount, query, otherOptions);
 
-                    return new MessageResponse(wallets);
+                    return new MessageResponse(results);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
@@ -169,12 +170,12 @@ export class ProjectWalletService extends NatsService {
             });
 
         /**
-         * Get project wallets
+         * Get relayer accounts
          * @param user - user
          *
-         * @returns {any[]} wallets
+         * @returns {any[]} relayer accounts
          */
-        this.getMessages(AuthEvents.GET_PROJECT_WALLETS_ALL,
+        this.getMessages(AuthEvents.GET_RELAYER_ACCOUNTS_ALL,
             async (msg: {
                 user: IAuthUser
             }) => {
@@ -189,11 +190,11 @@ export class ProjectWalletService extends NatsService {
                         return new MessageError('User does not exist.');
                     }
 
-                    const wallets = await entityRepository.find(ProjectWallet, {
+                    const results = await entityRepository.find(RelayerAccount, {
                         owner: user.did
                     });
 
-                    return new MessageResponse(wallets);
+                    return new MessageResponse(results);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
@@ -201,13 +202,13 @@ export class ProjectWalletService extends NatsService {
             });
 
         /**
-         * Create project wallet
+         * Create relayer account
          * @param user - user
          * @param config - config
          *
-         * @returns {any} wallet
+         * @returns {any} relayer account
          */
-        this.getMessages(AuthEvents.CREATE_PROJECT_WALLET,
+        this.getMessages(AuthEvents.CREATE_RELAYER_ACCOUNT,
             async (msg: {
                 user: IAuthUser,
                 config: {
@@ -230,7 +231,7 @@ export class ProjectWalletService extends NatsService {
                         return new MessageError('Invalid config.');
                     }
 
-                    const projectWallet = {
+                    const newRelayerAccount = {
                         name: config.name,
                         account: config.account,
                         owner: target.did,
@@ -244,20 +245,20 @@ export class ProjectWalletService extends NatsService {
                         return new MessageError('Invalid account.');
                     }
 
-                    const old = await entityRepository.findOne(ProjectWallet, {
-                        account: projectWallet.account,
-                        owner: projectWallet.owner
+                    const old = await entityRepository.findOne(RelayerAccount, {
+                        account: newRelayerAccount.account,
+                        owner: newRelayerAccount.owner
                     });
                     if (old) {
-                        return new MessageError('Wallet already exist.');
+                        return new MessageError('Relayer account already exist.');
                     }
 
-                    const wallet = new Wallet();
+                    const walletHelper = new Wallet();
                     const userFull = await entityRepository.findOne(User, { did: user.did });
-                    await wallet.setKey(userFull.walletToken, KeyType.PROJECT_WALLET, `${projectWallet.owner}/${projectWallet.account}`, key);
+                    await walletHelper.setKey(userFull.walletToken, KeyType.RELAYER_ACCOUNT, `${newRelayerAccount.owner}/${newRelayerAccount.account}`, key);
 
-                    let item = entityRepository.create(ProjectWallet, projectWallet);
-                    item = await entityRepository.save(ProjectWallet, item);
+                    let item = entityRepository.create(RelayerAccount, newRelayerAccount);
+                    item = await entityRepository.save(RelayerAccount, item);
 
                     return new MessageResponse(item);
                 } catch (error) {
@@ -268,12 +269,12 @@ export class ProjectWalletService extends NatsService {
 
 
         /**
-         * Generate project wallet
+         * Generate relayer account
          * @param user - user
          *
          * @returns {any} account
          */
-        this.getMessages(AuthEvents.GENERATE_PROJECT_WALLET,
+        this.getMessages(AuthEvents.GENERATE_RELAYER_ACCOUNT,
             async (msg: {
                 user: IAuthUser
             }) => {
@@ -297,40 +298,40 @@ export class ProjectWalletService extends NatsService {
             });
 
         /**
-         * Get user wallet
+         * Get user relayer account
          * @param did - DID
          */
-        this.getMessages(AuthEvents.GET_USER_WALLET,
+        this.getMessages(AuthEvents.GET_USER_RELAYER_ACCOUNT,
             async (msg: {
                 did: string,
-                wallet: string,
+                relayerAccount: string,
                 userId: string | null
             }) => {
-                const { did, wallet, userId } = msg;
+                const { did, relayerAccount, userId } = msg;
                 try {
                     const entityRepository = new DatabaseServer();
-                    if (wallet) {
-                        const projectWallet = await entityRepository.findOne(ProjectWallet, {
-                            account: wallet,
+                    if (relayerAccount) {
+                        const relayerAccountRow = await entityRepository.findOne(RelayerAccount, {
+                            account: relayerAccount,
                             owner: did
                         });
-                        if (projectWallet) {
+                        if (relayerAccountRow) {
                             return new MessageResponse({
-                                account: projectWallet.account,
-                                name: projectWallet.name,
+                                account: relayerAccountRow.account,
+                                name: relayerAccountRow.name,
                                 default: false
                             });
                         }
                     }
                     const user = await entityRepository.findOne(User, { did });
-                    if (!wallet || wallet === user.hederaAccountId) {
+                    if (!relayerAccount || relayerAccount === user.hederaAccountId) {
                         return new MessageResponse({
                             name: 'Default',
                             account: user.hederaAccountId,
                             default: true
                         });
                     }
-                    return new MessageError('Wallet not found.');
+                    return new MessageError('Relayer account not found.');
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
@@ -338,12 +339,12 @@ export class ProjectWalletService extends NatsService {
             });
 
         /**
-         * Get project wallets
+         * Get user relayer accounts
          * @param user - user
          *
-         * @returns {any[]} wallets
+         * @returns {any[]} relayer accounts
          */
-        this.getMessages(AuthEvents.GET_USER_WALLETS,
+        this.getMessages(AuthEvents.GET_USER_RELAYER_ACCOUNTS,
             async (msg: {
                 user: IAuthUser,
                 filters: {
@@ -386,10 +387,10 @@ export class ProjectWalletService extends NatsService {
                         }
                     }, {
                         $lookup: {
-                            from: "project_wallet",
+                            from: "relayer-account",
                             localField: "did",
                             foreignField: "owner",
-                            as: "wallets"
+                            as: "relayerAccounts"
                         }
                     }, {
                         $project: {
@@ -397,13 +398,13 @@ export class ProjectWalletService extends NatsService {
                             did: "$did",
                             parent: "$parent",
                             hederaAccountId: "$hederaAccountId",
-                            wallets: {
-                                $concatArrays: [[null], "$wallets"]
+                            relayerAccounts: {
+                                $concatArrays: [[null], "$relayerAccounts"]
                             }
                         }
                     }, {
                         $unwind: {
-                            path: "$wallets",
+                            path: "$relayerAccounts",
                             preserveNullAndEmptyArrays: true
                         }
                     }, {
@@ -412,8 +413,8 @@ export class ProjectWalletService extends NatsService {
                             did: "$did",
                             parent: "$parent",
                             hederaAccountId: "$hederaAccountId",
-                            walletAccountId: "$wallets.account",
-                            walletName: "$wallets.name"
+                            relayerAccountId: "$relayerAccounts.account",
+                            relayerAccountName: "$relayerAccounts.name"
                         }
                     }];
 
@@ -435,17 +436,15 @@ export class ProjectWalletService extends NatsService {
                                 $or: [{
                                     username: { $regex: '.*' + search + '.*' },
                                 }, {
-                                    walletName: { $regex: '.*' + search + '.*' }
+                                    relayerAccountName: { $regex: '.*' + search + '.*' }
                                 }]
                             }
                         })
                     }
 
-                    // console.debug(JSON.stringify(aggregate, null, 4))
+                    const results = await entityRepository.aggregate(User, aggregate);
 
-                    const wallets = await entityRepository.aggregate(User, aggregate);
-
-                    return new MessageResponse(wallets);
+                    return new MessageResponse(results);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
@@ -453,19 +452,19 @@ export class ProjectWalletService extends NatsService {
             });
 
         /**
-         * Get user wallet
+         * Get relayer account
          * @param did - DID
          */
-        this.getMessages(AuthEvents.GET_WALLET,
+        this.getMessages(AuthEvents.GET_RELAYER_ACCOUNT,
             async (msg: {
-                wallet: string,
+                relayerAccount: string,
                 userId: string | null
             }) => {
-                const { wallet, userId } = msg;
+                const { relayerAccount, userId } = msg;
                 try {
                     const entityRepository = new DatabaseServer();
 
-                    const user = await entityRepository.findOne(User, { hederaAccountId: wallet });
+                    const user = await entityRepository.findOne(User, { hederaAccountId: relayerAccount });
                     if (user) {
                         return new MessageResponse({
                             name: 'Default',
@@ -474,12 +473,12 @@ export class ProjectWalletService extends NatsService {
                             default: true
                         });
                     }
-                    const projectWallet = await entityRepository.findOne(ProjectWallet, { account: wallet });
-                    if (projectWallet) {
+                    const row = await entityRepository.findOne(RelayerAccount, { account: relayerAccount });
+                    if (row) {
                         return new MessageResponse({
-                            name: projectWallet.name,
-                            account: projectWallet.account,
-                            owner: projectWallet.owner,
+                            name: row.name,
+                            account: row.account,
+                            owner: row.owner,
                             default: false
                         });
                     }
@@ -492,23 +491,23 @@ export class ProjectWalletService extends NatsService {
 
 
         /**
-         * Get user wallet
+         * Relayer account exist
          * @param did - DID
          */
-        this.getMessages(AuthEvents.WALLET_EXIST,
+        this.getMessages(AuthEvents.RELAYER_ACCOUNT_EXIST,
             async (msg: {
                 did: string,
-                wallet: string,
+                relayerAccount: string,
                 userId: string | null
             }) => {
-                const { did, wallet, userId } = msg;
+                const { did, relayerAccount, userId } = msg;
                 try {
                     const entityRepository = new DatabaseServer();
-                    const projectWallet = await entityRepository.findOne(ProjectWallet, {
+                    const row = await entityRepository.findOne(RelayerAccount, {
                         owner: did,
-                        account: wallet
+                        account: relayerAccount
                     });
-                    return new MessageResponse(!!projectWallet);
+                    return new MessageResponse(!!row);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);

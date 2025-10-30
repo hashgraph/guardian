@@ -163,13 +163,13 @@ export class RevocationBlock {
             }
         }
 
-        const wallet = await PolicyUtils.getDocumentWallet(ref, doc, userId);
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, doc, userId);
 
         await PolicyActionsUtils.sendMessages({
             ref,
             messages: needUpdate,
             owner: event.user.did,
-            wallet,
+            relayerAccount,
             updateIpfs: false,
             userId
         });

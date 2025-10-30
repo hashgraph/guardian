@@ -62,7 +62,7 @@ import { FormulaConfigurationComponent } from './modules/formulas/formula-config
 import { ExternalPolicyComponent } from './modules/policy-engine/external-policies/external-policies.component';
 import { PolicyRequestsComponent } from './modules/policy-engine/requests/requests.component';
 import { PolicyRepositoryComponent } from './modules/policy-engine/policy-repository/policy-repository.component';
-import { ProjectWalletsComponent } from './views/project-wallets/project-wallets.component';
+import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
 
 
 @Injectable({
@@ -756,8 +756,8 @@ const routes: Routes = [
         }
     },
     {
-        path: 'project-wallets',
-        component: ProjectWalletsComponent,
+        path: 'relayer-accounts',
+        component: RelayerAccountsComponent,
         canActivate: [PermissionsGuard],
         data: {
             roles: [

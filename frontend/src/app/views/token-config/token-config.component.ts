@@ -13,7 +13,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { UntypedFormGroup } from '@angular/forms';
 import { ContractService } from 'src/app/services/contract.service';
 import { TokenDialogComponent } from 'src/app/components/token-dialog/token-dialog.component';
-import { ProjectWalletService } from 'src/app/services/project-wallet.service';
+import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 
 enum OperationMode {
     None, Kyc, Freeze
@@ -73,7 +73,7 @@ export class TokenConfigComponent implements OnInit {
 
     constructor(
         public tagsService: TagsService,
-        private projectWalletService: ProjectWalletService,
+        private relayerAccountsService: RelayerAccountsService,
         private profileService: ProfileService,
         private tokenService: TokenService,
         private informService: InformService,
@@ -138,13 +138,13 @@ export class TokenConfigComponent implements OnInit {
             tooltip: false
         }, {
             id: 'id',
-            title: 'WALLET ID',
+            title: 'ACCOUNT ID',
             type: 'text',
             size: '150',
             tooltip: false
         }, {
             id: 'name',
-            title: 'WALLET NAME',
+            title: 'NAME',
             type: 'text',
             size: 'auto',
             tooltip: false
@@ -243,7 +243,7 @@ export class TokenConfigComponent implements OnInit {
             return;
         }
         if (this.tokenId) {
-            this.loadWallets();
+            this.loadRelayerAccounts();
         } else {
             this.loadTokens();
         }
@@ -267,20 +267,20 @@ export class TokenConfigComponent implements OnInit {
         });
     }
 
-    private loadWallets() {
-        this.projectWalletService
-            .getUserWallets(
+    private loadRelayerAccounts() {
+        this.relayerAccountsService
+            .getUserRelayerAccounts(
                 this.pageIndex,
                 this.pageSize,
             )
             .subscribe((response) => {
-                const { page, count } = this.projectWalletService.parsePage(response);
+                const { page, count } = this.relayerAccountsService.parsePage(response);
                 this.users = page || [];
                 this.userPageCount = count || this.users.length;
                 for (const item of this.users) {
-                    if (!item.walletAccountId) {
-                        item.walletAccountId = item.hederaAccountId;
-                        item.walletName = 'Default';
+                    if (!item.relayerAccountId) {
+                        item.relayerAccountId = item.hederaAccountId;
+                        item.relayerAccountName = 'Default';
                     }
                 }
 
@@ -418,7 +418,7 @@ export class TokenConfigComponent implements OnInit {
     public refresh(user: any) {
         user.loading = true;
         this.tokenService
-            .walletInfo(this.tokenId, user.walletAccountId)
+            .relayerAccountInfo(this.tokenId, user.relayerAccountId)
             .subscribe((res) => {
                 this.refreshUser(user, res);
                 user.loading = false;
@@ -624,6 +624,6 @@ export class TokenConfigComponent implements OnInit {
             this.userPageIndex = event.pageIndex;
             this.userPageSize = event.pageSize;
         }
-        this.loadWallets();
+        this.loadRelayerAccounts();
     }
 }

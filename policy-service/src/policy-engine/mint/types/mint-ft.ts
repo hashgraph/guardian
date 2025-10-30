@@ -60,7 +60,7 @@ export class MintFT extends TypedMint {
             decimals: number;
             policyId: string;
             owner: string;
-            wallet: string;
+            relayerAccount: string;
             secondaryVpIds?: string[];
         },
         root: IHederaCredentials,
@@ -223,14 +223,14 @@ export class MintFT extends TypedMint {
         transaction.mintStatus = MintTransactionStatus.PENDING;
         await this._db.saveMintTransaction(transaction);
 
-        const wallet = await this.getWallet();
+        const relayerAccount = await this.getRelayerAccount();
         try {
             await workers.addRetryableTask(
                 {
                     type: WorkerTaskType.MINT_FT,
                     data: {
-                        hederaAccountId: wallet.hederaAccountId,
-                        hederaAccountKey: wallet.hederaAccountKey,
+                        hederaAccountId: relayerAccount.hederaAccountId,
+                        hederaAccountKey: relayerAccount.hederaAccountKey,
                         dryRun: this._ref && this._ref.dryRun,
                         tokenId: this._token.tokenId,
                         supplyKey: this._token.supplyKey,
@@ -318,14 +318,14 @@ export class MintFT extends TypedMint {
         transaction.transferStatus = MintTransactionStatus.PENDING;
         await this._db.saveMintTransaction(transaction);
 
-        const wallet = await this.getWallet();
+        const relayerAccount = await this.getRelayerAccount();
         try {
             await workers.addRetryableTask(
                 {
                     type: WorkerTaskType.TRANSFER_FT,
                     data: {
-                        hederaAccountId: wallet.hederaAccountId,
-                        hederaAccountKey: wallet.hederaAccountKey,
+                        hederaAccountId: relayerAccount.hederaAccountId,
+                        hederaAccountKey: relayerAccount.hederaAccountKey,
                         dryRun: this._ref && this._ref.dryRun,
                         tokenId: this._token.tokenId,
                         targetAccount: this._mintRequest.target,

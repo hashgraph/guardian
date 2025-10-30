@@ -114,7 +114,7 @@ export class GroupManagerBlock {
         }
 
         if (member.messageId) {
-            const wallet = await PolicyUtils.getUserWallet(ref, user.did, null, userId);
+            const relayerAccount = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, userId);
             const message = await MessageServer
                 .getMessage({
                     dryRun: ref.dryRun,
@@ -131,7 +131,7 @@ export class GroupManagerBlock {
                     topic,
                     message,
                     owner: user.did,
-                    wallet,
+                    relayerAccount,
                     updateIpfs: false,
                     userId
                 });

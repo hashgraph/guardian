@@ -244,10 +244,10 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     draftRef?: string;
 
     /**
-     * Wallet
+     * Relayer Account
      */
     @Property({ nullable: true })
-    wallet?: string;
+    relayerAccount?: string;
 
     /**
      * Table File Ids
@@ -314,7 +314,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         prop.signature = this.signature;
         prop.schema = this.schema;
         prop.relationships = this.relationships;
-        prop.wallet = this.wallet;
+        prop.relayerAccount = this.relayerAccount;
         prop.processingStatus = this.processingStatus;
         prop.policyId = this.policyId;
         return prop;

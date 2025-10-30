@@ -20,7 +20,7 @@ const filename = fileURLToPath(import.meta.url);
 
 interface IMetadata {
     owner: PolicyUser;
-    wallet: string;
+    relayerAccount: string;
     id: string;
     reference: string;
     accounts: any;
@@ -347,7 +347,7 @@ export class CustomLogicBlock {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
         const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
-        const wallet = await PolicyUtils.getDocumentWallet(ref, firstDocument, userId);
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, firstDocument, userId);
         const relationships = [];
         let accounts: any = {};
         let tokens: any = {};
@@ -402,7 +402,7 @@ export class CustomLogicBlock {
                 break;
         }
 
-        return { owner, wallet, id, reference, accounts, tokens, relationships, issuer };
+        return { owner, relayerAccount, id, reference, accounts, tokens, relationships, issuer };
     }
 
     /**
@@ -419,7 +419,7 @@ export class CustomLogicBlock {
     ): Promise<IPolicyDocument> {
         const {
             owner,
-            wallet,
+            relayerAccount,
             id,
             reference,
             accounts,
@@ -458,7 +458,7 @@ export class CustomLogicBlock {
             ref,
             type: ref.options.idType,
             user: owner,
-            wallet,
+            relayerAccount,
             userId
         });
         if (newId) {
@@ -469,7 +469,7 @@ export class CustomLogicBlock {
             ref,
             subject: vcSubject,
             issuer,
-            wallet,
+            relayerAccount,
             options: { uuid },
             userId
         });
@@ -480,7 +480,7 @@ export class CustomLogicBlock {
         item.relationships = relationships.length ? relationships : null;
         item.accounts = accounts && Object.keys(accounts).length ? accounts : null;
         item.tokens = tokens && Object.keys(tokens).length ? tokens : null;
-        item.wallet = wallet;
+        item.relayerAccount = relayerAccount;
         // -->
 
         return item;

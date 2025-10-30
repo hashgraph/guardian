@@ -1436,7 +1436,7 @@ export class TokensApi {
     /**
      * User info
      */
-    @Get('/:tokenId/wallets/:walletId/info')
+    @Get('/:tokenId/relayer-accounts/:relayerAccountId/info')
     @Auth(
         Permissions.TOKENS_TOKEN_MANAGE,
         Permissions.TOKENS_TOKEN_READ,
@@ -1454,9 +1454,9 @@ export class TokensApi {
         example: Examples.DB_ID
     })
     @ApiParam({
-        name: 'walletId',
+        name: 'relayerAccountId',
         type: String,
-        description: 'Wallet Account Id',
+        description: 'Relayer Account Id',
         required: true,
         example: Examples.ACCOUNT_ID
     })
@@ -1470,10 +1470,10 @@ export class TokensApi {
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getWalletInfo(
+    async getRelayerAccountInfo(
         @AuthUser() user: IAuthUser,
         @Param('tokenId') tokenId: string,
-        @Param('walletId') walletId: string
+        @Param('relayerAccountId') relayerAccountId: string
     ): Promise<TokenInfoDTO> {
         try {
             if (!user.did) {
@@ -1481,10 +1481,10 @@ export class TokensApi {
             }
             const guardians = new Guardians();
             if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_MANAGE)) {
-                return await guardians.getWalletToken(tokenId, walletId, null, user);
+                return await guardians.getRelayerAccountInfo(tokenId, relayerAccountId, null, user);
             } else {
                 const owner = new EntityOwner(user);
-                return await guardians.getWalletToken(tokenId, walletId, owner, user);
+                return await guardians.getRelayerAccountInfo(tokenId, relayerAccountId, owner, user);
             }
         } catch (error) {
             await this.logger.error(error, ['API_GATEWAY'], user.id);

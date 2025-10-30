@@ -160,14 +160,14 @@ export class MultiSignBlock {
         const vcDocument = sourceDoc.document;
         const credentialSubject = vcDocument.credentialSubject[0];
         const uuid = await ref.components.generateUUID();
-        const wallet = await PolicyUtils.getDocumentWallet(ref, sourceDoc, user.userId);
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, sourceDoc, user.userId);
 
         const newVC = await PolicyActionsUtils
             .signVC({
                 ref,
                 subject: credentialSubject,
                 issuer: user.did,
-                wallet,
+                relayerAccount,
                 options: { uuid, group: groupContext },
                 userId: user.userId
             });
@@ -227,7 +227,7 @@ export class MultiSignBlock {
             const docOwner = await PolicyUtils.getDocumentOwner(ref, sourceDoc, userId);
             const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
             const policyOwnerDocument = await policyOwnerCred.loadDidDocument(ref, userId);
-            const wallet = await PolicyUtils.getDocumentWallet(ref, sourceDoc, userId);
+            const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, sourceDoc, userId);
 
             const vcs = data.map(e => VcDocument.fromJsonTree(e.document));
             const uuid: string = await ref.components.generateUUID();
@@ -252,7 +252,7 @@ export class MultiSignBlock {
                     topic,
                     message: vpMessage,
                     owner: docOwner.did,
-                    wallet,
+                    relayerAccount,
                     updateIpfs: true,
                     userId: docOwner.userId
                 });
@@ -263,7 +263,7 @@ export class MultiSignBlock {
             vpDocument.messageId = vpMessageId;
             vpDocument.topicId = vpMessageResult.getTopicId();
             vpDocument.relationships = sourceDoc.messageId ? [sourceDoc.messageId] : null;
-            vpDocument.wallet = wallet;
+            vpDocument.relayerAccount = relayerAccount;
             await ref.databaseServer.saveVP(vpDocument);
 
             await ref.databaseServer.setMultiSigStatus(

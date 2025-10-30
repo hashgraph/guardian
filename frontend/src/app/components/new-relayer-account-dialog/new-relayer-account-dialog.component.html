@@ -14,16 +14,16 @@
 
         <form [formGroup]="dataForm" autocomplete="off">
             <div class="guardian-input-container">
-                <label class="form-label" htmlFor="name">* Wallet Name</label>
+                <label class="form-label" htmlFor="name">* Relayer Account Name</label>
                 <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly" autocomplete="off"/>
             </div>
 
             <div class="guardian-input-container">
-                <label class="form-label" htmlFor="account">* Account ID</label>
+                <label class="form-label" htmlFor="account">* Relayer Account ID</label>
                 <input formControlName="account" id="account" pInputText type="text" [readonly]="readonly" autocomplete="off"/>
             </div>
             <div class="guardian-input-container">
-                <label class="form-label" htmlFor="key">* Wallet Key</label>
+                <label class="form-label" htmlFor="key">* Relayer Account Key</label>
                 <p-password formControlName="key" id="key" [toggleMask]="true" autocomplete="off" [feedback]="false" />
             </div>
         </form>
@@ -45,7 +45,7 @@
             <button 
                 (click)="onSubmit()" 
                 class="guardian-button guardian-button-primary"
-                [disabled]="dataForm.invalid">Add Wallet</button>
+                [disabled]="dataForm.invalid">Add Relayer Account</button>
         </div>
     </div>
 </div>

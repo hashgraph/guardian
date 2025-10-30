@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ProjectWalletService } from 'src/app/services/project-wallet.service';
+import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 
 @Component({
-    selector: 'new-project-wallets-dialog',
-    templateUrl: './new-project-wallets-dialog.component.html',
-    styleUrls: ['./new-project-wallets-dialog.component.scss'],
+    selector: 'new-relayer-account-dialog',
+    templateUrl: './new-relayer-account-dialog.component.html',
+    styleUrls: ['./new-relayer-account-dialog.component.scss'],
 })
-export class NewProjectWalletDialog {
+export class NewRelayerAccountDialog {
     public loading = true;
     public dataForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
@@ -21,7 +21,7 @@ export class NewProjectWalletDialog {
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private projectWalletService: ProjectWalletService,
+        private relayerAccountsService: RelayerAccountsService,
         private dialogService: DialogService,
     ) {
         this.title = this.config.data?.title || '';
@@ -63,8 +63,8 @@ export class NewProjectWalletDialog {
 
     public onGenerate() {
         this.loading = true;
-        this.projectWalletService
-            .generateProjectWallet()
+        this.relayerAccountsService
+            .generateRelayerAccount()
             .subscribe((account) => {
                 const data = this.dataForm.value;
                 this.dataForm.setValue({

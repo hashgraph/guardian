@@ -12,7 +12,7 @@ import { TagsService } from 'src/app/services/tag.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { noWhitespaceValidator } from '../../validators/no-whitespace-validator';
-import { ProjectWalletService } from 'src/app/services/project-wallet.service';
+import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 
 enum OperationMode {
     None, Generate, Associate
@@ -65,7 +65,7 @@ export class ListOfTokensUserComponent implements OnInit {
         public tagsService: TagsService,
         private profileService: ProfileService,
         private tokenService: TokenService,
-        private projectWalletService: ProjectWalletService,
+        private relayerAccountsService: RelayerAccountsService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: DialogService
@@ -105,7 +105,7 @@ export class ListOfTokensUserComponent implements OnInit {
             tooltip: false
         }, {
             id: 'options',
-            title: 'WALLETS',
+            title: 'RELAYER ACCOUNTS',
             type: 'text',
             size: '100',
             tooltip: false
@@ -116,13 +116,13 @@ export class ListOfTokensUserComponent implements OnInit {
         this.userPageCount = 0;
         this.usersColumns = [{
             id: 'id',
-            title: 'WALLET ID',
+            title: 'ACCOUNT ID',
             type: 'text',
             size: '150',
             tooltip: false
         }, {
             id: 'name',
-            title: 'WALLET NAME',
+            title: 'NAME',
             type: 'text',
             size: 'auto',
             tooltip: false
@@ -192,7 +192,7 @@ export class ListOfTokensUserComponent implements OnInit {
             return;
         }
         if (this.tokenId) {
-            this.loadWallets();
+            this.loadRelayerAccounts();
         } else {
             this.loadTokenData();
         }
@@ -256,23 +256,23 @@ export class ListOfTokensUserComponent implements OnInit {
         }
     }
 
-    private loadWallets() {
+    private loadRelayerAccounts() {
         forkJoin([
             this.tokenService.getTokenById(this.tokenId),
-            this.projectWalletService
-                .getUserWallets(
+            this.relayerAccountsService
+                .getUserRelayerAccounts(
                     this.pageIndex,
                     this.pageSize,
                 )
         ]).subscribe(([token, response]) => {
             this.tokenName = token?.body?.tokenName || this.tokenId;
-            const { page, count } = this.projectWalletService.parsePage(response);
+            const { page, count } = this.relayerAccountsService.parsePage(response);
             this.users = page || [];
             this.userPageCount = count || this.users.length;
             for (const item of this.users) {
-                if (!item.walletAccountId) {
-                    item.walletAccountId = item.hederaAccountId;
-                    item.walletName = 'Default';
+                if (!item.relayerAccountId) {
+                    item.relayerAccountId = item.hederaAccountId;
+                    item.relayerAccountName = 'Default';
                 }
             }
 
@@ -361,7 +361,7 @@ export class ListOfTokensUserComponent implements OnInit {
     public refresh(user: any) {
         user.loading = true;
         this.tokenService
-            .walletInfo(this.tokenId, user.walletAccountId)
+            .relayerAccountInfo(this.tokenId, user.relayerAccountId)
             .subscribe((res) => {
                 this.refreshUser(user, res);
                 user.loading = false;
@@ -405,7 +405,7 @@ export class ListOfTokensUserComponent implements OnInit {
             this.userPageIndex = event.pageIndex;
             this.userPageSize = event.pageSize;
         }
-        this.loadWallets();
+        this.loadRelayerAccounts();
     }
 
     public goToTokensPage() {

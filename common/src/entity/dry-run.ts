@@ -781,10 +781,10 @@ export class DryRun extends BaseEntity {
     draftRef?: string;
 
     /**
-     * Wallet
+     * Relayer Account
      */
     @Property({ nullable: true })
-    wallet?: string;
+    relayerAccount?: string;
 
     /**
      * old file id

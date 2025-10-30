@@ -106,9 +106,9 @@ export async function documentsAPI(
      *
      * @returns {IVCDocument[]} - VC Documents
      */
-    ApiResponse(MessageAPI.GET_WALLET_RELATIONSHIPS, async (msg: {
+    ApiResponse(MessageAPI.GET_RELAYER_ACCOUNT_RELATIONSHIPS, async (msg: {
         user: IAuthUser,
-        wallet: string,
+        relayerAccountId: string,
         filters: {
             pageIndex?: any,
             pageSize?: any
@@ -118,7 +118,7 @@ export async function documentsAPI(
             if (!msg) {
                 return new MessageError('Invalid parameters.');
             }
-            const { user, wallet, filters } = msg;
+            const { user, relayerAccountId, filters } = msg;
             const { pageIndex, pageSize } = filters;
             const otherOptions: any = {};
             const _pageSize = parseInt(pageSize, 10);
@@ -133,7 +133,7 @@ export async function documentsAPI(
             }
             const [items, count] = await dataBaseServer.findAndCount(VcDocument, {
                 owner: user.did,
-                wallet
+                relayerAccount: relayerAccountId
             }, otherOptions);
 
             for (const item of items) {

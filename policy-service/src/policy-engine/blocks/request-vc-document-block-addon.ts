@@ -205,8 +205,8 @@ export class RequestVcDocumentBlockAddon {
                 const _vcHelper = new VcHelper();
                 const idType = ref.options.idType;
 
-                //Wallet
-                const wallet = await PolicyUtils.getWallet(ref, user.did, _data.wallet, documentRef, user.userId);
+                //Relayer Account
+                const relayerAccount = await PolicyUtils.getRelayerAccount(ref, user.did, _data.relayerAccount, documentRef, user.userId);
 
                 const credentialSubject = document;
                 credentialSubject.policyId = ref.policyId;
@@ -217,7 +217,7 @@ export class RequestVcDocumentBlockAddon {
                     ref,
                     type: idType,
                     user,
-                    wallet: wallet,
+                    relayerAccount: relayerAccount,
                     userId: user.userId
                 });
                 if (newId) {
@@ -252,18 +252,18 @@ export class RequestVcDocumentBlockAddon {
                     ref,
                     subject: credentialSubject,
                     issuer: user.did,
-                    wallet: wallet,
+                    relayerAccount: relayerAccount,
                     options: { uuid, group: groupContext },
                     userId: user.userId
                 });
                 let item = PolicyUtils.createVC(ref, user, vc);
 
-                const accounts = PolicyUtils.getHederaAccounts(vc, wallet, this._schema);
+                const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, this._schema);
                 const schemaIRI = ref.options.schema;
                 item.type = schemaIRI;
                 item.schema = schemaIRI;
                 item.accounts = accounts;
-                item.wallet = wallet;
+                item.relayerAccount = relayerAccount;
                 item = PolicyUtils.setDocumentRef(item, documentRef);
 
                 const state: IPolicyEventState = { data: item };

@@ -11,7 +11,7 @@ export class SignVC {
         ref: AnyBlockType,
         subject: any,
         issuer: string,
-        wallet: string,
+        relayerAccount: string,
         options: IDocumentOptions,
         userId: string | null
     }): Promise<VcDocumentDefinition> {
@@ -32,11 +32,11 @@ export class SignVC {
         ref: AnyBlockType,
         subject: any,
         issuer: string,
-        wallet: string,
+        relayerAccount: string,
         options: IDocumentOptions,
         userId: string | null
     }): Promise<any> {
-        const { ref, subject, issuer, wallet, options, userId } = config;
+        const { ref, subject, issuer, relayerAccount, options, userId } = config;
         const vcHelper = new VcHelper();
         const userAccount = await PolicyUtils.getHederaAccountId(ref, issuer, userId);
 
@@ -53,7 +53,7 @@ export class SignVC {
             uuid: GenerateUUIDv4(),
             owner: issuer,
             accountId: userAccount,
-            wallet,
+            relayerAccount,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.SignVC,
@@ -69,7 +69,7 @@ export class SignVC {
     public static async response(config: {
         row: PolicyAction,
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }) {
         const { row, user, userId } = config;
@@ -117,7 +117,7 @@ export class SignVC {
             request &&
             response &&
             request.accountId === response.accountId &&
-            request.wallet === response.wallet
+            request.relayerAccount === response.relayerAccount
         ) {
             return true;
         }

@@ -463,15 +463,15 @@ export class Guardians extends NatsService {
      * @param username
      * @param owner
      */
-    public async getWalletToken(
+    public async getRelayerAccountInfo(
         tokenId: string,
-        walletId: string,
+        relayerAccountId: string,
         owner: IOwner,
         user: IAuthUser,
     ): Promise<ITokenInfo> {
-        return await this.sendMessage(MessageAPI.GET_WALLET_TOKEN_INFO, {
+        return await this.sendMessage(MessageAPI.GET_RELAYER_ACCOUNT_INFO, {
             tokenId,
-            walletId,
+            relayerAccountId,
             owner,
             user,
         });
@@ -3869,19 +3869,20 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.DELETE_FILE, { user, fileId });
     }
 
-
     /**
-     * Get project wallets
+     * Get RelayerAccount Relationships
+     * @param relayerAccountId
      * @param user
+     * @param filters
      */
-    public async getWalletRelationships(
-        wallet: string,
+    public async getRelayerAccountRelationships(
+        relayerAccountId: string,
         user: IAuthUser,
         filters: {
             pageIndex?: number | string,
             pageSize?: number | string
         }
     ): Promise<ResponseAndCount<any>> {
-        return await this.sendMessage(MessageAPI.GET_WALLET_RELATIONSHIPS, { wallet, user, filters });
+        return await this.sendMessage(MessageAPI.GET_RELAYER_ACCOUNT_RELATIONSHIPS, { relayerAccountId, user, filters });
     }
 }

@@ -21,9 +21,9 @@ export interface IHederaCredentials {
 }
 
 /**
- * User wallet
+ * User relayer account
  */
-export interface IWallet {
+export interface IRelayerAccount {
     /**
      * User id
      */
@@ -367,8 +367,7 @@ export class UserCredentials {
         if (this._dryRun) {
             return await ref.databaseServer.getVirtualKey(this._did, this._did);
         } else {
-            const wallet = new Wallet();
-            return await wallet.getUserKey(this._did, KeyType.KEY, this._did, userId);
+            return await (new Wallet()).getUserKey(this._did, KeyType.KEY, this._did, userId);
         }
     }
 
@@ -380,16 +379,15 @@ export class UserCredentials {
         } else {
             const users = new Users()
             const userFull = await users.getUserById(this._did, userId);
-            const wallet = new Wallet();
-            return await wallet.getUserSignOptions(userFull)
+            return await (new Wallet()).getUserSignOptions(userFull)
         }
     }
 
-    public async loadWalletKey(ref: AnyBlockType, wallet: string, userId: string | null): Promise<string | null> {
+    public async loadRelayerAccountKey(ref: AnyBlockType, relayerAccount: string, userId: string | null): Promise<string | null> {
         if (this._dryRun) {
-            return await ref.databaseServer.getVirtualKey(this._did, `${this._did}/${wallet}`);
+            return await ref.databaseServer.getVirtualKey(this._did, `${this._did}/${relayerAccount}`);
         } else {
-            return await (new Wallet()).getUserKey(this._did, KeyType.PROJECT_WALLET, `${this._did}/${wallet}`, userId);
+            return await (new Wallet()).getUserKey(this._did, KeyType.RELAYER_ACCOUNT, `${this._did}/${relayerAccount}`, userId);
         }
     }
 
@@ -402,20 +400,20 @@ export class UserCredentials {
         }
     }
 
-    private async isWallet(wallet: string, userId: string | null): Promise<boolean> {
-        if (wallet && wallet !== this._hederaAccountId) {
+    private async isRelayerAccount(relayerAccount: string, userId: string | null): Promise<boolean> {
+        if (relayerAccount && relayerAccount !== this._hederaAccountId) {
             return true;
         }
-        return (new Users()).walletExist(this._did, wallet, userId);
+        return (new Users()).relayerAccountExist(this._did, relayerAccount, userId);
     }
 
-    public async loadWallet(ref: AnyBlockType, wallet: string, userId: string | null): Promise<IWallet> {
-        if (await this.isWallet(wallet, userId)) {
-            const walletKey = await this.loadWalletKey(ref, wallet, userId);
+    public async loadRelayerAccount(ref: AnyBlockType, relayerAccount: string, userId: string | null): Promise<IRelayerAccount> {
+        if (await this.isRelayerAccount(relayerAccount, userId)) {
+            const relayerAccountKey = await this.loadRelayerAccountKey(ref, relayerAccount, userId);
             return {
                 id: this._id,
-                hederaAccountId: wallet,
-                hederaAccountKey: walletKey,
+                hederaAccountId: relayerAccount,
+                hederaAccountKey: relayerAccountKey,
                 signOptions: {
                     signType: SignType.INTERNAL
                 }
@@ -436,8 +434,7 @@ export class UserCredentials {
         if (this._dryRun) {
             return await ref.databaseServer.getVirtualKey(this._did, ref.messageId);
         } else {
-            const wallet = new Wallet();
-            return await wallet.getUserKey(this._did, KeyType.MESSAGE_KEY, `${this._did}#${ref.messageId}`, userId);
+            return await (new Wallet()).getUserKey(this._did, KeyType.MESSAGE_KEY, `${this._did}#${ref.messageId}`, userId);
         }
     }
 
@@ -533,8 +530,7 @@ export class UserCredentials {
             if (this._dryRun) {
                 await ref.databaseServer.setVirtualKey(walletToken, id, key);
             } else {
-                const wallet = new Wallet();
-                await wallet.setUserKey(walletToken, KeyType.DID_KEYS, id, key, userId);
+                await (new Wallet()).setUserKey(walletToken, KeyType.DID_KEYS, id, key, userId);
             }
         }
         await ref.databaseServer.saveDid(row);
@@ -553,8 +549,7 @@ export class UserCredentials {
         did: string,
         userId: string | null
     ): Promise<string | null> {
-        const wallet = new Wallet();
-        return await wallet.getUserKey(did, KeyType.MESSAGE_KEY, `${did}#${messageId}`, userId);
+        return await (new Wallet()).getUserKey(did, KeyType.MESSAGE_KEY, `${did}#${messageId}`, userId);
     }
 
     public static async loadMessageKeyByAccount(
@@ -564,8 +559,7 @@ export class UserCredentials {
     ): Promise<string | null> {
         const users = new Users();
         const userFull = await users.getUserByAccount(accountId, userId);
-        const wallet = new Wallet();
-        return await wallet.getUserKey(userFull.did, KeyType.MESSAGE_KEY, `${userFull.did}#${messageId}`, userId);
+        return await (new Wallet()).getUserKey(userFull.did, KeyType.MESSAGE_KEY, `${userFull.did}#${messageId}`, userId);
     }
 
     public static async loadMessageKeyOrPrivateKey(
@@ -574,8 +568,7 @@ export class UserCredentials {
         userId: string | null
     ): Promise<string | null> {
         if (!ref.dryRun) {
-            const wallet = new Wallet();
-            const messageKey = await wallet.getUserKey(did, KeyType.MESSAGE_KEY, `${did}#${ref.messageId}`, userId);
+            const messageKey = await (new Wallet()).getUserKey(did, KeyType.MESSAGE_KEY, `${did}#${ref.messageId}`, userId);
 
             if (messageKey) {
                 return messageKey;

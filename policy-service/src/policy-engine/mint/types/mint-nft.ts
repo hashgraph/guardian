@@ -66,7 +66,7 @@ export class MintNFT extends TypedMint {
             decimals: number;
             policyId: string;
             owner: string;
-            wallet: string;
+            relayerAccount: string;
             metadata?: string;
             secondaryVpIds?: string[];
         },
@@ -179,7 +179,7 @@ export class MintNFT extends TypedMint {
                 limit: MintNFT.BATCH_NFT_MINT_SIZE,
             }
         );
-        const wallet = await this.getWallet();
+        const relayerAccount = await this.getRelayerAccount();
         while (transactions.length > 0) {
             const mintNFT = async (transaction: MintTransaction): Promise<void> => {
                 transaction.mintStatus = MintTransactionStatus.PENDING;
@@ -189,8 +189,8 @@ export class MintNFT extends TypedMint {
                         {
                             type: WorkerTaskType.MINT_NFT,
                             data: {
-                                hederaAccountId: wallet.hederaAccountId,
-                                hederaAccountKey: wallet.hederaAccountKey,
+                                hederaAccountId: relayerAccount.hederaAccountId,
+                                hederaAccountKey: relayerAccount.hederaAccountKey,
                                 dryRun: this._db.getDryRun(),
                                 tokenId: this._token.tokenId,
                                 supplyKey: this._token.supplyKey,
@@ -277,7 +277,7 @@ export class MintNFT extends TypedMint {
                 limit: MintNFT.BATCH_NFT_MINT_SIZE,
             }
         );
-        const wallet = await this.getWallet();
+        const relayerAccount = await this.getRelayerAccount();
         while (transactions.length > 0) {
             const transferNFT = async (
                 transaction: MintTransaction
@@ -289,8 +289,8 @@ export class MintNFT extends TypedMint {
                         {
                             type: WorkerTaskType.TRANSFER_NFT,
                             data: {
-                                hederaAccountId: wallet.hederaAccountId,
-                                hederaAccountKey: wallet.hederaAccountKey,
+                                hederaAccountId: relayerAccount.hederaAccountId,
+                                hederaAccountKey: relayerAccount.hederaAccountKey,
                                 dryRun: this._ref && this._ref.dryRun,
                                 tokenId: this._token.tokenId,
                                 targetAccount: this._mintRequest.target,

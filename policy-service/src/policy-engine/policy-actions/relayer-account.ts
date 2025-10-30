@@ -5,11 +5,11 @@ import { PolicyActionType } from './policy-action.type.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyAction, Users } from '@guardian/common';
 
-export class WalletAction {
+export class RelayerAccountAction {
     public static async local(options: {
         ref: AnyBlockType,
         user: PolicyUser,
-        wallet: any
+        relayerAccount: any
         userId: string | null
     }): Promise<void> {
         return;
@@ -18,7 +18,7 @@ export class WalletAction {
     public static async request(options: {
         ref: AnyBlockType,
         user: PolicyUser,
-        wallet: {
+        relayerAccount: {
             account: string;
             name: string;
             key: string;
@@ -26,14 +26,14 @@ export class WalletAction {
         }
         userId: string | null
     }): Promise<any> {
-        const { user, wallet } = options;
+        const { user, relayerAccount } = options;
         const data = {
-            type: PolicyActionType.AddWallet,
+            type: PolicyActionType.AddRelayerAccount,
             owner: user.did,
-            wallet: {
-                name: wallet.name,
-                account: wallet.account,
-                key: wallet.key,
+            relayerAccount: {
+                name: relayerAccount.name,
+                account: relayerAccount.account,
+                key: relayerAccount.key,
             }
         };
         return data;
@@ -46,8 +46,8 @@ export class WalletAction {
     ): Promise<void> {
         try {
             const data = row?.document;
-            const wallet = data?.wallet;
-            await (new Users()).createWallet({ did: user.did, id: userId }, wallet, userId);
+            const relayerAccount = data?.relayerAccount;
+            await (new Users()).createRelayerAccount({ did: user.did, id: userId }, relayerAccount, userId);
         } catch (error) {
             return;
         }

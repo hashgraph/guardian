@@ -11,18 +11,18 @@ export class SendMessages {
         ref: AnyBlockType,
         messages: Message[],
         owner: string,
-        wallet: string,
+        relayerAccount: string,
         updateIpfs: boolean,
         userId: string | null
     }): Promise<Message[]> {
-        const { ref, messages, owner, wallet, updateIpfs, userId } = options;
+        const { ref, messages, owner, relayerAccount, updateIpfs, userId } = options;
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
-        const userWallet = await userCred.loadWallet(ref, wallet, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
         const messageServer = new MessageServer({
-            operatorId: userWallet.hederaAccountId,
-            operatorKey: userWallet.hederaAccountKey,
-            signOptions: userWallet.signOptions,
+            operatorId: userRelayerAccount.hederaAccountId,
+            operatorKey: userRelayerAccount.hederaAccountKey,
+            signOptions: userRelayerAccount.signOptions,
             encryptKey: userHederaCred.hederaAccountKey,
             dryRun: ref.dryRun
         });
@@ -47,11 +47,11 @@ export class SendMessages {
         ref: AnyBlockType,
         messages: Message[],
         owner: string,
-        wallet: string,
+        relayerAccount: string,
         updateIpfs: boolean,
         userId: string | null
     }): Promise<any> {
-        const { ref, messages, owner, wallet, updateIpfs, userId } = options;
+        const { ref, messages, owner, relayerAccount, updateIpfs, userId } = options;
         const userAccount = await PolicyUtils.getHederaAccountId(ref, owner, userId);
         const topics: any[] = [];
         const documents: any[] = [];
@@ -65,7 +65,7 @@ export class SendMessages {
             uuid: GenerateUUIDv4(),
             owner,
             accountId: userAccount,
-            wallet,
+            relayerAccount,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.SendMessages,
@@ -82,21 +82,21 @@ export class SendMessages {
     public static async response(options: {
         row: PolicyAction,
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }) {
-        const { row, user, wallet, userId } = options;
+        const { row, user, relayerAccount, userId } = options;
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
         const { updateIpfs, topics, documents } = data;
 
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
-        const userWallet = await userCred.loadWallet(ref, wallet, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
         const userMessageKey = await userCred.loadMessageKey(ref, userId);
         const messageServer = new MessageServer({
-            operatorId: userWallet.hederaAccountId,
-            operatorKey: userWallet.hederaAccountKey,
-            signOptions: userWallet.signOptions,
+            operatorId: userRelayerAccount.hederaAccountId,
+            operatorKey: userRelayerAccount.hederaAccountKey,
+            signOptions: userRelayerAccount.signOptions,
             encryptKey: userMessageKey,
             dryRun: ref.dryRun
         });
@@ -149,7 +149,7 @@ export class SendMessages {
                 request &&
                 response &&
                 request.accountId === response.accountId &&
-                request.wallet === response.wallet
+                request.relayerAccount === response.relayerAccount
             )) {
                 return false;
             }

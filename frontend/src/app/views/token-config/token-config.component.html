@@ -249,12 +249,12 @@
                                             <span class="text-truncate">{{row.username}}</span>
                                         </ng-container>
                                         <ng-container *ngSwitchCase="'id'">
-                                            <hedera-explorer [params]="row.walletAccountId || ''" type="accounts">
-                                                {{ row.walletAccountId }}
+                                            <hedera-explorer [params]="row.relayerAccountId || ''" type="accounts">
+                                                {{ row.relayerAccountId }}
                                             </hedera-explorer>
                                         </ng-container>
                                         <ng-container *ngSwitchCase="'name'">
-                                            <span class="text-truncate">{{row.walletName || ''}}</span>
+                                            <span class="text-truncate">{{row.relayerAccountName || ''}}</span>
                                         </ng-container>
                                         <ng-container *ngSwitchCase="'balance'"> 
                                             <div *ngIf="row.loading" class="options-container">
@@ -350,8 +350,8 @@
                         class="svg-icon-32"
                         src="/assets/images/icons/32/list.svg"
                         svgClass="icon-color-disabled"></svg-icon>
-                    <span class="guardian-user-not-data__text-strong">There are no wallets created yet</span>
-                    <span class="guardian-user-not-data__text">Please create a new wallet to see the data</span>
+                    <span class="guardian-user-not-data__text-strong">There are no accounts created yet</span>
+                    <span class="guardian-user-not-data__text">Please create a new account to see the data</span>
                 </div>
             </ng-template>
         </div>

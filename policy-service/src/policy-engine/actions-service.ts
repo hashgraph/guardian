@@ -264,7 +264,7 @@ export class PolicyActionsService {
             owner: data.owner,
             creator: data.owner,
             accountId: data.accountId,
-            wallet: data.wallet,
+            relayerAccount: data.relayerAccount,
             blockTag: data.blockTag,
             topicId: data.topicId,
             policyId: this.policyId,
@@ -319,7 +319,7 @@ export class PolicyActionsService {
         const data = await PolicyActionsUtils.response({
             row,
             user,
-            wallet: row.wallet,
+            relayerAccount: row.relayerAccount,
             userId: user.userId
         });
 
@@ -341,7 +341,7 @@ export class PolicyActionsService {
             owner: row.owner,
             creator: row.owner,
             accountId: row.accountId,
-            wallet: row.wallet,
+            relayerAccount: row.relayerAccount,
             blockTag: row.blockTag,
             messageId: null,
             sender: null,
@@ -534,7 +534,7 @@ export class PolicyActionsService {
                 owner: message.owner,
                 creator: message.owner,
                 accountId: message.accountId,
-                wallet: message.wallet,
+                relayerAccount: message.relayerAccount,
                 sender: message.payer,
                 blockTag: message.blockTag,
                 messageId: message.id,
@@ -554,7 +554,7 @@ export class PolicyActionsService {
             row.owner = message.owner;
             row.creator = message.owner;
             row.accountId = message.accountId;
-            row.wallet = message.wallet;
+            row.relayerAccount = message.relayerAccount;
             row.sender = message.payer;
             row.topicId = message.topicId?.toString();
             row.blockTag = message.blockTag;

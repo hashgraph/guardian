@@ -13,7 +13,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { MeecoAuthService } from './api/meeco-service.js';
 import { ApplicationEnvironment } from './environment.js';
 import { RoleService } from './api/role-service.js';
-import { ProjectWalletService } from './api/project-wallet.js';
+import { RelayerAccountsService } from './api/relayer-accounts.js';
 import { DEFAULT_MONGO } from '#constants';
 import { checkValidJwt } from './utils/index.js';
 
@@ -80,8 +80,8 @@ Promise.all([
         await new RoleService().setConnection(cn).init();
         new RoleService().registerListeners(logger);
 
-        await new ProjectWalletService().setConnection(cn).init();
-        new ProjectWalletService().registerListeners(logger);
+        await new RelayerAccountsService().setConnection(cn).init();
+        new RelayerAccountsService().registerListeners(logger);
 
         const validator = new ValidateConfiguration();
 

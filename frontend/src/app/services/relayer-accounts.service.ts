@@ -7,8 +7,8 @@ import { API_BASE_URL } from './api';
  * Services for working from policy and separate blocks.
  */
 @Injectable()
-export class ProjectWalletService {
-    private readonly url: string = `${API_BASE_URL}/project-wallet`;
+export class RelayerAccountsService {
+    private readonly url: string = `${API_BASE_URL}/relayer-accounts`;
 
     constructor(
         private http: HttpClient,
@@ -40,37 +40,37 @@ export class ProjectWalletService {
         return params;
     }
 
-    public getCurrentWallet(): Observable<any> {
+    public getCurrentRelayerAccount(): Observable<any> {
         return this.http.get<any>(`${this.url}/current`);
     }
 
-    public getProjectWallets(
+    public getRelayerAccounts(
         pageIndex?: number,
         pageSize?: number,
         filters?: any
     ): Observable<HttpResponse<any[]>> {
-        const params = ProjectWalletService.getOptions(filters, pageIndex, pageSize);
+        const params = RelayerAccountsService.getOptions(filters, pageIndex, pageSize);
         return this.http.get<any>(`${this.url}`, { observe: 'response', params });
     }
 
-    public getUserWallets(
+    public getUserRelayerAccounts(
         pageIndex?: number,
         pageSize?: number,
         filters?: any
     ): Observable<HttpResponse<any[]>> {
-        const params = ProjectWalletService.getOptions(filters, pageIndex, pageSize);
+        const params = RelayerAccountsService.getOptions(filters, pageIndex, pageSize);
         return this.http.get<any>(`${this.url}/accounts`, { observe: 'response', params });
     }
 
-    public getProjectWalletBalance(account: string): Observable<string> {
+    public getRelayerAccountBalance(account: string): Observable<string> {
         return this.http.get(`${this.url}/${account}/balance`, { responseType: 'text' });
     }
 
-    public getProjectWalletsAll(): Observable<any[]> {
+    public getRelayerAccountsAll(): Observable<any[]> {
         return this.http.get<any[]>(`${this.url}/all`);
     }
 
-    public createProjectWallet(
+    public createRelayerAccount(
         data: {
             name?: string,
             account?: string,
@@ -81,17 +81,17 @@ export class ProjectWalletService {
         return this.http.post<any>(`${this.url}`, data);
     }
 
-    public generateProjectWallet(): Observable<any> {
+    public generateRelayerAccount(): Observable<any> {
         return this.http.post<any>(`${this.url}/generate`, null);
     }
 
     public getRelationships(
-        wallet: string,
+        relayerAccountId: string,
         pageIndex?: number,
         pageSize?: number,
         filters?: any
     ): Observable<HttpResponse<any[]>> {
-        const params = ProjectWalletService.getOptions(filters, pageIndex, pageSize);
-        return this.http.get<any>(`${this.url}/${wallet}/relationships`, { observe: 'response', params });
+        const params = RelayerAccountsService.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/${relayerAccountId}/relationships`, { observe: 'response', params });
     }
 }

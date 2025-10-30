@@ -15,7 +15,7 @@ import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.s
 import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structures';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { autosaveValueChanged, getMinutesAgoStream } from 'src/app/utils/autosave-utils';
-import { ProjectWalletService } from 'src/app/services/project-wallet.service';
+import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -40,7 +40,7 @@ export class RequestDocumentBlockDialog {
     public get autosaveId() { return this.parent?.getAutosaveId(); }
     public get edit() { return this.parent?.edit; }
     public get draft() { return this.parent?.draft; }
-    public get wallet() { return this.parent?.wallet; }
+    public get relayerAccount() { return this.parent?.relayerAccount; }
     public get user() { return this.parent?.user; }
 
     public buttons: any = [];
@@ -54,9 +54,9 @@ export class RequestDocumentBlockDialog {
     private readonly AUTOSAVE_INTERVAL = 120000;
     private dataSaved: boolean = false;
     private stepper = [true, false, false];
-    public walletType: string = 'account';
-    public currentWallet: string;
-    public wallets: any[] = [];
+    public relayerAccountType: string = 'account';
+    public currentRelayerAccount: string;
+    public relayerAccounts: any[] = [];
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
     private buttonNames: { [id: string]: string } = {
@@ -64,11 +64,11 @@ export class RequestDocumentBlockDialog {
         cancel: 'Cancel',
         prev: 'Previous',
         next: 'Next',
-        wallet: 'Select Wallet',
+        relayerAccount: 'Select Relayer Account',
         submit: 'Validate & Create'
     }
 
-    public walletForm = new FormGroup({
+    public relayerAccountForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
         account: new FormControl<string>('', Validators.required),
         key: new FormControl<string>('', Validators.required),
@@ -80,7 +80,7 @@ export class RequestDocumentBlockDialog {
         private dialogService: DialogService,
         private policyEngineService: PolicyEngineService,
         private schemaRulesService: SchemaRulesService,
-        private projectWalletService: ProjectWalletService,
+        private relayerAccountsService: RelayerAccountsService,
         private fb: UntypedFormBuilder,
         private toastr: ToastrService,
         private changeDetectorRef: ChangeDetectorRef,
@@ -147,13 +147,13 @@ export class RequestDocumentBlockDialog {
             });
     }
 
-    private loadWallets() {
+    private loadRelayerAccounts() {
         this.loading = true;
-        this.projectWalletService
-            .getProjectWalletsAll()
+        this.relayerAccountsService
+            .getRelayerAccountsAll()
             .pipe(takeUntil(this.destroy$))
-            .subscribe((wallets: any[]) => {
-                this.wallets = wallets;
+            .subscribe((relayerAccounts: any[]) => {
+                this.relayerAccounts = relayerAccounts;
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -178,14 +178,14 @@ export class RequestDocumentBlockDialog {
         }
     }
 
-    private getWallet() {
-        if (this.wallet) {
-            if (this.walletType === 'account') {
+    private getRelayerAccount() {
+        if (this.relayerAccount) {
+            if (this.relayerAccountType === 'account') {
                 return null;
-            } else if (this.walletType === 'wallet') {
-                return this.currentWallet;
-            } else if (this.walletType === 'new') {
-                return this.walletForm.value;
+            } else if (this.relayerAccountType === 'relayerAccount') {
+                return this.currentRelayerAccount;
+            } else if (this.relayerAccountType === 'new') {
+                return this.relayerAccountForm.value;
             } else {
                 return null;
             }
@@ -210,7 +210,7 @@ export class RequestDocumentBlockDialog {
                 ref: this.docRef,
                 draft: draft,
                 draftId: draftId,
-                wallet: this.getWallet()
+                relayerAccount: this.getRelayerAccount()
             })
             .subscribe(() => {
                 setTimeout(() => {
@@ -232,10 +232,10 @@ export class RequestDocumentBlockDialog {
             return;
         }
         if (this.dataForm.valid || draft) {
-            if (this.wallet) {
+            if (this.relayerAccount) {
                 if (this.isStep(0)) {
                     this.setStep(1);
-                    this.loadWallets();
+                    this.loadRelayerAccounts();
                 } else {
                     await this.onSubmit(draft);
                 }
@@ -297,9 +297,9 @@ export class RequestDocumentBlockDialog {
     }
 
     public getButtonName(item: any) {
-        if (this.wallet && item.id === 'submit') {
+        if (this.relayerAccount && item.id === 'submit') {
             if (this.isStep(0)) {
-                return this.buttonNames['wallet'];
+                return this.buttonNames['relayerAccount'];
             } else {
                 return this.buttonNames['submit'];
             }
@@ -318,15 +318,15 @@ export class RequestDocumentBlockDialog {
         }, 0);
     }
 
-    public ifWalletDisabled() {
-        if (this.wallet) {
+    public ifRelayerAccountDisabled() {
+        if (this.relayerAccount) {
             if (this.isStep(1)) {
-                if (this.walletType === 'account') {
+                if (this.relayerAccountType === 'account') {
                     return false;
-                } else if (this.walletType === 'wallet') {
-                    return !this.currentWallet;
-                } else if (this.walletType === 'new') {
-                    return this.walletForm.invalid;
+                } else if (this.relayerAccountType === 'relayerAccount') {
+                    return !this.currentRelayerAccount;
+                } else if (this.relayerAccountType === 'new') {
+                    return this.relayerAccountForm.invalid;
                 } else {
                     return null;
                 }
@@ -340,7 +340,7 @@ export class RequestDocumentBlockDialog {
 
     public ifDisabledBtn(config: any) {
         if (config.id === 'submit') {
-            return !this.dataForm.valid || this.loading || this.ifWalletDisabled();
+            return !this.dataForm.valid || this.loading || this.ifRelayerAccountDisabled();
         } else {
             return false;
         }
@@ -365,13 +365,13 @@ export class RequestDocumentBlockDialog {
         return this.stepper[index];
     }
 
-    public onGenerateWallet() {
+    public onGenerateRelayerAccount() {
         this.loading = true;
-        this.projectWalletService
-            .generateProjectWallet()
+        this.relayerAccountsService
+            .generateRelayerAccount()
             .subscribe((account) => {
-                const data = this.walletForm.value;
-                this.walletForm.setValue({
+                const data = this.relayerAccountForm.value;
+                this.relayerAccountForm.setValue({
                     name: data.name || '',
                     account: account.id || '',
                     key: account.key || ''

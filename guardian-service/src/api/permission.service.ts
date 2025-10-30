@@ -322,7 +322,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                         );
                     case KeyEntity.DISCUSSION:
                         return new MessageResponse(true);
-                    case KeyEntity.PROJECT_WALLET:
+                    case KeyEntity.RELAYER_ACCOUNT:
                         return new MessageResponse(entityId?.startsWith(did));
                     default:
                         return new MessageResponse(false);

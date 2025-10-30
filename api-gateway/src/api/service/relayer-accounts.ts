@@ -13,9 +13,9 @@ import {
     VcDocumentDTO
 } from '#middlewares';
 
-@Controller('project-wallet')
-@ApiTags('project-wallet')
-export class ProjectWalletApi {
+@Controller('relayer-accounts')
+@ApiTags('relayer-accounts')
+export class RelayerAccountsApi {
     constructor(private readonly logger: PinoLogger) {
     }
 
@@ -60,7 +60,7 @@ export class ProjectWalletApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getProjectWallets(
+    async getRelayerAccounts(
         @AuthUser() user: IAuthUser,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
@@ -73,7 +73,7 @@ export class ProjectWalletApi {
                 pageIndex,
                 pageSize
             }
-            return await users.getProjectWallets(user, filters);
+            return await users.getRelayerAccounts(user, filters);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -102,7 +102,7 @@ export class ProjectWalletApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async createProjectWallet(
+    async createRelayerAccount(
         @AuthUser() user: IAuthUser,
         @Body() body: {
             name?: string,
@@ -112,7 +112,7 @@ export class ProjectWalletApi {
     ): Promise<any> {
         try {
             const users = new Users();
-            return await users.createProjectWallet(user, body);
+            return await users.createRelayerAccount(user, body);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger, user.id);
@@ -139,12 +139,12 @@ export class ProjectWalletApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getCurrentWallet(
+    async getCurrentRelayerAccount(
         @AuthUser() user: IAuthUser,
     ): Promise<any> {
         try {
             const users = new Users();
-            return await users.getCurrentWallet(user);
+            return await users.getCurrentRelayerAccount(user);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -170,12 +170,12 @@ export class ProjectWalletApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getProjectWalletsAll(
+    async getRelayerAccountsAll(
         @AuthUser() user: IAuthUser,
     ): Promise<any> {
         try {
             const users = new Users();
-            return await users.getProjectWalletsAll(user);
+            return await users.getRelayerAccountsAll(user);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -208,13 +208,13 @@ export class ProjectWalletApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getProjectWalletBalance(
+    async getRelayerAccountBalance(
         @AuthUser() user: IAuthUser,
         @Param('account') account: string,
     ): Promise<any> {
         try {
             const users = new Users();
-            return await users.getProjectWalletBalance(user, account);
+            return await users.getRelayerAccountBalance(user, account);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -239,12 +239,12 @@ export class ProjectWalletApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async generateProjectWallet(
+    async generateRelayerAccount(
         @AuthUser() user: IAuthUser,
     ): Promise<any> {
         try {
             const users = new Users();
-            return await users.generateProjectWallet(user);
+            return await users.generateRelayerAccount(user);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger, user.id);
@@ -292,7 +292,7 @@ export class ProjectWalletApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getUserWallets(
+    async getUserRelayerAccounts(
         @AuthUser() user: IAuthUser,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
@@ -305,7 +305,7 @@ export class ProjectWalletApi {
                 pageIndex,
                 pageSize
             }
-            return await users.getUserWallets(user, filters);
+            return await users.getUserRelayerAccounts(user, filters);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -314,7 +314,7 @@ export class ProjectWalletApi {
     /**
      * 
      */
-    @Get('/:wallet/relationships')
+    @Get('/:relayerAccount/relationships')
     @Auth(
     )
     @ApiOperation({
@@ -322,9 +322,9 @@ export class ProjectWalletApi {
         description: ''
     })
     @ApiParam({
-        name: 'wallet',
+        name: 'relayerAccountId',
         type: String,
-        description: 'Policy Id',
+        description: 'Relayer Account Id',
         required: true,
         example: Examples.DB_ID
     })
@@ -352,10 +352,10 @@ export class ProjectWalletApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getRelationships(
+    async getRelayerAccountRelationships(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
-        @Param('wallet') wallet: string,
+        @Param('relayerAccountId') relayerAccountId: string,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
     ): Promise<any> {
@@ -365,7 +365,7 @@ export class ProjectWalletApi {
                 pageSize
             }
             const guardian = new Guardians();
-            const { items, count } = await guardian.getWalletRelationships(wallet, user, filters);
+            const { items, count } = await guardian.getRelayerAccountRelationships(relayerAccountId, user, filters);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger, user.id);

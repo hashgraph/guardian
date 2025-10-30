@@ -30,7 +30,7 @@ export class DocumentViewComponent implements OnInit {
     @Input() policyId?: string;
     @Input() documentId?: string;
     @Input() schemaId?: string;
-    @Input() wallet?: string;
+    @Input('relayer-account') relayerAccount?: string;
 
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
 

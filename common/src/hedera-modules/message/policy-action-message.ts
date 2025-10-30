@@ -42,7 +42,7 @@ export class PolicyActionMessage extends Message {
     /**
      * User account
      */
-    public wallet: string;
+    public relayerAccount: string;
     /**
      * Block
      */
@@ -66,7 +66,7 @@ export class PolicyActionMessage extends Message {
         this.owner = action.owner;
         this.policyId = action.policyId;
         this.accountId = action.accountId;
-        this.wallet = action.wallet;
+        this.relayerAccount = action.relayerAccount;
         this.blockTag = action.blockTag;
         this.parent = action.startMessageId;
         this.document = data;
@@ -94,7 +94,7 @@ export class PolicyActionMessage extends Message {
             owner: this.owner,
             policyId: this.policyId,
             accountId: this.accountId,
-            wallet: this.wallet,
+            relayerAccount: this.relayerAccount,
             blockTag: this.blockTag,
             parent: this.parent,
             cid: this.getDocumentUrl(UrlType.cid),
@@ -183,7 +183,7 @@ export class PolicyActionMessage extends Message {
         message.owner = json.owner;
         message.policyId = json.policyId;
         message.accountId = json.accountId;
-        message.wallet = json.wallet;
+        message.relayerAccount = json.relayerAccount;
         message.blockTag = json.blockTag;
         message.parent = json.parent;
 
@@ -226,7 +226,7 @@ export class PolicyActionMessage extends Message {
         result.owner = this.owner;
         result.policyId = this.policyId;
         result.accountId = this.accountId;
-        result.wallet = this.wallet;
+        result.relayerAccount = this.relayerAccount;
         result.blockTag = this.blockTag;
         result.parent = this.parent;
         result.document = this.document;
@@ -243,7 +243,7 @@ export class PolicyActionMessage extends Message {
         result.owner = json.owner;
         result.policyId = json.policyId;
         result.accountId = json.accountId;
-        result.wallet = json.wallet;
+        result.relayerAccount = json.relayerAccount;
         result.blockTag = json.blockTag;
         result.parent = json.parent;
         result.document = json.document;

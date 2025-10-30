@@ -362,41 +362,32 @@ export class Users extends NatsService {
         return await this.sendMessage(AuthEvents.REFRESH_USER_PERMISSIONS, { id, owner, userId });
     }
 
-
-
-
-
-
-
-
-
-
     /**
-     * Get project wallet balance
+     * Get relayer account balance
      * @param user
      */
-    public async getProjectWalletBalance(
+    public async getRelayerAccountBalance(
         user: IAuthUser,
         account: string
     ): Promise<any> {
-        return await this.sendMessage(AuthEvents.GET_PROJECT_WALLET_BALANCE, { user, account });
+        return await this.sendMessage(AuthEvents.GET_RELAYER_ACCOUNT_BALANCE, { user, account });
     }
 
     /**
-     * Get current wallet
+     * Get current relayer account
      * @param user
      */
-    public async getCurrentWallet(
+    public async getCurrentRelayerAccount(
         user: IAuthUser
     ): Promise<any[]> {
-        return await this.sendMessage(AuthEvents.GET_CURRENT_WALLET, { user });
+        return await this.sendMessage(AuthEvents.GET_CURRENT_RELAYER_ACCOUNT, { user });
     }
 
     /**
-     * Get project wallets
+     * Get relayer accounts
      * @param user
      */
-    public async getProjectWallets(
+    public async getRelayerAccounts(
         user: IAuthUser,
         filters: {
             search?: string,
@@ -404,14 +395,14 @@ export class Users extends NatsService {
             pageSize?: number | string
         }
     ): Promise<any[]> {
-        return await this.sendMessage(AuthEvents.GET_PROJECT_WALLETS, { user, filters });
+        return await this.sendMessage(AuthEvents.GET_RELAYER_ACCOUNTS, { user, filters });
     }
 
     /**
-     * Get project wallets
+     * Get relayer accounts
      * @param user
      */
-    public async getUserWallets(
+    public async getUserRelayerAccounts(
         user: IAuthUser,
         filters: {
             search?: string,
@@ -419,24 +410,24 @@ export class Users extends NatsService {
             pageSize?: number | string
         }
     ): Promise<any[]> {
-        return await this.sendMessage(AuthEvents.GET_USER_WALLETS, { user, filters });
+        return await this.sendMessage(AuthEvents.GET_USER_RELAYER_ACCOUNTS, { user, filters });
     }
 
     /**
-     * Get project wallets
+     * Get relayer accounts
      * @param user
      */
-    public async getProjectWalletsAll(
+    public async getRelayerAccountsAll(
         user: IAuthUser
     ): Promise<any[]> {
-        return await this.sendMessage(AuthEvents.GET_PROJECT_WALLETS_ALL, { user });
+        return await this.sendMessage(AuthEvents.GET_RELAYER_ACCOUNTS_ALL, { user });
     }
 
     /**
-     * Create project wallet
+     * Create relayer account
      * @param user
      */
-    public async createProjectWallet(
+    public async createRelayerAccount(
         user: IAuthUser,
         config: {
             name?: string
@@ -444,17 +435,17 @@ export class Users extends NatsService {
             key?: string,
         }
     ): Promise<any> {
-        return await this.sendMessage(AuthEvents.CREATE_PROJECT_WALLET, { user, config });
+        return await this.sendMessage(AuthEvents.CREATE_RELAYER_ACCOUNT, { user, config });
     }
 
     /**
-     * Generate project wallet
+     * Generate relayer account
      * @param user
      */
-    public async generateProjectWallet(
+    public async generateRelayerAccount(
         user: IAuthUser
     ): Promise<any> {
-        return await this.sendMessage(AuthEvents.GENERATE_PROJECT_WALLET, { user });
+        return await this.sendMessage(AuthEvents.GENERATE_RELAYER_ACCOUNT, { user });
     }
 }
 

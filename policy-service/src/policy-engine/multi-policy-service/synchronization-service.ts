@@ -259,7 +259,7 @@ export class SynchronizationService {
                         policyId: policy.id?.toString(),
                         userId: policyOwner?.id,
                         owner: transaction.owner,
-                        wallet: transaction.wallet,
+                        relayerAccount: transaction.relayerAccount,
                         notifier
                     }).catch(error => {
                         this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE'], policyOwnerId);

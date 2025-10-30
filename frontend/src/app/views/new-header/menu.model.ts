@@ -68,11 +68,11 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
         ],
     },
     {
-        title: 'Project Wallets',
+        title: 'Relayer Accounts',
         svgIcon: 'wallet',
         allowedUserRoles: [UserRole.STANDARD_REGISTRY],
         active: false,
-        routerLink: '/project-wallets'
+        routerLink: '/relayer-accounts'
     },
     {
         title: 'Administration',

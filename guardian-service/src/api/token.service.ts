@@ -1038,24 +1038,24 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             }
         })
 
-    ApiResponse(MessageAPI.GET_WALLET_TOKEN_INFO,
+    ApiResponse(MessageAPI.GET_RELAYER_ACCOUNT_INFO,
         async (msg: {
             tokenId: string,
-            walletId: string,
+            relayerAccountId: string,
             owner: IOwner,
             user: IAuthUser
         }) => {
             try {
-                const { tokenId, walletId, owner, user } = msg;
+                const { tokenId, relayerAccountId, owner, user } = msg;
 
                 const users = new Users();
                 if (owner) {
-                    const wallet = await users.getUserWallet(owner.creator, walletId, user?.id);
+                    const wallet = await users.getUserRelayerAccount(owner.creator, relayerAccountId, user?.id);
                     if (!wallet) {
                         return new MessageError('Wallet not found.', 500);
                     }
                 } else {
-                    const wallet = await users.getWallet(walletId, user?.id);
+                    const wallet = await users.getRelayerAccount(relayerAccountId, user?.id);
                     if (!wallet) {
                         return new MessageError('Wallet not found.', 500);
                     }
@@ -1070,7 +1070,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const info = await workers.addNonRetryableTask({
                     type: WorkerTaskType.GET_ACCOUNT_TOKENS_REST,
                     data: {
-                        hederaAccountId: walletId,
+                        hederaAccountId: relayerAccountId,
                         payload: { userId: user?.id }
                     }
                 }, {

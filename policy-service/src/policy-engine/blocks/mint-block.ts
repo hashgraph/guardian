@@ -128,7 +128,7 @@ export class MintBlock {
         ref: AnyBlockType,
         docs: IPolicyDocument[],
         accounts: string[],
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     ): string {
         let targetAccount: string;
@@ -140,7 +140,7 @@ export class MintBlock {
             if (ref.options.accountId) {
                 targetAccount = firstAccounts;
             } else {
-                targetAccount = wallet;
+                targetAccount = relayerAccount;
             }
             if (!targetAccount) {
                 throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
@@ -276,7 +276,7 @@ export class MintBlock {
         token: TokenCollection,
         topicId: string,
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         targetAccount: string,
         documents: VcDocument[],
         messages: string[],
@@ -341,7 +341,7 @@ export class MintBlock {
         mintVcDocument.messageId = vcMessageResult.getId();
         mintVcDocument.topicId = vcMessageResult.getTopicId();
         mintVcDocument.relationships = messages;
-        mintVcDocument.wallet = wallet;
+        mintVcDocument.relayerAccount = relayerAccount;
         mintVcDocument.documentFields = Array.from(
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
         );
@@ -374,7 +374,7 @@ export class MintBlock {
         vpDocument.topicId = vpMessageResult.getTopicId();
         vpDocument.documentFields = Array.from(PolicyComponentsUtils.getDocumentCacheFields(ref.policyId));
         vpDocument.relationships = messages;
-        vpDocument.wallet = wallet;
+        vpDocument.relayerAccount = relayerAccount;
         const savedVp = await ref.databaseServer.saveVP(vpDocument);
         // #endregion
 
@@ -390,7 +390,7 @@ export class MintBlock {
             transactionMemo,
             documents,
             policyOwnerSignOptions,
-            wallet,
+            relayerAccount,
             userId
         });
 
@@ -498,14 +498,14 @@ export class MintBlock {
         const additionalMessages = this.getAdditionalMessages(additionalDocs);
         const topicId = topics[0];
 
-        const wallet = await PolicyUtils.getDocumentWallet(ref, docs[0], userId);
-        const targetAccount = this.getAccount(ref, docs, accounts, wallet, userId);
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, docs[0], userId);
+        const targetAccount = this.getAccount(ref, docs, accounts, relayerAccount, userId);
 
         const [vp, amount] = await this.mintProcessing(
             token,
             topicId,
             user,
-            wallet,
+            relayerAccount,
             targetAccount,
             vcs,
             messages,
@@ -521,7 +521,7 @@ export class MintBlock {
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             tokenId: token.tokenId,
-            accountId: wallet,
+            accountId: relayerAccount,
             amount,
             documents: ExternalDocuments(docs),
             result: ExternalDocuments(vp),

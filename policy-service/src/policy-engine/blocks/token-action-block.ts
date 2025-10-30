@@ -134,15 +134,15 @@ export class TokenActionBlock {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        let wallet: string = null;
+        let relayerAccount: string = null;
         let userDID: string = null;
         if (doc && field && doc.accounts) {
-            wallet = doc.accounts[field];
+            relayerAccount = doc.accounts[field];
         } else if (doc && !field) {
             userDID = doc.owner;
-            wallet = await PolicyUtils.getDocumentWallet(ref, doc, userId);
+            relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, doc, userId);
         }
-        if (!wallet) {
+        if (!relayerAccount) {
             throw new BlockActionError('Hedera Account not found.', ref.blockType, ref.uuid);
         }
 
@@ -152,7 +152,7 @@ export class TokenActionBlock {
                     ref,
                     token,
                     user: userDID,
-                    wallet,
+                    relayerAccount,
                     userId
                 });
                 break;
@@ -162,27 +162,27 @@ export class TokenActionBlock {
                     ref,
                     token,
                     user: userDID,
-                    wallet,
+                    relayerAccount,
                     userId
                 });
                 break;
             }
             case 'freeze': {
-                const account = PolicyUtils.createHederaCredentials(wallet);
+                const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
                 await PolicyUtils.freeze(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'unfreeze': {
-                const account = PolicyUtils.createHederaCredentials(wallet);
+                const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
                 await PolicyUtils.unfreeze(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'grantKyc': {
-                const account = PolicyUtils.createHederaCredentials(wallet);
+                const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
                 await runIdempotent(ref, 'grantKyc', () =>
@@ -192,7 +192,7 @@ export class TokenActionBlock {
                 break;
             }
             case 'revokeKyc': {
-                const account = PolicyUtils.createHederaCredentials(wallet);
+                const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
                 await PolicyUtils.revokeKyc(ref, token, account, ownerCredentials, userId);

@@ -1008,9 +1008,9 @@ export interface IPolicyDBDocument<T> {
     startMessageId?: string;
 
     /**
-     * Wallet
+     * Relayer Account
      */
-    wallet?: string;
+    relayerAccount?: string;
 }
 
 /**

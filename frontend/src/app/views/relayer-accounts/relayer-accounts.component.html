@@ -16,12 +16,12 @@
         <div class="guardian-user-page-filters">
             <div class="search-filter">
                 <input
-                    [(ngModel)]="searchWallet"
+                    [(ngModel)]="search"
                     class="guardian-input search-policy-input"
                     pInputText
                     placeholder="Search by keyword"
                     type="text" 
-                    (change)="onSetWalletSearch()"/>
+                    (change)="onSearch()"/>
                 <i class="search-icon">
                     <svg-icon 
                         class="svg-icon-16" 
@@ -42,7 +42,7 @@
                         svgClass="icon-color-primary">
                     </svg-icon>
                 </div>
-                <div class="guardian-button-label">Update All Wallets</div>
+                <div class="guardian-button-label">Update All Accounts</div>
             </button>
         </div>
     </div>
@@ -109,7 +109,7 @@
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
                                         <button
-                                            (click)="onOpenWallet(row)"
+                                            (click)="onOpen(row)"
                                             class="guardian-button guardian-button-secondary grid-btn"
                                         >Details</button>
                                     </ng-container>
@@ -138,8 +138,8 @@
                     class="svg-icon-32"
                     src="/assets/images/icons/32/list.svg"
                     svgClass="icon-color-disabled"></svg-icon>
-                <span class="guardian-user-not-data__text-strong">There are no wallets created yet</span>
-                <span class="guardian-user-not-data__text">Please create a new wallet to see the data</span>
+                <span class="guardian-user-not-data__text-strong">There are no accounts created yet</span>
+                <span class="guardian-user-not-data__text">Please create a new account to see the data</span>
             </div>
         </ng-template>
     </div>

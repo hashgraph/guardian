@@ -19,9 +19,9 @@ import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
 import { ChangePasswordComponent } from '../login/change-password/change-password.component';
 import { UserKeysDialog } from 'src/app/components/user-keys-dialog/user-keys-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { ProjectWalletService } from 'src/app/services/project-wallet.service';
-import { NewProjectWalletDialog } from 'src/app/components/new-project-wallets-dialog/new-project-wallets-dialog.component';
-import { ProjectWalletDetailsDialog } from 'src/app/components/project-wallet-details-dialog/project-wallet-details-dialog.component';
+import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
+import { NewRelayerAccountDialog } from 'src/app/components/new-relayer-account-dialog/new-relayer-account-dialog.component';
+import { RelayerAccountDetailsDialog } from 'src/app/components/relayer-account-details-dialog/relayer-account-details-dialog.component';
 import moment from 'moment';
 
 enum OperationMode {
@@ -127,9 +127,9 @@ export class UserProfileComponent implements OnInit {
     public remoteDidDocumentForm!: UntypedFormControl;
     public didKeys: any[] = [];
 
-    public tab: 'general' | 'keys' | 'wallets' = 'general';
+    public tab: 'general' | 'keys' | 'relayerAccounts' = 'general';
     public tabIndex = 0;
-    public tabs: ['general', 'wallets', 'keys'] = ['general', 'wallets', 'keys'];
+    public tabs: ['general', 'relayerAccounts', 'keys'] = ['general', 'relayerAccounts', 'keys'];
 
     public keyPage: any[];
     public keyCount: number;
@@ -137,12 +137,12 @@ export class UserProfileComponent implements OnInit {
     public keyPageSize: number;
     public keyColumns: IColumn[];
 
-    public walletPage: any[];
-    public walletCount: number;
-    public walletPageIndex: number;
-    public walletPageSize: number;
-    public walletColumns: IColumn[];
-    public searchWallet: string;
+    public relayerAccountPage: any[];
+    public relayerAccountCount: number;
+    public relayerAccountPageIndex: number;
+    public relayerAccountPageSize: number;
+    public relayerAccountColumns: IColumn[];
+    public searchRelayerAccount: string;
     public balances: Map<string, string>;
 
     public location: LocationType | undefined;
@@ -157,7 +157,7 @@ export class UserProfileComponent implements OnInit {
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
-        private projectWalletService: ProjectWalletService,
+        private relayerAccountsService: RelayerAccountsService,
         private otherService: DemoService,
         private schemaService: SchemaService,
         private informService: InformService,
@@ -400,11 +400,11 @@ export class UserProfileComponent implements OnInit {
         }];
 
 
-        this.walletPage = [];
-        this.walletCount = 0;
-        this.walletPageIndex = 0;
-        this.walletPageSize = 10;
-        this.walletColumns = [{
+        this.relayerAccountPage = [];
+        this.relayerAccountCount = 0;
+        this.relayerAccountPageIndex = 0;
+        this.relayerAccountPageSize = 10;
+        this.relayerAccountColumns = [{
             id: 'account',
             title: 'Account',
             type: 'text',
@@ -445,10 +445,10 @@ export class UserProfileComponent implements OnInit {
         this.keyPageSize = 10;
         this.keyCount = 0;
 
-        this.walletPage = [];
-        this.walletPageIndex = 0;
-        this.walletPageSize = 10;
-        this.walletCount = 0;
+        this.relayerAccountPage = [];
+        this.relayerAccountPageIndex = 0;
+        this.relayerAccountPageSize = 10;
+        this.relayerAccountCount = 0;
 
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
@@ -1020,9 +1020,9 @@ export class UserProfileComponent implements OnInit {
         if (this.tab === 'general') {
             this.loadDate();
         }
-        if (this.tab === 'wallets') {
-            this.walletPageIndex = 0;
-            this.loadWallets();
+        if (this.tab === 'relayerAccounts') {
+            this.relayerAccountPageIndex = 0;
+            this.loadRelayerAccounts();
         }
         if (this.tab === 'keys') {
             this.keyPageIndex = 0;
@@ -1157,21 +1157,21 @@ export class UserProfileComponent implements OnInit {
             });
     }
 
-    private loadWallets() {
+    private loadRelayerAccounts() {
         const filters: any = {
-            search: this.searchWallet
+            search: this.searchRelayerAccount
         };
         this.subLoading = true;
-        this.projectWalletService
-            .getProjectWallets(
-                this.walletPageIndex,
-                this.walletPageSize,
+        this.relayerAccountsService
+            .getRelayerAccounts(
+                this.relayerAccountPageIndex,
+                this.relayerAccountPageSize,
                 filters
             )
             .subscribe((response) => {
-                const { page, count } = this.projectWalletService.parsePage(response);
-                this.walletPage = page;
-                this.walletCount = count;
+                const { page, count } = this.relayerAccountsService.parsePage(response);
+                this.relayerAccountPage = page;
+                this.relayerAccountCount = count;
                 for (const row of page) {
                     row.__lastUpdate = '-';
                 }
@@ -1183,33 +1183,33 @@ export class UserProfileComponent implements OnInit {
             });
     }
 
-    public onWalletPage(event: any): void {
-        if (this.walletPageSize != event.pageSize) {
-            this.walletPageIndex = 0;
-            this.walletPageSize = event.pageSize;
+    public onRelayerAccountPage(event: any): void {
+        if (this.relayerAccountPageSize != event.pageSize) {
+            this.relayerAccountPageIndex = 0;
+            this.relayerAccountPageSize = event.pageSize;
         } else {
-            this.walletPageIndex = event.pageIndex;
-            this.walletPageSize = event.pageSize;
+            this.relayerAccountPageIndex = event.pageIndex;
+            this.relayerAccountPageSize = event.pageSize;
         }
-        this.loadWallets();
+        this.loadRelayerAccounts();
     }
 
-    public onCreateWallet() {
-        const dialogRef = this.dialogService.open(NewProjectWalletDialog, {
+    public onCreateRelayerAccount() {
+        const dialogRef = this.dialogService.open(NewRelayerAccountDialog, {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
             data: {
-                title: 'Add Wallet'
+                title: 'Add Relayer Account'
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.subLoading = true;
-                this.projectWalletService
-                    .createProjectWallet(result)
+                this.relayerAccountsService
+                    .createRelayerAccount(result)
                     .subscribe((newItem) => {
-                        this.loadWallets();
+                        this.loadRelayerAccounts();
                     }, (e) => {
                         this.subLoading = false;
                     });
@@ -1217,24 +1217,20 @@ export class UserProfileComponent implements OnInit {
         });
     }
 
-    public onOpenWallet(item: any) {
-        const dialogRef = this.dialogService.open(ProjectWalletDetailsDialog, {
+    public onOpenRelayerAccount(item: any) {
+        const dialogRef = this.dialogService.open(RelayerAccountDetailsDialog, {
             showHeader: false,
             width: '1100px',
             styleClass: 'guardian-dialog',
             data: {
-                wallet: item
+                relayerAccount: item
             }
         });
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
-    public onDeleteWallet(item: any) {
-
-    }
-
-    public onSetWalletSearch() {
-        this.loadWallets();
+    public onRelayerAccountSearch() {
+        this.loadRelayerAccounts();
     }
 
     public getBalance(row: any) {
@@ -1243,8 +1239,8 @@ export class UserProfileComponent implements OnInit {
 
     public updateBalance(row: any) {
         row.__loading = true;
-        this.projectWalletService
-            .getProjectWalletBalance(row.account)
+        this.relayerAccountsService
+            .getRelayerAccountBalance(row.account)
             .subscribe((balance) => {
                 this.balances.set(row.account, balance);
                 row.__loading = false;
@@ -1256,7 +1252,7 @@ export class UserProfileComponent implements OnInit {
     }
 
     public updateAllBalance() {
-        for (const row of this.walletPage) {
+        for (const row of this.relayerAccountPage) {
             this.updateBalance(row);
         }
     }

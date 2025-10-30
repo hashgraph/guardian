@@ -142,7 +142,7 @@ export class TagsManagerBlock {
                     throw new BlockActionError(`Invalid target`, ref.blockType, ref.uuid);
                 }
 
-                const wallet = await PolicyUtils.getUserWallet(ref, user.did, null, user.userId);
+                const relayerAccount = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, user.userId);
 
                 const tagUUID: string = await ref.components.generateUUID();
                 tag.uuid = tag.uuid || tagUUID;
@@ -154,7 +154,7 @@ export class TagsManagerBlock {
                 tag.owner = user.did;
                 tag.policyId = ref.policyId;
                 tag.date = (new Date()).toISOString();
-                tag.wallet = wallet;
+                tag.relayerAccount = relayerAccount;
 
                 //Document
                 if (tag.document && typeof tag.document === 'object') {
@@ -181,7 +181,7 @@ export class TagsManagerBlock {
                         ref,
                         subject: credentialSubject,
                         issuer: user.did,
-                        wallet,
+                        relayerAccount,
                         options: { uuid },
                         userId: user.userId
                     });
@@ -310,7 +310,7 @@ export class TagsManagerBlock {
         const message = new TagMessage(MessageAction.PublishTag);
         message.setDocument(item);
 
-        const wallet = await PolicyUtils.getUserWallet(ref, owner, null, userId);
+        const relayerAccount = await PolicyUtils.getUserRelayerAccount(ref, owner, null, userId);
 
         const topic = await PolicyActionsUtils.getTopicById(ref, topicId, userId);
         const result = await PolicyActionsUtils.sendMessage({
@@ -318,7 +318,7 @@ export class TagsManagerBlock {
             topic,
             message,
             owner,
-            wallet,
+            relayerAccount,
             updateIpfs: true,
             userId
         });
@@ -338,7 +338,7 @@ export class TagsManagerBlock {
     private async deleteTag(item: Tag, topicId: string, owner: string, userId: string | null): Promise<Tag> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
-        const wallet = await PolicyUtils.getUserWallet(ref, owner, null, userId);
+        const relayerAccount = await PolicyUtils.getUserRelayerAccount(ref, owner, null, userId);
 
         item.operation = 'Delete';
         item.status = 'Published';
@@ -353,7 +353,7 @@ export class TagsManagerBlock {
             topic,
             message,
             owner,
-            wallet,
+            relayerAccount,
             updateIpfs: true,
             userId
         });

@@ -20,7 +20,7 @@ export enum KeyEntity {
     KEY = 'KEY',
     MESSAGE = 'MESSAGE',
     DISCUSSION = 'DISCUSSION',
-    PROJECT_WALLET = 'PROJECT_WALLET',
+    RELAYER_ACCOUNT = 'RELAYER_ACCOUNT',
 }
 
 /**
@@ -41,7 +41,7 @@ export enum KeyType {
     FIREBLOCKS_KEY = 'FIREBLOCKS_KEY',
     MESSAGE_KEY = 'MESSAGE_KEY',
     DISCUSSION = 'DISCUSSION',
-    PROJECT_WALLET = 'PROJECT_WALLET'
+    RELAYER_ACCOUNT = 'RELAYER_ACCOUNT'
 }
 
 /**
@@ -59,7 +59,7 @@ export const KEY_TYPE_KEY_ENTITY: Map<KeyType, KeyEntity> = new Map([
     [KeyType.DID_KEYS, KeyEntity.DID],
     [KeyType.KEY, KeyEntity.KEY],
     [KeyType.DISCUSSION, KeyEntity.DISCUSSION],
-    [KeyType.PROJECT_WALLET, KeyEntity.PROJECT_WALLET],
+    [KeyType.RELAYER_ACCOUNT, KeyEntity.RELAYER_ACCOUNT],
 ]);
 
 /**

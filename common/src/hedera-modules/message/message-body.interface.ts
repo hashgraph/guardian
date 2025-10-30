@@ -853,7 +853,7 @@ export interface PolicyActionMessageBody extends MessageBody {
     /**
      * User account
      */
-    wallet: string;
+    relayerAccount: string;
     /**
      * Block
      */

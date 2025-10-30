@@ -1,20 +1,19 @@
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { ProjectWalletService } from 'src/app/services/project-wallet.service';
+import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 
 @Component({
-    selector: 'project-wallet-details-dialog',
-    templateUrl: './project-wallet-details-dialog.component.html',
-    styleUrls: ['./project-wallet-details-dialog.component.scss'],
+    selector: 'relayer-account-details-dialog',
+    templateUrl: './relayer-account-details-dialog.component.html',
+    styleUrls: ['./relayer-account-details-dialog.component.scss'],
 })
-export class ProjectWalletDetailsDialog {
+export class RelayerAccountDetailsDialog {
     public loading = true;
     public title: string;
     public readonly: boolean;
-    public wallet: any;
-    public walletId: string;
+    public relayerAccount: any;
+    public relayerAccountId: string;
 
     public page: any[];
     public count: number;
@@ -25,13 +24,13 @@ export class ProjectWalletDetailsDialog {
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private projectWalletService: ProjectWalletService,
+        private relayerAccountsService: RelayerAccountsService,
         private dialogService: DialogService,
     ) {
-        this.wallet = this.config.data?.wallet;
+        this.relayerAccount = this.config.data?.relayerAccount;
         this.readonly = true;
-        this.title = this.wallet?.name || 'Wallet';
-        this.walletId = this.wallet?.account || '';
+        this.title = this.relayerAccount?.name || 'Relayer Account';
+        this.relayerAccountId = this.relayerAccount?.account || '';
         this.page = [];
         this.count = 0;
         this.pageIndex = 0;
@@ -54,14 +53,14 @@ export class ProjectWalletDetailsDialog {
 
     private loadDocuments() {
         this.loading = true;
-        this.projectWalletService
+        this.relayerAccountsService
             .getRelationships(
-                this.walletId,
+                this.relayerAccountId,
                 this.pageIndex,
                 this.pageSize
             )
             .subscribe((response) => {
-                const { page, count } = this.projectWalletService.parsePage(response);
+                const { page, count } = this.relayerAccountsService.parsePage(response);
                 this.page = page;
                 this.count = count;
                 setTimeout(() => {

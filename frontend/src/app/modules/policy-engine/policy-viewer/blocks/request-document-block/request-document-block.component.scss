@@ -474,7 +474,7 @@
 
 
 
-.wallet-steps {
+.relayer-account-steps {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -515,14 +515,14 @@
 }
 
 
-.wallet-container {
-    .wallet-type-values {
+.relayer-account-container {
+    .relayer-account-type-values {
         display: flex;
         flex-direction: column;
         width: fit-content;
         width: 100%;
 
-        .wallet-type-value {
+        .relayer-account-type-value {
             display: flex;
             flex-direction: row;
             width: 100%;
@@ -531,12 +531,12 @@
             cursor: pointer;
             margin-right: 24px;
 
-            .wallet-type-value-select {
+            .relayer-account-type-value-select {
                 width: 24px;
                 height: 24px;
             }
 
-            .wallet-type-value-name {
+            .relayer-account-type-value-name {
                 padding: 4px 0 4px 8px;
                 height: 24px;
                 text-align: left;
@@ -551,7 +551,7 @@
         }
     }
 
-    .wallet-container-buttons {
+    .relayer-account-container-buttons {
         padding: 12px 48px;
         display: flex;
         justify-content: space-between;
@@ -575,7 +575,7 @@
     }
 }
 
-.wallet-type-config {
+.relayer-account-type-config {
     width: 100%;
     padding: 24px 16px 24px 32px;
 
@@ -586,7 +586,7 @@
     }
 }
 
-.wallet-form {
+.relayer-account-form {
     margin-bottom: 24px;
     width: 100%;
     display: grid;

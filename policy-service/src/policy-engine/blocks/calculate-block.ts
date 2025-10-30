@@ -15,7 +15,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 
 interface IMetadata {
     owner: PolicyUser;
-    wallet: string;
+    relayerAccount: string;
     id: string;
     reference: string;
     accounts: any;
@@ -208,8 +208,8 @@ export class CalculateContainerBlock {
             }
         }
         const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
-        const wallet = await PolicyUtils.getDocumentWallet(ref, firstDocument, userId);
-        return { owner, wallet, id, reference, accounts, tokens, relationships };
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, firstDocument, userId);
+        return { owner, relayerAccount, id, reference, accounts, tokens, relationships };
     }
 
     /**
@@ -226,7 +226,7 @@ export class CalculateContainerBlock {
     ): Promise<IPolicyDocument> {
         const {
             owner,
-            wallet,
+            relayerAccount,
             id,
             reference,
             accounts,
@@ -269,7 +269,7 @@ export class CalculateContainerBlock {
         item.relationships = relationships.length ? relationships : null;
         item.accounts = accounts && Object.keys(accounts).length ? accounts : null;
         item.tokens = tokens && Object.keys(tokens).length ? tokens : null;
-        item.wallet = wallet;
+        item.relayerAccount = relayerAccount;
         // -->
 
         return item;

@@ -298,37 +298,37 @@ export class Users extends NatsService {
     }
 
     /**
-     * Return user wallet
+     * Return user relayerAccount
      * @param did
-     * @param wallet
+     * @param relayerAccount
      * @param userId
      */
-    public async getUserWallet(
+    public async getUserRelayerAccount(
         did: string,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     ): Promise<{ account: string, name: string, default: boolean }> {
-        return await this.sendMessage(AuthEvents.GET_USER_WALLET, { did, wallet, userId });
+        return await this.sendMessage(AuthEvents.GET_USER_RELAYER_ACCOUNT, { did, relayerAccount, userId });
     }
 
     /**
-     * Return user wallet
-     * @param wallet
+     * Return user relayer account
+     * @param relayerAccount
      * @param userId
      */
-    public async getWallet(
-        wallet: string,
+    public async getRelayerAccount(
+        relayerAccount: string,
         userId: string | null
     ): Promise<{ account: string, name: string, owner: string, default: boolean }> {
-        return await this.sendMessage(AuthEvents.GET_WALLET, { wallet, userId });
+        return await this.sendMessage(AuthEvents.GET_RELAYER_ACCOUNT, { relayerAccount, userId });
     }
 
     /**
-     * Return user wallet
-     * @param wallet
+     * Create relayer account
+     * @param relayerAccount
      * @param userId
      */
-    public async createWallet(
+    public async createRelayerAccount(
         user: {
             did: string,
             id: string
@@ -340,19 +340,19 @@ export class Users extends NatsService {
         },
         userId: string | null
     ): Promise<{ account: string, name: string, owner: string, default: boolean }> {
-        return await this.sendMessage(AuthEvents.CREATE_PROJECT_WALLET, { user, config, userId });
+        return await this.sendMessage(AuthEvents.CREATE_RELAYER_ACCOUNT, { user, config, userId });
     }
 
     /**
-     * Return user wallet
-     * @param wallet
+     * If relayer account exist
+     * @param relayerAccount
      * @param userId
      */
-    public async walletExist(
+    public async relayerAccountExist(
         did: string,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     ): Promise<boolean> {
-        return await this.sendMessage(AuthEvents.WALLET_EXIST, { did, wallet, userId });
+        return await this.sendMessage(AuthEvents.RELAYER_ACCOUNT_EXIST, { did, relayerAccount, userId });
     }
 }

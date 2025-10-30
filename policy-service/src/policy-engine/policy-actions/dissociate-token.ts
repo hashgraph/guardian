@@ -11,29 +11,29 @@ export class DissociateToken {
         ref: AnyBlockType,
         token: Token,
         user: string,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }): Promise<boolean> {
-        const { ref, token, user, wallet, userId } = options;
+        const { ref, token, user, relayerAccount, userId } = options;
         const userCred = await PolicyUtils.getUserCredentials(ref, user, userId);
-        const userWallet = await userCred.loadWallet(ref, wallet, userId);
-        return await PolicyUtils.dissociate(ref, token, userWallet, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
+        return await PolicyUtils.dissociate(ref, token, userRelayerAccount, userId);
     }
 
     public static async request(options: {
         ref: AnyBlockType,
         token: Token,
         user: string,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }): Promise<any> {
-        const { ref, token, user, wallet, userId } = options;
+        const { ref, token, user, relayerAccount, userId } = options;
         const userAccount = await PolicyUtils.getHederaAccountId(ref, user, userId);
         const data = {
             uuid: GenerateUUIDv4(),
             owner: user,
             accountId: userAccount,
-            wallet,
+            relayerAccount,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.DissociateToken,
@@ -52,17 +52,17 @@ export class DissociateToken {
     public static async response(options: {
         row: PolicyAction,
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }) {
-        const { row, user, wallet, userId } = options;
+        const { row, user, relayerAccount, userId } = options;
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
         const { token } = data;
 
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
-        const userWallet = await userCred.loadWallet(ref, wallet, userId);
-        const dissociate = await PolicyUtils.dissociate(ref, token, userWallet, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
+        const dissociate = await PolicyUtils.dissociate(ref, token, userRelayerAccount, userId);
 
         return {
             type: PolicyActionType.DissociateToken,
@@ -91,7 +91,7 @@ export class DissociateToken {
                 request &&
                 response &&
                 request.accountId === response.accountId &&
-                request.wallet === response.wallet
+                request.relayerAccount === response.relayerAccount
             ) {
                 return true;
             }

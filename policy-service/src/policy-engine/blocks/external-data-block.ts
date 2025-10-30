@@ -165,16 +165,16 @@ export class ExternalDataBlock {
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);
 
-        //Wallet
-        const wallet = await PolicyUtils.getWallet(ref, user.did, data.wallet, documentRef, user.userId);
+        //Relayer Account
+        const relayerAccount = await PolicyUtils.getRelayerAccount(ref, user.did, data.relayerAccount, documentRef, user.userId);
 
-        const accounts = PolicyUtils.getHederaAccounts(vc, wallet, schema);
+        const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, schema);
 
         let doc = PolicyUtils.createVC(ref, user, vc);
         doc.type = ref.options.entityType;
         doc.schema = ref.options.schema;
         doc.accounts = accounts;
-        doc.wallet = wallet;
+        doc.relayerAccount = relayerAccount;
         doc.signature = (verify ?
             DocumentSignature.VERIFIED :
             DocumentSignature.INVALID);

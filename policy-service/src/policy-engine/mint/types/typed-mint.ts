@@ -92,7 +92,7 @@ export abstract class TypedMint {
             decimals: number;
             policyId: string;
             owner: string;
-            wallet: string;
+            relayerAccount: string;
             metadata?: string;
         },
         root: IHederaCredentials,
@@ -239,17 +239,17 @@ export abstract class TypedMint {
         return notification;
     }
 
-    protected async getWallet() {
-        if (this._mintRequest?.wallet) {
-            const userWallet = await PolicyUtils.loadWallet(
+    protected async getRelayerAccount() {
+        if (this._mintRequest?.relayerAccount) {
+            const userRelayerAccount = await PolicyUtils.loadRelayerAccount(
                 this._mintRequest.owner,
-                this._mintRequest.wallet,
+                this._mintRequest.relayerAccount,
                 this._ref,
                 this.userId
             );
             return {
-                hederaAccountId: userWallet.hederaAccountId,
-                hederaAccountKey: userWallet.hederaAccountKey,
+                hederaAccountId: userRelayerAccount.hederaAccountId,
+                hederaAccountKey: userRelayerAccount.hederaAccountKey,
             }
         } else {
             return {

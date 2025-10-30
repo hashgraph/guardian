@@ -148,7 +148,7 @@ export class RequestVcDocumentBlock {
             presetSchema: options.presetSchema,
             presetFields: options.presetFields,
             editType: options.editType || 'new',
-            wallet: !!options.wallet,
+            relayerAccount: !!options.relayerAccount,
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || [],
             data: sources && sources.length && sources[0] || null,
@@ -201,11 +201,11 @@ export class RequestVcDocumentBlock {
 
             const documentRef = await this.getRelationships(ref, data.ref);
 
-            //Wallet
-            const wallet = await PolicyUtils.getWallet(ref, user.did, data.wallet, documentRef, user.userId);
+            //Relayer Account
+            const relayerAccount = await PolicyUtils.getRelayerAccount(ref, user.did, data.relayerAccount, documentRef, user.userId);
 
             //Prepare Credential Subject
-            const credentialSubject = await this.createCredentialSubject(user, wallet, document);
+            const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document);
 
             //Get relationships
             if (documentRef) {
@@ -235,7 +235,7 @@ export class RequestVcDocumentBlock {
             }
 
             //Create Verifiable Credential
-            const item = await this.createVerifiableCredential(user, wallet, credentialSubject);
+            const item = await this.createVerifiableCredential(user, relayerAccount, credentialSubject);
             PolicyUtils.setDocumentRef(item, documentRef);
 
             //Update metadata
@@ -388,7 +388,7 @@ export class RequestVcDocumentBlock {
 
     private async createCredentialSubject(
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         document: any
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
@@ -407,7 +407,7 @@ export class RequestVcDocumentBlock {
             ref,
             type: idType,
             user,
-            wallet,
+            relayerAccount,
             userId: user.userId
         });
         if (newId) {
@@ -423,7 +423,7 @@ export class RequestVcDocumentBlock {
 
     private async createVerifiableCredential(
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         credentialSubject: any
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
@@ -435,18 +435,18 @@ export class RequestVcDocumentBlock {
             ref,
             subject: credentialSubject,
             issuer: user.did,
-            wallet,
+            relayerAccount,
             options: { uuid, group: groupContext },
             userId: user.userId
         });
         const item = PolicyUtils.createVC(ref, user, vc);
 
-        const accounts = PolicyUtils.getHederaAccounts(vc, wallet, this._schema);
+        const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, this._schema);
         const schemaIRI = ref.options.schema;
         item.type = schemaIRI;
         item.schema = schemaIRI;
         item.accounts = accounts;
-        item.wallet = wallet;
+        item.relayerAccount = relayerAccount;
         return item;
     }
 }

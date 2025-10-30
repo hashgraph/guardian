@@ -10,18 +10,18 @@ export class GenerateDID {
     public static async local(options: {
         ref: AnyBlockType,
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }): Promise<string> {
-        const { ref, user, wallet, userId } = options;
+        const { ref, user, relayerAccount, userId } = options;
         const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null, userId);
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
-        const userWallet = await userCred.loadWallet(ref, wallet, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
         const client = new MessageServer({
-            operatorId: userWallet.hederaAccountId,
-            operatorKey: userWallet.hederaAccountKey,
-            signOptions: userWallet.signOptions,
+            operatorId: userRelayerAccount.hederaAccountId,
+            operatorKey: userRelayerAccount.hederaAccountKey,
+            signOptions: userRelayerAccount.signOptions,
             encryptKey: userHederaCred.hederaAccountKey,
             dryRun: ref.dryRun
         });
@@ -50,10 +50,10 @@ export class GenerateDID {
     public static async request(options: {
         ref: AnyBlockType,
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }): Promise<any> {
-        const { ref, user, wallet, userId } = options;
+        const { ref, user, relayerAccount, userId } = options;
         const userAccount = await PolicyUtils.getHederaAccountId(ref, user.did, userId);
         const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null, userId);
         const data = {
@@ -61,7 +61,7 @@ export class GenerateDID {
             owner: user.did,
             topicId: topic.topicId,
             accountId: userAccount,
-            wallet,
+            relayerAccount,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.GenerateDID,
@@ -75,7 +75,7 @@ export class GenerateDID {
     public static async response(options: {
         row: PolicyAction,
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }) {
         const { row, user, userId } = options;
@@ -149,7 +149,7 @@ export class GenerateDID {
             request &&
             response &&
             request.accountId === response.accountId &&
-            request.wallet === response.wallet
+            request.relayerAccount === response.relayerAccount
         ) {
             return true;
         }

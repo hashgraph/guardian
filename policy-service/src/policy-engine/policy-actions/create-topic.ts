@@ -12,12 +12,12 @@ export class CreateTopic {
         type: TopicType,
         config: any,
         owner: string,
-        wallet: string,
+        relayerAccount: string,
         memoObj: any,
         needKey: boolean,
         userId: string | null
     }): Promise<TopicConfig> {
-        const { ref, type, config, owner, wallet, memoObj, needKey, userId } = options;
+        const { ref, type, config, owner, relayerAccount, memoObj, needKey, userId } = options;
         const rootTopic = await TopicConfig.fromObject(
             await ref.databaseServer.getTopic({
                 policyId: ref.policyId,
@@ -25,11 +25,11 @@ export class CreateTopic {
             }), !ref.dryRun, userId);
 
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
-        const userWallet = await userCred.loadWallet(ref, wallet, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
         const topicHelper = new TopicHelper(
-            userWallet.hederaAccountId,
-            userWallet.hederaAccountKey,
-            userWallet.signOptions,
+            userRelayerAccount.hederaAccountId,
+            userRelayerAccount.hederaAccountKey,
+            userRelayerAccount.signOptions,
             ref.dryRun,
         );
         const topic = await topicHelper.create({
@@ -58,11 +58,11 @@ export class CreateTopic {
         type: TopicType,
         config: any,
         owner: string,
-        wallet: string,
+        relayerAccount: string,
         memoObj: any,
         userId: string | null
     }): Promise<any> {
-        const { ref, type, config, owner, wallet, memoObj, userId } = options;
+        const { ref, type, config, owner, relayerAccount, memoObj, userId } = options;
         const rootTopic = await TopicConfig.fromObject(
             await ref.databaseServer.getTopic({
                 policyId: ref.policyId,
@@ -74,7 +74,7 @@ export class CreateTopic {
             uuid: GenerateUUIDv4(),
             owner,
             accountId: userAccount,
-            wallet,
+            relayerAccount,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.CreateTopic,
@@ -98,20 +98,20 @@ export class CreateTopic {
     public static async response(options: {
         row: PolicyAction,
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }) {
-        const { row, user, wallet, userId } = options;
+        const { row, user, relayerAccount, userId } = options;
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
         const { parent, topic } = data;
 
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
-        const userWallet = await userCred.loadWallet(ref, wallet, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
         const topicHelper = new TopicHelper(
-            userWallet.hederaAccountId,
-            userWallet.hederaAccountKey,
-            userWallet.signOptions,
+            userRelayerAccount.hederaAccountId,
+            userRelayerAccount.hederaAccountKey,
+            userRelayerAccount.signOptions,
             ref.dryRun,
         );
         const topicConfig = await topicHelper.create(topic, userId, {
@@ -153,7 +153,7 @@ export class CreateTopic {
                 request &&
                 response &&
                 request.accountId === response.accountId &&
-                request.wallet === response.wallet
+                request.relayerAccount === response.relayerAccount
             ) {
                 return true;
             }

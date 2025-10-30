@@ -146,7 +146,7 @@
         <div
             [class.collapsed-item]="menuCollapsed"
             [routerLink]="(user.STANDARD_REGISTRY) ? '/config' : 'user-profile'"
-            [queryParams]="{tab: 'wallets'}"
+            [queryParams]="{tab: 'relayerAccount'}"
             class="item balance-item"
         >
             <svg-icon 
@@ -154,7 +154,7 @@
                 src="/assets/images/icons/16/wallet.svg"
                 svgClass="icon-color-menu">
             </svg-icon>
-            <span> Wallets <span *ngIf="balance">{{ balance }}</span></span>
+            <span> Accounts <span *ngIf="balance">{{ balance }}</span></span>
             <div *ngIf="!balance" class="preloader">
                 <div class="preloader-image"></div>
             </div>

@@ -12,17 +12,17 @@ export class SignAndSendRole {
         subject: any,
         group: any,
         uuid: string,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }): Promise<{
         vc: VcDocumentDefinition;
         message: RoleMessage;
     }> {
-        const { ref, subject, group, uuid, wallet, userId } = options;
+        const { ref, subject, group, uuid, relayerAccount, userId } = options;
         const did = group.owner;
         const vcHelper = new VcHelper();
         const userCred = await PolicyUtils.getUserCredentials(ref, did, userId);
-        const userWallet = await userCred.loadWallet(ref, wallet, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
 
         const userDidDocument = await userCred.loadDidDocument(ref, userId);
         const userVC = await vcHelper.createVerifiableCredential(
@@ -35,9 +35,9 @@ export class SignAndSendRole {
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
         const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref, userId);
         const messageServer = new MessageServer({
-            operatorId: userWallet.hederaAccountId,
-            operatorKey: userWallet.hederaAccountKey,
-            signOptions: userWallet.signOptions,
+            operatorId: userRelayerAccount.hederaAccountId,
+            operatorKey: userRelayerAccount.hederaAccountKey,
+            signOptions: userRelayerAccount.signOptions,
             encryptKey: userHederaCred.hederaAccountKey,
             dryRun: ref.dryRun
         });
@@ -61,10 +61,10 @@ export class SignAndSendRole {
         subject: any,
         group: any,
         uuid: string,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }): Promise<any> {
-        const { ref, subject, group, uuid, wallet, userId } = options;
+        const { ref, subject, group, uuid, relayerAccount, userId } = options;
         const did = group.owner;
         const vcHelper = new VcHelper();
         const userAccount = await PolicyUtils.getHederaAccountId(ref, did, userId);
@@ -86,7 +86,7 @@ export class SignAndSendRole {
             owner: did,
             topicId: rootTopic.topicId,
             accountId: userAccount,
-            wallet,
+            relayerAccount,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.SignAndSendRole,
@@ -102,7 +102,7 @@ export class SignAndSendRole {
     public static async response(options: {
         row: PolicyAction,
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }) {
         const { row, user, userId } = options;
@@ -177,7 +177,7 @@ export class SignAndSendRole {
             request &&
             response &&
             request.accountId === response.accountId &&
-            request.wallet === response.wallet
+            request.relayerAccount === response.relayerAccount
         ) {
             return true;
         }

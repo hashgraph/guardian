@@ -88,7 +88,7 @@ export class PolicyAction extends BaseEntity {
         nullable: true,
         index: true
     })
-    wallet?: string;
+    relayerAccount?: string;
 
     /**
      * Hedera account id

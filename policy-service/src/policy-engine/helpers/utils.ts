@@ -1,4 +1,24 @@
-import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers, EncryptVcHelper, SchemaConverterUtils } from '@guardian/common';
+import {
+    HederaDidDocument,
+    IAuthUser,
+    KeyType,
+    NotificationHelper,
+    Schema as SchemaCollection,
+    Token,
+    Topic,
+    TopicConfig,
+    TopicHelper,
+    Users,
+    VcDocument as VcDocumentCollection,
+    VcDocumentDefinition as VcDocument,
+    VcDocumentDefinition as HVcDocument,
+    VcSubject,
+    VpDocumentDefinition as VpDocument,
+    Wallet,
+    Workers,
+    EncryptVcHelper,
+    SchemaConverterUtils
+} from '@guardian/common';
 import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SchemaField, SignatureType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { FilterQuery } from '@mikro-orm/core';
@@ -6,7 +26,7 @@ import * as mathjs from 'mathjs';
 import { DocumentType } from '../interfaces/document.type.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
-import { IHederaCredentials, IWallet, PolicyUser, UserCredentials } from '../policy-user.js';
+import { IHederaCredentials, IRelayerAccount, PolicyUser, UserCredentials } from '../policy-user.js';
 import { guardianVersion } from '../../version.js';
 import { buildTableHelper } from '../helpers/table-field-core.js';
 
@@ -32,9 +52,9 @@ export class PolicyUtils {
     private static readonly users = new Users();
 
     /**
-     * Wallet service
+     * Wallet helper
      */
-    private static readonly wallet = new Wallet();
+    private static readonly walletHelper = new Wallet();
 
     /**
      * Custom Functions
@@ -464,7 +484,7 @@ export class PolicyUtils {
     public static async associate(
         ref: AnyBlockType,
         token: Token,
-        user: IHederaCredentials | IWallet,
+        user: IHederaCredentials | IRelayerAccount,
         userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
@@ -503,7 +523,7 @@ export class PolicyUtils {
     public static async dissociate(
         ref: AnyBlockType,
         token: Token,
-        user: IHederaCredentials | IWallet,
+        user: IHederaCredentials | IRelayerAccount,
         userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
@@ -551,7 +571,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualFreeze(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            const freezeKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId, userId);
+            const freezeKey = await PolicyUtils.walletHelper.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId, userId);
             return await workers.addNonRetryableTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
@@ -588,7 +608,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualUnfreeze(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            const freezeKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId, userId);
+            const freezeKey = await PolicyUtils.walletHelper.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId, userId);
             return await workers.addRetryableTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
@@ -625,7 +645,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualGrantKyc(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            const kycKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId, userId);
+            const kycKey = await PolicyUtils.walletHelper.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId, userId);
             return await workers.addRetryableTask({
                 type: WorkerTaskType.GRANT_KYC_TOKEN,
                 data: {
@@ -663,7 +683,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualRevokeKyc(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            const kycKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId, userId);
+            const kycKey = await PolicyUtils.walletHelper.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId, userId);
             return await workers.addRetryableTask({
                 type: WorkerTaskType.GRANT_KYC_TOKEN,
                 data: {
@@ -717,44 +737,44 @@ export class PolicyUtils {
             });
             tokenId = createdToken.tokenId;
 
-            const wallet = new Wallet();
+            const walletHelper = new Wallet();
             await Promise.all([
-                wallet.setUserKey(
+                walletHelper.setUserKey(
                     user.did,
                     KeyType.TOKEN_TREASURY_KEY,
                     createdToken.tokenId,
                     createdToken.adminKey,
                     userId
                 ),
-                wallet.setUserKey(
+                walletHelper.setUserKey(
                     user.did,
                     KeyType.TOKEN_ADMIN_KEY,
                     createdToken.tokenId,
                     createdToken.adminKey,
                     userId
                 ),
-                wallet.setUserKey(
+                walletHelper.setUserKey(
                     user.did,
                     KeyType.TOKEN_FREEZE_KEY,
                     createdToken.tokenId,
                     createdToken.freezeKey,
                     userId
                 ),
-                wallet.setUserKey(
+                walletHelper.setUserKey(
                     user.did,
                     KeyType.TOKEN_KYC_KEY,
                     createdToken.tokenId,
                     createdToken.kycKey,
                     userId
                 ),
-                wallet.setUserKey(
+                walletHelper.setUserKey(
                     user.did,
                     KeyType.TOKEN_SUPPLY_KEY,
                     createdToken.tokenId,
                     createdToken.supplyKey,
                     userId
                 ),
-                wallet.setUserKey(
+                walletHelper.setUserKey(
                     user.did,
                     KeyType.TOKEN_WIPE_KEY,
                     createdToken.tokenId,
@@ -935,59 +955,59 @@ export class PolicyUtils {
     }
 
     /**
-     * Get Document Wallet
+     * Get Document Relayer Account
      * @param ref
      * @param document
      * @param userId
      */
-    public static async getDocumentWallet(
+    public static async getDocumentRelayerAccount(
         ref: AnyBlockType,
         document: IPolicyDocument,
         userId: string | null
     ): Promise<string> {
-        return PolicyUtils.getUserWallet(ref, document?.owner, document?.wallet, userId);
+        return PolicyUtils.getUserRelayerAccount(ref, document?.owner, document?.relayerAccount, userId);
     }
 
     /**
-     * Get User Wallet
+     * Get User Relayer Account
      * @param ref
      * @param did
-     * @param wallet
+     * @param relayerAccount
      * @param userId
      */
-    public static async getUserWallet(
+    public static async getUserRelayerAccount(
         ref: AnyBlockType,
         did: string,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     ): Promise<string> {
         if (ref.dryRun) {
             const userFull = await ref.components.getVirtualUser(did);
             return userFull.hederaAccountId;
         } else {
-            const config = await PolicyUtils.users.getUserWallet(did, wallet, userId);
+            const config = await PolicyUtils.users.getUserRelayerAccount(did, relayerAccount, userId);
             return config?.account;
         }
     }
 
     /**
-     * Get User Wallet
+     * Get User Relayer Account
      * @param ref
      * @param did
-     * @param wallet
+     * @param relayerAccount
      * @param userId
      */
-    public static async getRefWallet(
+    public static async getRefRelayerAccount(
         ref: AnyBlockType,
         did: string,
-        wallet: string,
+        relayerAccount: string,
         documentRef: IPolicyDocument | null,
         userId: string | null
     ): Promise<string> {
-        if (documentRef && !wallet) {
-            return PolicyUtils.getDocumentWallet(ref, documentRef, userId);
+        if (documentRef && !relayerAccount) {
+            return PolicyUtils.getDocumentRelayerAccount(ref, documentRef, userId);
         } else {
-            return PolicyUtils.getUserWallet(ref, did, wallet, userId);
+            return PolicyUtils.getUserRelayerAccount(ref, did, relayerAccount, userId);
         }
     }
 
@@ -1098,7 +1118,7 @@ export class PolicyUtils {
             if (!userFull) {
                 throw new Error('User not found');
             }
-            return await PolicyUtils.wallet.getKey(userFull.walletToken, type, keyName);
+            return await PolicyUtils.walletHelper.getKey(userFull.walletToken, type, keyName);
         }
     }
 
@@ -1119,7 +1139,7 @@ export class PolicyUtils {
             if (!userFull) {
                 throw new Error('User not found');
             }
-            await PolicyUtils.wallet.setKey(userFull.walletToken, type, keyName, key);
+            await PolicyUtils.walletHelper.setKey(userFull.walletToken, type, keyName, key);
         }
     }
 
@@ -1760,16 +1780,16 @@ export class PolicyUtils {
         }
     }
 
-    private static async loadWalletKey(
+    private static async loadRelayerAccountKey(
         did: string,
-        wallet: string,
+        relayerAccount: string,
         ref: AnyBlockType | null,
         userId: string | null
     ): Promise<string | null> {
         if (ref && ref.dryRun) {
-            return ref.databaseServer.getVirtualKey(did, `${did}/${wallet}`);
+            return ref.databaseServer.getVirtualKey(did, `${did}/${relayerAccount}`);
         } else {
-            return PolicyUtils.wallet.getUserKey(did, KeyType.PROJECT_WALLET, `${did}/${wallet}`, userId);
+            return PolicyUtils.walletHelper.getUserKey(did, KeyType.RELAYER_ACCOUNT, `${did}/${relayerAccount}`, userId);
         }
     }
 
@@ -1781,23 +1801,23 @@ export class PolicyUtils {
         if (ref && ref.dryRun) {
             return ref.databaseServer.getVirtualKey(did, did);
         } else {
-            return PolicyUtils.wallet.getUserKey(did, KeyType.KEY, did, userId);
+            return PolicyUtils.walletHelper.getUserKey(did, KeyType.KEY, did, userId);
         }
     }
 
-    public static async loadWallet(
+    public static async loadRelayerAccount(
         did: string,
-        wallet: string,
+        relayerAccount: string,
         ref: AnyBlockType | null,
         userId: string | null
     ) {
         const userFull = await PolicyUtils.loadUser(did, ref, userId);
         const hederaAccountId: string = userFull?.hederaAccountId;
-        if (wallet && wallet !== hederaAccountId) {
-            const walletKey = await PolicyUtils.loadWalletKey(did, wallet, ref, userId);
+        if (relayerAccount && relayerAccount !== hederaAccountId) {
+            const relayerAccountKey = await PolicyUtils.loadRelayerAccountKey(did, relayerAccount, ref, userId);
             return {
-                hederaAccountId: wallet,
-                hederaAccountKey: walletKey
+                hederaAccountId: relayerAccount,
+                hederaAccountKey: relayerAccountKey
             }
         } else {
             const hederaKey = await PolicyUtils.loadHederaKey(did, ref, userId);
@@ -1808,32 +1828,32 @@ export class PolicyUtils {
         }
     }
 
-    public static async getWallet(
+    public static async getRelayerAccount(
         ref: AnyBlockType,
         did: string,
-        wallet: string | null | undefined,
+        relayerAccount: string | null | undefined,
         documentRef: IPolicyDocument,
         userId: string | null
     ) {
         try {
-            let walletAccount: string;
+            let account: string;
             if (ref.dryRun) {
-                walletAccount = await PolicyUtils.getUserWallet(ref, did, null, userId);
-            } else if (wallet) {
-                walletAccount = wallet;
+                account = await PolicyUtils.getUserRelayerAccount(ref, did, null, userId);
+            } else if (relayerAccount) {
+                account = relayerAccount;
             } else if (documentRef) {
-                walletAccount = await PolicyUtils.getDocumentWallet(ref, documentRef, userId);
+                account = await PolicyUtils.getDocumentRelayerAccount(ref, documentRef, userId);
             } else {
-                walletAccount = await PolicyUtils.getUserWallet(ref, did, null, userId);
+                account = await PolicyUtils.getUserRelayerAccount(ref, did, null, userId);
             }
-            return walletAccount;
+            return account;
         } catch (error) {
-            throw Error(`Invalid wallet.`);
+            throw Error(`Invalid relayer account.`);
         }
     }
 
-    public static async checkWalletBalance(
-        wallet?: {
+    public static async checkAccountBalance(
+        relayerAccount?: {
             account: string;
             name: string;
             default: boolean;
@@ -1841,12 +1861,12 @@ export class PolicyUtils {
         userId?: string
     ) {
         try {
-            if (wallet) {
+            if (relayerAccount) {
                 const workers = new Workers();
                 const info = await workers.addNonRetryableTask({
                     type: WorkerTaskType.GET_ACCOUNT_INFO_REST,
                     data: {
-                        hederaAccountId: wallet.account,
+                        hederaAccountId: relayerAccount.account,
                         payload: { userId }
                     }
                 }, {

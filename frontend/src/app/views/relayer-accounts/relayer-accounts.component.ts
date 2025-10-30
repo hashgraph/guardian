@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, PolicyStatus, UserPermissions } from '@guardian/interfaces';
+import { UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { ProjectWalletService } from 'src/app/services/project-wallet.service';
-import { NewProjectWalletDialog } from 'src/app/components/new-project-wallets-dialog/new-project-wallets-dialog.component';
-import { ProjectWalletDetailsDialog } from 'src/app/components/project-wallet-details-dialog/project-wallet-details-dialog.component';
+import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
+import { RelayerAccountDetailsDialog } from 'src/app/components/relayer-account-details-dialog/relayer-account-details-dialog.component';
 import moment from 'moment';
 
 interface IColumn {
@@ -20,12 +19,12 @@ interface IColumn {
 }
 
 @Component({
-    selector: 'app-project-wallets',
-    templateUrl: './project-wallets.component.html',
-    styleUrls: ['./project-wallets.component.scss'],
+    selector: 'app-relayer-accounts',
+    templateUrl: './relayer-accounts.component.html',
+    styleUrls: ['./relayer-accounts.component.scss'],
 })
-export class ProjectWalletsComponent implements OnInit {
-    public readonly title: string = 'Project Wallets';
+export class RelayerAccountsComponent implements OnInit {
+    public readonly title: string = 'Relayer Accounts';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
@@ -36,15 +35,15 @@ export class ProjectWalletsComponent implements OnInit {
     public pageSize: number;
     public pageCount: number;
     public columns: IColumn[];
-    public currentWallet: any;
+    public currentRelayerAccount: any;
     public balances: Map<string, string>;
-    public searchWallet: string;
+    public search: string;
 
     private subscription = new Subscription();
 
     constructor(
         private profileService: ProfileService,
-        private projectWalletService: ProjectWalletService,
+        private relayerAccountsService: RelayerAccountsService,
         private dialogService: DialogService,
         private router: Router,
         private route: ActivatedRoute
@@ -110,15 +109,15 @@ export class ProjectWalletsComponent implements OnInit {
         this.loading = true;
         forkJoin([
             this.profileService.getProfile(),
-            this.projectWalletService.getCurrentWallet(),
-        ]).subscribe(([profile, currentWallet]) => {
+            this.relayerAccountsService.getCurrentRelayerAccount(),
+        ]).subscribe(([profile, current]) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
-            this.currentWallet = currentWallet;
+            this.currentRelayerAccount = current;
 
             if (this.isConfirmed) {
-                this.loadWallets();
+                this.loadRelayerAccounts();
             } else {
                 setTimeout(() => {
                     this.loading = false;
@@ -129,17 +128,17 @@ export class ProjectWalletsComponent implements OnInit {
         });
     }
 
-    private loadWallets() {
+    private loadRelayerAccounts() {
         const filters: any = {};
         this.loading = true;
-        this.projectWalletService
-            .getUserWallets(
+        this.relayerAccountsService
+            .getUserRelayerAccounts(
                 this.pageIndex,
                 this.pageSize,
                 filters
             )
             .subscribe((response) => {
-                const { page, count } = this.projectWalletService.parsePage(response);
+                const { page, count } = this.relayerAccountsService.parsePage(response);
                 this.page = page;
                 this.pageCount = count;
                 for (const row of this.page) {
@@ -162,20 +161,20 @@ export class ProjectWalletsComponent implements OnInit {
             this.pageIndex = event.pageIndex;
             this.pageSize = event.pageSize;
         }
-        this.loadWallets();
+        this.loadRelayerAccounts();
     }
 
-    public onSetWalletSearch() {
-        this.loadWallets();
+    public onSearch() {
+        this.loadRelayerAccounts();
     }
 
-    public onOpenWallet(item: any) {
-        const dialogRef = this.dialogService.open(ProjectWalletDetailsDialog, {
+    public onOpen(item: any) {
+        const dialogRef = this.dialogService.open(RelayerAccountDetailsDialog, {
             showHeader: false,
             width: '1100px',
             styleClass: 'guardian-dialog',
             data: {
-                wallet: item
+                relayerAccount: item
             }
         });
         dialogRef.onClose.subscribe(async (result) => { });
@@ -187,8 +186,8 @@ export class ProjectWalletsComponent implements OnInit {
 
     public updateBalance(row: any) {
         row.__loading = true;
-        this.projectWalletService
-            .getProjectWalletBalance(row.account)
+        this.relayerAccountsService
+            .getRelayerAccountBalance(row.account)
             .subscribe((balance) => {
                 this.balances.set(row.account, balance);
                 row.__loading = false;
@@ -206,15 +205,15 @@ export class ProjectWalletsComponent implements OnInit {
     }
 
     public getAccountName(row: any) {
-        if (row.walletAccountId) {
-            return row.walletName;
+        if (row.relayerAccountId) {
+            return row.relayerAccountName;
         } else {
             return 'Default';
         }
     }
     public getAccount(row: any) {
-        if (row.walletAccountId) {
-            return row.walletAccountId;
+        if (row.relayerAccountId) {
+            return row.relayerAccountId;
         } else {
             return row.hederaAccountId;
         }

@@ -114,7 +114,7 @@ export class RetirementBlock {
         policyOwner: UserCredentials,
         user: PolicyUser,
         targetAccount: string,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -227,7 +227,7 @@ export class RetirementBlock {
         vcDocument.messageId = vcMessageResult.getId();
         vcDocument.topicId = vcMessageResult.getTopicId();
         vcDocument.relationships = relationships;
-        vcDocument.wallet = wallet;
+        vcDocument.relayerAccount = relayerAccount;
 
         await ref.databaseServer.saveVC(vcDocument);
 
@@ -254,7 +254,7 @@ export class RetirementBlock {
         vpDocument.messageId = vpMessageResult.getId();
         vpDocument.topicId = vpMessageResult.getTopicId();
         vpDocument.relationships = relationships;
-        vpDocument.wallet = wallet;
+        vpDocument.relayerAccount = relayerAccount;
         await ref.databaseServer.saveVP(vpDocument);
 
         await MintService.wipe({
@@ -263,7 +263,7 @@ export class RetirementBlock {
             tokenValue,
             root: policyOwnerHederaCred,
             targetAccount: targetAccount,
-            wallet,
+            relayerAccount,
             uuid: vpMessageResult.getId(),
             userId,
             serialNumbers
@@ -354,12 +354,12 @@ export class RetirementBlock {
         }
         const topicId = topicIds[0];
 
-        const wallet = await PolicyUtils.getDocumentWallet(ref, docs[0], event?.user?.userId);
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, docs[0], event?.user?.userId);
         let targetAccount: string;
         if (ref.options.accountId) {
             targetAccount = firstAccounts;
         } else {
-            targetAccount = wallet;
+            targetAccount = relayerAccount;
         }
 
         if (!targetAccount) {
@@ -376,7 +376,7 @@ export class RetirementBlock {
             policyOwner,
             docOwner,
             targetAccount,
-            wallet,
+            relayerAccount,
             event?.user?.userId
         );
 
@@ -386,7 +386,7 @@ export class RetirementBlock {
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, docOwner, {
             tokenId: token.tokenId,
-            accountId: wallet,
+            accountId: relayerAccount,
             amount: tokenValue,
             documents: ExternalDocuments(docs),
             result: ExternalDocuments(vp),

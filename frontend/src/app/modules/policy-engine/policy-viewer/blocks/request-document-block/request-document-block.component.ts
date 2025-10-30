@@ -20,7 +20,7 @@ import { DocumentAutosaveStorage } from '../../../structures';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { PolicyStatus } from '@guardian/interfaces';
-import { ProjectWalletService } from 'src/app/services/project-wallet.service';
+import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -30,7 +30,7 @@ interface IRequestDocumentData {
     presetFields: any[];
     restoreData: any;
     data: any;
-    wallet: boolean;
+    relayerAccount: boolean;
     draft: boolean;
     editType: 'new' | 'edit';
     uiMetaData: {
@@ -93,16 +93,16 @@ export class RequestDocumentBlockComponent
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public readonly: boolean = false;
     public draft: boolean;
-    public wallet: boolean;
+    public relayerAccount: boolean;
     public draftId?: string;
     public dialog: RequestDocumentBlockDialog;
     public edit: boolean;
     private storage: DocumentAutosaveStorage;
     private stepper = [true, false, false];
-    public walletType: string = 'account';
-    public currentWallet: string;
-    public wallets: any[] = [];
-    public walletForm = new FormGroup({
+    public relayerAccountType: string = 'account';
+    public currentRelayerAccount: string;
+    public relayerAccounts: any[] = [];
+    public relayerAccountForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
         account: new FormControl<string>('', Validators.required),
         key: new FormControl<string>('', Validators.required),
@@ -115,7 +115,7 @@ export class RequestDocumentBlockComponent
         profile: ProfileService,
         policyHelper: PolicyHelper,
         private schemaRulesService: SchemaRulesService,
-        private projectWalletService: ProjectWalletService,
+        private relayerAccountsService: RelayerAccountsService,
         private fb: UntypedFormBuilder,
         private dialogService: DialogService,
         private router: Router,
@@ -219,7 +219,7 @@ export class RequestDocumentBlockComponent
             this.edit = data.editType === 'edit';
             this.schema = new Schema(schema);
             this.hideFields = {};
-            this.wallet = !!data.wallet && !this.dryRun;
+            this.relayerAccount = !!data.relayerAccount && !this.dryRun;
             this.draft = isDraft;
             this.draftId = (isDraft && row) ? row.id : null;
             if (uiMetaData.privateFields) {
@@ -263,8 +263,8 @@ export class RequestDocumentBlockComponent
             this.disabled = false;
             this.isExist = false;
         }
-        if (this.wallet) {
-            this.submitText = 'Select Wallet';
+        if (this.relayerAccount) {
+            this.submitText = 'Select Relayer Account';
         } else {
             this.submitText = (this.edit && !this.draft) ? 'Validate & Update' : 'Validate & Create';
         }
@@ -296,13 +296,13 @@ export class RequestDocumentBlockComponent
     }
 
 
-    private loadWallets() {
+    private loadRelayerAccounts() {
         this.loading = true;
-        this.projectWalletService
-            .getProjectWalletsAll()
+        this.relayerAccountsService
+            .getRelayerAccountsAll()
             .pipe(takeUntil(this.destroy$))
-            .subscribe((wallets: any[]) => {
-                this.wallets = wallets;
+            .subscribe((relayerAccounts: any[]) => {
+                this.relayerAccounts = relayerAccounts;
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -347,10 +347,10 @@ export class RequestDocumentBlockComponent
             return;
         }
         if (this.dataForm.valid || draft) {
-            if (this.wallet) {
+            if (this.relayerAccount) {
                 if (this.isStep(0)) {
                     this.setStep(1);
-                    this.loadWallets();
+                    this.loadRelayerAccounts();
                 } else {
                     await this.onSubmit(draft);
                 }
@@ -360,14 +360,14 @@ export class RequestDocumentBlockComponent
         }
     }
 
-    private getWallet() {
-        if (this.wallet) {
-            if (this.walletType === 'account') {
+    private getRelayerAccount() {
+        if (this.relayerAccount) {
+            if (this.relayerAccountType === 'account') {
                 return null;
-            } else if (this.walletType === 'wallet') {
-                return this.currentWallet;
-            } else if (this.walletType === 'new') {
-                return this.walletForm.value;
+            } else if (this.relayerAccountType === 'relayerAccount') {
+                return this.currentRelayerAccount;
+            } else if (this.relayerAccountType === 'new') {
+                return this.relayerAccountForm.value;
             } else {
                 return null;
             }
@@ -393,7 +393,7 @@ export class RequestDocumentBlockComponent
                 ref: this.ref,
                 draft,
                 draftId: this.draftId,
-                wallet: this.getWallet()
+                relayerAccount: this.getRelayerAccount()
             })
             .pipe(
                 finalize(async () => {
@@ -622,13 +622,13 @@ export class RequestDocumentBlockComponent
         return this.stepper[index];
     }
 
-    public onGenerateWallet() {
+    public onGenerateRelayerAccount() {
         this.loading = true;
-        this.projectWalletService
-            .generateProjectWallet()
+        this.relayerAccountsService
+            .generateRelayerAccount()
             .subscribe((account) => {
-                const data = this.walletForm.value;
-                this.walletForm.setValue({
+                const data = this.relayerAccountForm.value;
+                this.relayerAccountForm.setValue({
                     name: data.name || '',
                     account: account.id || '',
                     key: account.key || ''
@@ -639,15 +639,15 @@ export class RequestDocumentBlockComponent
             });
     }
 
-    public ifWalletDisabled() {
-        if (this.wallet) {
+    public ifRelayerAccountDisabled() {
+        if (this.relayerAccount) {
             if (this.isStep(1)) {
-                if (this.walletType === 'account') {
+                if (this.relayerAccountType === 'account') {
                     return false;
-                } else if (this.walletType === 'wallet') {
-                    return !this.currentWallet;
-                } else if (this.walletType === 'new') {
-                    return this.walletForm.invalid;
+                } else if (this.relayerAccountType === 'relayerAccount') {
+                    return !this.currentRelayerAccount;
+                } else if (this.relayerAccountType === 'new') {
+                    return this.relayerAccountForm.invalid;
                 } else {
                     return null;
                 }
@@ -660,6 +660,6 @@ export class RequestDocumentBlockComponent
     }
 
     public ifDisabledBtn() {
-        return !this.dataForm.valid || this.loading || this.ifWalletDisabled();
+        return !this.dataForm.valid || this.loading || this.ifRelayerAccountDisabled();
     }
 }

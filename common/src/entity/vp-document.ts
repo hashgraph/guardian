@@ -140,10 +140,10 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
     tokenId?: any;
 
     /**
-     * Wallet
+     * Relayer Account
      */
     @Property({ nullable: true })
-    wallet?: string;
+    relayerAccount?: string;
 
     /**
      * old file id
@@ -190,7 +190,7 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
         prop.tokenId = this.tokenId;
         prop.option = this.option;
         prop.relationships = this.relationships;
-        prop.wallet = this.wallet;
+        prop.relayerAccount = this.relayerAccount;
         prop.topicId = this.topicId;
         prop.policyId = this.policyId;
         return prop;

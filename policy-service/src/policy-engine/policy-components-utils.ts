@@ -1582,51 +1582,51 @@ export class PolicyComponentsUtils {
         }
     }
 
-    private static async _checkWallet(
+    private static async _checkRelayerAccount(
         ref: IPolicyInterfaceBlock,
         user: PolicyUser,
         data: any
     ): Promise<string> {
-        if (!data.wallet || ref.dryRun) {
+        if (!data.relayerAccount || ref.dryRun) {
             return;
         }
-        const walletConfig = data.wallet;
-        let wallet: any;
-        if (typeof walletConfig === 'string') {
-            wallet = await (new Users()).getUserWallet(user.did, walletConfig, user.userId);
+        const relayerAccountConfig = data.relayerAccount;
+        let relayerAccount: any;
+        if (typeof relayerAccountConfig === 'string') {
+            relayerAccount = await (new Users()).getUserRelayerAccount(user.did, relayerAccountConfig, user.userId);
         } else {
-            wallet = await (new Users()).createWallet({ did: user.did, id: user.userId }, walletConfig, user.userId);
+            relayerAccount = await (new Users()).createRelayerAccount({ did: user.did, id: user.userId }, relayerAccountConfig, user.userId);
         }
-        if (!wallet) {
-            return `Invalid wallet.`;
+        if (!relayerAccount) {
+            return `Invalid relayer account.`;
         }
 
-        const balance = await PolicyUtils.checkWalletBalance(wallet, user.userId);
+        const balance = await PolicyUtils.checkAccountBalance(relayerAccount, user.userId);
 
         if (balance === false) {
-            return 'The wallet account has insufficient balance.';
+            return 'The relayer account has insufficient balance.';
         }
 
         if (balance === null) {
-            return `Invalid wallet.`;
+            return `Invalid relayer account.`;
         }
 
         if (ref.locationType === LocationType.REMOTE) {
-            await PolicyComponentsUtils._sendWallet(ref, user, wallet);
+            await PolicyComponentsUtils._sendRelayerAccount(ref, user, relayerAccount);
         }
 
-        data.wallet = wallet.account;
+        data.relayerAccount = relayerAccount.account;
     }
 
-    private static async _sendWallet(
+    private static async _sendRelayerAccount(
         ref: IPolicyInterfaceBlock,
         user: PolicyUser,
-        wallet: any
+        relayerAccount: any
     ): Promise<void> {
         const userId = user.userId;
-        const walletKey = await PolicyUtils.loadWallet(user.did, wallet.account, ref, userId);
-        wallet.key = walletKey.hederaAccountKey;
-        await PolicyActionsUtils.setWallet({ ref, user, wallet, userId });
+        const relayerAccountKey = await PolicyUtils.loadRelayerAccount(user.did, relayerAccount.account, ref, userId);
+        relayerAccount.key = relayerAccountKey.hederaAccountKey;
+        await PolicyActionsUtils.setRelayerAccount({ ref, user, relayerAccount, userId });
     }
 
     public static async blockSetData(
@@ -1634,7 +1634,7 @@ export class PolicyComponentsUtils {
         user: PolicyUser,
         data: any
     ): Promise<MessageResponse<any> | MessageError<any>> {
-        const error = await PolicyComponentsUtils._checkWallet(block, user, data);
+        const error = await PolicyComponentsUtils._checkRelayerAccount(block, user, data);
         if (error) {
             return new MessageError(error, 500);
         }

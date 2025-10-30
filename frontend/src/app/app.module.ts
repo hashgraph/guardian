@@ -68,8 +68,8 @@ import { StandardRegistryCardComponent } from './components/standard-registry-ca
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
 import { NotificationComponent } from './components/notification/notification.component';
 import { TokenDialogComponent } from './components/token-dialog/token-dialog.component';
-import { NewProjectWalletDialog } from './components/new-project-wallets-dialog/new-project-wallets-dialog.component';
-import { ProjectWalletDetailsDialog } from './components/project-wallet-details-dialog/project-wallet-details-dialog.component';
+import { NewRelayerAccountDialog } from './components/new-relayer-account-dialog/new-relayer-account-dialog.component';
+import { RelayerAccountDetailsDialog } from './components/relayer-account-details-dialog/relayer-account-details-dialog.component';
 //Modules
 import { MaterialModule } from './modules/common/material.module';
 import { PolicyEngineModule } from './modules/policy-engine/policy-engine.module';
@@ -136,8 +136,8 @@ import { ExternalPoliciesService } from './services/external-policy.service';
 import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.component';
 import { GeoJsonService } from './services/geo-json.service';
 import { PolicyRepositoryService } from './services/policy-repository.service';
-import { ProjectWalletService } from './services/project-wallet.service';
-import { ProjectWalletsComponent } from './views/project-wallets/project-wallets.component';
+import { RelayerAccountsService } from './services/relayer-accounts.service';
+import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
 
 @NgModule({
     declarations: [
@@ -178,12 +178,12 @@ import { ProjectWalletsComponent } from './views/project-wallets/project-wallets
         ForgotPasswordDialogComponent,
         OnlyForDemoDirective,
         TokenDialogComponent,
-        NewProjectWalletDialog,
-        ProjectWalletDetailsDialog,
+        NewRelayerAccountDialog,
+        RelayerAccountDetailsDialog,
         UseWithServiceDirective,
         RolesViewComponent,
         UsersManagementComponent,
-        ProjectWalletsComponent,
+        RelayerAccountsComponent,
         UsersManagementDetailComponent,
         WorkerTasksComponent,
         UserKeysDialog
@@ -270,7 +270,7 @@ import { ProjectWalletsComponent } from './views/project-wallets/project-wallets
         PermissionsService,
         PermissionsGuard,
         CommentsService,
-        ProjectWalletService,
+        RelayerAccountsService,
         PolicyRepositoryService,
         {
             provide: GET_SCHEMA_NAME,

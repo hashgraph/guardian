@@ -24,7 +24,7 @@ interface IRequestDocumentAddonData {
     readonly: boolean;
     schema: ISchema;
     active: boolean;
-    wallet: boolean;
+    relayerAccount: boolean;
     data: any;
     buttonName: string;
     hideWhenDiscontinued?: boolean;
@@ -78,7 +78,7 @@ export class RequestDocumentBlockAddonComponent
     public dialog: RequestDocumentBlockDialog;
     public edit: boolean;
     public draft: boolean;
-    public wallet: boolean;
+    public relayerAccount: boolean;
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -130,7 +130,7 @@ export class RequestDocumentBlockAddonComponent
             this.dialogTitle = data.dialogTitle;
             this.disabled = active === false;
             this.isExist = true;
-            this.wallet = !!data.wallet && !this.dryRun;
+            this.relayerAccount = !!data.relayerAccount && !this.dryRun;
             this.needPreset = data.preset;
             this.presetFields = data.presetFields || [];
             this.restoreData = data.restoreData;

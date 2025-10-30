@@ -14,7 +14,7 @@ import { CreateTopic } from './create-topic.js';
 import { AssociateToken } from './associate-token.js';
 import { DissociateToken } from './dissociate-token.js';
 import { SendMessages } from './send-messages.js';
-import { WalletAction } from './wallet.js';
+import { RelayerAccountAction } from './relayer-account.js';
 
 export class PolicyActionsUtils {
     private static needKey(status: PolicyStatus, availability: PolicyAvailability): boolean {
@@ -81,8 +81,8 @@ export class PolicyActionsUtils {
     ) {
         const type = remoteAction?.document?.type;
         switch (type) {
-            case PolicyActionType.AddWallet: {
-                return await WalletAction.complete(remoteAction, user, userId);
+            case PolicyActionType.AddRelayerAccount: {
+                return await RelayerAccountAction.complete(remoteAction, user, userId);
             }
             default:
                 return false;
@@ -92,7 +92,7 @@ export class PolicyActionsUtils {
     public static async response(options: {
         row: PolicyAction,
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }) {
         const type = options?.row?.document?.type;
@@ -134,7 +134,7 @@ export class PolicyActionsUtils {
         subject: any,
         group: any,
         uuid: string,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }): Promise<{
         vc: VcDocumentDefinition,
@@ -193,7 +193,7 @@ export class PolicyActionsUtils {
         ref: AnyBlockType,
         type: string,
         user: PolicyUser,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }): Promise<string> {
         const { ref, type, user, userId } = options;
@@ -246,7 +246,7 @@ export class PolicyActionsUtils {
         ref: AnyBlockType,
         subject: any,
         issuer: string,
-        wallet: string,
+        relayerAccount: string,
         options: IDocumentOptions,
         userId: string | null
     }): Promise<VcDocumentDefinition> {
@@ -281,7 +281,7 @@ export class PolicyActionsUtils {
         topic: TopicConfig,
         message: Message,
         owner: string,
-        wallet: string,
+        relayerAccount: string,
         updateIpfs: boolean,
         userId: string | null
     }): Promise<Message> {
@@ -314,7 +314,7 @@ export class PolicyActionsUtils {
         ref: AnyBlockType,
         messages: Message[],
         owner: string,
-        wallet: string,
+        relayerAccount: string,
         updateIpfs: boolean,
         userId: string | null
     }): Promise<Message[]> {
@@ -346,7 +346,7 @@ export class PolicyActionsUtils {
         ref: AnyBlockType,
         token: Token,
         user: string,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }): Promise<boolean> {
         const { ref, user, userId } = options;
@@ -377,7 +377,7 @@ export class PolicyActionsUtils {
         ref: AnyBlockType,
         token: Token,
         user: string,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }): Promise<boolean> {
         const { ref, user, userId } = options;
@@ -408,12 +408,12 @@ export class PolicyActionsUtils {
         ref: AnyBlockType,
         name: string,
         owner: string,
-        wallet: string,
+        relayerAccount: string,
         memoObj: any,
         userId: string | null
     }): Promise<TopicConfig> {
         // Root topic
-        const { ref, name, owner, wallet, memoObj, userId } = options;
+        const { ref, name, owner, relayerAccount, memoObj, userId } = options;
         if (!name || name === 'root') {
             return await PolicyActionsUtils.getRootTopic(ref, userId);
         }
@@ -439,7 +439,7 @@ export class PolicyActionsUtils {
             config,
             owner: topicOwner,
             memoObj,
-            wallet: owner === topicOwner ? wallet : null,
+            relayerAccount: owner === topicOwner ? relayerAccount : null,
             userId
         });
     }
@@ -493,7 +493,7 @@ export class PolicyActionsUtils {
         type: TopicType,
         config: any,
         owner: string,
-        wallet: string,
+        relayerAccount: string,
         memoObj: any,
         userId: string | null
     }): Promise<TopicConfig> {
@@ -527,14 +527,14 @@ export class PolicyActionsUtils {
      * group-manager
      */
 
-    public static async setWallet(options: {
+    public static async setRelayerAccount(options: {
         ref: AnyBlockType,
         user: PolicyUser,
-        wallet: any
+        relayerAccount: any
         userId: string | null
     }): Promise<void> {
         const { ref, user } = options;
-        const data = await WalletAction.request(options);
+        const data = await RelayerAccountAction.request(options);
         const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
         await controller.sendRemoteAction(user, data)
     }

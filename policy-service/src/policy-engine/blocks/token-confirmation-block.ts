@@ -270,15 +270,15 @@ export class TokenConfirmationBlock {
                 tokenId = doc.tokens[ref.options.template];
             }
 
-            let wallet: string = null;
+            let relayerAccount: string = null;
             if (doc && field && doc.accounts) {
-                wallet = doc.accounts[field];
+                relayerAccount = doc.accounts[field];
             } else if (doc && !field) {
-                wallet = await PolicyUtils.getDocumentWallet(ref, doc, userId);
+                relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, doc, userId);
             }
 
             this.state[id] = {
-                accountId: wallet,
+                accountId: relayerAccount,
                 data: event.data,
                 user: event.user,
                 tokenId

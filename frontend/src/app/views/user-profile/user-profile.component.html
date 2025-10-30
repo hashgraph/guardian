@@ -23,9 +23,9 @@
                             <div class="tabview-label">General</div>
                         </ng-template>
                     </p-tabPanel>
-                    <p-tabPanel [selected]="tab === 'wallets'">
+                    <p-tabPanel [selected]="tab === 'relayerAccounts'">
                         <ng-template pTemplate="header">
-                            <div class="tabview-label">Wallets</div>
+                            <div class="tabview-label">Relayer Accounts</div>
                         </ng-template>
                     </p-tabPanel>
                     <p-tabPanel [selected]="tab === 'keys'">
@@ -118,17 +118,17 @@
                 </div>
             </ng-container>
 
-            <ng-container *ngIf="tab === 'wallets'">
+            <ng-container *ngIf="tab === 'relayerAccounts'">
                 <div class="guardian-user-page-toolbar">
                     <div class="guardian-user-page-filters">
                         <div class="search-filter">
                             <input
-                                [(ngModel)]="searchWallet"
+                                [(ngModel)]="searchRelayerAccount"
                                 class="guardian-input search-policy-input"
                                 pInputText
                                 placeholder="Search by keyword"
                                 type="text" 
-                                (change)="onSetWalletSearch()"/>
+                                (change)="onRelayerAccountSearch()"/>
                             <i class="search-icon">
                                 <svg-icon 
                                     class="svg-icon-16" 
@@ -149,10 +149,10 @@
                                     svgClass="icon-color-primary">
                                 </svg-icon>
                             </div>
-                            <div class="guardian-button-label">Update All Wallets</div>
+                            <div class="guardian-button-label">Update All Accounts</div>
                         </button>
                         <button
-                            (click)="onCreateWallet()"
+                            (click)="onCreateRelayerAccount()"
                             class="guardian-button guardian-button-primary">
                             <div class="guardian-button-icon">
                                 <svg-icon
@@ -161,21 +161,21 @@
                                     svgClass="icon-color-secondary">
                                 </svg-icon>
                             </div>
-                            <div class="guardian-button-label">Add Wallet</div>
+                            <div class="guardian-button-label">Add Relayer Account</div>
                         </button>
                     </div>
                 </div>
                 <div class="guardian-user-page-grid">
-                    <ng-container *ngIf="walletPage && walletPage.length > 0; else noData">
+                    <ng-container *ngIf="relayerAccountPage && relayerAccountPage.length > 0; else noData">
                         <div class="guardian-grid-container">
                             <p-table
                                 class="guardian-grid-table"
-                                [value]="walletPage"
+                                [value]="relayerAccountPage"
                                 [scrollable]="true"
                             >
                                 <ng-template pTemplate="header">
                                     <tr class="guardian-grid-header">
-                                        <ng-container *ngFor="let column of walletColumns">
+                                        <ng-container *ngFor="let column of relayerAccountColumns">
                                             <th
                                                 *ngIf="!column.canDisplay || column.canDisplay()"
                                                 class="header-cell-{{column.type}} col-{{column.size}}"
@@ -185,7 +185,7 @@
                                 </ng-template>
                                 <ng-template let-row pTemplate="body">
                                     <tr class="guardian-grid-row">
-                                        <ng-container *ngFor="let column of walletColumns">
+                                        <ng-container *ngFor="let column of relayerAccountColumns">
                                             <td
                                                 *ngIf="!column.canDisplay || column.canDisplay()"
                                                 class="row-cell-{{column.type}} col-{{column.size}}"
@@ -227,21 +227,9 @@
                                                 </ng-container>
                                                 <ng-container *ngSwitchCase="'options'">
                                                     <button
-                                                        (click)="onOpenWallet(row)"
+                                                        (click)="onOpenRelayerAccount(row)"
                                                         class="guardian-button guardian-button-secondary grid-btn"
                                                     >Details</button>
-                                                </ng-container>
-                                                <ng-container *ngSwitchCase="'delete'">
-                                                    <div
-                                                        [attr.disabled]="row.status === 'PUBLISHED'"
-                                                        class="guardian-icon-button big"
-                                                        (click)="onDeleteWallet(row)">
-                                                        <svg-icon
-                                                            class="icon-btn"
-                                                            src="/assets/images/icons/delete.svg"
-                                                            [svgClass]="row.status === 'PUBLISHED' ? 'icon-color-disabled' : 'icon-color-delete'">
-                                                        </svg-icon>
-                                                    </div>
                                                 </ng-container>
                                                 <ng-container *ngSwitchDefault>
                                                     <span class="text-truncate">{{row[column.id]}}</span>
@@ -254,10 +242,10 @@
                             <div class="guardian-grid-paginator">
                                 <app-paginator
                                     class="guardian-grid-paginator"
-                                    [pageIndex]="walletPageIndex"
-                                    [pageSize]="walletPageSize"
-                                    [length]="walletCount"
-                                    (page)="onKeyPage($event)"
+                                    [pageIndex]="relayerAccountPageIndex"
+                                    [pageSize]="relayerAccountPageSize"
+                                    [length]="relayerAccountCount"
+                                    (page)="onRelayerAccountPage($event)"
                                 ></app-paginator>
                             </div>
                         </div>
@@ -268,8 +256,8 @@
                                 class="svg-icon-32"
                                 src="/assets/images/icons/32/list.svg"
                                 svgClass="icon-color-disabled"></svg-icon>
-                            <span class="guardian-user-not-data__text-strong">There are no wallets created yet</span>
-                            <span class="guardian-user-not-data__text">Please create a new wallet to see the data</span>
+                            <span class="guardian-user-not-data__text-strong">There are no accounts created yet</span>
+                            <span class="guardian-user-not-data__text">Please create a new account to see the data</span>
                         </div>
                     </ng-template>
                 </div>
@@ -363,7 +351,7 @@
                                     [pageIndex]="keyPageIndex"
                                     [pageSize]="keyPageSize"
                                     [length]="keyCount"
-                                    (page)="onWalletPage($event)"
+                                    (page)="onKeyPage($event)"
                                 ></app-paginator>
                             </div>
                         </div>

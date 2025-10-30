@@ -16,7 +16,7 @@ export class MintService {
     /**
      * Wallet service
      */
-    private static readonly wallet = new Wallet();
+    private static readonly walletHelper = new Wallet();
     /**
      * Logger service
      */
@@ -58,13 +58,13 @@ export class MintService {
             tokenConfig.treasuryKey = tokenPK;
         } else {
             const [treasuryKey, supplyKey] = await Promise.all([
-                MintService.wallet.getUserKey(
+                MintService.walletHelper.getUserKey(
                     token.owner,
                     KeyType.TOKEN_TREASURY_KEY,
                     token.tokenId,
                     userId
                 ),
-                MintService.wallet.getUserKey(
+                MintService.walletHelper.getUserKey(
                     token.owner,
                     KeyType.TOKEN_SUPPLY_KEY,
                     token.tokenId,
@@ -102,7 +102,7 @@ export class MintService {
         transactionMemo: string,
         documents: VcDocument[],
         policyOwnerSignOptions: ISignOptions,
-        wallet: string,
+        relayerAccount: string,
         userId: string | null
     }): Promise<void> {
         const {
@@ -116,7 +116,7 @@ export class MintService {
             transactionMemo,
             documents,
             policyOwnerSignOptions,
-            wallet,
+            relayerAccount,
             userId
         } = options;
 
@@ -159,7 +159,7 @@ export class MintService {
                     tokenId: token.tokenId,
                     amount: tokenValue,
                     target: targetAccount,
-                    wallet,
+                    relayerAccount,
                     status: 'Waiting',
                 } as FilterObject<MultiPolicyTransaction>);
             }
@@ -186,7 +186,7 @@ export class MintService {
                         memo: transactionMemo,
                         policyId: ref.policyId,
                         owner: documentOwner.did,
-                        wallet
+                        relayerAccount
                     },
                     policyOwnerHederaCred,
                     tokenConfig,
@@ -219,7 +219,7 @@ export class MintService {
                         memo: transactionMemo,
                         policyId: ref.policyId,
                         owner: documentOwner.did,
-                        wallet
+                        relayerAccount
                     },
                     policyOwnerHederaCred,
                     tokenConfig,
@@ -480,7 +480,7 @@ export class MintService {
         vpMessageId: string,
         policyId: string,
         owner: string;
-        wallet: string;
+        relayerAccount: string;
         userId: string | null,
         notifier?: NotificationHelper
     }): Promise<void> {
@@ -494,7 +494,7 @@ export class MintService {
             policyId,
             userId,
             owner,
-            wallet,
+            relayerAccount,
             notifier
         } = options;
         const messageIds = ids.join(',');
@@ -507,13 +507,13 @@ export class MintService {
             tokenName: token.tokenName,
         };
         const [treasuryKey, supplyKey] = await Promise.all([
-            MintService.wallet.getUserKey(
+            MintService.walletHelper.getUserKey(
                 token.owner,
                 KeyType.TOKEN_TREASURY_KEY,
                 token.tokenId,
                 userId
             ),
-            MintService.wallet.getUserKey(
+            MintService.walletHelper.getUserKey(
                 token.owner,
                 KeyType.TOKEN_SUPPLY_KEY,
                 token.tokenId,
@@ -537,7 +537,7 @@ export class MintService {
                     decimals: token.decimals,
                     policyId,
                     owner,
-                    wallet
+                    relayerAccount
                 },
                 root,
                 tokenConfig,
@@ -571,7 +571,7 @@ export class MintService {
                     decimals: token.decimals,
                     policyId,
                     owner,
-                    wallet
+                    relayerAccount
                 },
                 root,
                 tokenConfig,
@@ -620,7 +620,7 @@ export class MintService {
         tokenValue: number,
         root: IHederaCredentials,
         targetAccount: string,
-        wallet: string,
+        relayerAccount: string,
         uuid: string,
         userId: string | null,
         serialNumbers?: number[]
@@ -663,7 +663,7 @@ export class MintService {
                 }
             );
         } else {
-            const wipeKey = await MintService.wallet.getUserKey(
+            const wipeKey = await MintService.walletHelper.getUserKey(
                 token.owner,
                 KeyType.TOKEN_WIPE_KEY,
                 token.tokenId,

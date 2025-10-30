@@ -453,12 +453,12 @@ export class SendToGuardianBlock {
             message.setMemo(memo);
 
             const topicOwner = this.getTopicOwner(ref, document, ref.options.topicOwner);
-            const wallet = document.owner === topicOwner ? document.wallet : null;
+            const relayerAccount = document.owner === topicOwner ? document.relayerAccount : null;
             const topic = await PolicyActionsUtils.getOrCreateTopic({
                 ref,
                 name: ref.options.topic,
                 owner: topicOwner,
-                wallet: wallet,
+                relayerAccount,
                 memoObj: document,
                 userId
             });
@@ -467,7 +467,7 @@ export class SendToGuardianBlock {
                 topic,
                 message,
                 owner: document.owner,
-                wallet: document.wallet,
+                relayerAccount: document.relayerAccount,
                 updateIpfs: true,
                 userId
             });
@@ -494,7 +494,7 @@ export class SendToGuardianBlock {
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
-        const wallet = await PolicyUtils.getDocumentWallet(ref, document, userId);
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, document, userId);
         const owner = await PolicyUtils.getUserByIssuer(ref, document, userId);
         //
         // Create Message
@@ -543,7 +543,7 @@ export class SendToGuardianBlock {
         document.document = docObject.toJsonTree();
         document.policyId = ref.policyId;
         document.tag = ref.tag;
-        document.wallet = wallet;
+        document.relayerAccount = relayerAccount;
         document.option = Object.assign({}, document.option);
         if (ref.options.options) {
             for (const option of ref.options.options) {
