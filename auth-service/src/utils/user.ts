@@ -139,8 +139,6 @@ export class UserUtils {
         return UserUtils.updateUsersFields(users, prop);
     }
 
-
-
     public static async generateAccount(user: User, userId: string): Promise<{
         id: string,
         key: string

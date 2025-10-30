@@ -289,7 +289,11 @@ export class ListOfTokensUserComponent implements OnInit {
     public associate(user: any) {
         this.loading = true;
         this.tokenService
-            .pushAssociate(this.tokenId, user.associated != 'Yes')
+            .pushAssociateWithAccount(
+                this.tokenId,
+                user.relayerAccountId,
+                user.associated != 'Yes'
+            )
             .subscribe(
                 (result) => {
                     const { taskId, expectation } = result;

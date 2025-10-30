@@ -267,7 +267,6 @@ export class RelayerAccountsService extends NatsService {
                 }
             });
 
-
         /**
          * Generate relayer account
          * @param user - user
@@ -387,34 +386,34 @@ export class RelayerAccountsService extends NatsService {
                         }
                     }, {
                         $lookup: {
-                            from: "relayer-account",
-                            localField: "did",
-                            foreignField: "owner",
-                            as: "relayerAccounts"
+                            from: 'relayer-account',
+                            localField: 'did',
+                            foreignField: 'owner',
+                            as: 'relayerAccounts'
                         }
                     }, {
                         $project: {
-                            username: "$username",
-                            did: "$did",
-                            parent: "$parent",
-                            hederaAccountId: "$hederaAccountId",
+                            username: '$username',
+                            did: '$did',
+                            parent: '$parent',
+                            hederaAccountId: '$hederaAccountId',
                             relayerAccounts: {
-                                $concatArrays: [[null], "$relayerAccounts"]
+                                $concatArrays: [[null], '$relayerAccounts']
                             }
                         }
                     }, {
                         $unwind: {
-                            path: "$relayerAccounts",
+                            path: '$relayerAccounts',
                             preserveNullAndEmptyArrays: true
                         }
                     }, {
                         $project: {
-                            username: "$username",
-                            did: "$did",
-                            parent: "$parent",
-                            hederaAccountId: "$hederaAccountId",
-                            relayerAccountId: "$relayerAccounts.account",
-                            relayerAccountName: "$relayerAccounts.name"
+                            username: '$username',
+                            did: '$did',
+                            parent: '$parent',
+                            hederaAccountId: '$hederaAccountId',
+                            relayerAccountId: '$relayerAccounts.account',
+                            relayerAccountName: '$relayerAccounts.name'
                         }
                     }];
 
@@ -488,7 +487,6 @@ export class RelayerAccountsService extends NatsService {
                     return new MessageError(error);
                 }
             });
-
 
         /**
          * Relayer account exist

@@ -1,16 +1,11 @@
 import { Auth, AuthUser } from '#auth';
 import { InternalException, Guardians, Users } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Permissions } from '@guardian/interfaces';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Query, Response } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Response } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
     Examples,
     InternalServerErrorDTO,
-    pageHeader,
-    PolicyCommentUserDTO,
-    SchemaDTO,
-    VcDocumentDTO
 } from '#middlewares';
 
 @Controller('relayer-accounts')
@@ -20,7 +15,7 @@ export class RelayerAccountsApi {
     }
 
     /**
-     * 
+     *
      */
     @Get('/')
     @Auth(
@@ -80,7 +75,7 @@ export class RelayerAccountsApi {
     }
 
     /**
-     * 
+     *
      */
     @Post('/')
     @Auth()
@@ -120,7 +115,7 @@ export class RelayerAccountsApi {
     }
 
     /**
-     * 
+     *
      */
     @Get('/current')
     @Auth(
@@ -151,7 +146,7 @@ export class RelayerAccountsApi {
     }
 
     /**
-     * 
+     *
      */
     @Get('/all')
     @Auth(
@@ -182,7 +177,7 @@ export class RelayerAccountsApi {
     }
 
     /**
-     * 
+     *
      */
     @Get('/:account/balance')
     @Auth(
@@ -221,7 +216,7 @@ export class RelayerAccountsApi {
     }
 
     /**
-     * 
+     *
      */
     @Post('/generate')
     @Auth()
@@ -252,7 +247,7 @@ export class RelayerAccountsApi {
     }
 
     /**
-     * 
+     *
      */
     @Get('/accounts')
     @Auth(
@@ -312,7 +307,7 @@ export class RelayerAccountsApi {
     }
 
     /**
-     * 
+     *
      */
     @Get('/:relayerAccount/relationships')
     @Auth(

@@ -392,9 +392,14 @@ export class Guardians extends NatsService {
      * @param tokenId
      * @param did
      */
-    public async associateToken(tokenId: string, owner: IOwner): Promise<ITokenInfo> {
+    public async associateToken(
+        tokenId: string,
+        accountId: string,
+        owner: IOwner
+    ): Promise<ITokenInfo> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN, {
             tokenId,
+            accountId,
             owner,
             associate: true,
         });
@@ -406,9 +411,15 @@ export class Guardians extends NatsService {
      * @param did
      * @param task
      */
-    public async associateTokenAsync(tokenId: string, owner: IOwner, task: NewTask): Promise<NewTask> {
+    public async associateTokenAsync(
+        tokenId: string,
+        accountId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN_ASYNC, {
             tokenId,
+            accountId,
             owner,
             associate: true,
             task,
@@ -420,9 +431,14 @@ export class Guardians extends NatsService {
      * @param tokenId
      * @param did
      */
-    public async dissociateToken(tokenId: string, owner: IOwner): Promise<ITokenInfo> {
+    public async dissociateToken(
+        tokenId: string,
+        accountId: string,
+        owner: IOwner
+    ): Promise<ITokenInfo> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN, {
             tokenId,
+            accountId,
             owner,
             associate: false,
         });
@@ -434,9 +450,15 @@ export class Guardians extends NatsService {
      * @param did
      * @param task
      */
-    public async dissociateTokenAsync(tokenId: string, owner: IOwner, task: NewTask): Promise<NewTask> {
+    public async dissociateTokenAsync(
+        tokenId: string,
+        accountId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN_ASYNC, {
             tokenId,
+            accountId,
             owner,
             associate: false,
             task,

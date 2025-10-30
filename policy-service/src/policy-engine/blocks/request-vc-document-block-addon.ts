@@ -217,7 +217,7 @@ export class RequestVcDocumentBlockAddon {
                     ref,
                     type: idType,
                     user,
-                    relayerAccount: relayerAccount,
+                    relayerAccount,
                     userId: user.userId
                 });
                 if (newId) {
@@ -252,7 +252,7 @@ export class RequestVcDocumentBlockAddon {
                     ref,
                     subject: credentialSubject,
                     issuer: user.did,
-                    relayerAccount: relayerAccount,
+                    relayerAccount,
                     options: { uuid, group: groupContext },
                     userId: user.userId
                 });

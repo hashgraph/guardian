@@ -1,5 +1,3 @@
-import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyActionType } from './policy-action.type.js';
 import { PolicyUser } from '../policy-user.js';

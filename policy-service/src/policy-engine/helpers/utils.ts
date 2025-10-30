@@ -1822,7 +1822,7 @@ export class PolicyUtils {
         } else {
             const hederaKey = await PolicyUtils.loadHederaKey(did, ref, userId);
             return {
-                hederaAccountId: hederaAccountId,
+                hederaAccountId,
                 hederaAccountKey: hederaKey,
             }
         }

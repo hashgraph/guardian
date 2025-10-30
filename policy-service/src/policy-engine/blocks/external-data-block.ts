@@ -14,7 +14,6 @@ import {
     VcHelper,
 } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
 /**
  * External data block

@@ -262,7 +262,7 @@ export class RetirementBlock {
             token,
             tokenValue,
             root: policyOwnerHederaCred,
-            targetAccount: targetAccount,
+            targetAccount,
             relayerAccount,
             uuid: vpMessageResult.getId(),
             userId,

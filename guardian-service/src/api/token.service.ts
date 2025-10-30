@@ -481,6 +481,7 @@ async function deleteToken(
  */
 async function associateToken(
     tokenId: string,
+    accountId: string | null,
     target: IOwner,
     associate: any,
     dataBaseServer: DatabaseServer,
@@ -505,18 +506,20 @@ async function associateToken(
     notifier.completeStep(STEP_FIND_TOKEN);
 
     notifier.startStep(STEP_RESOLVE_ACCOUNT);
-    const wallet = new Wallet();
     const users = new Users();
     const user = await users.getUserById(target.creator, target.id);
-    const userID = user.hederaAccountId;
-    const userDID = user.did;
-    const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
     if (!user) {
         throw new Error('User not found');
     }
 
-    if (!user.hederaAccountId) {
-        throw new Error('User is not linked to an Hedera Account');
+    const account: any = await users.getUserRelayerAccount(target.creator, accountId, target.id);
+    if (!account) {
+        throw new Error('Hedera Account not found');
+    }
+    if (account.default) {
+        account.key = await (new Wallet()).getKey(user.walletToken, KeyType.KEY, user.did);
+    } else {
+        account.key = await (new Wallet()).getKey(user.walletToken, KeyType.RELAYER_ACCOUNT, `${user.did}/${account.account}`);
     }
     notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
@@ -526,8 +529,8 @@ async function associateToken(
         type: WorkerTaskType.ASSOCIATE_TOKEN,
         data: {
             tokenId,
-            userID,
-            userKey,
+            userID: account.account,
+            userKey: account.key,
             associate,
             payload: { userId: user.id }
         }
@@ -957,12 +960,13 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
     ApiResponse(MessageAPI.ASSOCIATE_TOKEN,
         async (msg: {
             tokenId: string,
+            accountId: string | null,
             owner: IOwner,
             associate: boolean
         }) => {
             try {
-                const { tokenId, owner, associate } = msg;
-                const result = await associateToken(tokenId, owner, associate, dataBaseServer, NewNotifier.empty());
+                const { tokenId, accountId, owner, associate } = msg;
+                const result = await associateToken(tokenId, accountId, owner, associate, dataBaseServer, NewNotifier.empty());
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -973,15 +977,16 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
     ApiResponse(MessageAPI.ASSOCIATE_TOKEN_ASYNC,
         async (msg: {
             tokenId: string,
+            accountId: string | null,
             owner: IOwner,
             associate: boolean,
             task: any
         }) => {
-            const { tokenId, owner, associate, task } = msg;
+            const { tokenId, accountId, owner, associate, task } = msg;
             const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
-                const result = await associateToken(tokenId, owner, associate, dataBaseServer, notifier);
+                const result = await associateToken(tokenId, accountId, owner, associate, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);

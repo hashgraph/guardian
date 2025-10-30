@@ -90,6 +90,18 @@ export class TokenService {
         return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/dissociate`, null);
     }
 
+    public pushAssociateWithAccount(
+        tokenId: string,
+        accountId: string,
+        associate: boolean
+    ): Observable<{ taskId: string, expectation: number }> {
+        if (associate) {
+            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/associate/${accountId}`, null);
+        } else {
+            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/dissociate/${accountId}`, null);
+        }
+    }
+
     public kyc(tokenId: string, username: string, kyc: boolean): Observable<void> {
         if (kyc) {
             return this.http.put<void>(`${this.url}/${tokenId}/${username}/grant-kyc`, null);
