@@ -47,6 +47,9 @@ import {
     PolicyAvailability,
     PolicyActionType,
     PolicyActionStatus,
+    SchemaCategory,
+    SchemaHelper,
+    SchemaStatus,
     IgnoreRule
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
@@ -62,7 +65,7 @@ import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
-import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
+import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper, updateSchemaDefs } from '../helpers/import-helpers/index.js';
 
 /**
  * PolicyEngineChannel
@@ -1688,6 +1691,7 @@ export class PolicyEngineService {
                     }
                     xlsxResult.updateSchemas(false);
                     GenerateBlocks.generate(xlsxResult);
+
                     return new MessageResponse(xlsxResult.toJson());
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1746,9 +1750,10 @@ export class PolicyEngineService {
                 xlsx: any,
                 policyId: string,
                 owner: IOwner,
+                schemasIds: string[],
                 task: any
             }): Promise<IMessageResponse<any>> => {
-                const { xlsx, policyId, owner, task } = msg;
+                const { xlsx, policyId, owner, task, schemasIds } = msg;
                 const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
@@ -1797,7 +1802,8 @@ export class PolicyEngineService {
                             skipGenerateId: true
                         },
                         notifier,
-                        owner?.id
+                        owner?.id,
+                        schemasIds,
                     );
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
                     notifier.completeStep(STEP_IMPORT_SCHEMAS);

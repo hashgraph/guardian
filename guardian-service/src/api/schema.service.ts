@@ -976,9 +976,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             messageIds: string[],
             owner: IOwner,
             topicId: string,
-            task: any
+            task: any,
+            schemasIds?: string[]
         }) => {
-            const { owner, messageIds, topicId, task } = msg;
+            const { owner, messageIds, topicId, task, schemasIds } = msg;
             const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
@@ -999,7 +1000,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     },
                     logger,
                     notifier,
-                    owner?.id
+                    owner?.id,
+                    schemasIds,
                 );
                 notifier.result(schemasMap);
             }, async (error) => {
@@ -1059,9 +1061,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             files: any,
             owner: IOwner,
             topicId: string,
-            task: any
+            task: any,
+            schemasIds?: string[]
         }) => {
-            const { owner, files, topicId, task } = msg;
+            const { owner, files, topicId, task, schemasIds } = msg;
             const { schemas, tags } = files;
 
             const notifier = await NewNotifier.create(task);
@@ -1082,7 +1085,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         topicId
                     },
                     notifier,
-                    owner?.id
+                    owner?.id,
+                    schemasIds,
                 );
                 result = await importTagsByFiles(result, tags, notifier);
 
@@ -1665,9 +1669,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             owner: IOwner,
             topicId: string,
             xlsx: any,
-            task: any
+            task: any,
+            schemasIds?: string[],
         }) => {
-            const { owner, xlsx, topicId, task } = msg;
+            const { owner, xlsx, topicId, task, schemasIds } = msg;
             const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 // <-- Steps
@@ -1726,7 +1731,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         skipGenerateId: true
                     },
                     notifier.getStep(STEP_IMPORT_SCHEMAS),
-                    owner?.id
+                    owner?.id,
+                    schemasIds,
                 );
                 notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
@@ -1779,6 +1785,44 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 GenerateBlocks.generate(xlsxResult);
 
                 return new MessageResponse(xlsxResult.toJson());
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+
+    /**
+     * Check for schemas dublicates
+     */
+    ApiResponse(MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES,
+        async (msg: {
+            schemaNames: string[];
+            owner?: IOwner;
+            policyId?: string;
+        }) => {
+            try {
+                const { schemaNames, policyId } = msg;
+                if (!schemaNames?.length) {
+                    throw new Error('files in body is empty');
+                }
+
+                const schemasCanBeReplaced = schemaNames.length ? await DatabaseServer.getSchemas({
+                    topicId: policyId,
+                    category: SchemaCategory.POLICY,
+                    readonly: false,
+                    system: false,
+                    status: {
+                        $nin: [SchemaStatus.PUBLISHED, SchemaStatus.UNPUBLISHED]
+                    },
+                    name: {
+                        $in: schemaNames
+                    }
+                }, {}) : []
+
+                return new MessageResponse({
+                    schemasCanBeReplaced,
+                });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);

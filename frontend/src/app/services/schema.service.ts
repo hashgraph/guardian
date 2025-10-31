@@ -146,12 +146,16 @@ export class SchemaService {
         return this.http.get<any[]>(`${this.url}/${id}/export/message`);
     }
 
-    public pushImportByMessage(messageId: string, topicId: any): Observable<ITask> {
-        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/message`, { messageId });
+    public pushImportByMessage(messageId: string, topicId: any, schemasForReplace?: string[]): Observable<ITask> {
+        var query = schemasForReplace?.length ? `?schemas=${schemasForReplace.join(',')}` : '';
+
+        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/message${query}`, { messageId });
     }
 
-    public pushImportByFile(schemasFile: any, topicId: any): Observable<ITask> {
-        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/file`, schemasFile, {
+    public pushImportByFile(schemasFile: any, topicId: any, schemasForReplace?: string[]): Observable<ITask> {
+        var query = schemasForReplace?.length ? `?schemas=${schemasForReplace.join(',')}` : '';
+
+        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/file${query}`, schemasFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream',
             },
@@ -167,7 +171,7 @@ export class SchemaService {
     }
 
     public previewByFile(schemasFile: any): Observable<ISchema[]> {
-        return this.http.post<any[]>(`${this.url}/import/file/preview`, schemasFile, {
+        return this.http.post<any>(`${this.url}/import/file/preview`, schemasFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream',
             },
@@ -247,8 +251,14 @@ export class SchemaService {
         });
     }
 
-    public pushImportByXlsx(schemasFile: any, topicId: any): Observable<{ taskId: string, expectation: number }> {
-        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/xlsx`, schemasFile, {
+    public checkForDublicates(data: { schemaNames: string[]; policyId: string }): Observable<any> {
+        return this.http.post<any>(`${this.url}/import/schemas/duplicates`, data);
+    }
+
+    public pushImportByXlsx(schemasFile: any, topicId: any, schemasForReplace?: string[]): Observable<{ taskId: string, expectation: number }> {
+        var query = schemasForReplace?.length ? `?schemas=${schemasForReplace.join(',')}` : '';
+
+        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/xlsx${query}`, schemasFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream',
             },
