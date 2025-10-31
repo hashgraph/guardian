@@ -157,7 +157,11 @@ export class RelayerAccountsService extends NatsService {
                         owner: user.did
                     };
                     if (search) {
-                        query.name = { $regex: '.*' + search + '.*' }
+                        query.$or = [{
+                            name: { $regex: '.*' + search + '.*' },
+                        }, {
+                            account: { $regex: '.*' + search + '.*' }
+                        }]
                     }
 
                     const results = await entityRepository.find(RelayerAccount, query, otherOptions);
@@ -434,6 +438,10 @@ export class RelayerAccountsService extends NatsService {
                             $match: {
                                 $or: [{
                                     username: { $regex: '.*' + search + '.*' },
+                                }, {
+                                    relayerAccountName: { $regex: '.*' + search + '.*' }
+                                }, {
+                                    hederaAccountId: { $regex: '.*' + search + '.*' }
                                 }, {
                                     relayerAccountName: { $regex: '.*' + search + '.*' }
                                 }]
