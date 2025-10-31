@@ -17,6 +17,7 @@ import {
     PolicyAvailability,
     SchemaCategory,
     LocationType,
+    IgnoreRule,
     ModuleStatus
 } from '@guardian/interfaces';
 import {
@@ -1779,8 +1780,9 @@ export class PolicyEngine extends NatsService {
      * Validate Model
      * @param policy
      * @param isDruRun
+     * @param ignoreRules
      */
-    public async validateModel(policy: Policy | string, isDruRun: boolean = false): Promise<ISerializedErrors> {
+    public async validateModel(policy: Policy | string, isDruRun: boolean = false, ignoreRules?: ReadonlyArray<IgnoreRule>): Promise<ISerializedErrors> {
         let policyId: string;
         if (typeof policy === 'string') {
             policyId = policy
@@ -1791,7 +1793,7 @@ export class PolicyEngine extends NatsService {
             }
             policyId = policy.id.toString();
         }
-        const policyValidator = new PolicyValidator(policy, isDruRun);
+        const policyValidator = new PolicyValidator(policy, isDruRun, ignoreRules);
         await policyValidator.build(policy);
         await policyValidator.validate();
         return policyValidator.getSerializedErrors();

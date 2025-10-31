@@ -10,6 +10,8 @@ import {
     DebugBlockConfigDTO,
     DebugBlockHistoryDTO,
     DebugBlockResultDTO,
+    DeleteSavepointsDTO,
+    DeleteSavepointsResultDTO,
     Examples,
     ExportMessageDTO,
     ImportMessageDTO,
@@ -3550,33 +3552,35 @@ export class PolicyApi {
     /**
      * Delete savepoints
      */
-    @Delete('/:policyId/savepoints')
+    @Post('/:policyId/savepoints/delete')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
         summary: 'Delete dry-run savepoints.',
-        description: 'Deletes the specified savepoints for the policy (Dry Run only).',
+        description: 'Deletes the specified savepoints for the policy (Dry Run only).'
     })
-    @ApiParam({ name: 'policyId', type: String, required: true, example: Examples.DB_ID })
-    @ApiBody({
-        description: '{ savepointIds: string[] }',
-        schema: {
-            type: 'object',
-            properties: {
-                savepointIds: { type: 'array', items: { type: 'string' } }
-            },
-            required: ['savepointIds']
-        }
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        required: true,
+        example: Examples.DB_ID
     })
-    @ApiOkResponse({ description: 'Successful operation.' })
-    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiBody({ type: DeleteSavepointsDTO })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: DeleteSavepointsResultDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(DeleteSavepointsDTO, DeleteSavepointsResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSavepoints(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: { savepointIds: string[], skipCurrentSavepointGuard: boolean },
+        @Body() body: DeleteSavepointsDTO,
         @Req() req
-    ) {
+    ): Promise<DeleteSavepointsResultDTO> {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
         const policy = await engineService.accessPolicy(policyId, owner, 'read');
@@ -3589,7 +3593,12 @@ export class PolicyApi {
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
         try {
-            return await engineService.deleteSavepoints(policyId, owner, body.savepointIds, body.skipCurrentSavepointGuard);
+            return await engineService.deleteSavepoints(
+                policyId,
+                owner,
+                body.savepointIds,
+                body.skipCurrentSavepointGuard
+            ) as DeleteSavepointsResultDTO
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
