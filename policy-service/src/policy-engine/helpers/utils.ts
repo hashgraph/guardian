@@ -1853,7 +1853,7 @@ export class PolicyUtils {
     }
 
     public static async checkAccountBalance(
-        relayerAccount?: string,
+        relayerAccount?: string | any,
         userId?: string
     ) {
         try {
@@ -1862,7 +1862,7 @@ export class PolicyUtils {
                 const info = await workers.addNonRetryableTask({
                     type: WorkerTaskType.GET_ACCOUNT_INFO_REST,
                     data: {
-                        hederaAccountId: relayerAccount,
+                        hederaAccountId: typeof relayerAccount === 'string' ? relayerAccount : relayerAccount?.account,
                         payload: { userId }
                     }
                 }, {
