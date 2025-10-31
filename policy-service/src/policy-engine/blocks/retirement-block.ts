@@ -167,7 +167,7 @@ export class RetirementBlock {
                     }
                     if (valRule < 1) {
                         throw new Error(
-                            `Serial numbers must be greater than or equal to 1.`
+                            'Serial numbers must be greater than or equal to 1.'
                         );
                     }
                     out.add(valRule);

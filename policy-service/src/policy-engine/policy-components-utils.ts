@@ -721,7 +721,7 @@ export class PolicyComponentsUtils {
         if (block.blockType === BlockType.Tool) {
             block.children = [];
             const tool = await DatabaseServer.getTool({
-                status: ModuleStatus.PUBLISHED,
+                status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN]},
                 messageId: block.messageId,
                 hash: block.hash
             });

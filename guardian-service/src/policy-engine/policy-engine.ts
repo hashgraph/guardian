@@ -17,7 +17,8 @@ import {
     PolicyAvailability,
     SchemaCategory,
     LocationType,
-    IgnoreRule
+    IgnoreRule,
+    ModuleStatus
 } from '@guardian/interfaces';
 import {
     Artifact,
@@ -1542,9 +1543,22 @@ export class PolicyEngine extends NatsService {
             throw new Error('Version must be greater than ' + policy.previousVersion);
         }
 
+        if (policy.tools?.length > 0) {
+            const toolMessageIds = policy.tools.map((toolData: any) => toolData.messageId);
+            const tools = await DatabaseServer.getTools({
+                messageId: { $in: toolMessageIds}
+            });
+            const toolNotPublished = tools.find(tool => tool.status !== ModuleStatus.PUBLISHED);
+
+            if (toolNotPublished) {
+                throw new Error('Policy has tools that are not published');
+            }
+        }
+
         const countModels = await DatabaseServer.getPolicyCount({
             version,
-            uuid: policy.uuid
+            topicId: policy.topicId,
+            owner: owner.owner
         });
         if (countModels > 0) {
             throw new Error('Policy with current version already was published');

@@ -56,7 +56,8 @@ import {
     ExternalPolicyDTO,
     PolicyPreviewDTO,
     ProfileDTO,
-    PolicyKeyDTO
+    PolicyKeyDTO,
+    ToolVersionDTO
 } from '#middlewares';
 
 /**
@@ -2163,7 +2164,7 @@ export class Guardians extends NatsService {
      * @param owner
      * @param tool
      */
-    public async publishTool(id: string, owner: IOwner, tool: ToolDTO): Promise<any> {
+    public async publishTool(id: string, owner: IOwner, tool: ToolVersionDTO): Promise<any> {
         return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { id, owner, tool });
     }
 
@@ -2174,8 +2175,28 @@ export class Guardians extends NatsService {
      * @param tool
      * @param task
      */
-    public async publishToolAsync(id: string, owner: IOwner, tool: ToolDTO, task: NewTask) {
-        return await this.sendMessage(MessageAPI.PUBLISH_TOOL_ASYNC, { id, owner, tool, task });
+    public async publishToolAsync(id: string, owner: IOwner, body: ToolVersionDTO, task: NewTask) {
+        return await this.sendMessage(MessageAPI.PUBLISH_TOOL_ASYNC, { id, owner, body, task });
+    }
+
+    /**
+     * Publish tool
+     * @param id
+     * @param owner
+     * @param tool
+     */
+    public async dryRunTool(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.DRY_RUN_TOOL, { id, owner });
+    }
+
+    /**
+     * Draft tool
+     * @param id
+     * @param owner
+     * @param tool
+     */
+    public async draftTool(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.DRAFT_TOOL, { id, owner });
     }
 
     /**

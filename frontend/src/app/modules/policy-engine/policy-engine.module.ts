@@ -161,6 +161,8 @@ import { AddSavepointDialog } from "./policy-viewer/dialogs/add-savepoint-dialog
 import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
 import { IgnoreRulesDialog } from "./dialogs/ignore-rules-dialog/ignore-rules-dialog.component";
 import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
+import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
+import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 
 @NgModule({
     declarations: [
@@ -197,6 +199,7 @@ import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-c
         FiltersAddonBlockComponent,
         HelpIcon,
         SavePolicyDialog,
+        SaveToolDialog,
         PreviewPolicyDialog,
         ReplaceSchemasDialogComponent,
         ExportPolicyDialog,
@@ -232,6 +235,7 @@ import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-c
         SelectSchema,
         PolicyTestResult,
         PublishPolicyDialog,
+        PublishToolDialog,
         CreateTokenConfigComponent,
         CreateTokenBlockComponent,
         MultiPolicyDialogComponent,
