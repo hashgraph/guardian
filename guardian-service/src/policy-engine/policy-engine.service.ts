@@ -29,7 +29,26 @@ import {
     VcHelper,
     XlsxToJson
 } from '@guardian/common';
-import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType, PolicyActionStatus } from '@guardian/interfaces';
+import {
+    DocumentCategoryType,
+    DocumentType,
+    EntityOwner,
+    ExternalMessageEvents,
+    GenerateUUIDv4,
+    IOwner,
+    PolicyEngineEvents,
+    PolicyEvents,
+    PolicyHelper,
+    PolicyTestStatus,
+    PolicyStatus,
+    Schema,
+    SchemaField,
+    TopicType,
+    PolicyAvailability,
+    PolicyActionType,
+    PolicyActionStatus,
+    IgnoreRule
+} from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
@@ -1283,10 +1302,11 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.VALIDATE_POLICIES,
-            async (msg: { policyId: string, model: Policy, owner: IOwner }): Promise<IMessageResponse<any>> => {
+            async (msg: { policyId: string, model: Policy & { ignoreRules?: ReadonlyArray<IgnoreRule> }, owner: IOwner }): Promise<IMessageResponse<any>> => {
                 try {
                     const { model } = msg;
-                    const results = await this.policyEngine.validateModel(model);
+                    const ignoreRules = model.ignoreRules;
+                    const results = await this.policyEngine.validateModel(model, false, ignoreRules);
                     return new MessageResponse({
                         results,
                         policy: model

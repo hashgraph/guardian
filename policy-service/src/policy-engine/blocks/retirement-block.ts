@@ -123,7 +123,6 @@ export class RetirementBlock {
         const policyOwnerSignOptions = await policyOwner.loadSignOptions(ref, userId);
 
         const uuid: string = await ref.components.generateUUID();
-
         let serialNumbers: number[] = []
         let tokenValue: number = 0;
         let tokenAmount: string = '0';
@@ -153,8 +152,7 @@ export class RetirementBlock {
                     if (startRule > endRule) {
                         throw new Error(`End serial number must be greater than or equal to start serial number.`);
                     }
-                    for (const n of PolicyUtils.aggregateSerialRange(startRule, endRule))
-                    {
+                    for (const n of PolicyUtils.aggregateSerialRange(startRule, endRule)) {
                         out.add(n)
                     }
                 } else {
@@ -169,7 +167,7 @@ export class RetirementBlock {
                     }
                     if (valRule < 1) {
                         throw new Error(
-                            'Serial numbers must be greater than or equal to 1.'
+                            `Serial numbers must be greater than or equal to 1.`
                         );
                     }
                     out.add(valRule);
@@ -191,7 +189,6 @@ export class RetirementBlock {
             const amount = PolicyUtils.aggregate(ref.options.rule, documents);
             [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         }
-
         const wipeVC = await this.createWipeVC(policyOwnerDidDocument, token, tokenAmount, ref, serialNumbers);
         const vcs = [].concat(documents, wipeVC);
         const vp = await this.createVP(policyOwnerDidDocument, uuid, vcs);
@@ -302,7 +299,6 @@ export class RetirementBlock {
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
-
         const token = await this.getToken(ref, docs);
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
