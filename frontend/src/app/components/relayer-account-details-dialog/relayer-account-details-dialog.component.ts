@@ -84,6 +84,7 @@ export class RelayerAccountDetailsDialog {
                 title: 'VC Document',
                 type: 'VC',
                 viewDocument: true,
+                canExport: false,
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
