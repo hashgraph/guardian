@@ -2159,7 +2159,6 @@ export class EntityService {
             const em = DataBaseHelper.getEntityManager();
             const [rows, count] = (await em.findAndCount(Message, {
                 type: MessageType.POLICY_COMMENT,
-                'options.target': messageId,
                 'options.discussion': discussionId,
             } as any, options)) as [any[], number];
             for (let i = 0; i < rows.length; i++) {
