@@ -158,9 +158,9 @@ export class RelayerAccountsService extends NatsService {
                     };
                     if (search) {
                         query.$or = [{
-                            name: { $regex: '.*' + search + '.*' },
+                            name: { $regex: '.*' + search + '.*', $options: 'i' },
                         }, {
-                            account: { $regex: '.*' + search + '.*' }
+                            account: { $regex: '.*' + search + '.*', $options: 'i' }
                         }]
                     }
 
@@ -437,13 +437,13 @@ export class RelayerAccountsService extends NatsService {
                         aggregate.push({
                             $match: {
                                 $or: [{
-                                    username: { $regex: '.*' + search + '.*' },
+                                    username: { $regex: '.*' + search + '.*', $options: 'i' },
                                 }, {
-                                    relayerAccountName: { $regex: '.*' + search + '.*' }
+                                    hederaAccountId: { $regex: '.*' + search + '.*', $options: 'i' }
                                 }, {
-                                    hederaAccountId: { $regex: '.*' + search + '.*' }
+                                    relayerAccountId: { $regex: '.*' + search + '.*', $options: 'i' }
                                 }, {
-                                    relayerAccountName: { $regex: '.*' + search + '.*' }
+                                    relayerAccountName: { $regex: '.*' + search + '.*', $options: 'i' }
                                 }]
                             }
                         })

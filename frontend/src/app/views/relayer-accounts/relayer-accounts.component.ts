@@ -123,7 +123,9 @@ export class RelayerAccountsComponent implements OnInit {
     }
 
     private loadRelayerAccounts() {
-        const filters: any = {};
+        const filters: any = {
+            search: this.search
+        };
         this.loading = true;
         this.relayerAccountsService
             .getUserRelayerAccounts(
