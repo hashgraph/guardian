@@ -833,6 +833,17 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Deleting a schema.
+     *
+     * @param {string} topicId - topic id
+     *
+     * @returns {any}
+     */
+    public async deleteSchemas(topicId: string, owner: IOwner): Promise<ISchema[] | boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMAS, { topicId, owner });
+    }
+
+    /**
      * Changing the status of a schema on PUBLISHED.
      *
      * @param {string} id - schema id

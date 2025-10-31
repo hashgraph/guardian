@@ -227,6 +227,10 @@ export class SchemaService {
         return this.http.get<ISchemaDeletionPreview>(`${this.singleSchemaUrl}/${id}/deletionPreview`, options);
     }
 
+    public deleteSchemasByTopicId(topicId: string): Observable<any> {
+        return this.http.delete<any>(`${this.url}/topic/${topicId}`, {});
+    }
+
     public properties(): Observable<any[]> {
         return this.http.get<any>(`${API_BASE_URL}/projects/properties`);
     }
