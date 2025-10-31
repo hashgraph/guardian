@@ -236,7 +236,7 @@ export abstract class TypedMint {
         }
         return notification;
     }
-    ь
+
     /**
      * Mint tokens
      * @param isProgressNeeded Is progress needed

@@ -780,16 +780,16 @@ export class Worker extends NatsService {
                     try {
                         await client.wipe(token.tokenId, targetAccount, wipeKey, tokenValue, userId, token.tokenType, serialNumbers, uuid);
                     } catch (error) {
-                        if (token.tokenType === "non-fungible") {
+                        if (token.tokenType === 'non-fungible') {
                             const plural =
                                 Array.isArray(serialNumbers) &&
                                 serialNumbers.length !== 1
-                                    ? "s"
-                                    : "";
-                            if (error.message.includes("INVALID_NFT_ID")) {
+                                    ? 's'
+                                    : '';
+                            if (error.message.includes('INVALID_NFT_ID')) {
                                 await this.logger.error(
                                     `Task error: ${this.currentTaskId}, ${error.message}`,
-                                    ["WORKER"],
+                                    ['WORKER'],
                                     userId
                                 );
                                 await NotificationHelper.error(
@@ -799,11 +799,11 @@ export class Worker extends NatsService {
                                 );
                                 break;
                             } else if (
-                                error.message.includes("INVALID_WIPING_AMOUNT")
+                                error.message.includes('INVALID_WIPING_AMOUNT')
                             ) {
                                 await this.logger.error(
                                     `Task error: ${this.currentTaskId}, ${error.message}`,
-                                    ["WORKER"],
+                                    ['WORKER'],
                                     userId
                                 );
                                 await NotificationHelper.error(

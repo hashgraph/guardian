@@ -3,6 +3,7 @@ import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
     ISchema,
+    ISchemaDeletionPreview,
     IUser,
     LocationType,
     Schema,
@@ -29,12 +30,12 @@ import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.
 import { SchemaViewDialog } from '../../modules/schema-engine/schema-view-dialog/schema-view-dialog.component';
 import { ModulesService } from '../../services/modules.service';
 import { ToolsService } from 'src/app/services/tools.service';
-import { AlertComponent, AlertType } from 'src/app/modules/common/alert/alert.component';
 import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog/copy-schema-dialog';
 import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
-import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { SchemaDeleteWarningDialogComponent } from 'src/app/modules/schema-engine/schema-delete-warning-dialog/schema-delete-warning-dialog.component';
+import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
 
 enum SchemaType {
     System = 'system',
@@ -815,7 +816,7 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private deleteSchema(id: string): void {
+    private deleteSchema(id: string, includeChildren: boolean): void {
         if (!id) {
             return;
         }
@@ -842,7 +843,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Tool:
             case SchemaType.Policy:
             default: {
-                this.schemaService.delete(id).subscribe((data: any) => {
+                this.schemaService.delete(id, includeChildren).subscribe((data: any) => {
                     this.loadSchemas();
                 }, (e) => {
                     this.loadError(e);
@@ -1094,38 +1095,49 @@ export class SchemaConfigComponent implements OnInit {
 
     private onDeleteSchema(element: Schema, parents?: ISchema[]): void {
         if (!Array.isArray(parents) || !parents.length) {
-            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            this.schemaService.getSchemaDeletionPreview(element.id, element.topicId).subscribe((result: ISchemaDeletionPreview) => {
+                const dialogRef = this.dialogService.open(SchemaDeleteDialogComponent, {
+                    showHeader: false,
+                    width: '640px',
+                    styleClass: 'guardian-dialog',
+                    data: {
+                        header: 'Delete Schema',
+                        text: `Are you sure want to delete schema (${element.name})?`,
+                        deletableChildren: result.deletableChildren,
+                        blockedChildren: result.blockedChildren,
+                        buttons: [{
+                            name: 'Close',
+                            class: 'secondary'
+                        }, {
+                            name: 'Delete',
+                            class: 'delete'
+                        }]
+                    },
+                });
+                dialogRef.onClose.subscribe((result: any) => {
+                    if (result.action === 'Delete') {
+                        this.deleteSchema(element.id, result.includeChildren);
+                    }
+                });
+            })
+        } else {
+            const parentsSchemaNames = parents.map(parent => SchemaHelper.getSchemaName(
+                parent.name,
+                parent.version || parent.sourceVersion,
+                parent.status
+            ));
+            this.dialog.open(SchemaDeleteWarningDialogComponent, {
                 showHeader: false,
                 width: '640px',
                 styleClass: 'guardian-dialog',
                 data: {
-                    header: 'Delete Schema',
-                    text: `Are you sure want to delete schema (${element.name})?`,
+                    header: 'Warning',
+                    text: `There are some schemas that depend on this schema:`,
+                    warningItems: parentsSchemaNames,
                     buttons: [{
                         name: 'Close',
                         class: 'secondary'
-                    }, {
-                        name: 'Delete',
-                        class: 'delete'
                     }]
-                },
-            });
-            dialogRef.onClose.subscribe((result: string) => {
-                if (result === 'Delete') {
-                    this.deleteSchema(element.id);
-                }
-            });
-        } else {
-            this.dialog.open(AlertComponent, {
-                data: {
-                    type: AlertType.WARN,
-                    text: `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
-                        SchemaHelper.getSchemaName(
-                            parent.name,
-                            parent.version || parent.sourceVersion,
-                            parent.status
-                        )
-                    ).join('\r\n')}`
                 }
             });
         }

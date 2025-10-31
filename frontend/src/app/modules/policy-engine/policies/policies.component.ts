@@ -902,6 +902,8 @@ export class PoliciesComponent implements OnInit {
             storeNames,
             keyPrefix
         );
+
+        this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, element.id)
     }
 
     public deletePolicy(policy?: any) {
@@ -924,7 +926,22 @@ export class PoliciesComponent implements OnInit {
             this.policyEngineService.pushDelete(policy?.id).pipe(takeUntil(this._destroy$)).subscribe(
                 async (result) => {
                     await this.indexedDb.delete(DB_NAME.GUARDIAN, STORES_NAME.POLICY_STORAGE, policy?.id);
-                    
+
+                    const databaseName = DB_NAME.TABLES;
+                    const storeNames = [
+                        STORES_NAME.FILES_STORE,
+                        STORES_NAME.DRAFT_STORE
+                    ];
+                    const keyPrefix = `${policy?.id}__`;
+
+                    await this.indexedDb.clearByKeyPrefixAcrossStores(
+                        databaseName,
+                        storeNames,
+                        keyPrefix
+                    );
+
+                    await this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policy?.id)
+
                     const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
