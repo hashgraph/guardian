@@ -130,7 +130,10 @@ export class ConditionModel {
     }
 
     private wrapNot(expr: string): string {
-        if (!expr) return '';
-        return `NOT(${expr})`;
+        if (!expr) {
+            return '';
+        } else {
+            return `NOT(${expr})`;
+        }
     }
 }

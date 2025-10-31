@@ -8,13 +8,13 @@ function sameValue(a: any, b: any): boolean {
 }
 
 export class XlsxSchemaConditions {
-    private single?: { field: SchemaField; value: any };
-    private group?: { op: 'OR' | 'AND'; items: Array<{ field: SchemaField; value: any }> };
+    private readonly single?: { field: SchemaField; value: any };
+    private readonly group?: { op: 'OR' | 'AND'; items: { field: SchemaField; value: any }[] };
 
     public readonly condition: SchemaCondition;
 
     constructor(field: SchemaField, value: any);
-    constructor(group: { op: 'OR' | 'AND'; items: Array<{ field: SchemaField; value: any }> });
+    constructor(group: { op: 'OR' | 'AND'; items: { field: SchemaField; value: any }[] });
     constructor(arg1: any, value?: any) {
         if (typeof arg1 === 'object' && value === undefined && arg1?.op && Array.isArray(arg1.items)) {
             this.group = { op: arg1.op, items: arg1.items };
@@ -46,10 +46,15 @@ export class XlsxSchemaConditions {
 
     public equal(otherFieldOrGroup: any, otherValue?: any): boolean {
         if (this.group) {
-            if (!(otherFieldOrGroup?.op && Array.isArray(otherFieldOrGroup.items))) return false;
-            if (this.group.op !== otherFieldOrGroup.op) return false;
-            if (this.group.items.length !== otherFieldOrGroup.items.length) return false;
-
+            if (!(otherFieldOrGroup?.op && Array.isArray(otherFieldOrGroup.items))) {
+                return false
+            };
+            if (this.group.op !== otherFieldOrGroup.op) {
+                return false
+            };
+            if (this.group.items.length !== otherFieldOrGroup.items.length) {
+                return false
+            };
             const norm = (arr: any[]) =>
                 arr
                     .map(i => `${i.field?.name}::${JSON.stringify(i.value)}`)
