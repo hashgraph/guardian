@@ -6,9 +6,10 @@ Deletes the schema with the provided schema ID. Only users with the Standard Reg
 
 #### Path Parameters
 
-| Name                                       | Type   | Description |
-| ------------------------------------------ | ------ | ----------- |
-| schemaID<mark style="color:red;">\*</mark> | String | Schema ID   |
+| Name                                       | Type    | Description           |
+| ------------------------------------------ | ------- | --------------------- |
+| schemaID<mark style="color:red;">\*</mark> | String  | Schema ID             |
+| includeChildren                            | Boolean | Include child schemas |
 
 {% tabs %}
 {% tab title="200: OK Successful Operation" %}
