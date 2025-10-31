@@ -4,6 +4,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { FormulasViewDialog } from '../../formulas/dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 
+type SchemaFieldPredicate = { field: any; fieldValue: any } | { field: any; const: any };
 interface IFieldControl extends SchemaField {
     fullPath: string;
     hide: boolean;
@@ -99,32 +100,85 @@ export class SchemaFormViewComponent implements OnInit {
         }
 
         for (const item of this.fields) {
-            if (item.conditions) {
-                for (const condition of item.conditions) {
-                    const values = this.values ? this.values[item.name] : {};
-                    const ifField = item.fields?.find((f: any) => f.name === condition.ifCondition.field.name);
-                    const currentConditionValue = (ifField && values) ? values[ifField.name] : undefined;
-                    if (!currentConditionValue) {
-                        continue;
+            if (!item.conditions || !Array.isArray(item.conditions)) continue;
+
+            const subValues = this.values ? this.values[item.name] : {};
+
+            for (const condition of item.conditions) {
+                const ic = condition?.ifCondition;
+                if (!ic) continue;
+
+                const condTrue = this.evaluateIfCondition(ic, subValues);
+
+                for (const field of (condition.thenFields ?? [])) {
+                    const thenField = item.fields?.find((f: any) => f.name === field.name);
+                    if (thenField) {
+                        (thenField as any).notCorrespondCondition = !condTrue;
                     }
-                    if (currentConditionValue !== condition.ifCondition.fieldValue) {
-                        for (const field of condition.thenFields) {
-                            const thenField = item.fields?.find((f: any) => f.name === field.name);
-                            if (thenField) {
-                                (thenField as any).notCorrespondCondition = true;
-                            }
-                        }
-                    } else {
-                        for (const field of condition.thenFields) {
-                            const thenField = item.fields?.find((f: any) => f.name === field.name);
-                            if (thenField) {
-                                (thenField as any).notCorrespondCondition = false;
-                            }
-                        }
+                }
+                for (const field of (condition.elseFields ?? [])) {
+                    const elseField = item.fields?.find((f: any) => f.name === field.name);
+                    if (elseField) {
+                        (elseField as any).notCorrespondCondition = condTrue;
                     }
                 }
             }
         }
+    }
+
+    private isSingleIF(ic: any): ic is { field: any; fieldValue: any } {
+        return ic && 'field' in ic && 'fieldValue' in ic;
+    }
+
+    private isAND(ic: any): ic is { AND: SchemaFieldPredicate[] } {
+        return ic && 'AND' in ic && Array.isArray(ic.AND);
+    }
+
+    private isOR(ic: any): ic is { OR: SchemaFieldPredicate[] } {
+        return ic && 'OR' in ic && Array.isArray(ic.OR);
+    }
+
+    private getPredicates(ic: any): { field: any; fieldValue: any }[] {
+        if (this.isSingleIF(ic)) {
+            return [{ field: ic.field, fieldValue: ic.fieldValue }];
+        }
+        if (this.isAND(ic)) {
+            return ic.AND.map(p => ({ field: (p as any).field, fieldValue: (p as any).fieldValue ?? (p as any).const }));
+        }
+        if (this.isOR(ic)) {
+            return ic.OR.map(p => ({ field: (p as any).field, fieldValue: (p as any).fieldValue ?? (p as any).const }));
+        }
+        return [];
+    }
+
+    private evaluateIfCondition(
+        ic: any,
+        subValues: any
+    ): boolean {
+        const preds = this.getPredicates(ic);
+        if (preds.length === 0) {
+            return false;
+        }
+
+        const check = (pred: { field: any; fieldValue: any }) => {
+            const fieldName = pred.field?.name;
+            if (!fieldName) {
+                return false;
+            }
+            const current = subValues ? subValues[fieldName] : undefined;
+            return current === pred.fieldValue;
+        };
+
+        if (this.isSingleIF(ic)) {
+            return check(preds[0]);
+        }
+        if (this.isAND(ic)) {
+            return preds.every(check);
+        }
+        if (this.isOR(ic)) {
+            return preds.some(check);
+        }
+        return false;
     }
 
     private update(schemaFields?: SchemaField[]) {
