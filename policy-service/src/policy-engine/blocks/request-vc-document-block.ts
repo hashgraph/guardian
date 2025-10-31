@@ -269,7 +269,7 @@ export class RequestVcDocumentBlock {
             } else {
                 ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             }
-            if (draft) {
+            if (draft || editType === 'edit') {
                 ref.triggerEvents(PolicyOutputEventType.ReferenceEvent, user, { data: documentRef });
             }
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
