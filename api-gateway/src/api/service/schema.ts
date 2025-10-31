@@ -1147,7 +1147,7 @@ export class SchemaApi {
     async deleteSchema(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
-        @Query('includeChildren') includeChildren = false,
+        @Query('includeChildren') includeChildren: boolean = false,
         @Req() req
     ): Promise<SchemaDTO[]> {
         const guardians = new Guardians();
@@ -1174,7 +1174,7 @@ export class SchemaApi {
         }
 
         try {
-            const schemas = (await guardians.deleteSchema(schemaId, owner, true, includeChildren) as ISchema[]);
+            const schemas = (await guardians.deleteSchema(schemaId, owner, true, String(includeChildren).toLowerCase() === 'true') as ISchema[]);
             SchemaHelper.updatePermission(schemas, owner);
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];

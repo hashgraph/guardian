@@ -31,7 +31,7 @@ export class SchemaDeleteDialogComponent implements OnInit {
         this.deletableChildren = this.config.data?.deletableChildren?.map((item: any) => item.name);
         this.blockedChildren = this.config.data?.blockedChildren?.map((item: any) => ({
             schema: item.schema,
-            parents: item.parents?.map((parent: ISchema) => parent.name)
+            blockingSchemas: item.blockingSchemas?.map((blockingSchema: ISchema) => blockingSchema.name)
         }));
     }
 
