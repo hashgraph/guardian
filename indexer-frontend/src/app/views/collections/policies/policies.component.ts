@@ -59,6 +59,13 @@ export class PoliciesComponent extends BaseGridComponent {
 
     columns: any[] = [
         {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+        {
             type: ColumnType.CHECK_BOX,
             title: 'grid.prioritize',
             checkField: 'options.instanceTopicId',
@@ -74,12 +81,28 @@ export class PoliciesComponent extends BaseGridComponent {
             }
         },
         {
+            type: ColumnType.TEXT,
+            field: 'options.name',
+            title: 'grid.name',
+            width: '550px',
+        },
+        {
             type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
             width: '250px',
             sort: true,
             hederaType: HederaType.TRANSACTION,
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'topicId',
+            title: 'grid.topic_id',
+            width: '150px',
+            link: {
+                field: 'topicId',
+                url: '/topics',
+            },
         },
         {
             type: ColumnType.TEXT,
@@ -94,35 +117,6 @@ export class PoliciesComponent extends BaseGridComponent {
                 return formattedDate;
             }
         },
-        {
-            type: ColumnType.TEXT,
-            field: 'topicId',
-            title: 'grid.topic_id',
-            width: '150px',
-            link: {
-                field: 'topicId',
-                url: '/topics',
-            },
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'options.name',
-            title: 'grid.name',
-            width: '200px',
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'options.owner',
-            title: 'grid.owner',
-            width: '650px',
-        },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
-        },
     ];
 
     constructor(
@@ -136,6 +130,10 @@ export class PoliciesComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(
             new Filter({
                 label: 'grid.filter.topic_id',

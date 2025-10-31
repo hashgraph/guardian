@@ -96,4 +96,63 @@ export async function documentsAPI(
             return new MessageResponse({ items, count });
         }
     });
+
+    /**
+     * Return VC Documents
+     *
+     * @param {Object} [payload] - filters
+     * @param {string} [payload.type] - filter by type
+     * @param {string} [payload.owner] - filter by owner
+     *
+     * @returns {IVCDocument[]} - VC Documents
+     */
+    ApiResponse(MessageAPI.GET_RELAYER_ACCOUNT_RELATIONSHIPS, async (msg: {
+        user: IAuthUser,
+        relayerAccountId: string,
+        filters: {
+            pageIndex?: any,
+            pageSize?: any
+        }
+    }) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid parameters.');
+            }
+            const { user, relayerAccountId, filters } = msg;
+            if (!relayerAccountId) {
+                return new MessageResponse({ items: [], count: 0 });
+            }
+
+            const { pageIndex, pageSize } = filters;
+            const otherOptions: any = {};
+            const _pageSize = parseInt(pageSize, 10);
+            const _pageIndex = parseInt(pageIndex, 10);
+            if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = _pageSize;
+                otherOptions.offset = _pageIndex * _pageSize;
+            } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = 100;
+            }
+            const [items, count] = await dataBaseServer.findAndCount(VcDocument, {
+                owner: user.did,
+                relayerAccount: relayerAccountId
+            }, otherOptions);
+
+            for (const item of items) {
+                const policy = await dataBaseServer.getPolicy(item.policyId, { fields: ['name'] } as any);
+                (item as any).policyName = policy?.name;
+                (item as any).policyVersion = policy?.version;
+
+                const schema = await dataBaseServer.getSchemaByIRI(item.schema, policy?.topicId, { fields: ['name'] } as any);
+                (item as any).schemaName = schema?.name;
+            }
+
+            return new MessageResponse({ items, count });
+        }
+        catch (error) {
+            return new MessageError(error);
+        }
+    });
 }

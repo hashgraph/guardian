@@ -45,7 +45,9 @@ export class PolicyImportExportHelper {
             DatabaseServer.getSystemSchema(SchemaEntity.USER_ROLE),
             DatabaseServer.getSystemSchema(SchemaEntity.CHUNK),
             DatabaseServer.getSystemSchema(SchemaEntity.ACTIVITY_IMPACT),
-            DatabaseServer.getSystemSchema(SchemaEntity.TOKEN_DATA_SOURCE)
+            DatabaseServer.getSystemSchema(SchemaEntity.TOKEN_DATA_SOURCE),
+            DatabaseServer.getSystemSchema(SchemaEntity.POLICY_COMMENT),
+            DatabaseServer.getSystemSchema(SchemaEntity.POLICY_DISCUSSION)
         ]);
 
         for (const schema of schemas) {
@@ -212,13 +214,14 @@ export class PolicyImportExportHelper {
         const toolIds = new Set<string>()
         PolicyImportExportHelper.findTools(policy.config, toolIds);
         const tools = await DatabaseServer.getTools({
-            status: ModuleStatus.PUBLISHED,
+            status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN]},
             messageId: { $in: Array.from(toolIds.values()) }
-        }, { fields: ['name', 'topicId', 'messageId', 'tools'] });
+        }, { fields: ['name', 'version', 'topicId', 'messageId', 'tools'] });
         const list = [];
         for (const row of tools) {
             list.push({
                 name: row.name,
+                version: row.version,
                 topicId: row.topicId,
                 messageId: row.messageId
             })

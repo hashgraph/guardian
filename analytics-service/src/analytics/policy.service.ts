@@ -9,11 +9,13 @@ import {
     TokenMessage,
     UrlType,
     DatabaseServer,
+    SchemaPackageMessage,
 } from '@guardian/common';
 import { AnalyticsModule as Module } from '../entity/analytics-module.js';
 import { AnalyticsPolicy as Policy } from '../entity/analytics-policy.js';
 import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance.js';
 import { AnalyticsSchema as Schema } from '../entity/analytics-schema.js';
+import { AnalyticsSchemaPackage as SchemaPackage } from '../entity/analytics-schema-package.js';
 import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
 import { AnalyticsTag as Tag } from '../entity/analytics-tag.js';
 import { AnalyticsToken as Token } from '../entity/analytics-token.js';
@@ -59,8 +61,11 @@ export class AnalyticsPolicyService {
             if (json.type === MessageType.Schema) {
                 item = SchemaMessage.fromMessageObject(json);
             }
+            if (json.type === MessageType.SchemaPackage) {
+                item = SchemaPackageMessage.fromMessageObject(json);
+            }
             if (item && item.validate()) {
-                item.setAccount(message.payer_account_id);
+                item.setPayer(message.payer_account_id);
                 item.setIndex(message.sequence_number);
                 item.setId(message.id);
                 item.setTopicId(message.topicId);
@@ -95,8 +100,11 @@ export class AnalyticsPolicyService {
             if (json.type === MessageType.Schema) {
                 item = SchemaMessage.fromMessageObject(json);
             }
+            if (json.type === MessageType.SchemaPackage) {
+                item = SchemaPackageMessage.fromMessageObject(json);
+            }
             if (item && item.validate()) {
-                item.setAccount(message.payer_account_id);
+                item.setPayer(message.payer_account_id);
                 item.setIndex(message.sequence_number);
                 item.setId(message.id);
                 item.setTopicId(message.topicId);
@@ -215,6 +223,26 @@ export class AnalyticsPolicyService {
 
                         await databaseServer.save(Schema, entity);
                     }
+                    if (data.type === MessageType.SchemaPackage) {
+                        const row = {
+                            uuid: report.uuid,
+                            root: report.root,
+                            account: data.payer,
+                            timeStamp: data.id,
+                            name: data.name,
+                            description: data.description,
+                            version: data.version,
+                            owner: sr.did,
+                            action: data.action,
+                            schemas: data.schemas,
+                            ipfs: data.getDocumentUrl(UrlType.cid)
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(SchemaPackage, row);
+
+                        await databaseServer.save(SchemaPackage, entity);
+                    }
                 }
             });
         } catch (error) {
@@ -318,6 +346,28 @@ export class AnalyticsPolicyService {
                         const entity = await databaseServer.create(Schema, row);
 
                         await databaseServer.save(Schema, entity);
+                    }
+
+                    if (data.type === MessageType.SchemaPackage) {
+                        const row = {
+                            uuid: report.uuid,
+                            root: report.root,
+                            account: data.payer,
+                            timeStamp: data.id,
+                            policyTopicId: policy.topicId,
+                            name: data.name,
+                            description: data.description,
+                            version: data.version,
+                            owner: policy.owner,
+                            action: data.action,
+                            schemas: data.schemas,
+                            ipfs: data.getDocumentUrl(UrlType.cid)
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(SchemaPackage, row);
+
+                        await databaseServer.save(SchemaPackage, entity);
                     }
                 }
             });

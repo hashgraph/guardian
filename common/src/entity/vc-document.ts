@@ -18,7 +18,7 @@ import {
 } from '@mikro-orm/core';
 import { RestoreEntity } from '../models/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { DataBaseHelper } from '../helpers/index.js';
+import { DataBaseHelper, extractTableFileIds } from '../helpers/index.js';
 import { DeleteCache } from './delete-cache.js';
 
 /**
@@ -154,6 +154,12 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     messageId?: string;
 
     /**
+     * Parent message
+     */
+    @Property({ nullable: true })
+    startMessageId?: string;
+
+    /**
      * Hedera Hash
      */
     @Property({ nullable: true })
@@ -214,6 +220,48 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     _encryptedDocumentFileId?: ObjectId;
 
     /**
+     * Edited
+     */
+    @Property({ nullable: true })
+    edited?: boolean;
+
+    /**
+     * draft
+     */
+    @Property({ nullable: true })
+    draft?: boolean;
+
+    /**
+     * draft Id
+     */
+    @Property({ nullable: true })
+    draftId?: string;
+
+    /**
+     * draft ref
+     */
+    @Property({ nullable: true })
+    draftRef?: string;
+
+    /**
+     * Relayer Account
+     */
+    @Property({ nullable: true })
+    relayerAccount?: string;
+
+    /**
+     * Table File Ids
+     */
+    @Property({ nullable: true })
+    tableFileIds?: ObjectId[];
+
+    /**
+     * Old Table File Ids
+     */
+    @Property({ persist: false, nullable: true })
+    _oldTableFileIds?: ObjectId[];
+
+    /**
      * Document defaults
      */
     @BeforeCreate()
@@ -224,6 +272,8 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         this.option.status = this.option.status || ApproveStatus.NEW;
 
         if (this.document) {
+            this.tableFileIds = extractTableFileIds(this.document);
+
             const document = JSON.stringify(this.document);
             this.documentFileId = await this._createFile(document, 'VcDocument');
             this.document = this._createFieldCache(this.document, this.documentFields);
@@ -232,6 +282,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
             }
             this._updateDocHash(document);
         } else {
+            this.tableFileIds = undefined;
             this._updateDocHash('');
         }
         if (this.encryptedDocument) {
@@ -263,6 +314,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         prop.signature = this.signature;
         prop.schema = this.schema;
         prop.relationships = this.relationships;
+        prop.relayerAccount = this.relayerAccount;
         prop.processingStatus = this.processingStatus;
         prop.policyId = this.policyId;
         return prop;
@@ -291,6 +343,18 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     @BeforeUpdate()
     async updateFiles() {
         if (this.document) {
+            const nextTableFileIds = extractTableFileIds(this.document) || [];
+            const currentTableFileIds = this.tableFileIds || [];
+
+            const removedTableFileIds = currentTableFileIds.filter((existingId) => {
+                const existing = String(existingId);
+
+                return !nextTableFileIds.some((nextId) => String(nextId) === existing);
+            });
+
+            this._oldTableFileIds = removedTableFileIds.length ? removedTableFileIds : undefined;
+            this.tableFileIds = nextTableFileIds;
+
             const document = JSON.stringify(this.document);
             const documentFileId = await this._createFile(document, 'VcDocument');
             if (documentFileId) {
@@ -303,7 +367,11 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
                 delete this.document;
             }
             this._updateDocHash(document);
+        } else if (this.tableFileIds && this.tableFileIds.length) {
+            this._oldTableFileIds = this.tableFileIds;
+            this.tableFileIds = undefined;
         }
+
         if (this.encryptedDocument) {
             const encryptedDocumentFileId = await this._createFile(this.encryptedDocument, 'VcDocument');
             if (encryptedDocumentFileId) {
@@ -338,6 +406,16 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
                 });
             delete this._encryptedDocumentFileId;
         }
+
+        if (this._oldTableFileIds && this._oldTableFileIds.length) {
+            for (const fileId of this._oldTableFileIds) {
+                DataBaseHelper.gridFS.delete(fileId).catch((reason) => {
+                    console.error(`AfterUpdate: VcDocument, ${this._id}, _oldTableFileIds`)
+                    console.error(reason)
+                });
+            }
+            delete this._oldTableFileIds;
+        }
     }
 
     /**
@@ -360,6 +438,15 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
                     console.error(`AfterDelete: VcDocument, ${this._id}, encryptedDocumentFileId`)
                     console.error(reason)
                 });
+        }
+
+        if (this.tableFileIds && this.tableFileIds.length) {
+            for (const fileId of this.tableFileIds) {
+                DataBaseHelper.gridFS.delete(fileId).catch((reason) => {
+                    console.error(`AfterDelete: VcDocument, ${this._id}, tableFileIds`)
+                    console.error(reason)
+                });
+            }
         }
     }
 

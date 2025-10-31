@@ -21,6 +21,14 @@ export class IPFSService {
         });
     }
 
+    public addFileDirect(file: any): Observable<any> {
+        return this.http.post<string>(`${this.url}/file/direct`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream',
+            },
+        });
+    }
+
     public addFileDryRun(file: any, policyId: string): Observable<any> {
         return this.http.post<string>(`${this.url}/file/dry-run/${policyId}`, file, {
             headers: {
@@ -97,5 +105,10 @@ export class IPFSService {
     public loadJsonFileByLink(link: string): Observable<any> {
         let cidMatches = link.match(this.cidPattern);
         return this.getJsonFile((cidMatches && cidMatches[0]) || '')
+    }
+
+    public deleteCid(cid: string): Observable<void> {
+        const encodedCid = encodeURIComponent(cid);
+        return this.http.delete<void>(`${this.url}/file/${encodedCid}`, {});
     }
 }

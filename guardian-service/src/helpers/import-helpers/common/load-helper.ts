@@ -1,4 +1,4 @@
-import { DatabaseServer, MessageServer, MessageType, PinoLogger, SchemaMessage, UrlType } from '@guardian/common';
+import { DatabaseServer, MessageAction, MessageServer, MessageType, PinoLogger, SchemaMessage, SchemaPackageMessage, UrlType } from '@guardian/common';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 
 export class SchemaCache {
@@ -48,22 +48,31 @@ export class SchemaCache {
  * @param messageId
  * @param log
  */
-export async function loadSchema(messageId: string, log: PinoLogger, userId: string | null): Promise<any> {
+export async function loadSchema(
+    messageId: string,
+    log: PinoLogger,
+    userId: string | null
+): Promise<ISchema | ISchema[] | null> {
     try {
-        let schemaToImport = SchemaCache.getSchema(messageId);
-        if (!schemaToImport) {
-            const messageServer = new MessageServer(null);
-            log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE'], userId);
-            const message = await messageServer
-                .getMessage<SchemaMessage>({
-                    messageId,
-                    loadIPFS: true,
-                    type: MessageType.Schema,
-                    userId,
-                    interception: null
-                });
-            log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE'], userId);
-            schemaToImport = {
+        const result = SchemaCache.getSchema(messageId);
+        if (result) {
+            return result;
+        }
+        const messageServer = new MessageServer(null);
+        log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE'], userId);
+        const response = await messageServer
+            .getMessage<SchemaMessage | SchemaPackageMessage>({
+                messageId,
+                loadIPFS: true,
+                type: [MessageType.Schema, MessageType.SchemaPackage],
+                userId,
+                interception: null
+            });
+
+        log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE'], userId);
+        if (response.type === MessageType.Schema) {
+            const message = response as SchemaMessage;
+            const schemaToImport: any = {
                 iri: null,
                 uuid: message.uuid,
                 hash: '',
@@ -86,14 +95,115 @@ export async function loadSchema(messageId: string, log: PinoLogger, userId: str
                 documentURL: message.getDocumentUrl(UrlType.url),
                 contextURL: message.getContextUrl(UrlType.url)
             }
-            schemaToImport = SchemaHelper.updateIRI(schemaToImport);
+            SchemaHelper.updateIRI(schemaToImport);
             SchemaCache.setSchema(messageId, schemaToImport);
+            return schemaToImport;
+        } else if (response.type === MessageType.SchemaPackage) {
+            const message = response as SchemaPackageMessage;
+            const schemasToImport: any[] = [];
+            const documents = message.getDocument();
+            const contexts = message.getContext();
+            const metadata = message.getMetadata();
+            if (Array.isArray(metadata?.schemas)) {
+                for (const schema of metadata.schemas) {
+                    const document = documents[schema.id];
+                    const context = contexts;
+                    const schemaToImport: any = {
+                        iri: null,
+                        uuid: schema.uuid,
+                        hash: '',
+                        owner: null,
+                        messageId,
+                        name: schema.name,
+                        description: schema.description,
+                        entity: schema.entity as SchemaEntity,
+                        version: schema.version,
+                        creator: schema.owner,
+                        topicId: message.getTopicId(),
+                        codeVersion: schema.codeVersion,
+                        relationships: metadata.relationships || [],
+                        status: SchemaStatus.PUBLISHED,
+                        readonly: false,
+                        system: false,
+                        active: false,
+                        document,
+                        context,
+                        documentURL: message.getDocumentUrl(UrlType.url),
+                        contextURL: message.getContextUrl(UrlType.url)
+                    }
+                    SchemaHelper.updateIRI(schemaToImport);
+                    schemasToImport.push(schemaToImport);
+                }
+            }
+            SchemaCache.setSchema(messageId, schemasToImport);
+            return schemasToImport;
+        } else {
+            return null;
         }
-        return schemaToImport;
     } catch (error) {
         log.error(error, ['GUARDIAN_SERVICE'], userId);
         throw new Error(`Cannot load schema ${messageId}`);
     }
+}
+
+export async function loadAnotherSchemas(
+    uniqueTopics: string[],
+    log: PinoLogger,
+    userId: string | null
+): Promise<{
+    uuid: string,
+    version: string,
+    messageId: string
+}[]> {
+    const messageServer = new MessageServer(null);
+    const anotherSchemas: (SchemaMessage | SchemaPackageMessage)[] = [];
+
+    for (const topicId of uniqueTopics) {
+        const messages = await messageServer.getMessages<SchemaMessage | SchemaPackageMessage>(
+            topicId,
+            userId,
+            [MessageType.Schema, MessageType.SchemaPackage]
+        );
+        for (const message of messages) {
+            if (
+                message.action === MessageAction.PublishSchema ||
+                message.action === MessageAction.PublishSchemas ||
+                message.action === MessageAction.PublishSystemSchema ||
+                message.action === MessageAction.PublishSystemSchemas
+            ) {
+                anotherSchemas.push(message);
+            }
+        }
+    }
+
+    const result: {
+        uuid: string,
+        version: string,
+        messageId: string
+    }[] = [];
+    for (const anotherSchema of anotherSchemas) {
+        if (anotherSchema.type === MessageType.Schema) {
+            const message = (anotherSchema as SchemaMessage);
+            result.push({
+                uuid: message.uuid,
+                version: message.version,
+                messageId: message.getId(),
+            })
+        } else {
+            const message = (await messageServer.loadDocument(anotherSchema)) as SchemaPackageMessage;
+            const metadata = message.getMetadata();
+            if (Array.isArray(metadata?.schemas)) {
+                for (const schema of metadata.schemas) {
+                    result.push({
+                        uuid: schema.uuid,
+                        version: schema.version,
+                        messageId: message.getId(),
+                    })
+                }
+            }
+        }
+    }
+    return result;
 }
 
 /**

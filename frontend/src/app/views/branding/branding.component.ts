@@ -217,7 +217,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
 
         if (this.isPreviewOn) {
             document.body.style.setProperty('--linear-gradient', gradientData);
-            document.body.style.setProperty('--header-color-shadow', shadow);
+            // document.body.style.setProperty('--header-color-shadow', shadow);
             document.body.style.setProperty('--color-primary', this.primaryHexColorControl.value);
             companyName.innerHTML = brandingData.companyName;
             document.title = brandingData.companyName;
@@ -237,7 +237,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
         const primaryColor = this.primaryColorControl.value ? this.primaryColorControl.value : brandingData.primaryColor;
 
         document.body.style.setProperty('--linear-gradient', gradientData);
-        document.body.style.setProperty('--header-color-shadow', shadow);
+        // document.body.style.setProperty('--header-color-shadow', shadow);
         document.body.style.setProperty('--color-primary', primaryColor);
         //document.documentElement.style.setProperty('--button-primary-color', primaryColor);
         if (this.companyNameControl.value) {
@@ -265,12 +265,12 @@ export class BrandingComponent implements OnInit, OnDestroy {
         }
         this.initResetDialog = false;
         const payload = {
-            headerColor: '#0681EE',
-            headerColor1: '#0A467C',
-            primaryColor: '#0681EE',
+            headerColor: '#0031ff',
+            headerColor1: '#8259ef',
+            primaryColor: '#0031ff',
             companyName: 'GUARDIAN',
-            companyLogoUrl: '',
-            loginBannerUrl: '',
+            companyLogoUrl: '/assets/images/logo.png',
+            loginBannerUrl: '/assets/bg.jpg',
             faviconUrl: 'favicon.ico'
         };
 

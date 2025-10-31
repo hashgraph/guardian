@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import {DialogService} from 'primeng/dynamicdialog';
 import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { IntegrationDataTypes } from '@guardian/interfaces';
+import { PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Component for display block of 'Integration Button Block' type.
@@ -20,17 +21,19 @@ export class IntegrationButtonBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('policyStatus') policyStatus!: string;
 
     loading: boolean = true;
     socket: any;
     data: any;
     buttonName: string;
+    hideWhenDiscontinued?: boolean;
     url: string;
     testFieldPath: string;
     readonly: boolean = false;
     commonVisible: boolean = false;
     integrationType: string;
-    
+
     // private readonly _commentField: string = 'option.comment';
 
     constructor(
@@ -104,12 +107,21 @@ export class IntegrationButtonBlockComponent implements OnInit {
             this.readonly = !!data.readonly;
             this.data = data.data;
             this.buttonName = data.buttonName;
+            this.hideWhenDiscontinued = !!data.hideWhenDiscontinued;
             this.url = data.url;
             this.testFieldPath = data.testFieldPath;
             this.integrationType = data.integrationType;
         } else {
             this.data = null;
         }
+    }
+
+    isBtnVisible() {
+        if (this.policyStatus === PolicyStatus.DISCONTINUED && this.hideWhenDiscontinued) {
+            return false;
+        }
+
+        return true;
     }
 
     openDialog(document: any, data: any) {

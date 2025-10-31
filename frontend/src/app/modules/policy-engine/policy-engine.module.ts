@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MaterialModule } from 'src/app/modules/common/material.module';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 //Modules
@@ -83,6 +83,7 @@ import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-docu
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
 import { SavePolicyDialog } from './dialogs/save-policy-dialog/save-policy-dialog.component';
 import { PreviewPolicyDialog } from './dialogs/preview-policy-dialog/preview-policy-dialog.component';
+import { ReplaceSchemasDialogComponent } from './dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
 import { ExportPolicyDialog } from './dialogs/export-policy-dialog/export-policy-dialog.component';
 import { CronConfigDialog } from './dialogs/cron-config-dialog/cron-config-dialog.component';
 import { CodeEditorDialogComponent } from './dialogs/code-editor-dialog/code-editor-dialog.component';
@@ -137,6 +138,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { PasswordModule } from 'primeng/password';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
 import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
@@ -155,6 +157,14 @@ import { TestCodeDialog } from './dialogs/test-code-dialog/test-code-dialog.comp
 import { ProjectDataExportComponent } from './project-data-export/project-data-export.component';
 import { TransformationButtonBlockComponent } from './policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
 import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integration-button-block/integration-button-block.component';
+import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
+import { AddSavepointDialog } from "./policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component";
+import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
+import { IgnoreRulesDialog } from "./dialogs/ignore-rules-dialog/ignore-rules-dialog.component";
+import { PolicyRepositoryComponent } from './policy-repository/policy-repository.component';
+import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
+import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
+import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 
 @NgModule({
     declarations: [
@@ -167,6 +177,7 @@ import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integrat
         RequestConfigComponent,
         PolicyPropertiesComponent,
         MintConfigComponent,
+        WipeConfigComponent,
         SendConfigComponent,
         ExternalDataConfigComponent,
         AggregateConfigComponent,
@@ -190,7 +201,9 @@ import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integrat
         FiltersAddonBlockComponent,
         HelpIcon,
         SavePolicyDialog,
+        SaveToolDialog,
         PreviewPolicyDialog,
+        ReplaceSchemasDialogComponent,
         ExportPolicyDialog,
         CalculateConfigComponent,
         CalculateMathConfigComponent,
@@ -224,6 +237,7 @@ import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integrat
         SelectSchema,
         PolicyTestResult,
         PublishPolicyDialog,
+        PublishToolDialog,
         CreateTokenConfigComponent,
         CreateTokenBlockComponent,
         MultiPolicyDialogComponent,
@@ -268,11 +282,17 @@ import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integrat
         PolicyRequestsComponent,
         SearchExternalPolicyDialog,
         TestCodeDialog,
-        SearchToolDialog
+        SearchToolDialog,
+        RestoreSavepointDialog,
+        AddSavepointDialog,
+        IgnoreRulesDialog,
+        OnLoadSavepointDialog,
+        PolicyRepositoryComponent
     ],
     imports: [
         CommonModule,
         FormsModule,
+        ReactiveFormsModule,
         MaterialModule,
         CodemirrorModule,
         DragDropModule,
@@ -294,6 +314,7 @@ import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integrat
         SplitButtonModule,
         TabViewModule,
         RadioButtonModule,
+        PasswordModule,
         InputSwitchModule,
         AppRoutingModule,
         DialogModule,

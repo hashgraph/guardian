@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, SchemaField, SchemaRuleValidateResult, UnitSystem } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { FormulasViewDialog } from '../../formulas/dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 
+type SchemaFieldPredicate = { field: any; fieldValue: any } | { field: any; const: any };
 interface IFieldControl extends SchemaField {
     fullPath: string;
     hide: boolean;
@@ -16,6 +17,7 @@ interface IFieldControl extends SchemaField {
     pageIndex: number;
     pageSize: number;
     notCorrespondCondition?: boolean;
+    link?: string | undefined;
     open: boolean;
 }
 
@@ -43,6 +45,12 @@ export class SchemaFormViewComponent implements OnInit {
     @Input() dryRun?: boolean = false;
     @Input() rules?: SchemaRuleValidateResult;
     @Input() formulas?: any;
+    @Input('discussion') discussionData?: any;
+    @Input('discussion-action') discussionAction: boolean = false;
+    @Input('discussion-view') discussionView: boolean = false;
+    @Input() link?: string | undefined;
+
+    @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
 
     public fields: IFieldControl[] | undefined = [];
     private pageSize: number = 25;
@@ -91,6 +99,9 @@ export class SchemaFormViewComponent implements OnInit {
                 this.update();
             }
         }
+        if (changes.link) {
+            this.openField(this.link);
+        }
     }
 
     private init() {
@@ -99,32 +110,85 @@ export class SchemaFormViewComponent implements OnInit {
         }
 
         for (const item of this.fields) {
-            if (item.conditions) {
-                for (const condition of item.conditions) {
-                    const values = this.values ? this.values[item.name] : {};
-                    const ifField = item.fields?.find((f: any) => f.name === condition.ifCondition.field.name);
-                    const currentConditionValue = (ifField && values) ? values[ifField.name] : undefined;
-                    if (!currentConditionValue) {
-                        continue;
+            if (!item.conditions || !Array.isArray(item.conditions)) continue;
+
+            const subValues = this.values ? this.values[item.name] : {};
+
+            for (const condition of item.conditions) {
+                const ic = condition?.ifCondition;
+                if (!ic) continue;
+
+                const condTrue = this.evaluateIfCondition(ic, subValues);
+
+                for (const field of (condition.thenFields ?? [])) {
+                    const thenField = item.fields?.find((f: any) => f.name === field.name);
+                    if (thenField) {
+                        (thenField as any).notCorrespondCondition = !condTrue;
                     }
-                    if (currentConditionValue !== condition.ifCondition.fieldValue) {
-                        for (const field of condition.thenFields) {
-                            const thenField = item.fields?.find((f: any) => f.name === field.name);
-                            if (thenField) {
-                                (thenField as any).notCorrespondCondition = true;
-                            }
-                        }
-                    } else {
-                        for (const field of condition.thenFields) {
-                            const thenField = item.fields?.find((f: any) => f.name === field.name);
-                            if (thenField) {
-                                (thenField as any).notCorrespondCondition = false;
-                            }
-                        }
+                }
+                for (const field of (condition.elseFields ?? [])) {
+                    const elseField = item.fields?.find((f: any) => f.name === field.name);
+                    if (elseField) {
+                        (elseField as any).notCorrespondCondition = condTrue;
                     }
                 }
             }
         }
+    }
+
+    private isSingleIF(ic: any): ic is { field: any; fieldValue: any } {
+        return ic && 'field' in ic && 'fieldValue' in ic;
+    }
+
+    private isAND(ic: any): ic is { AND: SchemaFieldPredicate[] } {
+        return ic && 'AND' in ic && Array.isArray(ic.AND);
+    }
+
+    private isOR(ic: any): ic is { OR: SchemaFieldPredicate[] } {
+        return ic && 'OR' in ic && Array.isArray(ic.OR);
+    }
+
+    private getPredicates(ic: any): { field: any; fieldValue: any }[] {
+        if (this.isSingleIF(ic)) {
+            return [{ field: ic.field, fieldValue: ic.fieldValue }];
+        }
+        if (this.isAND(ic)) {
+            return ic.AND.map(p => ({ field: (p as any).field, fieldValue: (p as any).fieldValue ?? (p as any).const }));
+        }
+        if (this.isOR(ic)) {
+            return ic.OR.map(p => ({ field: (p as any).field, fieldValue: (p as any).fieldValue ?? (p as any).const }));
+        }
+        return [];
+    }
+
+    private evaluateIfCondition(
+        ic: any,
+        subValues: any
+    ): boolean {
+        const preds = this.getPredicates(ic);
+        if (preds.length === 0) {
+            return false;
+        }
+
+        const check = (pred: { field: any; fieldValue: any }) => {
+            const fieldName = pred.field?.name;
+            if (!fieldName) {
+                return false;
+            }
+            const current = subValues ? subValues[fieldName] : undefined;
+            return current === pred.fieldValue;
+        };
+
+        if (this.isSingleIF(ic)) {
+            return check(preds[0]);
+        }
+        if (this.isAND(ic)) {
+            return preds.every(check);
+        }
+        if (this.isOR(ic)) {
+            return preds.some(check);
+        }
+        return false;
     }
 
     private update(schemaFields?: SchemaField[]) {
@@ -304,7 +368,8 @@ export class SchemaFormViewComponent implements OnInit {
             ) && (
                 item.format !== 'date' &&
                 item.format !== 'time' &&
-                item.format !== 'date-time'
+                item.format !== 'date-time' &&
+                item.customType !== 'table'
             )
         );
     }
@@ -362,5 +427,69 @@ export class SchemaFormViewComponent implements OnInit {
             data: formulas,
         });
         dialogRef.onClose.subscribe((result: any) => { });
+    }
+
+    public isDiscussion(item: IFieldControl) {
+        return (this.discussionView && (
+            this.isInput(item) ||
+            this.isDateTime(item) ||
+            this.isDate(item) ||
+            this.isBoolean(item) ||
+            this.isInput(item)
+        ));
+    }
+
+    public isDiscussionCount(item: IFieldControl) {
+        // return 10;
+        return this.discussionData ? this.discussionData[item.fullPath] : 0;
+    }
+
+    public openDiscussion(item: IFieldControl) {
+        this.discussionActionEvent.emit({
+            type: 'open',
+            field: item.fullPath,
+            fieldName: item.title
+        });
+    }
+
+    public linkMessage(item: IFieldControl) {
+        this.discussionActionEvent.emit({
+            type: 'link',
+            field: item.fullPath,
+            fieldName: item.title
+        });
+    }
+
+    public onDiscussionAction($event: any) {
+        this.discussionActionEvent.emit($event);
+    }
+
+    public openField(link?: string): void {
+        let _rootLink: string | undefined = undefined;
+        let _subLink: string | undefined = undefined;
+        if (link) {
+            const index = link.indexOf('.');
+            if (index > -1) {
+                _rootLink = link.substring(0, index);
+                _subLink = link.substring(index + 1) || undefined;
+            } else {
+                _rootLink = link;
+                _subLink = undefined;
+            }
+        } else {
+            _rootLink = undefined;
+            _subLink = undefined;
+        }
+
+        if (_rootLink && this.fields) {
+            for (const field of this.fields) {
+                if (field.name === _rootLink) {
+                    field.open = true;
+                    field.link = _subLink;
+                } else {
+                    field.link = undefined;
+                }
+            }
+        }
     }
 }

@@ -16,7 +16,9 @@ import {
     TopicType,
     PolicyAvailability,
     SchemaCategory,
-    LocationType
+    LocationType,
+    IgnoreRule,
+    ModuleStatus
 } from '@guardian/interfaces';
 import {
     Artifact,
@@ -54,15 +56,13 @@ import {
     deleteDemoSchema,
     deleteSchema,
     findAndDryRunSchema,
-    findAndPublishSchema,
     ImportMode,
     ImportPolicyOptions,
     importTag,
-    incrementSchemaVersion,
     PolicyImportExportHelper,
     publishPolicyTags,
-    publishSystemSchemas,
-    sendSchemaMessage
+    publishSchemasPackage,
+    publishSystemSchemasPackage
 } from '../helpers/import-helpers/index.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import { ISerializedErrors } from './policy-validation-results-container.js';
@@ -345,15 +345,15 @@ export class PolicyEngine extends NatsService {
             topicId: { $eq: 'draft' },
             owner: owner.owner
         });
-        const users = new Users();
+        // const users = new Users();
         for (const schema of schemas) {
+            // const topic = await TopicConfig.fromObject(
+            //     await DatabaseServer.getTopicById(policyTopicId),
+            //     true,
+            //     owner.id
+            // );
+            // const root = await users.getHederaAccount(owner.creator, owner.id);
             schema.topicId = policyTopicId;
-            const topic = await TopicConfig.fromObject(
-                await DatabaseServer.getTopicById(policyTopicId),
-                true,
-                owner.id
-            );
-            const root = await users.getHederaAccount(owner.creator, owner.id);
             const dependencySchemas = await DatabaseServer.getSchemas({
                 $and: [
                     { iri: { $in: schema.defs } },
@@ -364,22 +364,10 @@ export class PolicyEngine extends NatsService {
             } as FilterObject<SchemaCollection>);
             for (const dependencySchema of dependencySchemas) {
                 dependencySchema.topicId = policyTopicId;
-                await sendSchemaMessage(
-                    owner,
-                    root,
-                    topic,
-                    MessageAction.CreateSchema,
-                    dependencySchema
-                );
+                // await sendSchemaMessage(owner, root, topic, MessageAction.CreateSchema, dependencySchema);
             }
             await DatabaseServer.updateSchemas(dependencySchemas);
-            await sendSchemaMessage(
-                owner,
-                root,
-                topic,
-                MessageAction.CreateSchema,
-                schema
-            );
+            // await sendSchemaMessage(owner, root, topic, MessageAction.CreateSchema, schema);
         }
         await DatabaseServer.updateSchemas(schemas);
     }
@@ -510,12 +498,20 @@ export class PolicyEngine extends NatsService {
 
             step.startStep(STEP_PUBLISH_SYSTEM_SCHEMAS);
             const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-            await publishSystemSchemas(
+            /*await publishSystemSchemas(
                 systemSchemas,
                 messageServer,
                 user,
                 step.getStep(STEP_PUBLISH_SYSTEM_SCHEMAS)
-            );
+            );*/
+            await publishSystemSchemasPackage({
+                name: model.name,
+                version: model.version,
+                schemas: systemSchemas,
+                owner: user,
+                server: messageServer,
+                notifier
+            })
             step.completeStep(STEP_PUBLISH_SYSTEM_SCHEMAS);
 
             newTopic = await DatabaseServer.saveTopic(topic.toObject());
@@ -838,43 +834,53 @@ export class PolicyEngine extends NatsService {
      */
     public async publishSchemas(
         model: Policy,
-        user: IOwner,
+        owner: IOwner,
         root: IRootConfig,
+        server: MessageServer,
         notifier: INotificationStep,
         schemaMap: Map<string, string>,
         userId: string | null
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
-        notifier.setEstimate(schemas.length);
+        await publishSchemasPackage({
+            name: model.name,
+            version: model.version,
+            type: MessageAction.PublishSchemas,
+            schemas,
+            owner,
+            server,
+            schemaMap,
+            notifier
+        })
 
-        let num: number = 0;
-        for (const row of schemas) {
-            const step = notifier.addStep(`${row.name || '-'}`);
-            step.setId(row.id);
-            step.minimize(true);
-            num++;
-        }
-        for (const row of schemas) {
-            const step = notifier.getStepById(row.id);
+        // notifier.setEstimate(schemas.length);
+        // let num: number = 0;
+        // for (const row of schemas) {
+        //     const step = notifier.addStep(`${row.name || '-'}`);
+        //     step.setId(row.id);
+        //     step.minimize(true);
+        //     num++;
+        // }
+        // for (const row of schemas) {
+        //     const step = notifier.getStepById(row.id);
+        //     const schema = await incrementSchemaVersion(row.topicId, row.iri, user);
+        //     if (!schema || schema.status === SchemaStatus.PUBLISHED) {
+        //         step.skip();
+        //         continue;
+        //     }
+        //     step.start();
+        //     await findAndPublishSchema(
+        //         schema.id,
+        //         schema.version,
+        //         user,
+        //         root,
+        //         step,
+        //         schemaMap,
+        //         userId
+        //     );
+        //     step.complete();
+        // }
 
-            const schema = await incrementSchemaVersion(row.topicId, row.iri, user);
-            if (!schema || schema.status === SchemaStatus.PUBLISHED) {
-                step.skip();
-                continue;
-            }
-
-            step.start();
-            await findAndPublishSchema(
-                schema.id,
-                schema.version,
-                user,
-                root,
-                step,
-                schemaMap,
-                userId
-            );
-            step.complete();
-        }
         return model;
     }
 
@@ -992,6 +998,7 @@ export class PolicyEngine extends NatsService {
         const STEP_CREATE_SYNC_TOPIC = 'Create synchronization topic';
         const STEP_CREATE_RESTORE_TOPIC = 'Create restore topic';
         const STEP_CREATE_ACTION_TOPIC = 'Create actions topic';
+        const STEP_CREATE_COMMENTS_TOPIC = 'Create comments topic';
         const STEP_PUBLISH_POLICY = 'Publish policy';
         const STEP_PUBLISH_MESSAGE = 'Publish message';
         const STEP_PUBLISH_TAGS = 'Publish tags';
@@ -1007,6 +1014,7 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_CREATE_SYNC_TOPIC, 2);
         notifier.addStep(STEP_CREATE_RESTORE_TOPIC, 2);
         notifier.addStep(STEP_CREATE_ACTION_TOPIC, 2);
+        notifier.addStep(STEP_CREATE_COMMENTS_TOPIC, 2);
         notifier.addStep(STEP_PUBLISH_POLICY, 20);
         notifier.addStep(STEP_PUBLISH_MESSAGE, 4);
         notifier.addStep(STEP_PUBLISH_TAGS, 4);
@@ -1037,6 +1045,7 @@ export class PolicyEngine extends NatsService {
                 model,
                 user,
                 root,
+                messageServer,
                 notifier.getStep(STEP_PUBLISH_SCHEMAS),
                 schemaMap,
                 userId
@@ -1229,6 +1238,31 @@ export class PolicyEngine extends NatsService {
                 notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
             }
 
+            const createCommentsTopic = async () => {
+                notifier.startStep(STEP_CREATE_COMMENTS_TOPIC);
+                const commentsTopic = await topicHelper.create({
+                    type: TopicType.CommentsTopic,
+                    name: TopicType.CommentsTopic,
+                    description: TopicType.CommentsTopic,
+                    owner: user.creator,
+                    policyId: model.id.toString(),
+                    policyUUID: model.uuid
+                }, user.id, { admin: true, submit: false });
+                await commentsTopic.saveKeys(user.id);
+                await DatabaseServer.saveTopic(commentsTopic.toObject());
+                model.commentsTopicId = commentsTopic.topicId;
+                notifier.completeStep(STEP_CREATE_COMMENTS_TOPIC);
+            }
+            if (model.status === PolicyStatus.PUBLISH_ERROR) {
+                if (!!model.commentsTopicId) {
+                    await createCommentsTopic();
+                } else {
+                    notifier.skipStep(STEP_CREATE_COMMENTS_TOPIC);
+                }
+            } else {
+                await createCommentsTopic();
+            }
+
             const configToPublish = structuredClone(model.config);
             this.cleanHeadersRecursive(configToPublish, ['httpRequestBlock']);
 
@@ -1344,13 +1378,13 @@ export class PolicyEngine extends NatsService {
         const dryRunId = model.id.toString();
         const databaseServer = new DatabaseServer(dryRunId);
 
-        //Create Services
+        // Create Services
         const [root, topic] = await Promise.all([
             this.users.getHederaAccount(user.owner, user.id),
             TopicConfig.fromObject(
                 await DatabaseServer.getTopicById(model.topicId), !demo, user.id
             )
-        ])
+        ]);
 
         const messageServer = new MessageServer({
             operatorId: root.hederaAccountId,
@@ -1364,7 +1398,11 @@ export class PolicyEngine extends NatsService {
         model = await this.dryRunSchemas(model, user);
         model.status = demo ? PolicyStatus.DEMO : PolicyStatus.DRY_RUN;
         model.version = version;
-        this.regenerateIds(model.config);
+
+        const savepointsCount = await DatabaseServer.getSavepointsCount(dryRunId);
+        if (demo || savepointsCount === 0) {
+            this.regenerateIds(model.config);
+        }
 
         //Create instance topic
         const rootTopic = await topicHelper.create({
@@ -1385,9 +1423,7 @@ export class PolicyEngine extends NatsService {
         const buffer = await zip.generateAsync({
             type: 'arraybuffer',
             compression: 'DEFLATE',
-            compressionOptions: {
-                level: 3
-            }
+            compressionOptions: { level: 3 }
         });
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
@@ -1398,7 +1434,7 @@ export class PolicyEngine extends NatsService {
             interception: null
         });
 
-        //Link topic and message
+        // Link topic and message
         await topicHelper.twoWayLink(rootTopic, topic, result.getId(), user.id);
 
         //Create Policy VC
@@ -1416,7 +1452,7 @@ export class PolicyEngine extends NatsService {
             url: url.url || '',
             uuid: model.uuid || '',
             operation: 'PUBLISH'
-        }
+        };
         const policySchema = await DatabaseServer.getSchemaByType(model.topicId, SchemaEntity.POLICY);
         if (policySchema) {
             const schemaObject = new Schema(policySchema);
@@ -1452,7 +1488,6 @@ export class PolicyEngine extends NatsService {
         retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger, user.id);
 
         logger.info('Run Policy', ['GUARDIAN_SERVICE'], user.id);
-
         return retVal;
     }
 
@@ -1535,9 +1570,22 @@ export class PolicyEngine extends NatsService {
             throw new Error('Version must be greater than ' + policy.previousVersion);
         }
 
+        if (policy.tools?.length > 0) {
+            const toolMessageIds = policy.tools.map((toolData: any) => toolData.messageId);
+            const tools = await DatabaseServer.getTools({
+                messageId: { $in: toolMessageIds}
+            });
+            const toolNotPublished = tools.find(tool => tool.status !== ModuleStatus.PUBLISHED);
+
+            if (toolNotPublished) {
+                throw new Error('Policy has tools that are not published');
+            }
+        }
+
         const countModels = await DatabaseServer.getPolicyCount({
             version,
-            uuid: policy.uuid
+            topicId: policy.topicId,
+            owner: owner.owner
         });
         if (countModels > 0) {
             throw new Error('Policy with current version already was published');
@@ -1759,8 +1807,9 @@ export class PolicyEngine extends NatsService {
      * Validate Model
      * @param policy
      * @param isDruRun
+     * @param ignoreRules
      */
-    public async validateModel(policy: Policy | string, isDruRun: boolean = false): Promise<ISerializedErrors> {
+    public async validateModel(policy: Policy | string, isDruRun: boolean = false, ignoreRules?: ReadonlyArray<IgnoreRule>): Promise<ISerializedErrors> {
         let policyId: string;
         if (typeof policy === 'string') {
             policyId = policy
@@ -1771,7 +1820,7 @@ export class PolicyEngine extends NatsService {
             }
             policyId = policy.id.toString();
         }
-        const policyValidator = new PolicyValidator(policy, isDruRun);
+        const policyValidator = new PolicyValidator(policy, isDruRun, ignoreRules);
         await policyValidator.build(policy);
         await policyValidator.validate();
         return policyValidator.getSerializedErrors();

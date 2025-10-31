@@ -18,6 +18,7 @@ import { SchemaField, Schema } from '@indexer/interfaces';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DialogService } from 'primeng/dynamicdialog';
 import { FormulasViewDialog } from '../../dialogs/formulas-view-dialog/formulas-view-dialog.component';
+import {TableViewerComponent} from '../table-viewer/table-viewer.component';
 
 /**
  * Form view by schema
@@ -38,7 +39,8 @@ import { FormulasViewDialog } from '../../dialogs/formulas-view-dialog/formulas-
         CheckboxModule,
         FormsModule,
         InputTextareaModule,
-        FormulasViewDialog
+        FormulasViewDialog,
+        TableViewerComponent,
     ],
     providers: [DialogService],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,6 +52,7 @@ export class SchemaFormViewComponent {
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('values') values: any;
     @Input() formulas?: any;
+    @Input('analytics') analytics?: any;
 
     fields: any[] | undefined = [];
     pageSize: number = 20;
@@ -173,7 +176,8 @@ export class SchemaFormViewComponent {
                 item.type === 'integer') &&
             item.format !== 'date' &&
             item.format !== 'time' &&
-            item.format !== 'date-time'
+            item.format !== 'date-time' &&
+            item.customType !== 'table'
         );
     }
 

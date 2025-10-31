@@ -1,8 +1,24 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { Controller } from '@nestjs/common';
 import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, IAuthUser, JsonToXlsx, MessageError, MessageResponse, NewNotifier, PinoLogger, RunFunctionAsync, Schema as SchemaCollection, Users, XlsxToJson } from '@guardian/common';
-import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, findAndPublishSchema, getSchemaCategory, getSchemaTarget, importSubTools, importTagsByFiles, PolicyImportExportHelper, prepareSchemaPreview, previewToolByMessage, SchemaImportExportHelper, updateSchemaDefs, updateToolConfig } from '../helpers/import-helpers/index.js'
+import { IOwner, ISchema, IChildSchemaDeletionBlock, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
+import {
+    checkForCircularDependency,
+    copySchemaAsync,
+    createSchemaAndArtifacts,
+    deleteSchema,
+    findAndPublishSchema,
+    getSchemaCategory,
+    getSchemaTarget,
+    importSubTools,
+    importTagsByFiles,
+    PolicyImportExportHelper,
+    prepareSchemaPreview,
+    previewToolByMessage,
+    SchemaImportExportHelper,
+    updateSchemaDefs,
+    updateToolConfig
+} from '../helpers/import-helpers/index.js'
 import { getPageOptions } from './helpers/index.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
@@ -202,6 +218,108 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         'status'
                     ]
                 }));
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Return child schemas
+     *
+     * @param {Object} [msg] - payload
+     *
+     * @returns {ISchemaDeletionPreview} - Schema deletion preview
+     */
+    ApiResponse(MessageAPI.GET_SCHEMA_DELETION_PREVIEW,
+        async (msg: {
+            id: string,
+            topicId: string,
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load schema parameter');
+                }
+
+                const { id, topicId, owner } = msg;
+                if (!id) {
+                    return new MessageError('Invalid schema id');
+                }
+                if (!owner) {
+                    return new MessageError('Invalid schema owner');
+                }
+
+                const schema = await DatabaseServer.getSchema({
+                    id,
+                    owner: owner.owner
+                });
+                if (!schema) {
+                    return new MessageError('Schema is not found');
+                }
+
+                const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
+                const defsIds = defs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
+
+                const childSchemasFilter: any = {
+                    uuid: { $in: defsIds },
+                    status: ModuleStatus.DRAFT,
+                }
+                const childSchemas = await DatabaseServer.getSchemas(childSchemasFilter, {
+                    fields: [
+                        'uuid',
+                        'name',
+                        'version',
+                        'sourceVersion',
+                        'status'
+                    ]
+                })
+
+                const blockedChildren: IChildSchemaDeletionBlock[] = [];
+                const blockedChildrenIds = new Set<string>();
+
+                if (topicId) {
+                    const policySchemasFilter: any = {
+                        topicId,
+                        readonly: false,
+                        system: false,
+                        status: ModuleStatus.DRAFT,
+                        category: SchemaCategory.POLICY
+                    }
+                    const allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
+
+                    if (allPolicySchemas?.length > 0) {
+                        allPolicySchemas.forEach(item => {
+                            if (schema.uuid !== item.uuid && !childSchemas.some(child => child.uuid === item.uuid)) {
+                                const schemaDefs = Array.isArray(item.defs) ? item.defs : [item.defs];
+                                const schemaDefsIds = schemaDefs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
+
+                                const childSchemaUsedInAnotherSchema = childSchemas.find(child => schemaDefsIds.includes(child.uuid));
+                                if (childSchemaUsedInAnotherSchema) {
+                                    const alreadyExist = blockedChildren.find(x => x.schema.uuid === childSchemaUsedInAnotherSchema.uuid);
+
+                                    if (alreadyExist) {
+                                        alreadyExist.blockingSchemas.push(item);
+                                    } else {
+                                        blockedChildren.push({
+                                            schema: childSchemaUsedInAnotherSchema,
+                                            blockingSchemas: [item]
+                                        });
+
+                                        blockedChildrenIds.add(childSchemaUsedInAnotherSchema.uuid);
+                                    }
+                                }
+                            }
+                        })
+                    }
+                }
+
+                const deletableChildren = childSchemas.filter(item => !blockedChildrenIds.has(item.uuid))
+
+                return new MessageResponse({
+                    deletableChildren,
+                    blockedChildren
+                });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
@@ -596,7 +714,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         readonly: false,
                         topicId: { $in: topicIds },
                         category: SchemaCategory.TOOL,
-                        status: SchemaStatus.PUBLISHED
+                        status: { $in: [SchemaStatus.PUBLISHED, SchemaStatus.DRAFT] }
                     }]
                 } as FilterObject<SchemaCollection>);
                 for (const schema of schemas) {
@@ -700,14 +818,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             id: string,
             owner: IOwner,
-            needResult: boolean
+            needResult: boolean,
+            includeChildren: boolean
         }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid delete schema parameter');
                 }
 
-                const { id, owner, needResult } = msg;
+                const { id, owner, needResult, includeChildren } = msg;
                 if (!id) {
                     return new MessageError('Invalid schema id');
                 }
@@ -746,6 +865,56 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     );
                 }
 
+                if (includeChildren) {
+                    const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
+                    const defsIds = defs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
+
+                    const childSchemasFilter: any = {
+                        uuid: { $in: defsIds },
+                        status: ModuleStatus.DRAFT,
+                    }
+                    const childSchemas = await DatabaseServer.getSchemas(childSchemasFilter, {
+                        fields: [
+                            'uuid',
+                            'name',
+                            'version',
+                            'sourceVersion',
+                            'status'
+                        ]
+                    })
+
+                    const blockedChildrenIds = new Set<string>();
+
+                    const policySchemasFilter: any = {
+                        topicId: schema.topicId,
+                        readonly: false,
+                        system: false,
+                        status: ModuleStatus.DRAFT,
+                        category: SchemaCategory.POLICY
+                    }
+                    const allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
+
+                    if (allPolicySchemas?.length > 0) {
+                        allPolicySchemas.forEach(item => {
+                            if (schema.uuid !== item.uuid && !childSchemas.some(child => child.uuid === item.uuid)) {
+                                const schemaDefs = Array.isArray(item.defs) ? item.defs : [item.defs];
+                                const schemaDefsIds = schemaDefs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
+
+                                const childSchemaUsedInAnotherSchema = childSchemas.find(child => schemaDefsIds.includes(child.uuid));
+                                if (childSchemaUsedInAnotherSchema) {
+                                    blockedChildrenIds.add(childSchemaUsedInAnotherSchema.uuid);
+                                }
+                            }
+                        })
+                    }
+
+                    const deletableChildren = childSchemas.filter(item => !blockedChildrenIds.has(item.uuid))
+
+                    for (const element of deletableChildren) {
+                        await deleteSchema(element.id, owner, NewNotifier.empty());
+                    }
+                }
+
                 await deleteSchema(id, owner, NewNotifier.empty());
 
                 if (needResult) {
@@ -754,6 +923,55 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 } else {
                     return new MessageResponse(true);
                 }
+            } catch (error) {
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Delete policy schemas.
+     *
+     * @param {Object} payload - filters
+     * @param {string} payload.topicId - topic id
+     *
+     * @returns {any} - result
+     */
+    ApiResponse<any>(MessageAPI.DELETE_SCHEMAS,
+        async (msg: {
+            topicId: string,
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid delete schema parameter');
+                }
+
+                const { topicId, owner } = msg;
+
+                if (!topicId) {
+                    return new MessageError('Invalid topic id');
+                }
+                if (!owner) {
+                    return new MessageError('Invalid schema owner');
+                }
+
+                const schemasToDelete = await DatabaseServer.getSchemas({
+                    topicId,
+                    readonly: false,
+                    status: SchemaStatus.DRAFT
+                });
+                if (schemasToDelete?.length <= 0) {
+                    return new MessageError('Schemas not found', 404);
+                }
+                for (const schema of schemasToDelete) {
+                    await deleteSchema(
+                        schema.id,
+                        owner,
+                        NewNotifier.empty()
+                    );
+                }
+
+                return new MessageResponse(true);
             } catch (error) {
                 return new MessageError(error);
             }
@@ -807,9 +1025,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             messageIds: string[],
             owner: IOwner,
             topicId: string,
-            task: any
+            task: any,
+            schemasIds?: string[]
         }) => {
-            const { owner, messageIds, topicId, task } = msg;
+            const { owner, messageIds, topicId, task, schemasIds } = msg;
             const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
@@ -830,7 +1049,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     },
                     logger,
                     notifier,
-                    owner?.id
+                    owner?.id,
+                    schemasIds,
                 );
                 notifier.result(schemasMap);
             }, async (error) => {
@@ -890,9 +1110,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             files: any,
             owner: IOwner,
             topicId: string,
-            task: any
+            task: any,
+            schemasIds?: string[]
         }) => {
-            const { owner, files, topicId, task } = msg;
+            const { owner, files, topicId, task, schemasIds } = msg;
             const { schemas, tags } = files;
 
             const notifier = await NewNotifier.create(task);
@@ -913,7 +1134,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         topicId
                     },
                     notifier,
-                    owner?.id
+                    owner?.id,
+                    schemasIds,
                 );
                 result = await importTagsByFiles(result, tags, notifier);
 
@@ -1496,9 +1718,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             owner: IOwner,
             topicId: string,
             xlsx: any,
-            task: any
+            task: any,
+            schemasIds?: string[],
         }) => {
-            const { owner, xlsx, topicId, task } = msg;
+            const { owner, xlsx, topicId, task, schemasIds } = msg;
             const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 // <-- Steps
@@ -1557,7 +1780,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         skipGenerateId: true
                     },
                     notifier.getStep(STEP_IMPORT_SCHEMAS),
-                    owner?.id
+                    owner?.id,
+                    schemasIds,
                 );
                 notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
@@ -1610,6 +1834,43 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 GenerateBlocks.generate(xlsxResult);
 
                 return new MessageResponse(xlsxResult.toJson());
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Check for schemas dublicates
+     */
+    ApiResponse(MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES,
+        async (msg: {
+            schemaNames: string[];
+            owner?: IOwner;
+            policyId?: string;
+        }) => {
+            try {
+                const { schemaNames, policyId } = msg;
+                if (!schemaNames?.length) {
+                    throw new Error('files in body is empty');
+                }
+
+                const schemasCanBeReplaced = schemaNames.length ? await DatabaseServer.getSchemas({
+                    topicId: policyId,
+                    category: SchemaCategory.POLICY,
+                    readonly: false,
+                    system: false,
+                    status: {
+                        $nin: [SchemaStatus.PUBLISHED, SchemaStatus.UNPUBLISHED]
+                    },
+                    name: {
+                        $in: schemaNames
+                    }
+                }, {}) : []
+
+                return new MessageResponse({
+                    schemasCanBeReplaced,
+                });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);

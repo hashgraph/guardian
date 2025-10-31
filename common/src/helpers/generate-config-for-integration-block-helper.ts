@@ -29,6 +29,13 @@ export const generateConfigForIntegrationBlock = (
         'default': ''
     },
     {
+        'name': 'hideWhenDiscontinued',
+        'label': 'Hide when discontinued',
+        'title': 'Hide when discontinued',
+        'type': propertyType?.Checkbox || 'Checkbox',
+        'default': false
+    },
+    {
         'name': 'getFromCache',
         'label': 'Enable caching',
         'title': 'Enable caching',

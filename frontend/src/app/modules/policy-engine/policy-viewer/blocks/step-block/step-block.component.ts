@@ -26,8 +26,10 @@ export class StepBlockComponent implements OnInit {
 
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
+    @Input('policyStatus') policyStatus!: string;
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
+    @Input('savepointIds') savepointIds?: string[] | null = null;
 
     blocks: any;
     activeBlockId: any;
@@ -69,7 +71,7 @@ export class StepBlockComponent implements OnInit {
             }, 500);
         } else {
             this.policyEngineService
-                .getBlockData(this.id, this.policyId)
+                .getBlockData(this.id, this.policyId, this.savepointIds)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }

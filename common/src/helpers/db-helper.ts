@@ -15,7 +15,8 @@ export const MAP_DOCUMENT_AGGREGATION_FILTERS = {
     PAGINATION: 'pagination',
     VC_DOCUMENTS: 'vc-documents',
     VP_DOCUMENTS: 'vp-documents',
-    APPROVE: 'approve'
+    APPROVE: 'approve',
+    DRY_RUN_SAVEPOINT: 'dry-run-savepoint',
 }
 
 export const MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS = {
@@ -153,6 +154,50 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
                 reject(error);
             }
         });
+    }
+
+    /**
+     * Save file with id
+     * @param id
+     * @param filename
+     * @param buffer
+     * @returns file ID
+     */
+    public static async saveFileWithId(id: ObjectId, filename: string, buffer: Buffer): Promise<ObjectId> {
+        return new Promise<ObjectId>((resolve, reject) => {
+            try {
+                const stream = DataBaseHelper.gridFS.openUploadStreamWithId(id, filename);
+                stream.end(buffer, (err?: any) => err ? reject(err) : resolve(id));
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    /**
+     * Overwrite file
+     * @param id
+     * @param filename
+     * @param buffer
+     * @returns file ID
+     */
+    public static async overwriteFile(id: ObjectId, filename: string, buffer: Buffer): Promise<ObjectId> {
+        try {
+            await DataBaseHelper.gridFS.delete(id).catch((err: any) => {
+                return;
+            });
+            return await DataBaseHelper.saveFileWithId(id, filename, buffer);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Delete file
+     * @param id
+     */
+    public static async deleteFile(id: ObjectId): Promise<void> {
+        await DataBaseHelper.gridFS.delete(id);
     }
 
     /**
@@ -296,6 +341,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             itemsPerPage,
             page,
             policyId,
+            savepointIds
         } = props;
 
         const filters = {
@@ -383,6 +429,19 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
                     }
                 }
             ],
+            [MAP_DOCUMENT_AGGREGATION_FILTERS.DRY_RUN_SAVEPOINT]: [
+                {
+                    $match: {
+                        $or: [
+                            ...(savepointIds
+                                ? [{ savepointId: { $in: savepointIds } }]
+                                : []),
+                            { savepointId: { $exists: false } },
+                            { savepointId: null },
+                        ]
+                    }
+                }
+            ]
         };
 
         aggregation[aggregateMethod](...filters[nameFilter]);
@@ -795,6 +854,13 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         return entitiesToUpdate.length === 1
             ? entitiesToUpdate[0]
             : entitiesToUpdate;
+    }
+
+    public async updateManyRaw(filter: unknown, update: unknown): Promise<number> {
+        const repo = this._em.getRepository(this.entityClass);
+        const res = await repo.getCollection().updateMany(filter, update);
+
+        return (res?.modifiedCount ?? res?.result?.nModified ?? 0);
     }
 
     @CreateRequestContext(() => DataBaseHelper.orm)

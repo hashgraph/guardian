@@ -16,8 +16,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 export class ContainerBlockComponent implements OnInit, OnDestroy {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
+    @Input('policyStatus') policyStatus!: string;
     @Input('static') static!: any;
     @Input('dryRun') dryRun: boolean;
+    @Input('savepointIds') savepointIds?: string[] | null = null;
 
     loading: boolean = true;
     socket: any;
@@ -88,7 +90,7 @@ export class ContainerBlockComponent implements OnInit, OnDestroy {
             }, 500);
         } else {
             this.policyEngineService
-                .getBlockData(this.id, this.policyId)
+                .getBlockData(this.id, this.policyId, this.savepointIds)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }

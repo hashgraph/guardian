@@ -5,6 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
+import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -82,10 +83,12 @@ export class SchemaFormComponent implements OnInit {
     @Input() comesFromDialog: boolean = false;
     @Input() dryRun?: boolean = false;
     @Input() policyId?: string = '';
+    @Input() blockId: string = '';
     @Input() rules?: SchemaRuleValidateResult;
     @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
     @Input() isFormForRequestBlock: boolean = false;
+    @Input() lastSavedAt?: Date;
 
     @Output() change = new EventEmitter<Schema | null>();
     @Output() destroy = new EventEmitter<void>();
@@ -94,105 +97,17 @@ export class SchemaFormComponent implements OnInit {
     @Output() saveBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() buttons = new EventEmitter<any>();
 
+    public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
+
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public isShown: boolean[] = [true];
     public currentIndex: number = 0;
-    public buttonsConfig: IButton[] = [
-        {
-            id: 'save',
-            visible: () => {
-                return this.saveShown;
-            },
-            disabled: () => {
-                return false;
-            },
-            text: this.saveText,
-            class: 'p-button-outlined',
-            type: 'secondary',
-            iconPath: '/assets/images/icons/save.svg',
-            fn: () => {
-                this.onSaveBtnClick(this.formModel?.controls);
-            },
-        },
-        {
-            id: 'cancel',
-            visible: () => {
-                if (!this.formModel?.controls || this.isChildSchema) {
-                    return false;
-                }
-                return this.currentIndex === 0 && !this.cancelHidden;
-            },
-            disabled: () => {
-                return false;
-            },
-            text: this.cancelText,
-            class: 'p-button-outlined',
-            type: 'secondary',
-            fn: () => {
-                this.onCancelBtnClick();
-            },
-        },
-        {
-            id: 'prev',
-            visible: () => {
-                if (!this.formModel?.controls || this.isChildSchema) {
-                    return false;
-                }
-                return this.currentIndex !== 0;
-            },
-            disabled: () => {
-                return false;
-            },
-            text: 'Previous',
-            class: 'p-button-outlined',
-            type: 'secondary',
-            fn: () => {
-                this.getPrevShownFields(this.formModel?.controls);
-            },
-        },
-        {
-            id: 'next',
-            visible: () => {
-                if (!this.formModel?.controls || this.isChildSchema) {
-                    return false;
-                }
-                return !this.isShown[this.formModel.controls.length - 1];
-            },
-            disabled: () => {
-                return false;
-            },
-            text: 'Next',
-            class: 'p-button',
-            type: 'primary',
-            fn: () => {
-                this.getNextShownFields(this.formModel?.controls);
-            },
-        },
-        {
-            id: 'submit',
-            visible: () => {
-                if (!this.formModel?.controls || this.isChildSchema) {
-                    return false;
-                }
-                return !!this.isShown[this.formModel.controls.length - 1] && !this.submitHidden;
-            },
-            disabled: () => {
-                return false;
-            },
-            text: this.submitText,
-            class: 'p-button',
-            type: 'primary',
-            fn: () => {
-                this.onSubmitBtnClick(this.formModel?.controls);
-            },
-        }
-    ]
+    public buttonsConfig: IButton[] = [];
 
     constructor(
         private ipfs: IPFSService,
         protected changeDetectorRef: ChangeDetectorRef
     ) { }
-
 
     ngOnInit(): void {
     }
@@ -220,13 +135,101 @@ export class SchemaFormComponent implements OnInit {
 
             }
         }
-        this.buttons.emit(this.buttonsConfig);
+        this.createButtons();
     }
 
     ngOnDestroy() {
         this.destroy.emit();
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
+    }
+
+    public createButtons() {
+        this.buttonsConfig = [{
+            id: 'cancel',
+            visible: () => {
+                if (!this.formModel?.controls || this.isChildSchema) {
+                    return false;
+                }
+                return this.currentIndex === 0 && !this.cancelHidden;
+            },
+            disabled: () => {
+                return false;
+            },
+            text: this.cancelText,
+            class: 'p-button-outlined',
+            type: 'secondary',
+            fn: () => {
+                this.onCancelBtnClick();
+            },
+        }, {
+            id: 'prev',
+            visible: () => {
+                if (!this.formModel?.controls || this.isChildSchema) {
+                    return false;
+                }
+                return this.currentIndex !== 0;
+            },
+            disabled: () => {
+                return false;
+            },
+            text: 'Previous',
+            class: 'p-button-outlined',
+            type: 'secondary',
+            fn: () => {
+                this.getPrevShownFields(this.formModel?.controls);
+            },
+        }, {
+            id: 'next',
+            visible: () => {
+                if (!this.formModel?.controls || this.isChildSchema) {
+                    return false;
+                }
+                return !this.isShown[this.formModel.controls.length - 1];
+            },
+            disabled: () => {
+                return false;
+            },
+            text: 'Next',
+            class: 'p-button',
+            type: 'primary',
+            fn: () => {
+                this.getNextShownFields(this.formModel?.controls);
+            },
+        }, {
+            id: 'submit',
+            visible: () => {
+                if (!this.formModel?.controls || this.isChildSchema) {
+                    return false;
+                }
+                return !!this.isShown[this.formModel.controls.length - 1] && !this.submitHidden;
+            },
+            disabled: () => {
+                return false;
+            },
+            text: this.submitText,
+            class: 'p-button',
+            type: 'primary',
+            fn: () => {
+                this.onSubmitBtnClick(this.formModel?.controls);
+            },
+        }, {
+            id: 'save',
+            visible: () => {
+                return this.saveShown;
+            },
+            disabled: () => {
+                return false;
+            },
+            text: this.saveText,
+            class: 'p-button-outlined',
+            type: 'primary',
+            iconPath: '/assets/images/icons/save.svg',
+            fn: () => {
+                this.onSaveBtnClick(this.formModel?.controls);
+            },
+        }]
+        this.buttons.emit(this.buttonsConfig);
     }
 
     public addGroup(item: IFieldControl<any>) {
@@ -314,6 +317,7 @@ export class SchemaFormComponent implements OnInit {
                 item.format !== 'time' &&
                 item.format !== 'date-time'
             ) && !item.remoteLink && !item.enum
+            && item.customType !== 'table'
         );
     }
 
@@ -448,11 +452,18 @@ export class SchemaFormComponent implements OnInit {
     }
 
 
-    public getInvalidMessageByFieldType(item: IFieldControl<any>): string {
+    public getInvalidMessageByFieldType(item: IFieldControl<any>, itemFromList?: IFieldIndexControl<any>): string {
         const type = item.format || item.type;
         const messages = item.isArray
             ? ErrorArrayMessageByFieldType
             : ErrorFieldMessageByFieldType;
+
+        if (item.control?.errors?.[item.id]) {
+            return item.control.errors[item.id];
+        } else if (itemFromList?.control?.errors?.[item.id]) {
+            return itemFromList.control.errors[item.id];
+        }
+
         switch (type) {
             case 'email':
                 return messages.Email;

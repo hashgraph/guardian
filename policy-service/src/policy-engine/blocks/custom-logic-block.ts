@@ -14,11 +14,13 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { fileURLToPath } from 'url';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { BlockActionError } from '../errors/index.js';
+import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 
 const filename = fileURLToPath(import.meta.url);
 
 interface IMetadata {
     owner: PolicyUser;
+    relayerAccount: string;
     id: string;
     reference: string;
     accounts: any;
@@ -186,6 +188,12 @@ export class CustomLogicBlock {
                     if (!result) {
                         triggerEvents(null);
                         if (final) {
+                            try {
+                                disposeTables();
+                            } catch {
+                                //
+                            }
+
                             resolve(null);
                         }
                         return;
@@ -207,6 +215,12 @@ export class CustomLogicBlock {
                         }
                         triggerEvents(items);
                         if (final) {
+                            try {
+                                disposeTables();
+                            } catch {
+                                //
+                            }
+
                             resolve(items);
                         }
                         return;
@@ -214,6 +228,11 @@ export class CustomLogicBlock {
                         const item = await processing(result);
                         triggerEvents(item);
                         if (final) {
+                            try {
+                                disposeTables();
+                            } catch {
+                                //
+                            }
                             resolve(item);
                         }
                         return;
@@ -238,6 +257,16 @@ export class CustomLogicBlock {
                 const sources: IPolicyDocument[] = await this.getSources(user);
 
                 const context = await ref.debugContext({ documents, sources });
+
+                const disposeTables = await hydrateTablesInObject(
+                    context.documents,
+                    async (fileId: string) => loadFileTextById(ref, fileId),
+                );
+
+                const tablesPack: Record<string, { rows: any[]; columnKeys: string[] }> = {};
+
+                collectTablesPack(context.documents, tablesPack);
+
                 const expression = ref.options.expression || '';
                 if (ref.options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
                     const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-python-worker.js'), {
@@ -246,7 +275,8 @@ export class CustomLogicBlock {
                             user,
                             artifacts,
                             documents: context.documents,
-                            sources: context.sources
+                            sources: context.sources,
+                            tablesPack
                         },
                     });
                     worker.on('error', (error) => {
@@ -275,7 +305,8 @@ export class CustomLogicBlock {
                             user,
                             artifacts,
                             documents: context.documents,
-                            sources: context.sources
+                            sources: context.sources,
+                            tablesPack
                         },
                     });
                     worker.on('error', (error) => {
@@ -316,6 +347,7 @@ export class CustomLogicBlock {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
         const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, firstDocument, userId);
         const relationships = [];
         let accounts: any = {};
         let tokens: any = {};
@@ -370,7 +402,7 @@ export class CustomLogicBlock {
                 break;
         }
 
-        return { owner, id, reference, accounts, tokens, relationships, issuer };
+        return { owner, relayerAccount, id, reference, accounts, tokens, relationships, issuer };
     }
 
     /**
@@ -387,6 +419,7 @@ export class CustomLogicBlock {
     ): Promise<IPolicyDocument> {
         const {
             owner,
+            relayerAccount,
             id,
             reference,
             accounts,
@@ -421,12 +454,25 @@ export class CustomLogicBlock {
 
         const uuid = await ref.components.generateUUID();
 
-        const newId = await PolicyActionsUtils.generateId(ref, ref.options.idType, owner, userId);
+        const newId = await PolicyActionsUtils.generateId({
+            ref,
+            type: ref.options.idType,
+            user: owner,
+            relayerAccount,
+            userId
+        });
         if (newId) {
             vcSubject.id = newId;
         }
 
-        const newVC = await PolicyActionsUtils.signVC(ref, vcSubject, issuer, { uuid }, userId);
+        const newVC = await PolicyActionsUtils.signVC({
+            ref,
+            subject: vcSubject,
+            issuer,
+            relayerAccount,
+            options: { uuid },
+            userId
+        });
 
         const item = PolicyUtils.createVC(ref, owner, newVC);
         item.type = outputSchema.iri;
@@ -434,6 +480,7 @@ export class CustomLogicBlock {
         item.relationships = relationships.length ? relationships : null;
         item.accounts = accounts && Object.keys(accounts).length ? accounts : null;
         item.tokens = tokens && Object.keys(tokens).length ? tokens : null;
+        item.relayerAccount = relayerAccount;
         // -->
 
         return item;

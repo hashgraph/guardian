@@ -28,6 +28,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyOutputEventType } from '../interfaces/policy-event-type.js';
 import deepEqual from 'deep-equal';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 
 /**
  * Request VC document block addon with UI
@@ -176,7 +177,16 @@ export class RequestVcDocumentBlockAddon {
                     );
                 }
                 const document = _data.document;
+
+                const disposeTables = await hydrateTablesInObject(
+                    document,
+                    async (fileId: string) => loadFileTextById(ref, fileId),
+                );
+
                 PolicyUtils.setAutoCalculateFields(this._schema, document);
+
+                disposeTables();
+
                 const presetCheck = await this.checkPreset(
                     ref,
                     document,
@@ -194,14 +204,22 @@ export class RequestVcDocumentBlockAddon {
 
                 const _vcHelper = new VcHelper();
                 const idType = ref.options.idType;
-                const userAccountId = await PolicyUtils.getHederaAccountId(ref, user.did, user.userId);
+
+                //Relayer Account
+                const relayerAccount = await PolicyUtils.getRelayerAccount(ref, user.did, _data.relayerAccount, documentRef, user.userId);
 
                 const credentialSubject = document;
                 credentialSubject.policyId = ref.policyId;
 
                 PolicyUtils.setGuardianVersion(credentialSubject, this._schema);
 
-                const newId = await PolicyActionsUtils.generateId(ref, idType, user, user.userId);
+                const newId = await PolicyActionsUtils.generateId({
+                    ref,
+                    type: idType,
+                    user,
+                    relayerAccount,
+                    userId: user.userId
+                });
                 if (newId) {
                     credentialSubject.id = newId;
                 }
@@ -230,14 +248,22 @@ export class RequestVcDocumentBlockAddon {
                 const groupContext = await PolicyUtils.getGroupContext(ref, user);
                 const uuid = await ref.components.generateUUID();
 
-                const vc = await PolicyActionsUtils.signVC(ref, credentialSubject, user.did, { uuid, group: groupContext }, user.userId);
+                const vc = await PolicyActionsUtils.signVC({
+                    ref,
+                    subject: credentialSubject,
+                    issuer: user.did,
+                    relayerAccount,
+                    options: { uuid, group: groupContext },
+                    userId: user.userId
+                });
                 let item = PolicyUtils.createVC(ref, user, vc);
 
-                const accounts = PolicyUtils.getHederaAccounts(vc, userAccountId, this._schema);
+                const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, this._schema);
                 const schemaIRI = ref.options.schema;
                 item.type = schemaIRI;
                 item.schema = schemaIRI;
                 item.accounts = accounts;
+                item.relayerAccount = relayerAccount;
                 item = PolicyUtils.setDocumentRef(item, documentRef);
 
                 const state: IPolicyEventState = { data: item };

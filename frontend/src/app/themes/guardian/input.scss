@@ -38,6 +38,15 @@
         width: 100%;
     }
 
+    .p-password {
+        width: 100%;
+
+        input {
+            width: 100%;
+            padding-right: 30px;
+        }
+    }
+
     .guardian-input {
         height: 40px;
         border-radius: 8px;

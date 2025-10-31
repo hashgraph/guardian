@@ -8,6 +8,8 @@ import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialo
 import { ViewerDialog } from '../../../dialogs/viewer-dialog/viewer-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
+import { VCFullscreenDialog } from 'src/app/modules/schema-engine/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
+import { Subject } from 'rxjs';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -27,8 +29,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 export class DocumentsSourceBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
+    @Input('policyStatus') policyStatus!: string;
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
+    @Input('savepointIds') savepointIds?: string[] | null = null;
 
     isActive = false;
     loading: boolean = true;
@@ -52,6 +56,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
     enableSorting: boolean = false;
     hasHistory: boolean = false;
     readonly: boolean = false;
+
+    private _destroy$ = new Subject<void>();
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -79,6 +85,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (this.socket) {
             this.socket.unsubscribe();
         }
+        this._destroy$.next();
+        this._destroy$.unsubscribe();
     }
 
     onUpdate(blocks: string[]): void {
@@ -96,7 +104,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }, 500);
         } else {
             this.policyEngineService
-                .getBlockData(this.id, this.policyId)
+                .getBlockData(this.id, this.policyId, this.savepointIds)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }
@@ -208,7 +216,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     async getBindBlock(blockTag: any) {
         return new Promise<any>(async (resolve, reject) => {
-            this.policyEngineService.getBlockDataByName(blockTag, this.policyId).subscribe((data: any) => {
+            this.policyEngineService.getBlockDataByName(blockTag, this.policyId, this.savepointIds).subscribe((data: any) => {
                 resolve(data);
             }, (e) => {
                 resolve(null);
@@ -216,7 +224,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         });
     }
 
-    onDialog(row: any, field: any) {
+    onDialog(row: any, field: any, comments?: boolean) {
         const data = row;
         const document = row[field.name];
         if (field._block) {
@@ -237,23 +245,26 @@ export class DocumentsSourceBlockComponent implements OnInit {
             dialogRef.onClose.subscribe(async (result) => {
             });
         } else {
-            const dialogRef = this.dialogService.open(VCViewerDialog, {
+            const dialogRef = this.dialogService.open(VCFullscreenDialog, {
                 showHeader: false,
                 width: '1000px',
                 styleClass: 'guardian-dialog',
+                maskStyleClass: 'guardian-fullscreen-dialog',
                 data: {
+                    type: 'VC',
+                    backLabel: 'Back to Policy',
+                    title: field.dialogContent,
+                    viewDocument: true,
+                    dryRun: !!row.dryRunId,
                     id: row.id,
                     row: row,
                     document: document,
-                    dryRun: !!row.dryRunId,
-                    title: field.dialogContent,
-                    type: 'VC',
-                    viewDocument: true
+                    openComments: comments,
+                    destroy: this._destroy$
                 }
             });
             dialogRef.onClose.subscribe(async (result) => {
             });
-
         }
     }
 
@@ -432,11 +443,11 @@ export class DocumentsSourceBlockComponent implements OnInit {
         });
     }
 
-    onButton(event: MouseEvent, row: any, field: any) {
+    onButton(event: MouseEvent, row: any, field: any, comments?: boolean) {
         event.preventDefault();
         event.stopPropagation();
         if (field.action == 'dialog') {
-            this.onDialog(row, field);
+            this.onDialog(row, field, comments);
         }
         if (field.action == 'link') {
             this.onRedirect(row, field);
@@ -500,7 +511,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     getClass(type: string): string {
-        if(type === 'text') {
+        if (type === 'text') {
             return 'text-container';
         }
         return ''

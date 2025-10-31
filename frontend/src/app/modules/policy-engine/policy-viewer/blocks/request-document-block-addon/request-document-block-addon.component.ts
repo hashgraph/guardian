@@ -18,13 +18,16 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { RequestDocumentBlockDialog } from '../request-document-block/dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
+import { PolicyStatus } from '@guardian/interfaces';
 
 interface IRequestDocumentAddonData {
     readonly: boolean;
     schema: ISchema;
     active: boolean;
+    relayerAccount: boolean;
     data: any;
     buttonName: string;
+    hideWhenDiscontinued?: boolean;
     uiClass: string;
     dialogTitle: string;
     preset: boolean;
@@ -48,6 +51,8 @@ export class RequestDocumentBlockAddonComponent
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
+    @Input('savepointIds') savepointIds?: string[] | null = null;
+    @Input('policyStatus') policyStatus!: string;
 
     public isExist = false;
     public disabled = false;
@@ -65,11 +70,16 @@ export class RequestDocumentBlockAddonComponent
     public dialogRef: any;
     public uiClass: any;
     public buttonName: any;
+    public hideWhenDiscontinued?: boolean = false;
     public restoreData: any;
     public rules: any;
     public hideFields: any;
     public readonly: boolean = false;
     public dialog: RequestDocumentBlockDialog;
+    public edit: boolean;
+    public draft: boolean;
+    public relayerAccount: boolean;
+    public isLocalUser: boolean = true;
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -97,6 +107,16 @@ export class RequestDocumentBlockAddonComponent
         this.destroy();
     }
 
+    public __validate() {
+        const errors: string[] = [];
+        Object.keys(this.dataForm.controls).forEach(key => {
+            if (!this.dataForm.get(key)?.valid) {
+                errors.push(key);
+            }
+        });
+        console.log(errors);
+    }
+
     override setData(data: IRequestDocumentAddonData) {
         if (data) {
             this.readonly = !!data.readonly;
@@ -106,10 +126,12 @@ export class RequestDocumentBlockAddonComponent
             this.ref = row;
             this.schema = new Schema(schema);
             this.buttonName = data.buttonName;
+            this.hideWhenDiscontinued = !!data.hideWhenDiscontinued;
             this.uiClass = data.uiClass;
             this.dialogTitle = data.dialogTitle;
             this.disabled = active === false;
             this.isExist = true;
+            this.relayerAccount = !!data.relayerAccount && !this.dryRun;
             this.needPreset = data.preset;
             this.presetFields = data.presetFields || [];
             this.restoreData = data.restoreData;
@@ -126,6 +148,14 @@ export class RequestDocumentBlockAddonComponent
             this.disabled = false;
             this.isExist = false;
         }
+    }
+
+    isBtnVisible() {
+        if (this.policyStatus === PolicyStatus.DISCONTINUED && this.hideWhenDiscontinued) {
+            return false;
+        }
+
+        return true;
     }
 
     private getJson(data: any, presetFields: any[]) {
@@ -205,6 +235,10 @@ export class RequestDocumentBlockAddonComponent
 
     public getRef() {
         return this.ref.id;
+    }
+
+    public getAutosaveId() {
+        return this.ref?.id ?? `${this.policyId}_${this.id}_${this?.user?.id}`;
     }
 
     public onDialog() {

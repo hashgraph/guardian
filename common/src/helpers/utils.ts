@@ -335,3 +335,23 @@ export const generateNumberFromString = (inputString) => {
 
     return hash;
 }
+
+export function toArrayBuffer(buffer?: Buffer): ArrayBuffer | undefined {
+    if (buffer) {
+        return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+    } else if (buffer === null) {
+        return null;
+    } else {
+        return undefined;
+    }
+}
+
+export function toBuffer(arrayBuffer?: Buffer | ArrayBuffer): Buffer | undefined {
+    if (arrayBuffer) {
+        return Buffer.from(arrayBuffer as any);
+    } else if (arrayBuffer === null) {
+        return null;
+    } else {
+        return undefined;
+    }
+}

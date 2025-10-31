@@ -296,6 +296,35 @@
                 <div class="guardian-button-label">Edit values</div>
             </button>
         </div>
+
+        <div *ngIf="geoJson && !loading" class="geojson-options-container">
+            <div class="dropdown-field guardian-input-container">
+                <label class="form-label">GeoJSON types</label>
+                <p-multiSelect
+                    class="guardian-dropdown"
+                    [options]="geoJsonOptions"
+                    [formControl]="geoJsonControl"
+                    optionLabel="label"
+                    optionValue="value"
+                    display="chip"
+                    defaultLabel="Select geometry types"
+                    [showClear]="true"
+                    appendTo="body">
+                </p-multiSelect>
+            </div>
+
+            <div *ngIf="geoKeywords.length" class="form-group geojson-form-field">
+                <label class="form-label">Selected geometries</label>
+                <div class="p-chips" aria-label="GeoJSON values">
+                    <div class="p-chips-container">
+                        <div class="p-chips-token" *ngFor="let g of geoKeywords">
+                            <span class="p-chips-token-label">{{ g }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div *ngIf="!helpText && presetFormFields" class="selected-values">
             <div>
                 <span class="selected-values__title">Selected values</span>
@@ -313,6 +342,7 @@
                         [fields]="presetFormFields"
                         [preset]="presetValues"
                         [showButtons]="false"
+                        [likeDryRun]="true"
                         (form)="initDefaultForm($event)"
                     ></app-schema-form-root>
                 </div>

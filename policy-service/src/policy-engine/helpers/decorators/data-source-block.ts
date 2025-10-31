@@ -155,9 +155,10 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param paginationData
              * @param countResult
+             * @param opts
              * @protected
              */
-            protected async getGlobalSources(user: PolicyUser, paginationData: any, countResult?: boolean) {
+            protected async getGlobalSources(user: PolicyUser, paginationData: any, countResult?: boolean, opts?: { savepointIds?: string[] } ) {
                 const dynFilters = {};
                 for (const child of this.children) {
                     if (child.blockClassName === 'DataSourceAddon') {
@@ -171,7 +172,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                         }
                     }
                 }
-                return await this.getSources(user, dynFilters, paginationData, countResult);
+                return await this.getSources(user, dynFilters, paginationData, countResult, opts);
             }
 
             /**
@@ -266,13 +267,15 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param globalFilters
              * @param paginationData
              * @param countResult
+             * @param opts
              * @protected
              */
             protected async getSources(
                 user: PolicyUser,
                 globalFilters: any,
                 paginationData: any,
-                countResult: boolean = false
+                countResult: boolean = false,
+                opts?: { savepointIds?: string[] }
             ): Promise<any[] | number> {
                 const data = [];
                 let totalCount = 0;
@@ -287,6 +290,20 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                         }
                         _globalFilters.$and.push(value);
                     }
+                }
+
+                if (opts?.savepointIds?.length) {
+                    const bySavepoint = {
+                        $or: [
+                            {savepointId: {$in: opts.savepointIds}},
+                            {savepointId: {$exists: false}},
+                            {savepointId: null},
+                        ]
+                    };
+                    if (!_globalFilters.$and) {
+                        _globalFilters.$and = [];
+                    }
+                    _globalFilters.$and.push(bySavepoint);
                 }
 
                 const resultsCountArray = [];

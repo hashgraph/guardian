@@ -2,9 +2,6 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpExcepti
 
 import { Observable, of, switchMap, tap } from 'rxjs';
 
-//common
-import { PinoLogger } from '@guardian/common';
-
 //services
 import { CacheService } from '../cache-service.js';
 import { Users } from '../users.js';
@@ -21,8 +18,7 @@ import { CACHE, CACHE_PREFIXES, META_DATA } from '#constants';
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
     constructor(
-        private readonly cacheService: CacheService,
-        private readonly logger: PinoLogger,
+        private readonly cacheService: CacheService
     ) {
     }
 
@@ -46,13 +42,7 @@ export class CacheInterceptor implements NestInterceptor {
             }
         }
 
-        let { url: route } = request;
-
-        try {
-            route = decodeURI(request.url);
-        } catch (e) {
-            await this.logger.warn(`Bad URI: ${request.url}`, ['API_GATEWAY'], user?.id);
-        }
+        const { url: route } = request;
 
         const [cacheKey] = getCacheKey([route], user, CACHE_PREFIXES.CACHE);
         const [cacheTag] = getCacheKey([route.split('?')[0]], user);

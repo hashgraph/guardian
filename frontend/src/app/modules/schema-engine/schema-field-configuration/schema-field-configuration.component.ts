@@ -8,7 +8,13 @@ import {
     Output,
     SimpleChanges
 } from '@angular/core';
-import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
+import {
+    AbstractControl,
+    UntypedFormArray,
+    UntypedFormControl,
+    UntypedFormGroup,
+    Validators,
+} from '@angular/forms';
 import { SchemaField, UnitSystem } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { IPFS_SCHEMA } from 'src/app/services/api';
@@ -50,6 +56,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public autocalculated = false;
     public unit: boolean = true;
     public enum: boolean = false;
+    public availableActions: boolean = false;
     public helpText: boolean = false;
     public loading: boolean = false;
     public keywords: string[] = [];
@@ -75,6 +82,19 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     private fieldTypeSub: Subscription;
     private fieldPropertySub: Subscription;
     private _sd?: any;
+
+    public geoJson = false;
+    public geoJsonControl = new UntypedFormControl([]);
+    public geoJsonOptions = [
+        { label: 'Point', value: 'Point' },
+        { label: 'Polygon', value: 'Polygon' },
+        { label: 'LineString', value: 'LineString' },
+        { label: 'MultiPoint', value: 'MultiPoint' },
+        { label: 'MultiPolygon', value: 'MultiPolygon' },
+        { label: 'MultiLineString', value: 'MultiLineString' }
+    ];
+    public geoKeywords: string[] = [];
+    private geoJsonSub?: Subscription;
 
     constructor(
         public dialog: DialogService,
@@ -264,6 +284,26 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         this.fieldPropertySub = this.property.valueChanges.subscribe(val => {
             this.field.property.setValue(val);
         });
+
+        const initialGeo = this.field?.controlAvailableOptions?.value;
+
+        if (Array.isArray(initialGeo)) {
+            this.geoJsonControl.setValue(initialGeo);
+            this.updateGeoKeywords(initialGeo);
+        }
+        this.geoJsonSub = this.geoJsonControl.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((vals: string[] | null) => {
+                const value = vals || [];
+                const fc = this.field.controlAvailableOptions;
+
+                if (fc instanceof UntypedFormArray) {
+                    fc.clear();
+                    value.forEach(v => fc.push(new UntypedFormControl(v)));
+                }
+
+                this.updateGeoKeywords(value);
+        });
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -300,6 +340,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     ngOnDestroy() {
         this.fieldPropertySub.unsubscribe();
         this.fieldTypeSub.unsubscribe();
+        this.geoJsonSub?.unsubscribe();
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
     }
@@ -347,6 +388,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         this.isString = (item && item.name === 'String') || false;
         this.helpText = (item && item.name === 'Help Text') || false;
         this.enum = ((item && item.name) || typeName) === 'Enum';
+        this.geoJson = ((item && item.name) || typeName) === 'GeoJSON';
     }
 
     onEditEnum() {
@@ -434,5 +476,13 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 this.field.expression.updateValueAndValidity();
             }
         })
+    }
+
+    private updateGeoKeywords(values: string[]) {
+        if (!values?.length || values?.length === this.geoJsonOptions.length) {
+            this.geoKeywords = ['All'];
+        } else {
+            this.geoKeywords = values || [];
+        }
     }
 }

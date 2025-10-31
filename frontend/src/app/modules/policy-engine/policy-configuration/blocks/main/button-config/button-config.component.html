@@ -113,6 +113,19 @@
                 <input class="prop-input" [(ngModel)]="button.uiClass" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
+        <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName" title="Hide when discontinued">Hide when discontinued</td>
+            <td class="propRowCell">
+                <p-checkbox
+                    [(ngModel)]="button.hideWhenDiscontinued"
+                    [binary]="true"
+                    [readonly]="readonly"
+                    (blur)="onSave()"
+                    [style]="{marginLeft: '8px'}"
+                ></p-checkbox>
+            </td>
+        </tr>
 
         <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], 'filtersGroup')"

@@ -4,6 +4,7 @@ export interface NavbarMenuItem {
     title: string;
     childItems?: NavbarMenuItem[];
     iconUrl?: string;
+    svgIcon?: string;
     routerLink?: string;
     active?: boolean;
     allowedUserRoles?: UserRole[];
@@ -65,6 +66,13 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/contracts'
             },
         ],
+    },
+    {
+        title: 'Relayer Accounts',
+        svgIcon: 'wallet',
+        allowedUserRoles: [UserRole.STANDARD_REGISTRY],
+        active: false,
+        routerLink: '/relayer-accounts'
     },
     {
         title: 'Administration',

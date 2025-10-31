@@ -21,7 +21,7 @@ import {
 import moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { ConditionControl } from '../condition-control';
+import { ConditionControl, IfOperator } from '../condition-control';
 import { FieldControl } from '../field-control';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -58,7 +58,11 @@ export class SchemaConfigurationComponent implements OnInit {
     @Output('init') initForm = new EventEmitter<SchemaConfigurationComponent>();
     @Output('change-form') changeForm = new EventEmitter<any>();
     @Output('use-update-sub-schemas') useUpdateSubSchemas = new EventEmitter<any>();
-
+    public ifModeOptions = [
+        { label: 'IF', value: 'SINGLE' as IfOperator },
+        { label: 'IF ALL (“and”)', value: 'AND' as IfOperator },
+        { label: 'IF ANY (“or”)', value: 'OR' as IfOperator }
+    ];
     public started = false;
     public fields!: FieldControl[];
     public conditions!: ConditionControl[];
@@ -365,48 +369,199 @@ export class SchemaConfigurationComponent implements OnInit {
         this.conditions = [];
         this.conditionsForm.reset();
 
-        for (let index = 0; index < conditions.length; index++) {
-            const condition = conditions[index];
-            const fieldNameInCondition = condition.ifCondition.field.name;
-            const field = this.fields.find(item => item.controlKey.value === fieldNameInCondition);
-            const newCondition = new ConditionControl(
-                field,
-                condition.ifCondition.fieldValue
-            )
+        for (const condition of conditions) {
+            const raw = (condition as any).ifCondition;
+            let operator: IfOperator = 'SINGLE';
+            if (raw?.OR) {
+                operator = 'OR';
+            } else if (raw?.AND) {
+                operator = 'AND';
+            }
 
-            this.ifConditionFieldChange(newCondition, newCondition.field!.value);
+            const cc = new ConditionControl(undefined, '', operator);
+            cc.clearConditions(false);
 
-            condition.thenFields.forEach((field) => {
-                const fieldValue = new FieldControl(
-                    field,
-                    this.getType(field),
-                    this.destroy$,
-                    this.defaultFieldsMap,
-                    this.dataForm?.get('entity') as UntypedFormControl,
+            condition.thenFields.forEach(field => {
+                const fc = new FieldControl(
+                    field, this.getType(field), this.destroy$,
+                    this.defaultFieldsMap, this.dataForm?.get('entity') as UntypedFormControl,
                     this.getFieldName()
                 );
-                fieldValue.refreshType(this.types);
-                newCondition.addThenControl(fieldValue);
+                fc.refreshType(this.types);
+                cc.addThenControl(fc);
             });
 
-            condition.elseFields?.forEach((field) => {
-                const fieldValue = new FieldControl(
-                    field,
-                    this.getType(field),
-                    this.destroy$,
-                    this.defaultFieldsMap,
-                    this.dataForm?.get('entity') as UntypedFormControl,
+            condition.elseFields?.forEach(field => {
+                const fc = new FieldControl(
+                    field, this.getType(field), this.destroy$,
+                    this.defaultFieldsMap, this.dataForm?.get('entity') as UntypedFormControl,
                     this.getFieldName()
                 );
-                fieldValue.refreshType(this.types);
-                newCondition.addElseControl(fieldValue);
+                fc.refreshType(this.types);
+                cc.addElseControl(fc);
             });
 
-            this.conditions.push(newCondition);
-            this.conditionsForm.addControl(newCondition.name, newCondition.createGroup());
+            this.conditions.push(cc);
+            this.conditionsForm.addControl(cc.name, cc.createGroup());
         }
+
+        const pickName = (x: any): string | undefined =>
+            x?.name || x?.key || x?.controlKey?.value || x;
+
+        conditions.forEach((condition, idx) => {
+            const cc = this.conditions[idx];
+            const group = this.conditionsForm.get(cc.name) as UntypedFormGroup;
+            const ifGroup = group.get('ifCondition') as UntypedFormGroup;
+
+            const raw = (condition as any).ifCondition;
+            let operator: IfOperator = 'SINGLE';
+            let pairs: Array<{ field: any; fieldValue: any }> = [];
+            if (raw?.OR) {
+                operator = 'OR'; pairs = raw.OR;
+            }
+            else if (raw?.AND) {
+                operator = 'AND'; pairs = raw.AND;
+            }
+            else if (raw?.field) {
+                operator = 'SINGLE'; pairs = [raw];
+            }
+            (ifGroup.get('operator') as UntypedFormControl).setValue(operator, { emitEvent: false });
+
+            const available = new Map<string, FieldControl>();
+            for (const f of this.fields) {
+                const key = f.controlKey?.value;
+                if (key && f.isCondition(this.schemaTypeMap)) {
+                    available.set(key, f);
+                }
+            }
+            this.conditions.forEach(other => {
+                if (other === cc) return;
+                for (const f of other.thenControls || []) {
+                    const key = f.controlKey?.value;
+                    if (key) {
+                        available.set(key, f);
+                    }
+                }
+                for (const f of other.elseControls || []) {
+                    const key = f.controlKey?.value;
+                    if (key) {
+                        available.set(key, f);
+                    }
+                }
+            });
+
+            cc.clearConditions(false);
+            pairs.forEach(p => {
+                const fieldName = pickName(p.field);
+                const fc = fieldName ? available.get(fieldName) : undefined;
+                cc.addCondition(fc, p.fieldValue);
+                const row = cc.conditions.at(cc.conditions.length - 1) as UntypedFormGroup;
+                const valueCtrl = row.get('fieldValue') as UntypedFormControl;
+                if (fc) {
+                    this.ifFormatValueFor(valueCtrl, fc);
+                }
+            });
+        });
     }
 
+
+    public onIfModeChange(condition: ConditionControl) {
+        condition.normalizeByOperator();
+    }
+    public getRowFieldControl(row: UntypedFormGroup): UntypedFormControl {
+        return row.get('field') as UntypedFormControl;
+    }
+
+    public getRowValueControl(row: UntypedFormGroup): UntypedFormControl {
+        return row.get('fieldValue') as UntypedFormControl;
+    }
+
+    public onIfRowAdd(condition: ConditionControl) {
+        condition.addCondition(undefined, '');
+    }
+    public onIfRowRemove(condition: ConditionControl, idx: number) {
+        condition.removeCondition(idx);
+    }
+
+    public onIfRowFieldChange(condition: ConditionControl, idx: number, event: any) {
+        const row = condition.conditions.at(idx) as UntypedFormGroup;
+        const fieldCtrl = row.get('field') as UntypedFormControl;
+        const valueCtrl = row.get('fieldValue') as UntypedFormControl;
+        fieldCtrl.setValue(event.value);
+        this.ifFormatValueFor(valueCtrl, event.value);
+    }
+
+    private ifFormatValueFor(valueCtrl: UntypedFormControl, field: FieldControl) {
+        const type = this.schemaTypeMap[field.controlType.value];
+        const isNumber = ['number', 'integer'].includes(type.type) || type.format === 'duration';
+
+        const validators = [];
+        if (field.controlRequired.value) {
+            validators.push(Validators.required);
+        }
+        if (isNumber) {
+            validators.push(this.isNumberOrEmptyValidator());
+        }
+
+        valueCtrl.clearValidators();
+        valueCtrl.setValidators(validators);
+
+        if (['date', 'date-time', 'time'].includes(type.format)) {
+            this.subscribeFormatDateValue(valueCtrl, type.format);
+        } else if (isNumber) {
+            this.subscribeFormatNumberValue(valueCtrl, type.format || type.type);
+        }
+
+        valueCtrl.updateValueAndValidity();
+    }
+
+    public getOperatorControl(condition: ConditionControl): UntypedFormControl {
+        return (this.conditionsForm.get(condition.name) as UntypedFormGroup)
+            .get('ifCondition')!
+            .get('operator') as UntypedFormControl;
+    }
+
+    public getOperatorValue(condition: ConditionControl): 'SINGLE' | 'AND' | 'OR' {
+        const c = this.getOperatorControl(condition);
+        return (c?.value || 'SINGLE') as any;
+    }
+
+    public getIfRows(condition: ConditionControl): UntypedFormGroup[] {
+        return condition.conditions.controls as UntypedFormGroup[];
+    }
+
+    public getRowField(row: UntypedFormGroup): FieldControl | null {
+        return (row.get('field') as UntypedFormControl)?.value || null;
+    }
+
+    private getTypeByField(fc: FieldControl | null | undefined) {
+        if (!fc) {
+            return null;
+        }
+        const typeKey = fc.controlType?.value;
+        return typeKey ? this.schemaTypeMap[typeKey] : null;
+    }
+
+    public isFieldType1(fc: FieldControl | null): boolean {
+        const t = this.getTypeByField(fc);
+        return !!t && t.type !== 'boolean' && !['time', 'date-time', 'date'].includes(t.format);
+    }
+    public isFieldType2(fc: FieldControl | null): boolean {
+        const t = this.getTypeByField(fc);
+        return !!t && t.type === 'string' && t.format === 'time';
+    }
+    public isFieldType3(fc: FieldControl | null): boolean {
+        const t = this.getTypeByField(fc);
+        return !!t && t.type === 'string' && t.format === 'date-time';
+    }
+    public isFieldType4(fc: FieldControl | null): boolean {
+        const t = this.getTypeByField(fc);
+        return !!t && t.type === 'string' && t.format === 'date';
+    }
+    public isFieldType5(fc: FieldControl | null): boolean {
+        const t = this.getTypeByField(fc);
+        return !!t && t.type === 'boolean';
+    }
     private checkDependencies(currentSchemaId: any, schema: Schema): boolean {
         if (currentSchemaId && schema.document) {
             if (schema.document.$id === currentSchemaId) {
@@ -543,7 +698,7 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     public onConditionAdd() {
-        const condition = new ConditionControl(undefined, '');
+        const condition = new ConditionControl(undefined, '', 'SINGLE');
         this.conditions.push(condition);
         this.conditionsForm.addControl(condition.name, condition.createGroup());
     }
@@ -603,6 +758,7 @@ export class SchemaConfigurationComponent implements OnInit {
             unit,
             remoteLink,
             enumArray,
+            availableOptionsArray,
             textColor,
             textSize,
             textBold,
@@ -701,6 +857,7 @@ export class SchemaConfigurationComponent implements OnInit {
             readOnly: false,
             remoteLink: type?.customType === 'enum' ? remoteLink : undefined,
             enum: type?.customType === 'enum' && !remoteLink ? enumArray : undefined,
+            availableOptions: availableOptionsArray || type?.availableOptions,
             isPrivate: this.dataForm.value?.entity === SchemaEntity.EVC ? isPrivate : undefined,
             default: defaultValue,
             suggest: suggestValue,
@@ -716,22 +873,20 @@ export class SchemaConfigurationComponent implements OnInit {
         schema.entity = value.entity;
 
         const fields: SchemaField[] = [];
-        const fieldsWithNames: any[] = [];
+        const allFieldsByName = new Map<string, SchemaField>();
 
+        const fieldsWithNames: { field: SchemaField; name: string }[] = [];
         for (const fieldConfig of this.fields) {
             const schemaField = this.buildSchemaField(fieldConfig, value.fields);
             if (schemaField) {
                 fields.push(schemaField);
-                fieldsWithNames.push({
-                    field: schemaField,
-                    name: fieldConfig.name
-                })
+                fieldsWithNames.push({ field: schemaField, name: fieldConfig.name });
+                allFieldsByName.set(fieldConfig.name, schemaField);
             }
         }
 
         const defaultFields = this.defaultFieldsMap[value.entity] || [];
-        for (let i = 0; i < defaultFields.length; i++) {
-            const fieldConfig = defaultFields[i];
+        for (const fieldConfig of defaultFields) {
             const schemaField: SchemaField = {
                 name: fieldConfig.name,
                 title: fieldConfig.title,
@@ -752,36 +907,103 @@ export class SchemaConfigurationComponent implements OnInit {
                 property: fieldConfig.property
             };
             fields.push(schemaField);
+            allFieldsByName.set(fieldConfig.name, schemaField);
+        }
+
+        const conditionValues = value.conditions || {};
+        for (const cond of this.conditions) {
+            const condVal = conditionValues[cond.name];
+            if (!condVal) {
+                continue;
+            }
+
+            const pushBuilt = (fc: FieldControl, controlsGroup: any) => {
+                const sf = this.buildSchemaField(fc, controlsGroup);
+                if (sf) {
+                    fields.push(sf);
+                    allFieldsByName.set(fc.name, sf);
+                }
+            };
+
+            for (const fc of cond.thenControls || []) {
+                pushBuilt(fc, condVal.thenFieldControls);
+            }
+            for (const fc of cond.elseControls || []) {
+                pushBuilt(fc, condVal.elseFieldControls);
+            }
         }
 
         const conditions: SchemaCondition[] = [];
         for (const element of this.conditions) {
             const conditionValue = value.conditions[element.name];
+            if (!conditionValue) {
+                continue;
+            }
+
             const thenFields: SchemaField[] = [];
             const elseFields: SchemaField[] = [];
 
             for (const thenField of element.thenControls) {
-                const schemaField = this.buildSchemaField(thenField, conditionValue.thenFieldControls);
-                if (schemaField) {
-                    thenFields.push(schemaField);
+                const sf = allFieldsByName.get(thenField.name);
+                if (sf) {
+                    thenFields.push(sf);
                 }
             }
             for (const elseField of element.elseControls) {
-                const schemaField = this.buildSchemaField(elseField, conditionValue.elseFieldControls);
-                if (schemaField) {
-                    elseFields.push(schemaField);
+                const sf = allFieldsByName.get(elseField.name);
+                if (sf) {
+                    elseFields.push(sf);
                 }
             }
 
-            const item = fieldsWithNames.find(item => item.name === conditionValue.ifCondition.field.name);
-            conditions.push({
-                ifCondition: {
-                    field: item.field,
-                    fieldValue: conditionValue.ifCondition.fieldValue
-                },
-                thenFields: thenFields,
-                elseFields: elseFields
-            });
+            const op: IfOperator = conditionValue.ifCondition?.operator || 'SINGLE';
+            const rows = (conditionValue.ifCondition?.conditions as any[]) || [];
+            if (!rows.length) {
+                continue;
+            }
+
+            const getPickedName = (r: any): string | undefined => {
+                return r?.field?.name || r?.field?.key || r?.field?.controlKey?.value || r?.field;
+            };
+
+            if (op === 'SINGLE') {
+                const row = rows[0];
+                const name = getPickedName(row);
+                const sf = name ? allFieldsByName.get(name) : undefined;
+                if (!sf) {
+                    continue;
+                }
+
+                conditions.push({
+                    ifCondition: {
+                        field: sf,
+                        fieldValue: row.fieldValue
+                    },
+                    thenFields,
+                    elseFields
+                });
+            } else {
+                const arr = rows
+                    .map(r => {
+                        const name = getPickedName(r);
+                        const sf = name ? allFieldsByName.get(name) : undefined;
+                        if (!sf) {
+                            return null;
+                        }
+                        return { field: sf, fieldValue: r.fieldValue };
+                    })
+                    .filter(Boolean) as { field: SchemaField; fieldValue: any }[];
+
+                if (!arr.length) {
+                    continue;
+                }
+
+                conditions.push({
+                    ifCondition: op === 'AND' ? { AND: arr } : { OR: arr },
+                    thenFields,
+                    elseFields
+                });
+            }
         }
 
         schema.update(fields, conditions);
@@ -807,6 +1029,10 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     public ifConditionFieldChange(condition: ConditionControl, field: FieldControl | any) {
+        if (!field) {
+            return;
+        }
+        
         if (condition.changeEvents) {
             condition.fieldValue.patchValue('', {
                 emitEvent: false
@@ -984,8 +1210,55 @@ export class SchemaConfigurationComponent implements OnInit {
         };
     }
 
-    public getFieldsForCondition(): FieldControl[] {
-        return this.fields.filter(item => item.isCondition(this.schemaTypeMap));
+    public getFieldsForCondition(current: ConditionControl): FieldControl[] {
+        const globals = this.fields.filter(f => f.isCondition(this.schemaTypeMap));
+
+        const fromOtherConds: FieldControl[] = [];
+        for (const cond of this.conditions) {
+            if (cond === current) {
+                continue;
+            }
+            if (cond.thenControls) {
+                fromOtherConds.push(...cond.thenControls);
+            }
+            if (cond.elseControls) {
+                fromOtherConds.push(...cond.elseControls);
+            }
+        }
+
+        const excludeCurrent = new Set<string>();
+        if (current) {
+            for (const f of current.thenControls || []) excludeCurrent.add(f.controlKey?.value);
+            for (const f of current.elseControls || []) excludeCurrent.add(f.controlKey?.value);
+        }
+
+        const seen = new Set<string>();
+        const result: FieldControl[] = [];
+
+        const pushUnique = (arr: FieldControl[]) => {
+            for (const f of arr) {
+                const key = f?.controlKey?.value;
+                if (!key) {
+                    continue;
+                }
+                if (excludeCurrent.has(key)) {
+                    continue;
+                }
+                if (seen.has(key)) {
+                    continue;
+                }
+                if (!f.isCondition(this.schemaTypeMap)) {
+                    continue;
+                }
+                seen.add(key);
+                result.push(f);
+            }
+        };
+
+        pushUnique(globals);
+        pushUnique(fromOtherConds);
+
+        return result;
     }
 
     public isValid(): boolean {

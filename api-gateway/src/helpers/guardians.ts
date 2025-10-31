@@ -13,6 +13,7 @@ import {
     IRetirePool,
     IRetireRequest,
     ISchema,
+    ISchemaDeletionPreview,
     IToken,
     ITokenInfo,
     IUser,
@@ -55,7 +56,8 @@ import {
     ExternalPolicyDTO,
     PolicyPreviewDTO,
     ProfileDTO,
-    PolicyKeyDTO
+    PolicyKeyDTO,
+    ToolVersionDTO
 } from '#middlewares';
 
 /**
@@ -392,9 +394,14 @@ export class Guardians extends NatsService {
      * @param tokenId
      * @param did
      */
-    public async associateToken(tokenId: string, owner: IOwner): Promise<ITokenInfo> {
+    public async associateToken(
+        tokenId: string,
+        accountId: string,
+        owner: IOwner
+    ): Promise<ITokenInfo> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN, {
             tokenId,
+            accountId,
             owner,
             associate: true,
         });
@@ -406,9 +413,15 @@ export class Guardians extends NatsService {
      * @param did
      * @param task
      */
-    public async associateTokenAsync(tokenId: string, owner: IOwner, task: NewTask): Promise<NewTask> {
+    public async associateTokenAsync(
+        tokenId: string,
+        accountId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN_ASYNC, {
             tokenId,
+            accountId,
             owner,
             associate: true,
             task,
@@ -420,9 +433,14 @@ export class Guardians extends NatsService {
      * @param tokenId
      * @param did
      */
-    public async dissociateToken(tokenId: string, owner: IOwner): Promise<ITokenInfo> {
+    public async dissociateToken(
+        tokenId: string,
+        accountId: string,
+        owner: IOwner
+    ): Promise<ITokenInfo> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN, {
             tokenId,
+            accountId,
             owner,
             associate: false,
         });
@@ -434,9 +452,15 @@ export class Guardians extends NatsService {
      * @param did
      * @param task
      */
-    public async dissociateTokenAsync(tokenId: string, owner: IOwner, task: NewTask): Promise<NewTask> {
+    public async dissociateTokenAsync(
+        tokenId: string,
+        accountId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN_ASYNC, {
             tokenId,
+            accountId,
             owner,
             associate: false,
             task,
@@ -454,6 +478,26 @@ export class Guardians extends NatsService {
             tokenId,
             username,
             owner
+        });
+    }
+
+    /**
+     * Get token info
+     * @param tokenId
+     * @param username
+     * @param owner
+     */
+    public async getRelayerAccountInfo(
+        tokenId: string,
+        relayerAccountId: string,
+        owner: IOwner,
+        user: IAuthUser,
+    ): Promise<ITokenInfo> {
+        return await this.sendMessage(MessageAPI.GET_RELAYER_ACCOUNT_INFO, {
+            tokenId,
+            relayerAccountId,
+            owner,
+            user,
         });
     }
 
@@ -629,6 +673,15 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Get schema parents
+     * @param id Schema identifier
+     * @returns Schemas
+     */
+    public async getSchemaDeletionPreview(id: string, topicId: string, owner: IOwner): Promise<ISchemaDeletionPreview> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_DELETION_PREVIEW, { id, topicId, owner });
+    }
+
+    /**
      * Get schema tree
      * @param id Id
      * @param owner Owner
@@ -659,8 +712,14 @@ export class Guardians extends NatsService {
      * @param {string} topicId
      * @param {NewTask} task
      */
-    public async importSchemasByMessagesAsync(messageIds: string[], owner: IOwner, topicId: string, task: NewTask): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, { messageIds, owner, topicId, task });
+    public async importSchemasByMessagesAsync(
+        messageIds: string[],
+        owner: IOwner,
+        topicId: string,
+        task: NewTask,
+        schemasIds?: string[]
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, { messageIds, owner, topicId, task, schemasIds });
     }
 
     /**
@@ -700,9 +759,10 @@ export class Guardians extends NatsService {
         files: any,
         owner: IOwner,
         topicId: string,
-        task: NewTask
+        task: NewTask,
+        schemasIds?: string[]
     ): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, { files, owner, topicId, task });
+        return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, { files, owner, topicId, task, schemasIds });
     }
 
     /**
@@ -733,8 +793,21 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} Schema preview
      */
-    public async previewSchemasByFile(files: ISchema[]): Promise<ISchema[]> {
+    public async previewSchemasByFile(files: ISchema[]) {
         return files;
+    }
+
+    /**
+     * Check schemas dublicates
+     *
+     * @param {string[]} schemaNames
+     * @param {IOwner} owner
+     * @param {string[]} policyId
+     *
+     * @returns {ISchema[]} Schema preview
+     */
+    public async getSchemasDublicates(schemaNames: string[], owner?: IOwner, policyId?: string) {
+        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames, owner, policyId });
     }
 
     /**
@@ -797,8 +870,19 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async deleteSchema(id: string, owner: IOwner, needResult = false): Promise<ISchema[] | boolean> {
-        return await this.sendMessage(MessageAPI.DELETE_SCHEMA, { id, owner, needResult });
+    public async deleteSchema(id: string, owner: IOwner, needResult = false, includeChildren = false): Promise<ISchema[] | boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMA, { id, owner, needResult, includeChildren });
+    }
+
+    /**
+     * Deleting a schema.
+     *
+     * @param {string} topicId - topic id
+     *
+     * @returns {any}
+     */
+    public async deleteSchemas(topicId: string, owner: IOwner): Promise<ISchema[] | boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMAS, { topicId, owner });
     }
 
     /**
@@ -1021,6 +1105,35 @@ export class Guardians extends NatsService {
         url: string
     }> {
         return await this.sendMessage(MessageAPI.IPFS_ADD_FILE, { user, buffer });
+    }
+
+    /**
+     * Add file to IPFS directly
+     * @param user
+     * @param buffer File
+     * @returns CID, URL
+     */
+    public async addFileIpfsDirect(user: IAuthUser, buffer: ArrayBuffer | string): Promise<{
+        /**
+         * CID
+         */
+        cid: string,
+        /**
+         * URL
+         */
+        url: string
+    }> {
+        return await this.sendMessage(MessageAPI.IPFS_ADD_FILE_DIRECT, { user, buffer });
+    }
+
+    /**
+     * Remove file from IPFS (unpin/garbage collect on node side)
+     * @param user                    Authenticated user
+     * @param cid
+     * @returns { fileId, filename }
+     */
+    public async deleteIpfsCid(user: IAuthUser, cid: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.IPFS_DELETE_CID, { user, cid });
     }
 
     /**
@@ -2104,7 +2217,7 @@ export class Guardians extends NatsService {
      * @param owner
      * @param tool
      */
-    public async publishTool(id: string, owner: IOwner, tool: ToolDTO): Promise<any> {
+    public async publishTool(id: string, owner: IOwner, tool: ToolVersionDTO): Promise<any> {
         return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { id, owner, tool });
     }
 
@@ -2115,8 +2228,28 @@ export class Guardians extends NatsService {
      * @param tool
      * @param task
      */
-    public async publishToolAsync(id: string, owner: IOwner, tool: ToolDTO, task: NewTask) {
-        return await this.sendMessage(MessageAPI.PUBLISH_TOOL_ASYNC, { id, owner, tool, task });
+    public async publishToolAsync(id: string, owner: IOwner, body: ToolVersionDTO, task: NewTask) {
+        return await this.sendMessage(MessageAPI.PUBLISH_TOOL_ASYNC, { id, owner, body, task });
+    }
+
+    /**
+     * Publish tool
+     * @param id
+     * @param owner
+     * @param tool
+     */
+    public async dryRunTool(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.DRY_RUN_TOOL, { id, owner });
+    }
+
+    /**
+     * Draft tool
+     * @param id
+     * @param owner
+     * @param tool
+     */
+    public async draftTool(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.DRAFT_TOOL, { id, owner });
     }
 
     /**
@@ -2718,8 +2851,8 @@ export class Guardians extends NatsService {
      * @param versionOfTopicId
      * @param task
      */
-    public async importSchemasByXlsxAsync(owner: IOwner, topicId: string, xlsx: ArrayBuffer, task: NewTask) {
-        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX_ASYNC, { owner, xlsx, topicId, task });
+    public async importSchemasByXlsxAsync(owner: IOwner, topicId: string, xlsx: ArrayBuffer, task: NewTask, schemasIds?: string[]) {
+        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX_ASYNC, { owner, xlsx, topicId, task, schemasIds });
     }
 
     /**
@@ -3779,5 +3912,61 @@ export class Guardians extends NatsService {
      */
     public async deleteKey(user: IAuthUser, id: string): Promise<boolean> {
         return await this.sendMessage(MessageAPI.DELETE_USER_KEYS, { user, id });
+    }
+
+    /**
+     * Get file by id
+     * @param fileId  File identifier
+     * @param user    Authenticated user
+     * @returns { buffer, filename, contentType }
+     */
+    public async csvGetFile(
+        fileId: string,
+        user: IAuthUser
+    ): Promise<{ buffer: Buffer; filename: string; contentType: string }> {
+        return await this.sendMessage(MessageAPI.GET_FILE, { user, fileId });
+    }
+
+    /**
+     * Save file (create or overwrite)
+     * @param payload.file.buffer     File bytes
+     * @param payload.file.originalname Original filename (optional)
+     * @param payload.file.mimetype   Mime type (optional)
+     * @param payload.fileId          Existing file id to overwrite (optional)
+     * @param payload
+     * @param user                    Authenticated user
+     * @returns { fileId, filename }
+     */
+    public async upsertFile(
+        payload: { file: { buffer: Buffer; originalname?: string; mimetype?: string }, fileId?: string },
+        user: IAuthUser
+    ): Promise<{ fileId: string; filename: string; contentType: string }> {
+        return await this.sendMessage(MessageAPI.UPSERT_FILE, { user, ...payload });
+    }
+
+    /**
+     * Delete file
+     * @param user
+     * @param fileId
+     */
+    public async deleteGridFile(user: IAuthUser, fileId: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_FILE, { user, fileId });
+    }
+
+    /**
+     * Get RelayerAccount Relationships
+     * @param relayerAccountId
+     * @param user
+     * @param filters
+     */
+    public async getRelayerAccountRelationships(
+        relayerAccountId: string,
+        user: IAuthUser,
+        filters: {
+            pageIndex?: number | string,
+            pageSize?: number | string
+        }
+    ): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_RELAYER_ACCOUNT_RELATIONSHIPS, { relayerAccountId, user, filters });
     }
 }

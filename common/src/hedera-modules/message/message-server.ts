@@ -30,11 +30,14 @@ import { PolicyDiffMessage } from './policy-diff-message.js';
 import { PolicyActionMessage } from './policy-action-message.js';
 import { ContractMessage } from './contract-message.js';
 import { INotificationStep, NewNotifier } from '../../notification/index.js';
+import { SchemaPackageMessage } from './schema-package-message.js';
+import { CommentMessage } from './comment-message.js';
+import { DiscussionMessage } from './discussion-message.js';
 
 interface LoadMessageOptions {
     messageId: string,
     loadIPFS?: boolean,
-    type?: MessageType | null,
+    type?: MessageType | MessageType[] | null,
     userId?: string | null,
     dryRun?: string,
     encryptKey?: string,
@@ -45,7 +48,7 @@ interface LoadMessagesOptions {
     topicId: string | TopicId,
     dryRun?: string,
     userId?: string | null,
-    type?: MessageType,
+    type?: MessageType | MessageType[] | null,
     action?: MessageAction,
     timeStamp?: string
 }
@@ -271,7 +274,7 @@ export class MessageServer {
      * @param options
      * @private
      */
-    private async addFile(file: ArrayBuffer, options?: MessageOptions) {
+    private async addFile(file: Buffer, options?: MessageOptions) {
         const notifier = options?.notifier || NewNotifier.empty();
         if (this.dryRun) {
             const id = GenerateUUIDv4();
@@ -363,7 +366,11 @@ export class MessageServer {
      * @param userId
      * @param type
      */
-    public static fromMessage<T extends Message>(message: string, userId: string | null, type?: MessageType): T {
+    public static fromMessage<T extends Message>(
+        message: string,
+        userId: string | null,
+        type?: MessageType | MessageType[] | null
+    ): T {
         const json = JSON.parse(message);
         return MessageServer.fromMessageObject(json, userId, type);
     }
@@ -374,9 +381,23 @@ export class MessageServer {
      * @param userId
      * @param type
      */
-    public static fromMessageObject<T extends Message>(json: any, userId: string | null, type?: MessageType): T {
+    public static fromMessageObject<T extends Message>(
+        json: any,
+        userId: string | null,
+        type?: MessageType | MessageType[] | null
+    ): T {
         let message: Message;
-        json.type = json.type || type;
+        if (Array.isArray(type)) {
+            if (!type.includes(json.type)) {
+                new PinoLogger().error(`Invalid message type: ${json.type || 'UNKNOWN TYPE'}`, ['GUARDIAN_SERVICE'], userId);
+                throw new Error(`Invalid message type: ${json.type}`);
+            }
+        } else if (type) {
+            if (type !== json.type) {
+                new PinoLogger().error(`Invalid message type: ${json.type || 'UNKNOWN TYPE'}`, ['GUARDIAN_SERVICE'], userId);
+                throw new Error(`Invalid message type: ${json.type}`);
+            }
+        }
         switch (json.type) {
             case MessageType.EVCDocument:
             case MessageType.VCDocument:
@@ -387,6 +408,9 @@ export class MessageServer {
                 break;
             case MessageType.Schema:
                 message = SchemaMessage.fromMessageObject(json);
+                break;
+            case MessageType.SchemaPackage:
+                message = SchemaPackageMessage.fromMessageObject(json);
                 break;
             case MessageType.Policy:
                 message = PolicyMessage.fromMessageObject(json);
@@ -439,6 +463,13 @@ export class MessageServer {
             case MessageType.PolicyAction:
                 message = PolicyActionMessage.fromMessageObject(json);
                 break;
+            case MessageType.PolicyComment:
+                message = CommentMessage.fromMessageObject(json);
+                break;
+            case MessageType.PolicyDiscussion:
+                message = DiscussionMessage.fromMessageObject(json);
+                break;
+
             // Default schemas
             case 'schema-document':
                 message = SchemaMessage.fromMessageObject(json);
@@ -461,7 +492,6 @@ export class MessageServer {
      */
     public static fromJson<T extends Message>(json: any): T {
         let message: Message;
-        json.type = json.type;
         switch (json.type) {
             case MessageType.Contract:
                 message = ContractMessage.fromJson(json);
@@ -475,6 +505,9 @@ export class MessageServer {
                 break;
             case MessageType.Schema:
                 message = SchemaMessage.fromJson(json);
+                break;
+            case MessageType.SchemaPackage:
+                message = SchemaPackageMessage.fromJson(json);
                 break;
             case MessageType.Policy:
             case MessageType.InstancePolicy:
@@ -524,6 +557,12 @@ export class MessageServer {
                 break;
             case MessageType.PolicyAction:
                 message = PolicyActionMessage.fromJson(json);
+                break;
+            case MessageType.PolicyComment:
+                message = CommentMessage.fromJson(json);
+                break;
+            case MessageType.PolicyDiscussion:
+                message = DiscussionMessage.fromJson(json);
                 break;
             // Default schemas
             case 'schema-document':
@@ -621,7 +660,7 @@ export class MessageServer {
             const json = JSON.parse(message.message);
             if (json.type === MessageType.Topic) {
                 const item = TopicMessage.fromMessageObject(json);
-                item.setAccount(message.payer_account_id);
+                item.setPayer(message.payer_account_id);
                 item.setIndex(message.sequence_number);
                 item.setId(message.id);
                 item.setMemo(message.memo);
@@ -795,7 +834,7 @@ export class MessageServer {
      */
     private async getTopicMessage<T extends Message>(
         timeStamp: string,
-        type: MessageType | null,
+        type: MessageType | MessageType[] | null,
         options: LoadMessageOptions
     ): Promise<T> {
         const workers = new Workers();
@@ -825,7 +864,7 @@ export class MessageServer {
         });
 
         const item = MessageServer.fromMessage<T>(message, options.userId, type);
-        item.setAccount(payer_account_id);
+        item.setPayer(payer_account_id);
         item.setIndex(sequence_number);
         item.setId(id);
         item.setTopicId(topicId);
@@ -842,7 +881,7 @@ export class MessageServer {
      */
     private static async getTopicMessage<T extends Message>(
         timeStamp: string,
-        type: MessageType | null,
+        type: MessageType | MessageType[] | null,
         options: LoadMessageOptions
     ): Promise<T> {
         const workers = new Workers();
@@ -867,7 +906,7 @@ export class MessageServer {
         });
 
         const item = MessageServer.fromMessage<T>(message, options.userId, type);
-        item.setAccount(payer_account_id);
+        item.setPayer(payer_account_id);
         item.setIndex(sequence_number);
         item.setId(id);
         item.setTopicId(topicId);
@@ -884,12 +923,12 @@ export class MessageServer {
      */
     private async getDryRunTopicMessage<T extends Message>(
         timeStamp: string,
-        type: MessageType | null,
+        type: MessageType | MessageType[] | null,
         userId: string | null
     ): Promise<T> {
         const message = await DatabaseServer.getVirtualMessage(this.dryRun, timeStamp);
         const item = MessageServer.fromMessage<T>(message.document, userId, type);
-        item.setAccount(null);
+        item.setPayer(null);
         item.setIndex(null);
         item.setId(message.messageId);
         item.setTopicId(message.topicId);
@@ -907,12 +946,12 @@ export class MessageServer {
     private static async getDryRunTopicMessage<T extends Message>(
         dryRun: string,
         timeStamp: string,
-        type: MessageType | null,
+        type: MessageType | MessageType[] | null,
         userId: string | null
     ): Promise<T> {
         const message = await DatabaseServer.getVirtualMessage(dryRun, timeStamp);
         const item = MessageServer.fromMessage<T>(message.document, userId, type);
-        item.setAccount(null);
+        item.setPayer(null);
         item.setIndex(null);
         item.setId(message.messageId);
         item.setTopicId(message.topicId);
@@ -953,7 +992,9 @@ export class MessageServer {
             try {
                 const item = MessageServer.fromMessage<T>(message.document, userId);
                 let filter = true;
-                if (type) {
+                if (Array.isArray(type)) {
+                    filter = filter && type.includes(item.type);
+                } else if (type) {
                     filter = filter && item.type === type;
                 }
                 if (action) {
@@ -1009,14 +1050,16 @@ export class MessageServer {
             try {
                 const item = MessageServer.fromMessage(message.message, userId);
                 let filter = true;
-                if (type) {
+                if (Array.isArray(type)) {
+                    filter = filter && type.includes(item.type);
+                } else if (type) {
                     filter = filter && item.type === type;
                 }
                 if (action) {
                     filter = filter && item.action === action;
                 }
                 if (filter) {
-                    item.setAccount(message.payer_account_id);
+                    item.setPayer(message.payer_account_id);
                     item.setIndex(message.sequence_number);
                     item.setId(message.id);
                     item.setTopicId(topic);
@@ -1040,7 +1083,7 @@ export class MessageServer {
     public async getMessages<T extends Message>(
         topicId: string | TopicId,
         userId: string | null,
-        type?: MessageType,
+        type?: MessageType | MessageType[],
         action?: MessageAction
     ): Promise<T[]> {
         if (this.dryRun) {
@@ -1064,7 +1107,7 @@ export class MessageServer {
         dryRun: string,
         topicId: string | TopicId,
         userId: string | null,
-        type?: MessageType,
+        type?: MessageType | MessageType[],
         action?: MessageAction,
         timeStamp?: string
     ): Promise<Message[]> {
@@ -1074,7 +1117,9 @@ export class MessageServer {
             try {
                 const item = MessageServer.fromMessage<T>(message.document, userId);
                 let filter = true;
-                if (type) {
+                if (Array.isArray(type)) {
+                    filter = filter && type.includes(item.type);
+                } else if (type) {
                     filter = filter && item.type === type;
                 }
                 if (action) {
@@ -1104,7 +1149,7 @@ export class MessageServer {
     public async getTopicMessages(
         topicId: string | TopicId,
         userId: string | null,
-        type?: MessageType,
+        type?: MessageType | MessageType[],
         action?: MessageAction,
         timeStamp?: string
     ): Promise<Message[]> {
@@ -1136,14 +1181,16 @@ export class MessageServer {
             try {
                 const item = MessageServer.fromMessage(message.message, userId);
                 let filter = true;
-                if (type) {
+                if (Array.isArray(type)) {
+                    filter = filter && type.includes(item.type);
+                } else if (type) {
                     filter = filter && item.type === type;
                 }
                 if (action) {
                     filter = filter && item.action === action;
                 }
                 if (filter) {
-                    item.setAccount(message.payer_account_id);
+                    item.setPayer(message.payer_account_id);
                     item.setIndex(message.sequence_number);
                     item.setId(message.id);
                     item.setTopicId(topic);

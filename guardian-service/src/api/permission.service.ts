@@ -44,15 +44,7 @@ async function getSchema(
             active: true,
         });
         if (schema) {
-            schema.creator = owner.creator;
-            schema.owner = owner.owner;
-            const item = await publishSystemSchema(
-                schema,
-                owner,
-                messageServer,
-                MessageAction.PublishSystemSchema,
-                NewNotifier.empty()
-            );
+            const item = await publishSystemSchema(schema, owner, messageServer, NewNotifier.empty());
             const result = await dataBaseServer.save(SchemaCollection, item);
             return result;
         } else {
@@ -298,6 +290,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 const { did, keyType, entityId } = msg;
 
                 const entity = KEY_TYPE_KEY_ENTITY.get(keyType);
+
                 if (!entity) {
                     return new MessageResponse(false);
                 }
@@ -327,6 +320,10 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                                 topicId: entityId
                             }) > 0
                         );
+                    case KeyEntity.DISCUSSION:
+                        return new MessageResponse(true);
+                    case KeyEntity.RELAYER_ACCOUNT:
+                        return new MessageResponse(entityId?.startsWith(did));
                     default:
                         return new MessageResponse(false);
                 }

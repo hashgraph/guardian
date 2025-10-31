@@ -8,6 +8,8 @@ import { GeojsonTypeComponent } from './geojson-type/geojson-type.component';
 import { MaterialModule } from '../common/material.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
+import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { AgGridModule } from 'ag-grid-angular';
 //Components
 import { SchemaDialog } from './schema-dialog/schema-dialog.component';
 import { SchemaFormComponent } from './schema-form/schema-form.component';
@@ -17,7 +19,8 @@ import { SchemaFormViewComponent } from './schema-form-view/schema-form-view.com
 import { DocumentViewComponent } from './document-view/document-view.component';
 import { SetVersionDialog } from './set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
-import { GeoImageComponent } from './vc-dialog/components/geo-image.component';
+import { VCFullscreenDialog } from './vc-fullscreen-dialog/vc-fullscreen-dialog.component';
+import { GeoImageComponent } from './geo-image/geo-image.component';
 import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.component';
 import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.component';
 import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
@@ -44,6 +47,11 @@ import { DateTimeComponent } from './schema-form/controls/date-time/date-time.co
 import { FormulasModule } from '../formulas/formulas.module';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.component';
+import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-dialog.component';
+import {TableFieldComponent} from './table-field/table-field.component';
+import {TableViewerComponent} from "./table-viewer/table-viewer.component";
+import { SchemaDeleteWarningDialogComponent } from './schema-delete-warning-dialog/schema-delete-warning-dialog.component';
+import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delete-dialog.component';
 
 @NgModule({
     declarations: [
@@ -56,19 +64,25 @@ import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.com
         DocumentViewComponent,
         SetVersionDialog,
         VCViewerDialog,
+        VCFullscreenDialog,
         GeoImageComponent,
         SchemaViewDialog,
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
         EnumEditorDialog,
         CompareSchemaDialog,
+        SchemaDeleteWarningDialogComponent,
+        SchemaDeleteDialogComponent,
         GeojsonTypeComponent,
+        UploadGeoDataDialog,
         SentinelHubTypeComponent,
         ServiceUnavailableDialog,
         SchemaTreeComponent,
         SchemaFormDialog,
         DateTimeComponent,
-        SchemaFormRootComponent
+        SchemaFormRootComponent,
+        TableFieldComponent,
+        TableViewerComponent
     ],
     imports: [
         CommonModule,
@@ -90,7 +104,8 @@ import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.com
         SelectButtonModule,
         AccordionModule,
         FormulasModule,
-        AngularSvgIconModule.forRoot()
+        AngularSvgIconModule.forRoot(),
+        DynamicDialogModule,
     ],
     exports: [
         SchemaDialog,
@@ -101,6 +116,7 @@ import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.com
         DocumentViewComponent,
         SetVersionDialog,
         VCViewerDialog,
+        VCFullscreenDialog,
         GeoImageComponent,
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,

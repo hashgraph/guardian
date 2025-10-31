@@ -1,4 +1,4 @@
-import { IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField } from '../index.js';
+import { IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaFieldPredicate } from '../index.js';
 import { SchemaDataTypes } from '../interface/schema-document.interface.js';
 import { Schema } from '../models/schema.js';
 import geoJson from './geojson-schema/geo-json.js';
@@ -86,6 +86,7 @@ export class SchemaHelper {
             textSize,
             textBold,
             orderPosition,
+            availableOptions,
             isPrivate,
             hidden,
             suggest,
@@ -124,6 +125,7 @@ export class SchemaHelper {
                 field.font.bold = textBold;
             }
         }
+        field.availableOptions = availableOptions;
         field.property = property ? String(property) : null;
         field.customType = customType ? String(customType) : null;
         field.isPrivate = isPrivate;
@@ -261,44 +263,95 @@ export class SchemaHelper {
         schemaCache: Map<string, any>,
         defs: any = null
     ): SchemaCondition[] {
-        const conditions: SchemaCondition[] = [];
-
-        if (!document || !document.allOf) {
-            return conditions;
+        if (!document) {
+            return [];
         }
+        const results: SchemaCondition[] = [];
 
-        const allOf = Object.keys(document.allOf);
-        for (const oneOf of allOf) {
-            const condition = document.allOf[oneOf];
-            if (!condition.if) {
-                continue;
+        const buildFields = (node: any) =>
+            SchemaHelper.parseFields(node, context, schemaCache, document.$defs || defs) as SchemaField[];
+
+        const predicatesFromProperties = (props: any): SchemaFieldPredicate[] => {
+            const preds: SchemaFieldPredicate[] = [];
+            for (const key of Object.keys(props || {})) {
+                const rule = props[key];
+                if (rule && Object.prototype.hasOwnProperty.call(rule, 'const')) {
+                    const f = fields.find(x => x.name === key);
+                    if (f) {
+                        preds.push({ field: f, fieldValue: rule.const });
+                    }
+                }
+            }
+            return preds;
+        };
+
+        const toIfCondition = (nodeIf: any): SchemaCondition['ifCondition'] | null => {
+            if (!nodeIf || typeof nodeIf !== 'object') {
+                return null;
             }
 
-            const ifConditionFieldName = Object.keys(condition.if.properties)[0];
+            if (Array.isArray(nodeIf.anyOf)) {
+                const branches = nodeIf.anyOf
+                    .map((b: any) => predicatesFromProperties(b?.properties))
+                    .filter(arr => arr.length > 0);
 
-            const conditionToAdd: SchemaCondition = {
-                ifCondition: {
-                    field: fields.find(field => field.name === ifConditionFieldName),
-                    fieldValue: condition.if.properties[ifConditionFieldName].const
-                },
-                thenFields: SchemaHelper.parseFields(
-                    condition.then,
-                    context,
-                    schemaCache,
-                    document.$defs || defs
-                ) as SchemaField[],
-                elseFields: SchemaHelper.parseFields(
-                    condition.else,
-                    context,
-                    schemaCache,
-                    document.$defs || defs
-                ) as SchemaField[],
-            };
+                const flat = branches.flat();
+                if (flat.length === 1) {
+                    return flat[0];
+                }
 
-            conditions.push(conditionToAdd);
+                return { OR: flat };
+            }
+
+            if (Array.isArray(nodeIf.allOf)) {
+                const parts = nodeIf.allOf
+                    .map((b: any) => predicatesFromProperties(b?.properties))
+                    .filter(arr => arr.length > 0);
+
+                const flat = parts.flat();
+                if (flat.length === 1) {
+                    return flat[0];
+                }
+
+                return { AND: flat };
+            }
+
+            if (nodeIf.properties) {
+                const preds = predicatesFromProperties(nodeIf.properties);
+                if (preds.length === 0) {
+                    return null;
+                }
+                if (preds.length === 1) {
+                    return preds[0];
+                }
+                return { AND: preds };
+            }
+
+            return null;
+        };
+
+        const parseArray = (arr: any[]): SchemaCondition[] => {
+            const out: SchemaCondition[] = [];
+            for (const n of arr || []) {
+                if (!n?.if) {
+                    continue;
+                }
+                const ifCondition = toIfCondition(n.if);
+                const thenFields = buildFields(n.then);
+                const elseFields = buildFields(n.else);
+                out.push({ ifCondition, thenFields, elseFields });
+            }
+            return out;
+        };
+
+        if (Array.isArray(document.allOf)) {
+            results.push(...parseArray(document.allOf));
+        }
+        if (Array.isArray((document as any).anyOf)) {
+            results.push(...parseArray((document as any).anyOf));
         }
 
-        return conditions;
+        return results;
     }
 
     /**
@@ -444,58 +497,83 @@ export class SchemaHelper {
             allOf: []
         };
 
-        if (conditions.length === 0) {
-            delete document.allOf;
-        }
+        const serializeIf = (cond: SchemaCondition): any => {
+            const ic = cond.ifCondition;
+            if (!ic) {
+                return null;
+            }
 
-        const documentConditions = document.allOf;
-        for (const element of conditions) {
-            const insertingPosition = fields.indexOf(fields.find(item => element.ifCondition.field.name === item.name)) + 1;
-            const ifCondition = {};
-            ifCondition[element.ifCondition.field.name] = { 'const': element.ifCondition.fieldValue };
-            const condition = {
-                'if': {
-                    'properties': ifCondition
-                },
-                'then': {},
-                'else': {}
+            const single = (p: SchemaFieldPredicate | { field: SchemaField; fieldValue: any }) => {
+                return {
+                    properties: { [p.field.name]: { const: p.fieldValue } }
+                }
             };
 
-            let req = []
-            let props = {}
+            if ('field' in ic && 'fieldValue' in ic) {
+                return single(ic);
+            }
 
-            SchemaHelper.getFieldsFromObject(element.thenFields, req, props, schema.contextURL);
-            // To prevent including condition field in common required fields
-            element.thenFields?.forEach(item => item.required = false);
-            fields.splice(insertingPosition, 0, ...element.thenFields);
-            if (Object.keys(props).length > 0) {
-                condition.then = {
-                    'properties': props,
-                    'required': req
+            if ('AND' in ic && Array.isArray(ic.AND)) {
+                if (ic.AND.length === 0) {
+                    return null;
                 }
-            }
-            else {
-                delete condition.then;
-            }
-
-            req = []
-            props = {}
-
-            SchemaHelper.getFieldsFromObject(element.elseFields, req, props, schema.contextURL);
-            // To prevent including condition field in common required fields
-            element.elseFields?.forEach(item => item.required = false);
-            fields.splice(insertingPosition + element.thenFields.length, 0, ...element.elseFields);
-            if (Object.keys(props).length > 0) {
-                condition.else = {
-                    'properties': props,
-                    'required': req
+                if (ic.AND.length === 1) {
+                    return single(ic.AND[0]);
                 }
-            }
-            else {
-                delete condition.else;
+                return {
+                    allOf: ic.AND.map(p => single(p))
+                };
             }
 
-            documentConditions.push(condition);
+            if ('OR' in ic && Array.isArray(ic.OR)) {
+                if (ic.OR.length === 0) {
+                    return null;
+                }
+                if (ic.OR.length === 1) {
+                    return single(ic.OR[0]);
+                }
+                return {
+                    anyOf: ic.OR.map(p => single(p))
+                };
+            }
+
+            return null;
+        };
+
+        const serializeCondition = (cond: SchemaCondition) => {
+            const ifNode = serializeIf(cond);
+            if (!ifNode) {
+                return null;
+            }
+
+            const buildSub = (sub?: SchemaField[]) => {
+                const req: string[] = [];
+                const props: any = {};
+                SchemaHelper.getFieldsFromObject(sub || [], req, props, schema.contextURL);
+                return Object.keys(props).length ? { properties: props, required: req } : undefined;
+            };
+
+            const thenObj = buildSub(cond.thenFields);
+            const elseObj = buildSub(cond.elseFields);
+
+            const obj: any = { if: ifNode };
+            if (thenObj) {
+                obj.then = thenObj;
+            }
+            if (elseObj) {
+                obj.else = elseObj;
+            }
+            return obj;
+        };
+
+        const conditionNodes = (conditions || [])
+            .map(serializeCondition)
+            .filter(Boolean);
+
+        if (conditionNodes.length) {
+            (document as any).allOf = conditionNodes;
+        } else {
+            delete (document as any).allOf;
         }
 
         SchemaHelper.getFieldsFromObject(fields, document.required, document.properties, schema.contextURL);
@@ -539,6 +617,9 @@ export class SchemaHelper {
         }
         if (field.textBold) {
             comment.textBold = field.textBold;
+        }
+        if (field.availableOptions) {
+            comment.availableOptions = field.availableOptions;
         }
         if (Number.isInteger(orderPosition) && orderPosition >= 0) {
             comment.orderPosition = orderPosition;
@@ -1067,21 +1148,83 @@ export class SchemaHelper {
                 }
             }
         }
+        const normalizeIfCondition = (ifCondition: any): {
+            mode: 'IF' | 'AND' | 'OR',
+            field?: string,
+            fieldValue?: any,
+            predicates?: { field: string, value: any }[]
+        } | null => {
+            if (!ifCondition) {
+                return null;
+            }
+
+            if (Array.isArray(ifCondition.AND)) {
+                return {
+                    mode: 'AND',
+                    predicates: ifCondition.AND
+                        .filter((p: any) => p?.field?.name)
+                        .map((p: any) => ({ field: p.field.name, fieldValue: p.fieldValue }))
+                };
+            }
+            if (Array.isArray(ifCondition.OR)) {
+                return {
+                    mode: 'OR',
+                    predicates: ifCondition.OR
+                        .filter((p: any) => p?.field?.name)
+                        .map((p: any) => ({ field: p.field.name, fieldValue: p.fieldValue }))
+                };
+            }
+
+            if (ifCondition.field?.name !== undefined) {
+                return {
+                    mode: 'IF',
+                    field: ifCondition.field.name,
+                    fieldValue: ifCondition.fieldValue
+                };
+            }
+
+            if (Array.isArray(ifCondition.predicates) && ifCondition.predicates.length) {
+                const mode = ifCondition.op === 'ANY_OF' ? 'OR' : 'AND';
+                const preds = ifCondition.predicates
+                    .filter((p: any) => p?.field?.name)
+                    .map((p: any) => ({ field: p.field.name, value: p.value }));
+                if (preds.length === 1) {
+                    return { mode: 'IF', field: preds[0].field, fieldValue: preds[0].value };
+                }
+                return { mode, predicates: preds };
+            }
+
+            return null;
+        };
+
         if (Array.isArray(schema.conditions)) {
-            for (const condition of schema.conditions) {
+            schema.conditions.forEach((condition: any, idx: number) => {
                 if (Array.isArray(condition.errors)) {
+                    const norm = normalizeIfCondition(condition.ifCondition);
                     for (const error of condition.errors) {
+                        const target: any = { type: 'condition', index: idx };
+
+                        if (norm) {
+                            target.mode = norm.mode;
+                            if (norm.mode === 'IF') {
+                                target.field = norm.field;
+                                target.fieldValue = norm.fieldValue;
+                            } else {
+                                target.predicates = norm.predicates || [];
+                            }
+                        } else {
+                            target.mode = 'IF';
+                            target.field = condition?.ifCondition?.field?.name;
+                            target.fieldValue = condition?.ifCondition?.fieldValue;
+                        }
+
                         errors.push({
                             ...error,
-                            target: {
-                                type: 'condition',
-                                field: condition.ifCondition?.field?.name,
-                                fieldValue: condition.ifCondition?.fieldValue
-                            }
+                            target
                         });
                     }
                 }
-            }
+            });
         }
         return errors;
     }

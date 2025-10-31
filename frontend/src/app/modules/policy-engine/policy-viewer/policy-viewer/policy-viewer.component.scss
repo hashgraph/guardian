@@ -821,7 +821,7 @@ a.go-back-link svg {
             padding: 5px 12px;
             min-width: 120px;
             border-radius: 8px;
-            background: var(--color-primary, #0681EE);
+            background: var(--color-primary, #0031ff);
 
             .p-button-label {
                 font-family: Inter;
@@ -859,7 +859,7 @@ a.go-back-link svg {
                 font-style: normal;
                 font-weight: 500;
                 line-height: 30px;
-                color: var(--color-primary, #0681EE);
+                color: var(--color-primary, #0031ff);
             }
         }
     }
@@ -874,4 +874,26 @@ a.go-back-link svg {
 :host ::ng-deep .content {
     right: inherit !important;
     min-width: 100% !important;
+}
+
+.dry-run-action-btn[disabled="true"],
+.dry-run-group-btn[disabled="true"],
+.dry-run-action-btn[aria-disabled="true"],
+.dry-run-group-btn[aria-disabled="true"] {
+    filter: grayscale(1);
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.dry-run-action-btn[aria-disabled="true"],
+.dry-run-group-btn[aria-disabled="true"] {
+    pointer-events: auto;
+}
+
+.dry-run-action-btn[aria-disabled="true"]:hover,
+.dry-run-group-btn[aria-disabled="true"]:hover,
+.dry-run-action-btn[disabled="true"]:hover,
+.dry-run-group-btn[disabled="true"]:hover {
+    border: 1px solid var(---color-color-grey-white, #FFF);
+    background: var(--color-color-grey-white, #FFF);
 }

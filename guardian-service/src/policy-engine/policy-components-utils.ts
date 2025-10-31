@@ -1,5 +1,5 @@
-import { PolicyHelper, PolicyStatus } from '@guardian/interfaces';
-import { DatabaseServer, Policy } from '@guardian/common';
+import { Permissions, PolicyHelper, PolicyStatus } from '@guardian/interfaces';
+import { DatabaseServer, IAuthUser, Policy } from '@guardian/common';
 import { IPolicyUser } from './policy-user.js';
 import { ExternalEvent } from './interfaces/external-event.js';
 
@@ -40,12 +40,18 @@ export class PolicyComponentsUtils {
      * @param policy
      * @param did
      */
-    public static async GetPolicyInfo(policy: Policy, did: string): Promise<Policy> {
+    public static async GetPolicyInfo(
+        policy: Policy,
+        user: IAuthUser
+    ): Promise<Policy> {
         if (!policy) {
             return policy;
         }
         const result: any = policy;
         const policyId = policy.id.toString();
+
+        let did = user.did;
+        let permissions = user.permissions || [];
         if (did) {
             result.userRoles = [];
             result.userGroups = [];
@@ -54,12 +60,13 @@ export class PolicyComponentsUtils {
 
             if (PolicyHelper.isDryRunMode(policy)) {
                 const activeUser = await DatabaseServer.getVirtualUser(policyId);
-                if (activeUser) {
+                if (activeUser && did !== activeUser.did) {
                     did = activeUser.did;
+                    permissions = [];
                 }
             }
 
-            if (policy.owner === did) {
+            if (policy.owner === did || permissions.includes(Permissions.POLICIES_POLICY_MANAGE)) {
                 result.userRoles.push('Administrator');
                 result.userRole = 'Administrator';
             }
@@ -95,6 +102,58 @@ export class PolicyComponentsUtils {
         }
 
         result.tests = await DatabaseServer.getPolicyTests(policyId);
+
+        return result;
+    }
+
+    /**
+     * Get Policy Full Info
+     * @param policy
+     * @param did
+     */
+    public static async GetUserRole(
+        policy: Policy,
+        user: IAuthUser
+    ): Promise<string> {
+        if (!policy) {
+            return 'No role';
+        }
+
+        const policyId = policy.id.toString();
+
+        let result: string = null;
+        let did = user.did;
+        let permissions = user.permissions || [];
+        if (did) {
+            if (PolicyHelper.isDryRunMode(policy)) {
+                const activeUser = await DatabaseServer.getVirtualUser(policyId);
+                if (activeUser && did !== activeUser.did) {
+                    did = activeUser.did;
+                    permissions = [];
+                }
+            }
+
+            if (policy.owner === did || permissions.includes(Permissions.POLICIES_POLICY_MANAGE)) {
+                result = 'Administrator';
+            }
+
+            const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
+            const db = new DatabaseServer(dryRun);
+            const groups = await db.getGroupsByUser(policyId, did, {
+                fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']
+            });
+            for (const group of groups) {
+                if (group.active !== false) {
+                    result = group.role;
+                }
+            }
+
+            if (!result) {
+                result = 'No role';
+            }
+        } else {
+            result = 'No role';
+        }
 
         return result;
     }
