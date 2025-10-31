@@ -16,4 +16,4 @@ Once you click on the above button, you will be able to fill all schema fields w
 
 In Dry Run mode it is possible to quickly fill in the fields using the provided example values from the schema. This feature is most useful for testing/demonstrations or for experimenting and learning Guardian capabilities.
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
