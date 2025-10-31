@@ -152,6 +152,7 @@
       * [Importing Schema from IPFS](guardian/standard-registry/schemas/schema-creation-using-apis/importing-schema-from-ipfs.md)
       * [Returning Schema by SchemaID](guardian/standard-registry/schemas/schema-creation-using-apis/returning-schema-by-schemaid.md)
       * [Returns all child schemas](guardian/standard-registry/schemas/schema-creation-using-apis/returns-all-child-schemas.md)
+      * [Deletes all schemas by topic id. Only users with the Standard Registry are allowed.](guardian/standard-registry/schemas/schema-creation-using-apis/deletes-all-schemas-by-topic-id.-only-users-with-the-standard-registry-are-allowed..md)
     * [System Schema APIs](guardian/standard-registry/schemas/system-schema-apis/README.md)
       * [Returns Schema by Type](guardian/standard-registry/schemas/system-schema-apis/returns-schema-by-type.md)
       * [Creates New System Schema](guardian/standard-registry/schemas/system-schema-apis/creates-new-system-schema.md)

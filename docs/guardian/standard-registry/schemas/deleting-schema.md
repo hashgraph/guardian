@@ -32,3 +32,9 @@ If the selected schema depends on one or more parent schemas, deletion is not al
 * The modal displays a warning message explaining that the scheme cannot be deleted due to existing dependencies.
 
 <figure><img src="../../../.gitbook/assets/image (456).png" alt=""><figcaption></figcaption></figure>
+
+### 2.3 Deleting all Schemas
+
+User will now be able to delete all schemas for a particular policy by using "Delete All Schemas" button:
+
+<figure><img src="../../../.gitbook/assets/image (457).png" alt=""><figcaption></figcaption></figure>
