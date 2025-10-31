@@ -105,7 +105,7 @@
                 </form>
                 <div class="relayer-account-container" [attr.visibility]="isStep(1)">
                     <div class="relayer-account-type-values">
-                        <div *ngIf="!!isLocalUser && relayerAccountType !== 'account'" class="account-warning">
+                        <div *ngIf="needRemoteWarning" class="account-warning">
                             <svg-icon
                                 class="svg-icon"
                                 src="/assets/images/icons/warning.svg"

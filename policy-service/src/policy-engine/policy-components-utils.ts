@@ -1590,7 +1590,26 @@ export class PolicyComponentsUtils {
         if (!data.relayerAccount || ref.dryRun) {
             return;
         }
+
+        if (![
+            'requestVcDocumentBlock',
+            'requestVcDocumentBlockAddon',
+            'externalDataBlock'
+        ].includes(ref.blockType)) {
+            return;
+        }
+
         const relayerAccountConfig = data.relayerAccount;
+
+        const balance = await PolicyUtils.checkAccountBalance(relayerAccountConfig, user.userId);
+        if (balance === false) {
+            return 'The relayer account has insufficient balance.';
+        }
+
+        if (balance === null) {
+            return `Invalid relayer account.`;
+        }
+
         let relayerAccount: any;
         if (typeof relayerAccountConfig === 'string') {
             relayerAccount = await (new Users()).getUserRelayerAccount(user.did, relayerAccountConfig, user.userId);
@@ -1598,16 +1617,6 @@ export class PolicyComponentsUtils {
             relayerAccount = await (new Users()).createRelayerAccount({ did: user.did, id: user.userId }, relayerAccountConfig, user.userId);
         }
         if (!relayerAccount) {
-            return `Invalid relayer account.`;
-        }
-
-        const balance = await PolicyUtils.checkAccountBalance(relayerAccount, user.userId);
-
-        if (balance === false) {
-            return 'The relayer account has insufficient balance.';
-        }
-
-        if (balance === null) {
             return `Invalid relayer account.`;
         }
 
