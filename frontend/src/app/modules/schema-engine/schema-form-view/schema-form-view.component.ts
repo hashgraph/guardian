@@ -46,6 +46,7 @@ export class SchemaFormViewComponent implements OnInit {
     @Input() formulas?: any;
     @Input('discussion') discussionData?: any;
     @Input('discussion-action') discussionAction: boolean = false;
+    @Input('discussion-view') discussionView: boolean = false;
     @Input() link?: string | undefined;
 
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
@@ -375,13 +376,13 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     public isDiscussion(item: IFieldControl) {
-        return (
+        return (this.discussionView && (
             this.isInput(item) ||
             this.isDateTime(item) ||
             this.isDate(item) ||
             this.isBoolean(item) ||
             this.isInput(item)
-        )
+        ));
     }
 
     public isDiscussionCount(item: IFieldControl) {

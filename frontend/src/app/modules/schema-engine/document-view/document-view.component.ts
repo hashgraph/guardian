@@ -25,6 +25,7 @@ export class DocumentViewComponent implements OnInit {
     @Input('schema') schema!: any;
     @Input('discussion') discussionData!: any;
     @Input('discussion-action') discussionAction: boolean = false;
+    @Input('discussion-view') discussionView: boolean = false;
 
     @Input() dryRun?: boolean = false;
     @Input() policyId?: string;
