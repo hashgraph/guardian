@@ -46,6 +46,10 @@ export interface PolicyOptions {
      */
     synchronizationTopicId: string;
     /**
+     * Comments topic identifier
+     */
+    commentsTopicId: string;
+    /**
      * Discontinued date
      */
     discontinuedDate?: string;

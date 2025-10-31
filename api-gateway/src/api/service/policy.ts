@@ -3036,7 +3036,7 @@ export class PolicyApi {
 
         const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
-        
+
         if (schemas && schemasIds.length) {
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))

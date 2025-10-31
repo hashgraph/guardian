@@ -15,6 +15,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 
 interface IMetadata {
     owner: PolicyUser;
+    relayerAccount: string;
     id: string;
     reference: string;
     accounts: any;
@@ -207,7 +208,8 @@ export class CalculateContainerBlock {
             }
         }
         const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
-        return { owner, id, reference, accounts, tokens, relationships };
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, firstDocument, userId);
+        return { owner, relayerAccount, id, reference, accounts, tokens, relationships };
     }
 
     /**
@@ -224,6 +226,7 @@ export class CalculateContainerBlock {
     ): Promise<IPolicyDocument> {
         const {
             owner,
+            relayerAccount,
             id,
             reference,
             accounts,
@@ -250,9 +253,9 @@ export class CalculateContainerBlock {
             VCHelper.addDryRunContext(vcSubject);
         }
 
+        const uuid = await ref.components.generateUUID();
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const didDocument = await policyOwnerCred.loadDidDocument(ref, userId);
-        const uuid = await ref.components.generateUUID();
         const newVC = await VCHelper.createVerifiableCredential(
             vcSubject,
             didDocument,
@@ -266,6 +269,7 @@ export class CalculateContainerBlock {
         item.relationships = relationships.length ? relationships : null;
         item.accounts = accounts && Object.keys(accounts).length ? accounts : null;
         item.tokens = tokens && Object.keys(tokens).length ? tokens : null;
+        item.relayerAccount = relayerAccount;
         // -->
 
         return item;

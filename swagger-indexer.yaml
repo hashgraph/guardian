@@ -48,6 +48,34 @@ paths:
       summary: Search
       tags:
         - search
+  /entities/ipfs/{cid}:
+    get:
+      description: Returns file
+      operationId: EntityApi_loadFile
+      parameters:
+        - name: cid
+          required: true
+          in: path
+          description: CID
+          schema:
+            example: bafybe...3w5sk3m
+            type: string
+      responses:
+        '200':
+          description: File
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get file
+      tags:
+        - entities
   /entities/registries:
     get:
       description: Returns standard registries
@@ -2272,6 +2300,79 @@ paths:
       summary: Get VC relationships
       tags:
         - entities
+  /entities/vc-documents/{messageId}/discussions:
+    get:
+      description: Returns VC comments
+      operationId: EntityApi_getDiscussions
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          schema:
+            example: '1706823227.586179534'
+            type: string
+      responses:
+        '200':
+          description: VC comments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelationshipsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get VC comments
+      tags:
+        - entities
+  /entities/vc-documents/{messageId}/discussions/{discussionId}/comments:
+    get:
+      description: Returns VC comments
+      operationId: EntityApi_getVcComments
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          schema:
+            example: '1706823227.586179534'
+            type: string
+        - name: discussionId
+          required: true
+          in: path
+          description: Message identifier
+          schema:
+            example: '1706823227.586179534'
+            type: string
+        - name: pageIndex
+          required: true
+          in: query
+          schema:
+            type: number
+        - name: pageSize
+          required: true
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: VC comments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelationshipsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get VC comments
+      tags:
+        - entities
   /entities/nfts:
     get:
       description: Returns NFTs
@@ -3269,6 +3370,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: Standard Registry
         action:
           type: string
@@ -3314,6 +3417,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: Init
         options:
           $ref: '#/components/schemas/RegistryOptionsDTO'
@@ -3604,6 +3709,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
         category:
           type: number
           description: Category
@@ -3785,6 +3892,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: DID-Document
         action:
           type: string
@@ -3830,6 +3939,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: create-did-document
         options:
           $ref: '#/components/schemas/RegistryUserOptionsDTO'
@@ -3950,6 +4061,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: DID-Document
         action:
           type: string
@@ -3995,6 +4108,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: create-did-document
         options:
           $ref: '#/components/schemas/RegistryUserOptionsDTO'
@@ -4114,6 +4229,10 @@ components:
           type: string
           description: Synchronization topic identifier
           example: 0.0.4481265
+        commentsTopicId:
+          type: string
+          description: Comments topic identifier
+          example: 0.0.4481265
         discontinuedDate:
           type: string
           description: Discontinued date
@@ -4129,6 +4248,7 @@ components:
         - policyTopicId
         - instanceTopicId
         - synchronizationTopicId
+        - commentsTopicId
         - discontinuedDate
     PolicyAnalyticsDTO:
       type: object
@@ -4294,6 +4414,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: Policy
         action:
           type: string
@@ -4339,6 +4461,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: publish-policy
         options:
           $ref: '#/components/schemas/PolicyOptionsDTO'
@@ -4564,6 +4688,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: Tool
         action:
           type: string
@@ -4609,6 +4735,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: publish-tool
         options:
           $ref: '#/components/schemas/ToolOptionsDTO'
@@ -4804,6 +4932,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: Module
         action:
           type: string
@@ -4849,6 +4979,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: publish-module
         options:
           $ref: '#/components/schemas/ModuleOptionsDTO'
@@ -5037,6 +5169,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: Schema
         action:
           type: string
@@ -5082,6 +5216,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: publish-schema
         options:
           $ref: '#/components/schemas/SchemaOptionsDTO'
@@ -5240,6 +5376,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: Schema
         action:
           type: string
@@ -5285,6 +5423,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: publish-schema
         options:
           $ref: '#/components/schemas/SchemaOptionsDTO'
@@ -5678,6 +5818,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: VP-Document
         action:
           type: string
@@ -5723,6 +5865,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: create-vp-document
         options:
           $ref: '#/components/schemas/VPOptionsDTO'
@@ -5902,6 +6046,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: Role-Document
         action:
           type: string
@@ -5947,6 +6093,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: create-vc-document
         options:
           $ref: '#/components/schemas/RoleOptionsDTO'
@@ -6137,6 +6285,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: Policy-Label
         action:
           type: string
@@ -6182,6 +6332,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: publish-policy-label
         options:
           $ref: '#/components/schemas/StatisticOptionsDTO'
@@ -6389,6 +6541,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: VC-Document
         action:
           type: string
@@ -6434,6 +6588,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: create-vc-document
         options:
           $ref: '#/components/schemas/VCOptionsDTO'
@@ -6608,6 +6764,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: Policy-Label
         action:
           type: string
@@ -6653,6 +6811,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: publish-policy-label
         options:
           $ref: '#/components/schemas/LabelOptionsDTO'
@@ -6840,6 +7000,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: VP-Document
         action:
           type: string
@@ -6885,6 +7047,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: create-vp-document
         options:
           $ref: '#/components/schemas/VPOptionsDTO'
@@ -7056,6 +7220,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: Formula
         action:
           type: string
@@ -7101,6 +7267,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: publish-formula
         options:
           $ref: '#/components/schemas/FormulaOptionsDTO'
@@ -7306,6 +7474,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: DID-Document
         action:
           type: string
@@ -7351,6 +7521,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: create-did-document
         options:
           $ref: '#/components/schemas/DIDOptionsDTO'
@@ -7471,6 +7643,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: DID-Document
         action:
           type: string
@@ -7516,6 +7690,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: create-did-document
         options:
           $ref: '#/components/schemas/DIDOptionsDTO'
@@ -7700,6 +7876,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: VC-Document
         action:
           type: string
@@ -7745,6 +7923,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: create-vc-document
         options:
           $ref: '#/components/schemas/VCOptionsDTO'
@@ -8121,6 +8301,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: Topic
         action:
           type: string
@@ -8166,6 +8348,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: create-topic
         options:
           $ref: '#/components/schemas/TopicOptionsDTO'
@@ -8437,6 +8621,8 @@ components:
             - Schema-Package
             - Policy-Diff
             - Policy-Action
+            - Policy-Discussion
+            - Policy-Comment
           example: Contract
         action:
           type: string
@@ -8482,6 +8668,8 @@ components:
             - publish-policy-label
             - create-label-document
             - publish-formula
+            - create-policy-comment
+            - create-policy-discussion
           example: create-contract
         options:
           $ref: '#/components/schemas/ContractOptionsDTO'

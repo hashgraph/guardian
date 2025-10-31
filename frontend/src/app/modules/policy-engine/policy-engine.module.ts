@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MaterialModule } from 'src/app/modules/common/material.module';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 //Modules
@@ -138,6 +138,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { PasswordModule } from 'primeng/password';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
 import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
@@ -160,6 +161,7 @@ import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoin
 import { AddSavepointDialog } from "./policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component";
 import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
 import { IgnoreRulesDialog } from "./dialogs/ignore-rules-dialog/ignore-rules-dialog.component";
+import { PolicyRepositoryComponent } from './policy-repository/policy-repository.component';
 import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
 import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
@@ -284,7 +286,8 @@ import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.comp
         RestoreSavepointDialog,
         AddSavepointDialog,
         IgnoreRulesDialog,
-        OnLoadSavepointDialog
+        OnLoadSavepointDialog,
+        PolicyRepositoryComponent
     ],
     imports: [
         CommonModule,
@@ -311,6 +314,7 @@ import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.comp
         SplitButtonModule,
         TabViewModule,
         RadioButtonModule,
+        PasswordModule,
         InputSwitchModule,
         AppRoutingModule,
         DialogModule,

@@ -19,7 +19,7 @@ interface ICondition {
     fieldPath?: string;
     compareValue?: any;
     op?: 'OR' | 'AND';
-    items?: Array<{ fieldPath: string; compareValue: any }>;
+    items?: { fieldPath: string; compareValue: any }[];
     invert?: boolean;
 }
 
@@ -29,7 +29,7 @@ export class XlsxToJson {
         const xlsxResult = new XlsxResult();
         try {
             const workbook = new Workbook();
-            await workbook.read(buffer)
+            await workbook.read(buffer as any);
             const worksheets = workbook.getWorksheets();
 
             for (const worksheet of worksheets) {
@@ -672,9 +672,9 @@ export class XlsxToJson {
                     return { field: target, value: it.compareValue };
                 });
 
-                const key = { op: result.op, items: resolved };
-                const existed = conditionCache.find(c => (c as any).equal(key));
-                const holder = existed || new XlsxSchemaConditions(key as any);
+                const conditionKey = { op: result.op, items: resolved };
+                const existed = conditionCache.find(c => (c as any).equal(conditionKey));
+                const holder = existed || new XlsxSchemaConditions(conditionKey as any);
 
                 holder.addField(field, !!result.invert);
                 if (!existed) {
@@ -801,7 +801,9 @@ export class XlsxToJson {
                     };
 
                     const pair = toPair(a, b);
-                    if (!pair) throw new Error(`Unsupported EXACT signature in "${formulae}"`);
+                    if (!pair) {
+                        throw new Error(`Unsupported EXACT signature in "${formulae}"`)
+                    };
 
                     return {
                         type: 'formulae',
@@ -812,7 +814,7 @@ export class XlsxToJson {
                 }
 
                 if ((name === 'OR' || name === 'AND') && fn.args.length >= 2) {
-                    const items: Array<{ fieldPath: string; compareValue: any }> = [];
+                    const items: { fieldPath: string; compareValue: any }[] = [];
                     for (const arg of fn.args) {
                         const parsed = parseFn(arg, false);
                         if (!(parsed?.type === 'formulae' && parsed.fieldPath && parsed.compareValue !== undefined && !parsed.op)) {
@@ -834,7 +836,6 @@ export class XlsxToJson {
 
         return parseFn(nodes, false);
     }
-
 
     private static isAutoCalculate(type: string, field: SchemaField): boolean {
         return field.hidden || type === 'Auto-Calculate';

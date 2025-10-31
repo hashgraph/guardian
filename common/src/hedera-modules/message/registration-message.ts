@@ -57,6 +57,7 @@ export class RegistrationMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             did: this.did,
             topicId: this.registrantTopicId,
             attributes: this.attributes
@@ -66,7 +67,7 @@ export class RegistrationMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         return [];
     }
 
@@ -111,6 +112,7 @@ export class RegistrationMessage extends Message {
         message.did = json.did;
         message.registrantTopicId = json.topicId
         message.lang = json.lang;
+        message.account = json.account;
         message.attributes = json.attributes || {};
         return message;
     }

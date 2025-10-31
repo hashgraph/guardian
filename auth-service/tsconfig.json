@@ -1,46 +1,46 @@
 {
-  "compileOnSave": true,
-  "compilerOptions": {
-    "baseUrl": "./src",
-    "declaration": true,
-    "emitDecoratorMetadata": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "inlineSourceMap": true,
-    "lib": [
-      "dom",
-      "es5",
-      "es6"
-    ],
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "outDir": "dist/",
-    "paths": {
-      "@api/*": [
-        "api/*"
-      ],
-      "@entity/*": [
-        "entity/*"
-      ],
-      "@helpers/*": [
-        "helpers/*"
-      ],
-      "#constants": [
-        "constants/index.js"
-      ],
-      "#utils": [
-        "utils/index.js"
-      ]
+    "compileOnSave": true,
+    "compilerOptions": {
+        "baseUrl": "./src",
+        "declaration": true,
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "skipLibCheck": true,
+        "inlineSourceMap": true,
+        "lib": [
+            "dom",
+            "es5",
+            "es6"
+        ],
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "outDir": "dist/",
+        "paths": {
+            "@api/*": [
+                "api/*"
+            ],
+            "@entity/*": [
+                "entity/*"
+            ],
+            "@helpers/*": [
+                "helpers/*"
+            ],
+            "#constants": [
+                "constants/index.js"
+            ],
+            "#utils": [
+                "utils/index.js"
+            ]
+        },
+        "target": "es2022"
     },
-    "target": "es2022"
-  },
-  "exclude": [
-    "node_modules",
-    "public",
-    "dist"
-  ],
-  "include": [
-    "src/**/*"
-  ]
+    "exclude": [
+        "node_modules",
+        "public",
+        "dist"
+    ],
+    "include": [
+        "src/**/*"
+    ]
 }

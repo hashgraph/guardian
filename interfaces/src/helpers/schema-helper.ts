@@ -540,7 +540,6 @@ export class SchemaHelper {
             return null;
         };
 
-
         const serializeCondition = (cond: SchemaCondition) => {
             const ifNode = serializeIf(cond);
             if (!ifNode) {
@@ -548,8 +547,8 @@ export class SchemaHelper {
             }
 
             const buildSub = (sub?: SchemaField[]) => {
-                let req: string[] = [];
-                let props: any = {};
+                const req: string[] = [];
+                const props: any = {};
                 SchemaHelper.getFieldsFromObject(sub || [], req, props, schema.contextURL);
                 return Object.keys(props).length ? { properties: props, required: req } : undefined;
             };
@@ -1153,7 +1152,7 @@ export class SchemaHelper {
             mode: 'IF' | 'AND' | 'OR',
             field?: string,
             fieldValue?: any,
-            predicates?: Array<{ field: string, value: any }>
+            predicates?: { field: string, value: any }[]
         } | null => {
             if (!ifCondition) {
                 return null;

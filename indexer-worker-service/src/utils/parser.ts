@@ -48,6 +48,10 @@ export class Parser {
                     message.options.relationships = json.relationships;
                     message.options.documentStatus = json.documentStatus;
                     message.options.encodedData = json.encodedData || json.type === 'EVC-Document';
+                    message.options.tag = json.tag;
+                    message.options.startMessage = json.startMessage;
+                    message.options.entityType = json.entityType;
+                    message.options.option = json.option;
                     if (json.cid) {
                         message.files.push(json.cid);
                     }
@@ -97,6 +101,7 @@ export class Parser {
                     message.options.policyTopicId = json.topicId;
                     message.options.instanceTopicId = json.instanceTopicId;
                     message.options.synchronizationTopicId = json.synchronizationTopicId;
+                    message.options.commentsTopicId = json.commentsTopicId;
                     if (json.effectiveDate) {
                         message.options.discontinuedDate = new Date(json.effectiveDate)
                     }
@@ -106,7 +111,8 @@ export class Parser {
                     message.topics = [
                         json.topicId,
                         json.instanceTopicId,
-                        json.synchronizationTopicId
+                        json.synchronizationTopicId,
+                        json.commentsTopicId
                     ];
                     break;
                 case MessageType.VP_DOCUMENT:
@@ -269,6 +275,22 @@ export class Parser {
                     message.options.owner = json.owner;
                     message.options.policyTopicId = json.policyTopicId;
                     message.options.policyInstanceTopicId = json.policyInstanceTopicId;
+                    if (json.cid) {
+                        message.files.push(json.cid);
+                    }
+                    break;
+                case MessageType.POLICY_COMMENT:
+                    message.options.hash = json.hash;
+                    message.options.target = json.target;
+                    message.options.discussion = json.discussion;
+                    if (json.cid) {
+                        message.files.push(json.cid);
+                    }
+                    break;
+                case MessageType.POLICY_DISCUSSION:
+                    message.options.hash = json.hash;
+                    message.options.target = json.target;
+                    message.options.relationships = json.relationships;
                     if (json.cid) {
                         message.files.push(json.cid);
                     }

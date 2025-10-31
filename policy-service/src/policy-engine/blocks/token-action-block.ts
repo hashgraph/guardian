@@ -134,48 +134,57 @@ export class TokenActionBlock {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        let userHederaAccountId: string = null;
+        let relayerAccount: string = null;
         let userDID: string = null;
-        if (doc) {
-            if (field) {
-                if (doc.accounts) {
-                    userHederaAccountId = doc.accounts[field];
-                }
-            } else {
-                userDID = doc.owner;
-                userHederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner, userId);
-            }
+        if (doc && field && doc.accounts) {
+            relayerAccount = doc.accounts[field];
+        } else if (doc && !field) {
+            userDID = doc.owner;
+            relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, doc, userId);
         }
-        await PolicyUtils.checkAccountId(userHederaAccountId, userId);
+        if (!relayerAccount) {
+            throw new BlockActionError('Hedera Account not found.', ref.blockType, ref.uuid);
+        }
 
         switch (ref.options.action) {
             case 'associate': {
-                await PolicyActionsUtils.associateToken(ref, token, userDID, userId);
+                await PolicyActionsUtils.associateToken({
+                    ref,
+                    token,
+                    user: userDID,
+                    relayerAccount,
+                    userId
+                });
                 break;
             }
             case 'dissociate': {
-                await PolicyActionsUtils.dissociateToken(ref, token, userDID, userId);
+                await PolicyActionsUtils.dissociateToken({
+                    ref,
+                    token,
+                    user: userDID,
+                    relayerAccount,
+                    userId
+                });
                 break;
             }
             case 'freeze': {
+                const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
-                const account = PolicyUtils.createHederaCredentials(userHederaAccountId);
                 await PolicyUtils.freeze(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'unfreeze': {
+                const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
-                const account = PolicyUtils.createHederaCredentials(userHederaAccountId);
                 await PolicyUtils.unfreeze(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'grantKyc': {
+                const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
-                const account = PolicyUtils.createHederaCredentials(userHederaAccountId);
-
                 await runIdempotent(ref, 'grantKyc', () =>
                     PolicyUtils.grantKyc(ref, token, account, ownerCredentials, userId)
                 );
@@ -183,9 +192,9 @@ export class TokenActionBlock {
                 break;
             }
             case 'revokeKyc': {
+                const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
-                const account = PolicyUtils.createHederaCredentials(userHederaAccountId);
                 await PolicyUtils.revokeKyc(ref, token, account, ownerCredentials, userId);
                 break;
             }

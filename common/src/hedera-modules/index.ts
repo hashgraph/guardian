@@ -11,3 +11,4 @@ export { TopicConfig } from './topic.js';
 export { Hashing } from './hashing.js';
 export { MessageMemo } from './memo-mappings/message-memo.js';
 export { TopicMemo } from './memo-mappings/topic-memo.js';
+export { checkHederaKey } from './utils.js';

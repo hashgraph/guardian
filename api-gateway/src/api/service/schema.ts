@@ -1523,7 +1523,6 @@ export class SchemaApi {
         }
     }
 
-
     /**
      * Check for schemas duplicates
      */
@@ -2698,7 +2697,7 @@ export class SchemaApi {
         const owner = new EntityOwner(user);
 
         try {
-            await guardians.deleteSchemas(topicId, owner) as ISchema[];
+            await guardians.deleteSchemas(topicId, owner);
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
 

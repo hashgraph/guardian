@@ -3,7 +3,7 @@
         <div class="guardian-loading-image"></div>
     </div>
 
-    <div *ngIf="document">
+    <div *ngIf="document" class="form-body">
 
         <div class="guardian-accordion-container">
             <p-accordion [activeIndex]="0" class="guardian-accordion">
@@ -14,6 +14,17 @@
                             <div class="form-field-value">
                                 <div class="form-field-input guardian-input-container">
                                     <input pInputText [value]="document.id || ''" [readonly]="true" type="text"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="relayerAccount" class="form-field-container">
+                        <div class="form-field">
+                            <div class="label-field">Relayer Account</div>
+                            <div class="form-field-value">
+                                <div class="form-field-input guardian-input-container">
+                                    <input pInputText [value]="relayerAccount" [readonly]="true" type="text"/>
                                 </div>
                             </div>
                         </div>
@@ -108,7 +119,12 @@
                             [dryRun]="dryRun" 
                             [values]="item"
                             [rules]="rulesResults"
-                            [formulas]="formulasResults">
+                            [formulas]="formulasResults"
+                            [link]="link"
+                            [discussion]="discussionData"
+                            [discussion-view]="discussionView"
+                            [discussion-action]="discussionAction"
+                            (discussion-action)="onDiscussionAction($event)">
                         </app-schema-form-view>
                     </p-accordionTab>
                 </p-accordion>
@@ -134,7 +150,11 @@
                             [formulas]="formulas"
                             [dryRun]="dryRun" 
                             [hide-fields]="hideFields"
-                            type="VC">
+                            type="VC"
+                            [discussion]="discussionData"
+                            [discussion-view]="discussionView"
+                            [discussion-action]="discussionAction"
+                            (discussion-action)="onDiscussionAction($event)">
                         </app-document-view>
                     </p-accordionTab>
                 </p-accordion>

@@ -33,6 +33,8 @@ import { PolicyNavigationMap } from './interfaces/block-state.js';
 import { ComponentsService } from './helpers/components-service.js';
 import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
 import { PolicyActionsService } from './actions-service.js';
+import { PolicyActionsUtils } from './policy-actions/utils.js';
+import { PolicyUtils } from './helpers/utils.js';
 
 /**
  * Policy tag helper
@@ -1550,6 +1552,7 @@ export class PolicyComponentsUtils {
         const result = await block.setData(user, data, ActionType.COMMON);
         return new MessageResponse(result);
     }
+
     private static async _blockSetDataRemote(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
@@ -1563,6 +1566,7 @@ export class PolicyComponentsUtils {
             return new MessageError('Invalid policy controller', 500);
         }
     }
+
     private static async _blockSetDataCustom(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
@@ -1578,11 +1582,71 @@ export class PolicyComponentsUtils {
         }
     }
 
+    private static async _checkRelayerAccount(
+        ref: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        data: any
+    ): Promise<string> {
+        if (!data.relayerAccount || ref.dryRun) {
+            return;
+        }
+
+        if (![
+            'requestVcDocumentBlock',
+            'requestVcDocumentBlockAddon',
+            'externalDataBlock'
+        ].includes(ref.blockType)) {
+            return;
+        }
+
+        const relayerAccountConfig = data.relayerAccount;
+
+        const balance = await PolicyUtils.checkAccountBalance(relayerAccountConfig, user.userId);
+        if (balance === false) {
+            return 'The relayer account has insufficient balance.';
+        }
+
+        if (balance === null) {
+            return `Invalid relayer account.`;
+        }
+
+        let relayerAccount: any;
+        if (typeof relayerAccountConfig === 'string') {
+            relayerAccount = await (new Users()).getUserRelayerAccount(user.did, relayerAccountConfig, user.userId);
+        } else {
+            relayerAccount = await (new Users()).createRelayerAccount({ did: user.did, id: user.userId }, relayerAccountConfig, user.userId);
+        }
+        if (!relayerAccount) {
+            return `Invalid relayer account.`;
+        }
+
+        if (ref.locationType === LocationType.REMOTE) {
+            await PolicyComponentsUtils._sendRelayerAccount(ref, user, relayerAccount);
+        }
+
+        data.relayerAccount = relayerAccount.account;
+    }
+
+    private static async _sendRelayerAccount(
+        ref: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        relayerAccount: any
+    ): Promise<void> {
+        const userId = user.userId;
+        const relayerAccountKey = await PolicyUtils.loadRelayerAccount(user.did, relayerAccount.account, ref, userId);
+        relayerAccount.key = relayerAccountKey.hederaAccountKey;
+        await PolicyActionsUtils.setRelayerAccount({ ref, user, relayerAccount, userId });
+    }
+
     public static async blockSetData(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
         data: any
     ): Promise<MessageResponse<any> | MessageError<any>> {
+        const error = await PolicyComponentsUtils._checkRelayerAccount(block, user, data);
+        if (error) {
+            return new MessageError(error, 500);
+        }
         if (block.actionType === LocationType.LOCAL) {
             //Action - local, policy - local|remote, user - local|remote
             return await PolicyComponentsUtils._blockSetDataLocal(block, user, data);

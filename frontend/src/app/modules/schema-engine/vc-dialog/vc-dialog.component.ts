@@ -48,6 +48,7 @@ export class VCViewerDialog {
     }[];
 
     public fileSize: number = 0;
+    public canExport: boolean = true;
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -85,12 +86,14 @@ export class VCViewerDialog {
             getByUser,
             additionalOptions = [],
             additionalOptionsData,
+            canExport
         } = this.dialogConfig.data;
 
         this.policyId = row?.policyId;
         this.documentId = row?.id;
         this.schemaId = row?.schema;
         this.messageId = row?.messageId;
+        this.canExport = !(canExport === false);
 
         this.getByUser = getByUser;
         this.id = id;

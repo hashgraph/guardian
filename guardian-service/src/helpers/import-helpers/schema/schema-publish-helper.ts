@@ -13,8 +13,6 @@ function checkSchemaProps(item: SchemaCollection, document: ISchemaDocument) {
             throw new Error(`Field type is not set. Field: ${name}, Schema: ${item.uuid}`);
         }
         if (field.isRef && (!document.$defs || !document.$defs[field.type])) {
-            console.debug(field);
-            console.debug(document);
             throw new Error(`Dependent schema not found: ${item.iri}, Field: ${name}, Field Type: ${field.type}`);
         }
     }

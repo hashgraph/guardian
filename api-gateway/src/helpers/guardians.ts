@@ -394,9 +394,14 @@ export class Guardians extends NatsService {
      * @param tokenId
      * @param did
      */
-    public async associateToken(tokenId: string, owner: IOwner): Promise<ITokenInfo> {
+    public async associateToken(
+        tokenId: string,
+        accountId: string,
+        owner: IOwner
+    ): Promise<ITokenInfo> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN, {
             tokenId,
+            accountId,
             owner,
             associate: true,
         });
@@ -408,9 +413,15 @@ export class Guardians extends NatsService {
      * @param did
      * @param task
      */
-    public async associateTokenAsync(tokenId: string, owner: IOwner, task: NewTask): Promise<NewTask> {
+    public async associateTokenAsync(
+        tokenId: string,
+        accountId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN_ASYNC, {
             tokenId,
+            accountId,
             owner,
             associate: true,
             task,
@@ -422,9 +433,14 @@ export class Guardians extends NatsService {
      * @param tokenId
      * @param did
      */
-    public async dissociateToken(tokenId: string, owner: IOwner): Promise<ITokenInfo> {
+    public async dissociateToken(
+        tokenId: string,
+        accountId: string,
+        owner: IOwner
+    ): Promise<ITokenInfo> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN, {
             tokenId,
+            accountId,
             owner,
             associate: false,
         });
@@ -436,9 +452,15 @@ export class Guardians extends NatsService {
      * @param did
      * @param task
      */
-    public async dissociateTokenAsync(tokenId: string, owner: IOwner, task: NewTask): Promise<NewTask> {
+    public async dissociateTokenAsync(
+        tokenId: string,
+        accountId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN_ASYNC, {
             tokenId,
+            accountId,
             owner,
             associate: false,
             task,
@@ -456,6 +478,26 @@ export class Guardians extends NatsService {
             tokenId,
             username,
             owner
+        });
+    }
+
+    /**
+     * Get token info
+     * @param tokenId
+     * @param username
+     * @param owner
+     */
+    public async getRelayerAccountInfo(
+        tokenId: string,
+        relayerAccountId: string,
+        owner: IOwner,
+        user: IAuthUser,
+    ): Promise<ITokenInfo> {
+        return await this.sendMessage(MessageAPI.GET_RELAYER_ACCOUNT_INFO, {
+            tokenId,
+            relayerAccountId,
+            owner,
+            user,
         });
     }
 
@@ -3909,5 +3951,22 @@ export class Guardians extends NatsService {
      */
     public async deleteGridFile(user: IAuthUser, fileId: string): Promise<boolean> {
         return await this.sendMessage(MessageAPI.DELETE_FILE, { user, fileId });
+    }
+
+    /**
+     * Get RelayerAccount Relationships
+     * @param relayerAccountId
+     * @param user
+     * @param filters
+     */
+    public async getRelayerAccountRelationships(
+        relayerAccountId: string,
+        user: IAuthUser,
+        filters: {
+            pageIndex?: number | string,
+            pageSize?: number | string
+        }
+    ): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_RELAYER_ACCOUNT_RELATIONSHIPS, { relayerAccountId, user, filters });
     }
 }

@@ -91,6 +91,8 @@ export abstract class TypedMint {
             tokenType: TokenType;
             decimals: number;
             policyId: string;
+            owner: string;
+            relayerAccount: string;
             metadata?: string;
         },
         root: IHederaCredentials,
@@ -235,6 +237,26 @@ export abstract class TypedMint {
             notification.result = this._ref.policyId;
         }
         return notification;
+    }
+
+    protected async getRelayerAccount() {
+        if (this._mintRequest?.relayerAccount) {
+            const userRelayerAccount = await PolicyUtils.loadRelayerAccount(
+                this._mintRequest.owner,
+                this._mintRequest.relayerAccount,
+                this._ref,
+                this.userId
+            );
+            return {
+                hederaAccountId: userRelayerAccount.hederaAccountId,
+                hederaAccountKey: userRelayerAccount.hederaAccountKey,
+            }
+        } else {
+            return {
+                hederaAccountId: this._root.hederaAccountId,
+                hederaAccountKey: this._root.hederaAccountKey,
+            }
+        }
     }
 
     /**

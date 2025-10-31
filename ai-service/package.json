@@ -35,7 +35,8 @@
         "start": "node dist/index.js"
     },
     "devDependencies": {
-        "nodemon": "^3.0.1"
+        "nodemon": "^3.0.1",
+        "@types/glob": "^8.1.0"
     },
     "type": "module"
 }

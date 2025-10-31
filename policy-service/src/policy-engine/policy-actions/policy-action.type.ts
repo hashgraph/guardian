@@ -7,5 +7,6 @@ export enum PolicyActionType {
     SendMessages = 'send-messages',
     CreateTopic = 'create-topic',
     AssociateToken = 'associate-token',
-    DissociateToken = 'dissociate-token'
+    DissociateToken = 'dissociate-token',
+    AddRelayerAccount = 'add-relayer-account'
 }

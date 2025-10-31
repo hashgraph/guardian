@@ -881,7 +881,7 @@ export class JsonToSchema {
         }
     }
 
-    private static fromavailableOptions(
+    private static fromAvailableOptions(
         value: IFieldJson,
         context: ErrorContext
     ): {
@@ -1051,7 +1051,7 @@ export class JsonToSchema {
             textBold: JsonToSchema.fromFont(value, context).bold,
 
             enum: JsonToSchema.fromEnum(value, context).enum,
-            availableOptions: JsonToSchema.fromavailableOptions(value, context).availableOptions,
+            availableOptions: JsonToSchema.fromAvailableOptions(value, context).availableOptions,
             remoteLink: JsonToSchema.fromEnum(value, context).link,
 
             expression: JsonToSchema.fromExpression(value, context),

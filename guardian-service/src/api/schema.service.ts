@@ -1840,7 +1840,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
-
     /**
      * Check for schemas dublicates
      */

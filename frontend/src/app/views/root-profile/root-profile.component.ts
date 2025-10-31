@@ -4,22 +4,36 @@ import { AuthService } from '../../services/auth.service';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from '../../services/profile.service';
 import { SchemaService } from '../../services/schema.service';
-import { IUser, Schema, SchemaEntity } from '@guardian/interfaces';
+import { IUser, Schema, SchemaEntity, UserPermissions } from '@guardian/interfaces';
 import { DemoService } from '../../services/demo.service';
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { HeaderPropsService } from '../../services/header-props.service';
 import { InformService } from '../../services/inform.service';
 import { TasksService } from '../../services/tasks.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
 import { ChangePasswordComponent } from '../login/change-password/change-password.component';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
+import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
+import { NewRelayerAccountDialog } from 'src/app/components/new-relayer-account-dialog/new-relayer-account-dialog.component';
+import { RelayerAccountDetailsDialog } from 'src/app/components/relayer-account-details-dialog/relayer-account-details-dialog.component';
+import moment from 'moment';
 
 enum OperationMode {
     None,
     Generate,
     GetAllUserTopics,
+}
+
+interface IColumn {
+    id: string;
+    title: string;
+    type: string;
+    size: string;
+    tooltip: boolean;
+    permissions?: (user: UserPermissions) => boolean;
+    canDisplay?: () => boolean;
 }
 
 /**
@@ -34,6 +48,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     @ViewChild('actionMenu') actionMenu: any;
 
     public loading: boolean = true;
+    public subLoading: boolean = false;
     public taskId: string | undefined = undefined;
     public isConfirmed: boolean = false;
     public profile: IUser | null;
@@ -76,21 +91,72 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     private subscriptions = new Subscription()
     public isRestore = false;
 
+    public tab: 'general' | 'relayerAccounts' = 'general';
+    public tabIndex = 0;
+    public tabs: ['general', 'relayerAccounts'] = ['general', 'relayerAccounts'];
+
+    public relayerAccountPage: any[];
+    public relayerAccountCount: number;
+    public relayerAccountPageIndex: number;
+    public relayerAccountPageSize: number;
+    public relayerAccountColumns: IColumn[];
+    public searchRelayerAccount: string;
+    public balances: Map<string, string>;
+
     constructor(
-        private router: Router,
         private auth: AuthService,
         private fb: UntypedFormBuilder,
         private profileService: ProfileService,
+        private relayerAccountsService: RelayerAccountsService,
         private schemaService: SchemaService,
         private otherService: DemoService,
         private informService: InformService,
         private taskService: TasksService,
         private headerProps: HeaderPropsService,
         private dialogService: DialogService,
+        private route: ActivatedRoute,
+        private router: Router,
         private cdRef: ChangeDetectorRef
     ) {
         this.profile = null;
         this.balance = null;
+        this.balances = new Map<string, string>();
+
+        this.relayerAccountPage = [];
+        this.relayerAccountCount = 0;
+        this.relayerAccountPageIndex = 0;
+        this.relayerAccountPageSize = 10;
+        this.relayerAccountColumns = [{
+            id: 'account',
+            title: 'Account',
+            type: 'text',
+            size: '200',
+            tooltip: false
+        }, {
+            id: 'balance',
+            title: 'Balance',
+            type: 'text',
+            size: '200',
+            tooltip: false
+        }, {
+            id: 'refresh',
+            title: 'Update date',
+            type: 'text',
+            size: '200',
+            tooltip: false
+        }, {
+            id: 'name',
+            title: 'Name',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'options',
+            title: 'Actions',
+            type: 'text',
+            size: '170',
+            tooltip: false
+        }];
         this.initForm(this.vcForm);
     }
 
@@ -105,6 +171,15 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             fireBlocksApiKey: '',
             fireBlocksPrivateiKey: ''
         });
+        this.subscriptions.add(
+            this.route.queryParams.subscribe((queryParams) => {
+                const tab = this.route.snapshot.queryParams['tab'];
+                this.tabIndex = Math.max(this.tabs.indexOf(tab), 0);
+                this.tab = this.tabs[this.tabIndex] || 'general';
+                this.changeTab();
+                this.cdRef.detectChanges();
+            })
+        );
         this.loadProfile();
         this.step = 'HEDERA';
     }
@@ -641,5 +716,123 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         }).onClose.subscribe((data) => {
             this.loadProfile();
         });
+    }
+
+    public onChangeTab(tab: any) {
+        this.tabIndex = tab.index;
+        this.tab = this.tabs[tab.index] || 'general';
+        this.router.navigate([], {
+            queryParams: { tab: this.tab }
+        });
+    }
+
+    private changeTab() {
+        if (this.tab === 'general') {
+            this.loadProfile();
+        }
+        if (this.tab === 'relayerAccounts') {
+            this.relayerAccountPageIndex = 0;
+            this.loadRelayerAccounts();
+        }
+    }
+
+    private loadRelayerAccounts() {
+        const filters: any = {
+            search: this.searchRelayerAccount
+        };
+        this.subLoading = true;
+        this.relayerAccountsService
+            .getRelayerAccounts(
+                this.relayerAccountPageIndex,
+                this.relayerAccountPageSize,
+                filters
+            )
+            .subscribe((response) => {
+                const { page, count } = this.relayerAccountsService.parsePage(response);
+                this.relayerAccountPage = page;
+                this.relayerAccountCount = count;
+                for (const row of page) {
+                    row.__lastUpdate = '-';
+                }
+                setTimeout(() => {
+                    this.subLoading = false;
+                }, 500);
+            }, (e) => {
+                this.subLoading = false;
+            });
+    }
+
+    public onRelayerAccountPage(event: any): void {
+        if (this.relayerAccountPageSize != event.pageSize) {
+            this.relayerAccountPageIndex = 0;
+            this.relayerAccountPageSize = event.pageSize;
+        } else {
+            this.relayerAccountPageIndex = event.pageIndex;
+            this.relayerAccountPageSize = event.pageSize;
+        }
+        this.loadRelayerAccounts();
+    }
+
+    public onCreateRelayerAccount() {
+        const dialogRef = this.dialogService.open(NewRelayerAccountDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Add Relayer Account'
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+                this.subLoading = true;
+                this.relayerAccountsService
+                    .createRelayerAccount(result)
+                    .subscribe((newItem) => {
+                        this.loadRelayerAccounts();
+                    }, (e) => {
+                        this.subLoading = false;
+                    });
+            }
+        });
+    }
+
+    public onOpenAccount(item: any) {
+        const dialogRef = this.dialogService.open(RelayerAccountDetailsDialog, {
+            showHeader: false,
+            width: '1100px',
+            styleClass: 'guardian-dialog',
+            data: {
+                relayerAccount: item
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => { });
+    }
+
+    public onRelayerAccountSearch() {
+        this.loadRelayerAccounts();
+    }
+
+    public getBalance(row: any) {
+        return this.balances.get(row.account) || '-';
+    }
+
+    public updateBalance(row: any) {
+        row.__loading = true;
+        this.relayerAccountsService
+            .getRelayerAccountBalance(row.account)
+            .subscribe((balance) => {
+                this.balances.set(row.account, balance);
+                row.__loading = false;
+                row.__lastUpdate = moment(Date.now()).format("YYYY-MM-DD, HH:mm");
+            }, (e) => {
+                row.__balance = '-';
+                row.__loading = false;
+            });
+    }
+
+    public updateAllBalance() {
+        for (const row of this.relayerAccountPage) {
+            this.updateBalance(row);
+        }
     }
 }
