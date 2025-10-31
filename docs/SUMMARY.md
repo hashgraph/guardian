@@ -408,6 +408,8 @@
         * [Returns List of Tools](guardian/standard-registry/policies/tools/tools-apis/returns-list-of-tools-1.md)
         * [Importing Tool from a Zip file](guardian/standard-registry/policies/tools/tools-apis/importing-tool-from-a-zip-file.md)
         * [Importing Tool from a Zip file asynchronously](guardian/standard-registry/policies/tools/tools-apis/importing-tool-from-a-zip-file-asynchronously.md)
+        * [Run policy without making any persistent changes or executing         transaction.](guardian/standard-registry/policies/tools/tools-apis/run-policy-without-making-any-persistent-changes-or-executing-transaction..md)
+        * [Return policy to editing. Only users with the Standard Registry can make request](guardian/standard-registry/policies/tools/tools-apis/return-policy-to-editing.-only-users-with-the-standard-registry-can-make-request.md)
     * [Modules](guardian/standard-registry/policies/modules/README.md)
       * [Modules using UI](guardian/standard-registry/policies/modules/modules-using-ui.md)
       * [Modules APIs](guardian/standard-registry/policies/modules/modules-apis/README.md)
