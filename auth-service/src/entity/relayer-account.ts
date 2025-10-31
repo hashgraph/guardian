@@ -29,8 +29,8 @@ export class RelayerAccount extends BaseEntity {
     /**
      * Parent
      */
-    @Property()
-    parent: string;
+    @Property({ nullable: true })
+    parent?: string;
 
     /**
      * Username
