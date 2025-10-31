@@ -17190,7 +17190,7 @@ paths:
       summary: ''
       tags:
         - relayer-accounts
-  /relayer-accounts/{relayerAccount}/relationships:
+  /relayer-accounts/{relayerAccountId}/relationships:
     get:
       description: ''
       operationId: RelayerAccountsApi_getRelayerAccountRelationships
