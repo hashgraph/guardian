@@ -119,6 +119,10 @@ export async function documentsAPI(
                 return new MessageError('Invalid parameters.');
             }
             const { user, relayerAccountId, filters } = msg;
+            if (!relayerAccountId) {
+                return new MessageResponse({ items: [], count: 0 });
+            }
+
             const { pageIndex, pageSize } = filters;
             const otherOptions: any = {};
             const _pageSize = parseInt(pageSize, 10);

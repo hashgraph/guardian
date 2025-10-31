@@ -309,7 +309,7 @@ export class RelayerAccountsApi {
     /**
      *
      */
-    @Get('/:relayerAccount/relationships')
+    @Get('/:relayerAccountId/relationships')
     @Auth(
     )
     @ApiOperation({
