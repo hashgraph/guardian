@@ -19,6 +19,7 @@ import { SuggestionsService } from '../../../../services/suggestions.service';
 import { ThemeService } from '../../../../services/theme.service';
 import { NewModuleDialog } from '../../dialogs/new-module-dialog/new-module-dialog.component';
 import { PublishPolicyDialog } from '../../dialogs/publish-policy-dialog/publish-policy-dialog.component';
+import { PublishToolDialog } from '../../dialogs/publish-tool-dialog/publish-tool-dialog.component';
 import { PolicyAction, SavePolicyDialog } from '../../dialogs/save-policy-dialog/save-policy-dialog.component';
 import { StopResizingEvent } from '../../directives/resizing.directive';
 import { CONFIGURATION_ERRORS } from '../../injectors/configuration.errors.injector';
@@ -35,6 +36,7 @@ import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.s
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
 import { IgnoreRule } from '@guardian/interfaces';
 import { IgnoreRulesDialog } from "../../dialogs/ignore-rules-dialog/ignore-rules-dialog.component";
+import { SaveToolDialog, ToolSaveAction } from '../../dialogs/save-tool-dialog/save-tool-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -1985,33 +1987,57 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public saveAsTool() {
-        const tool = this.toolTemplate.getJSON();
-        delete tool.id;
-        delete tool.uuid;
-        const dialogRef = this.dialogService.open(NewModuleDialog, {
-            width: '650px',
-            styleClass: 'custom-dialog',
-            header: 'New Tool',
-            closable: true,
+        const dialogRef = this.dialog.open(SaveToolDialog, {
+            showHeader: false,
+            width: '550px',
+            styleClass: 'guardian-dialog',
             data: {
-                type: 'tool'
+                tool: this.toolTemplate,
+                action: this.toolTemplate.status === 'DRAFT'
+                    ? ToolSaveAction.CREATE_NEW_TOOL
+                    : null
             }
-            // data: { ...tool, type: 'tool' }
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
-            if (!result) {
-                return;
+            if (result && this.toolTemplate) {
+                this.loading = true;
+
+                const json = this.toolTemplate.getJSON();
+                const tool = Object.assign({}, json, result.tool);
+                
+                if (result.action === ToolSaveAction.CREATE_NEW_TOOL) {
+                    delete tool._id;
+                    delete tool.id;
+                    delete tool.uuid;
+                    delete tool.topicId;
+                    delete tool.status;
+                    delete tool.owner;
+                    delete tool.version;
+                    this.toolsService.create(tool).pipe(takeUntil(this._destroy$)).subscribe((result) => {
+                        this.router.navigate(['/tool-configuration'], {
+                            queryParams: { toolId: result.id }
+                        });
+                    }, (e) => {
+                        this.loading = false;
+                    });
+                } else if (result.action === ToolSaveAction.CREATE_NEW_VERSION) {
+                    delete tool._id;
+                    delete tool.id;
+                    delete tool.uuid;
+                    delete tool.status;
+                    delete tool.owner;
+                    delete tool.version;
+                    tool.previousVersion = json.version;
+
+                    this.toolsService.create(tool).pipe(takeUntil(this._destroy$)).subscribe((result) => {
+                        this.router.navigate(['/tool-configuration'], {
+                            queryParams: { toolId: result.id }
+                        });
+                    }, (e) => {
+                        this.loading = false;
+                    });
+                }
             }
-            tool.name = result.name;
-            tool.description = result.description;
-            this.loading = true;
-            this.toolsService.create(tool).pipe(takeUntil(this._destroy$)).subscribe((result) => {
-                this.router.navigate(['/tool-configuration'], {
-                    queryParams: { toolId: result.id }
-                });
-            }, (e) => {
-                this.loading = false;
-            });
         });
     }
 
@@ -2028,18 +2054,42 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    public tryPublishTool() {
+    public draftTool() {
         this.loading = true;
-        this.toolsService.pushPublish(this.toolId).pipe(takeUntil(this._destroy$)).subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.router.navigate(['task', taskId], {
-                queryParams: {
-                    last: btoa(location.href)
-                }
-            });
+        this.toolsService.draft(this.toolId).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
+            this.clearState();
+            this.loadData();
         }, (e) => {
-            console.error(e.error);
             this.loading = false;
+        });
+    }
+
+    public tryPublishTool() {
+        this.setToolVersion();
+    }
+
+    public setToolVersion() {
+        const dialogRef = this.dialogService.open(PublishToolDialog, {
+            showHeader: false,
+            header: 'Publish Tool',
+            width: '600px',
+            styleClass: 'guardian-dialog'
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
+            if (options) {
+                this.loading = true;
+                this.toolsService.pushPublish(this.toolId, options).pipe(takeUntil(this._destroy$)).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
         });
     }
 
@@ -2054,6 +2104,27 @@ export class PolicyConfigurationComponent implements OnInit {
             this.onSelect(this.openFolder.root);
             this.loading = false;
         }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    public async tryRunTool() {
+        this.dryRunTool();
+    }
+
+    private dryRunTool() {
+        this.loading = true;
+        this.toolsService.dryRun(this.toolId).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            if (isValid) {
+                this.clearState();
+                this.loadData();
+            } else {
+                this.setErrors(errors, 'tool');
+                this.loading = false;
+            }
+        }, (e) => {
+            console.error(e.error);
             this.loading = false;
         });
     }

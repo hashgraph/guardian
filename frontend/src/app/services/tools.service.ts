@@ -15,9 +15,9 @@ export class ToolsService {
         private http: HttpClient
     ) { }
 
-    public page(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
+    public page(pageIndex?: number, pageSize?: number, search?: string): Observable<HttpResponse<any[]>> {
         if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            return this.http.get<any>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response', headers: headersV2 });
+            return this.http.get<any>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}&search=${search}`, { observe: 'response', headers: headersV2 });
         }
         return this.http.get<any>(`${this.url}`, { observe: 'response' });
     }
@@ -46,12 +46,20 @@ export class ToolsService {
         return this.http.put<any[]>(`${this.url}/${id}`, tool);
     }
 
-    public publish(id: string): Observable<any> {
-        return this.http.put<any[]>(`${this.url}/${id}/publish`, null);
+    public draft(id: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/${id}/draft`, null);
     }
 
-    public pushPublish(id: string): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<any>(`${this.url}/${id}/push/publish`, null);
+    public publish(id: string, options: { toolVersion: string }): Observable<any> {
+        return this.http.put<any[]>(`${this.url}/${id}/publish`, options);
+    }
+
+    public pushPublish(id: string, options: { toolVersion: string }): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<any>(`${this.url}/${id}/push/publish`, options);
+    }
+
+    public dryRun(id: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/${id}/dry-run`, null);
     }
 
     public exportInFile(id: string): Observable<ArrayBuffer> {

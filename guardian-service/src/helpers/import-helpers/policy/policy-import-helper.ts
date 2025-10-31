@@ -214,13 +214,14 @@ export class PolicyImportExportHelper {
         const toolIds = new Set<string>()
         PolicyImportExportHelper.findTools(policy.config, toolIds);
         const tools = await DatabaseServer.getTools({
-            status: ModuleStatus.PUBLISHED,
+            status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN]},
             messageId: { $in: Array.from(toolIds.values()) }
-        }, { fields: ['name', 'topicId', 'messageId', 'tools'] });
+        }, { fields: ['name', 'version', 'topicId', 'messageId', 'tools'] });
         const list = [];
         for (const row of tools) {
             list.push({
                 name: row.name,
+                version: row.version,
                 topicId: row.topicId,
                 messageId: row.messageId
             })

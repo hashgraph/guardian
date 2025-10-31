@@ -39,6 +39,20 @@
                             <textarea [(ngModel)]="module.description" [readonly]="readonly"></textarea>
                         </td>
                     </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Previous Version</td>
+                        <td class="propRowCell">
+                            <input class="prop-input" [ngModel]="module.previousVersion" readonly>
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.main">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Version</td>
+                        <td class="propRowCell">
+                            <input class="prop-input" [ngModel]="module.version" readonly>
+                        </td>
+                    </tr>
                 </ng-container>
 
                 <ng-container *ngIf="type == 'Variables'">

@@ -83,6 +83,7 @@ import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-docu
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
 import { SavePolicyDialog } from './dialogs/save-policy-dialog/save-policy-dialog.component';
 import { PreviewPolicyDialog } from './dialogs/preview-policy-dialog/preview-policy-dialog.component';
+import { ReplaceSchemasDialogComponent } from './dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
 import { ExportPolicyDialog } from './dialogs/export-policy-dialog/export-policy-dialog.component';
 import { CronConfigDialog } from './dialogs/cron-config-dialog/cron-config-dialog.component';
 import { CodeEditorDialogComponent } from './dialogs/code-editor-dialog/code-editor-dialog.component';
@@ -162,6 +163,8 @@ import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint
 import { IgnoreRulesDialog } from "./dialogs/ignore-rules-dialog/ignore-rules-dialog.component";
 import { PolicyRepositoryComponent } from './policy-repository/policy-repository.component';
 import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
+import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
+import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 
 @NgModule({
     declarations: [
@@ -198,7 +201,9 @@ import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-c
         FiltersAddonBlockComponent,
         HelpIcon,
         SavePolicyDialog,
+        SaveToolDialog,
         PreviewPolicyDialog,
+        ReplaceSchemasDialogComponent,
         ExportPolicyDialog,
         CalculateConfigComponent,
         CalculateMathConfigComponent,
@@ -232,6 +237,7 @@ import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-c
         SelectSchema,
         PolicyTestResult,
         PublishPolicyDialog,
+        PublishToolDialog,
         CreateTokenConfigComponent,
         CreateTokenBlockComponent,
         MultiPolicyDialogComponent,

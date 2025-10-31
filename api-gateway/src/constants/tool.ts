@@ -3,6 +3,7 @@ export const REQUIRED_PROPS = {
     NAME: 'name',
     STATUS: 'status',
     TOPIC_ID: 'topicId',
+    VERSION: 'version',
     _ID: '_id',
 };
 

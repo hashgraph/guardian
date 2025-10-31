@@ -605,7 +605,7 @@ export class PolicyApi {
             model.categories = policy.categories;
             model.projectSchema = policy.projectSchema;
 
-            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`, `${PREFIXES.SCHEMES}schema-with-sub-schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return await engineService.savePolicy(model, new EntityOwner(user), policyId);
@@ -3015,17 +3015,20 @@ export class PolicyApi {
     async importPolicyFromXlsxAsync(
         @AuthUser() user: IAuthUser,
         @Query('policyId') policyId: string,
+        @Query('schemas') schemas: string,
         @Body() file: ArrayBuffer,
         @Req() req
     ): Promise<TaskDTO> {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
         }
+        const schemasIds = (schemas || '').split(',');
+
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.importXlsxAsync(file, new EntityOwner(user), policyId, task);
+            await engineService.importXlsxAsync(file, new EntityOwner(user), policyId, schemasIds, task);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
@@ -3033,6 +3036,11 @@ export class PolicyApi {
 
         const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+        
+        if (schemas && schemasIds.length) {
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+        }
 
         return task;
     }

@@ -809,6 +809,10 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     public ifConditionFieldChange(condition: ConditionControl, field: FieldControl | any) {
+        if (!field) {
+            return;
+        }
+        
         if (condition.changeEvents) {
             condition.fieldValue.patchValue('', {
                 emitEvent: false

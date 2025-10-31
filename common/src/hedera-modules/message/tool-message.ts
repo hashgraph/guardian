@@ -43,6 +43,10 @@ export class ToolMessage extends Message {
      * Tags topic ID
      */
     public tagsTopicId: string;
+    /**
+     * Version
+     */
+    public version: string;
 
     constructor(type: MessageType.Tool, action: MessageAction) {
         super(action, type);
@@ -64,6 +68,7 @@ export class ToolMessage extends Message {
         this.document = toBuffer(zip);
         this.toolTopicId = model.topicId;
         this.tagsTopicId = model.tagsTopicId;
+        this.version = model.version;
     }
 
     /**
@@ -91,6 +96,7 @@ export class ToolMessage extends Message {
             hash: this.hash,
             topicId: this.toolTopicId?.toString(),
             tagsTopicId: this.tagsTopicId,
+            version: this.version,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url)
         }
@@ -154,6 +160,7 @@ export class ToolMessage extends Message {
         message.hash = json.hash;
         message.toolTopicId = json.topicId;
         message.tagsTopicId = json.tagsTopicId;
+        message.version = json.version;
 
         if (json.cid) {
             const urls = [{
@@ -203,6 +210,7 @@ export class ToolMessage extends Message {
         result.document = this.document;
         result.toolTopicId = this.toolTopicId;
         result.tagsTopicId = this.tagsTopicId;
+        result.version = this.version;
         return result;
     }
 
@@ -220,6 +228,7 @@ export class ToolMessage extends Message {
         result.document = json.document;
         result.toolTopicId = json.toolTopicId;
         result.tagsTopicId = json.tagsTopicId;
+        result.version = json.version;
         return result;
     }
 

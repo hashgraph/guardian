@@ -1758,9 +1758,10 @@ export class PolicyEngineService {
                 xlsx: any,
                 policyId: string,
                 owner: IOwner,
+                schemasIds: string[],
                 task: any
             }): Promise<IMessageResponse<any>> => {
-                const { xlsx, policyId, owner, task } = msg;
+                const { xlsx, policyId, owner, task, schemasIds } = msg;
                 const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
@@ -1809,7 +1810,8 @@ export class PolicyEngineService {
                             skipGenerateId: true
                         },
                         notifier,
-                        owner?.id
+                        owner?.id,
+                        schemasIds,
                     );
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
                     notifier.completeStep(STEP_IMPORT_SCHEMAS);

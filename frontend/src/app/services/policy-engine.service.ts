@@ -249,8 +249,15 @@ export class PolicyEngineService {
         });
     }
 
-    public pushImportByXlsx(policyFile: any, policyId: string): Observable<{ taskId: string, expectation: number }> {
+    public pushImportByXlsx(policyFile: any, policyId: string, schemasForReplace?: string[]): Observable<{ taskId: string, expectation: number }> {
         var query = policyId ? `?policyId=${policyId}` : '';
+        if (schemasForReplace?.length) {
+            if (query) {
+                query = `${query}&schemas=${schemasForReplace.join(',')}`
+            } else {
+                query = `?schemas=${schemasForReplace.join(',')}`
+            }
+        }
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/xlsx${query}`, policyFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream'

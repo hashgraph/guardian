@@ -586,6 +586,10 @@ export interface ToolMessageBody extends MessageBody {
      * Tags topic ID
      */
     tagsTopicId: string;
+    /**
+     * Version
+     */
+    version: string;
 }
 
 /**

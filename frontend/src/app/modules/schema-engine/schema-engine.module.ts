@@ -50,6 +50,8 @@ import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.com
 import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-dialog.component';
 import {TableFieldComponent} from './table-field/table-field.component';
 import {TableViewerComponent} from "./table-viewer/table-viewer.component";
+import { SchemaDeleteWarningDialogComponent } from './schema-delete-warning-dialog/schema-delete-warning-dialog.component';
+import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delete-dialog.component';
 
 @NgModule({
     declarations: [
@@ -69,6 +71,8 @@ import {TableViewerComponent} from "./table-viewer/table-viewer.component";
         SchemaFieldConfigurationComponent,
         EnumEditorDialog,
         CompareSchemaDialog,
+        SchemaDeleteWarningDialogComponent,
+        SchemaDeleteDialogComponent,
         GeojsonTypeComponent,
         UploadGeoDataDialog,
         SentinelHubTypeComponent,
