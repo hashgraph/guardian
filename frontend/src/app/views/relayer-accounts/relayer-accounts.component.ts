@@ -79,12 +79,6 @@ export class RelayerAccountsComponent implements OnInit {
             type: 'text',
             size: 'auto',
             tooltip: false
-        }, {
-            id: 'options',
-            title: 'Actions',
-            type: 'text',
-            size: '170',
-            tooltip: false
         }];
     }
 

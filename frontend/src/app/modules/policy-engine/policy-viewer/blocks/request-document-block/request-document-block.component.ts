@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, } from '@angular/core';
 import { FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { DocumentGenerator, DocumentValidators, ISchema, Schema } from '@guardian/interfaces';
+import { DocumentGenerator, DocumentValidators, ISchema, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -108,6 +108,16 @@ export class RequestDocumentBlockComponent
         key: new FormControl<string>('', Validators.required),
     });
     public submitText: string = 'Validate & Create';
+    public isLocalUser: boolean = true;
+    public remoteWarning: boolean = false;
+
+    public get needRemoteWarning () {
+        return !this.isLocalUser && this.relayerAccountType !== 'account';
+    }
+
+    public get isRemoteWarning() {
+        return this.needRemoteWarning && !this.remoteWarning;
+    }
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -209,6 +219,8 @@ export class RequestDocumentBlockComponent
         if (data) {
             const isDraft = data.data?.draft ?? false;
 
+
+            this.isLocalUser = this.user.location === LocationType.LOCAL;
             this.readonly = !!data.readonly;
             const uiMetaData = data.uiMetaData;
             const row = data.data;
@@ -660,6 +672,6 @@ export class RequestDocumentBlockComponent
     }
 
     public ifDisabledBtn() {
-        return !this.dataForm.valid || this.loading || this.ifRelayerAccountDisabled();
+        return !this.dataForm.valid || this.loading || this.ifRelayerAccountDisabled() || this.isRemoteWarning;
     }
 }

@@ -67,11 +67,11 @@
                                 <div class="guardian-step-marker">2</div>
                                 <div class="guardian-step-name">Configure Relayer Account</div>
                             </div>
-                            <div class="guardian-step-separator"></div>
+                            <!-- <div class="guardian-step-separator"></div>
                             <div class="guardian-step" [attr.action]="isActionStep(2)" [attr.disabled]="true">
                                 <div class="guardian-step-marker">3</div>
                                 <div class="guardian-step-name">Validation Results</div>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
@@ -105,6 +105,22 @@
                 </form>
                 <div class="relayer-account-container" [attr.visibility]="isStep(1)">
                     <div class="relayer-account-type-values">
+                        <div *ngIf="!!isLocalUser && relayerAccountType !== 'account'" class="account-warning">
+                            <svg-icon
+                                class="svg-icon"
+                                src="/assets/images/icons/warning.svg"
+                                svgClass="icon-color-warning">
+                            </svg-icon>
+                            <div class="account-warning-text">Relayer Account signing key will now be securely transferred to the primary Guardian policy instance.</div>
+                            <p-checkbox
+                                [(ngModel)]="remoteWarning"
+                                [binary]="true"
+                                inputId="ipfsCheckbox"
+                                class="guardian-checkbox-warning checkbox-24 account-warning-action"
+                                label="Please confirm action.">
+                            </p-checkbox>
+                        </div>
+                        
                         <div class="relayer-account-type-value">
                             <div class="relayer-account-type-value-select">
                                 <p-radioButton
@@ -158,7 +174,7 @@
                                     inputId="type_3"></p-radioButton>
                             </div>
                             <label class="relayer-account-type-value-name" for="type_3">
-                                New Relayer Account
+                                New relayer account
                             </label>
                         </div>
                         <div class="relayer-account-type-config" [attr.selected]="relayerAccountType==='new'">

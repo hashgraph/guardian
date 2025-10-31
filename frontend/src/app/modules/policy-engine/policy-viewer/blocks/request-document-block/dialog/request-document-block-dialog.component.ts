@@ -42,6 +42,7 @@ export class RequestDocumentBlockDialog {
     public get draft() { return this.parent?.draft; }
     public get relayerAccount() { return this.parent?.relayerAccount; }
     public get user() { return this.parent?.user; }
+    public get isLocalUser() { return this.parent?.isLocalUser; }
 
     public buttons: any = [];
     public rules: DocumentValidators;
@@ -57,6 +58,7 @@ export class RequestDocumentBlockDialog {
     public relayerAccountType: string = 'account';
     public currentRelayerAccount: string;
     public relayerAccounts: any[] = [];
+    public remoteWarning: boolean = false;
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
     private buttonNames: { [id: string]: string } = {
@@ -73,6 +75,14 @@ export class RequestDocumentBlockDialog {
         account: new FormControl<string>('', Validators.required),
         key: new FormControl<string>('', Validators.required),
     });
+
+    public get needRemoteWarning() {
+        return !this.isLocalUser && this.relayerAccountType !== 'account';
+    }
+
+    public get isRemoteWarning() {
+        return this.needRemoteWarning && !this.remoteWarning;
+    }
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -340,7 +350,7 @@ export class RequestDocumentBlockDialog {
 
     public ifDisabledBtn(config: any) {
         if (config.id === 'submit') {
-            return !this.dataForm.valid || this.loading || this.ifRelayerAccountDisabled();
+            return !this.dataForm.valid || this.loading || this.ifRelayerAccountDisabled() || this.isRemoteWarning;
         } else {
             return false;
         }

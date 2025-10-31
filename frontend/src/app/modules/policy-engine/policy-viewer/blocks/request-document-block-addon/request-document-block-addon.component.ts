@@ -79,6 +79,7 @@ export class RequestDocumentBlockAddonComponent
     public edit: boolean;
     public draft: boolean;
     public relayerAccount: boolean;
+    public isLocalUser: boolean = true;
 
     constructor(
         policyEngineService: PolicyEngineService,
