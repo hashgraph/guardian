@@ -23,3 +23,10 @@ The Complex Iterative Workflow is a digital process within Guardian that enables
 
 * **Traceable Communication**: All comments, changes, and resolutions are timestamped and linked to both user identity and document version.
 * **Transparent Accountability**: At any stage, stakeholders can review the entire back-and-forth – from initial submission through every cycle of clarification, correction, and approval – directly in Guardian.
+
+### Why Use the Complex Iterative Workflow? <a href="#why-use-the-complex-iterative-workflow" id="why-use-the-complex-iterative-workflow"></a>
+
+* **Clarity & Focus**: Every clarification stays linked to its context, reducing confusion and “lost in translation” risks.​
+* **Faster Resolution**: Developers know exactly what to correct and where, minimizing unnecessary delays due to vague feedback.
+* **Confidentiality Options**: Not all discussions belong in the open; privacy controls make the workflow suitable for sensitive topics.
+* **Verifiable History**: In regulated environments, being able to prove precisely who said what, when, and in which context is essential for audits and conflict resolution.
