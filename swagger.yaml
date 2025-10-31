@@ -7283,12 +7283,7 @@ paths:
         DB. Only users with the Standard Registry role are allowed to make the
         request.
       operationId: PolicyApi_importPolicyFromXlsxPreview
-      parameters:
-        - name: policyId
-          required: true
-          in: query
-          schema:
-            type: string
+      parameters: []
       requestBody:
         required: true
         description: A xlsx file containing policy config.
@@ -9252,12 +9247,7 @@ paths:
         Previews the schema from a zip file. Only users with the Standard
         Registry role are allowed to make the request.
       operationId: SchemaApi_importFromFilePreview
-      parameters:
-        - name: policyId
-          required: true
-          in: query
-          schema:
-            type: string
+      parameters: []
       requestBody:
         required: true
         description: A zip file containing schema to be imported.
@@ -9986,12 +9976,7 @@ paths:
         Previews the schema from a xlsx file. Only users with the Standard
         Registry role are allowed to make the request.
       operationId: SchemaApi_importPolicyFromXlsxPreview
-      parameters:
-        - name: policyId
-          required: true
-          in: query
-          schema:
-            type: string
+      parameters: []
       requestBody:
         required: true
         description: A xlsx file containing schema config.
