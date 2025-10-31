@@ -55,6 +55,8 @@ export class ToolTemplate {
         this.buildBlock(template.config);
         this._config.setNameSilently(template.name);
         this._config.setDescriptionSilently(template.description);
+        this._config.setPreviousVersionSilently(template.previousVersion);
+        this._config.setVersionSilently(template.version);
         this._config.setLocalTagSilently(this._config.localTag || 'Tool');
 
         this.isDraft = (this.status === PolicyStatus.DRAFT) || (this.status === ModuleStatus.DRAFT);
