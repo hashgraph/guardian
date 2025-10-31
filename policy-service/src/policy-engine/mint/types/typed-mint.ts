@@ -3,7 +3,7 @@ import { IHederaCredentials } from '../../policy-user.js';
 import { TokenConfig } from '../configs/token-config.js';
 import { MintService } from '../mint-service.js';
 import { PolicyUtils } from '../../helpers/utils.js';
-import { MintTransactionStatus, NotificationAction, TokenType } from '@guardian/interfaces';
+import { LocationType, MintTransactionStatus, NotificationAction, TokenType } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';
 
 /**
@@ -247,15 +247,27 @@ export abstract class TypedMint {
                 this._ref,
                 this.userId
             );
+            if (userRelayerAccount.hederaAccountKey) {
+                return {
+                    hederaAccountId: userRelayerAccount.hederaAccountId,
+                    hederaAccountKey: userRelayerAccount.hederaAccountKey,
+                }
+            }
+            //TODO
+            if (userRelayerAccount.location === LocationType.REMOTE) {
+                return {
+                    hederaAccountId: this._root.hederaAccountId,
+                    hederaAccountKey: this._root.hederaAccountKey,
+                }
+            }
             return {
                 hederaAccountId: userRelayerAccount.hederaAccountId,
                 hederaAccountKey: userRelayerAccount.hederaAccountKey,
             }
-        } else {
-            return {
-                hederaAccountId: this._root.hederaAccountId,
-                hederaAccountKey: this._root.hederaAccountKey,
-            }
+        }
+        return {
+            hederaAccountId: this._root.hederaAccountId,
+            hederaAccountKey: this._root.hederaAccountKey,
         }
     }
 

@@ -1816,12 +1816,14 @@ export class PolicyUtils {
         if (relayerAccount && relayerAccount !== hederaAccountId) {
             const relayerAccountKey = await PolicyUtils.loadRelayerAccountKey(did, relayerAccount, ref, userId);
             return {
+                location: userFull.location,
                 hederaAccountId: relayerAccount,
                 hederaAccountKey: relayerAccountKey
             }
         } else {
             const hederaKey = await PolicyUtils.loadHederaKey(did, ref, userId);
             return {
+                location: userFull.location,
                 hederaAccountId,
                 hederaAccountKey: hederaKey,
             }
