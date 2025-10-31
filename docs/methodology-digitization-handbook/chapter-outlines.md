@@ -248,171 +248,147 @@
 
 **VM0033 Context**: Real implementation examples from VM0033 production policy including dataTransformationAddon for Verra API integration, documentValidatorBlock configurations, and comprehensive testing approaches.
 
-## Part V: Calculation Logic Implementation
+## ✅ Part V: Calculation Logic Implementation
 
-### Chapter 17: Custom Logic Block Development
+### Chapter 17: (Reserved for Part IV completion)
 
-**Purpose**: Implement complex calculation logic using JavaScript in Guardian.
+**Purpose**: Reserved for additional Part IV content.
 
-**Key Topics**:
+### Chapter 18: Custom Logic Block Development
 
-* JavaScript/Python development environment setup
-* Guardian calculation block architecture
-* Input/output document handling
-* Mathematical operations and precision handling
-* Error handling and validation
-* Performance optimization techniques
-* Debugging and testing strategies
-
-**VM0033 Context**: Complete implementation of VM0033 emission reduction calculations, including baseline emissions, project emissions, and net emission reductions.
-
-### Chapter 18: Formula Linked Definitions (FLDs)
-
-**Purpose**: Implement complex parameter relationships and dependencies.
+**Purpose**: Implement emission reduction calculations using JavaScript in Guardian's customLogicBlock.
 
 **Key Topics**:
 
-* FLD concept and architecture
-* Parameter linking and dependency management
-* Dynamic calculation updates
-* Circular dependency detection and resolution
-* Performance implications of complex FLDs
-* Documentation and maintenance strategies
+* Guardian customLogicBlock architecture and JavaScript execution environment
+* Document input/output handling with credentialSubject field access
+* VM0033 baseline emissions, project emissions, and net emission reduction calculations
+* Schema field integration and Auto Calculate field implementation
+* Error handling and validation within calculation blocks
+* Testing calculation logic outside and within Guardian environment
 
-**VM0033 Context**: Implementation of VM0033's complex parameter relationships, including soil organic carbon calculations and biomass estimations.
+**VM0033 Context**: Complete implementation of VM0033 emission reduction calculations using real production JavaScript from er-calculations.js artifact, including field mapping to PDD and monitoring report schemas.
 
-### Chapter 19: Data Validation and Error Handling
+### Chapter 19: Formula Linked Definitions (FLDs)
 
-**Purpose**: Ensure data quality and system reliability through robust validation.
-
-**Key Topics**:
-
-* Input validation strategies and techniques
-* Business rule validation implementation
-* Error message design and user feedback
-* Data sanitization and security considerations
-* Graceful error recovery mechanisms
-* Logging and monitoring for validation issues
-
-**VM0033 Context**: Comprehensive validation rules for VM0033 data inputs, including range checks, consistency validations, and methodology-specific business rules.
-
-### Chapter 20: Calculation Testing and Verification
-
-**Purpose**: Validate calculation accuracy against test artifacts and methodology requirements.
+**Purpose**: Brief foundation chapter establishing FLD concepts for parameter relationship management in Guardian methodologies.
 
 **Key Topics**:
 
-* Unit testing for calculation functions
-* Integration testing with complete workflows
-* Test data generation and management
-* Performance testing for large datasets
-* Regression testing for methodology updates
+* FLD concept and basic architectural understanding
+* Parameter reuse across multiple schema documents in policy workflows 
+* VM0033 parameter relationship examples suitable for FLD implementation
+* Integration patterns with customLogicBlock calculations
+* Basic design principles for FLD frameworks
 
-**VM0033 Context**: Complete testing suite for VM0033 calculations, comparing results against manually calculated test cases and methodology examples.
+**VM0033 Context**: Concise overview establishing FLD concepts with VM0033 parameter relationship examples, focusing on foundational understanding rather than detailed implementation.
+
+### Chapter 20: Guardian Tools Architecture and Implementation
+
+**Purpose**: Build Guardian Tools using extractDataBlock and customLogicBlock patterns, with AR Tool 14 as practical example.
+
+**Key Topics**:
+
+* Guardian Tools architecture as mini-policies with three-block pattern
+* ExtractDataBlock workflows for schema-based data input/output operations
+* CustomLogicBlock integration for standardized calculation implementations
+* AR Tool 14 complete implementation with stratified random sampling
+* Tool versioning, schema evolution, and production deployment patterns
+* Tool integration patterns for use across multiple methodologies
+
+**VM0033 Context**: Real AR Tool 14 implementation from Guardian production artifacts showing complete biomass calculation tool that integrates with VM0033 wetland restoration methodology.
+
+### Chapter 21: Calculation Testing and Validation
+
+**Purpose**: Comprehensive testing using Guardian's dry-run mode and customLogicBlock testing interface with VM0033 and AR Tool 14 test artifacts.
+
+**Key Topics**:
+
+* Guardian's customLogicBlock testing interface with three input methods (schema-based, JSON editor, file upload)
+* Interactive testing and debugging with Guardian's built-in debug() function
+* Dry-run mode for complete policy workflow testing without blockchain transactions
+* Test artifact validation using final-PDD-vc.json and official methodology spreadsheets
+* Testing at every calculation stage: baseline, project, leakage, and net ERR
+* API-based automated testing using Guardian's REST APIs and Cypress framework
+* Best practices for test data management and systematic testing approaches
+
+**VM0033 Context**: Practical testing implementation using VM0033_Allcot_Test_Case_Artifact.xlsx and final-PDD-vc.json with Guardian's testing interface, demonstrating complete validation workflow from individual calculations to full policy testing.
 
 ## Part VI: Integration and Testing
 
-### Chapter 21: End-to-End Policy Testing
+### Chapter 22: End-to-End Policy Testing
 
-**Purpose**: Validate complete policy functionality across all user roles and scenarios.
-
-**Key Topics**:
-
-* Test scenario design and coverage analysis
-* Multi-role testing strategies
-* Workflow testing and state validation
-* Data integrity testing across the complete flow
-* User acceptance testing coordination
-* Performance and load testing
-
-**VM0033 Context**: Comprehensive end-to-end testing of VM0033 policy, including multiple project types and restoration scenarios.
-
-### Chapter 22: API Integration and Automation
-
-**Purpose**: Leverage Guardian APIs for testing, integration, and automation.
+**Purpose**: Testing complete methodology workflows across all stakeholder roles using Guardian's dry-run capabilities and VM0033 production patterns.
 
 **Key Topics**:
 
-* Guardian API architecture and authentication
-* Automated data submission and workflow execution
-* Integration with external monitoring systems
-* Bulk data processing and batch operations
-* API testing and validation strategies
-* Error handling and retry mechanisms
+* Multi-role testing framework with virtual user management
+* Complete stakeholder workflow simulation (Project Proponent, VVB, Standard Registry)
+* VM0033 workflow testing using policy navigation structure and role transitions
+* Production-scale data validation with large datasets and multi-year monitoring periods
+* Cross-component integration testing validating schema-workflow-calculation consistency
+* Guardian dry-run artifacts and validation procedures for methodology compliance
 
-**VM0033 Context**: API-based automation for VM0033 data submission, including PDD registration and monitoring report submission.
+**VM0033 Context**: Complete end-to-end testing using VM0033 policy structure, demonstrating multi-stakeholder workflows from PDD submission through VCU token issuance with role-based testing scenarios.
 
-## Part VII: Deployment and Maintenance
+### Chapter 23: API Integration and Automation
 
-### Chapter 23: User Management and Role Assignment
-
-**Purpose**: Set up and manage users, roles, and permissions for deployed methodologies.
+**Purpose**: Automating methodology operations using Guardian's REST API framework for production deployment and integration.
 
 **Key Topics**:
 
-* User onboarding and account management
-* Role assignment and permission configuration
-* Organization management and multi-tenancy
-* Access control and security policies
-* User training and support procedures
-* Audit and compliance reporting
+* Guardian API authentication patterns with JWT tokens and refresh token management
+* VM0033 policy block API structure using real block IDs for PDD and monitoring report submission
+* Dry-run API operations with virtual user creation and management for automated testing
+* Automated workflow execution class demonstrating complete VM0033 project lifecycle via APIs
+* Cypress testing integration for automated methodology validation and regression testing
 
-**VM0033 Context**: User management for VM0033 implementation, including VVB accreditation, project developer registration, and Verra administrator roles.
+**VM0033 Context**: Practical API automation using VM0033 policy endpoints, demonstrating automated data submission, virtual user workflows, and production API patterns for scalable methodology operations.
 
-### Chapter 24: Monitoring and Analytics - Guardian Indexer
 
-**Purpose**: Monitoring and analytics for deployed methodologies and data submitted via Indexer
+### Chapter 24: Guardian Indexer for Methodology Analytics
 
-**Key Topics**:
-
-* Usage analytics and reporting
-* Data export and reporting capabilities
-* Compliance monitoring and audit trails
-
-**VM0033 Context**: Viewing all data on Indexer, tracking project registrations, credit issuances
-
-### Chapter 25: Maintenance and Updates
-
-**Purpose**: Maintain and evolve deployed methodologies over time.
+**Purpose**: Deploy and configure Guardian Indexer for comprehensive methodology analytics, monitoring, and compliance reporting.
 
 **Key Topics**:
 
-* Maintenance procedures and schedules
-* Bug fixing and issue resolution
-* Methodology updates and regulatory changes
-* User feedback integration and feature requests
-* Long-term support and lifecycle planning
+* Guardian Indexer installation and configuration with Docker
+* Global search capabilities across all Guardian instances and methodology data
+* VM0033 project lifecycle tracking and performance analytics
+* Priority loading system for important datasets
+* Compliance monitoring and automated audit trail generation
+* API integration and external system connectivity
 
-**VM0033 Context**: Maintenance strategy for VM0033 implementation, including handling Verra methodology updates and regulatory changes.
+**VM0033 Context**: Using Guardian Indexer to monitor VM0033 tidal wetland restoration projects, track VCU credit issuances, and generate compliance reports for Verra registry requirements.
 
-## Part VIII: Advanced Topics and Best Practices
+## Part VII: Advanced Topics and Best Practices
 
-### Chapter 26: Integration with External Systems
+### Chapter 25: Integration with External Systems
 
-**Purpose**: Connect Guardian-based methodologies with external systems and services.
-
-**Key Topics**:
-
-* External system integration patterns
-* Data transformation via blocks
-* Data synchronization and consistency
-* Real-time data feeds and streaming (Metered Policy Example)
-
-**VM0033 Context**: Integration of VM0033 with external monitoring systems, satellite data feeds, and Verra's registry systems.
-
-### Chapter 27: Troubleshooting and Common Issues
-
-**Purpose**: Provide solutions for common problems encountered during methodology digitization.
+**Purpose**: Implement bidirectional data exchange between Guardian and external platforms.
 
 **Key Topics**:
 
-* Common digitization pitfalls and solutions
-* Debugging techniques and tools
-* Data quality issues and resolution
-* User experience problems and fixes
-* Integration and compatibility issues
+* Data transformation using dataTransformationAddon blocks with JavaScript
+* VM0033 production transformation code for external registry integration
+* External data reception using externalDataBlock and MRV configuration patterns
+* Metered energy policy patterns for automated monitoring data collection
 
-**VM0033 Context**: Some specific troubleshooting scenarios encountered during VM0033 implementation and their solutions.
+**VM0033 Context**: VM0033's dataTransformationAddon block implementation for Verra Project Hub integration and MRV sender patterns for external monitoring data collection.
+
+### Chapter 26: Troubleshooting and Common Issues
+
+**Purpose**: Practical tips and solutions for common problems encountered during methodology digitization.
+
+**Key Topics**:
+
+* Schema building best practices and Excel import pitfalls
+* Development workflow optimization using savepoints and API testing
+* Custom logic block testing and document history debugging
+* Event troubleshooting when documents don't appear in UI
+* Performance optimization and calculation precision issues
+
+**VM0033 Context**: Real-world troubleshooting tips from Guardian methodology development experience, focusing on practical solutions to save development time.
 
 ***
 

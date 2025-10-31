@@ -13,3 +13,5 @@ This block supports two types of artifacts : JSON (.json) and Executable Code (.
 **JSON** : will be added to the “artifacts” variable which is array in specific order (for example artifacts\[0] is e\_grid\_mapping json object).
 
 **Executable Code** : will be executed before main function.
+
+To access table data in customlogic block, please check [Custom Logic Block & Tables](../../../schemas/available-schema-types/table-data-input-field/custom-logic-block-and-tables.md) for more details.
