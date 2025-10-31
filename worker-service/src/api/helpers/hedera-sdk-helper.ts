@@ -2030,7 +2030,8 @@ export class HederaSDKHelper {
         if (!res || !res.data) {
             throw new Error(error);
         }
-        if (res?.data?.links?.next) {
+        result.push(res.data);
+        if (res.data?.links?.next) {
             const _next = res.data.links.next.split('?')[1];
             if (_next) {
                 await HederaSDKHelper.loadData(url, `?${_next}`, result, error);
