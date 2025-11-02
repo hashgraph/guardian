@@ -2184,7 +2184,7 @@ export class PolicyEngineService {
                     const deletedIds = await DatabaseServer.deleteSavepoints(policyId, savepointIds);
 
                     if (deletedIds.length) {
-                        await DatabaseServer.removeBlockStateSnapshots(policyId, deletedIds);
+                        await DatabaseServer.removeBlockStateSnapshots(deletedIds);
                         await DatabaseServer.deleteDryRunBySavepoints(policyId, deletedIds);
                         await DatabaseServer.deleteSnapshotsBySavepoints(policyId, deletedIds);
                     }
