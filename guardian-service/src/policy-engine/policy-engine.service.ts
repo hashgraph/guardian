@@ -2105,6 +2105,12 @@ export class PolicyEngineService {
                     await DatabaseServer.removeDryRunWithEmptySavepoint(policyId)
                     await DatabaseServer.setCurrentSavepoint(policyId, savepointId);
 
+                    await new GuardiansService().sendPolicyMessage(
+                        PolicyEvents.APPLY_SAVEPOINT,
+                        policyId,
+                        { savepointId }
+                    );
+
                     const updated = await DatabaseServer.getSavepointById(policyId, savepointId);
                     return new MessageResponse({ savepoint: updated });
                 } catch (error) {
