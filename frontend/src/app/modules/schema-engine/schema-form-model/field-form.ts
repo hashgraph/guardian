@@ -6,7 +6,6 @@ import { Subject, takeUntil } from 'rxjs';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GeoForm } from './geo-form';
 import { SentinelHubForm } from './sentinel-hub-form';
-
 export interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup | UntypedFormArray> extends SchemaField {
     id: string;
     hide: boolean;
@@ -41,11 +40,19 @@ export interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGr
 }
 
 export interface IConditionControl<T extends UntypedFormControl | UntypedFormGroup | UntypedFormArray> extends IFieldControl<T> {
-    conditionFieldName?: string,
-    conditionFieldValue?: any,
-    conditionInvert: boolean
+    conditionExpr: IConditionExpr;
+    conditionInvert: boolean;
+    dependsOn: string[];
 }
-
+type IfOp = 'SINGLE' | 'AND' | 'OR';
+interface IConditionPair {
+    name: string;
+    value: any;
+}
+interface IConditionExpr {
+    op: IfOp;
+    pairs: IConditionPair[];
+}
 export class FieldForm {
     public readonly form: UntypedFormGroup;
     public readonly lvl: number;
@@ -82,6 +89,34 @@ export class FieldForm {
     public destroy() {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
+    }
+
+    private normalizeIfCondition(raw: any): IConditionExpr {
+        if (raw?.OR) {
+            return {
+                op: 'OR',
+                pairs: (raw.OR || []).map((r: any) => ({
+                    name: r?.field?.name || r?.field?.key || r?.field,
+                    value: r?.fieldValue
+                }))
+            };
+        }
+        if (raw?.AND) {
+            return {
+                op: 'AND',
+                pairs: (raw.AND || []).map((r: any) => ({
+                    name: r?.field?.name || r?.field?.key || r?.field,
+                    value: r?.fieldValue
+                }))
+            };
+        }
+        return {
+            op: 'SINGLE',
+            pairs: [{
+                name: raw?.field?.name || raw?.field?.key || raw?.field,
+                value: raw?.fieldValue
+            }]
+        };
     }
 
     public setData(data: {
@@ -141,10 +176,10 @@ export class FieldForm {
         this.conditionFields.clear();
         if (conditions) {
             for (const condition of conditions) {
-                for (const field of condition.thenFields) {
+                for (const field of (condition.thenFields || [])) {
                     this.conditionFields.add(field.name);
                 }
-                for (const field of condition.elseFields) {
+                for (const field of (condition.elseFields || [])) {
                     this.conditionFields.add(field.name);
                 }
             }
@@ -153,7 +188,32 @@ export class FieldForm {
         return { fields, conditions }
     }
 
+    private equalsLoosely(a: any, b: any): boolean {
+        const an = (typeof a === 'number') ? a : (typeof a === 'string' && a.trim() !== '' && !isNaN(+a) ? +a : NaN);
+        const bn = (typeof b === 'number') ? b : (typeof b === 'string' && b.trim() !== '' && !isNaN(+b) ? +b : NaN);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an === bn;
 
+        const ad = moment(a); const bd = moment(b);
+        if (ad.isValid() && bd.isValid()) return ad.toISOString() === bd.toISOString();
+
+        const as = (a ?? '').toString().trim();
+        const bs = (b ?? '').toString().trim();
+        return as === bs;
+    }
+
+    private evaluateIf(expr: IConditionExpr): boolean {
+        if (!expr || !expr.pairs?.length) return false;
+
+        const test = (p: IConditionPair) => {
+            const c = this.form.controls[p.name];
+            if (!c) return false;
+            return this.equalsLoosely(c.value, p.value);
+        };
+
+        if (expr.op === 'SINGLE') return test(expr.pairs[0]);
+        if (expr.op === 'AND') return expr.pairs.every(test);
+        return expr.pairs.some(test);
+    }
     private buildFields(fields: SchemaField[] | undefined): IFieldControl<any>[] | null {
         if (!fields) {
             return null;
@@ -181,34 +241,34 @@ export class FieldForm {
 
 
     private buildConditions(conditions: SchemaCondition[] | undefined): IConditionControl<any>[] | null {
-        if (!conditions) {
-            return null;
-        }
+        if (!conditions) return null;
 
         const controls: IConditionControl<any>[] = [];
+
         for (const condition of conditions) {
-            const name = condition.ifCondition?.field?.name;
-            const value = condition.ifCondition?.fieldValue;
+            const expr = this.normalizeIfCondition((condition as any).ifCondition);
+            const deps = Array.from(new Set(expr.pairs.map(p => p.name).filter(Boolean)));
             for (const thenField of condition.thenFields) {
                 const fieldControl = this.createFieldControl(thenField, this.preset);
                 const item: IConditionControl<any> = {
                     ...fieldControl,
-                    conditionFieldName: name,
-                    conditionFieldValue: value,
+                    conditionExpr: expr,
                     conditionInvert: false,
+                    dependsOn: deps,
                     visibility: false
-                }
+                };
                 controls.push(item);
             }
-            for (const elseField of condition.elseFields) {
+
+            for (const elseField of (condition.elseFields || [])) {
                 const fieldControl = this.createFieldControl(elseField, this.preset);
                 const item: IConditionControl<any> = {
                     ...fieldControl,
-                    conditionFieldName: name,
-                    conditionFieldValue: value,
+                    conditionExpr: expr,
                     conditionInvert: true,
+                    dependsOn: deps,
                     visibility: false
-                }
+                };
                 controls.push(item);
             }
         }
@@ -216,13 +276,13 @@ export class FieldForm {
         for (const item of controls) {
             item.visibility = this.checkConditionValue(item);
             if (item.control && item.visibility) {
-                // this.form.removeControl(item.name);
                 this.form.addControl(item.name, item.control, { emitEvent: false });
             }
         }
 
         return controls;
     }
+
 
     private subscribeConditions() {
         this.form.valueChanges
@@ -233,41 +293,75 @@ export class FieldForm {
     }
 
     private rebuildControls(): IFieldControl<any>[] {
-        const controls: IFieldControl<any>[] = [];
+        const result: IFieldControl<any>[] = [];
+        const placed = new Set<string>();
+
+        const pushCondDependents = (anchorName: string) => {
+            if (!this.conditionControls) return;
+            for (const cc of this.conditionControls) {
+                if (placed.has(cc.id)) continue;
+                if (!cc.dependsOn?.includes(anchorName)) continue;
+
+                cc.visibility = this.checkConditionValue(cc);
+                result.push(cc);
+                placed.add(cc.id);
+
+                pushCondDependents(cc.name);
+            }
+        };
+
         if (this.fieldControls) {
-            for (const fieldControl of this.fieldControls) {
-                fieldControl.visibility = this.ifFieldVisible(fieldControl);
-                controls.push(fieldControl);
-                if (this.conditionControls) {
-                    for (const conditionControl of this.conditionControls) {
-                        if (conditionControl.conditionFieldName === fieldControl.name) {
-                            conditionControl.visibility = this.checkConditionValue(conditionControl);
-                            controls.push(conditionControl);
-                        }
-                    }
-                }
+            for (const base of this.fieldControls) {
+                base.visibility = this.ifFieldVisible(base);
+                result.push(base);
+                placed.add(base.id);
+
+                pushCondDependents(base.name);
             }
         }
-        return controls;
+
+        if (this.conditionControls) {
+            for (const cc of this.conditionControls) {
+                if (placed.has(cc.id)) continue;
+                cc.visibility = this.checkConditionValue(cc);
+                result.push(cc);
+                placed.add(cc.id);
+            }
+        }
+
+        return result;
     }
 
     private rebuildConditions(force: boolean = true) {
-        let needUpdate = false;
-        if (this.conditionControls) {
+        if (!this.conditionControls) return;
+
+        let anyChanged = false;
+        const MAX = this.conditionControls.length || 1;
+
+        for (let pass = 0; pass < MAX; pass++) {
+            let passChanged = false;
+
             for (const item of this.conditionControls) {
                 const visibility = this.checkConditionValue(item);
-                if (visibility !== item.visibility || force) {
+                const wasVisible = !!item.visibility;
+
+                if (force || visibility !== wasVisible) {
                     item.visibility = visibility;
                     this.form.removeControl(item.name, { emitEvent: false });
                     if (item.control && item.visibility) {
                         this.form.addControl(item.name, item.control, { emitEvent: false });
                     }
-                    needUpdate = true;
+                    passChanged = true;
                 }
             }
+
+            anyChanged = anyChanged || passChanged;
+            if (!passChanged) break;
         }
-        if (needUpdate) {
-            this.form.updateValueAndValidity();
+
+        if (anyChanged) {
+            this.controls = this.rebuildControls();
+            this.form.updateValueAndValidity({ emitEvent: false });
         }
     }
 
@@ -332,19 +426,11 @@ export class FieldForm {
         }
     }
 
-    private checkConditionValue(conditionControl: IConditionControl<any>): boolean {
-        if (conditionControl.conditionFieldName) {
-            const control = this.form.controls[conditionControl.conditionFieldName];
-            if (control) {
-                if (conditionControl.conditionInvert) {
-                    return control.value !== conditionControl.conditionFieldValue;
-                } else {
-                    return control.value === conditionControl.conditionFieldValue;
-                }
-            }
-        }
-        return false;
+    private checkConditionValue(item: IConditionControl<any>): boolean {
+        const ok = this.evaluateIf(item.conditionExpr);
+        return item.conditionInvert ? !ok : ok;
     }
+
 
     private ifSubSchema(item: IFieldControl<any>): boolean {
         return !item.isArray && item.isRef;

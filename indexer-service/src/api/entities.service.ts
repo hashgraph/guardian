@@ -411,6 +411,22 @@ async function addRelationship(
 
 @Controller()
 export class EntityService {
+    @MessagePattern(IndexerMessageAPI.GET_IPFS_FILE)
+    async loadFile(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Registry>>> {
+        try {
+            const file = await IPFSService.getFile(msg.cid, 20 * 1000);
+            if (file) {
+                return new MessageResponse<any>(file.toString('base64'));
+            } else {
+                return new MessageResponse<any>(null);
+            }
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+
     //#region ACCOUNTS
     //#region STANDARD REGISTRIES
     @MessagePattern(IndexerMessageAPI.GET_REGISTRIES)
@@ -2068,6 +2084,95 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+    //#endregion
+    //#region DISCUSSIONS
+    @MessagePattern(IndexerMessageAPI.GET_DISCUSSIONS)
+    async getDiscussions(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<any>> {
+        try {
+            const { messageId } = msg;
+            const targets = [messageId];
+            const em = DataBaseHelper.getEntityManager();
+            const target = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.VC_DOCUMENT,
+            });
+            if (target?.options?.startMessage) {
+                const parents = await em.find(Message, {
+                    $or: [{
+                        'options.startMessage': target.options.startMessage,
+                    }, {
+                        consensusTimestamp: target.options.startMessage,
+                    }],
+                    type: MessageType.VC_DOCUMENT,
+                } as any);
+                for (const parent of parents) {
+                    targets.push(parent.consensusTimestamp)
+                }
+            }
+            console.log(targets);
+
+            const discussions = await em.find(Message, {
+                'options.target': { $in: targets },
+                type: MessageType.POLICY_DISCUSSION,
+            } as any);
+            const comments = await em.find(Message, {
+                'options.target': { $in: targets },
+                type: MessageType.POLICY_COMMENT,
+            } as any);
+
+            const map = new Map<string, number>();
+            for (const comment of comments) {
+                if (comment.options?.discussion) {
+                    const count = (map.get(comment.options.discussion) || 0) + 1;
+                    map.set(comment.options.discussion, count);
+                }
+            }
+            for (const discussion of discussions) {
+                if (!discussion.options) {
+                    discussion.options = {};
+                }
+                discussion.options.comments = map.get(discussion.consensusTimestamp) || 0;
+            }
+            for (let i = 0; i < discussions.length; i++) {
+                discussions[i] = await loadDocuments(discussions[i], true);
+            }
+
+            return new MessageResponse<any>(discussions);
+        } catch (error) {
+            console.log(error);
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_COMMENTS)
+    async getComments(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<any>>> {
+        try {
+            const options = parsePageParams(msg);
+            const { messageId, discussionId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(Message, {
+                type: MessageType.POLICY_COMMENT,
+                'options.discussion': discussionId,
+            } as any, options)) as [any[], number];
+            for (let i = 0; i < rows.length; i++) {
+                rows[i] = await loadDocuments(rows[i], true);
+            }
+            const result = {
+                items: rows,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<any>>(result);
+        } catch (error) {
             return new MessageError(error, getErrorCode(error.code));
         }
     }

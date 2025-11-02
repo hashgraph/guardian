@@ -53,7 +53,9 @@ import {
     VpDocument as VpDocumentCollection,
     ExternalPolicy,
     PolicyAction,
-    PolicyKey
+    PolicyKey,
+    PolicyComment,
+    PolicyDiscussion
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -63,7 +65,7 @@ import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { BaseEntity } from '../models/index.js';
-import {DryRunSavepointSnapshot} from '../entity/dry-run-savepoint-snapshot.js';
+import { DryRunSavepointSnapshot } from '../entity/dry-run-savepoint-snapshot.js';
 
 /**
  * Database server
@@ -79,6 +81,14 @@ export class DatabaseServer extends AbstractDatabaseServer {
     private static readonly DOCUMENTS_HANDLING_CHUNK_SIZE = process.env.DOCUMENTS_HANDLING_CHUNK_SIZE
         ? parseInt(process.env.DOCUMENTS_HANDLING_CHUNK_SIZE, 10)
         : 500;
+
+    public static dbID(id: string): ObjectId {
+        try {
+            return new ObjectId(id);
+        } catch (error) {
+            return null;
+        }
+    }
 
     /**
      * Add dry run id
@@ -255,8 +265,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param policyId
      * @param savepointProps
      */
-    public static async createSavepoint(policyId: string, savepointProps: {name: string, savepointPath: string[]}): Promise<string> {
-        const {name, savepointPath = []} = savepointProps
+    public static async createSavepoint(policyId: string, savepointProps: { name: string, savepointPath: string[] }): Promise<string> {
+        const { name, savepointPath = [] } = savepointProps
 
         const dryRunSavepoint = new DataBaseHelper(DryRunSavepoint);
         await dryRunSavepoint.updateManyRaw(
@@ -517,7 +527,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         }
 
         const snaps = await new DataBaseHelper(DryRunSavepointSnapshot)
-            .find({ policyId, savepointId: { $in: path } }, { fields: ['sourceId','options','savepointId'] } as any);
+            .find({ policyId, savepointId: { $in: path } }, { fields: ['sourceId', 'options', 'savepointId'] } as any);
 
         if (!snaps?.length) {
             return;
@@ -1083,6 +1093,124 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async removeFormula(formula: Formula): Promise<void> {
         return await new DataBaseHelper(Formula).remove(formula);
+    }
+
+    /**
+     * Create Policy Comment
+     * @param comment
+     */
+    public static async createPolicyComment(
+        comment: FilterObject<PolicyComment>
+    ): Promise<PolicyComment> {
+        const item = new DataBaseHelper(PolicyComment).create(comment);
+        return await new DataBaseHelper(PolicyComment).save(item);
+    }
+
+    /**
+     * Get Policy Comments
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyCommentsAndCount(
+        filters?: FilterObject<PolicyComment>,
+        options?: FindOptions<object>
+    ): Promise<[PolicyComment[], number]> {
+        return await new DataBaseHelper(PolicyComment).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Policy Comments
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyCommentsCount(
+        filters?: FilterObject<PolicyComment>,
+        options?: FindOptions<object>
+    ): Promise<number> {
+        return await new DataBaseHelper(PolicyComment).count(filters, options);
+    }
+
+    /**
+     * Get Policy Comment
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyComment(
+        filters: FilterQuery<PolicyComment>,
+        options?: FindOptions<object>
+    ): Promise<PolicyComment | null> {
+        return await new DataBaseHelper(PolicyComment).findOne(filters, options);
+    }
+
+    /**
+     * Get Policy Comments
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyComments(
+        filters: FilterQuery<PolicyComment>,
+        options?: FindOptions<object, never, PopulatePath.ALL, never>
+    ): Promise<PolicyComment[]> {
+        return await new DataBaseHelper(PolicyComment).find(filters, options as any);
+    }
+
+    /**
+     * Update Policy Comment
+     * @param comment
+     */
+    public static async updatePolicyComment(comment: PolicyComment): Promise<PolicyComment> {
+        return await new DataBaseHelper(PolicyComment).update(comment);
+    }
+
+    /**
+     * Delete Policy Comment
+     * @param comment
+     */
+    public static async removePolicyComment(comment: PolicyComment): Promise<void> {
+        return await new DataBaseHelper(PolicyComment).remove(comment);
+    }
+
+    /**
+     * Create Policy discussion
+     * @param discussion
+     */
+    public static async createPolicyDiscussion(
+        discussion: FilterObject<PolicyDiscussion>
+    ): Promise<PolicyDiscussion> {
+        const item = new DataBaseHelper(PolicyDiscussion).create(discussion);
+        return await new DataBaseHelper(PolicyDiscussion).save(item);
+    }
+
+    /**
+     * Get Policy discussions
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyDiscussions(
+        filters: FilterQuery<PolicyDiscussion>,
+        options?: FindOptions<object, never, PopulatePath.ALL, never>
+    ): Promise<PolicyDiscussion[]> {
+        return await new DataBaseHelper(PolicyDiscussion).find(filters, options as any);
+    }
+
+    /**
+     * Get Policy discussion
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyDiscussion(
+        filters: FilterQuery<PolicyDiscussion>,
+        options?: FindOptions<object, never, PopulatePath.ALL, never>
+    ): Promise<PolicyDiscussion | null> {
+        return await new DataBaseHelper(PolicyDiscussion).findOne(filters, options as any);
+    }
+
+    /**
+     * Update Policy discussion
+     * @param discussion
+     */
+    public static async updatePolicyDiscussion(discussion: PolicyDiscussion): Promise<PolicyDiscussion> {
+        return await new DataBaseHelper(PolicyDiscussion).update(discussion);
     }
 
     /**
@@ -2475,6 +2603,17 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Get Groups
+     * @param policyId
+     * @param options
+     *
+     * @virtual
+     */
+    public async getPolicyGroups(policyId: string, options?: unknown): Promise<PolicyRolesCollection[]> {
+        return await this.find(PolicyRolesCollection, { policyId }, options);
+    }
+
+    /**
      * Get Groups By User
      * @param policyId
      * @param did
@@ -2696,8 +2835,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public async getPolicy(policyId: string | null): Promise<Policy | null> {
-        return await new DataBaseHelper(Policy).findOne(policyId);
+    public async getPolicy(policyId: string | null, options?: FindOptions<object>): Promise<Policy | null> {
+        return await new DataBaseHelper(Policy).findOne(policyId, options);
     }
 
     /**
@@ -2881,11 +3020,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param iri
      * @param topicId
      */
-    public async getSchemaByIRI(iri: string, topicId?: string): Promise<SchemaCollection | null> {
+    public async getSchemaByIRI(
+        iri: string,
+        topicId?: string,
+        options?: FindOptions<SchemaCollection>
+    ): Promise<SchemaCollection | null> {
         if (topicId) {
-            return await new DataBaseHelper(SchemaCollection).findOne({ iri, topicId });
+            return await new DataBaseHelper(SchemaCollection).findOne({ iri, topicId }, options);
         } else {
-            return await new DataBaseHelper(SchemaCollection).findOne({ iri });
+            return await new DataBaseHelper(SchemaCollection).findOne({ iri }, options);
         }
     }
 
@@ -3358,6 +3501,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Get VCs
+     * @param filters
+     * @param options
+     */
+    public static async getVCsAndCount(
+        filters?: FilterQuery<VcDocumentCollection>,
+        options?: FindOptions<VcDocumentCollection>
+    ): Promise<[VcDocumentCollection[], number]> {
+        return await new DataBaseHelper(VcDocumentCollection).findAndCount(filters, options);
+    }
+
+    /**
      * Get VC
      * @param filters
      * @param options
@@ -3508,6 +3663,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getVPs(filters?: FilterQuery<VpDocumentCollection>, options?: FindOptions<VpDocumentCollection>): Promise<VpDocumentCollection[]> {
         return await new DataBaseHelper(VpDocumentCollection).find(filters, options);
+    }
+
+    /**
+     * Get VCs
+     * @param filters
+     * @param options
+     */
+    public static async getVPsAndCount(
+        filters?: FilterQuery<VpDocumentCollection>,
+        options?: FindOptions<VpDocumentCollection>
+    ): Promise<[VpDocumentCollection[], number]> {
+        return await new DataBaseHelper(VpDocumentCollection).findAndCount(filters, options);
     }
 
     /**

@@ -1,7 +1,7 @@
 <form>
     <ng-container *ngFor="let item of fields">
 
-        <div *ngIf="ifFieldVisible(item)" class="form-field-container">
+        <div *ngIf="ifFieldVisible(item)" class="form-field-container" [attr.field-id]="item.fullPath">
 
             <!-- simple field -->
             <div *ngIf="ifSimpleField(item)" class="form-field">
@@ -37,11 +37,11 @@
                                 [readonly]="true"
                                 type="text"/>
                             <div class="form-field-url-buttons">
-                                <button
-                                        [cdkCopyToClipboard]="item.value"
+                                <button 
+                                    [cdkCopyToClipboard]="item.value" 
                                     class="guardian-button guardian-button-primary">Copy Link</button>
                                 <button
-                                        [cdkCopyToClipboard]="getCID(item.value)"
+                                    [cdkCopyToClipboard]="getCID(item.value)"
                                     class="guardian-button guardian-button-secondary">Copy CID</button>
                             </div>
                         </div>
@@ -68,7 +68,7 @@
                         <input [readonly]="true" [value]="item.value" class="p-field-input" pInputText>
                     </div>
 
-                    <div *ngIf="isBoolean(item)" class="boolean-form-field">
+                    <div *ngIf="isBoolean(item)" class="form-field-boolean">
                         <span class="boolean-show">{{ isBooleanView(item.value) }}</span>
                     </div>
 
@@ -82,6 +82,46 @@
                             (click)="showFormulas(formulas)">
                             <svg-icon
                                 src="/assets/images/icons/function.svg"
+                                svgClass="icon-color-primary"></svg-icon>
+                        </button>
+                    </div>
+
+                    <ng-container *ngIf="isDiscussion(item)">
+                        <div
+                            *ngIf="isDiscussionCount(item) as messageCount; else elseDiscussion"
+                            class="form-field-discussion">
+                            <button
+                                class="guardian-icon-button"
+                                (click)="openDiscussion(item)">
+                                <svg-icon
+                                    src="/assets/images/icons/chat.svg"
+                                    svgClass="icon-color-grey-color-3"
+                                ></svg-icon>
+                            </button>
+                            <div class="icon-count">{{messageCount}}</div>
+                        </div>
+                        <ng-template #elseDiscussion>
+                            <div class="form-field-discussion">
+                                <button
+                                    class="guardian-icon-button"
+                                    (click)="openDiscussion(item)">
+                                    <svg-icon
+                                        src="/assets/images/icons/chat.svg"
+                                        svgClass="icon-color-grey-color-3"
+                                    ></svg-icon>
+                                </button>
+                            </div>
+                        </ng-template>
+                    </ng-container>
+
+                    <div
+                        *ngIf="discussionAction"
+                        class="form-field-discussion discussion-action">
+                        <button
+                            class="guardian-icon-button"
+                            (click)="linkMessage(item)">
+                            <svg-icon
+                                src="/assets/images/icons/hashtag.svg"
                                 svgClass="icon-color-primary"></svg-icon>
                         </button>
                     </div>
@@ -221,7 +261,11 @@
                                             [fields]="item.fields"
                                             [values]="this.values && this.values[item.name]"
                                             [rules]="rules"
-                                            [formulas]="formulas">
+                                            [formulas]="formulas"
+                                            [link]="item.link"
+                                            [discussion]="discussionData"
+                                            [discussion-action]="discussionAction"
+                                            (discussion-action)="onDiscussionAction($event)">
                                         </app-schema-form-view>
                                     </ng-container>
                                 </div>
@@ -262,7 +306,11 @@
                                             [fields]="item.fields"
                                             [values]="listItem"
                                             [rules]="rules"
-                                            [formulas]="formulas">
+                                            [formulas]="formulas"
+                                            [link]="item.link"
+                                            [discussion]="discussionData"
+                                            [discussion-action]="discussionAction"
+                                            (discussion-action)="onDiscussionAction($event)">
                                         </app-schema-form-view>
                                     </ng-container>
                                 </div>

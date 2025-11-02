@@ -124,25 +124,31 @@ export class MintBlock {
      * @param userId
      * @private
      */
-    private async getAccount(ref: AnyBlockType, docs: IPolicyDocument[], accounts: string[], userId: string | null): Promise<string> {
-        let targetAccountId: string;
+    private getAccount(
+        ref: AnyBlockType,
+        docs: IPolicyDocument[],
+        accounts: string[],
+        relayerAccount: string,
+        userId: string | null
+    ): string {
+        let targetAccount: string;
         if (ref.options.accountType !== 'custom-value') {
             const firstAccounts = accounts[0];
             if (accounts.find(a => a !== firstAccounts)) {
                 ref.error(`More than one account found! Transfer made on the first (${firstAccounts})`);
             }
             if (ref.options.accountId) {
-                targetAccountId = firstAccounts;
+                targetAccount = firstAccounts;
             } else {
-                targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner, userId);
+                targetAccount = relayerAccount;
             }
-            if (!targetAccountId) {
+            if (!targetAccount) {
                 throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
             }
         } else {
-            targetAccountId = ref.options.accountIdValue;
+            targetAccount = ref.options.accountIdValue;
         }
-        return targetAccountId;
+        return targetAccount;
     }
 
     /**
@@ -270,7 +276,8 @@ export class MintBlock {
         token: TokenCollection,
         topicId: string,
         user: PolicyUser,
-        accountId: string,
+        relayerAccount: string,
+        targetAccount: string,
         documents: VcDocument[],
         messages: string[],
         additionalMessages: string[],
@@ -334,6 +341,7 @@ export class MintBlock {
         mintVcDocument.messageId = vcMessageResult.getId();
         mintVcDocument.topicId = vcMessageResult.getTopicId();
         mintVcDocument.relationships = messages;
+        mintVcDocument.relayerAccount = relayerAccount;
         mintVcDocument.documentFields = Array.from(
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
         );
@@ -364,27 +372,27 @@ export class MintBlock {
         vpDocument.type = DocumentCategoryType.MINT;
         vpDocument.messageId = vpMessageId;
         vpDocument.topicId = vpMessageResult.getTopicId();
-        vpDocument.documentFields = Array.from(
-            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
-        );
+        vpDocument.documentFields = Array.from(PolicyComponentsUtils.getDocumentCacheFields(ref.policyId));
         vpDocument.relationships = messages;
+        vpDocument.relayerAccount = relayerAccount;
         const savedVp = await ref.databaseServer.saveVP(vpDocument);
         // #endregion
 
         const transactionMemo = `${vpMessageId} ${MessageMemo.parseMemo(true, ref.options.memo, savedVp)}`.trimEnd();
-        await MintService.mint(
+        await MintService.mint({
             ref,
             token,
             tokenValue,
-            user,
+            documentOwner: user,
             policyOwnerHederaCred,
-            accountId,
+            targetAccount,
             vpMessageId,
             transactionMemo,
             documents,
             policyOwnerSignOptions,
+            relayerAccount,
             userId
-        );
+        });
 
         return [savedVp, tokenValue];
     }
@@ -490,9 +498,20 @@ export class MintBlock {
         const additionalMessages = this.getAdditionalMessages(additionalDocs);
         const topicId = topics[0];
 
-        const accountId = await this.getAccount(ref, docs, accounts, userId);
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, docs[0], userId);
+        const targetAccount = this.getAccount(ref, docs, accounts, relayerAccount, userId);
 
-        const [vp, amount] = await this.mintProcessing(token, topicId, user, accountId, vcs, messages, additionalMessages, userId);
+        const [vp, amount] = await this.mintProcessing(
+            token,
+            topicId,
+            user,
+            relayerAccount,
+            targetAccount,
+            vcs,
+            messages,
+            additionalMessages,
+            userId
+        );
 
         const state: IPolicyEventState = event.data;
         state.result = vp;
@@ -502,7 +521,7 @@ export class MintBlock {
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             tokenId: token.tokenId,
-            accountId,
+            accountId: relayerAccount,
             amount,
             documents: ExternalDocuments(docs),
             result: ExternalDocuments(vp),

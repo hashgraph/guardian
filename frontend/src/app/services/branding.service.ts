@@ -95,7 +95,7 @@ export class BrandingService {
                 const gradientData = colorToGradient(brandingData.headerColor, brandingData.headerColor1);
                 const shadow = colorToGradient(brandingData.headerColor, brandingData.headerColor1);
                 document.body.style.setProperty('--linear-gradient', gradientData);
-                document.body.style.setProperty('--header-color-shadow', shadow);
+                // document.body.style.setProperty('--header-color-shadow', shadow);
             }
             if (brandingData.companyName) {
                 if (companyName) {

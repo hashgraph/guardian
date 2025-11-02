@@ -3,11 +3,11 @@ import { BlockActionError } from '../errors/index.js';
 import { DocumentCategoryType, DocumentSignature, LocationType, SchemaEntity, SchemaHelper, TokenType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage, HederaDidDocument} from '@guardian/common';
+import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage, HederaDidDocument } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
@@ -34,7 +34,7 @@ import { MintService } from '../mint/mint-service.js';
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true,
+        defaultEvent: true
     },
     variables: [
         { path: 'options.tokenId', alias: 'token', type: 'Token' },
@@ -113,7 +113,8 @@ export class RetirementBlock {
         topicId: string,
         policyOwner: UserCredentials,
         user: PolicyUser,
-        targetAccountId: string,
+        targetAccount: string,
+        relayerAccount: string,
         userId: string | null
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -123,7 +124,7 @@ export class RetirementBlock {
         const policyOwnerSignOptions = await policyOwner.loadSignOptions(ref, userId);
 
         const uuid: string = await ref.components.generateUUID();
-        
+
         let serialNumbers: number[] = []
         let tokenValue: number = 0;
         let tokenAmount: string = '0';
@@ -138,11 +139,11 @@ export class RetirementBlock {
             for (const tok of wipeTokens) {
                 const dash = tok.indexOf('-');
                 if (dash > 0) {
-                    const leftRaw  = tok.slice(0, dash).trim();
+                    const leftRaw = tok.slice(0, dash).trim();
                     const rightRaw = tok.slice(dash + 1).trim();
 
                     const startRule = PolicyUtils.aggregate(String(leftRaw), documents);
-                    const endRule   = PolicyUtils.aggregate(String(rightRaw), documents);
+                    const endRule = PolicyUtils.aggregate(String(rightRaw), documents);
 
                     if (!Number.isInteger(startRule) || !Number.isInteger(endRule)) {
                         throw new Error(`Serial numbers must be integers.`);
@@ -153,7 +154,9 @@ export class RetirementBlock {
                     if (startRule > endRule) {
                         throw new Error(`End serial number must be greater than or equal to start serial number.`);
                     }
-                    for (const n of PolicyUtils.aggregateSerialRange(startRule, endRule)) out.add(n);
+                    for (const n of PolicyUtils.aggregateSerialRange(startRule, endRule)) {
+                        out.add(n)
+                    };
                 } else {
                     const valRule = PolicyUtils.aggregate(
                         String(tok),
@@ -166,7 +169,7 @@ export class RetirementBlock {
                     }
                     if (valRule < 1) {
                         throw new Error(
-                            "Serial numbers must be greater than or equal to 1."
+                            'Serial numbers must be greater than or equal to 1.'
                         );
                     }
                     out.add(valRule);
@@ -178,17 +181,17 @@ export class RetirementBlock {
             }
         }
         else if (token.tokenType === TokenType.FUNGIBLE) {
-            const ruleOpt =  ref.options.rule
+            const ruleOpt = ref.options.rule
             const hasRule =
                 ruleOpt !== null && ruleOpt !== undefined &&
                 (typeof ruleOpt !== 'string' || ruleOpt.trim() !== '');
-             if (!hasRule) {
+            if (!hasRule) {
                 throw new Error('For FUNGIBLE tokens, Rule is required');
             }
             const amount = PolicyUtils.aggregate(ref.options.rule, documents);
             [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         }
-        
+
         const wipeVC = await this.createWipeVC(policyOwnerDidDocument, token, tokenAmount, ref, serialNumbers);
         const vcs = [].concat(documents, wipeVC);
         const vp = await this.createVP(policyOwnerDidDocument, uuid, vcs);
@@ -224,6 +227,7 @@ export class RetirementBlock {
         vcDocument.messageId = vcMessageResult.getId();
         vcDocument.topicId = vcMessageResult.getTopicId();
         vcDocument.relationships = relationships;
+        vcDocument.relayerAccount = relayerAccount;
 
         await ref.databaseServer.saveVC(vcDocument);
 
@@ -250,9 +254,20 @@ export class RetirementBlock {
         vpDocument.messageId = vpMessageResult.getId();
         vpDocument.topicId = vpMessageResult.getTopicId();
         vpDocument.relationships = relationships;
+        vpDocument.relayerAccount = relayerAccount;
         await ref.databaseServer.saveVP(vpDocument);
 
-        await MintService.wipe(ref, token, tokenValue, policyOwnerHederaCred, targetAccountId, vpMessageResult.getId(), userId, serialNumbers);
+        await MintService.wipe({
+            ref,
+            token,
+            tokenValue,
+            root: policyOwnerHederaCred,
+            targetAccount,
+            relayerAccount,
+            uuid: vpMessageResult.getId(),
+            userId,
+            serialNumbers
+        });
 
         return [vpDocument, tokenValue];
     }
@@ -299,7 +314,7 @@ export class RetirementBlock {
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
-        
+
         const token = await this.getToken(ref, docs);
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
@@ -339,13 +354,15 @@ export class RetirementBlock {
         }
         const topicId = topicIds[0];
 
-        let targetAccountId: string;
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, docs[0], event?.user?.userId);
+        let targetAccount: string;
         if (ref.options.accountId) {
-            targetAccountId = firstAccounts;
+            targetAccount = firstAccounts;
         } else {
-            targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner, event?.user?.userId);
+            targetAccount = relayerAccount;
         }
-        if (!targetAccountId) {
+
+        if (!targetAccount) {
             throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
         }
 
@@ -358,7 +375,8 @@ export class RetirementBlock {
             topicId,
             policyOwner,
             docOwner,
-            targetAccountId,
+            targetAccount,
+            relayerAccount,
             event?.user?.userId
         );
 
@@ -368,7 +386,7 @@ export class RetirementBlock {
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, docOwner, {
             tokenId: token.tokenId,
-            accountId: targetAccountId,
+            accountId: relayerAccount,
             amount: tokenValue,
             documents: ExternalDocuments(docs),
             result: ExternalDocuments(vp),

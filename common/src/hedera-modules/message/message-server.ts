@@ -31,6 +31,8 @@ import { PolicyActionMessage } from './policy-action-message.js';
 import { ContractMessage } from './contract-message.js';
 import { INotificationStep, NewNotifier } from '../../notification/index.js';
 import { SchemaPackageMessage } from './schema-package-message.js';
+import { CommentMessage } from './comment-message.js';
+import { DiscussionMessage } from './discussion-message.js';
 
 interface LoadMessageOptions {
     messageId: string,
@@ -272,7 +274,7 @@ export class MessageServer {
      * @param options
      * @private
      */
-    private async addFile(file: ArrayBuffer, options?: MessageOptions) {
+    private async addFile(file: Buffer, options?: MessageOptions) {
         const notifier = options?.notifier || NewNotifier.empty();
         if (this.dryRun) {
             const id = GenerateUUIDv4();
@@ -461,6 +463,13 @@ export class MessageServer {
             case MessageType.PolicyAction:
                 message = PolicyActionMessage.fromMessageObject(json);
                 break;
+            case MessageType.PolicyComment:
+                message = CommentMessage.fromMessageObject(json);
+                break;
+            case MessageType.PolicyDiscussion:
+                message = DiscussionMessage.fromMessageObject(json);
+                break;
+
             // Default schemas
             case 'schema-document':
                 message = SchemaMessage.fromMessageObject(json);
@@ -548,6 +557,12 @@ export class MessageServer {
                 break;
             case MessageType.PolicyAction:
                 message = PolicyActionMessage.fromJson(json);
+                break;
+            case MessageType.PolicyComment:
+                message = CommentMessage.fromJson(json);
+                break;
+            case MessageType.PolicyDiscussion:
+                message = DiscussionMessage.fromJson(json);
                 break;
             // Default schemas
             case 'schema-document':
@@ -645,7 +660,7 @@ export class MessageServer {
             const json = JSON.parse(message.message);
             if (json.type === MessageType.Topic) {
                 const item = TopicMessage.fromMessageObject(json);
-                item.setAccount(message.payer_account_id);
+                item.setPayer(message.payer_account_id);
                 item.setIndex(message.sequence_number);
                 item.setId(message.id);
                 item.setMemo(message.memo);
@@ -849,7 +864,7 @@ export class MessageServer {
         });
 
         const item = MessageServer.fromMessage<T>(message, options.userId, type);
-        item.setAccount(payer_account_id);
+        item.setPayer(payer_account_id);
         item.setIndex(sequence_number);
         item.setId(id);
         item.setTopicId(topicId);
@@ -891,7 +906,7 @@ export class MessageServer {
         });
 
         const item = MessageServer.fromMessage<T>(message, options.userId, type);
-        item.setAccount(payer_account_id);
+        item.setPayer(payer_account_id);
         item.setIndex(sequence_number);
         item.setId(id);
         item.setTopicId(topicId);
@@ -913,7 +928,7 @@ export class MessageServer {
     ): Promise<T> {
         const message = await DatabaseServer.getVirtualMessage(this.dryRun, timeStamp);
         const item = MessageServer.fromMessage<T>(message.document, userId, type);
-        item.setAccount(null);
+        item.setPayer(null);
         item.setIndex(null);
         item.setId(message.messageId);
         item.setTopicId(message.topicId);
@@ -936,7 +951,7 @@ export class MessageServer {
     ): Promise<T> {
         const message = await DatabaseServer.getVirtualMessage(dryRun, timeStamp);
         const item = MessageServer.fromMessage<T>(message.document, userId, type);
-        item.setAccount(null);
+        item.setPayer(null);
         item.setIndex(null);
         item.setId(message.messageId);
         item.setTopicId(message.topicId);
@@ -1044,7 +1059,7 @@ export class MessageServer {
                     filter = filter && item.action === action;
                 }
                 if (filter) {
-                    item.setAccount(message.payer_account_id);
+                    item.setPayer(message.payer_account_id);
                     item.setIndex(message.sequence_number);
                     item.setId(message.id);
                     item.setTopicId(topic);
@@ -1175,7 +1190,7 @@ export class MessageServer {
                     filter = filter && item.action === action;
                 }
                 if (filter) {
-                    item.setAccount(message.payer_account_id);
+                    item.setPayer(message.payer_account_id);
                     item.setIndex(message.sequence_number);
                     item.setId(message.id);
                     item.setTopicId(topic);

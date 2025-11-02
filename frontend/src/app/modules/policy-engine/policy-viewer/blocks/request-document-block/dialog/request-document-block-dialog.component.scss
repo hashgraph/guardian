@@ -10,6 +10,8 @@
 }
 
 .dialog-header {
+    padding: 32px 32px 24px 32px !important;
+
     .header-item {
         padding: 6px 12px;
         margin: 0px 16px;
@@ -28,6 +30,19 @@ form {
 
 .guardian-loading {
     border-radius: 0 !important;
+    background: #fff;
+    opacity: 0.5;
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
 }
 
 .dialog-body {
@@ -36,43 +51,87 @@ form {
     position: relative;
     display: flex;
     flex-direction: column;
+    padding-left: 32px;
 
     .dialog-body-container {
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .body-dialog-template {
         overflow: auto;
-        padding-right: 8px;
+        margin-right: 12px;
+        padding-right: 12px;
+        scrollbar-gutter: stable;
     }
 
     margin-bottom: 16px;
 }
 
+.dialog-footer {
+    padding: 20px 32px 32px 32px !important;
+}
+
 .action-buttons {
     display: flex;
-    justify-content: flex-end;
     user-select: none;
+    justify-content: flex-start !important;
 
     &>div {
-        margin-left: 15px;
-        margin-right: 0px;
+        margin-left: 0px;
+        margin-right: 16px;
     }
 
     .dialog-button {
         display: none;
     }
+
     .dialog-button[id="cancel"] {
         display: block;
     }
+
     .dialog-button[id="submit"] {
         display: block;
+
+        button {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
     }
+
     .dialog-button[id="save"] {
         display: block;
-        margin-right: auto;
+        margin-left: auto;
+        margin-right: 0px;
+
+        &[visible="false"] {
+            display: none !important;
+        }
 
         button {
             display: flex;
             gap: 8px;
+            padding-left: 16px;
+            padding-right: 16px;
         }
     }
+
+    .dialog-button[id="save"][visible="false"]+.last-autosave {
+        right: 52px;
+    }
+
+    .dialog-button[id="save"][visible="true"]+.last-autosave {
+        right: 182px;
+    }
+}
+
+.last-autosave {
+    position: absolute;
+    right: 182px;
+    bottom: 42px;
+    font-size: 14px;
+    color: #8E8E8E;
 }
 
 .close-icon-color {
@@ -81,8 +140,8 @@ form {
 }
 
 .save-icon-color {
-    fill: var(--color-primary);
-    color: var(--color-primary);
+    fill: var(--color-grey-white);
+    color: var(--color-grey-white);
 }
 
 @media (max-width: 810px) {
@@ -90,6 +149,7 @@ form {
         .dialog-button[visible="false"] {
             display: none !important;
         }
+
         .dialog-button[visible="true"] {
             display: block !important;
         }
@@ -103,9 +163,11 @@ form {
     color: var(--primary-color);
     background: #F9FAFC;
     border: 1px solid #C4D0E1;
-    height: 65px;
+    height: 52px;
+    min-height: 52px;
     border-radius: 8px;
     margin-bottom: 16px;
+    margin-right: 32px;
 
     svg-icon {
         height: 30px;
@@ -122,5 +184,143 @@ form {
     button {
         height: 30px;
         padding: 0px 30px 0px 12px;
+    }
+}
+
+.relayer-account-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    min-height: 48px;
+    margin-bottom: 16px;
+    margin-right: 32px;
+}
+
+.guardian-step-container {
+    width: 100%;
+
+    .guardian-step {
+        margin: 0 !important;
+    }
+
+    .guardian-step-separator {
+        min-height: 34px !important;
+        width: 100%;
+    }
+
+    .guardian-stepper {
+        .guardian-step:first-child {
+            padding-left: 0px;
+        }
+
+        .guardian-step:last-child {
+            padding-right: 0px;
+        }
+    }
+}
+
+* [visibility="false"] {
+    height: 0px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    overflow: hidden;
+}
+
+
+.relayer-account-container {
+    .relayer-account-type-values {
+        display: flex;
+        flex-direction: column;
+        width: fit-content;
+        width: 100%;
+
+        .relayer-account-type-value {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 40px;
+            align-items: center;
+            cursor: pointer;
+            margin-right: 24px;
+
+            .relayer-account-type-value-select {
+                width: 24px;
+                height: 24px;
+            }
+
+            .relayer-account-type-value-name {
+                padding: 4px 0 4px 8px;
+                height: 24px;
+                text-align: left;
+                color: var(--guardian-font-color, #23252E);
+                cursor: pointer;
+                font-family: Poppins;
+                font-weight: 600;
+                font-size: 16px;
+                line-height: 20px;
+                vertical-align: middle;
+            }
+        }
+    }
+}
+
+.relayer-account-type-config {
+    width: 100%;
+    padding: 24px 16px 24px 32px;
+
+    &[selected="false"] {
+        filter: grayscale(1);
+        opacity: 0.7;
+        pointer-events: none;
+    }
+}
+
+.relayer-account-form {
+    margin-bottom: 24px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: calc(50% - 8px) calc(50% - 8px);
+    gap: 16px;
+}
+
+.guardian-button {
+    height: 40px;
+    padding: 1px 16px;
+}
+
+.account-warning {
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    padding: 12px 16px 12px 40px;
+    margin-right: 2px;
+    border: 1px solid var(--guardian-warning-color, #DA9B22);
+    background: var(--guardian-warning-background, #FFF6E3);
+    position: relative;
+
+    svg-icon {
+        position: absolute;
+        left: 16px;
+        top: 12px;
+
+        svg {
+            fill: var(--guardian-warning-color, #DA9B22);
+            color: var(--guardian-warning-color, #DA9B22);
+        }
+    }
+
+    .account-warning-text {
+        font-weight: 700;
+        padding-right: 4px;
+    }
+
+    .account-warning-action {
+        color: var(--guardian-warning-color, #DA9B22);
+        font-family: Inter;
+        font-size: 12px;
+        line-height: 14px;
+        letter-spacing: 0%;
     }
 }

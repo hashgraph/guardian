@@ -285,7 +285,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             this.field.property.setValue(val);
         });
 
-        const initialGeo = this.field.controlAvailableOptions?.value;
+        const initialGeo = this.field?.controlAvailableOptions?.value;
 
         if (Array.isArray(initialGeo)) {
             this.geoJsonControl.setValue(initialGeo);

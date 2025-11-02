@@ -622,7 +622,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                         this.permissions.includes('OWNER') ||
                         this.permissions.includes('ANY_ROLE')
                     ) {
-                        //debugger
                         const owners = [this.policyOwner];
                         for (const owner of owners) {
                             if (!result.has(owner)) {

@@ -154,6 +154,12 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     messageId?: string;
 
     /**
+     * Parent message
+     */
+    @Property({ nullable: true })
+    startMessageId?: string;
+
+    /**
      * Hedera Hash
      */
     @Property({ nullable: true })
@@ -212,6 +218,36 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
      */
     @Property({ persist: false, nullable: true })
     _encryptedDocumentFileId?: ObjectId;
+
+    /**
+     * Edited
+     */
+    @Property({ nullable: true })
+    edited?: boolean;
+
+    /**
+     * draft
+     */
+    @Property({ nullable: true })
+    draft?: boolean;
+
+    /**
+     * draft Id
+     */
+    @Property({ nullable: true })
+    draftId?: string;
+
+    /**
+     * draft ref
+     */
+    @Property({ nullable: true })
+    draftRef?: string;
+
+    /**
+     * Relayer Account
+     */
+    @Property({ nullable: true })
+    relayerAccount?: string;
 
     /**
      * Table File Ids
@@ -278,6 +314,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         prop.signature = this.signature;
         prop.schema = this.schema;
         prop.relationships = this.relationships;
+        prop.relayerAccount = this.relayerAccount;
         prop.processingStatus = this.processingStatus;
         prop.policyId = this.policyId;
         return prop;

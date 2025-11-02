@@ -12,7 +12,7 @@ export class BlockStateSavepoint extends BaseEntity {
     savepointId!: string;
 
     @Property()
-    blockId!:string;
+    blockId!: string;
 
     @Property()
     blockStateDryRunRecord!: unknown;

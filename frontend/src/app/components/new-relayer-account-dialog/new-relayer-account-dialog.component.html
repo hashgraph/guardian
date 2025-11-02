@@ -1,0 +1,51 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+
+        <form [formGroup]="dataForm" autocomplete="off">
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="name">* Relayer Account Name</label>
+                <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly" autocomplete="off"/>
+            </div>
+
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="account">* Relayer Account ID</label>
+                <input formControlName="account" id="account" pInputText type="text" [readonly]="readonly" autocomplete="off"/>
+            </div>
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="key">* Relayer Account Key</label>
+                <p-password formControlName="key" id="key" [toggleMask]="true" autocomplete="off" [feedback]="false" />
+            </div>
+        </form>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button left">
+            <button 
+                (click)="onGenerate()" 
+                class="guardian-button guardian-button-secondary">Generate New Account & Key</button>
+        </div>
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button">
+            <button 
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary"
+                [disabled]="dataForm.invalid">Add Relayer Account</button>
+        </div>
+    </div>
+</div>

@@ -54,6 +54,14 @@ export async function setDefaultSchema() {
         throw new Error(`You need to fill ${SchemaEntity.USER_PERMISSIONS} field in system-schemas.json file`);
     }
 
+    if (!map.hasOwnProperty(SchemaEntity.POLICY_DISCUSSION)) {
+        throw new Error(`You need to fill ${SchemaEntity.POLICY_DISCUSSION} field in system-schemas.json file`);
+    }
+
+    if (!map.hasOwnProperty(SchemaEntity.POLICY_COMMENT)) {
+        throw new Error(`You need to fill ${SchemaEntity.POLICY_COMMENT} field in system-schemas.json file`);
+    }
+
     const fn = async (schema: any) => {
         const existingSchemas = await DatabaseServer.getSchema({
             uuid: schema.uuid,
@@ -86,4 +94,6 @@ export async function setDefaultSchema() {
     await fn(map[SchemaEntity.TOKEN_DATA_SOURCE]);
     await fn(map[SchemaEntity.ROLE]);
     await fn(map[SchemaEntity.USER_PERMISSIONS]);
+    await fn(map[SchemaEntity.POLICY_DISCUSSION]);
+    await fn(map[SchemaEntity.POLICY_COMMENT]);
 }

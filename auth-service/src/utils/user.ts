@@ -6,11 +6,12 @@ import {
     UserDefaultPermission,
     UserRole,
     IGroup,
+    WorkerTaskType,
 } from '@guardian/interfaces';
 import { USER_REQUIRED_PROPS, USER_KEYS_PROPS } from '#constants';
 import { User } from '../entity/user.js';
 import { DynamicRole } from '../entity/dynamic-role.js';
-import { DatabaseServer } from '@guardian/common';
+import { checkHederaKey, DatabaseServer, KeyType, Wallet, Workers } from '@guardian/common';
 
 export enum UserProp {
     RAW = 'RAW',
@@ -136,5 +137,63 @@ export class UserUtils {
     public static async getUsers(filters: any, prop: UserProp): Promise<User[]> {
         const users = await new DatabaseServer().find(User, filters);
         return UserUtils.updateUsersFields(users, prop);
+    }
+
+    public static async generateAccount(user: User, userId: string): Promise<{
+        id: string,
+        key: string
+    }> {
+        const userID = user.hederaAccountId;
+        const userDID = user.did;
+        if (!userDID || !userID) {
+            throw new Error('Hedera Account not found');
+        }
+        const wallet = new Wallet();
+        const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
+
+        const workers = new Workers();
+        const result = await workers.addNonRetryableTask({
+            type: WorkerTaskType.CREATE_ACCOUNT,
+            data: {
+                operatorId: userID,
+                operatorKey: userKey,
+                initialBalance: 0,
+                payload: { userId }
+            }
+        }, {
+            priority: 20,
+            attempts: 0,
+            userId,
+            interception: userId,
+            registerCallback: true
+        });
+        return result;
+    }
+
+    public static async checkAccount(
+        account?: string,
+        key?: string,
+        userId?: string
+    ): Promise<number> {
+        try {
+            const workers = new Workers();
+            const info = await workers.addNonRetryableTask({
+                type: WorkerTaskType.GET_ACCOUNT_INFO_REST,
+                data: {
+                    hederaAccountId: account,
+                    payload: { userId }
+                }
+            }, {
+                priority: 20
+            });
+
+            if (checkHederaKey(key, info.key.key)) {
+                return (info.balance.balance / 100000000);
+            } else {
+                return null;
+            }
+        } catch (error) {
+            return null;
+        }
     }
 }

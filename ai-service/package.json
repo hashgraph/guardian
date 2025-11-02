@@ -1,11 +1,11 @@
 {
     "name": "ai-service",
-    "version": "3.3.0",
+    "version": "3.4.0-rc",
     "main": "dist/app.js",
     "license": "Apache-2.0",
     "dependencies": {
-        "@guardian/common": "^3.3.0",
-        "@guardian/interfaces": "^3.3.0",
+        "@guardian/common": "3.4.0-rc",
+        "@guardian/interfaces": "3.4.0-rc",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
         "@nestjs/common": "^11.0.11",
@@ -35,7 +35,8 @@
         "start": "node dist/index.js"
     },
     "devDependencies": {
-        "nodemon": "^3.0.1"
+        "nodemon": "^3.0.1",
+        "@types/glob": "^8.1.0"
     },
     "type": "module"
 }

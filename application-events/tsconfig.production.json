@@ -1,25 +1,27 @@
 {
-  "compilerOptions": {
-    "baseUrl": "src",
-    "module": "ESNext",
-    "target": "es2022",
-    "experimentalDecorators": true,
-    "outDir": "./dist",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "isolatedModules": true,
-    "moduleResolution": "node",
-    "paths": {
-      "#constants": ["constants/index.js"]
-    }
-  },
-  "include": [
-    "./src/**/*",
-    "./tests/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "**/*.spec.ts"
-  ]
+    "compilerOptions": {
+        "baseUrl": "src",
+        "module": "ESNext",
+        "target": "es2022",
+        "experimentalDecorators": true,
+        "outDir": "./dist",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "isolatedModules": true,
+        "moduleResolution": "node",
+        "paths": {
+            "#constants": [
+                "constants/index.js"
+            ]
+        }
+    },
+    "include": [
+        "./src/**/*",
+        "./tests/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts"
+    ]
 }

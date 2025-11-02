@@ -1,0 +1,42 @@
+<div class="vc-fullscreen-dialog">
+    <div class="vc-fullscreen-dialog-header">
+        <div class="back-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Back</button>
+        </div>
+        <div class="header-text">
+            {{title}}
+        </div>
+    </div>
+    <div class="vc-fullscreen-dialog-body">
+
+        <div class="document-content">
+
+            <div class="document-content__document">
+                @if (schema && credentialSubject) {
+                    <app-schema-form-view 
+                        [schema]="schema"
+                        [values]="credentialSubject"
+                        [private-fields]="privateFields"
+                        [formulas]="formulasResults">
+                    </app-schema-form-view>
+                }
+            </div>
+                                                  
+        </div>
+        <div class="comments-content">
+            <app-comments
+                [target-id]="targetId"
+                [discussion-id]="discussionId"
+                [discussion]="discussion"
+                [key]="key"
+                [schema]="schema"
+                (link)="onLinkField($event)"
+            >
+
+            </app-comments>
+        </div>
+
+    </div>
+</div>

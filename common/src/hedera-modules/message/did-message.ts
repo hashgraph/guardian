@@ -67,6 +67,7 @@ export class DIDMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             did: this.did,
             cid: this.getUrls()[0]?.cid,
             uri: this.getUrls()[0]?.url
@@ -80,7 +81,7 @@ export class DIDMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         const json = JSON.stringify(this.document);
         const buffer = Buffer.from(json);
         return [buffer];

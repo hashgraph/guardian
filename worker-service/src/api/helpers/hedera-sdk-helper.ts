@@ -861,12 +861,14 @@ export class HederaSDKHelper {
         key: PrivateKey;
     }> {
         const client = this.client;
-
+        if (!Number.isFinite(initialBalance) || initialBalance < 0) {
+            initialBalance = INITIAL_BALANCE;
+        }
         const newPrivateKey = PrivateKey.generate();
         const transaction = new AccountCreateTransaction()
             .setKey(newPrivateKey.publicKey)
             .setMaxTransactionFee(MAX_FEE)
-            .setInitialBalance(new Hbar(initialBalance || INITIAL_BALANCE));
+            .setInitialBalance(new Hbar(initialBalance));
         const receipt = await this.executeAndReceipt(client, transaction, 'AccountCreateTransaction', userId);
         const newAccountId = receipt.accountId;
 
@@ -2018,8 +2020,60 @@ export class HederaSDKHelper {
         return hbars.toString();
     }
 
+    private static async loadData(
+        url: string,
+        next: string,
+        result: any[],
+        error: string
+    ) {
+        const res = await axios.get(`${url}${next}`, { responseType: 'json' });
+        if (!res || !res.data) {
+            throw new Error(error);
+        }
+        result.push(res.data);
+        if (res.data?.links?.next) {
+            const _next = res.data.links.next.split('?')[1];
+            if (_next) {
+                await HederaSDKHelper.loadData(url, `?${_next}`, result, error);
+            }
+        }
+        return result;
+    }
+
     /**
      * Get balance account (Rest API)
+     *
+     * @param {string} accountId - Account Id
+     *
+     * @returns {any} - balances
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
+    public static async accountTokensInfo(accountId: string): Promise<any> {
+        try {
+            AccountId.fromString(accountId);
+        } catch (error) {
+            throw new Error(`Invalid account '${accountId}'`);
+        }
+
+        const error = `Invalid account '${accountId}'`;
+        const responses = await HederaSDKHelper.loadData(`${Environment.HEDERA_ACCOUNT_API}${accountId}/tokens`, '', [], error);
+        const result: { [tokenId: string]: any } = {};
+        for (const response of responses) {
+            const tokens: any[] = response.tokens;
+            for (const token of tokens) {
+                result[token.token_id] = {
+                    tokenId: token.token_id,
+                    balance: token.balance?.toString(),
+                    frozen: token.freeze_status === 'FROZEN',
+                    kyc: token.kyc_status === 'GRANTED',
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get account (Rest API)
      *
      * @param {string} accountId - Account Id
      *
@@ -2027,24 +2081,25 @@ export class HederaSDKHelper {
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
     public static async accountInfo(accountId: string): Promise<any> {
+        try {
+            AccountId.fromString(accountId);
+        } catch (error) {
+            throw new Error(`Invalid account '${accountId}'`);
+        }
+
         const res = await axios.get(
-            `${Environment.HEDERA_ACCOUNT_API}${accountId}/tokens`,
+            `${Environment.HEDERA_ACCOUNT_API}${accountId}`,
             { responseType: 'json' }
         );
         if (!res || !res.data) {
             throw new Error(`Invalid account '${accountId}'`);
         }
-        const tokens: any[] = res.data.tokens;
-        const result: { [tokenId: string]: any } = {};
-        for (const token of tokens) {
-            result[token.token_id] = {
-                tokenId: token.token_id,
-                balance: token.balance?.toString(),
-                frozen: token.freeze_status === 'FROZEN',
-                kyc: token.kyc_status === 'GRANTED',
-            }
-        }
-        return result;
+        return {
+            account: res.data.account,
+            balance: res.data.balance?.balance,
+            key: res.data.key,
+
+        };
     }
 
     /**

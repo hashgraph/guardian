@@ -103,6 +103,7 @@ export class SchemaMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             name: this.name,
             description: this.description,
             entity: this.entity,
@@ -121,7 +122,7 @@ export class SchemaMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (
             this.action === MessageAction.PublishSchema ||
             this.action === MessageAction.PublishSystemSchema

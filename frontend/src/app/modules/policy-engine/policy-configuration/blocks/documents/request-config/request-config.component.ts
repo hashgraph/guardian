@@ -1,5 +1,5 @@
-import {Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
-import {IModuleVariables, PolicyBlock, SchemaVariables} from '../../../../structures';
+import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
 
 /**
  * Settings for block of 'requestVcDocument' type.
@@ -31,15 +31,20 @@ export class RequestConfigComponent implements OnInit {
     presetMap: any;
 
     public idTypeOptions = [
-        {label: 'None', value: ''},
-        {label: 'DID (New DID)', value: 'DID'},
-        {label: 'UUID (New UUID)', value: 'UUID'},
-        {label: 'Owner (Owner DID)', value: 'OWNER'}
+        { label: 'None', value: '' },
+        { label: 'DID (New DID)', value: 'DID' },
+        { label: 'UUID (New UUID)', value: 'UUID' },
+        { label: 'Owner (Owner DID)', value: 'OWNER' }
     ];
 
     public uiMetaDataTypeOptions = [
-        {label: 'PAGE', value: 'page'},
-        {label: 'DIALOG', value: 'dialog'}
+        { label: 'PAGE', value: 'page' },
+        { label: 'DIALOG', value: 'dialog' }
+    ];
+
+    public editType = [
+        { label: 'New', value: 'new' },
+        { label: 'Edit', value: 'edit' }
     ];
 
     constructor() {
@@ -60,6 +65,7 @@ export class RequestConfigComponent implements OnInit {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;
+        this.properties.editType = this.properties.editType || 'new';
         this.properties.uiMetaData = this.properties.uiMetaData || {};
         this.properties.uiMetaData.type = this.properties.uiMetaData.type || 'page';
         this.properties.presetFields = this.properties.presetFields || [];

@@ -1,14 +1,29 @@
 <ng-container [ngTemplateOutlet]="!tokenId ? tokensTable : usingTokens"></ng-container>
 
 <ng-template #tokensTable>
-    <div *ngIf="!loading" class="container">
-        <div class="header">
-            <h1>List of Tokens</h1>
+    <div class="guardian-page">
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
         </div>
-        <ng-container *ngIf="isConfirmed; else noDIDSettings">
-            <div class="actions-container">
+
+        <div *ngIf="!isConfirmed" class="guardian-user-not-registered">
+            Before starting work you need to get DID
+            <a [routerLink]="['/profile']">here</a>
+        </div>
+
+        <div *ngIf="!loading" class="guardian-user-page-header">
+            <span>List of Tokens</span>
+        </div>
+
+        <div *ngIf="!loading" class="guardian-user-page-toolbar">
+            <div class="guardian-user-page-filters">
                 <div *ngIf="policies" class="dropdown-block">
-                    <p-dropdown (onChange)="onFilter()" [appendTo]="'body'" [(ngModel)]="policyDropdownItem" [options]="policies!">
+                    <p-dropdown 
+                        (onChange)="onFilter()" 
+                        [appendTo]="'body'" 
+                        [(ngModel)]="policyDropdownItem" 
+                        [options]="policies!"
+                    >
                         <ng-template pTemplate="selectedItem">
                             <div *ngIf="policyDropdownItem">
                                 <span class="dropdown-label">Policy</span>
@@ -21,178 +36,325 @@
                         </ng-template>
                     </p-dropdown>
                 </div>
+            </div>
+            <div class="guardian-user-page-buttons">
                 <button
                     *ngIf="user.TOKENS_TOKEN_CREATE"
                     (click)="newToken()"
-                    [icon]="'pi pi-plus'"
-                    class="button"
-                    label="Create token"
-                    pButton
-                    type="button"></button>
+                    class="guardian-button guardian-button-primary">
+                    <div class="guardian-button-icon">
+                        <svg-icon class="icon-btn svg-icon"
+                            src="/assets/images/icons/add.svg"
+                            svgClass="icon-color-secondary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Create token</div>
+                </button>
             </div>
-            <ng-container *ngIf="tokens.length > 0 else noData">
-                <div class="table-container">
-                    <table>
-                        <tr class="row-header">
-                            <th>TOKEN ID</th>
-                            <th>TOKEN NAME</th>
-                            <th>TOKEN SYMBOL</th>
-                            <th>POLICIES</th>
-                            <th>TAGS</th>
-                            <th>OPERATIONS</th>
-                        </tr>
-                        <ng-container *ngFor="let token of tokens">
-                            <tr class="row-item">
-                                <td>
-                                    <hedera-explorer *ngIf="!token.draftToken else draftToken" [params]="token.tokenId" type="tokens">
-                                        {{ token.tokenId }}
-                                    </hedera-explorer>
-                                    <ng-template #draftToken>Draft Token</ng-template>
-                                </td>
-                                <td>{{ token.tokenName }}</td>
-                                <td>{{ token.tokenSymbol }}</td>
-                                <td>{{ token.policies?.join(', ') }}</td>
-                                <td>
-                                    <tags-explorer
-                                            *ngIf="user.TAGS_TAG_READ"
-                                            [user]="user"
-                                            [data]="token._tags"
-                                            [entity]="tagEntity"
-                                            [owner]="owner"
-                                            [schemas]="tagSchemas"
-                                            [service]="tagsService"
-                                            [target]="token.id"></tags-explorer>
-                                </td>
-                                <td>
-                                    <div class="flex flex-column-gap-20">
-                                        <svg-icon
-                                            *ngIf="user.TOKENS_TOKEN_MANAGE"
-                                            (click)="!token.draftToken ? goToUsingTokens(token) : null"
-                                            class="opacity-icon"
-                                            src="/assets/images/icons/group.svg"
-                                            [svgClass]="!token.draftToken ? 'primary-color' : 'disabled-color'"></svg-icon>
-                                        <svg-icon
-                                            *ngIf="user.TOKENS_TOKEN_UPDATE"
-                                            (click)="openEditDialog(token)"
-                                            class="opacity-icon"
-                                            src="/assets/images/icons/edit.svg"
-                                            [svgClass]="token.enableAdmin ? 'primary-color' : 'disabled-color'"></svg-icon>
+        </div>
 
-                                        <svg-icon
-                                            *ngIf="user.TOKENS_TOKEN_DELETE"
-                                            (click)="token.canDelete ? questToDeleteToken(token) : null"
-                                            class="opacity-icon"
-                                            src="/assets/images/icons/delete.svg"
-                                            [svgClass]="token.canDelete ? 'delete-color' : 'disabled-color'"></svg-icon>
-                                    </div>
-                                </td>
+        <div *ngIf="!loading" class="guardian-user-page-grid">
+            <ng-container *ngIf="tokens && tokens.length > 0; else noData">
+                <div class="guardian-grid-container">
+                    <p-table
+                        class="guardian-grid-table"
+                        [value]="tokens"
+                        [scrollable]="true"
+                    >
+                        <ng-template pTemplate="header">
+                            <tr class="guardian-grid-header">
+                                <ng-container *ngFor="let column of columns">
+                                    <th
+                                        *ngIf="!column.canDisplay || column.canDisplay()"
+                                        class="header-cell-{{column.type}} col-{{column.size}}"
+                                        >{{column.title}}</th>
+                                </ng-container>
                             </tr>
-                        </ng-container>
-                    </table>
+                        </ng-template>
+                        <ng-template let-row pTemplate="body">
+                            <tr class="guardian-grid-row">
+                                <ng-container *ngFor="let column of columns">
+                                    <td
+                                        *ngIf="!column.canDisplay || column.canDisplay()"
+                                        class="row-cell-{{column.type}} col-{{column.size}}"
+                                        pTooltip="{{row[column.id]}}"
+                                        [tooltipDisabled]="!column.tooltip"
+                                        tooltipPosition="top"
+                                        [showDelay]="1000"
+                                        [ngSwitch]="column.id"
+                                    >
+                                        <ng-container *ngSwitchCase="'id'">
+                                            <hedera-explorer 
+                                                *ngIf="!row.draftToken else draftToken" 
+                                                [params]="row.tokenId" 
+                                                type="tokens"
+                                            >{{ row.tokenId }}</hedera-explorer>
+                                            <ng-template #draftToken>Draft Token</ng-template>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'name'">
+                                            <span class="text-truncate">{{row.tokenName}}</span>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'symbol'">
+                                            <span class="text-truncate">{{row.tokenSymbol}}</span>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'policies'">
+                                            <span class="text-truncate">{{row.policies?.join(', ')}}</span>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'tags'">
+                                            <tags-explorer
+                                                    *ngIf="user.TAGS_TAG_READ"
+                                                    [user]="user"
+                                                    [data]="row._tags"
+                                                    [entity]="tagEntity"
+                                                    [owner]="owner"
+                                                    [schemas]="tagSchemas"
+                                                    [service]="tagsService"
+                                                    [target]="row.id"></tags-explorer>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'options'">
+                                            <div
+                                                *ngIf="user.TOKENS_TOKEN_MANAGE"
+                                                [attr.disabled]="row.draftToken"
+                                                class="guardian-icon-button big"
+                                                (click)="!row.draftToken ? goToUsingTokens(row) : null"
+                                            >
+                                                <svg-icon
+                                                    class="icon-btn"
+                                                    src="/assets/images/icons/group.svg"
+                                                    [svgClass]="!row.draftToken ? 'icon-color-primary': 'icon-color-disabled'">
+                                                </svg-icon>
+                                            </div>
+                                            <div
+                                                *ngIf="user.TOKENS_TOKEN_UPDATE"
+                                                [attr.disabled]="!row.enableAdmin"
+                                                class="guardian-icon-button big"
+                                                (click)="row.enableAdmin ? openEditDialog(row) : null"
+                                            >
+                                                <svg-icon
+                                                    class="icon-btn"
+                                                    src="/assets/images/icons/edit.svg"
+                                                    [svgClass]="row.enableAdmin ? 'icon-color-primary': 'icon-color-disabled'">
+                                                </svg-icon>
+                                            </div>
+                                            <div
+                                                *ngIf="user.TOKENS_TOKEN_DELETE"
+                                                [attr.disabled]="!row.canDelete"
+                                                class="guardian-icon-button big"
+                                                (click)="row.canDelete ? questToDeleteToken(row) : null"
+                                            >
+                                                <svg-icon
+                                                    class="icon-btn"
+                                                    src="/assets/images/icons/delete.svg"
+                                                    [svgClass]="row.canDelete ? 'icon-color-delete': 'icon-color-disabled'">
+                                                </svg-icon>
+                                            </div>
+                                        </ng-container>
+                                        <ng-container *ngSwitchDefault>
+                                            <span class="text-truncate">{{row[column.id]}}</span>
+                                        </ng-container>
+                                    </td>
+                                </ng-container>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                    <div class="guardian-grid-paginator">
+                        <app-paginator
+                            class="guardian-grid-paginator"
+                            [pageIndex]="pageIndex"
+                            [pageSize]="pageSize"
+                            [length]="tokensCount"
+                            (page)="onPage($event)"
+                        ></app-paginator>
+                    </div>
                 </div>
-
-                <app-paginator
-                    [pageIndex]="pageIndex"
-                    [pageSize]="pageSize"
-                    [length]="tokensCount"
-                    (page)="onPage($event)"
-                ></app-paginator>
-
             </ng-container>
-        </ng-container>
+            <ng-template #noData>
+                <div class="guardian-user-not-data">
+                    <svg-icon
+                        class="svg-icon-32"
+                        src="/assets/images/icons/32/list.svg"
+                        svgClass="icon-color-disabled"></svg-icon>
+                    <span class="guardian-user-not-data__text-strong">There are no tokens created yet</span>
+                    <span class="guardian-user-not-data__text">Please create a new token to see the data</span>
+                </div>
+            </ng-template>
+        </div>
     </div>
 </ng-template>
 
 <ng-template #usingTokens>
-    <div *ngIf="!loading" class="container">
-        <div>
-            <button (click)="goToTokensPage()"
-                    [iconPos]="'left'"
-                    [icon]="'pi pi-chevron-left'"
-                    class="button secondary height-40 margin-bottom-16"
-                    label="Back to List of Tokens"
-                    pButton type="button"></button>
+    <div class="guardian-page">
+        <div class="back-button">
+            <button 
+                (click)="goToTokensPage()" 
+                class="guardian-button guardian-button-secondary">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/left-arrow.svg"
+                        svgClass="icon-color-primary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Back to List of Tokens</div>
+            </button>
         </div>
-        <div class="header">
-            <h1>Token Users</h1>
-            <div>
-                <span class="tokenId"><strong>Token ID: </strong>{{ tokenId }}</span>
+
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+
+        <div *ngIf="!isConfirmed" class="guardian-user-not-registered">
+            Before starting work you need to get DID
+            <a [routerLink]="['/profile']">here</a>
+        </div>
+
+        <div *ngIf="!loading" class="guardian-user-page-header">
+            <span>Token Users</span>
+            <div class="token-id">
+                <span class="token-id-name">Token ID:</span>
+                 <span class="token-id-value">{{ tokenId }}</span>
             </div>
         </div>
-        <div class="table-container">
-            <table>
-                <tr class="row-header">
-                    <th>USERNAME</th>
-                    <th>ASSOCIATED</th>
-                    <th>TOKEN BALANCE</th>
-                    <th>FROZEN</th>
-                    <th>KYCD</th>
-                    <th>REFRESH</th>
-                </tr>
-                <ng-container *ngFor="let user of users">
-                    <tr class="row-item">
-                        <td>
-                            {{ user.username }}
-                        </td>
-                        <td>
-                            <div *ngIf="!user.loading && user.associated === 'Yes'" class="p-tag p-tag-success">Yes
-                            </div>
-                            <div *ngIf="!user.loading && user.associated === 'No'" class="p-tag p-tag-error">No</div>
-                        </td>
-                        <td>
-                            <ng-container *ngIf="!user.loading && user.balance else preloader">
-                                {{ user.balance }}
-                            </ng-container>
-                        </td>
-                        <td>
-                            <button (click)="freeze(user, true)" *ngIf="!user.loading && user.enableFreeze && user.frozen === 'No'"
-                                    class="button secondary"
-                                    pButton>
-                                Freeze
-                            </button>
-                            <button (click)="freeze(user, false)" *ngIf="!user.loading && user.enableFreeze && user.frozen === 'Yes'"
-                                    class="button secondary"
-                                    pButton>
-                                Unfreeze
-                            </button>
-                        </td>
-                        <td>
-                            <button (click)="kyc(user, false)" *ngIf="!user.loading && user.kyc === 'Yes'" class="button secondary"
-                                    label="Revoke KYC"
-                                    pButton
-                                    type="button"></button>
-                            <button (click)="kyc(user, true)" *ngIf="!user.loading && user.kyc === 'No'" [iconPos]="'left'"
-                                    [icon]="'pi pi-chevron-left'"
-                                    class="button secondary" label="Grant KYC"
-                                    pButton type="button"></button>
-                        </td>
-                        <td>
-                            <div class="flex flex-column-gap-20">
-                                <svg-icon (click)="!user.loading ? refresh(user) : null"
-                                    class="opacity-icon"
-                                    src="/assets/images/icons/refresh.svg"
-                                    [svgClass]="user.loading ? 'disabled-color' : 'primary-color'"></svg-icon>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-container>
-            </table>
+
+        <div *ngIf="!loading" class="guardian-user-page-grid">
+            <ng-container *ngIf="users && users.length > 0; else noData">
+                <div class="guardian-grid-container">
+                    <p-table
+                        class="guardian-grid-table"
+                        [value]="users"
+                        [scrollable]="true"
+                    >
+                        <ng-template pTemplate="header">
+                            <tr class="guardian-grid-header">
+                                <ng-container *ngFor="let column of usersColumns">
+                                    <th
+                                        *ngIf="!column.canDisplay || column.canDisplay()"
+                                        class="header-cell-{{column.type}} col-{{column.size}}"
+                                        >{{column.title}}</th>
+                                </ng-container>
+                            </tr>
+                        </ng-template>
+                        <ng-template let-row pTemplate="body">
+                            <tr class="guardian-grid-row">
+                                <ng-container *ngFor="let column of usersColumns">
+                                    <td
+                                        *ngIf="!column.canDisplay || column.canDisplay()"
+                                        class="row-cell-{{column.type}} col-{{column.size}}"
+                                        pTooltip="{{row[column.id]}}"
+                                        [tooltipDisabled]="!column.tooltip"
+                                        tooltipPosition="top"
+                                        [showDelay]="1000"
+                                        [ngSwitch]="column.id"
+                                    >
+                                        <ng-container *ngSwitchCase="'username'">
+                                            <span class="text-truncate">{{row.username}}</span>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'id'">
+                                            <hedera-explorer [params]="row.relayerAccountId || ''" type="accounts">
+                                                {{ row.relayerAccountId }}
+                                            </hedera-explorer>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'name'">
+                                            <span class="text-truncate">{{row.relayerAccountName || ''}}</span>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'balance'"> 
+                                            <div *ngIf="row.loading" class="options-container">
+                                                <div class="loading-placeholder balance-size"></div>
+                                            </div>
+                                            <div *ngIf="!row.loading && row.associated === 'Yes'" class="options-container">
+                                                <div class="user-balance balance-size">{{ row.balance }}</div>
+                                            </div>
+                                            <div *ngIf="!row.loading && row.associated === 'No'" class="options-container">
+                                                No associated
+                                            </div>
+                                            <div *ngIf="!row.loading && row.associated === 'n/a'" class="options-container">
+                                                No Data
+                                            </div>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'freeze'">
+                                            <div *ngIf="row.loading" class="options-container">
+                                                <div class="loading-placeholder freeze-size"></div>
+                                            </div>
+                                            <div *ngIf="!row.loading" class="options-container">
+                                                <button
+                                                    (click)="freeze(row, row.frozen === 'No')"
+                                                    [disabled]="!row.enableFreeze || row.frozen === 'n/a' || row.associated === 'No' || row.associated === 'n/a'"
+                                                    class="guardian-button guardian-button-secondary freeze-size"
+                                                >
+                                                    <div 
+                                                        *ngIf="row.frozen !== 'Yes'"
+                                                        class="guardian-button-label"
+                                                    >Freeze</div>
+                                                    <div 
+                                                        *ngIf="row.frozen === 'Yes'"
+                                                        class="guardian-button-label"
+                                                    >Unfreeze</div>
+                                                </button>
+                                            </div>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'kyc'"> 
+                                            <div *ngIf="row.loading" class="options-container">
+                                                <div class="loading-placeholder kyc-size"></div>
+                                            </div>
+                                            <div *ngIf="!row.loading" class="options-container">
+                                                <button
+                                                    (click)="kyc(row, row.kyc === 'No')"
+                                                    [disabled]="!row.enableKYC || row.kyc === 'n/a' || row.associated === 'No' || row.associated === 'n/a'"
+                                                    class="guardian-button guardian-button-secondary kyc-size"
+                                                >
+                                                    <div 
+                                                        *ngIf="row.kyc !== 'Yes'"
+                                                        class="guardian-button-label"
+                                                    >Grant KYC</div>
+                                                    <div 
+                                                        *ngIf="row.kyc === 'Yes'"
+                                                        class="guardian-button-label"
+                                                    >Revoke KYC</div>
+                                                </button>
+                                            </div>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'refresh'">
+                                            <div
+                                                [attr.disabled]="row.loading"
+                                                class="guardian-icon-button big"
+                                                (click)="!row.loading ? refresh(row) : null"
+                                            >
+                                                <svg-icon
+                                                    class="icon-btn"
+                                                    src="/assets/images/icons/refresh-2.svg"
+                                                    [svgClass]="!row.loading ? 'icon-color-primary': 'icon-color-disabled'">
+                                                </svg-icon>
+                                            </div>
+                                        </ng-container>    
+                                        <ng-container *ngSwitchDefault>
+                                            <span class="text-truncate">{{row[column.id]}}</span>
+                                        </ng-container>
+                                    </td>
+                                </ng-container>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                    <div class="guardian-grid-paginator">
+                        <app-paginator
+                            class="guardian-grid-paginator"
+                            [pageIndex]="userPageIndex"
+                            [pageSize]="userPageSize"
+                            [length]="userPageCount"
+                            (page)="onUserPage($event)"
+                        ></app-paginator>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-template #noData>
+                <div class="guardian-user-not-data">
+                    <svg-icon
+                        class="svg-icon-32"
+                        src="/assets/images/icons/32/list.svg"
+                        svgClass="icon-color-disabled"></svg-icon>
+                    <span class="guardian-user-not-data__text-strong">There are no accounts created yet</span>
+                    <span class="guardian-user-not-data__text">Please create a new account to see the data</span>
+                </div>
+            </ng-template>
         </div>
-    </div>
-</ng-template>
-
-<ng-template #noData>
-    <div class="not-exist">
-        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
-        </svg-icon>
-        <span class="info-text-strong">There are no tokens created yet</span>
-        <span class="info-text">Please create a new token to see the data</span>
-    </div>
-</ng-template>
-
-<ng-template #noDIDSettings>
-    <div class="not-exist">
-        <span>Before starting work you need to get DID <a [routerLink]="['/profile']">here</a></span>
     </div>
 </ng-template>
 

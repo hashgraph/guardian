@@ -52,7 +52,7 @@ export class IPFS {
      * @param options
      * @returns {string} - hash
      */
-    public static async addFile(file: ArrayBuffer, options?: IPFSOptions): Promise<{
+    public static async addFile(file: Buffer | ArrayBuffer, options?: IPFSOptions): Promise<{
         /**
          * CID
          */
@@ -67,7 +67,7 @@ export class IPFS {
             data: {
                 target: [IPFS.target, MessageAPI.IPFS_ADD_FILE].join('.'),
                 payload: {
-                    content: Buffer.from(file).toString('base64'),
+                    content: Buffer.from(file as any).toString('base64'),
                     userId: options?.userId
                 }
             }
