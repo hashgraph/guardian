@@ -501,7 +501,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
             }
         );
 
-
         const dryRunRepo = new DataBaseHelper(DryRun);
 
         await dryRunRepo.delete({
