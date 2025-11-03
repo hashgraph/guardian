@@ -151,6 +151,7 @@ const API = {
     ApproveValidationReportBtn: "tag/approve_validation_report_btn/blocks",
     RegWorkflowSteps: "tag/registrants_workflow_steps/blocks",
     Savepoint: "savepoints/",
+    SavepointDelete: "savepoints/delete",
 
     //Records
     Record: "record/",
