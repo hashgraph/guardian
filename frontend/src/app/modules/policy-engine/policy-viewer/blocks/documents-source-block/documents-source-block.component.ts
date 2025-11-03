@@ -514,6 +514,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (type === 'text') {
             return 'text-container';
         }
+        if (type === 'button') {
+            return 'button-container';
+        }
         return ''
     }
 }
