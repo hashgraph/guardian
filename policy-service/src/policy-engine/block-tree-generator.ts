@@ -342,8 +342,6 @@ export class BlockTreeGenerator extends NatsService {
             try {
                 const { savepointId } = msg;
 
-                console.log('PolicyEvents.APPLY_SAVEPOINT', policyId)
-
                 this.getRoot(policyId);
                 await PolicyComponentsUtils.restoreState(policyId);
                 await PolicyComponentsUtils.sentRestoreNotification(policyId);

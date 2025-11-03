@@ -490,7 +490,17 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async restoreSavepointStates(policyId: string, savepointId: string): Promise<void> {
         const snapsRepo = new DataBaseHelper(BlockStateSavepoint);
-        const snaps = await snapsRepo.find({ policyId, savepointId });
+
+        const snaps = await snapsRepo.find(
+            { policyId, savepointId },
+            {
+                orderBy: {
+                    createDate: 1,
+                    _id: 1,
+                },
+            }
+        );
+
 
         const dryRunRepo = new DataBaseHelper(DryRun);
 
