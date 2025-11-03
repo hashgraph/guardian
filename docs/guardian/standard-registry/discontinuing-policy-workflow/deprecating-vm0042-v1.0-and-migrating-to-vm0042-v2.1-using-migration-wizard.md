@@ -61,7 +61,7 @@ Navigate to the **"Policies"** section in the Guardian dashboard.
 
 Publishing VM0042 V2.1 Policy:
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Part 3: Migrate Data Using Migration Wizard
 

@@ -43,7 +43,7 @@ icon: cart-plus
 
 We can also customize the Field keys and Field Title by clicking on Advanced Tab.
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Schemas can be defined/changed by editing their JSON definitions
 

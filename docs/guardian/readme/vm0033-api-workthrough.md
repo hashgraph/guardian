@@ -115,7 +115,7 @@ Successful response looks like:
 
 #### 1.3 Policy Publishing
 
-<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **To publish a policy, use the id field from the previous step in the request:**
 
@@ -226,7 +226,7 @@ Successful response looks like:
 
 #### 1.4 Assign Policy to VVB and Project Proponent (PP) Users
 
-<figure><img src="../../.gitbook/assets/image (5) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (5) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **To assign a policy to a user, include the username in the request body, and set the `policyId` field to the id value from the policy importing step:**
 
@@ -705,7 +705,7 @@ true
 
 **To create a VVB in the policy, send a request with the VVB name in the body:**
 
-<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 `POST http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/create_new_vvb/blocks`
 
@@ -774,7 +774,7 @@ Successful response looks like:
 
 **Wait until the title is equal to “Waiting for approval”:**
 
-<figure><img src="../../.gitbook/assets/image (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (5) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <mark style="color:red;">`GET`</mark>` ``http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/new_VVB/blocks`
 
@@ -3061,7 +3061,7 @@ With body:
 
 #### 6.11 Create Verification Report
 
-<figure><img src="../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Get the reference for creating the report:**
 

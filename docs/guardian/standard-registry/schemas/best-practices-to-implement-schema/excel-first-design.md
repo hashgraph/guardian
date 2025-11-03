@@ -12,7 +12,7 @@ Detailed best practices for Excel-first design in building Hedera Guardian schem
     * Row 3: Schema Type (e.g., "Verifiable Credentials")
     * Row 4: Column headings for schema field attributes (Required, Field Type, Parameter, Visibility, Question, Multi-Answer, Default).
 
-    <figure><img src="../../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 *   **Define Each Field with Clear Attributes**\
     For every schema field, specify:
 
@@ -38,7 +38,7 @@ Detailed best practices for Excel-first design in building Hedera Guardian schem
 * **Incorporate Advanced Field Types**\
   Include Auto-Calculate fields for computed values, Image/File Upload fields for supporting documents, and Help Text fields to provide contextual guidance inline.
 
-<figure><img src="../../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * **Validation and Data Integrity**\
   Mark critical fields as required to enforce data capture. Choose proper data types for automatic Guardian validation (numbers, dates, boolean, urls). Use patterns or formulas as needed for more complex rules.
