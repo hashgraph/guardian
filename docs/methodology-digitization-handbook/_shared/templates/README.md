@@ -1,4 +1,4 @@
-# рџ“„ Templates
+# 📄 Templates
 
 > Standard templates for consistent content structure across all handbook parts
 

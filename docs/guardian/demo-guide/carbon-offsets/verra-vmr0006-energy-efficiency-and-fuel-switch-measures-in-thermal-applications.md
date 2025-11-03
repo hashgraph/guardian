@@ -152,4 +152,4 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
     <figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 16. The Trust Chain can also be viewed by clicking on the “View Trust Chain” button:
 
-<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
