@@ -24,6 +24,7 @@ interface IRequestDocumentAddonData {
     readonly: boolean;
     schema: ISchema;
     active: boolean;
+    relayerAccount: boolean;
     data: any;
     buttonName: string;
     hideWhenDiscontinued?: boolean;
@@ -75,6 +76,10 @@ export class RequestDocumentBlockAddonComponent
     public hideFields: any;
     public readonly: boolean = false;
     public dialog: RequestDocumentBlockDialog;
+    public edit: boolean;
+    public draft: boolean;
+    public relayerAccount: boolean;
+    public isLocalUser: boolean = true;
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -102,6 +107,16 @@ export class RequestDocumentBlockAddonComponent
         this.destroy();
     }
 
+    public __validate() {
+        const errors: string[] = [];
+        Object.keys(this.dataForm.controls).forEach(key => {
+            if (!this.dataForm.get(key)?.valid) {
+                errors.push(key);
+            }
+        });
+        console.log(errors);
+    }
+
     override setData(data: IRequestDocumentAddonData) {
         if (data) {
             this.readonly = !!data.readonly;
@@ -116,6 +131,7 @@ export class RequestDocumentBlockAddonComponent
             this.dialogTitle = data.dialogTitle;
             this.disabled = active === false;
             this.isExist = true;
+            this.relayerAccount = !!data.relayerAccount && !this.dryRun;
             this.needPreset = data.preset;
             this.presetFields = data.presetFields || [];
             this.restoreData = data.restoreData;
@@ -219,6 +235,10 @@ export class RequestDocumentBlockAddonComponent
 
     public getRef() {
         return this.ref.id;
+    }
+
+    public getAutosaveId() {
+        return this.ref?.id ?? `${this.policyId}_${this.id}_${this?.user?.id}`;
     }
 
     public onDialog() {

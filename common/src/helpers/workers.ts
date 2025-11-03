@@ -44,6 +44,7 @@ export const NON_RETRYABLE_HEDERA_ERRORS = [
     HederaResponseCode.CANNOT_WIPE_TOKEN_TREASURY_ACCOUNT,
     HederaResponseCode.TOKEN_HAS_NO_WIPE_KEY,
     HederaResponseCode.INVALID_WIPE_KEY,
+    HederaResponseCode.INVALID_NFT_ID,
 
     // Burn type errors
     HederaResponseCode.INVALID_TOKEN_BURN_AMOUNT,

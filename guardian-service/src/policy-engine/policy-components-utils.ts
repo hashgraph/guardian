@@ -105,4 +105,56 @@ export class PolicyComponentsUtils {
 
         return result;
     }
+
+    /**
+     * Get Policy Full Info
+     * @param policy
+     * @param did
+     */
+    public static async GetUserRole(
+        policy: Policy,
+        user: IAuthUser
+    ): Promise<string> {
+        if (!policy) {
+            return 'No role';
+        }
+
+        const policyId = policy.id.toString();
+
+        let result: string = null;
+        let did = user.did;
+        let permissions = user.permissions || [];
+        if (did) {
+            if (PolicyHelper.isDryRunMode(policy)) {
+                const activeUser = await DatabaseServer.getVirtualUser(policyId);
+                if (activeUser && did !== activeUser.did) {
+                    did = activeUser.did;
+                    permissions = [];
+                }
+            }
+
+            if (policy.owner === did || permissions.includes(Permissions.POLICIES_POLICY_MANAGE)) {
+                result = 'Administrator';
+            }
+
+            const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
+            const db = new DatabaseServer(dryRun);
+            const groups = await db.getGroupsByUser(policyId, did, {
+                fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']
+            });
+            for (const group of groups) {
+                if (group.active !== false) {
+                    result = group.role;
+                }
+            }
+
+            if (!result) {
+                result = 'No role';
+            }
+        } else {
+            result = 'No role';
+        }
+
+        return result;
+    }
 }

@@ -16,7 +16,9 @@ import {
     TopicType,
     PolicyAvailability,
     SchemaCategory,
-    LocationType
+    LocationType,
+    IgnoreRule,
+    ModuleStatus
 } from '@guardian/interfaces';
 import {
     Artifact,
@@ -996,6 +998,7 @@ export class PolicyEngine extends NatsService {
         const STEP_CREATE_SYNC_TOPIC = 'Create synchronization topic';
         const STEP_CREATE_RESTORE_TOPIC = 'Create restore topic';
         const STEP_CREATE_ACTION_TOPIC = 'Create actions topic';
+        const STEP_CREATE_COMMENTS_TOPIC = 'Create comments topic';
         const STEP_PUBLISH_POLICY = 'Publish policy';
         const STEP_PUBLISH_MESSAGE = 'Publish message';
         const STEP_PUBLISH_TAGS = 'Publish tags';
@@ -1011,6 +1014,7 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_CREATE_SYNC_TOPIC, 2);
         notifier.addStep(STEP_CREATE_RESTORE_TOPIC, 2);
         notifier.addStep(STEP_CREATE_ACTION_TOPIC, 2);
+        notifier.addStep(STEP_CREATE_COMMENTS_TOPIC, 2);
         notifier.addStep(STEP_PUBLISH_POLICY, 20);
         notifier.addStep(STEP_PUBLISH_MESSAGE, 4);
         notifier.addStep(STEP_PUBLISH_TAGS, 4);
@@ -1232,6 +1236,31 @@ export class PolicyEngine extends NatsService {
                 }
             } else {
                 notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
+            }
+
+            const createCommentsTopic = async () => {
+                notifier.startStep(STEP_CREATE_COMMENTS_TOPIC);
+                const commentsTopic = await topicHelper.create({
+                    type: TopicType.CommentsTopic,
+                    name: TopicType.CommentsTopic,
+                    description: TopicType.CommentsTopic,
+                    owner: user.creator,
+                    policyId: model.id.toString(),
+                    policyUUID: model.uuid
+                }, user.id, { admin: true, submit: false });
+                await commentsTopic.saveKeys(user.id);
+                await DatabaseServer.saveTopic(commentsTopic.toObject());
+                model.commentsTopicId = commentsTopic.topicId;
+                notifier.completeStep(STEP_CREATE_COMMENTS_TOPIC);
+            }
+            if (model.status === PolicyStatus.PUBLISH_ERROR) {
+                if (!!model.commentsTopicId) {
+                    await createCommentsTopic();
+                } else {
+                    notifier.skipStep(STEP_CREATE_COMMENTS_TOPIC);
+                }
+            } else {
+                await createCommentsTopic();
             }
 
             const configToPublish = structuredClone(model.config);
@@ -1541,9 +1570,22 @@ export class PolicyEngine extends NatsService {
             throw new Error('Version must be greater than ' + policy.previousVersion);
         }
 
+        if (policy.tools?.length > 0) {
+            const toolMessageIds = policy.tools.map((toolData: any) => toolData.messageId);
+            const tools = await DatabaseServer.getTools({
+                messageId: { $in: toolMessageIds}
+            });
+            const toolNotPublished = tools.find(tool => tool.status !== ModuleStatus.PUBLISHED);
+
+            if (toolNotPublished) {
+                throw new Error('Policy has tools that are not published');
+            }
+        }
+
         const countModels = await DatabaseServer.getPolicyCount({
             version,
-            uuid: policy.uuid
+            topicId: policy.topicId,
+            owner: owner.owner
         });
         if (countModels > 0) {
             throw new Error('Policy with current version already was published');
@@ -1765,8 +1807,9 @@ export class PolicyEngine extends NatsService {
      * Validate Model
      * @param policy
      * @param isDruRun
+     * @param ignoreRules
      */
-    public async validateModel(policy: Policy | string, isDruRun: boolean = false): Promise<ISerializedErrors> {
+    public async validateModel(policy: Policy | string, isDruRun: boolean = false, ignoreRules?: ReadonlyArray<IgnoreRule>): Promise<ISerializedErrors> {
         let policyId: string;
         if (typeof policy === 'string') {
             policyId = policy
@@ -1777,7 +1820,7 @@ export class PolicyEngine extends NatsService {
             }
             policyId = policy.id.toString();
         }
-        const policyValidator = new PolicyValidator(policy, isDruRun);
+        const policyValidator = new PolicyValidator(policy, isDruRun, ignoreRules);
         await policyValidator.build(policy);
         await policyValidator.validate();
         return policyValidator.getSerializedErrors();

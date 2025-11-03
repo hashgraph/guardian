@@ -13,8 +13,6 @@ function checkSchemaProps(item: SchemaCollection, document: ISchemaDocument) {
             throw new Error(`Field type is not set. Field: ${name}, Schema: ${item.uuid}`);
         }
         if (field.isRef && (!document.$defs || !document.$defs[field.type])) {
-            console.debug(field);
-            console.debug(document);
             throw new Error(`Dependent schema not found: ${item.iri}, Field: ${name}, Field Type: ${field.type}`);
         }
     }
@@ -668,32 +666,50 @@ function replaceSchemaIds(
     oldSchemaIri: string,
     newSchemaIri: string
 ) {
-    if (oldSchemaIri) {
-        if (Array.isArray(parsedSchema?.fields)) {
-            for (const field of parsedSchema.fields) {
-                if (field.type === oldSchemaIri) {
-                    field.type = newSchemaIri;
+    if (!oldSchemaIri) {
+        return;
+    }
+
+    const replaceFieldType = (field?: any) => {
+        if (field && field.type === oldSchemaIri) {
+            field.type = newSchemaIri;
+        }
+    };
+
+    if (Array.isArray(parsedSchema?.fields)) {
+        for (const field of parsedSchema.fields) {
+            replaceFieldType(field);
+        }
+    }
+
+    if (Array.isArray(parsedSchema?.conditions)) {
+        for (const condition of parsedSchema.conditions) {
+            const ic: any = condition.ifCondition;
+
+            if (ic?.field) {
+                replaceFieldType(ic.field);
+            }
+
+            if (Array.isArray(ic?.AND)) {
+                for (const p of ic.AND) {
+                    replaceFieldType(p?.field);
                 }
             }
-        }
-        if (Array.isArray(parsedSchema?.conditions)) {
-            for (const condition of parsedSchema.conditions) {
-                if (condition.ifCondition?.field?.type === oldSchemaIri) {
-                    condition.ifCondition.field.type = newSchemaIri;
+
+            if (Array.isArray(ic?.OR)) {
+                for (const p of ic.OR) {
+                    replaceFieldType(p?.field);
                 }
-                if (Array.isArray(condition.thenFields)) {
-                    for (const field of condition.thenFields) {
-                        if (field.type === oldSchemaIri) {
-                            field.type = newSchemaIri;
-                        }
-                    }
+            }
+
+            if (Array.isArray(condition.thenFields)) {
+                for (const field of condition.thenFields) {
+                    replaceFieldType(field);
                 }
-                if (Array.isArray(condition.elseFields)) {
-                    for (const field of condition.elseFields) {
-                        if (field.type === oldSchemaIri) {
-                            field.type = newSchemaIri;
-                        }
-                    }
+            }
+            if (Array.isArray(condition.elseFields)) {
+                for (const field of condition.elseFields) {
+                    replaceFieldType(field);
                 }
             }
         }

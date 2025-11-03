@@ -363,3 +363,33 @@ tr.revoked td:not(.mat-column-history) {
     pointer-events: none !important;
     filter: grayscale(1);
 }
+
+
+.buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    svg-icon.icon-btn {
+        margin-right: 8px;
+    }
+
+    .comments-button {
+        display: flex;
+        align-items: center;
+        width: 74px;
+        min-width: 74px;
+    }
+
+    .comments-count {
+        color: #848FA9;
+        font-family: Inter;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 16px;
+        vertical-align: middle;
+        margin-right: 8px;
+        width: 34px;
+        overflow: hidden;
+    }
+}

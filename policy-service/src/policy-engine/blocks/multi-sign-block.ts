@@ -160,9 +160,17 @@ export class MultiSignBlock {
         const vcDocument = sourceDoc.document;
         const credentialSubject = vcDocument.credentialSubject[0];
         const uuid = await ref.components.generateUUID();
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, sourceDoc, user.userId);
 
         const newVC = await PolicyActionsUtils
-            .signVC(ref, credentialSubject, user.did, { uuid, group: groupContext }, user.userId);
+            .signVC({
+                ref,
+                subject: credentialSubject,
+                issuer: user.did,
+                relayerAccount,
+                options: { uuid, group: groupContext },
+                userId: user.userId
+            });
 
         await ref.databaseServer.setMultiSigDocument(
             ref.uuid,
@@ -219,6 +227,7 @@ export class MultiSignBlock {
             const docOwner = await PolicyUtils.getDocumentOwner(ref, sourceDoc, userId);
             const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
             const policyOwnerDocument = await policyOwnerCred.loadDidDocument(ref, userId);
+            const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, sourceDoc, userId);
 
             const vcs = data.map(e => VcDocument.fromJsonTree(e.document));
             const uuid: string = await ref.components.generateUUID();
@@ -238,7 +247,15 @@ export class MultiSignBlock {
             vpMessage.setUser(null);
             const topic = await PolicyUtils.getPolicyTopic(ref, sourceDoc.topicId, userId);
             const vpMessageResult = await PolicyActionsUtils
-                .sendMessage(ref, topic, vpMessage, docOwner.did, true, docOwner.userId);
+                .sendMessage({
+                    ref,
+                    topic,
+                    message: vpMessage,
+                    owner: docOwner.did,
+                    relayerAccount,
+                    updateIpfs: true,
+                    userId: docOwner.userId
+                });
 
             const vpMessageId = vpMessageResult.getId();
             const vpDocument = PolicyUtils.createVP(ref, docOwner, vp);
@@ -246,6 +263,7 @@ export class MultiSignBlock {
             vpDocument.messageId = vpMessageId;
             vpDocument.topicId = vpMessageResult.getTopicId();
             vpDocument.relationships = sourceDoc.messageId ? [sourceDoc.messageId] : null;
+            vpDocument.relayerAccount = relayerAccount;
             await ref.databaseServer.saveVP(vpDocument);
 
             await ref.databaseServer.setMultiSigStatus(

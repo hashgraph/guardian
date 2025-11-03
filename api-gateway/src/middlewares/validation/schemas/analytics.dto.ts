@@ -438,6 +438,24 @@ export class FilterSearchPoliciesDTO {
     @IsOptional()
     @IsNumber()
     threshold?: number;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DID
+    })
+    @IsOptional()
+    @IsString()
+    toolName?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DID
+    })
+    @IsOptional()
+    @IsString()
+    toolVersion?: string;
 }
 
 export class FilterSearchBlocksDTO {

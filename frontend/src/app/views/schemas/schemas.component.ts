@@ -3,6 +3,7 @@ import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
     ISchema,
+    ISchemaDeletionPreview,
     IUser,
     LocationType,
     Schema,
@@ -29,12 +30,13 @@ import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.
 import { SchemaViewDialog } from '../../modules/schema-engine/schema-view-dialog/schema-view-dialog.component';
 import { ModulesService } from '../../services/modules.service';
 import { ToolsService } from 'src/app/services/tools.service';
-import { AlertComponent, AlertType } from 'src/app/modules/common/alert/alert.component';
 import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog/copy-schema-dialog';
 import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
-import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { SchemaDeleteWarningDialogComponent } from 'src/app/modules/schema-engine/schema-delete-warning-dialog/schema-delete-warning-dialog.component';
+import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
+import { ReplaceSchemasDialogComponent } from '../../modules/policy-engine/dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
 
 enum SchemaType {
     System = 'system',
@@ -815,7 +817,7 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private deleteSchema(id: string): void {
+    private deleteSchema(id: string, includeChildren: boolean): void {
         if (!id) {
             return;
         }
@@ -842,7 +844,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Tool:
             case SchemaType.Policy:
             default: {
-                this.schemaService.delete(id).subscribe((data: any) => {
+                this.schemaService.delete(id, includeChildren).subscribe((data: any) => {
                     this.loadSchemas();
                 }, (e) => {
                     this.loadError(e);
@@ -886,7 +888,7 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private importByMessage(data: any, topicId: string): void {
+    private importByMessage(data: any, topicId: string, schemasForReplace?: string[]): void {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
@@ -900,7 +902,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Policy:
             default: {
                 const category = this.getCategory();
-                this.schemaService.pushImportByMessage(data, topicId).subscribe((result) => {
+                this.schemaService.pushImportByMessage(data, topicId, schemasForReplace).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
@@ -915,7 +917,7 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private importByFile(data: any, topicId: string): void {
+    private importByFile(data: any, topicId: string, schemasForReplace?: string[]): void {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
@@ -929,7 +931,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Policy:
             default: {
                 const category = this.getCategory();
-                this.schemaService.pushImportByFile(data, topicId).subscribe((result) => {
+                this.schemaService.pushImportByFile(data, topicId, schemasForReplace).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
@@ -944,7 +946,7 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private importByExcel(data: any, topicId: string): void {
+    private importByExcel(data: any, topicId: string, schemasForReplace?: string[]): void {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
@@ -958,7 +960,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Policy:
             default: {
                 const category = this.getCategory();
-                this.schemaService.pushImportByXlsx(data, topicId).subscribe((result) => {
+                this.schemaService.pushImportByXlsx(data, topicId, schemasForReplace).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
@@ -1094,38 +1096,49 @@ export class SchemaConfigComponent implements OnInit {
 
     private onDeleteSchema(element: Schema, parents?: ISchema[]): void {
         if (!Array.isArray(parents) || !parents.length) {
-            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            this.schemaService.getSchemaDeletionPreview(element.id, element.topicId).subscribe((result: ISchemaDeletionPreview) => {
+                const dialogRef = this.dialogService.open(SchemaDeleteDialogComponent, {
+                    showHeader: false,
+                    width: '640px',
+                    styleClass: 'guardian-dialog',
+                    data: {
+                        header: 'Delete Schema',
+                        text: `Are you sure want to delete schema (${element.name})?`,
+                        deletableChildren: result.deletableChildren,
+                        blockedChildren: result.blockedChildren,
+                        buttons: [{
+                            name: 'Close',
+                            class: 'secondary'
+                        }, {
+                            name: 'Delete',
+                            class: 'delete'
+                        }]
+                    },
+                });
+                dialogRef.onClose.subscribe((result: any) => {
+                    if (result.action === 'Delete') {
+                        this.deleteSchema(element.id, result.includeChildren);
+                    }
+                });
+            })
+        } else {
+            const parentsSchemaNames = parents.map(parent => SchemaHelper.getSchemaName(
+                parent.name,
+                parent.version || parent.sourceVersion,
+                parent.status
+            ));
+            this.dialog.open(SchemaDeleteWarningDialogComponent, {
                 showHeader: false,
                 width: '640px',
                 styleClass: 'guardian-dialog',
                 data: {
-                    header: 'Delete Schema',
-                    text: `Are you sure want to delete schema (${element.name})?`,
+                    header: 'Warning',
+                    text: `There are some schemas that depend on this schema:`,
+                    warningItems: parentsSchemaNames,
                     buttons: [{
                         name: 'Close',
                         class: 'secondary'
-                    }, {
-                        name: 'Delete',
-                        class: 'delete'
                     }]
-                },
-            });
-            dialogRef.onClose.subscribe((result: string) => {
-                if (result === 'Delete') {
-                    this.deleteSchema(element.id);
-                }
-            });
-        } else {
-            this.dialog.open(AlertComponent, {
-                data: {
-                    type: AlertType.WARN,
-                    text: `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
-                        SchemaHelper.getSchemaName(
-                            parent.name,
-                            parent.version || parent.sourceVersion,
-                            parent.status
-                        )
-                    ).join('\r\n')}`
                 }
             });
         }
@@ -1284,13 +1297,105 @@ export class SchemaConfigComponent implements OnInit {
             }
             if (result && result.topicId) {
                 this.loading = true;
-                if (type == 'message') {
-                    this.importByMessage(data, result.topicId);
-                } else if (type == 'file') {
-                    this.importByFile(data, result.topicId);
-                } else if (type == 'xlsx') {
-                    this.importByExcel(data, result.topicId);
-                }
+                this.schemaService.checkForDublicates({
+                    policyId: result.topicId,
+                    schemaNames: schemas.map(({ name }: { name: string }) => name)
+                }).subscribe(
+                    (res) => {
+                        this.loading = false;
+                        if (res?.schemasCanBeReplaced?.length) {
+                            if (type == 'message') {
+                                this.importFromMessageReplace({
+                                    data,
+                                    ...result,
+                                    schemasCanBeReplaced: res.schemasCanBeReplaced,
+                                });
+                            } else if (type == 'file') {
+                                this.importFromFileReplace({
+                                    data,
+                                    ...result,
+                                    schemasCanBeReplaced: res.schemasCanBeReplaced,
+                                });
+                            } else if (type == 'xlsx') {
+                                this.importExcelReplace({
+                                    type: 'xlsx',
+                                    data,
+                                    ...result,
+                                    schemasCanBeReplaced: res.schemasCanBeReplaced,
+                                });
+                            }
+                        } else {
+                            if (type == 'message') {
+                                this.importByMessage(data, result.topicId);
+                            } else if (type == 'file') {
+                                this.importByFile(data, result.topicId);
+                            } else if (type == 'xlsx') {
+                                this.importByExcel(data, result.topicId);
+                            }
+                        }
+                    },
+                    (e) => {
+                        this.loading = false;
+                    }
+                );
+            }
+        });
+    }
+
+    private importFromMessageReplace(result: any) {
+        const { data, schemasCanBeReplaced } = result;
+        const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
+            header: 'Schemas for replace',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Schemas for replace',
+                schemasCanBeReplaced: schemasCanBeReplaced,
+            },
+        });
+        dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
+            if (resultWithSchemasForReplace) {
+                this.importByMessage(data, result.topicId, resultWithSchemasForReplace.selectedSchemaIds);
+            }
+        });
+    }
+
+    private importFromFileReplace(result: any) {
+        const { data, schemasCanBeReplaced } = result;
+        const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
+            header: 'Schemas for replace',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Schemas for replace',
+                schemasCanBeReplaced: schemasCanBeReplaced,
+            },
+        });
+        dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
+            if (resultWithSchemasForReplace) {
+                this.importByFile(data, result.topicId, resultWithSchemasForReplace.selectedSchemaIds);
+            }
+        });
+    }
+
+    private importExcelReplace(result: any) {
+        const { data, schemasCanBeReplaced } = result;
+        const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
+            header: 'Schemas for replace',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Schemas for replace',
+                schemasCanBeReplaced: schemasCanBeReplaced,
+            },
+        });
+        dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
+            if (resultWithSchemasForReplace) {
+                this.importByExcel(data, result.topicId, resultWithSchemasForReplace.selectedSchemaIds);
+
             }
         });
     }

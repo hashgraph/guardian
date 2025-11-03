@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ISchema, SchemaCategory, SchemaEntity, SchemaNode } from '@guardian/interfaces';
+import { ISchema, ISchemaDeletionPreview, SchemaCategory, SchemaEntity, SchemaNode } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { AuthService } from './auth.service';
@@ -128,8 +128,12 @@ export class SchemaService {
         return this.http.put<any[]>(`${this.url}/${id}/unpublish`, null);
     }
 
-    public delete(id: string): Observable<ISchema[]> {
-        return this.http.delete<any[]>(`${this.url}/${id}`);
+    public delete(id: string, includeChildren?: boolean): Observable<ISchema[]> {
+        return this.http.delete<any[]>(`${this.url}/${id}`, {
+            params: {
+                includeChildren: includeChildren ? true : false
+            }
+        });
     }
 
     public exportInFile(id: string): Observable<ArrayBuffer> {
@@ -142,12 +146,16 @@ export class SchemaService {
         return this.http.get<any[]>(`${this.url}/${id}/export/message`);
     }
 
-    public pushImportByMessage(messageId: string, topicId: any): Observable<ITask> {
-        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/message`, { messageId });
+    public pushImportByMessage(messageId: string, topicId: any, schemasForReplace?: string[]): Observable<ITask> {
+        var query = schemasForReplace?.length ? `?schemas=${schemasForReplace.join(',')}` : '';
+
+        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/message${query}`, { messageId });
     }
 
-    public pushImportByFile(schemasFile: any, topicId: any): Observable<ITask> {
-        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/file`, schemasFile, {
+    public pushImportByFile(schemasFile: any, topicId: any, schemasForReplace?: string[]): Observable<ITask> {
+        var query = schemasForReplace?.length ? `?schemas=${schemasForReplace.join(',')}` : '';
+
+        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/file${query}`, schemasFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream',
             },
@@ -163,7 +171,7 @@ export class SchemaService {
     }
 
     public previewByFile(schemasFile: any): Observable<ISchema[]> {
-        return this.http.post<any[]>(`${this.url}/import/file/preview`, schemasFile, {
+        return this.http.post<any>(`${this.url}/import/file/preview`, schemasFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream',
             },
@@ -214,6 +222,15 @@ export class SchemaService {
         return this.http.get<SchemaNode>(`${this.singleSchemaUrl}/${id}/tree`);
     }
 
+    public getSchemaDeletionPreview(id: string, topicId?: string): Observable<ISchemaDeletionPreview> {
+        const options = topicId ? { params: { topicId } } : {};
+        return this.http.get<ISchemaDeletionPreview>(`${this.singleSchemaUrl}/${id}/deletionPreview`, options);
+    }
+
+    public deleteSchemasByTopicId(topicId: string): Observable<any> {
+        return this.http.delete<any>(`${this.url}/topic/${topicId}`, {});
+    }
+
     public properties(): Observable<any[]> {
         return this.http.get<any>(`${API_BASE_URL}/projects/properties`);
     }
@@ -238,8 +255,14 @@ export class SchemaService {
         });
     }
 
-    public pushImportByXlsx(schemasFile: any, topicId: any): Observable<{ taskId: string, expectation: number }> {
-        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/xlsx`, schemasFile, {
+    public checkForDublicates(data: { schemaNames: string[]; policyId: string }): Observable<any> {
+        return this.http.post<any>(`${this.url}/import/schemas/duplicates`, data);
+    }
+
+    public pushImportByXlsx(schemasFile: any, topicId: any, schemasForReplace?: string[]): Observable<{ taskId: string, expectation: number }> {
+        var query = schemasForReplace?.length ? `?schemas=${schemasForReplace.join(',')}` : '';
+
+        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/xlsx${query}`, schemasFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream',
             },

@@ -1,0 +1,49 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{(isActionSelected$ | async) ? getTitle() : 'Select action'}}</div>
+    </div>
+    <div class="header-icon" (click)="onNoClick()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<ng-container *ngIf="isActionSelected$ | async; else selectActionTemplate">
+    <div class="dialog-body">
+        <form [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-field">
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="version">* Name</label>
+                <input formControlName="name" pInputText type="text" placeholder="Name" />
+            </div>
+            <div class="guardian-textarea-container">
+                <label class="form-label">Description</label>
+                <textarea formControlName="description" pTextarea rows="3"  placeholder="Description"></textarea>
+            </div>
+        </form>
+    </div>
+    <div class="dialog-footer">
+        <div class="action-buttons">
+            <div class="dialog-button">
+                <button 
+                    (click)="onNoClick()" 
+                    class="guardian-button guardian-button-secondary">Close</button>
+            </div>
+            <div class="dialog-button">
+                <button 
+                    (click)="onSubmit()" 
+                    class="guardian-button guardian-button-primary"
+                    [disabled]="dataForm.invalid">Ok</button>
+            </div>
+        </div>
+    </div>
+</ng-container>
+<ng-template #selectActionTemplate>
+    <div class="dialog-body">
+        <div class="action-select-step">
+            <button 
+                (click)="setAction(1)" 
+                class="guardian-button guardian-button-secondary">Create new tool</button>
+            <button 
+                (click)="setAction(2)" 
+                class="guardian-button guardian-button-secondary">Create new version</button>
+        </div>
+    </div>
+</ng-template>

@@ -147,7 +147,7 @@ export class GzipService {
         if (input instanceof Blob) {
             bytes = await input.arrayBuffer();
         } else if (input instanceof Uint8Array) {
-            bytes = input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength);
+            bytes = input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength) as ArrayBuffer;
         } else {
             bytes = input;
         }

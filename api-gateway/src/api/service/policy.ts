@@ -10,6 +10,8 @@ import {
     DebugBlockConfigDTO,
     DebugBlockHistoryDTO,
     DebugBlockResultDTO,
+    DeleteSavepointsDTO,
+    DeleteSavepointsResultDTO,
     Examples,
     ExportMessageDTO,
     ImportMessageDTO,
@@ -603,7 +605,7 @@ export class PolicyApi {
             model.categories = policy.categories;
             model.projectSchema = policy.projectSchema;
 
-            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`, `${PREFIXES.SCHEMES}schema-with-sub-schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return await engineService.savePolicy(model, new EntityOwner(user), policyId);
@@ -3013,17 +3015,20 @@ export class PolicyApi {
     async importPolicyFromXlsxAsync(
         @AuthUser() user: IAuthUser,
         @Query('policyId') policyId: string,
+        @Query('schemas') schemas: string,
         @Body() file: ArrayBuffer,
         @Req() req
     ): Promise<TaskDTO> {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
         }
+        const schemasIds = (schemas || '').split(',');
+
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.importXlsxAsync(file, new EntityOwner(user), policyId, task);
+            await engineService.importXlsxAsync(file, new EntityOwner(user), policyId, schemasIds, task);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
@@ -3031,6 +3036,11 @@ export class PolicyApi {
 
         const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
+        if (schemas && schemasIds.length) {
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+        }
 
         return task;
     }
@@ -3550,33 +3560,35 @@ export class PolicyApi {
     /**
      * Delete savepoints
      */
-    @Delete('/:policyId/savepoints')
+    @Post('/:policyId/savepoints/delete')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
         summary: 'Delete dry-run savepoints.',
-        description: 'Deletes the specified savepoints for the policy (Dry Run only).',
+        description: 'Deletes the specified savepoints for the policy (Dry Run only).'
     })
-    @ApiParam({ name: 'policyId', type: String, required: true, example: Examples.DB_ID })
-    @ApiBody({
-        description: '{ savepointIds: string[] }',
-        schema: {
-            type: 'object',
-            properties: {
-                savepointIds: { type: 'array', items: { type: 'string' } }
-            },
-            required: ['savepointIds']
-        }
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        required: true,
+        example: Examples.DB_ID
     })
-    @ApiOkResponse({ description: 'Successful operation.' })
-    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiBody({ type: DeleteSavepointsDTO })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: DeleteSavepointsResultDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(DeleteSavepointsDTO, DeleteSavepointsResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSavepoints(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: { savepointIds: string[], skipCurrentSavepointGuard: boolean },
+        @Body() body: DeleteSavepointsDTO,
         @Req() req
-    ) {
+    ): Promise<DeleteSavepointsResultDTO> {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
         const policy = await engineService.accessPolicy(policyId, owner, 'read');
@@ -3589,7 +3601,12 @@ export class PolicyApi {
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
         try {
-            return await engineService.deleteSavepoints(policyId, owner, body.savepointIds, body.skipCurrentSavepointGuard);
+            return await engineService.deleteSavepoints(
+                policyId,
+                owner,
+                body.savepointIds,
+                body.skipCurrentSavepointGuard
+            ) as DeleteSavepointsResultDTO
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

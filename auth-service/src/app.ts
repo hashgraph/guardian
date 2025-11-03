@@ -1,6 +1,6 @@
 import { AccountService } from './api/account-service.js';
 import { WalletService } from './api/wallet-service.js';
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, Migration, mongoForLoggingInitialization, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, ValidateConfiguration } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, Migration, mongoForLoggingInitialization, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, ValidateConfiguration, Wallet, Workers } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -13,6 +13,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { MeecoAuthService } from './api/meeco-service.js';
 import { ApplicationEnvironment } from './environment.js';
 import { RoleService } from './api/role-service.js';
+import { RelayerAccountsService } from './api/relayer-accounts.js';
 import { DEFAULT_MONGO } from '#constants';
 import { checkValidJwt } from './utils/index.js';
 
@@ -62,6 +63,11 @@ Promise.all([
         const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
         new WalletService().registerListeners(logger);
 
+        await new Wallet().setConnection(cn).init();
+
+        await new Workers().setConnection(cn).init();
+        new Workers().initListeners();
+
         const state = new ApplicationState();
         await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
 
@@ -73,6 +79,9 @@ Promise.all([
 
         await new RoleService().setConnection(cn).init();
         new RoleService().registerListeners(logger);
+
+        await new RelayerAccountsService().setConnection(cn).init();
+        new RelayerAccountsService().registerListeners(logger);
 
         const validator = new ValidateConfiguration();
 

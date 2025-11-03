@@ -234,7 +234,9 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
 
         const fixedActionsContainer = document.getElementById('fixed-actions-container');
         if (fixedActionsContainer) {
-            fixedActionsContainer.style.left = !this.smallMenuMode ? 'var(--header-width-expand)' : 'var(--header-width-collapse)'
+            fixedActionsContainer.style.left = !this.smallMenuMode ?
+                'var(--header-width-expand)' :
+                'var(--header-width-collapse)'
         }
 
         try {

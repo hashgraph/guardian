@@ -12,6 +12,7 @@ import { TagsService } from 'src/app/services/tag.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { noWhitespaceValidator } from '../../validators/no-whitespace-validator';
+import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 
 enum OperationMode {
     None, Generate, Associate
@@ -29,72 +30,42 @@ enum OperationMode {
 export class ListOfTokensUserComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();
     public profile?: IUser | null;
-    public tokens: any[] = [];
     public loading: boolean = true;
     public isConfirmed: boolean = false;
     public isFailed: boolean = false;
-    public isNewAccount: boolean = false;
     public isLocalUser: boolean = false;
 
-    public value: any;
-
-    public users: any[] = [];
-    public usersColumns: string[] = [
-        'username',
-        'associated',
-        'tokenBalance',
-        'frozen',
-        'kyc',
-        'refresh'
-    ];
+    public tokenId: string = '';
+    public tokenUrl: string = '';
 
     public taskId: string | undefined = undefined;
     public expectedTaskMessages: number = 0;
     public operationMode: OperationMode = OperationMode.None;
-    public selectedUser: any;
-    public currentPolicy: any = '';
+
     public policies: any[] | null = null;
     public tagEntity = TagType.Token;
     public owner: any;
     public tagSchemas: any[] = [];
 
-    public tokenDialogVisible: boolean = false;
-    public deleteTokenVisible: boolean = false;
-    public currentTokenId: any;
-    public dataForm = new UntypedFormGroup({
-        draftToken: new UntypedFormControl(true, [Validators.required]),
-        tokenName: new UntypedFormControl('Token Name', [Validators.required, noWhitespaceValidator()]),
-        tokenSymbol: new UntypedFormControl('F', [Validators.required, noWhitespaceValidator()]),
-        tokenType: new UntypedFormControl('fungible', [Validators.required]),
-        decimals: new UntypedFormControl('2'),
-        initialSupply: new UntypedFormControl('0'),
-        enableAdmin: new UntypedFormControl(true, [Validators.required]),
-        changeSupply: new UntypedFormControl(true, [Validators.required]),
-        enableFreeze: new UntypedFormControl(false, [Validators.required]),
-        enableKYC: new UntypedFormControl(false, [Validators.required]),
-        enableWipe: new UntypedFormControl(true, [Validators.required])
-    });
-    public dataFormPristine: any = this.dataForm.value;
-    public readonlyForm: boolean = false;
-    public hideType: boolean = false;
-
-    public policyDropdownItem: any;
-
-    public innerWidth: any;
-    public innerHeight: any;
-
+    public tokens: any[] = [];
+    public columns: any[];
     public tokensCount: any;
     public pageIndex: number;
     public pageSize: number;
 
+    public users: any[] = [];
+    public usersColumns: any[];
+    public userPageCount: any;
+    public userPageIndex: number;
+    public userPageSize: number;
+
+    public tokenName: string;
+
     constructor(
         public tagsService: TagsService,
-        private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
-        private informService: InformService,
-        private taskService: TasksService,
-        private policyEngineService: PolicyEngineService,
+        private relayerAccountsService: RelayerAccountsService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: DialogService
@@ -102,16 +73,97 @@ export class ListOfTokensUserComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 10;
         this.tokensCount = 0;
+        this.columns = [{
+            id: 'id',
+            title: 'TOKEN ID',
+            type: 'text',
+            size: '150',
+            tooltip: false
+        }, {
+            id: 'symbol',
+            title: 'TOKEN SYMBOL',
+            type: 'text',
+            size: '180',
+            tooltip: false
+        }, {
+            id: 'name',
+            title: 'TOKEN NAME',
+            type: 'text',
+            size: 'auto',
+            tooltip: true
+        }, {
+            id: 'policies',
+            title: 'POLICIES',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'tags',
+            title: 'TAGS',
+            type: 'text',
+            size: '220',
+            tooltip: false
+        }, {
+            id: 'options',
+            title: 'ACCOUNTS',
+            type: 'text',
+            size: '120',
+            tooltip: false
+        }]
+
+        this.userPageIndex = 0;
+        this.userPageSize = 10;
+        this.userPageCount = 0;
+        this.usersColumns = [{
+            id: 'id',
+            title: 'ACCOUNT ID',
+            type: 'text',
+            size: '150',
+            tooltip: false
+        }, {
+            id: 'name',
+            title: 'NAME',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'balance',
+            title: 'BALANCE',
+            type: 'text',
+            size: '200',
+            tooltip: false
+        }, {
+            id: 'associate',
+            title: 'ASSOCIATE',
+            type: 'text',
+            size: '150',
+            tooltip: false
+        }, {
+            id: 'freeze',
+            title: 'FROZEN',
+            type: 'text',
+            size: '150',
+            tooltip: false
+        }, {
+            id: 'kyc',
+            title: 'KYCD',
+            type: 'text',
+            size: '150',
+            tooltip: false
+        }, {
+            id: 'refresh',
+            title: 'REFRESH',
+            type: 'text',
+            size: '120',
+            tooltip: false
+        }]
     }
 
     ngOnInit() {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
         this.loading = true;
-        this.currentPolicy = this.route.snapshot.queryParams['policy'];
-        this.route.queryParams.subscribe(queryParams => {
-            this.loadDate();
-        });
+        this.tokenUrl = this.route.snapshot.queryParams['tokenId'];
+        this.tokenId = this.tokenUrl ? atob(this.tokenUrl) : '';
+        this.loadDate();
     }
 
     private loadDate() {
@@ -122,16 +174,28 @@ export class ListOfTokensUserComponent implements OnInit {
             this.user = new UserPermissions(this.profile);
             this.isConfirmed = !!this.profile.confirmed;
             this.isFailed = !!this.profile.failed;
-            this.isNewAccount = !this.profile.didDocument;
             this.isLocalUser = this.profile.location === LocationType.LOCAL;
             this.owner = this.profile?.did;
 
-            this.loadTokenData();
+            this.queryChange();
 
         }, ({ message }) => {
             this.loading = false;
             console.error(message);
         });
+    }
+
+    private queryChange() {
+        this.loading = true;
+        if (!this.isConfirmed) {
+            this.loading = false;
+            return;
+        }
+        if (this.tokenId) {
+            this.loadRelayerAccounts();
+        } else {
+            this.loadTokenData();
+        }
     }
 
     private loadTokenData() {
@@ -192,10 +256,44 @@ export class ListOfTokensUserComponent implements OnInit {
         }
     }
 
-    associate(token: Token) {
+    private loadRelayerAccounts() {
+        forkJoin([
+            this.tokenService.getTokenById(this.tokenId),
+            this.relayerAccountsService
+                .getUserRelayerAccounts(
+                    this.pageIndex,
+                    this.pageSize,
+                )
+        ]).subscribe(([token, response]) => {
+            this.tokenName = token?.body?.tokenName || this.tokenId;
+            const { page, count } = this.relayerAccountsService.parsePage(response);
+            this.users = page || [];
+            this.userPageCount = count || this.users.length;
+            for (const item of this.users) {
+                if (!item.relayerAccountId) {
+                    item.relayerAccountId = item.hederaAccountId;
+                    item.relayerAccountName = 'Default';
+                }
+            }
+
+            this.refreshAll(this.users);
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    public associate(user: any) {
         this.loading = true;
         this.tokenService
-            .pushAssociate(token.tokenId, token.associated != 'Yes')
+            .pushAssociateWithAccount(
+                this.tokenId,
+                user.relayerAccountId,
+                user.associated != 'Yes'
+            )
             .subscribe(
                 (result) => {
                     const { taskId, expectation } = result;
@@ -211,7 +309,7 @@ export class ListOfTokensUserComponent implements OnInit {
             );
     }
 
-    getColor(status: string) {
+    public getColor(status: string) {
         switch (status) {
             case 'Yes':
                 return 'green';
@@ -222,7 +320,7 @@ export class ListOfTokensUserComponent implements OnInit {
         }
     }
 
-    getPoliciesInfo(policies: string[]): string {
+    public getPoliciesInfo(policies: string[]): string {
         if (!policies || !policies.length) {
             return '';
         }
@@ -240,5 +338,84 @@ export class ListOfTokensUserComponent implements OnInit {
             this.pageSize = event.pageSize;
         }
         this.loadDate();
+    }
+
+    public goToUsingTokens(token: any) {
+        this.tokenUrl = token.url;
+        this.tokenId = this.tokenUrl ? atob(this.tokenUrl) : '';
+        this.router.navigate(['/tokens-user'], {
+            queryParams: {
+                tokenId: token.url,
+            }
+        });
+        this.queryChange();
+    }
+
+    public refreshAll(users: any[]) {
+        for (const item of users) {
+            item.loading = true;
+        }
+        setTimeout(() => {
+            for (const item of users) {
+                this.refresh(item);
+            }
+        }, 1000);
+    }
+
+    public refresh(user: any) {
+        user.loading = true;
+        this.tokenService
+            .relayerAccountInfo(this.tokenId, user.relayerAccountId)
+            .subscribe((res) => {
+                this.refreshUser(user, res);
+                user.loading = false;
+            }, (e) => {
+                console.error(e.error);
+                user.loading = false;
+            });
+    }
+
+    private refreshUser(user: any, res: any) {
+        user.refreshed = true;
+        user.associated = 'n/a';
+        user.balance = 'n/a';
+        user.hBarBalance = 'n/a';
+        user.frozen = 'n/a';
+        user.kyc = 'n/a';
+        user.enableAdmin = false;
+        user.enableFreeze = false;
+        user.enableKYC = false;
+        user.enableWipe = false;
+        if (res) {
+            user.enableAdmin = res.enableAdmin;
+            user.enableFreeze = res.enableFreeze;
+            user.enableKYC = res.enableKYC;
+            user.enableWipe = res.enableWipe;
+            user.associated = res.associated ? 'Yes' : 'No';
+            if (res.associated) {
+                user.balance = res.balance;
+                user.hBarBalance = res.hBarBalance;
+                user.frozen = res.frozen ? 'Yes' : 'No';
+                user.kyc = res.kyc ? 'Yes' : 'No';
+            }
+        }
+    }
+
+    public onUserPage(event: any): void {
+        if (this.userPageSize != event.pageSize) {
+            this.userPageIndex = 0;
+            this.userPageSize = event.pageSize;
+        } else {
+            this.userPageIndex = event.pageIndex;
+            this.userPageSize = event.pageSize;
+        }
+        this.loadRelayerAccounts();
+    }
+
+    public goToTokensPage() {
+        this.tokenUrl = '';
+        this.tokenId = '';
+        this.router.navigate(['/tokens-user']);
+        this.queryChange();
     }
 }

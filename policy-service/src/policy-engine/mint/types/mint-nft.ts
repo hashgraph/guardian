@@ -65,6 +65,8 @@ export class MintNFT extends TypedMint {
             tokenType: TokenType;
             decimals: number;
             policyId: string;
+            owner: string;
+            relayerAccount: string;
             metadata?: string;
             secondaryVpIds?: string[];
         },
@@ -90,16 +92,11 @@ export class MintNFT extends TypedMint {
             userId?: string;
         }
     ): Promise<void> {
-        const mintedTransactionsSerials =
-            await this._db.getTransactionsSerialsCount(this._mintRequest.id);
+        const mintedTransactionsSerials = await this._db.getTransactionsSerialsCount(this._mintRequest.id);
         let mintedCount = 0;
-        const tokensToMint = Math.floor(
-            this._mintRequest.amount - mintedTransactionsSerials
-        );
+        const tokensToMint = Math.floor(this._mintRequest.amount - mintedTransactionsSerials);
 
-        const transactionsCount = await this._db.getTransactionsCount({
-            mintRequestId: this._mintRequest.id,
-        });
+        const transactionsCount = await this._db.getTransactionsCount({ mintRequestId: this._mintRequest.id, });
         if (transactionsCount === 0) {
             const naturalCount = Math.floor(tokensToMint / 10);
             const restCount = tokensToMint % 10;
@@ -182,10 +179,9 @@ export class MintNFT extends TypedMint {
                 limit: MintNFT.BATCH_NFT_MINT_SIZE,
             }
         );
+        const relayerAccount = await this.getRelayerAccount();
         while (transactions.length > 0) {
-            const mintNFT = async (
-                transaction: MintTransaction
-            ): Promise<void> => {
+            const mintNFT = async (transaction: MintTransaction): Promise<void> => {
                 transaction.mintStatus = MintTransactionStatus.PENDING;
                 await this._db.saveMintTransaction(transaction);
                 try {
@@ -193,8 +189,8 @@ export class MintNFT extends TypedMint {
                         {
                             type: WorkerTaskType.MINT_NFT,
                             data: {
-                                hederaAccountId: this._root.hederaAccountId,
-                                hederaAccountKey: this._root.hederaAccountKey,
+                                hederaAccountId: relayerAccount.hederaAccountId,
+                                hederaAccountKey: relayerAccount.hederaAccountKey,
                                 dryRun: this._db.getDryRun(),
                                 tokenId: this._token.tokenId,
                                 supplyKey: this._token.supplyKey,
@@ -281,6 +277,7 @@ export class MintNFT extends TypedMint {
                 limit: MintNFT.BATCH_NFT_MINT_SIZE,
             }
         );
+        const relayerAccount = await this.getRelayerAccount();
         while (transactions.length > 0) {
             const transferNFT = async (
                 transaction: MintTransaction
@@ -292,8 +289,8 @@ export class MintNFT extends TypedMint {
                         {
                             type: WorkerTaskType.TRANSFER_NFT,
                             data: {
-                                hederaAccountId: this._root.hederaAccountId,
-                                hederaAccountKey: this._root.hederaAccountKey,
+                                hederaAccountId: relayerAccount.hederaAccountId,
+                                hederaAccountKey: relayerAccount.hederaAccountKey,
                                 dryRun: this._ref && this._ref.dryRun,
                                 tokenId: this._token.tokenId,
                                 targetAccount: this._mintRequest.target,
