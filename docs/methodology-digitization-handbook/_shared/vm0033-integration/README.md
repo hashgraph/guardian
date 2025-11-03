@@ -1,4 +1,4 @@
-# рџ”— VM0033 Integration
+# 🔗 VM0033 Integration
 
 > System for leveraging existing VM0033 documentation and requesting only Guardian-specific implementation details
 
