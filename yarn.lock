@@ -1945,9 +1945,9 @@
   integrity sha512-W+n+rM69XsFdwORF11UqJahn4J3xi4g/ZEOlJNL6KoW5ygWSmBB2p0S2BZ4FQeS/NDH72e6xIcu35SfJnE8bXw==
 
 "@nestjs/microservices@^11.0.11":
-  version "11.1.7"
-  resolved "https://registry.yarnpkg.com/@nestjs/microservices/-/microservices-11.1.7.tgz#6bd4dbacb69b3fe5248b5eb7c1f48841353b3e4b"
-  integrity sha512-Oc+Uqsx5Br0aCZOaQ4n+ykiI3q1nUNZ2zwM6WRxVYG5BWfeicXS0b68abg9LRblLmRJ5pX7NynE86YKNuN20nQ==
+  version "11.1.8"
+  resolved "https://registry.yarnpkg.com/@nestjs/microservices/-/microservices-11.1.8.tgz#2b3b6280e3f7d164f0d9023c32663e64e84edbda"
+  integrity sha512-AybVmZHzJtSnf3igmwH79FpwFjPZejtWTcWP29bT7QoPmDPg5A7/hPuWA6/Wf2cD6U37EAaX83+R4jCnR5E+6A==
   dependencies:
     iterare "1.2.1"
     tslib "2.8.1"
