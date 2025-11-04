@@ -17,7 +17,7 @@ Setup:
 * Multiple table fields can be added in one document.
 * All table fields can participate in calculations (cross-table formulas, sums, links with other fields, etc.).
 
-<figure><img src="../../../../../.gitbook/assets/unknown.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (7).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Use the field while filling the form
 
@@ -30,9 +30,9 @@ Available options:
 * Edit: open the table in a dialog and update cells.
 * Create manually: start with an empty table and fill it by hand.
 
-<figure><img src="../../../../../.gitbook/assets/unknown (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/unknown (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3. Run calculations (inside a table and with other fields)
 
@@ -45,17 +45,17 @@ Options:
 * AutoCalculate field (automatic calculation)
 * Custom Logic Block (custom rules/logic)
 
-<figure><img src="../../../../../.gitbook/assets/unknown (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (3) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/unknown (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (4) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/unknown (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 4. Save a prefilled table as a Draft
 
 Save an unfinished form with imported/entered table data and return to it later.
 
-<figure><img src="../../../../../.gitbook/assets/unknown (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 5. View and download results in document view
 
@@ -64,7 +64,7 @@ What it does:
 * In Guardian, VC document view shows tables and calculated values.
 * In Indexer, the same table is available for viewing and downloading.
 
-<figure><img src="../../../../../.gitbook/assets/unknown (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 6. Limits and performance
 
