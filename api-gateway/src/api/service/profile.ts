@@ -149,16 +149,19 @@ export class ProfileApi {
         const task = taskManager.start(TaskAction.CONNECT_USER, user.id);
         const username: string = user.username;
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`, `/${PREFIXES.ACCOUNTS}/session`];
+
+        taskManager.registerCallback(task, async () => {
+            await this.cacheService.invalidate(
+                getCacheKey([req.url, ...invalidedCacheTags], user)
+            );
+        });
+
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             await guardians.createUserProfileCommonAsync(user, username, profile, task);
-
-            setTimeout(async () => await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user)), 10000)
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
-
-            setTimeout(async () => await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user)), 10000)
         });
         return task;
     }
