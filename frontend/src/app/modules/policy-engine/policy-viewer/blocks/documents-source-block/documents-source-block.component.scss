@@ -177,12 +177,7 @@
 }
 
 .text {
-    overflow: hidden;
     white-space: nowrap;
-    // max-width: 400px;
-    display: inline-block;
-    text-overflow: ellipsis;
-    max-width: calc(100vw - 200px);
 }
 
 .array.text {
@@ -322,8 +317,8 @@ tr.revoked td:not(.mat-column-history) {
     white-space: nowrap;
 }
 
-::ng-deep .table.no-hover th,
-::ng-deep .p-datatable {
+.content::ng-deep .table.no-hover th,
+.content::ng-deep .p-datatable {
     .p-datatable-wrapper {
         overflow: inherit;
     }
@@ -333,20 +328,33 @@ tr.revoked td:not(.mat-column-history) {
         cursor: default;
         color: var(--color-grey-5, #495057);
     }
+
+    tr>td {
+        position: relative;
+    }
 }
 
 
-::ng-deep .p-datatable-thead {
+.content::ng-deep .p-datatable-thead {
     font-size: 14px;
     font-weight: 400;
 }
 
-::ng-deep .p-datatable-tbody .pi {
+.content::ng-deep .p-datatable-tbody .pi {
     font-size: 0.75rem;
 }
 
 .text-container {
     overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    position: absolute;
+    left: 1em;
+    top: 1em;
+    bottom: 1em;
+    right: 1em;
+    display: inline-block;
+    padding: 6px 0px;
 }
 
 *[readonly-block="true"] {
