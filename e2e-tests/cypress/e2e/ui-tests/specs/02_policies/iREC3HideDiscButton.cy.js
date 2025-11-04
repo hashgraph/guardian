@@ -47,7 +47,7 @@ context("Workflow iREC 3 Policy", { tags: ['ui'] }, () => {
         policiesPage.openPoliciesTab();
         policiesPage.openPolicy(name);
         policiesPage.approveUserInPolicy();
-        policiesPage.backToPoliciesList();
+        policiesPage.backToPoliciesListBtn();
         policiesPage.discontinuePolicy(name);
         homePage.logOut();
 
