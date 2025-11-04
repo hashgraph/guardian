@@ -124,6 +124,18 @@ export class MintRequest extends RestoreEntity {
     readonly?: boolean;
 
     /**
+     * Relayer Account
+     */
+    @Property({ nullable: true })
+    relayerAccount?: string;
+
+    /**
+     * Owner
+     */
+    @Property({ nullable: true })
+    owner?: string;
+
+    /**
      * Create document
      */
     @BeforeCreate()
@@ -147,6 +159,8 @@ export class MintRequest extends RestoreEntity {
         prop.error = this.error;
         prop.processDate = this.processDate;
         prop.policyId = this.policyId;
+        prop.relayerAccount = this.relayerAccount;
+        prop.owner = this.owner;
         this._updatePropHash(prop);
         this._updateDocHash('');
     }

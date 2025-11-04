@@ -15,7 +15,9 @@
         "outDir": "dist/",
         "target": "es2022",
         "paths": {
-          "#constants/*": ["./src/constants/*"]
+            "#constants/*": [
+                "./src/constants/*"
+            ]
         }
     },
     "exclude": [

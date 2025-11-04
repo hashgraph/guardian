@@ -74,7 +74,14 @@ export class SendToGuardianBlock {
      */
     private async getVCRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
         let old: any = null;
-        if (document.hash) {
+        if (document.draft || document.draftId) {
+            old = await ref.databaseServer.getVcDocument({
+                id: { $eq: document?.draftId },
+                policyId: { $eq: ref.policyId },
+                draft: { $eq: true }
+            });
+        }
+        else if (document.hash) {
             old = await ref.databaseServer.getVcDocument({
                 policyId: { $eq: ref.policyId },
                 hash: { $eq: document.hash },
@@ -169,9 +176,16 @@ export class SendToGuardianBlock {
     ): Promise<IPolicyDocument> {
         let old = await this.getVCRecord(document, operation, ref);
         if (old) {
+            if (!document.draft) {
+                delete document.draftId;
+                delete old.draftId;
+            }
             old = this.mapDocument(old, document);
             old = await PolicyUtils.updateVC(ref, old, userId);
         } else {
+            if (!document.draft) {
+                delete document.draftId;
+            }
             delete document.id;
             delete document._id;
             old = await PolicyUtils.saveVC(ref, document, userId);
@@ -385,6 +399,8 @@ export class SendToGuardianBlock {
         document.documentFields = Array.from(
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
         );
+        document.startMessageId = document.startMessageId || document.messageId;
+        document.edited = false;
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
         } else if (type === DocumentType.VerifiableCredential) {
@@ -437,12 +453,29 @@ export class SendToGuardianBlock {
             message.setMemo(memo);
 
             const topicOwner = this.getTopicOwner(ref, document, ref.options.topicOwner);
-            const topic = await PolicyActionsUtils.getOrCreateTopic(ref, ref.options.topic, topicOwner, document, userId);
-            const vcMessageResult = await PolicyActionsUtils.sendMessage(ref, topic, message, document.owner, true, userId);
+            const relayerAccount = document.owner === topicOwner ? document.relayerAccount : null;
+            const topic = await PolicyActionsUtils.getOrCreateTopic({
+                ref,
+                name: ref.options.topic,
+                owner: topicOwner,
+                relayerAccount,
+                memoObj: document,
+                userId
+            });
+            const vcMessageResult = await PolicyActionsUtils.sendMessage({
+                ref,
+                topic,
+                message,
+                owner: document.owner,
+                relayerAccount: document.relayerAccount,
+                updateIpfs: true,
+                userId
+            });
 
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
             document.topicId = vcMessageResult.getTopicId();
+            document.startMessageId = document.startMessageId || document.messageId;
 
             return document;
         } catch (error) {
@@ -461,7 +494,8 @@ export class SendToGuardianBlock {
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
-
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, document, userId);
+        const owner = await PolicyUtils.getUserByIssuer(ref, document, userId);
         //
         // Create Message
         //
@@ -472,10 +506,10 @@ export class SendToGuardianBlock {
             const didMessage = new DIDMessage(MessageAction.CreateDID);
             didMessage.setDocument(did);
             didMessage.setRelationships(document.relationships);
+            didMessage.setOwnerAccount(owner.hederaAccountId);
             message = didMessage;
             docObject = did;
         } else if (type === DocumentType.VerifiableCredential) {
-            const owner = await PolicyUtils.getUserByIssuer(ref, document, userId);
             const vc = VcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
             vcMessage.setDocument(vc);
@@ -485,10 +519,11 @@ export class SendToGuardianBlock {
             vcMessage.setEntityType(ref);
             vcMessage.setOption(document, ref);
             vcMessage.setUser(owner.roleMessage);
+            vcMessage.setRef(document.startMessageId);
+            vcMessage.setOwnerAccount(owner.hederaAccountId);
             message = vcMessage;
             docObject = vc;
         } else if (type === DocumentType.VerifiablePresentation) {
-            const owner = await PolicyUtils.getUserByIssuer(ref, document, userId);
             const vp = VpDocument.fromJsonTree(document.document);
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
@@ -497,6 +532,7 @@ export class SendToGuardianBlock {
             vpMessage.setEntityType(ref);
             vpMessage.setOption(document, ref);
             vpMessage.setUser(owner.roleMessage);
+            vpMessage.setOwnerAccount(owner.hederaAccountId);
             message = vpMessage;
             docObject = vp;
         }
@@ -507,6 +543,7 @@ export class SendToGuardianBlock {
         document.document = docObject.toJsonTree();
         document.policyId = ref.policyId;
         document.tag = ref.tag;
+        document.relayerAccount = relayerAccount;
         document.option = Object.assign({}, document.option);
         if (ref.options.options) {
             for (const option of ref.options.options) {
@@ -552,6 +589,24 @@ export class SendToGuardianBlock {
     }
 
     /**
+     * Document sender
+     * @param document
+     * @param userId
+     */
+    private async updateVersion(
+        document: IPolicyDocument,
+        userId: string | null
+    ): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const old = await ref.databaseServer.getVcDocument(document.id);
+
+        if (old && old.policyId === ref.policyId) {
+            old.edited = true;
+            await PolicyUtils.updateVC(ref, old, userId);
+        }
+    }
+
+    /**
      * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
@@ -578,6 +633,15 @@ export class SendToGuardianBlock {
             event.data.data = newDocs;
         } else {
             event.data.data = await this.documentSender(docs, event?.user?.userId);
+        }
+
+        const olds: IPolicyDocument | IPolicyDocument[] = event.data.old;
+        if (Array.isArray(olds)) {
+            for (const old of olds) {
+                await this.updateVersion(old, event?.user?.userId);
+            }
+        } else if (olds) {
+            await this.updateVersion(olds, event?.user?.userId);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);

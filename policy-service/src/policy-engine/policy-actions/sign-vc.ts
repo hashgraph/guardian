@@ -7,13 +7,15 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyActionType } from './policy-action.type.js';
 
 export class SignVC {
-    public static async local(
+    public static async local(config: {
         ref: AnyBlockType,
         subject: any,
         issuer: string,
+        relayerAccount: string,
         options: IDocumentOptions,
         userId: string | null
-    ): Promise<VcDocumentDefinition> {
+    }): Promise<VcDocumentDefinition> {
+        const { ref, subject, issuer, options, userId } = config;
         const vcHelper = new VcHelper();
         const userCred = await PolicyUtils.getUserCredentials(ref, issuer, userId);
         const didDocument = await userCred.loadDidDocument(ref, userId);
@@ -26,13 +28,15 @@ export class SignVC {
         return newVC;
     }
 
-    public static async request(
+    public static async request(config: {
         ref: AnyBlockType,
         subject: any,
         issuer: string,
+        relayerAccount: string,
         options: IDocumentOptions,
         userId: string | null
-    ): Promise<any> {
+    }): Promise<any> {
+        const { ref, subject, issuer, relayerAccount, options, userId } = config;
         const vcHelper = new VcHelper();
         const userAccount = await PolicyUtils.getHederaAccountId(ref, issuer, userId);
 
@@ -49,6 +53,7 @@ export class SignVC {
             uuid: GenerateUUIDv4(),
             owner: issuer,
             accountId: userAccount,
+            relayerAccount,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.SignVC,
@@ -61,11 +66,13 @@ export class SignVC {
         return data;
     }
 
-    public static async response(
+    public static async response(config: {
         row: PolicyAction,
         user: PolicyUser,
+        relayerAccount: string,
         userId: string | null
-    ) {
+    }) {
+        const { row, user, userId } = config;
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
         const document = data.document;
@@ -106,7 +113,12 @@ export class SignVC {
         response: PolicyAction,
         userId: string | null
     ): Promise<boolean> {
-        if (request && response && request.accountId === response.accountId) {
+        if (
+            request &&
+            response &&
+            request.accountId === response.accountId &&
+            request.relayerAccount === response.relayerAccount
+        ) {
             return true;
         }
         return false;

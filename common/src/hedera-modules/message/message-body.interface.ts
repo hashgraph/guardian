@@ -28,6 +28,10 @@ export interface MessageBody {
      */
     lang: string;
     /**
+     * Account
+     */
+    account: string;
+    /**
      * Revoke message
      */
     revokeMessage?: string;
@@ -127,6 +131,10 @@ export interface PolicyMessageBody extends MessageBody {
      * actionsTopicId
      */
     actionsTopicId: string;
+    /**
+     * commentsTopicId
+     */
+    commentsTopicId: string;
     /**
      * Effective Date
      */
@@ -273,6 +281,10 @@ export interface VcMessageBody extends MessageBody {
      * Tag
      */
     tag: string;
+    /**
+     * Start Message
+     */
+    startMessage: string;
     /**
      * Entity Type
      */
@@ -843,6 +855,10 @@ export interface PolicyActionMessageBody extends MessageBody {
      */
     accountId: string;
     /**
+     * User account
+     */
+    relayerAccount: string;
+    /**
      * Block
      */
     blockTag: string;
@@ -916,4 +932,56 @@ export interface SchemaPackageMessageBody extends MessageBody {
      * Metadata URI
      */
     metadata_uri?: string;
+}
+
+/**
+ * Discussion message body
+ */
+export interface DiscussionMessageBody extends MessageBody {
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+    /**
+     * Relationships
+     */
+    relationships: string[];
+    /**
+     * Hash
+     */
+    hash: string;
+    /**
+     * Target
+     */
+    target: string;
+}
+
+/**
+ * Comment message body
+ */
+export interface CommentMessageBody extends MessageBody {
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+    /**
+     * Discussion
+     */
+    discussion: string;
+    /**
+     * Hash
+     */
+    hash: string;
+    /**
+     * Target
+     */
+    target: string;
 }

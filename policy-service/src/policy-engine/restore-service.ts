@@ -195,7 +195,9 @@ export class PolicyRestoreService {
         try {
             const message = PolicyDiffMessage.fromMessage(data.message);
             await MessageServer.loadDocument(message);
-            const file = await FileHelper.unZipFile(message.document);
+            const buffer = message.document;
+            const arrayBuffer = buffer?.buffer?.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+            const file = await FileHelper.unZipFile(arrayBuffer);
             await this.controller.restore(file);
             await PolicyComponentsUtils.restoreState(this.policyId);
             PolicyComponentsUtils.sentRestoreNotification(this.policyId).then();

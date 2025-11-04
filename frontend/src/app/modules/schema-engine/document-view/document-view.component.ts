@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges, } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
 import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -23,11 +23,17 @@ export class DocumentViewComponent implements OnInit {
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
     @Input('type') type!: 'VC' | 'VP';
     @Input('schema') schema!: any;
+    @Input('discussion') discussionData!: any;
+    @Input('discussion-action') discussionAction: boolean = false;
+    @Input('discussion-view') discussionView: boolean = false;
 
     @Input() dryRun?: boolean = false;
     @Input() policyId?: string;
     @Input() documentId?: string;
     @Input() schemaId?: string;
+    @Input('relayer-account') relayerAccount?: string;
+
+    @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
 
     public loading: boolean = false;
     public isIssuerObject: boolean = false;
@@ -41,6 +47,7 @@ export class DocumentViewComponent implements OnInit {
     public rules: DocumentValidators;
     public rulesResults: SchemaRuleValidateResult;
     public formulasResults: any | null;
+    public link: string | undefined;
 
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -232,5 +239,15 @@ export class DocumentViewComponent implements OnInit {
     public onPage(event: any): void {
         this.pageIndex = event.pageIndex;
         this.pageSize = event.pageSize;
+    }
+
+    public onDiscussionAction($event: any) {
+        this.discussionActionEvent.emit($event);
+    }
+
+    public openField(id?: string): void {
+        const path = id?.split('/');
+        this.link = path && path.length > 1 ? path[path.length - 1] : undefined;
+        this.ref.detectChanges();
     }
 }

@@ -65,6 +65,15 @@
 
     <tr class="propRow">
         <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Custom Relayer Account</td>
+        <td class="propRowCell">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.relayerAccount" [readonly]="readonly"
+                   (blur)="onSave()">
+        </td>
+    </tr>
+
+    <tr class="propRow">
+        <td class="propRowCol"></td>
         <td class="propRowCell cellName">Preset</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="properties.preset" [readonly]="readonly"

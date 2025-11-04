@@ -1,4 +1,5 @@
 import {
+    IAuthUser,
     Policy as PolicyCollection,
     PolicyTool as PolicyToolCollection,
     Users
@@ -79,10 +80,10 @@ export class DebugComponentsService extends ComponentsService {
     }
 
     /**
-     * Get virtual user
+     * Get Virtual User
      * @param did
      */
-    public override getVirtualUser(_did: string) {
+    public override getVirtualUser(did: string): Promise<IAuthUser> {
         const users = new Users();
         return users.getUserById(this.owner, null);
     }

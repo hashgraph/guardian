@@ -7,21 +7,22 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyActionType } from './policy-action.type.js';
 
 export class GenerateDID {
-    public static async local(
+    public static async local(options: {
         ref: AnyBlockType,
         user: PolicyUser,
+        relayerAccount: string,
         userId: string | null
-    ): Promise<string> {
+    }): Promise<string> {
+        const { ref, user, relayerAccount, userId } = options;
         const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null, userId);
-
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
-        const userSignOptions = await userCred.loadSignOptions(ref, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
         const client = new MessageServer({
-            operatorId: userHederaCred.hederaAccountId,
-            operatorKey: userHederaCred.hederaAccountKey,
+            operatorId: userRelayerAccount.hederaAccountId,
+            operatorKey: userRelayerAccount.hederaAccountKey,
+            signOptions: userRelayerAccount.signOptions,
             encryptKey: userHederaCred.hederaAccountKey,
-            signOptions: userSignOptions,
             dryRun: ref.dryRun
         });
 
@@ -46,11 +47,13 @@ export class GenerateDID {
         return didObject.getDid();
     }
 
-    public static async request(
+    public static async request(options: {
         ref: AnyBlockType,
         user: PolicyUser,
+        relayerAccount: string,
         userId: string | null
-    ): Promise<any> {
+    }): Promise<any> {
+        const { ref, user, relayerAccount, userId } = options;
         const userAccount = await PolicyUtils.getHederaAccountId(ref, user.did, userId);
         const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null, userId);
         const data = {
@@ -58,6 +61,7 @@ export class GenerateDID {
             owner: user.did,
             topicId: topic.topicId,
             accountId: userAccount,
+            relayerAccount,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.GenerateDID,
@@ -68,11 +72,13 @@ export class GenerateDID {
         return data;
     }
 
-    public static async response(
+    public static async response(options: {
         row: PolicyAction,
         user: PolicyUser,
+        relayerAccount: string,
         userId: string | null
-    ) {
+    }) {
+        const { row, user, userId } = options;
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
         const topicId = data.topicId;
@@ -139,7 +145,12 @@ export class GenerateDID {
         response: PolicyAction,
         userId: string | null
     ): Promise<boolean> {
-        if (request && response && request.accountId === response.accountId) {
+        if (
+            request &&
+            response &&
+            request.accountId === response.accountId &&
+            request.relayerAccount === response.relayerAccount
+        ) {
             return true;
         }
         return false;

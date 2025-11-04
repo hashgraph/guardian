@@ -1,4 +1,4 @@
-import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -16,7 +16,7 @@ import { PolicyStatus } from '@guardian/interfaces';
     styleUrls: ['./button-block.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ButtonBlockComponent implements OnInit, AfterContentChecked {
+export class ButtonBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('policyStatus') policyStatus!: string;
@@ -39,27 +39,6 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         private dialogService: DialogService,
         private cdref: ChangeDetectorRef
     ) {
-    }
-
-    ngAfterContentChecked(): void {
-        if (!this.buttons) {
-            return;
-        }
-
-        if (!this.enableIndividualFilters) {
-            let visible = true;
-            for (const button of this.buttons) {
-                visible = visible && this.checkVisible(button);
-            }
-            for (const button of this.buttons) {
-                button.visible = visible;
-            }
-        } else {
-            for (const button of this.buttons) {
-                button.visible = this.checkVisible(button);
-            }
-        }
-        this.cdref.detectChanges();
     }
 
     ngOnInit(): void {
@@ -103,6 +82,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         this.setData(data);
         setTimeout(() => {
             this.loading = false;
+            this.cdref.detectChanges();
         }, 500);
     }
 
@@ -112,6 +92,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             this._onSuccess(null);
         } else {
             this.loading = false;
+            this.cdref.detectChanges();
         }
     }
 
@@ -125,6 +106,25 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         } else {
             this.data = null;
         }
+
+        if (!this.buttons) {
+            return;
+        }
+
+        if (!this.enableIndividualFilters) {
+            let visible = true;
+            for (const button of this.buttons) {
+                visible = visible && this.checkVisible(button);
+            }
+            for (const button of this.buttons) {
+                button.visible = visible;
+            }
+        } else {
+            for (const button of this.buttons) {
+                button.visible = this.checkVisible(button);
+            }
+        }
+        this.cdref.detectChanges();
     }
 
     isBtnVisible(button: any) {
@@ -217,6 +217,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
                 (e) => {
                     console.error(e.error);
                     this.loading = false;
+                    this.cdref.detectChanges();
                 }
             );
     }

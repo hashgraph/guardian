@@ -31,6 +31,31 @@
 
     <tr class="propRow">
         <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Edit type</td>
+        <td class="propRowCell">
+            <p-dropdown
+                [(ngModel)]="properties.editType"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select an Edit type"
+                [options]="editType"
+                [appendTo]="'body'"
+            >
+            </p-dropdown>
+        </td>
+    </tr>
+
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Custom Relayer Account</td>
+        <td class="propRowCell">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.relayerAccount" [readonly]="readonly"
+                   (blur)="onSave()">
+        </td>
+    </tr>
+
+    <tr class="propRow">
+        <td class="propRowCol"></td>
         <td class="propRowCell cellName">Preset</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="properties.preset" [readonly]="readonly"

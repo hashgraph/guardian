@@ -42,6 +42,7 @@ export class SchemaFormRootComponent implements OnInit {
     @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
     @Input() isFormForRequestBlock: boolean = false;
+    @Input() lastSavedAt?: Date;
 
     @Output('form') form = new EventEmitter<UntypedFormGroup>();
     @Output('change') change = new EventEmitter<Schema | null>();

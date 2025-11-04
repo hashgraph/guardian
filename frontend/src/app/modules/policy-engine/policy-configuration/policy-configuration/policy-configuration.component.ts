@@ -34,6 +34,8 @@ import { TestCodeDialog } from '../../dialogs/test-code-dialog/test-code-dialog.
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
+import { IgnoreRule } from '@guardian/interfaces';
+import { IgnoreRulesDialog } from "../../dialogs/ignore-rules-dialog/ignore-rules-dialog.component";
 import { SaveToolDialog, ToolSaveAction } from '../../dialogs/save-tool-dialog/save-tool-dialog.component';
 
 /**
@@ -76,7 +78,16 @@ export class PolicyConfigurationComponent implements OnInit {
     public selectType: 'Block' | 'Module' = 'Block';
     public errors: any[] = [];
     public errorsCount: number = -1;
+    public warningsCount: number = -1;
+    public infosCount: number = -1;
     public errorsMap: any;
+
+    public warningsMap: Record<string, true> = {};
+    public infosMap: Record<string, true> = {};
+    public warningsListMap: Record<string, string[]> = {};
+    public infosListMap: Record<string, string[]> = {};
+    public validationLevel: 'error' | 'warning' | 'info' | 'success' | 'ok' = 'ok';
+
     public currentView: string = 'blocks';
     public search: string = '';
     public searchModule: string = '';
@@ -140,6 +151,56 @@ export class PolicyConfigurationComponent implements OnInit {
     private _destroy$ = new Subject<void>();
     private indexedDb: IndexedDbRegistryService;
 
+    public ignoreRules: IgnoreRule[] = [];
+
+    /**
+     * Available presets to validation.
+     */
+    public readonly validationRuleOptions = [
+        {
+            key: 'hideAllWarnings',
+            label: 'Warnings',
+            hint: 'Non-critical warnings in validation results.',
+            rule: { severity: 'warning' },
+        },
+        {
+            key: 'hideAllInfos',
+            label: 'Information',
+            hint: 'Informational items in validation results.',
+            rule: { severity: 'info' },
+        },
+        {
+            key: 'hideDeprecatedBlocks',
+            label: 'Deprecated blocks',
+            hint: 'Warnings about deprecated blocks.',
+            rule: { code: 'DEPRECATION_BLOCK' },
+        },
+        {
+            key: 'hideDeprecatedProps',
+            label: 'Deprecated properties',
+            hint: 'Notifications about deprecated block properties.',
+            rule: { code: 'DEPRECATION_PROP' },
+        },
+        {
+            key: 'hideNoIncoming',
+            label: 'Incoming events',
+            hint: 'Reachability warnings for blocks with 0 incoming events.',
+            rule: { code: 'REACHABILITY_NO_IN' },
+        },
+        {
+            key: 'hideNoOutgoing',
+            label: 'Outgoing events',
+            hint: 'Reachability warnings for blocks with 0 outgoing events.',
+            rule: { code: 'REACHABILITY_NO_OUT' },
+        },
+        {
+            key: 'hideIsolated',
+            label: 'Isolated blocks',
+            hint: 'Reachability warnings for blocks without connecting events.',
+            rule: { code: 'REACHABILITY_ISOLATED' }
+        }
+    ];
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -175,6 +236,33 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private get hasChanges() {
         return this.storage.isUndo;
+    }
+
+    public get validationCount(): number {
+        if (this.validationLevel === 'error') {
+            return Math.max(0, this.errorsCount);
+        }
+        if (this.validationLevel === 'warning') {
+            return Math.max(0, this.warningsCount);
+        }
+        if (this.validationLevel === 'info') {
+            return Math.max(0, this.infosCount);
+        }
+        return 0;
+    }
+
+    public get hasActiveRules(): boolean {
+        const rules = this.ignoreRules ?? [];
+        const defaultRules = this.getDefaultIgnoreRules();
+
+        if (rules.length !== defaultRules.length) {
+            return true;
+        }
+
+        const serialize = (r: IgnoreRule) => JSON.stringify(r);
+        const defaultSet = new Set(defaultRules.map(serialize));
+
+        return rules.some(r => !defaultSet.has(serialize(r)));
     }
 
     private _disableComponentMenu: boolean = true;
@@ -228,6 +316,18 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.openType === 'Sub' || this.rootType === 'Module' || this.rootType === 'Tool';
     }
 
+    private emptyWarningsStates(): void {
+        this.warningsMap = {};
+        this.warningsListMap = {};
+        this.warningsCount = -1;
+    }
+
+    public emptyInfosStates(): void {
+        this.infosMap = {};
+        this.infosListMap = {};
+        this.infosCount = -1;
+    }
+
     private loadData(): void {
         this.errors = [];
         this.errorsCount = -1;
@@ -237,9 +337,42 @@ export class PolicyConfigurationComponent implements OnInit {
         this.moduleId = this.route.snapshot.queryParams.moduleId;
         this.toolId = this.route.snapshot.queryParams.toolId;
 
+        this.ensureStore(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE)
+            .then(() => {
+                return this.indexedDb.get<IgnoreRule[] | undefined>(
+                    DB_NAME.POLICY_WARNINGS,
+                    STORES_NAME.IGNORE_RULES_STORE,
+                    this.policyId
+                );
+            })
+            .then(async (rules) => {
+                if (Array.isArray(rules) && rules.length > 0) {
+                    this.ignoreRules = rules;
+                    return;
+                }
+                this.ignoreRules = this.getDefaultIgnoreRules();
+
+                try {
+                    const db = await this.indexedDb.getDB(DB_NAME.POLICY_WARNINGS);
+                    await db.put(
+                        STORES_NAME.IGNORE_RULES_STORE,
+                        this.ignoreRules,
+                        this.policyId
+                    );
+                } catch {
+                    //
+                }
+            })
+            .catch(() => {
+                this.ignoreRules = this.getDefaultIgnoreRules();
+            });
+
         if (this._configurationErrors.has(this.policyId)) {
             this.setErrors(this._configurationErrors.get(this.policyId), 'policy');
             this._configurationErrors.delete(this.policyId);
+
+            this.emptyWarningsStates()
+            this.emptyInfosStates()
         }
         if (this._configurationErrors.has(this.moduleId)) {
             this.setErrors(this._configurationErrors.get(this.moduleId), 'module');
@@ -605,6 +738,11 @@ export class PolicyConfigurationComponent implements OnInit {
             this.errors = [];
             this.errorsCount = -1;
             this.errorsMap = {};
+
+            this.emptyWarningsStates();
+            this.emptyInfosStates();
+            this.validationLevel = 'ok';
+
             this.openFolder =
                 this.rootTemplate.getModule(this.openFolder) ||
                 this.rootTemplate.getRootModule();
@@ -819,10 +957,58 @@ export class PolicyConfigurationComponent implements OnInit {
         }
         this.errorsCount = this.errors.length + commonErrors.length;
         this.errorsMap = {};
+
+        this.emptyWarningsStates()
+        this.emptyInfosStates()
+
+        this.infosListMap = {};
         for (const element of this.errors) {
             this.errorsMap[element.id] = element.errors;
         }
+
+        const collect = (
+            arr: any[],
+            prop: 'warnings' | 'infos',
+            flagsTarget: Record<string, true>,
+            listTarget: Record<string, string[]>
+        ) => {
+            for (const item of arr || []) {
+                if (Array.isArray(item[prop]) && item[prop].length) {
+                    flagsTarget[item.id] = true;
+                    listTarget[item.id] = (listTarget[item.id] || []).concat(item[prop]);
+                }
+                for (const b of (item.blocks || [])) {
+                    if (Array.isArray(b[prop]) && b[prop].length) {
+                        flagsTarget[b.id] = true;
+                        listTarget[b.id] = (listTarget[b.id] || []).concat(b[prop]);
+                    }
+                }
+            }
+        };
+
+        collect(blocks,  'warnings', this.warningsMap, this.warningsListMap);
+        collect(blocks,  'infos',    this.infosMap,    this.infosListMap);
+
+        collect(modules, 'warnings', this.warningsMap, this.warningsListMap);
+        collect(modules, 'infos',    this.infosMap,    this.infosListMap);
+
+        collect(tools,   'warnings', this.warningsMap, this.warningsListMap);
+        collect(tools,   'infos',    this.infosMap,    this.infosListMap);
+
         this.errorMessage(commonErrors, type);
+
+        this.warningsCount = Object.keys(this.warningsMap || {}).length;
+        this.infosCount = Object.keys(this.infosMap || {}).length;
+
+        if ((this.errorsCount ?? 0) > 0) {
+            this.validationLevel = 'error';
+        } else if (this.warningsCount > 0) {
+            this.validationLevel = 'warning';
+        } else if (this.infosCount > 0) {
+            this.validationLevel = 'info';
+        } else {
+            this.validationLevel = 'success';
+        }
     }
 
     private jsonToObject(json: string): any {
@@ -932,6 +1118,13 @@ export class PolicyConfigurationComponent implements OnInit {
             storeNames,
             keyPrefix
         );
+
+        this.indexedDb
+            .delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, this.policyId)
+            .then(() => { this.ignoreRules = []; })
+            .catch(() => {
+                //
+            });
     }
 
     private dryRunPolicy() {
@@ -943,6 +1136,10 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.loadData();
             } else {
                 this.setErrors(errors, 'policy');
+
+                this.emptyWarningsStates()
+                this.emptyInfosStates()
+
                 this.loading = false;
             }
         }, (e) => {
@@ -961,6 +1158,11 @@ export class PolicyConfigurationComponent implements OnInit {
         this.errors = [];
         this.errorsCount = -1;
         this.errorsMap = {};
+
+        this.emptyWarningsStates()
+        this.emptyInfosStates()
+
+        this.validationLevel = 'ok'
 
         this.clearState();
         this.onOpenRoot(this.policyTemplate);
@@ -1507,6 +1709,11 @@ export class PolicyConfigurationComponent implements OnInit {
     public validationPolicy() {
         this.loading = true;
         const json = this.policyTemplate.getJSON();
+
+        const ignoreRules = (this.ignoreRules && this.ignoreRules.length > 0)
+            ? this.ignoreRules
+            : this.getDefaultIgnoreRules();
+
         const object = {
             topicId: this.policyTemplate.topicId,
             policyRoles: json?.policyRoles,
@@ -1514,8 +1721,10 @@ export class PolicyConfigurationComponent implements OnInit {
             policyTopics: json?.policyTopics,
             policyTokens: json?.policyTokens,
             categories: json?.categories,
-            config: json?.config
+            config: json?.config,
+            ignoreRules
         }
+
         this.policyEngineService.validate(object).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
             const { policy, results } = data;
             const config = policy.config;
@@ -1819,7 +2028,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
                 const json = this.toolTemplate.getJSON();
                 const tool = Object.assign({}, json, result.tool);
-                
+
                 if (result.action === ToolSaveAction.CREATE_NEW_TOOL) {
                     delete tool._id;
                     delete tool.id;
@@ -2070,5 +2279,46 @@ export class PolicyConfigurationComponent implements OnInit {
                 });
             }
         });
+    }
+
+    private ensureStore(dbName: string, storeName: string, options?: IDBObjectStoreParameters): Promise<void> {
+        return this.indexedDb.registerStore(dbName, { name: storeName, options });
+    }
+
+    public async setIgnoreRules(): Promise<void> {
+        const databaseConnection = await this.indexedDb.getDB(DB_NAME.POLICY_WARNINGS);
+
+        const dialogRef = this.dialog.open(IgnoreRulesDialog, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'ignore-rule-dialog',
+            data: {
+                policyId: this.policyId,
+                rules: this.ignoreRules ?? [],
+                presetRuleOptions: this.validationRuleOptions,
+            },
+        });
+
+        dialogRef.onClose
+            .pipe(takeUntil(this._destroy$))
+            .subscribe(async (result: IgnoreRule[] | null) => {
+                if (result === null) {
+                    return;
+                }
+
+                await databaseConnection.put(
+                    STORES_NAME.IGNORE_RULES_STORE,
+                    result,
+                    this.policyId
+                );
+
+                this.ignoreRules = result;
+            });
+    }
+
+    private getDefaultIgnoreRules(): IgnoreRule[] {
+        return this.validationRuleOptions.map(
+            (option) => option.rule as IgnoreRule
+        );
     }
 }

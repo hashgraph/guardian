@@ -206,11 +206,11 @@ export class TokenConfirmationBlock {
         state: any,
         userId: string | null) {
         const account = {
+            id: userId,
             hederaAccountId: state.accountId,
             hederaAccountKey: data.hederaAccountKey
         }
 
-        await PolicyUtils.checkAccountId(account.hederaAccountId, userId);
         if (!account.hederaAccountKey) {
             throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
         }
@@ -263,27 +263,22 @@ export class TokenConfirmationBlock {
         if (event) {
             const documents = event.data?.data;
             const id = event.user?.id;
+            const userId = event?.user?.userId;
             const doc = Array.isArray(documents) ? documents[0] : documents;
-
-            let hederaAccountId: string = null;
-            let tokenId;
-            if (doc) {
-                if (field) {
-                    if (doc.accounts) {
-                        hederaAccountId = doc.accounts[field];
-                    }
-                } else {
-                    hederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner, event?.user?.userId);
-                }
-
-                if (ref.options.useTemplate) {
-                    if (doc.tokens) {
-                        tokenId = doc.tokens[ref.options.template];
-                    }
-                }
+            let tokenId: string;
+            if (ref.options.useTemplate && doc && doc.tokens) {
+                tokenId = doc.tokens[ref.options.template];
             }
+
+            let relayerAccount: string = null;
+            if (doc && field && doc.accounts) {
+                relayerAccount = doc.accounts[field];
+            } else if (doc && !field) {
+                relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, doc, userId);
+            }
+
             this.state[id] = {
-                accountId: hederaAccountId,
+                accountId: relayerAccount,
                 data: event.data,
                 user: event.user,
                 tokenId

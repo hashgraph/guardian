@@ -4,29 +4,17 @@ import { SchemaField } from './schema-field.interface.js';
  * Schema condition
  */
 export interface SchemaCondition {
-    /**
-     * 'if' condition
-     */
-    ifCondition: {
-        /**
-         * Schema field
-         */
-        field: SchemaField;
-        /**
-         * field value
-         */
-        fieldValue: string;
-    };
-    /**
-     * 'then' fields
-     */
-    thenFields: SchemaField[];
-    /**
-     * 'else' fields
-     */
-    elseFields: SchemaField[];
-    /**
-     * Errors
-     */
-    errors?: any[];
+  ifCondition: (
+    { field: SchemaField; fieldValue: any } |
+    { AND: SchemaFieldPredicate[] } |
+    { OR: SchemaFieldPredicate[] }
+  );
+  thenFields: SchemaField[];
+  elseFields: SchemaField[];
+  errors?: any[];
+}
+
+export interface SchemaFieldPredicate {
+  field: SchemaField;
+  fieldValue: any;
 }

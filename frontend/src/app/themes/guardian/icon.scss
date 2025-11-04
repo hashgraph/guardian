@@ -1,4 +1,9 @@
 .icon-color {
+    &-menu {
+        fill: var(--guardian-menu-color);
+        color: var(--guardian-menu-color);
+    }
+
     &-primary {
         fill: var(--guardian-primary-color);
         color: var(--guardian-primary-color);
@@ -62,5 +67,20 @@
     &-text {
         fill: var(--formula-text-color);
         color: var(--formula-text-color);
+    }
+
+    &-grey-color-2 {
+        fill: var(--guardian-grey-color-2);
+        color: var(--guardian-grey-color-2);
+    }
+
+    &-grey-color-3 {
+        fill: var(--guardian-grey-color-3);
+        color: var(--guardian-grey-color-3);
+    }
+
+    &-grey-color-4 {
+        fill: var(--guardian-grey-color-4);
+        color: var(--guardian-grey-color-4);
     }
 }

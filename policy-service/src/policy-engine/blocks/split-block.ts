@@ -147,6 +147,7 @@ export class SplitBlock {
         );
         clone.document = vc.toJsonTree();
         clone.hash = vc.toCredentialHash();
+        clone.relayerAccount = document.relayerAccount;
         clone = PolicyUtils.setDocumentRef(clone, document) as any;
         return clone;
     }

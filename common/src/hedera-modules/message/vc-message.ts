@@ -61,6 +61,10 @@ export class VCMessage extends Message {
      */
     public tag: string;
     /**
+     * Start Message
+     */
+    public startMessage: string;
+    /**
      * Entity Type
      */
     public entityType: string;
@@ -186,6 +190,14 @@ export class VCMessage extends Message {
     }
 
     /**
+     * Set parent message
+     * @param messageId
+     */
+    public setRef(messageId: string): void {
+        this.startMessage = messageId;
+    }
+
+    /**
      * Get documents
      */
     public getDocument(): any {
@@ -202,12 +214,14 @@ export class VCMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             issuer: this.issuer,
             relationships: this.relationships,
             encodedData: this.encodedData,
             documentStatus: this.documentStatus,
             guardianVersion: this.guardianVersion,
             tag: this.tag,
+            startMessage: this.startMessage,
             entityType: this.entityType,
             option: this.option,
             cid: this.getDocumentUrl(UrlType.cid),
@@ -218,7 +232,7 @@ export class VCMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(key: string): Promise<ArrayBuffer[]> {
+    public async toDocuments(key: string): Promise<Buffer[]> {
         let document = JSON.stringify(this.document);
         if (this.encodedData || this.type === MessageType.EVCDocument) {
             if (!key) {
@@ -234,7 +248,7 @@ export class VCMessage extends Message {
             });
             document = encryptedDocument.serialized;
         }
-        const buffer = Buffer.from(document);
+        const buffer = Buffer.from(document) as any;
         return [buffer];
     }
 
@@ -300,6 +314,7 @@ export class VCMessage extends Message {
         _message.encodedData = json.encodedData || json.type === MessageType.EVCDocument;
         _message.guardianVersion = json.guardianVersion;
         _message.tag = json.tag;
+        _message.startMessage = json.startMessage;
         _message.entityType = json.entityType;
         _message.option = json.option;
         const urls = [
@@ -349,6 +364,7 @@ export class VCMessage extends Message {
             encodedData: this.encodedData,
             guardianVersion: this.guardianVersion,
             tag: this.tag,
+            startMessage: this.startMessage,
             entityType: this.entityType,
             option: this.option,
         }
@@ -377,6 +393,7 @@ export class VCMessage extends Message {
         result.encodedData = this.encodedData;
         result.guardianVersion = this.guardianVersion;
         result.tag = this.tag;
+        result.startMessage = this.startMessage;
         result.entityType = this.entityType;
         result.option = this.option;
         return result;
@@ -396,6 +413,7 @@ export class VCMessage extends Message {
         result.encodedData = json.encodedData;
         result.guardianVersion = json.guardianVersion;
         result.tag = json.tag;
+        result.startMessage = json.startMessage;
         result.entityType = json.entityType;
         result.option = json.option;
         return result;

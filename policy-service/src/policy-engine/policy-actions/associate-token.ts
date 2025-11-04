@@ -7,28 +7,33 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyActionType } from './policy-action.type.js';
 
 export class AssociateToken {
-    public static async local(
+    public static async local(options: {
         ref: AnyBlockType,
         token: Token,
         user: string,
+        relayerAccount: string,
         userId: string | null
-    ): Promise<boolean> {
+    }): Promise<boolean> {
+        const { ref, token, user, relayerAccount, userId } = options;
         const userCred = await PolicyUtils.getUserCredentials(ref, user, userId);
-        const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
-        return await PolicyUtils.associate(ref, token, userHederaCred, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
+        return await PolicyUtils.associate(ref, token, userRelayerAccount, userId);
     }
 
-    public static async request(
+    public static async request(options: {
         ref: AnyBlockType,
         token: Token,
         user: string,
+        relayerAccount: string,
         userId: string | null
-    ): Promise<any> {
+    }): Promise<any> {
+        const { ref, token, user, relayerAccount, userId } = options;
         const userAccount = await PolicyUtils.getHederaAccountId(ref, user, userId);
         const data = {
             uuid: GenerateUUIDv4(),
             owner: user,
             accountId: userAccount,
+            relayerAccount,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.AssociateToken,
@@ -44,18 +49,20 @@ export class AssociateToken {
         return data;
     }
 
-    public static async response(
+    public static async response(options: {
         row: PolicyAction,
         user: PolicyUser,
+        relayerAccount: string,
         userId: string | null
-    ) {
+    }) {
+        const { row, user, relayerAccount, userId } = options;
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
         const { token } = data;
 
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
-        const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
-        const associate = await PolicyUtils.associate(ref, token, userHederaCred, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
+        const associate = await PolicyUtils.associate(ref, token, userRelayerAccount, userId);
 
         return {
             type: PolicyActionType.AssociateToken,
@@ -80,7 +87,12 @@ export class AssociateToken {
         userId: string | null
     ): Promise<boolean> {
         try {
-            if (request && response && request.accountId === response.accountId) {
+            if (
+                request &&
+                response &&
+                request.accountId === response.accountId &&
+                request.relayerAccount === response.relayerAccount
+            ) {
                 return true;
             }
             return false;

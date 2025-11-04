@@ -251,6 +251,80 @@ The calculation results would feeds directly into schemas to be reviewed by VVB/
 - Refine user interfaces and error handling
 - Optimize performance and user experience
 
+## User Roles and Permissions Management
+
+🚧 **Work in Progress** - This section covers Guardian's role-based access control and user management features.
+
+### Stakeholder Role Definition
+
+Guardian uses roles to separate users into different stakeholder types with specific workflow permissions. In VM0033 implementation, three primary roles manage the certification workflow:
+
+**Standard Registry (Admin)**
+- Creates and publishes methodology policies
+- Oversees project registration and validation oversight
+- Manages VVB accreditation and user permissions
+- Controls token minting and registry operations
+
+**VVB (Validation and Verification Body)**
+- Conducts independent project validation
+- Performs monitoring report verification
+- Submits validation and verification reports
+- Acts as trusted third-party auditor
+
+**Project Developer (Project Proponent)**
+- Submits project design documents (PDDs)
+- Provides monitoring reports and supporting documentation
+- Manages project implementation and reporting
+- Receives issued carbon credits (VCUs)
+
+### Role Configuration in Policy Configurator
+
+Roles are created using Guardian's Policy Configurator interface by adding Role Properties:
+
+1. **Role Creation**: Add Role Property in policy configuration
+2. **Role Assignment**: Set role values for different stakeholder types
+3. **Permission Mapping**: Configure block-level permissions based on roles
+4. **Access Control**: Limit workflow block visibility and API access per role
+
+### Block-Level Permissions
+
+Guardian workflow blocks include permission settings that control:
+- Which roles can view and interact with each block
+- API endpoint access control per stakeholder type
+- Document submission and approval permissions
+- Event propagation based on user roles
+
+**Example Permission Configuration:**
+```json
+{
+  "blockType": "requestVcDocumentBlock",
+  "permissions": ["Project_Proponent"],
+  "tag": "pdd_submission_block"
+}
+```
+
+This configuration allows only Project Proponents to submit PDDs through this specific workflow block.
+
+### Groups and Multi-User Management
+
+Guardian supports Groups for managing document access and collaboration:
+
+**Group Types:**
+- **Single**: One user per group (legacy compatibility)
+- **Multiple**: Multiple users can collaborate within groups
+
+**Access Types:**
+- **Global**: Static groups created at policy start
+- **Private**: Dynamic groups created by users during workflow execution
+
+**Document Filtering:**
+Groups enable sophisticated document filtering through `documentsSourceAddon`:
+- **Owned by User**: Documents created by current user
+- **Owned by Group**: Documents created within current group
+- **Combined Filtering**: User-specific documents within group context
+
+🚧 **Detailed Implementation**: Complete user management configuration patterns and group setup procedures will be covered in expanded sections.
+
 ## Key Takeaways
 
 Guardian's Policy Workflow Engine transforms static schemas into dynamic certification workflows. The event-driven architecture provides flexibility while maintaining audit trails and stakeholder separation.

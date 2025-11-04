@@ -65,7 +65,7 @@ export class AnalyticsPolicyService {
                 item = SchemaPackageMessage.fromMessageObject(json);
             }
             if (item && item.validate()) {
-                item.setAccount(message.payer_account_id);
+                item.setPayer(message.payer_account_id);
                 item.setIndex(message.sequence_number);
                 item.setId(message.id);
                 item.setTopicId(message.topicId);
@@ -104,7 +104,7 @@ export class AnalyticsPolicyService {
                 item = SchemaPackageMessage.fromMessageObject(json);
             }
             if (item && item.validate()) {
-                item.setAccount(message.payer_account_id);
+                item.setPayer(message.payer_account_id);
                 item.setIndex(message.sequence_number);
                 item.setId(message.id);
                 item.setTopicId(message.topicId);

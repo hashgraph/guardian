@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Checks from "../../../support/checkingMethods";
 import * as Authorization from "../../../support/authorization";
 
-context("Policies", { tags: ['policies', 'secondPool'] }, () => {
+context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const PPUser = Cypress.env('PPUser');
@@ -420,7 +420,7 @@ context("Policies", { tags: ['policies', 'secondPool'] }, () => {
                 headers: {
                     authorization
                 },
-                failOnStatusCode: false,
+                failOnStatusCode: false
             }
             Checks.whileRequestProccessing(waitProjectValidated, "approved_project", "data.0.type")
             cy.request({
@@ -450,7 +450,7 @@ context("Policies", { tags: ['policies', 'secondPool'] }, () => {
                             headers: {
                                 authorization
                             },
-                            timeout: 120000,
+                            timeout: 600000,
                             failOnStatusCode: false,
                         }
                         Checks.whileRequestProccessing(waitReportCreating, "Waiting for Verification", "data.0.option.status")

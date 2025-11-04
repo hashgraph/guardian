@@ -249,8 +249,15 @@ export class PolicyEngineService {
         });
     }
 
-    public pushImportByXlsx(policyFile: any, policyId: string): Observable<{ taskId: string, expectation: number }> {
+    public pushImportByXlsx(policyFile: any, policyId: string, schemasForReplace?: string[]): Observable<{ taskId: string, expectation: number }> {
         var query = policyId ? `?policyId=${policyId}` : '';
+        if (schemasForReplace?.length) {
+            if (query) {
+                query = `${query}&schemas=${schemasForReplace.join(',')}`
+            } else {
+                query = `?schemas=${schemasForReplace.join(',')}`
+            }
+        }
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/xlsx${query}`, policyFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream'
@@ -342,11 +349,10 @@ export class PolicyEngineService {
         savepointIds: string[],
         skipCurrentSavepointGuard = false
     ): Observable<{ hardDeletedIds: string[] }> {
-        return this.http.request(
-            'DELETE',
-            `${this.url}/${policyId}/savepoints`,
-            { body: { savepointIds, skipCurrentSavepointGuard } }
-        ) as any;
+        return this.http.post<{ hardDeletedIds: string[] }>(
+            `${this.url}/${policyId}/savepoints/delete`,
+            { savepointIds, skipCurrentSavepointGuard }
+        );
     }
 
     public loadDocuments(
@@ -366,21 +372,17 @@ export class PolicyEngineService {
         includeDocument: boolean = false,
         type: string,
         pageIndex?: number,
-        pageSize?: number
+        pageSize?: number,
+        filters?: any
     ): Observable<HttpResponse<any[]>> {
-        const params: any = {}
+        filters = filters || {};
         if (includeDocument) {
-            params.includeDocument = includeDocument;
+            filters.includeDocument = includeDocument;
         }
         if (type) {
-            params.type = type;
+            filters.type = type;
         }
-        if (Number.isInteger(pageIndex)) {
-            params.pageIndex = pageIndex;
-        }
-        if (Number.isInteger(pageSize)) {
-            params.pageSize = pageSize;
-        }
+        const params = PolicyEngineService.getOptions(filters, pageIndex, pageSize);
         return this.http.get<any>(`${this.url}/${policyId}/documents`, { observe: 'response', params });
     }
 
