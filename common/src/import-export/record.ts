@@ -200,8 +200,16 @@ export class RecordImportExport {
         if (policy) {
             const schemas = await DatabaseServer.getSchemas({ topicId: policy.topicId });
             for (const schema of schemas) {
+                let id: string;
+                if (schema.contextURL) {
+                    id = schema.contextURL + schema.iri;
+                } else if (schema.iri) {
+                    id = schema.iri;
+                } else {
+                    id = '';
+                }
                 results.push({
-                    id: schema.contextURL || schema.iri,
+                    id,
                     type: 'schema',
                     document: schema.document
                 });
