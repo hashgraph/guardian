@@ -3,10 +3,14 @@ export class SheetName {
     private readonly nameCache = new Set<string>();
 
     public getSheetName(name: string, size: number): string {
-        const id = ((name || '')
+        let id = ((name || '')
             .replace(/[\*,\?,\:,\\,\/,\[,\]]/ig, '')
             .slice(0, Math.min(size, 30)))
             .trim();
+
+        if (!id) {
+            id = 'blank';
+        }
 
         const key = id.toLocaleLowerCase();
 
