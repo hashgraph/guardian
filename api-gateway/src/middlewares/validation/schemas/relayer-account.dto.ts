@@ -1,7 +1,6 @@
-import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Examples } from '../examples.js';
-import { IsArray, IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
-import { VcDTO } from './document.dto.js';
+import { IsOptional, IsString } from 'class-validator';
 
 export class RelayerAccountDTO {
     @ApiProperty({
