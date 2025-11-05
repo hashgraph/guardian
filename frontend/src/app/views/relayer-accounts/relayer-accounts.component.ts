@@ -85,7 +85,7 @@ export class RelayerAccountsComponent implements OnInit {
     ngOnInit() {
         this.page = [];
         this.pageIndex = 0;
-        this.pageSize = 25;
+        this.pageSize = 10;
         this.pageCount = 0;
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {

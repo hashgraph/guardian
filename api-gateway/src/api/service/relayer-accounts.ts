@@ -57,6 +57,7 @@ export class RelayerAccountsApi {
     @HttpCode(HttpStatus.OK)
     async getRelayerAccounts(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
         @Query('search') search?: string,
@@ -68,7 +69,8 @@ export class RelayerAccountsApi {
                 pageIndex,
                 pageSize
             }
-            return await users.getRelayerAccounts(user, filters);
+            const { items, count } = await users.getRelayerAccounts(user, filters);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -289,6 +291,7 @@ export class RelayerAccountsApi {
     @HttpCode(HttpStatus.OK)
     async getUserRelayerAccounts(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
         @Query('search') search?: string,
@@ -300,7 +303,8 @@ export class RelayerAccountsApi {
                 pageIndex,
                 pageSize
             }
-            return await users.getUserRelayerAccounts(user, filters);
+            const { items, count } = await users.getUserRelayerAccounts(user, filters);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
