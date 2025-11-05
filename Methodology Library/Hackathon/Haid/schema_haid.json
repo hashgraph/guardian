@@ -1,0 +1,46 @@
+{
+  "name": "Haid Aid Distribution Schema",
+  "description": "Schema defining verifiable credentials for aid distribution events using Hedera Guardian in the Haid system.",
+  "version": "1.0.0",
+  "author": "Team Haid",
+  "fields": {
+    "recipient_did": {
+      "type": "string",
+      "description": "Decentralized Identifier (DID) of the refugee or recipient."
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Unique identifier of the aid event."
+    },
+    "aid_type": {
+      "type": "string",
+      "description": "Type of aid distributed (e.g. food, medical, shelter, cash)."
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Quantity or number of units distributed."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the aid distribution recorded on Hedera."
+    },
+    "volunteer_id": {
+      "type": "string",
+      "description": "Identifier or DID of the volunteer who conducted the distribution."
+    },
+    "ngo_id": {
+      "type": "string",
+      "description": "Identifier or DID of the NGO managing this event."
+    },
+    "location": {
+      "type": "string",
+      "description": "Physical location or camp site of distribution."
+    },
+    "signature": {
+      "type": "string",
+      "description": "Cryptographic signature verifying authenticity of the record."
+    }
+  }
+}
+

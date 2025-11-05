@@ -1,0 +1,30 @@
+{
+  "name": "Haid Aid Distribution Policy",
+  "description": "Policy governing issuance and verification of aid distribution credentials on Hedera Guardian for the Haid system.",
+  "version": "1.0.0",
+  "author": "Team Haid",
+  "schema": "schema_haid.json",
+  "roles": {
+    "NGO": {
+      "permissions": ["create_event", "issue_credential", "view_reports"]
+    },
+    "Volunteer": {
+      "permissions": ["log_distribution", "verify_recipient"]
+    },
+    "Recipient": {
+      "permissions": ["receive_aid", "view_personal_history"]
+    },
+    "Donor": {
+      "permissions": ["view_verified_reports", "track_donations"]
+    },
+    "Auditor": {
+      "permissions": ["verify_all_events", "access_full_logs"]
+    }
+  },
+  "verificationLogic": {
+    "requiresValidDID": true,
+    "requiresSignature": true,
+    "timestampOnChain": true,
+    "revokeIfDuplicateEvent": true
+  }
+}
