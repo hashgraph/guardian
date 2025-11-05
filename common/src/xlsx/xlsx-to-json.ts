@@ -207,7 +207,7 @@ export class XlsxToJson {
                 const normalizedName = schema.name?.trim();
                 if (!normalizedName) {
                     xlsxResult.addError({
-                        type: 'warning',
+                        type: 'error',
                         text: 'Schema name is empty.',
                         message: `Schema name is empty on sheet "${worksheet.name}".`,
                         worksheet: worksheet.name,
