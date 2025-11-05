@@ -6,6 +6,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GeoForm } from './geo-form';
 import { SentinelHubForm } from './sentinel-hub-form';
+
 export interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup | UntypedFormArray> extends SchemaField {
     id: string;
     hide: boolean;
@@ -53,6 +54,7 @@ interface IConditionExpr {
     op: IfOp;
     pairs: IConditionPair[];
 }
+
 export class FieldForm {
     public readonly form: UntypedFormGroup;
     public readonly lvl: number;
@@ -214,6 +216,7 @@ export class FieldForm {
         if (expr.op === 'AND') return expr.pairs.every(test);
         return expr.pairs.some(test);
     }
+
     private buildFields(fields: SchemaField[] | undefined): IFieldControl<any>[] | null {
         if (!fields) {
             return null;
@@ -238,7 +241,6 @@ export class FieldForm {
         // this.form.updateValueAndValidity();
         return controls;
     }
-
 
     private buildConditions(conditions: SchemaCondition[] | undefined): IConditionControl<any>[] | null {
         if (!conditions) return null;
@@ -283,7 +285,6 @@ export class FieldForm {
         return controls;
     }
 
-
     private subscribeConditions() {
         this.form.valueChanges
             .pipe(takeUntil(this.destroy$))
@@ -292,40 +293,63 @@ export class FieldForm {
             })
     }
 
+    private getLastVisibleIndexByNames(arr: IFieldControl<any>[], names: string[]): number {
+        if (!names?.length) {
+            return -1;
+        }
+        const nameSet = new Set(names);
+        let idx = -1;
+        for (let i = 0; i < arr.length; i++) {
+            const it = arr[i];
+            if (it.visibility && nameSet.has(it.name)) {
+                idx = i;
+            }
+        }
+        return idx;
+    }
+
     private rebuildControls(): IFieldControl<any>[] {
         const result: IFieldControl<any>[] = [];
-        const placed = new Set<string>();
-
-        const pushCondDependents = (anchorName: string) => {
-            if (!this.conditionControls) return;
-            for (const cc of this.conditionControls) {
-                if (placed.has(cc.id)) continue;
-                if (!cc.dependsOn?.includes(anchorName)) continue;
-
-                cc.visibility = this.checkConditionValue(cc);
-                result.push(cc);
-                placed.add(cc.id);
-
-                pushCondDependents(cc.name);
-            }
-        };
 
         if (this.fieldControls) {
             for (const base of this.fieldControls) {
                 base.visibility = this.ifFieldVisible(base);
                 result.push(base);
-                placed.add(base.id);
-
-                pushCondDependents(base.name);
             }
         }
 
-        if (this.conditionControls) {
+        if (this.conditionControls?.length) {
             for (const cc of this.conditionControls) {
-                if (placed.has(cc.id)) continue;
                 cc.visibility = this.checkConditionValue(cc);
+            }
+
+            const unplaced = new Set(this.conditionControls.map(c => c.id));
+            const byId = new Map(this.conditionControls.map(c => [c.id, c]));
+
+            const max = this.conditionControls.length || 1;
+            for (let pass = 0; pass < max && unplaced.size; pass++) {
+                let placedThisPass = 0;
+
+                for (const id of Array.from(unplaced)) {
+                    const cc = byId.get(id)!;
+
+                    const anchorIdx = this.getLastVisibleIndexByNames(result, cc.dependsOn);
+
+                    if (anchorIdx >= 0) {
+                        result.splice(anchorIdx + 1, 0, cc);
+                        unplaced.delete(id);
+                        placedThisPass++;
+                    }
+                }
+
+                if (!placedThisPass) {
+                    break;
+                }
+            }
+
+            for (const id of unplaced) {
+                const cc = byId.get(id)!;
                 result.push(cc);
-                placed.add(cc.id);
             }
         }
 
@@ -430,7 +454,6 @@ export class FieldForm {
         const ok = this.evaluateIf(item.conditionExpr);
         return item.conditionInvert ? !ok : ok;
     }
-
 
     private ifSubSchema(item: IFieldControl<any>): boolean {
         return !item.isArray && item.isRef;
@@ -816,7 +839,6 @@ export class FieldForm {
                 });
             });
     }
-
 
     private createArrayControl(): UntypedFormArray {
         return new UntypedFormArray([]);
