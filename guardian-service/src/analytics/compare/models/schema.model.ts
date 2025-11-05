@@ -44,12 +44,6 @@ export class SchemaModel {
     public readonly version: string;
 
     /**
-     * Schema URL
-     * @public
-     */
-    public readonly iri: string;
-
-    /**
      * Compare Options
      * @private
      */
@@ -62,6 +56,12 @@ export class SchemaModel {
     private readonly document: SchemaDocumentModel;
 
     /**
+     * Is empty schema
+     * @public
+     */
+    public readonly empty: boolean;
+
+    /**
      * Fields
      * @public
      */
@@ -71,6 +71,20 @@ export class SchemaModel {
         }
         return [];
     }
+
+    /**
+     * IRI
+     * @public
+     */
+    public get iri(): string {
+        return this._iri;
+    }
+
+    /**
+     * IRI
+     * @private
+     */
+    private _iri: string;
 
     /**
      * Weights
@@ -111,9 +125,13 @@ export class SchemaModel {
         this._weight = this._weightDocument = '';
 
         if (!schema) {
-            this.id = this.name = this.uuid = this.description = this.topicId = this.version = this.iri = '';
+            this.id = this.name = this.uuid = this.description = this.topicId = this.version = '';
+            this._iri = '';
+            this.empty = true;
             return;
         }
+
+        this.empty = false;
 
         const {
             id = '',
@@ -133,7 +151,7 @@ export class SchemaModel {
         this.description = description;
         this.topicId = topicId;
         this.version = version || sourceVersion;
-        this.iri = iri;
+        this._iri = iri;
         if (document) {
             const parsedDocument = typeof document === 'string' ? JSON.parse(document) : document;
             this.document = SchemaDocumentModel.from(parsedDocument);
@@ -305,5 +323,19 @@ export class SchemaModel {
         schemaModel.setPolicy(policy);
         schemaModel.update(options);
         return schemaModel;
+    }
+
+    /**
+     * Create empty model
+     * @param policy
+     * @param options
+     * @public
+     * @static
+     */
+    public static empty(iri: string, options: CompareOptions) {
+        const model = new SchemaModel(null, options);
+        model._iri = iri;
+        model.update(options);
+        return model;
     }
 }
