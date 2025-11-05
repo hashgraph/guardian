@@ -208,8 +208,8 @@ export class XlsxToJson {
                 if (!normalizedName) {
                     xlsxResult.addError({
                         type: 'warning',
-                        text: 'Page name is empty.',
-                        message: `Page name is empty on sheet "${worksheet.name}".`,
+                        text: 'Schema name is empty.',
+                        message: `Schema name is empty on sheet "${worksheet.name}".`,
                         worksheet: worksheet.name,
                         cell: worksheet.getPath(startCol, nameRow),
                         row: nameRow,
