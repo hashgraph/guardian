@@ -210,7 +210,7 @@ export class DocumentLoader {
             }
         }
         const schemaModel = await this.cacheSchemas.loadSchema(schemasId, type);
-        this.cacheSchemas.addSchemaCache(schemasId, schemaModel);
+        this.cacheSchemas.addSchemaCache(schemasId, schemaModel, type);
         if (!schemaModel.empty) {
             return schemaModel;
         } else {

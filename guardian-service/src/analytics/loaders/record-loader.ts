@@ -34,7 +34,7 @@ export class RecordLoader {
                 }
             } else {
                 const schemaModel = await this.cacheSchemas.loadSchema(schemasId, type);
-                this.cacheSchemas.addSchemaCache(schemasId, schemaModel);
+                this.cacheSchemas.addSchemaCache(schemasId, schemaModel, type);
                 if (!schemaModel.empty) {
                     schemaModels.push(schemaModel);
                 }
@@ -57,7 +57,7 @@ export class RecordLoader {
             if (document.type === 'schema') {
                 const schemaModel = SchemaModel.from(document.document, this.options);
                 schemaModel.update(this.options);
-                this.cacheSchemas.addSchemaCache(document.id, schemaModel);
+                this.cacheSchemas.addSchemaCache(document.id, schemaModel, schemaModel.iri);
             }
         }
         for (let index = 0; index < documents.length; index++) {

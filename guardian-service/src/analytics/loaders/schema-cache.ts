@@ -11,7 +11,7 @@ export class SchemaCache {
         this.cacheSchemas = new Map<string, SchemaModel[]>();
     }
 
-    private parseSchemaId(schemasId: string) {
+    private parseSchemaId(schemasId: string, type: string) {
         let contextURL = '';
         let iri = '';
         if (schemasId.startsWith('#')) {
@@ -29,15 +29,15 @@ export class SchemaCache {
                 iri = components[0].replace('schema:', '#');
             }
         }
-        return { contextURL, iri };
+        const typeId = type.startsWith('#') ? type : `#${type}`;
+        return { contextURL, iri, typeId };
     }
 
     public getSchemaCache(schemasId: string, type: string): SchemaModel | null {
         if (!schemasId) {
             return null;
         }
-        const { contextURL, iri } = this.parseSchemaId(schemasId);
-        const typeId = `#${type}`;
+        const { contextURL, iri, typeId } = this.parseSchemaId(schemasId, type);
         let schemas: SchemaModel[] | undefined = this.cacheSchemas.get(schemasId);
         if (!schemas) {
             schemas = this.cacheSchemas.get(contextURL);
@@ -58,37 +58,33 @@ export class SchemaCache {
         return null;
     }
 
-    public addSchemaCache(id: string, model: SchemaModel): void {
+    public addSchemaCache(id: string, model: SchemaModel, type: string): void {
         if (!id) {
             return;
         }
-        const { contextURL, iri } = this.parseSchemaId(id);
-        const fullId = contextURL || iri;
+        const { contextURL, iri, typeId } = this.parseSchemaId(id, type);
+        const fullId = contextURL || iri || typeId;
         const schemas = this.cacheSchemas.get(fullId) || [];
         schemas.push(model);
         this.cacheSchemas.set(fullId, schemas);
     }
 
     public async loadSchema(schemasId: string, type: string): Promise<SchemaModel> {
-        const { contextURL, iri } = this.parseSchemaId(schemasId);
+        const { contextURL, iri, typeId } = this.parseSchemaId(schemasId, type);
+        let schema: any;
         if (contextURL) {
-            const schema = await DatabaseServer.getSchema({ contextURL, iri });
-            if (schema) {
-                const schemaModel = new SchemaModel(schema, this.options);
-                schemaModel.update(this.options);
-                return schemaModel;
-            } else {
-                return SchemaModel.empty(type, this.options);
-            }
+            schema = await DatabaseServer.getSchema({ contextURL, iri: typeId });
+        } else if (iri) {
+            schema = await DatabaseServer.getSchema({ iri });
         } else {
-            const schema = await DatabaseServer.getSchema({ iri });
-            if (schema) {
-                const schemaModel = new SchemaModel(schema, this.options);
-                schemaModel.update(this.options);
-                return schemaModel;
-            } else {
-                return SchemaModel.empty(type, this.options);
-            }
+            schema = await DatabaseServer.getSchema({ iri: typeId });
+        }
+        if (schema) {
+            const schemaModel = new SchemaModel(schema, this.options);
+            schemaModel.update(this.options);
+            return schemaModel;
+        } else {
+            return SchemaModel.empty(type, this.options);
         }
     }
 }
