@@ -2105,6 +2105,12 @@ export class PolicyEngineService {
                     await DatabaseServer.removeDryRunWithEmptySavepoint(policyId)
                     await DatabaseServer.setCurrentSavepoint(policyId, savepointId);
 
+                    await new GuardiansService().sendPolicyMessage(
+                        PolicyEvents.APPLY_SAVEPOINT,
+                        policyId,
+                        { savepointId }
+                    );
+
                     const updated = await DatabaseServer.getSavepointById(policyId, savepointId);
                     return new MessageResponse({ savepoint: updated });
                 } catch (error) {
@@ -2221,7 +2227,7 @@ export class PolicyEngineService {
                     const deletedIds = await DatabaseServer.deleteSavepoints(policyId, savepointIds);
 
                     if (deletedIds.length) {
-                        await DatabaseServer.removeBlockStateSnapshots(policyId, deletedIds);
+                        await DatabaseServer.removeBlockStateSnapshots(deletedIds);
                         await DatabaseServer.deleteDryRunBySavepoints(policyId, deletedIds);
                         await DatabaseServer.deleteSnapshotsBySavepoints(policyId, deletedIds);
                     }
