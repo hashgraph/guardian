@@ -379,7 +379,7 @@ export class Users extends NatsService {
      */
     public async getCurrentRelayerAccount(
         user: IAuthUser
-    ): Promise<any[]> {
+    ): Promise<any> {
         return await this.sendMessage(AuthEvents.GET_CURRENT_RELAYER_ACCOUNT, { user });
     }
 
