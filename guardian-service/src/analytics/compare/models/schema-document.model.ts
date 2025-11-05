@@ -262,7 +262,7 @@ export class SchemaDocumentModel {
         const fields1 = this.fields;
         const fields2 = document.fields;
 
-        if (!fields1 || !fields2 || !fields1.length || !fields2.length) {
+        if (!fields1 || !fields2 || !fields1.length || fields2.length) {
             return 0;
         }
 
