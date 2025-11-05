@@ -18,11 +18,11 @@
 
 [Step by Step](ghgp-corporate-standard-v2.md#toc146717955)
 
-&#x20;       [Organization Flow](ghgp-corporate-standard-v2.md#toc146717956)
+[Organization Flow](ghgp-corporate-standard-v2.md#toc146717956)
 
-&#x20;       [VVB Flow](ghgp-corporate-standard-v2.md#toc146717957)
+[VVB Flow](ghgp-corporate-standard-v2.md#toc146717957)
 
-&#x20;       [Administrator (Registry) Flow](ghgp-corporate-standard-v2.md#toc146717958)
+[Administrator (Registry) Flow](ghgp-corporate-standard-v2.md#toc146717958)
 
 [Futureproofing (Automated GHG Inventories)](ghgp-corporate-standard-v2.md#toc146717959)
 
@@ -106,7 +106,7 @@ Carbon Emission Token (CET) equivalent to 1 metric ton of CO2e emissions.
 
 The Organization is responsible for inputting key data and information and assigning entities, assets, GHG sources, and devices in alignment with their corporate and operational structure.
 
-1\.     Login into the service using credentials.
+1\. Login into the service using credentials.
 
 <figure><img src="../../../.gitbook/assets/image (227).png" alt="" width="255"><figcaption></figcaption></figure>
 
@@ -190,7 +190,7 @@ Supply chain partners can reference the PCF to support their scope 3 calculation
 
 1. After the organizational emissions have been calculated, the Registry will approve or reject the CET issuance request, and consequently issue CETs if approved.
 
-<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Futureproofing (Automated GHG Inventories) <a href="#toc146717959" id="toc146717959"></a>
 
