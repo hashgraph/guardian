@@ -1,3 +1,7 @@
+---
+icon: sidebar-flip
+---
+
 # Demo using VM0033
 
 ## 1. Purpose and Context
