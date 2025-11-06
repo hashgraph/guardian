@@ -8,7 +8,7 @@ For a demo example of following steps, here is the policy timestamp: **167516453
 
 1. Switch to the Roles tab
 
-![Roles Tab](<../../../../.gitbook/assets/0 (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![Roles Tab](<../../../../.gitbook/assets/0 (2) (1) (2).png>)
 
 2. Create 2 new roles called ‘**Example role 1**_’ and_ ‘_**Example role 2**_’
 

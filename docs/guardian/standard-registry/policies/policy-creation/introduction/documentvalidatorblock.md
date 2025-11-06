@@ -2,7 +2,7 @@
 
 This block is to validate documents, including linked documents. This block returns an error if at least one of the checks don’t pass. It can be placed as a ‘child’ document, or as a link in the sequence of the blocks.
 
-![](<../../../../../.gitbook/assets/image (13) (4).png>)
+![](<../../../../../.gitbook/assets/image (13) (3) (2).png>)
 
 ### Properties
 

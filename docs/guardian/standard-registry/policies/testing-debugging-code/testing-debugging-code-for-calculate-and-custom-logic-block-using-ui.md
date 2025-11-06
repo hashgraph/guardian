@@ -16,7 +16,7 @@ The `customLogicBlock` supports isolated dry-run execution. This means it can be
 
 Execution is controlled through a step-by-step interface in the UI, enabling users to define parameters, input data, and immediately inspect the results.
 
-<figure><img src="../../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (2) (3).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -75,7 +75,7 @@ To utilize this:
 * Historical data is only available in dry-run mode and is cleared upon exit.
 * Code changes made in dry-run are not persisted. To retain them, re-enter the changes in **Draft Mode** of the policy.
 
-<figure><img src="../../../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (6) (2) (2).png" alt=""><figcaption></figcaption></figure>
 
 ***
 

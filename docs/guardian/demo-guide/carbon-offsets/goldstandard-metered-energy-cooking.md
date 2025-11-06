@@ -8,20 +8,20 @@ description: Policy developed by Gautam Prajapati during the SBS Hackathon
 
 * [Table of content](goldstandard-metered-energy-cooking.md#table-of-content)
 * [Introduction](goldstandard-metered-energy-cooking.md#introduction)
-* [Why ME\&ED(Metered and Measured Energy) Methodology?](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-* [Demo Video](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-* [Policy Workflow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-* [Policy Guide](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-* [Available Roles](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-* [Important Documents & Schemas](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-* [Token(Carbon credit)](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-* [Step By Step](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-  * [Registry(Gold Standard) Flow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-  * [Project Proponent Flow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-  * [VVB Flow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-* [Futureproofing(Automated credit issuance)](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-* [TODO](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-* [Existing Cookstove Policy Comparison](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+* [Why ME\&ED(Metered and Measured Energy) Methodology?](broken-reference/)
+* [Demo Video](broken-reference/)
+* [Policy Workflow](broken-reference/)
+* [Policy Guide](broken-reference/)
+* [Available Roles](broken-reference/)
+* [Important Documents & Schemas](broken-reference/)
+* [Token(Carbon credit)](broken-reference/)
+* [Step By Step](broken-reference/)
+  * [Registry(Gold Standard) Flow](broken-reference/)
+  * [Project Proponent Flow](broken-reference/)
+  * [VVB Flow](broken-reference/)
+* [Futureproofing(Automated credit issuance)](broken-reference/)
+* [TODO](broken-reference/)
+* [Existing Cookstove Policy Comparison](broken-reference/)
 
 ### Introduction
 
@@ -95,7 +95,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 2. Feel free to play around with policy config by clicking on edit icon and understanding the different schemas used by policy
 
-<figure><img src="../../../.gitbook/assets/image (1) (9) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (9) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (51) (2).png" alt=""><figcaption></figcaption></figure>
 
@@ -171,7 +171,7 @@ VVB is the external independent third party responsible for reviewing Project De
 
 This workflow includes a bonus flow which is a major distinction from other existing policies. Building monitoring reports for cookstove projects is a very manual and error-prone process due to distributed nature of project. Often, a sample group of households are selected to be monitored and results are extrapolated for all the households(in thousands) leading to overcrediting. Since this methodology focuses on having direct measurement devices associated with a stove, an automated way of monitoring is possible.
 
-<figure><img src="../../../.gitbook/assets/image (223).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (223) (2).png" alt=""><figcaption></figcaption></figure>
 
 1. Project proponent can register a measuring device associated a given cookstove
 

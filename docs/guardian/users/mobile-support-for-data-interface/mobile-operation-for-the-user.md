@@ -33,7 +33,7 @@ The user registration form into a policy has also been redesigned. This makes th
 
 The images below are the registration forms which have been redesigned
 
-![](<../../../.gitbook/assets/8 (2) (1).png>) ![](<../../../.gitbook/assets/9 (1) (3) (1).png>)
+![](<../../../.gitbook/assets/8 (2) (1).png>) ![](<../../../.gitbook/assets/9 (2) (1) (2).png>)
 
 ### User creating a retire request
 

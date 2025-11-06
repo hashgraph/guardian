@@ -28,13 +28,13 @@ The first step is that you will need to either login in to your account that you
 \
 Here we will create a new account. You will need to click on **“Create new”** which will then lead you to the page to add the necessary information.
 
-<figure><img src="../../../../.gitbook/assets/image (148).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (72) (2).png" alt=""><figcaption></figcaption></figure>
 
 **Step 2**
 
 You will need to follow the step below to Configure your account if you have selected **“Create new”**. And select account type, in this case you will want to select **‘Standard Registry’** and create a new account.
 
-<figure><img src="../../../../.gitbook/assets/image (151).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (139) (1).png" alt=""><figcaption></figcaption></figure>
 
 You will then need to add your User name, Password and Confirm Password, then you will click on **“Create”**.
 
@@ -46,7 +46,7 @@ Once you have added the correct details to configure your account, you will need
 
 You will need to configure your account. You will need to enter the details shown in the image below.
 
-<figure><img src="../../../../.gitbook/assets/image (187).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (146) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Step 4**
 
@@ -145,7 +145,7 @@ Here in this demo for the Employee, we will show the Employee creating an accoun
 
 The first step you will need to do is create a new account for the Employee, by clicking on **“Create New”**.
 
-<figure><img src="../../../../.gitbook/assets/image (55).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (55) (2).png" alt=""><figcaption></figcaption></figure>
 
 We will then add the username, password and confirm the password for the new account for the employee. Then we will click on **“Create”.**
 

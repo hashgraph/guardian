@@ -28,7 +28,7 @@
 
 ### 1.2 In the policy config there is a root block which is the top of the structure
 
-![](<../../../.gitbook/assets/image (74).png>)
+![](<../../../.gitbook/assets/API_1 (1).png>)
 
 ### 1.3 Request the config for the root block
 
@@ -86,7 +86,7 @@ Request the role
 | -------------------------------------- | ------ | ----------- |
 | role<mark style="color:red;">\*</mark> | String | INSTALLER   |
 
-![](<../../../.gitbook/assets/image (103) (1).png>)
+![](<../../../.gitbook/assets/API_3 (1).png>)
 
 ### 1.6 Request the root block and all contained blocks.
 
@@ -180,7 +180,7 @@ Request the role
 | type<mark style="color:red;">\*</mark>     | token  | 0d4b2c1f-dc7a-47f5-a9ab-238d190f6769&1.0.0                                            |
 | @context<mark style="color:red;">\*</mark> | array  | \["https://ipfs.io/ipfs/bafkreihj5c6npywzkfx2pylalh5f23lhy2ogofxhdqctvpoh3gczwtzjg4"] |
 
-![](<../../../.gitbook/assets/API_4 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/API_4 (1) (1).png>)
 
 ### 1.8 Request the root block and all contained blocks again.
 
@@ -242,7 +242,7 @@ Request the role
 {% endtab %}
 {% endtabs %}
 
-![](<../../../.gitbook/assets/image 1.png>)
+![](<../../../.gitbook/assets/API_5 (1).png>)
 
 ## 2. Login as a Standard Registry
 
@@ -268,7 +268,7 @@ Request the role
 {% endtab %}
 {% endtabs %}
 
-![](<../../../.gitbook/assets/image (38).png>)
+![](<../../../.gitbook/assets/API_6 (1).png>)
 
 ### 2.2 Request the root block and all contained blocks.
 
@@ -416,7 +416,7 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 				
 ```
 
-![](<../../../.gitbook/assets/image (77).png>)
+![](<../../../.gitbook/assets/API_7 (1).png>)
 
 ![](<../../../.gitbook/assets/image 2.png>)
 
@@ -629,9 +629,9 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 | type<mark style="color:red;">\*</mark>     | token  | 885838ef-6385-403a-b413-38baad45ee26&1.0.0                                            |
 | @context<mark style="color:red;">\*</mark> | URL    | \["https://ipfs.io/ipfs/bafkreidnedcys7trnfeovygn3tvemmlltnszbci6fhnk2hnexscmtchhka"] |
 
-![](../../../.gitbook/assets/Sensor.png)
+![](<../../../.gitbook/assets/API_9 (1).png>)
 
-<figure><img src="../../../.gitbook/assets/API_10 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (96) (3).png" alt=""><figcaption></figcaption></figure>
 
 ### 3.4 Refresh the Blocks
 
@@ -647,7 +647,7 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 | ------------------------------------ | ------ | ----------------------------- |
 | VC<mark style="color:red;">\*</mark> | String | record in the grid (data\[0]) |
 
-![](<../../../.gitbook/assets/image 4.png>)
+![](<../../../.gitbook/assets/API_11 (1).png>)
 
 ### 3.6 Sample MRV Sender Data
 

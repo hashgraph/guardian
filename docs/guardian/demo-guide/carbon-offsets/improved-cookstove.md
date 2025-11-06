@@ -52,7 +52,7 @@ The next step is to create a user account for the verifier. Once created and ent
 
 Fill out the Agent Application to become a verifier and wait for approval.
 
-<figure><img src="../../../.gitbook/assets/image (12) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (12) (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 Now log back into the Standard Registry account and go into the policy. You will notice now two approvals waiting for action.
 
@@ -88,7 +88,7 @@ The Verifier must now go into their Policy screen and view the PDD by click on t
 
 After that, the Verifer can select a Review ID and "Finalise review."
 
-<figure><img src="../../../.gitbook/assets/image (29) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (29) (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (9) (2).png" alt=""><figcaption></figcaption></figure>
 
@@ -112,7 +112,7 @@ Once the Monitoring Report has been submitted to the Verifier, the Verifier can 
 
 <figure><img src="../../../.gitbook/assets/image (17) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (18) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (18) (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 The Verifier can submit the Review ID and "Finalise review"
 
@@ -120,7 +120,7 @@ The Verifier can submit the Review ID and "Finalise review"
 
 At this point in the methodology workflow, the Project Developer can "request credit issuance" by clicking on the "Request credit issuance button" and filling out the Request ICCC issuance form.
 
-<figure><img src="../../../.gitbook/assets/image (24) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (24) (2) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (22) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 

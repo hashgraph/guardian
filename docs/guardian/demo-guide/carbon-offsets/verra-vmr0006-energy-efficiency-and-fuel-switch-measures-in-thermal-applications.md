@@ -129,7 +129,7 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 
 10. Log in as the Project Proponent and assign the VVB to the project using the dropdown.
 
-![](<../../../.gitbook/assets/18 (10).png>)
+![](<../../../.gitbook/assets/14 (10) (1).png>)
 
 11. Once the VVB is assigned, the VVB will now have access to the project for validation/verification.
 

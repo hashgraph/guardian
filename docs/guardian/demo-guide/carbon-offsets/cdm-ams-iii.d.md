@@ -83,7 +83,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right. As the policy is importing you can see the schemas, tools, and tokens importing.
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (24) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -137,7 +137,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 <figure><img src="../../../.gitbook/assets/image (18) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (20) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (19) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 11. Log in as the Project Participant and create a monitoring report by clicking on the “Add Report” button then fill out the monitoring report form.
 
@@ -161,7 +161,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 15. Once the minting process is completed, you can view the token amount by selecting the “VP” tab.
 
-<figure><img src="../../../.gitbook/assets/image (27) (1) (1) (1) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (27) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 16. The TrustChain can also be viewed by clicking on the “View TrustChain” button. Please note that the token amount may show “-1” when the tokens are still minting. Once the process is complete a notification will appear stating that the tokens have been minted and transferred.
 

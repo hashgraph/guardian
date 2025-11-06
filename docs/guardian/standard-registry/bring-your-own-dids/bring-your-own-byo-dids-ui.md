@@ -56,7 +56,7 @@ Final step of the registration presents a form, based on the corresponding syste
 
 ### 2.1. Select the Standard Registry to be associated with
 
-<figure><img src="../../../.gitbook/assets/image (9) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 2.2 User Hedera Account
 

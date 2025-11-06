@@ -18,7 +18,7 @@ Best practices for implementing conditional and visibility logic in Hedera Guard
   IF (Q1 = "Yes" AND Q2 >= 3) THEN show Q3 else hide Q3.\
   This prevents conflicts where last-interaction rules could unintentionally override previous ones.
 
-<figure><img src="../../../../.gitbook/assets/image (8) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (7) (1) (4).png" alt=""><figcaption></figcaption></figure>
 
 * **Test Conditional Logic Extensively**\
   Rigorous testing is essential. Use Guardian’s dry run mode or real data simulations to verify that fields behave as expected across all relevant input combinations. Confirm that visibility and requirement rules are mutually consistent.

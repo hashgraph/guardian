@@ -65,7 +65,7 @@ Guardian includes an auto-save mechanism to prevent data loss during form entry.
 
     > “Last auto-saved at \[timestamp].”
 
-<figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (5).png" alt=""><figcaption></figcaption></figure>
 
 #### Data Restoration
 

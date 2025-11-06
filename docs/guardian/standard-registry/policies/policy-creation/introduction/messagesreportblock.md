@@ -100,8 +100,8 @@ Or used in conjunctions with other blocks (e.g. with grid)
 
 * Central area shows the timeline of the events as they have been recorded (in messages) in the specific topics
 
-![image5.png](<../../../../../.gitbook/assets/6 (1) (3).png>)
+![image5.png](<../../../../../.gitbook/assets/4 (5) (1) (1).png>)
 
 * Right-side panel shows detailed information about the selected message
 
-![image1.png](<../../../../../.gitbook/assets/7 (6).png>)
+![image1.png](<../../../../../.gitbook/assets/0 (7) (2).png>)

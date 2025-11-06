@@ -4,7 +4,7 @@ description: Below you can see how is the Meeco integration flow.
 
 # How it works
 
-<figure><img src="../../../.gitbook/assets/mermaid-diagram-2023-07-10-153433.png" alt=""><figcaption><p>Meeco integration flow in the Guardian</p></figcaption></figure>
+<figure><img src="../../../meeco/mermaid-diagram-2023-07-10-153433.png" alt=""><figcaption><p>Meeco integration flow in the Guardian</p></figcaption></figure>
 
 If you are using [Mermaid Flow](https://www.mermaidflow.app/) here is the script to help your visualization
 
