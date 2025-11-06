@@ -208,4 +208,11 @@ export class InterfaceStepBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         return !!ref.options.cyclic;
     }
+
+    /**
+     * On Empty Block State
+     */
+    public onEmptyBlockState(): void {
+        this.state = {};
+    }
 }

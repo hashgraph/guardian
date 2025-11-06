@@ -379,7 +379,7 @@ export class Users extends NatsService {
      */
     public async getCurrentRelayerAccount(
         user: IAuthUser
-    ): Promise<any[]> {
+    ): Promise<any> {
         return await this.sendMessage(AuthEvents.GET_CURRENT_RELAYER_ACCOUNT, { user });
     }
 
@@ -394,7 +394,7 @@ export class Users extends NatsService {
             pageIndex?: number | string,
             pageSize?: number | string
         }
-    ): Promise<any[]> {
+    ): Promise<ResponseAndCount<any>> {
         return await this.sendMessage(AuthEvents.GET_RELAYER_ACCOUNTS, { user, filters });
     }
 
@@ -409,7 +409,7 @@ export class Users extends NatsService {
             pageIndex?: number | string,
             pageSize?: number | string
         }
-    ): Promise<any[]> {
+    ): Promise<ResponseAndCount<any>> {
         return await this.sendMessage(AuthEvents.GET_USER_RELAYER_ACCOUNTS, { user, filters });
     }
 
