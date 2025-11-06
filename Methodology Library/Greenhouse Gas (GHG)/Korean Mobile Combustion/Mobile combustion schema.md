@@ -1,6 +1,6 @@
 # **Mobile Combustion (Road)**
 
-**Policy Summary**
+### **Tool Summary**
 
 This methodology provides a standardized framework for reporting
 organizations in Korea to quantify, report, and verify direct greenhouse
@@ -13,7 +13,7 @@ combustion (road) sector. All parameters---such as calorific values,
 emission factors, and vehicle classification---are based on national
 default coefficients.
 
-**This methodology is applicable for**
+### **This methodology is applicable for**
 
 - Any company with owned vehicles (Scope 1) using transport fuels
   (Passenger Car, Van, and Truck).
@@ -26,8 +26,9 @@ default coefficients.
 
 - Any company that uses road transportation services, with respect to
   their upstream or downstream emissions (Scope 3 category 4 and 9).
+<br><br>
 
-**User Input**
+### **User Input**
 
 - Vehicle type
 
@@ -64,15 +65,12 @@ default coefficients.
 \- Most preferred activity data -- provides the most accurate emission
 results
 
-## **Unit Conversion**
+**Unit Conversion**
 
-= Fuel Spend (KRW) / Fuel Cost (KRW) x Fuel Efficiency (km/L)
+**Extrapolated Driving Distance (km)** = Fuel Spend (KRW) / Fuel Cost (KRW) x Fuel Efficiency (km/L) = Fuel Consumption (L) x Fuel Efficiency (km/L)
+<br><br>
 
-= Fuel Consumption (L) x Fuel Efficiency (km/L)
-
-##
-
-**Applied Vehicle Types**
+### **Applied Vehicle Types**
 
 | **Type**  | **Size**   | **Description**                                                                                                                                              | **Fuel Type**                 |
 | --------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------- |
@@ -88,8 +86,9 @@ results
 | Truck     | Small      | Maximum payload ≤ 1 ton AND gross vehicle weight ≤ 3.5 tons                                                                                                  | Diesel                        |
 |           | Medium     | 1 ton \< Maximum payload \< 5 tons OR 3.5 tons \< gross vehicle weight \< 10 tons                                                                            | Diesel                        |
 |           | Large      | 5 tons ≤ Maximum payload OR 10 tons ≤ Gross vehicle weight                                                                                                   | Diesel                        |
+<br><br>
 
-**Applied Emission Factors**
+### **Applied Emission Factors**
 
 - National emission factors by each vehicle type must be used to
   calculate emissions
@@ -98,10 +97,10 @@ results
 
 - x: average vehicle speed
 
-\- 50km/h automatically applied if 'urban' is selected as a primary
+- 50km/h automatically applied if 'urban' is selected as a primary
 driving road
 
-\- 80km/h automatically applied if 'highway' is selected as a primary
+- 80km/h automatically applied if 'highway' is selected as a primary
 driving road
 
 | **Vehicle Type** | **Size**   | **Fuel** | **Primary Driving Road** | **CO2 Emission Factors**              | **CH4 Emission Factors** | **N2O Emission Factors** |
@@ -155,7 +154,7 @@ driving road
 
 Source: Greenhouse Gas Inventory and Research Center of Korea
 
-**Fuel Efficiency & Cost**
+### **Fuel Efficiency & Cost**
 
 - Based on 2024 January data
 
@@ -313,12 +312,30 @@ Source: Greenhouse Gas Inventory and Research Center of Korea
 </table>
 
 Source: Opinet & Transportation Integrated Operation System
+<br><br>
 
-**Emission Calculation**
+### **Emission Calculation**
 
-![](./image_1.png)
+<p><strong><em>E<sub>i,j</sub> = Distance<sub>i,k,l,m</sub> × EF<sub>i,j,k,l</sub> × 10<sup>-6</sup></em></strong></p>
 
-## **Use case: Calculation of Mobile Combustion Emissions for General Companies**
+<p><strong>E<sub>i,j</sub></strong> : Total greenhouse gas <em>(j)</em> emissions (<strong>tGHG</strong>)</p>
+
+<p><strong>Distance<sub>i,k,l,m</sub></strong> : Driving distance (<strong>km</strong>)</p>
+<ul>
+  <li>If driving distance data is unavailable, Fuel Spend (<strong>KRW</strong>) or Fuel Consumption (<strong>L</strong>) data can be used to calculate extrapolated driving distance (<strong>km</strong>).</li>
+</ul>
+
+<p><strong>EF<sub>i,j,k,l</sub></strong> : GHG (<em>j</em>) emission factor (<strong>g/km</strong>)</p>
+<ul>
+  <li><strong>i</strong>: fuel type</li>
+  <li><strong>j</strong>: GHG type</li>
+  <li><strong>k</strong>: vehicle type</li>
+  <li><strong>l</strong>: vehicle size</li>
+  <li><strong>m</strong>: average speed</li>
+</ul>
+<br><br>
+
+### **Use case: Calculation of Mobile Combustion Emissions for General Companies**
 
 **Scenario**
 
@@ -396,5 +413,4 @@ Calculation Example:
   efficiency strategies
 
 ![텍스트, 영수증, 스크린샷, 도표이(가) 표시된 사진 자동 생성된
-설명](./image_2.png){width="3.886111111111111in"
-height="9.511805555555556in"}
+설명](./image_3.png)
