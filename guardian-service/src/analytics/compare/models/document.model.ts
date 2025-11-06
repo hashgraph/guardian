@@ -337,6 +337,18 @@ export class DocumentModel implements IWeightModel {
     }
 
     /**
+     * Get document type
+     * @public
+     */
+    public getTypes(): string[] {
+        if (this._document && this._document.types) {
+            return this._document.types;
+        } else {
+            return [];
+        }
+    }
+
+    /**
      * Get weight by name
      * @param type - weight name
      * @public

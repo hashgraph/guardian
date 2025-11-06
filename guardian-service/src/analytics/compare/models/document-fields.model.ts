@@ -25,6 +25,12 @@ export class DocumentFieldsModel {
      */
     public readonly schemas: string[];
 
+    /**
+     * Document types
+     * @public
+     */
+    public readonly types: string[];
+
     constructor(document: IVC | IVP) {
         if (typeof document.type === 'string') {
             this.type = document.type;
@@ -39,6 +45,7 @@ export class DocumentFieldsModel {
         }
         this.fields = DocumentFieldsModel.createFieldsList(document);
         this.schemas = DocumentFieldsModel.createSchemasList(document);
+        this.types = DocumentFieldsModel.createTypesList(document);
     }
 
     /**
@@ -174,6 +181,54 @@ export class DocumentFieldsModel {
             }
         }
         list.delete('https://www.w3.org/2018/credentials/v1');
+        return Array.from(list);
+    }
+
+    /**
+     * Check context
+     * @param context
+     * @param result
+     * @private
+     * @static
+     */
+    private static checkVCType(vc: any, result: Set<string>): Set<string> {
+        if (vc.credentialSubject) {
+            if (Array.isArray(vc.credentialSubject)) {
+                for (const subject of vc.credentialSubject) {
+                    result.add(subject.type);
+                }
+            } else {
+                const subject = vc.credentialSubject;
+                result.add(subject.type);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Create types list
+     * @param document - json
+     * @public
+     * @static
+     */
+    public static createTypesList(document: any): string[] {
+        if (!document) {
+            return [];
+        }
+        const list = new Set<string>();
+        if (document.verifiableCredential) {
+            if (Array.isArray(document.verifiableCredential)) {
+                for (const vc of document.verifiableCredential) {
+                    DocumentFieldsModel.checkVCType(vc, list);
+
+                }
+            } else {
+                const vc = document.verifiableCredential;
+                DocumentFieldsModel.checkVCType(vc, list);
+            }
+        } else {
+            DocumentFieldsModel.checkVCType(document, list);
+        }
         return Array.from(list);
     }
 

@@ -1,4 +1,4 @@
-<div [attr.instance]="!!policy" [attr.status]="policyInfo?.status" class="content">
+<div [attr.instance]="!!policy" [attr.status]="policyInfo?.status" class="policy-content">
     <ng-container *ngIf="!isConfirmed">
         <div class="not-exist">
             Before starting work you need to get DID
@@ -213,17 +213,17 @@
             [attr.hidden-container]="view !== 'policy'"
             [attr.policy-status]="policyInfo.status"
             *ngIf="view == 'policy'"
-            style="height: 100%;"
+            class="policy-body"
         >
             <ng-container *ngIf="!isDryRun; else dryRunContent">
                 <p-tabView [(activeIndex)]="activeTabIndex" (activeIndexChange)="onTabChange($event)">
                     <p-tabPanel [header]="'General'">
-                        <div class="policy-container">
+                        <div class="policy-container {{!navigationFooterDisabled ? 'step-container' : 'no-step-container' }}">
                             <progress-tracker
                                 *ngIf="steps && steps.length > 0"
                                 [steps]="steps"
                             ></progress-tracker>
-                            <div style="width: 100%;">
+                            <div class="policy-container-body">
                                 <render-block
                                     [block]="policy"
                                     [dryRun]="isDryRun"
@@ -261,12 +261,12 @@
                 </p-tabView>
             </ng-container>
             <ng-template #dryRunContent>
-                <div class="policy-container">
+                <div class="policy-container {{!navigationFooterDisabled ? 'step-container' : 'no-step-container' }}">
                     <progress-tracker
                         *ngIf="steps && steps.length > 0"
                         [steps]="steps"
                     ></progress-tracker>
-                    <div style="width: 100%;">
+                    <div class="policy-container-body">
                         <render-block
                             [block]="policy"
                             [dryRun]="isDryRun"

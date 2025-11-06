@@ -1,19 +1,20 @@
 import { DatabaseServer } from '@guardian/common';
 import { CompareOptions, IRefLvl, IVcDocument, IVpDocument } from '../compare/interfaces/index.js';
 import { DocumentModel, SchemaModel, VcDocumentModel, VpDocumentModel } from '../compare/models/index.js';
+import { SchemaCache } from './schema-cache.js';
 
 /**
  * Loader
  */
 export class DocumentLoader {
     private readonly cacheDocuments: Map<string, DocumentModel | null>;
-    private readonly cacheSchemas: Map<string, SchemaModel | null>;
+    private readonly cacheSchemas: SchemaCache;
     private readonly options: CompareOptions;
 
     constructor(options: CompareOptions) {
         this.options = options;
         this.cacheDocuments = new Map<string, DocumentModel>();
-        this.cacheSchemas = new Map<string, SchemaModel>();
+        this.cacheSchemas = new SchemaCache(options);
     }
 
     /**
@@ -179,8 +180,10 @@ export class DocumentLoader {
         //Schemas
         const schemaModels: SchemaModel[] = [];
         const schemasIds = documentModel.getSchemas();
+        const types = documentModel.getTypes();
+        const type = types[0];
         for (const schemasId of schemasIds) {
-            const schemaModel = await this.createSchema(schemasId);
+            const schemaModel = await this.createSchema(schemasId, type);
             if (schemaModel) {
                 schemaModels.push(schemaModel);
             }
@@ -197,19 +200,21 @@ export class DocumentLoader {
      * Create schema model
      * @param schemasId
      */
-    public async createSchema(schemasId: string): Promise<SchemaModel> {
-        if (this.cacheSchemas.has(schemasId)) {
-            return this.cacheSchemas.get(schemasId);
+    public async createSchema(schemasId: string, type: string): Promise<SchemaModel | null> {
+        const cacheModel = this.cacheSchemas.getSchemaCache(schemasId, type);
+        if (cacheModel) {
+            if (!cacheModel.empty) {
+                return cacheModel;
+            } else {
+                return null;
+            }
         }
-
-        let schemaModel: SchemaModel = null;
-        const schema = await DatabaseServer.getSchema({ contextURL: schemasId });
-        if (schema) {
-            schemaModel = new SchemaModel(schema, this.options);
-            schemaModel.update(this.options);
+        const schemaModel = await this.cacheSchemas.loadSchema(schemasId, type);
+        this.cacheSchemas.addSchemaCache(schemasId, schemaModel, type);
+        if (!schemaModel.empty) {
+            return schemaModel;
+        } else {
+            return null;
         }
-        this.cacheSchemas.set(schemasId, schemaModel);
-
-        return schemaModel;
     }
 }

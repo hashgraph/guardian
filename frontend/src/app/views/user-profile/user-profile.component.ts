@@ -403,7 +403,7 @@ export class UserProfileComponent implements OnInit {
         this.relayerAccountPage = [];
         this.relayerAccountCount = 0;
         this.relayerAccountPageIndex = 0;
-        this.relayerAccountPageSize = 25;
+        this.relayerAccountPageSize = 10;
         this.relayerAccountColumns = [{
             id: 'account',
             title: 'Account',

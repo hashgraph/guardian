@@ -164,9 +164,9 @@ export class RelayerAccountsService extends NatsService {
                         }]
                     }
 
-                    const results = await entityRepository.find(RelayerAccount, query, otherOptions);
+                    const [items, count] = await entityRepository.findAndCount(RelayerAccount, query, otherOptions);
 
-                    return new MessageResponse(results);
+                    return new MessageResponse({ items, count });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
@@ -421,18 +421,6 @@ export class RelayerAccountsService extends NatsService {
                         }
                     }];
 
-                    if (otherOptions.offset) {
-                        aggregate.push({
-                            $skip: otherOptions.offset
-                        })
-                    }
-
-                    if (otherOptions.limit) {
-                        aggregate.push({
-                            $limit: otherOptions.limit
-                        })
-                    }
-
                     if (search) {
                         aggregate.push({
                             $match: {
@@ -449,9 +437,36 @@ export class RelayerAccountsService extends NatsService {
                         })
                     }
 
-                    const results = await entityRepository.aggregate(User, aggregate);
+                    if (otherOptions.offset) {
+                        aggregate.push({
+                            $skip: otherOptions.offset
+                        })
+                    }
 
-                    return new MessageResponse(results);
+                    if (otherOptions.limit) {
+                        aggregate.push({
+                            $limit: otherOptions.limit
+                        })
+                    }
+
+                    const userCount = await entityRepository.count(User, {
+                        $or: [{
+                            parent: user.did
+                        }, {
+                            did: user.did
+                        }]
+                    });
+                    const accountCount = await entityRepository.count(RelayerAccount, {
+                        $or: [{
+                            parent: user.did
+                        }, {
+                            owner: user.did
+                        }]
+                    });
+                    const count = userCount + accountCount;
+                    const items = await entityRepository.aggregate(User, aggregate);
+
+                    return new MessageResponse({ items, count });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);

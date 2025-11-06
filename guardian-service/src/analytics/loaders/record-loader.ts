@@ -1,17 +1,18 @@
-import { DatabaseServer, IRecordResult } from '@guardian/common';
+import { IRecordResult } from '@guardian/common';
 import { CompareOptions } from '../compare/interfaces/index.js';
 import { DocumentModel, RecordModel, SchemaModel, VcDocumentModel, VpDocumentModel } from '../compare/models/index.js';
+import { SchemaCache } from './schema-cache.js';
 
 /**
  * Loader
  */
 export class RecordLoader {
-    private readonly cacheSchemas: Map<string, SchemaModel | null>;
     private readonly options: CompareOptions;
+    private readonly cacheSchemas: SchemaCache;
 
     constructor(options: CompareOptions) {
         this.options = options;
-        this.cacheSchemas = new Map<string, SchemaModel>();
+        this.cacheSchemas = new SchemaCache(options);
     }
 
     /**
@@ -23,30 +24,19 @@ export class RecordLoader {
     public async loadSchemas(document: DocumentModel): Promise<SchemaModel[]> {
         const schemaModels: SchemaModel[] = [];
         const schemasIds = document.getSchemas();
+        const types = document.getTypes();
+        const type = types[0];
         for (const schemasId of schemasIds) {
-            let iri = schemasId?.replace('schema#', '#');
-            iri = schemasId?.replace('schema:', '#');
-            if (this.cacheSchemas.has(schemasId)) {
-                const schemaModel = this.cacheSchemas.get(schemasId);
-                if (schemaModel) {
-                    schemaModels.push(schemaModel);
-                }
-            } else if (this.cacheSchemas.has(iri)) {
-                const schemaModel = this.cacheSchemas.get(iri);
-                if (schemaModel) {
-                    schemaModels.push(schemaModel);
+            const cacheModel = this.cacheSchemas.getSchemaCache(schemasId, type);
+            if (cacheModel) {
+                if (!cacheModel.empty) {
+                    schemaModels.push(cacheModel);
                 }
             } else {
-                const schema = (schemasId.startsWith('schema#') || schemasId.startsWith('schema:')) ?
-                    await DatabaseServer.getSchema({ iri }) :
-                    await DatabaseServer.getSchema({ contextURL: schemasId });
-                if (schema) {
-                    const schemaModel = new SchemaModel(schema, this.options);
-                    schemaModel.update(this.options);
+                const schemaModel = await this.cacheSchemas.loadSchema(schemasId, type);
+                this.cacheSchemas.addSchemaCache(schemasId, schemaModel, type);
+                if (!schemaModel.empty) {
                     schemaModels.push(schemaModel);
-                    this.cacheSchemas.set(schemasId, schemaModel);
-                } else {
-                    this.cacheSchemas.set(schemasId, null);
                 }
             }
         }
@@ -67,7 +57,7 @@ export class RecordLoader {
             if (document.type === 'schema') {
                 const schemaModel = SchemaModel.from(document.document, this.options);
                 schemaModel.update(this.options);
-                this.cacheSchemas.set(document.id, schemaModel);
+                this.cacheSchemas.addSchemaCache(document.id, schemaModel, schemaModel.iri);
             }
         }
         for (let index = 0; index < documents.length; index++) {
