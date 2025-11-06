@@ -38,24 +38,21 @@ export class IgnoreRulesDialog implements OnInit {
     ) {}
 
     public ngOnInit(): void {
-        const initialRules: IgnoreRule[] = Array.isArray(this.dialogConfig.data?.rules)
-            ? (this.dialogConfig.data.rules as IgnoreRule[])
-            : [];
-
-        const initialControlState: Record<string, boolean> = {};
-
         this.presetRuleOptions = Array.isArray(this.dialogConfig.data?.presetRuleOptions)
             ? this.dialogConfig.data.presetRuleOptions
             : [];
 
-        const hasSavedRules = initialRules.length > 0;
-            for (const option of this.presetRuleOptions) {
-                if (!hasSavedRules) {
-                     initialControlState[option.key] = false;
-                } else {
-                     initialControlState[option.key] = !this.containsRule(initialRules, option.rule);
-                }
-            }
+        const rawRules = this.dialogConfig.data?.rules;
+
+        const initialRules: IgnoreRule[] = Array.isArray(rawRules)
+            ? (rawRules as IgnoreRule[])
+            : this.presetRuleOptions.map(o => o.rule);
+
+        const initialControlState: Record<string, boolean> = {};
+
+        for (const option of this.presetRuleOptions) {
+            initialControlState[option.key] = !this.containsRule(initialRules, option.rule);
+        }
 
         this.form = this.formBuilder.group(initialControlState);
     }
@@ -122,7 +119,7 @@ export class IgnoreRulesDialog implements OnInit {
         b: IgnoreRule
     ): boolean {
         const normalize = (rule: IgnoreRule): string => {
-            const entries: Array<[string, unknown]> = Object
+            const entries: [string, unknown][] = Object
                 .entries(rule as Record<string, unknown>)
                 .filter(([, value]) =>
                     value !== undefined &&
