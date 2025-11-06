@@ -178,6 +178,8 @@ Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5044](https://github.com/hashgraph/guardian/issues/5044)
 
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/project-account-relayer-account/demo-using-ui](https://docs.hedera.com/guardian/guardian/standard-registry/project-account-relayer-account/demo-using-ui)
+
 **Need to implement best practices on Schema Cycle**
 
 We need to implement and document best practices covering the following aspects of the schema lifecycle:
@@ -254,12 +256,6 @@ Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry
 
 #### ---November---
 
-**Deterministic compression​**
-
-Implement deterministic compression for all cases in which compression is applied by Guardian.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4931](https://github.com/hashgraph/guardian/issues/4931)
-
 **Implementing Artifacts such as Schemas/Policies/tokens Deletion all at once​**
 
 1. Create a checkbox at the top of the schema/policy/token table, which will allow to select all the artifacts.
@@ -267,7 +263,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4931](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3375](https://github.com/hashgraph/guardian/issues/3375)
 
-Documentation Link:
+Documentation Link: TBD
 
 **Graphical View of formula linked definitions**
 
