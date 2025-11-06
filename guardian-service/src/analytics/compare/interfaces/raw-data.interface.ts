@@ -158,6 +158,7 @@ export interface IPolicyRawData {
     instanceTopicId?: string;
     version?: string;
     config?: IBlockRawData;
+    tools?: string[];
     policyRoles?: string[];
     policyGroups?: string[];
     policyTopics?: string[];
