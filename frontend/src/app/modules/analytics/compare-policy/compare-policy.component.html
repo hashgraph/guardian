@@ -18,7 +18,7 @@
             </p-accordionTab>
 
             <p-accordionTab header="Policy Roles">
-                <div *ngIf="roles?.length" class="merge-tree">
+                <div *ngIf="roles && roles.length" class="merge-tree">
                     <div *ngFor="let item of roles" class="report-item report-item-small"
                          [attr.type]="item.type" [attr.rate]="item.total_rate">
                         <div class="left-compare-result compare-result" [attr.open]="true">
@@ -39,7 +39,7 @@
             </p-accordionTab>
 
             <p-accordionTab header="Policy Groups">
-                <div *ngIf="groups?.length" class="merge-tree">
+                <div *ngIf="groups && groups.length" class="merge-tree">
                     <div *ngFor="let item of groups" class="report-item report-item-small" [attr.type]="item.type"
                          [attr.rate]="item.total_rate">
                         <div class="left-compare-result compare-result" [attr.open]="true">
@@ -60,8 +60,29 @@
             </p-accordionTab>
 
             <p-accordionTab header="Policy Tokens">
-                <div *ngIf="topics?.length" class="merge-tree">
+                <div *ngIf="topics && topics.length" class="merge-tree">
                     <div *ngFor="let item of topics" class="report-item report-item-small" [attr.type]="item.type"
+                         [attr.rate]="item.total_rate">
+                        <div class="left-compare-result compare-result" [attr.open]="true">
+                            <ng-container *ngIf="item.left">
+                                <ng-container
+                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 0 }"></ng-container>
+                            </ng-container>
+                        </div>
+                        <div class="middle-compare-result compare-result" [attr.open]="true"></div>
+                        <div class="right-compare-result compare-result" [attr.open]="true">
+                            <ng-container *ngIf="item.right">
+                                <ng-container
+                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 1 }"></ng-container>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </p-accordionTab>
+
+            <p-accordionTab header="Policy Tools">
+                <div *ngIf="tools && tools.length" class="merge-tree">
+                    <div *ngFor="let item of tools" class="report-item report-item-small" [attr.type]="item.type"
                          [attr.rate]="item.total_rate">
                         <div class="left-compare-result compare-result" [attr.open]="true">
                             <ng-container *ngIf="item.left">

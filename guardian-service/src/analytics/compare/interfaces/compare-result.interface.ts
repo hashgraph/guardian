@@ -37,6 +37,10 @@ export interface ICompareResult<T> {
      */
     tokens?: IReportTable;
     /**
+     * Tools rates (Policy)
+     */
+    tools?: IReportTable;
+    /**
      * InputEvents rates (Module)
      */
     inputEvents?: IReportTable;

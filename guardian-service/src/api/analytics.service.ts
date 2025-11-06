@@ -126,8 +126,6 @@ async function localSearch(
             ['tools.messageId']: { $in: options.toolMessageIds }
         });
     }
-    console.log(JSON.stringify(filter, null, 4));
-    
     if (options.toolName) {
         filter.$and.push({
             ['tools.name']: { $regex: `.*${options.toolName.trim()}.*`, $options: 'i' }
@@ -284,6 +282,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 const comparator = new PolicyComparator(compareOptions);
                 const results = comparator.compare(compareModels);
                 const result = comparator.to(results, type);
+
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
@@ -449,7 +448,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     toolName,
                     toolVersion
                 }
-    console.log(toolMessageIds);
+
                 const result: any = {
                     target: null,
                     result: []
