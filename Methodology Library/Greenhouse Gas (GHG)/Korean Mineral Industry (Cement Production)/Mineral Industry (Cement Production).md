@@ -66,9 +66,11 @@ Company ‘A’ produces cement through clinker calcination. To comply with annu
 **3) Emission Calculation Procedure**
 
 - Aggregate clinker production and kiln dust generation volumes
-- Apply the emission calculation formula for process emissions from cement production\
-   <b>E<sub>i</sub> = (EF<sub>i</sub> + EF<sub>toc</sub>) × (Q<sub>i</sub> + Q<sub>CKD</sub> × F<sub>CKD</sub>)</b>
+- Apply the emission calculation formula for process emissions from cement production.
+
+    - *Production Emissions (tCO₂) = (Clinker(t) × Emission factor(tCO₂/t-clinker)) + (Cement kiln dust(CKD)(t) × Emission factor(tCO₂/t-CKD)) + (Raw material × Emission factor(tCO₂/t))*
 - If waste fuel is used in kilns, calculate the emissions separately to avoid double-counting with process emissions
+    - *Waste Fuel Emissions (tCO₂) = Fuel Consumption (t) × Emission factor (kgCO₂/TJ) × NCV (TJ/Gg) × 10⁻⁶*
 
 **4) Reporting and Utilization**
 

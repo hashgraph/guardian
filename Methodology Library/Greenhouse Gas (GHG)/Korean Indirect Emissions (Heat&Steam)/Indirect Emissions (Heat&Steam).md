@@ -60,7 +60,7 @@ Source: Korea District Heating Corporation
 
 Scenario
 
-Company A operates multiple buildings including offices, production plants, and warehouses, using externally supplied heat and steam for heating and some industrial processes. To comply with ESG management and regulatory reporting obligations (e.g., GHG & Energy Target Management System), the company must calculate and disclose Scope 2 indirect emissions annually.
+Company A operates multiple buildings including offices, production plants, and warehouses, using externally supplied heat and steam for heating and some industrial processes. To comply with ESG management and both regulatory and voluntary reporting obligations (e.g., GHG & Energy Target Management System), the company must calculate and disclose Scope 2 indirect emissions annually.
 
 **1) Data Collection**
 
