@@ -4,7 +4,7 @@ import { SynchronizationTask } from '../synchronization-task.js';
 import { Collection } from 'mongodb';
 import { textSearch } from '../text-search-options.js';
 import { parseLabelFile } from '../parsers/index.js';
-import { loadFiles } from '../load-files.js';
+import { fastLoadFilesBuffer } from '../load-files.js';
 
 export class SynchronizationLabels extends SynchronizationTask {
     public readonly name: string = 'labels';
@@ -83,8 +83,8 @@ export class SynchronizationLabels extends SynchronizationTask {
         const needUpdate1 = await this.loadLabels(collection, fileIds);
         const needUpdate2 = await this.loadDocuments(collection);
 
-        console.log(`Sync labels: load files`)
-        const fileMap = await loadFiles(fileIds, true);
+        console.log(`Sync labels: load files`, fileIds.size);
+        const fileMap = await fastLoadFilesBuffer(fileIds);
 
         console.log(`Sync labels: update data`)
         for (const document of needUpdate1) {
@@ -101,6 +101,7 @@ export class SynchronizationLabels extends SynchronizationTask {
         }
         console.log(`Sync labels: flush`)
         await em.flush();
+        await em.clear();
     }
 
     private async createAnalytics1(

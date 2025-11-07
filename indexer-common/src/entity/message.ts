@@ -3,13 +3,18 @@ import { Entity, Enum, Index, PrimaryKey, Property, SerializedPrimaryKey, Unique
 import { ObjectId } from '@mikro-orm/mongodb';
 
 @Entity()
-@Unique({ name: 'consensus_timestamp', properties: ['consensusTimestamp'] })
+@Unique({ name: 'consensusTimestamp', properties: ['consensusTimestamp'] })
 @Index({ name: 'topicId', properties: ['topicId'] })
 @Index({ name: 'status', properties: ['status'] })
 @Index({ name: 'type', properties: ['type'] })
 @Index({ name: 'files', properties: ['files'] })
-@Index({ name: 'last_update', properties: ['lastUpdate'] })
-@Index({ name: 'loaded', properties: ['loaded'] })
+@Index({ name: 'uuid_type', properties: ['uuid', 'type'] })
+@Index({ name: 'loaded_lastUpdate', properties: ['loaded', 'lastUpdate'] })
+@Index({ name: 'type_action', properties: ['type', 'action'] })
+@Index({ name: 'processedProjects', properties: ['processedProjects'] })//MGS:
+@Index({ name: 'processedSchemas', properties: ['processedSchemas'] })//MGS:
+@Index({ name: 'parsedHasGeoJson', properties: ['parsedHasGeoJson'] })//MGS:
+
 export class Message implements IMessage {
     @PrimaryKey()
     _id: ObjectId;
@@ -109,4 +114,22 @@ export class Message implements IMessage {
 
     @Property({ nullable: true })
     loaded: boolean;
+
+    @Property({ nullable: true, })
+    parsedHasGeoJson: boolean;
+
+    @Property({ nullable: true, })
+    parsedSchemaIds: string[];
+
+    @Property({ nullable: true, })
+    parsedContextId: { context: string, type: string }
+
+    @Property({ nullable: true, })
+    parsedLinkedContextIds: { context: string, type: string }[]
+
+    @Property({ nullable: true })
+    processedProjects: boolean;
+
+    @Property({ nullable: true })
+    processedSchemas: boolean;
 }
