@@ -32,35 +32,34 @@ export class FileService {
     }
 
     private static async randomMessage(em: MongoEntityManager<MongoDriver>): Promise<Message> {
-        const delay = Date.now() - FileService.CYCLE_TIME;
-        const rows = await em.find(Message,
-            {
-                lastUpdate: { $lt: delay },
-                loaded: false
-            },
-            {
-                orderBy: { lastUpdate: 'ASC' },
-                limit: 50,
-            }
-        )
-        const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
-        const row = rows[index];
+        const now = Date.now();
+        const delay = now - FileService.CYCLE_TIME;
 
-        if (!row) {
+        const collection = em.getCollection(Message);
+
+        const sample = await collection.aggregate([
+            { $match: { lastUpdate: { $lt: delay }, loaded: false } },
+            { $sort:  { lastUpdate: 1 } },
+            { $limit: 50 },
+            { $sample: { size: 1 } },
+            { $project: { _id: 1 } }
+        ]).toArray();
+
+        const candidate = sample[0];
+        if (!candidate) {
             return null;
         }
 
-        const count = await em.nativeUpdate(Message, {
-            _id: row._id,
-            lastUpdate: { $lt: delay }
-        }, {
-            lastUpdate: Date.now()
-        });
+        const result = await collection.findOneAndUpdate(
+            { _id: candidate._id, lastUpdate: { $lt: delay } },
+            { $set: { lastUpdate: now } },
+            { returnDocument: 'before' }
+        );
 
-        if (count) {
-            return row;
-        } else {
-            return null;
+        if (result) {
+            return em.map(Message, result);
         }
+
+        return null;
     }
 }

@@ -38,6 +38,15 @@ export abstract class SynchronizationTask {
         const taskExecution = async () => {
             try {
                 const em = DataBaseHelper.getEntityManager();
+
+                //Check task already started
+                const exists = await em.findOne(SyncTaskEntity, { taskName: this._name });
+                if (exists) {
+                    console.log(`Tried to start the “${this._name}” task, but it’s already marked as started.` )
+                    await this.cleanOldTask();
+                    return;
+                }
+
                 const runningTask = em.create(SyncTaskEntity, {
                     taskName: this._name,
                     date: new Date(),
@@ -56,21 +65,7 @@ export abstract class SynchronizationTask {
                 console.log(`${this._name} task is finished`);
             } catch (error) {
                 console.log(error);
-                await safetyRunning(async () => {
-                    const em = DataBaseHelper.getEntityManager();
-                    const runningTask = await em.findOne(SyncTaskEntity, {
-                        taskName: this._name,
-                    });
-                    if (!runningTask) {
-                        return;
-                    }
-                    const now = new Date();
-                    if (
-                        runningTask.date.getTime() < now.addDays(-1).getTime()
-                    ) {
-                        await em.removeAndFlush(runningTask);
-                    }
-                });
+                await this.cleanOldTask();
             }
         };
         this._job = new CronJob(this._mask, taskExecution);
@@ -78,6 +73,24 @@ export abstract class SynchronizationTask {
         if (firstExecution) {
             taskExecution();
         }
+    }
+
+    private async cleanOldTask() {
+        await safetyRunning(async () => {
+            const em = DataBaseHelper.getEntityManager();
+            const runningTask = await em.findOne(SyncTaskEntity, {
+                taskName: this._name,
+            });
+            if (!runningTask) {
+                return;
+            }
+            const now = new Date();
+            if (
+                runningTask.date.getTime() < now.addDays(-1).getTime()
+            ) {
+                await em.removeAndFlush(runningTask);
+            }
+        });
     }
 
     public stop() {

@@ -223,7 +223,7 @@ export class LoadingQueueService {
             priorityTimestamp: number
         }
     ) {
-        setTimeout(() =>  this.updatePriorityQueue(msg.priorityTimestamp).then(), 10000)
+        setTimeout(() => this.updatePriorityQueue(msg.priorityTimestamp).then(), 10000)
     }
 
     private async updatePriorityQueue(priorityTimestamp: number) {
