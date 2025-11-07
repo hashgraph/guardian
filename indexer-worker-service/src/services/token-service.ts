@@ -7,7 +7,7 @@ import { PriorityStatus } from '@indexer/interfaces';
 import { ChannelService } from 'api/channel.service.js';
 
 export class TokenService {
-    public static CYCLE_TIME: number = 0;
+    public static CYCLE_TIME: number = 30 * 60 * 1000; // 30 minutes
     public static CHANNEL: ChannelService | null;
 
     public static async updateToken(job: Job) {
@@ -135,58 +135,51 @@ export class TokenService {
     }
 
     private static async randomToken(em: MongoEntityManager<MongoDriver>): Promise<TokenCache> {
-        const delay = Date.now() - TokenService.CYCLE_TIME;
-        const rows = await em.find(TokenCache,
-            {
-                $or: [
-                    { priorityDate: { $ne: null } },
-                    { lastUpdate: { $lt: delay } },
-                    { hasNext: true }
-                ]
-            },
-            {
-                orderBy: [
-                    { priorityDate: 'DESC' },
-                ],
-                limit: 50
-            }
-        )
-
-        if (!rows || rows.length <= 0) {
-            return null;
-        }
-
-        let row: any;
-        if (rows[0].priorityDate) {
-            row = rows[0]
-        } else {
-            const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
-            row = rows[index];
-        }
-
-        if (!row) {
-            return null;
-        }
-
         const now = Date.now();
-        const count = await em.nativeUpdate(TokenCache, {
-            tokenId: row.tokenId,
-            $or: [
-                { priorityDate: { $ne: null } },
-                { lastUpdate: { $lt: delay } },
-                { hasNext: true }
-            ]
-        }, {
-            serialNumber: row.serialNumber,
+        const delay = now - TokenService.CYCLE_TIME;
+
+        const setParams = {
+            serialNumber: "$serialNumber",
             lastUpdate: now,
             hasNext: false
-        });
+        };
 
-        if (count) {
-            return row;
-        } else {
-            return null;
+        const collection = await em.getCollection(TokenCache);
+
+        // Try to get priority tokens first
+        const priorityToken = await collection.findOneAndUpdate(
+            { priorityDate: { $ne: null }},
+            [
+                { $set: setParams }
+            ],
+            { sort: { priorityDate: -1 }, returnDocument: 'after' }
+        );
+
+        if (priorityToken) {
+            return em.map(TokenCache, priorityToken);
         }
+
+        // Selection from new tokens and tokens with more data
+        let token = await collection.findOneAndUpdate(
+            { $or: [{ lastUpdate: 0 }, { hasNext: true }] },
+            [
+                { $set: setParams }
+            ],
+            { sort: { lastUpdate: 1 } , returnDocument: 'after' }
+        );
+
+        // Selection from all eligible tokens
+        if (!token) {
+            token = await collection.findOneAndUpdate(
+                { lastUpdate: { $lt: delay } },
+                [
+                    { $set: setParams }
+                ],
+                { sort: { lastUpdate: 1 }, returnDocument: 'after' }
+            );
+        }
+
+        return token ? em.map(TokenCache, token) : null;
     }
 
     public static async saveSerials(nfts: NFT[]): Promise<NftCache[]> {

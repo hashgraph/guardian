@@ -2,9 +2,10 @@ import { DataBaseHelper, Message } from '@indexer/common';
 import { MessageType, MessageAction, IPFS_CID_PATTERN, VPAnalytics } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { SynchronizationTask } from '../synchronization-task.js';
-import { loadFiles } from '../load-files.js';
+import { fastLoadFiles, loadFiles } from '../load-files.js';
 import { Collection } from 'mongodb';
 import { SchemaFileHelper } from '../../helpers/schema-file-helper.js';
+import { PrepareRecordHelper } from '../prepare-record-helper.js';
 
 export class SynchronizationVPs extends SynchronizationTask {
     public readonly name: string = 'vps';
@@ -48,10 +49,6 @@ export class SynchronizationVPs extends SynchronizationTask {
         const schemas = collection.find({ type: MessageType.SCHEMA });
         while (await schemas.hasNext()) {
             const schema = await schemas.next();
-            const documentCID = SchemaFileHelper.getDocumentFile(schema);
-            if (documentCID) {
-                fileIds.add(documentCID);
-            }
             if (schema.files && schema.files[0]) {
                 schemaMap.set(schema.files[0], schema);
             }
@@ -96,12 +93,15 @@ export class SynchronizationVPs extends SynchronizationTask {
     }
 
     private async loadFiles(fileIds: Set<string>) {
-        console.log(`Sync VPs: load files`)
-        const fileMap = await loadFiles(fileIds, false);
+        console.log(`Sync VPs: load files`, fileIds.size)
+        const fileMap = await fastLoadFiles(fileIds);
         return fileMap;
     }
 
     public override async sync(): Promise<void> {
+
+        await PrepareRecordHelper.prepareVPMessages();
+
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 
@@ -111,7 +111,19 @@ export class SynchronizationVPs extends SynchronizationTask {
         const schemaMap = await this.loadSchemas(collection, fileIds);
         const labelDocumentMap = await this.loadLabelDocuments(collection);
         const needUpdate = await this.loadDocuments(collection, fileIds);
+        console.log(`Sync VPs: need update`, needUpdate.length);
         const fileMap = await this.loadFiles(fileIds);
+
+        //Load schemes files only for loaded messages
+        const schemaFileIds = new Set<string>()
+        for (const document of needUpdate) {
+            if (document.parsedLinkedContextIds && document.parsedLinkedContextIds.length > 0) {
+                document.parsedLinkedContextIds.forEach(d => schemaFileIds.add(d.context));
+            }
+        }
+        console.log(`Sync VPs: load related schema files`, schemaFileIds.size);
+        const schemaFileMap = await fastLoadFiles(schemaFileIds);
+        schemaFileMap.forEach((value, key) => fileMap.set(key, value));
 
         console.log(`Sync VPs: update data`)
         for (const document of needUpdate) {
@@ -129,6 +141,7 @@ export class SynchronizationVPs extends SynchronizationTask {
         }
         console.log(`Sync VPs: flush`)
         await em.flush();
+        await em.clear();
     }
 
     private createAnalytics(
@@ -253,6 +266,7 @@ export class SynchronizationVPs extends SynchronizationTask {
             }
         }
     }
+
 
     private filter() {
         return {

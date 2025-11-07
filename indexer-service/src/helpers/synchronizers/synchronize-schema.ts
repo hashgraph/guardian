@@ -2,7 +2,8 @@ import { DataBaseHelper, Message } from '@indexer/common';
 import { SchemaField, MessageType, MessageAction, Schema } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { SynchronizationTask } from '../synchronization-task.js';
-import { loadFiles } from '../load-files.js';
+import { fastLoadFiles } from '../load-files.js';
+import { BatchLoadHelper } from '../batch-load-helper.js';
 
 export class SynchronizationSchemas extends SynchronizationTask {
     public readonly name: string = 'schemas';
@@ -35,34 +36,44 @@ export class SynchronizationSchemas extends SynchronizationTask {
                 $in: [
                     MessageAction.PublishSchema,
                     MessageAction.PublishSystemSchema,
-                ],
-            }
+                ]
+            },
+            loaded: true, //Not process record without loaded files
+            processedSchemas: { $ne: true }, //Not process record twice
         });
-        const fileIds: Set<string> = new Set<string>();
-        const allSchemas: Message[] = [];
-        while (await schemas.hasNext()) {
-            const schema = await schemas.next();
-            const id = `${schema.topicId}|${schema.options?.uuid}`;
-            if (schemaMap.has(id)) {
-                schemaMap.get(id).push(schema);
-            } else {
-                schemaMap.set(id, [schema]);
+
+        await BatchLoadHelper.load<Message>(schemas, BatchLoadHelper.DEFAULT_BATCH_SIZE, async (rows, counter) => {
+            console.log(`Sync schemas: batch ${counter.batchIndex} start. Loaded ${counter.loadedTotal}`);
+
+            const fileIds: Set<string> = new Set<string>();
+            const allSchemas: Message[] = [];
+            for (const schema of rows) {
+                const id = `${schema.topicId}|${schema.options?.uuid}`;
+                if (schemaMap.has(id)) {
+                    schemaMap.get(id).push(schema);
+                } else {
+                    schemaMap.set(id, [schema]);
+                }
+                allSchemas.push(schema);
+                fileIds.add(schema.files?.[0]);
             }
-            allSchemas.push(schema);
-            fileIds.add(schema.files?.[0]);
-        }
 
-        console.log(`Sync schemas: load files`)
-        const fileMap = await loadFiles(fileIds, false);
+            console.log(`Sync schemas: load files`, fileIds.size);
+            const fileMap = await fastLoadFiles(fileIds);
 
-        console.log(`Sync schemas: update data`)
-        for (const schema of allSchemas) {
-            const row = em.getReference(Message, schema._id);
-            row.analytics = this.createAnalytics(schema, policyMap, schemaMap, fileMap);
-            em.persist(row);
-        }
-        console.log(`Sync schemas: flush`)
-        await em.flush();
+
+            console.log(`Sync schemas: update data`, allSchemas.length);
+            for (const schema of allSchemas) {
+                const row = em.getReference(Message, schema._id);
+                row.analytics = this.createAnalytics(schema, policyMap, schemaMap, fileMap);
+                row.processedSchemas = true; //Mark record as processed
+                em.persist(row);
+
+            }
+            console.log(`Sync schemas: flush batch.`)
+            await em.flush();
+            await em.clear();
+        });
     }
 
     private createAnalytics(

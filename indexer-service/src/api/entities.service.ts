@@ -1098,7 +1098,7 @@ export class EntityService {
                 });
             }
 
-            item = await loadDocuments(item, true);
+            item = await loadDocuments(item, false); 
 
             return new MessageResponse<SchemaDetails>({
                 id: messageId,
@@ -1377,7 +1377,7 @@ export class EntityService {
                 });
             }
 
-            item = await loadDocuments(item, true);
+            item = await loadDocuments(item, false);
 
             return new MessageResponse<RoleDetails>({
                 id: messageId,
@@ -1767,7 +1767,7 @@ export class EntityService {
                 });
             }
 
-            item = await loadDocuments(item, true);
+            item = await loadDocuments(item, false);
             const history = await em.find(
                 Message,
                 {
@@ -1877,7 +1877,7 @@ export class EntityService {
                 });
             }
 
-            item = await loadDocuments(item, true);
+            item = await loadDocuments(item, false);
             const history = await em.find(
                 Message,
                 {
@@ -2004,7 +2004,7 @@ export class EntityService {
                 });
             }
 
-            item = await loadDocuments(item, true);
+            item = await loadDocuments(item, false);          
 
             const schema = await loadSchema(item, true);
             const history = await em.find(
@@ -2229,7 +2229,7 @@ export class EntityService {
                 });
             }
 
-            item = await loadDocuments(item, true);
+            item = await loadDocuments(item, false);
             const history = await em.find(
                 Message,
                 {

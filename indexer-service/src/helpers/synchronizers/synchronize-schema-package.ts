@@ -1,9 +1,10 @@
 import { DataBaseHelper, Message } from '@indexer/common';
 import { SynchronizationTask } from '../synchronization-task.js';
-import { loadFiles } from '../load-files.js';
+import { fastLoadFiles } from '../load-files.js';
 import { SchemaField, MessageType, MessageAction, Schema } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { SchemaFileHelper } from '../../helpers/schema-file-helper.js';
+import { BatchLoadHelper } from '../batch-load-helper.js';
 
 export class SynchronizationSchemaPackage extends SynchronizationTask {
     public readonly name: string = 'schema-package';
@@ -41,47 +42,52 @@ export class SynchronizationSchemaPackage extends SynchronizationTask {
             analytics: { $exists: false }
         });
 
-        const fileIds: Set<string> = new Set<string>();
-        const allPackages: Message[] = [];
-        while (await packages.hasNext()) {
-            const item = await packages.next();
-            allPackages.push(item);
-            fileIds.add(item.files?.[0]);
-            fileIds.add(item.files?.[2]);
-        }
+        await BatchLoadHelper.load<Message>(packages, BatchLoadHelper.DEFAULT_BATCH_SIZE, async (rows, counter) => {
+            console.log(`Sync schemas package: batch ${counter.batchIndex} start. Loaded ${counter.loadedTotal}`);
 
-        console.log(`Sync schemas package: load files`)
-        const fileMap = await loadFiles(fileIds, false);
-
-        console.log(`Sync schemas package: unpack data`)
-        const allSchemas: Message[] = [];
-        for (const item of allPackages) {
-            const row = em.getReference(Message, item._id);
-            await SchemaFileHelper.unpack(em, item, allSchemas, fileMap);
-            row.analytics = {
-                textSearch: textSearch(row),
-                unpacked: true
-            };
-            em.persist(row);
-        }
-
-        console.log(`Sync schemas package: update data`)
-        const schemaMap = new Map<string, Message[]>();
-        for (const schema of allSchemas) {
-            const id = `${schema.topicId}|${schema.options?.uuid}`;
-            if (schemaMap.has(id)) {
-                schemaMap.get(id).push(schema);
-            } else {
-                schemaMap.set(id, [schema]);
+            const fileIds: Set<string> = new Set<string>();
+            const allPackages: Message[] = [];
+            for (const item of rows) {
+                allPackages.push(item);
+                fileIds.add(item.files?.[0]);
+                fileIds.add(item.files?.[2]);
             }
-        }
-        for (const schema of allSchemas) {
-            schema.analytics = this.createAnalytics(schema, policyMap, schemaMap, fileMap);
-            em.persist(schema);
-        }
 
-        console.log(`Sync schemas: flush`)
-        await em.flush();
+            console.log(`Sync schemas package: load files`, fileIds.size);
+            const fileMap = await fastLoadFiles(fileIds);
+
+            console.log(`Sync schemas package: unpack data`)
+            const allSchemas: Message[] = [];
+            for (const item of allPackages) {
+                const row = em.getReference(Message, item._id);
+                await SchemaFileHelper.unpack(em, item, allSchemas, fileMap);
+                row.analytics = {
+                    textSearch: textSearch(row),
+                    unpacked: true
+                };
+                em.persist(row);
+            }
+
+            console.log(`Sync schemas package: update data`)
+            const schemaMap = new Map<string, Message[]>();
+            for (const schema of allSchemas) {
+                const id = `${schema.topicId}|${schema.options?.uuid}`;
+                if (schemaMap.has(id)) {
+                    schemaMap.get(id).push(schema);
+                } else {
+                    schemaMap.set(id, [schema]);
+                }
+            }
+            for (const schema of allSchemas) {
+                schema.analytics = this.createAnalytics(schema, policyMap, schemaMap, fileMap);
+                em.persist(schema);
+            }
+
+            console.log(`Sync schemas package: flush batch`)
+            await em.flush();
+            await em.clear();
+        });
+
     }
 
     private createAnalytics(

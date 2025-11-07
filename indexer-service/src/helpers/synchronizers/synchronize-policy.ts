@@ -4,7 +4,8 @@ import { textSearch } from '../text-search-options.js';
 import { parsePolicyFile } from '../parsers/policy.parser.js';
 import { HashComparator, PolicyLoader } from '../../analytics/index.js';
 import { SynchronizationTask } from '../synchronization-task.js';
-import { loadFiles } from '../load-files.js';
+import { fastLoadFiles, fastLoadFilesBuffer } from '../load-files.js';
+import { BatchLoadHelper } from '../batch-load-helper.js';
 
 export class SynchronizationPolicy extends SynchronizationTask {
     public readonly name: string = 'policy';
@@ -18,22 +19,6 @@ export class SynchronizationPolicy extends SynchronizationTask {
         const collection = em.getCollection<Message>('message');
         const collection2 = em.getCollection<TokenCache>('token_cache');
 
-        console.log(`Sync Policies: load policies`)
-        const policies = collection.find({
-            type: MessageType.INSTANCE_POLICY,
-            action: MessageAction.PublishPolicy
-        });
-        const fileIds: Set<string> = new Set<string>();
-        const allPolicies: Message[] = [];
-        while (await policies.hasNext()) {
-            const policy = await policies.next();
-            allPolicies.push(policy);
-            fileIds.add(policy.files?.[0]);
-        }
-
-        console.log(`Sync Policies: load files`)
-        const fileMap = await loadFiles(fileIds, true);
-
         console.log(`Sync Policies: load SRs`)
         const srMap = new Map<string, Message>();
         const srs = collection.find({ type: MessageType.STANDARD_REGISTRY });
@@ -43,6 +28,7 @@ export class SynchronizationPolicy extends SynchronizationTask {
                 srMap.set(sr.options.registrantTopicId, sr);
             }
         }
+        console.log(`Sync Policies: loaded ${srMap.size} SRs`)
 
         console.log(`Sync Policies: load topics`)
         const topicMap = new Map<string, Message[]>();
@@ -58,6 +44,7 @@ export class SynchronizationPolicy extends SynchronizationTask {
                 topicMap.set(topic.topicId, [topic]);
             }
         }
+        console.log(`Sync Policies: loaded ${topicMap.size} topics`)
 
         console.log(`Sync Policies: load documents`)
         const documentMap = new Map<string, { vc: number, vp: number, evc: number }>();
@@ -90,22 +77,45 @@ export class SynchronizationPolicy extends SynchronizationTask {
             tokenMap.set(token.tokenId, token);
         }
 
-        console.log(`Sync Policies: update data`)
-        for (const policyRow of allPolicies) {
-            const row = em.getReference(Message, policyRow._id);
-            row.analytics = await this.createAnalytics(
-                policyRow,
-                topicMap,
-                srMap,
-                documentMap,
-                tokenMap,
-                fileMap
-            );
-            row.analyticsUpdate = Date.now();
-            em.persist(row);
-        }
-        console.log(`Sync Policies: flush`)
-        await em.flush();
+        const policies = collection.find({
+            type: MessageType.INSTANCE_POLICY,
+            action: MessageAction.PublishPolicy
+        }, {
+            sort: { analyticsUpdate: 1 },
+            limit: 100000
+        });
+
+        await BatchLoadHelper.load<Message>(policies, BatchLoadHelper.DEFAULT_BATCH_SIZE, async (rows, counter) => {
+            console.log(`Sync Policies: batch ${counter.batchIndex} start. Loaded ${counter.loadedTotal}`)
+            console.log(`Sync Policies: load policies`)
+            const fileIds: Set<string> = new Set<string>();
+            const allPolicies = [];
+            for (const policy of rows) {
+                allPolicies.push(policy);
+                fileIds.add(policy.files?.[0]);
+            }
+
+            console.log(`Sync Policies: load files`, fileIds.size)
+            const fileMap = await fastLoadFilesBuffer(fileIds);
+
+            console.log(`Sync Policies: update data`)
+            for (const policyRow of allPolicies) {
+                const row = em.getReference(Message, policyRow._id);
+                row.analytics = await this.createAnalytics(
+                    policyRow,
+                    topicMap,
+                    srMap,
+                    documentMap,
+                    tokenMap,
+                    fileMap
+                );
+                row.analyticsUpdate = Date.now();
+                em.persist(row);                
+            }
+            console.log(`Sync Policies: flush batch`)
+            await em.flush();
+            await em.clear();
+        });
     }
 
     private async createAnalytics(
