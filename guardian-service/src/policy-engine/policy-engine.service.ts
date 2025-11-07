@@ -3453,7 +3453,7 @@ export class PolicyEngineService {
 
                     const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
                     const db = new DatabaseServer(dryRun);
-                    const groups: any[] = await db.getPolicyGroups(policyId, {
+                    const groups: any[] = await db.getPolicyGroups({ policyId }, {
                         fields: ['username', 'did', 'role']
                     });
 
@@ -3702,6 +3702,9 @@ export class PolicyEngineService {
                     const row = await DatabaseServer.createPolicyDiscussion(discussion);
 
                     await PolicyCommentsUtils.saveKey(policy.owner, row.id, messageKey);
+
+                    await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.CREATE_POLICY_DISCUSSION, policyId, { discussion: row.id }) as any;
 
                     return new MessageResponse(row);
                 } catch (error) {
@@ -4141,7 +4144,7 @@ export class PolicyEngineService {
                     const items: any = [];
                     const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
                     const db = new DatabaseServer(dryRun);
-                    const groups: any[] = await db.getPolicyGroups(policyId, {
+                    const groups: any[] = await db.getPolicyGroups({ policyId }, {
                         fields: ['username', 'did', 'role']
                     });
 

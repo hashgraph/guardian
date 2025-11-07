@@ -1,5 +1,5 @@
 import { DataBaseHelper, DatabaseServer, Policy, PolicyDiff } from '@guardian/common';
-import { IPolicyDiff } from './index.js';
+import { IPolicyCollectionDiff, IPolicyDiff, IPolicyKeysDiff } from './index.js';
 import { FileHelper } from './file-helper.js';
 import {
     VcCollectionRestore,
@@ -16,12 +16,15 @@ import {
     ApproveCollectionRestore,
     MintRequestCollectionRestore,
     MintTransactionCollectionRestore,
-    PolicyInvitationsCollectionRestore
+    PolicyInvitationsCollectionRestore,
+
+    CommentKeysRestore
 } from './collections/index.js';
 
 export class PolicyRestore {
     private readonly policyId: string;
     private readonly messageId: string;
+    private readonly policyOwner: string;
 
     private readonly vcCollectionRestore: VcCollectionRestore;
     private readonly vpCollectionRestore: VpCollectionRestore;
@@ -39,10 +42,17 @@ export class PolicyRestore {
     private readonly mintTransactionCollectionRestore: MintTransactionCollectionRestore;
     private readonly policyInvitationsCollectionRestore: PolicyInvitationsCollectionRestore;
 
+    private readonly commentKeysRestore: CommentKeysRestore;
+
     private lastDiff: PolicyDiff | null;
 
-    constructor(policyId: string, messageId: string) {
+    constructor(
+        policyId: string,
+        policyOwner: string,
+        messageId: string
+    ) {
         this.policyId = policyId;
+        this.policyOwner = policyOwner;
         this.messageId = messageId;
         this.lastDiff = null;
 
@@ -61,6 +71,8 @@ export class PolicyRestore {
         this.mintRequestCollectionRestore = new MintRequestCollectionRestore(this.policyId, this.messageId);
         this.mintTransactionCollectionRestore = new MintTransactionCollectionRestore(this.policyId, this.messageId);
         this.policyInvitationsCollectionRestore = new PolicyInvitationsCollectionRestore(this.policyId, this.messageId);
+
+        this.commentKeysRestore = new CommentKeysRestore(this.policyId, this.policyOwner, this.messageId);
     }
 
     public async init(): Promise<void> {
@@ -77,13 +89,15 @@ export class PolicyRestore {
 
         if (diff.type === 'backup') {
             await this._restoreBackup(diff);
+        } else if (diff.type === 'keys') {
+            await this._restoreKeys(diff);
         } else {
             await this._restoreDiff(diff);
         }
     }
 
-    private async _restoreBackup(backup: IPolicyDiff): Promise<void> {
-        const oldDiff: IPolicyDiff = this.lastDiff.file || {};
+    private async _restoreBackup(backup: IPolicyCollectionDiff): Promise<void> {
+        const oldDiff: IPolicyCollectionDiff = this.lastDiff.file || {};
 
         oldDiff.uuid = backup.uuid;
         oldDiff.index = backup.index;
@@ -108,8 +122,8 @@ export class PolicyRestore {
         await this._saveBackup(oldDiff);
     }
 
-    private async _restoreDiff(diff: IPolicyDiff): Promise<void> {
-        const oldDiff: IPolicyDiff = this.lastDiff.file || {};
+    private async _restoreDiff(diff: IPolicyCollectionDiff): Promise<void> {
+        const oldDiff: IPolicyCollectionDiff = this.lastDiff.file || {};
         oldDiff.uuid = diff.uuid;
         oldDiff.index = diff.index;
         oldDiff.lastUpdate = diff.lastUpdate;
@@ -133,6 +147,10 @@ export class PolicyRestore {
         await this._saveBackup(oldDiff);
     }
 
+    private async _restoreKeys(diff: IPolicyKeysDiff): Promise<void> {
+        await this.commentKeysRestore.restoreBackup(diff.discussionsKeys);
+    }
+
     private async _loadBackup(policy: Policy) {
         const collection = DataBaseHelper.orm.em.getCollection<PolicyDiff>('PolicyDiff');
         let row = await collection.findOne<PolicyDiff>({ policyId: this.policyId });
@@ -153,7 +171,7 @@ export class PolicyRestore {
         this.lastDiff = row;
     }
 
-    private async _saveBackup(backup: IPolicyDiff) {
+    private async _saveBackup(backup: IPolicyCollectionDiff) {
         const valid = (
             !!backup.vcCollection &&
             !!backup.vpCollection &&

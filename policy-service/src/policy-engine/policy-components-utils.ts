@@ -723,7 +723,7 @@ export class PolicyComponentsUtils {
         if (block.blockType === BlockType.Tool) {
             block.children = [];
             const tool = await DatabaseServer.getTool({
-                status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN]},
+                status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN] },
                 messageId: block.messageId,
                 hash: block.hash
             });
@@ -1490,6 +1490,24 @@ export class PolicyComponentsUtils {
     public static backup(policyId: string) {
         if (PolicyComponentsUtils.BackupControllers.has(policyId)) {
             PolicyComponentsUtils.BackupControllers.get(policyId).backup();
+        }
+    }
+
+    /**
+     * Create new diff
+     * @param policyId
+     */
+    public static async backupKeys(
+        policyId: string,
+        options: {
+            comments: {
+                discussion?: string,
+                user?: string,
+            }
+        }
+    ) {
+        if (PolicyComponentsUtils.BackupControllers.has(policyId)) {
+            await PolicyComponentsUtils.BackupControllers.get(policyId).backupKeys(options);
         }
     }
 

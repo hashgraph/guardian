@@ -32,3 +32,7 @@ export * from './restore/approve-collection-restore.js'
 export * from './restore/mint-request-collection-restore.js'
 export * from './restore/mint-transaction-collection-restore.js'
 export * from './restore/invitation-collection-restore.js'
+
+export * from './backup/comments-keys-backup.js'
+
+export * from './restore/comment-keys-restore.js'

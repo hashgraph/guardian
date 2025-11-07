@@ -355,4 +355,13 @@ export class Users extends NatsService {
     ): Promise<boolean> {
         return await this.sendMessage(AuthEvents.RELAYER_ACCOUNT_EXIST, { did, relayerAccount, userId });
     }
+
+    /**
+     * Return remote users
+     * @param did
+     * @param userId
+     */
+    public async getRemoteUsers(did: string, userId: string | null): Promise<IAuthUser[]> {
+        return await this.sendMessage(AuthEvents.GET_REMOTE_USERS, { did, userId });
+    }
 }

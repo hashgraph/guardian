@@ -15,9 +15,9 @@ import {
     MintTransaction,
     PolicyInvitations
 } from '@guardian/common';
-import { ICollectionDiff } from './../index.js';
+import { ICollectionDiff, ICollectionKeys } from './../index.js';
 
-export interface IPolicyDiff {
+export interface IPolicyCollectionDiff {
     uuid: string,
     type: 'backup' | 'diff';
     index: number;
@@ -39,3 +39,15 @@ export interface IPolicyDiff {
     mintTransactionCollection?: ICollectionDiff<MintTransaction>;
     policyInvitationsCollection?: ICollectionDiff<PolicyInvitations>;
 }
+
+export interface IPolicyKeysDiff {
+    uuid: string,
+    type: 'keys';
+    index: number;
+    messageId?: string;
+    lastUpdate?: Date;
+
+    discussionsKeys?: ICollectionKeys
+}
+
+export type IPolicyDiff = IPolicyCollectionDiff | IPolicyKeysDiff;

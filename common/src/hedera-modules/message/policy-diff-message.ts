@@ -24,7 +24,7 @@ export class PolicyDiffMessage extends Message {
     /**
      * Diff type
      */
-    public diffType: string;
+    public diffType: 'backup' | 'diff' | 'keys';
     /**
      * Diff index
      */
