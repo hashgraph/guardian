@@ -11,8 +11,7 @@ waste management practices.
 
 The methodology follows the national guidelines of the Greenhouse Gas
 Inventory and Research Center of Korea (GIR), ensuring transparency,
-consistency in reporting, and compliance with verification and
-regulatory requirements.
+and consistency in reporting. 
 
 ### **This methodology is applicable for**
 
@@ -341,7 +340,7 @@ Waste activity data collection
 
 **3)** Emission Calculation Procedure
 
-- Aggregate monthly or annual incineration data by waste type.
+- Aggregate incineration data by waste type.
 
 - Apply formulas by GHG type:
 
@@ -662,7 +661,7 @@ Collection of waste activity data
 
 **3) Emission Calculation Procedure**
 
-- Aggregate monthly or annual landfilled waste volumes by type (deduct quantities removed for reprocessing, if applicable)
+- Aggregate landfilled waste volumes by type (deduct quantities removed for reprocessing, if applicable)
 
 - Set DOC, k, and MCF: Select from standard values based on waste type and facility type
 
@@ -684,7 +683,7 @@ Collection of waste activity data
 정확하지 않을 수
 있습니다.](./image_2_3.png)
 
-<br>><br>
+<br><br>
 
 ## **Biological Treatment of Solid Waste** 
 
@@ -717,6 +716,8 @@ can be retrieved directly from the platform.
 |                               | dry weight basis    | wet weight basis | dry weight basis    | wet weight basis |
 | composting                    | 10                  | 4                | 0.6                 | 0.3              |
 | anaerobic digestion           | 2                   | 1                | 0                   | 0                |
+
+Source: Greenhouse Gas Inventory and Research Center of Korea
 <br><br>
 
 ### **Emissions calculation**
@@ -797,7 +798,7 @@ calculate greenhouse gas emissions from its production process as Scope
 
 **3) Emission Calculation Procedure**
 
-3.  Aggregation of monthly or annual organic waste volumes by treatment
+3.  Aggregation of organic waste volumes by treatment
     method
 
 4.  Application of emission factors appropriate for the treatment method

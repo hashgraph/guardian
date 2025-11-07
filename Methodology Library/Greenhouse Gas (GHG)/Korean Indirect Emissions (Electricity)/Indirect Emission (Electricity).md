@@ -210,8 +210,8 @@ Calculation Example:
   tCO₂eq
 
 - Market based emission: (300 MWh x 0 tCO₂eq/MWh) + (1,200 MWh x 0
-  tCO₂eq/MWh) + \[(15,000 MWh -- 300 MWh -- 1,200 MWh) x 0.4781
-  tCO₂eq/MWh\] = 5,880.63 tCO₂eq
+  tCO₂eq/MWh) + \[(15,000 MWh - 300 MWh - 1,200 MWh) x 0.4781
+  tCO₂eq/MWh\] = 6,454.35 tCO₂eq
 
 5\) Result Application
 

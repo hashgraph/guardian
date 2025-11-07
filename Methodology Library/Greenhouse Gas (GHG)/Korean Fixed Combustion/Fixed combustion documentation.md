@@ -62,10 +62,12 @@ Eᵢⱼ = Qᵢ × ECᵢ × EFᵢⱼ × fᵢ
 | Symbol | Description |
 |---------|--------------|
 | **Eᵢⱼ** | Total greenhouse gas (*j*) emissions (**kgGHG**) from fixed combustion (*i*) |
-| **Qᵢ** | Fuel (*i*) consumption (amount) = Energy purchase cost / Average fuel (*i*) cost (**KRW/unit**) |
+| **Qᵢ** | Fuel (*i*) consumption (amount) = Energy purchase cost / Average fuel (*i*) cost (**KRW/unit**)* |
 | **ECᵢ** | Calorific value of fuel (*i*) (**TJ/unit**) |
 | **EFᵢⱼ** | Greenhouse gas *j* emission factor of fuel (*i*) (**kgGHG/TJ**) |
 | **fᵢ** | Oxidation factor of fuel (*i*) *(CH₄, N₂O not applicable)* |
+
+*'Fuel (*i*) consumption (amount)' is used for usage-based while 'Energy purchase cost / Average fuel (*i*) cost' is used for cost-based calculation method.
 <br><br>
 ### **Use case: Calculation of Fixed Combustion from Gaseous Fuel for General Companies**
 
@@ -197,6 +199,8 @@ Eᵢⱼ = Qᵢ × ECᵢ × EFᵢⱼ × fᵢ
 | **ECᵢ** | Calorific value of fuel (*i*) (**TJ/unit**) |
 | **EFᵢⱼ** | Greenhouse gas *j* emission factor of fuel (*i*) (**kgGHG/TJ**) |
 | **fᵢ** | Oxidation factor of fuel (*i*) *(CH₄, N₂O not applicable)* |
+
+*'Fuel (*i*) consumption (amount)' is used for usage-based while 'Energy purchase cost / Average fuel (*i*) cost' is used for cost-based calculation method.
 <br><br>
 
 ### **Use case: Calculation of Fixed Combustion from Liquid Fuel for General Companies**
@@ -310,13 +314,15 @@ Source: Greenhouse Gas Inventory and Research Center of Koreass
 
 Eᵢⱼ = Qᵢ × ECᵢ × EFᵢⱼ × fᵢ
 
-| Symbol | Description |
+| Symbol | Description |ㄴ
 |---------|--------------|
 | **Eᵢⱼ** | Total greenhouse gas (*j*) emissions (**kgGHG**) from fixed combustion (*i*) |
 | **Qᵢ** | Fuel (*i*) consumption (amount) = Energy purchase cost / Average fuel (*i*) cost (**KRW/unit**) |
 | **ECᵢ** | Calorific value of fuel (*i*) (**TJ/unit**) |
 | **EFᵢⱼ** | Greenhouse gas *j* emission factor of fuel (*i*) (**kgGHG/TJ**) |
 | **fᵢ** | Oxidation factor of fuel (*i*) *(CH₄, N₂O not applicable)* |
+
+*'Fuel (*i*) consumption (amount)' is used for usage-based while 'Energy purchase cost / Average fuel (*i*) cost' is used for cost-based calculation method.
 <br><br>
 
 ## **Use case: Calculation of Fixed Combustion from Solid Fuel for General Companies**

@@ -18,11 +18,11 @@ default coefficients.
 - Any company with owned vehicles (Scope 1) using transport fuels
   (Passenger Car, Van, and Truck).
 
+- Any company that leases or rent vehicles using transport fuels but do not have an operational control, with
+  respect to their lease or rent emissions (Scope 3 category 8 and 13).
+
 - Road transportation companies, with respect to their product emissions
   (Scope 3 category 11).
-
-- Any company that leases or rent vehicles using transport fuels, with
-  respect to their lease or rent emissions (Scope 3 category 8 and 13).
 
 - Any company that uses road transportation services, with respect to
   their upstream or downstream emissions (Scope 3 category 4 and 9).
@@ -64,10 +64,15 @@ default coefficients.
 
 \- Most preferred activity data -- provides the most accurate emission
 results
+<br><br>
 
-**Unit Conversion**
+**[Unit Conversion]**
 
-**Extrapolated Driving Distance (km)** = Fuel Spend (KRW) / Fuel Cost (KRW) x Fuel Efficiency (km/L) = Fuel Consumption (L) x Fuel Efficiency (km/L)
+**Extrapolated Driving Distance (km)**
+
+= (Fuel Spend (KRW) / Fuel Cost (KRW/L) x Fuel Efficiency (km/L))
+
+OR = (Fuel Consumption (L) x Fuel Efficiency (km/L))
 <br><br>
 
 ### **Applied Vehicle Types**
@@ -351,14 +356,13 @@ transport fuels in its owned vehicles.
 
 Priority 1 -- Direct activity data
 
-- Driving distance (km) for the reporting year, measured from
+- Driving distance (km) data per vehicle for the reporting year, measured from
   odometer/GPS or retrieved via a mapping service API.
 
 Priority 2 -- Cost based proxy
 
 - If driving distance data is unavailable, use total fuel cost (KRW) or
-  fuel consumption (L) for the reporting year from the finance system or
-  receipts
+  fuel consumption (L) data per vehicle for the reporting year from the finance system or receipts
 
 - The average cost of fuel and mileage are applied to estimate driving
   distance
