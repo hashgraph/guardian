@@ -3,12 +3,13 @@ import { Entity, Property, PrimaryKey, SerializedPrimaryKey, Unique, Index } fro
 import { ObjectId } from '@mikro-orm/mongodb';
 
 @Entity()
-@Unique({ name: 'consensus_timestamp', properties: ['consensusTimestamp'] })
-@Index({ name: 'chunk_id', properties: ['chunkId'] })
+@Unique({ name: 'consensusTimestamp', properties: ['consensusTimestamp'] })
+@Index({ name: 'chunkId', properties: ['chunkId'] })
 @Index({ name: 'type', properties: ['type'] })
 @Index({ name: 'status', properties: ['status'] })
-@Index({ name: 'priority_date', properties: ['priorityDate'] })
-@Index({ name: 'priority_date_and_topic_id', properties: ['priorityDate', 'topicId'] })
+@Index({ name: 'priorityDate', properties: ['priorityDate'] })
+@Index({ name: 'priorityDate_topicId', properties: ['priorityDate', 'topicId'] })
+
 export class MessageCache implements RawMessage {
     @PrimaryKey()
     _id: ObjectId;

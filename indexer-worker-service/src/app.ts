@@ -113,7 +113,7 @@ Promise.all([
         FILE_READ_DELAY: Utils.getIntParm(process.env.FILE_READ_DELAY, 5 * 1000),
         FILE_READ_TIMEOUT: Utils.getIntParm(process.env.FILE_READ_TIMEOUT, 60 * 1000),
         FILE_JOB_REFRESH_TIME: Utils.getIntParm(process.env.FILE_JOB_REFRESH_TIME, 60 * 1000),
-        FILE_JOB_COUNT: Utils.getIntParm(process.env.FILE_JOB_COUNT, 1),
+        FILE_JOB_COUNT: Utils.getIntParm(process.env.FILE_JOB_COUNT, 2),
     }).start();
 
     // await state.updateState(ApplicationStates.READY);

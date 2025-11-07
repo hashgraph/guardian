@@ -226,7 +226,7 @@ export class LoadingQueueService {
             priorityTimestamp: number
         }
     ) {
-        setTimeout(() =>  this.updatePriorityQueue(msg.priorityTimestamp).then(), 10000)
+        setTimeout(() => this.updatePriorityQueue(msg.priorityTimestamp).then(), 10000)
     }
 
     private async updatePriorityQueue(priorityTimestamp: number) {
@@ -236,46 +236,48 @@ export class LoadingQueueService {
             const filter = {
                 priorityTimestamp,
             }
-    
+
             const priorityQueueItem = await em.findOne(PriorityQueue, { priorityTimestamp });
-    
-            const topics = await em.find(TopicCache, filter);
-            const tokens = await em.find(TokenCache, filter);
-            const messages = await em.find(MessageCache, filter);
-    
+            if (!priorityQueueItem)
+                return;
+
             let status = priorityQueueItem.priorityStatus;
             let isFinished = true;
-    
-            topics.forEach(item => {
-                if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
+
+            const filterIsRunning = { priorityStatus: { $in: [PriorityStatus.RUNNING, PriorityStatus.FINISHED] } };
+            const filterIsNotFinished = { priorityStatus: { $ne: PriorityStatus.FINISHED } };
+
+            //Topics
+            {
+                const isRunning = await em.count(TopicCache, { ...filter, ...filterIsRunning }) > 0;
+                const isNotFinished = await em.count(TopicCache, { ...filter, ...filterIsNotFinished }) > 0;
+                if (isRunning)
                     status = PriorityStatus.RUNNING;
-                }
-                if (item.priorityStatus !== PriorityStatus.FINISHED) {
+                if (isNotFinished)
                     isFinished = false;
-                }
-            });
-    
-            tokens.forEach(item => {
-                if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
+            }
+            //Tokens
+            {
+                const isRunning = await em.count(TokenCache, { ...filter, ...filterIsRunning }) > 0;
+                const isNotFinished = await em.count(TokenCache, { ...filter, ...filterIsNotFinished }) > 0;
+                if (isRunning)
                     status = PriorityStatus.RUNNING;
-                }
-                if (item.priorityStatus !== PriorityStatus.FINISHED) {
+                if (isNotFinished)
                     isFinished = false;
-                }
-            });
-    
-            messages.forEach(item => {
-                if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
+            }
+            //Messages
+            {
+                const isRunning = await em.count(MessageCache, { ...filter, ...filterIsRunning }) > 0;
+                const isNotFinished = await em.count(MessageCache, { ...filter, ...filterIsNotFinished }) > 0;
+                if (isRunning)
                     status = PriorityStatus.RUNNING;
-                }
-                if (item.priorityStatus !== PriorityStatus.FINISHED) {
+                if (isNotFinished)
                     isFinished = false;
-                }
-            });
+            }            
 
             if (isFinished) {
                 AnalyticsTask.onAddEvent(priorityTimestamp);
-    
+
                 await em.nativeUpdate(PriorityQueue, {
                     priorityTimestamp: priorityTimestamp,
                 }, {
@@ -295,7 +297,7 @@ export class LoadingQueueService {
 
     public async updateAllPriorityQueue() {
         console.log('started updating the entire priority queue');
-        
+
         try {
             const em = DataBaseHelper.getEntityManager();
             const queueCollection = em.getCollection<PriorityQueue>('PriorityQueue');
@@ -309,10 +311,10 @@ export class LoadingQueueService {
                 const topics = await em.find(TopicCache, { priorityTimestamp });
                 const tokens = await em.find(TokenCache, { priorityTimestamp });
                 const messages = await em.find(MessageCache, { priorityTimestamp });
-        
+
                 let status = priorityQueueItem.priorityStatus;
                 let isFinished = true;
-        
+
                 topics.forEach(item => {
                     if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
                         status = PriorityStatus.RUNNING;
@@ -321,7 +323,7 @@ export class LoadingQueueService {
                         isFinished = false;
                     }
                 });
-        
+
                 tokens.forEach(item => {
                     if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
                         status = PriorityStatus.RUNNING;
@@ -330,7 +332,7 @@ export class LoadingQueueService {
                         isFinished = false;
                     }
                 });
-        
+
                 messages.forEach(item => {
                     if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
                         status = PriorityStatus.RUNNING;
@@ -339,7 +341,7 @@ export class LoadingQueueService {
                         isFinished = false;
                     }
                 });
-                
+
                 if (isFinished) {
                     await em.nativeUpdate(PriorityQueue, {
                         priorityTimestamp: priorityTimestamp,
@@ -436,7 +438,7 @@ export class LoadingQueueService {
                     topicId: policyId,
                 } as any,
             )
-            
+
             let policyInstancesResult = false;
             for (const item of policyInstances) {
                 policyInstancesResult ||= await this.addInstancePolicy(item.options.instanceTopicId, priorityTimestamp);
@@ -492,7 +494,7 @@ export class LoadingQueueService {
             priorityStatusDate: priorityDate,
             priorityTimestamp
         });
-        
+
         const messageResult = await em.nativeUpdate(MessageCache, {
             topicId: { $in: Array.from(topicIds) },
             priorityDate: { $eq: null }
