@@ -195,9 +195,6 @@
 }
 
 .serials-container {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
     position: absolute;
     left: 1em;
     top: 1em;
@@ -208,16 +205,24 @@
 }
 
 .serials {
-    padding-right: 25px;
     position: relative;
+    max-width: 100%;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding-right: 25px;
 }
 
 .serials i,
 .serials svg {
     position: absolute;
-    right: 0;
-    top: 0;
+    right: 1px;
+    top: 1px;
     cursor: pointer;
+    width: 20px;
+    height: 20px;
+    padding: 4px;
 }
 
 .serials hedera-explorer {

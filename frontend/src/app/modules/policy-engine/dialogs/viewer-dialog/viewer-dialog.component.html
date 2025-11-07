@@ -1,5 +1,12 @@
-<h1 mat-dialog-title class="dialog-title">{{title}}</h1>
-<div mat-dialog-content class="dialog-content">
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{ title }}</div>
+    </div>
+    <div class="header-icon" (click)="onClick()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
     <div class="content">
         <div class="links" *ngIf="type === 'LINK'">
             <hedera-explorer
@@ -17,7 +24,12 @@
         </div>
     </div>
 </div>
-<div class="dialog-actions">
-    <p-button label="Cancel" icon="pi pi-times" type="button" (click)="onClick()"
-              styleClass="p-button-cancel"></p-button>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClick()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+    </div>
 </div>
