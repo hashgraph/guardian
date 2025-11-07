@@ -569,6 +569,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (type === 'button') {
             return 'button-container';
         }
+        if (type === 'serials') {
+            return 'serials-container';
+        }
         return ''
     }
 }
