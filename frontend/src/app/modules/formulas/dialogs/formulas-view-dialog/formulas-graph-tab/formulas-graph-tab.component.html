@@ -1,0 +1,21 @@
+<div class="graph-tab" *ngIf="hasData">
+    <div class="tree-container">
+        <app-tree-graph
+            (init)="initGraph($event)"
+            (render)="onRender()"
+            (select)="onSelect($event)"
+        >
+            <ng-template #nodeTemplate let-node="node">
+                <div class="tree-node root-node selected-type-{{node.selected}}">
+                    <div class="node-header">
+                        {{ node.data.title }}
+                    </div>
+                </div>
+            </ng-template>
+        </app-tree-graph>
+    </div>
+</div>
+
+<div class="graph-tab-empty" *ngIf="!hasData">
+    No graph data.
+</div>

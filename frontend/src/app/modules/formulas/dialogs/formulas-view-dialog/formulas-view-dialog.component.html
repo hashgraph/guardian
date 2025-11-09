@@ -19,7 +19,7 @@
             </p-tabPanel>
         </p-tabView>
     </div>
-    <div *ngIf="viewFormulas" class="view-body">
+    <div *ngIf="activeTab === 'formulas'" class="view-body">
         <div class="nav-container">
 
             <div *ngIf="nav" class="field-tree">
@@ -46,16 +46,16 @@
                     </div>
                 </div>
             </div>
-    
-    
+
+
         </div>
-    
+
         <div class="context">
-    
+
             <ng-container *ngIf="current && current.type === 'constant'">
                 <div class="current-item-name">Constant</div>
                 <div class="current-item">
-                    
+
                     <div class="guardian-input-container">
                         <label class="form-label">Name</label>
                         <input [value]="current.name" pInputText type="text" [readonly]="true"/>
@@ -70,9 +70,9 @@
                     </div>
                 </div>
             </ng-container>
-    
-    
-    
+
+
+
             <ng-container *ngIf="current && current.type === 'variable'">
                 <div class="current-item-name">Variable</div>
                 <div class="current-item">
@@ -95,9 +95,9 @@
                     </div>
                 </div>
             </ng-container>
-    
-    
-    
+
+
+
             <ng-container *ngIf="current && current.type === 'formula'">
                 <div class="current-item-name">Formula</div>
                 <div class="current-item">
@@ -107,7 +107,7 @@
                     </div>
                     <div class="guardian-input-container" style="height: auto">
                         <label class="form-label">Formula</label>
-                        <math-live 
+                        <math-live
                             [(value)]="current.value"
                             [readonly]="true"
                         ></math-live>
@@ -124,9 +124,9 @@
                     <div class="guardian-textarea-container">
                         <label class="form-label">Relationships</label>
                         <div class="formula-relationships">
-                            <div 
-                                *ngFor="let relationship of current.relationshipItems" 
-                                class="formula-relationship" 
+                            <div
+                                *ngFor="let relationship of current.relationshipItems"
+                                class="formula-relationship"
                                 (click)="onRelationship(relationship)">
                                 {{relationship.name}}
                             </div>
@@ -138,9 +138,9 @@
                     </div>
                 </div>
             </ng-container>
-    
-    
-    
+
+
+
             <ng-container *ngIf="current && current.type === 'text'">
                 <div class="current-item-name">Text</div>
                 <div class="current-item">
@@ -164,8 +164,8 @@
                     <div class="guardian-textarea-container">
                         <label class="form-label">Relationships</label>
                         <div class="formula-relationships">
-                            <div 
-                                *ngFor="let relationship of current.relationshipItems" 
+                            <div
+                                *ngFor="let relationship of current.relationshipItems"
                                 class="formula-relationship"
                                 (click)="onRelationship(relationship)">
                                 {{relationship.name}}
@@ -200,10 +200,20 @@
                     </div>
                 </div>
             </ng-container>
-    
+
         </div>
     </div>
-    <div *ngIf="!viewFormulas" class="view-body">
+
+    <div *ngIf="activeTab === 'graph'" class="view-body">
+        <formulas-graph-tab
+            [tree]="tree"
+            [schema]="schema"
+            [path]="path">
+        </formulas-graph-tab>
+    </div>
+
+
+<div *ngIf="activeTab === 'files'" class="view-body">
         <div class="files-container">
             <div class="file-item" *ngFor="let file of files">
                 <div class="guardian-input-container">
@@ -224,8 +234,8 @@
 <div class="dialog-footer">
     <div class="action-buttons">
         <div class="dialog-button">
-            <button 
-                (click)="onClose()" 
+            <button
+                (click)="onClose()"
                 class="guardian-button guardian-button-secondary">Close</button>
         </div>
     </div>
