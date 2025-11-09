@@ -19,10 +19,12 @@ export class FormulasViewDialog {
     public files: FormulaFiles[];
 
     public viewDocumentOptions = [
-        { label: 'Formulas', value: true, icon: 'function' },
-        { label: 'Files', value: false, icon: 'file' }
+        { label: 'Formulas', key: 'formulas', icon: 'function' },
+        { label: 'Graph',    key: 'graph',    icon: 'graph' },
+        { label: 'Files',    key: 'files',    icon: 'file' }
     ];
-    public viewFormulas: boolean = true;
+
+    public activeTab: string = 'formulas';
 
     constructor(
         public ref: DynamicDialogRef,
@@ -80,6 +82,7 @@ export class FormulasViewDialog {
     }
 
     public setTab(event: any): void {
-        this.viewFormulas = event.index === 0;
+        const opt = this.viewDocumentOptions[event.index];
+        this.activeTab = opt?.key || 'formulas';
     }
 }
