@@ -1,8 +1,9 @@
-import { BaseEntity } from '../models/index.js';
+import { RestoreEntity } from '../models/index.js';
 import { GenerateUUIDv4, IVC } from '@guardian/interfaces';
 import { Entity, Property, BeforeCreate, OnLoad, BeforeUpdate, AfterDelete, AfterUpdate, AfterCreate, Unique, Index } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * PolicyDiscussion collection
@@ -13,7 +14,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'targetId_index', properties: ['targetId'] })
 @Index({ name: 'relationshipIds_index', properties: ['relationshipIds'] })
 @Index({ name: 'field_index', properties: ['field'] })
-export class PolicyDiscussion extends BaseEntity {
+export class PolicyDiscussion extends RestoreEntity {
     /**
      * ID
      */
@@ -199,6 +200,28 @@ export class PolicyDiscussion extends BaseEntity {
             this.documentFileId = await this._createFile(document, 'PolicyComment');
             delete this.document;
         }
+        this._updateDocHash(this.uuid);
+        this._updatePropHash(this.createProp());
+    }
+
+    private createProp(): any {
+        const prop: any = {};
+        prop.uuid = this.uuid;
+        prop.owner = this.owner;
+        prop.policyId = this.policyId;
+        prop.targetId = this.targetId;
+        prop.target = this.target;
+        prop.name = this.name;
+        prop.relationships = this.relationships;
+        prop.count = this.count;
+        prop.messageId = this.messageId;
+        prop.parent = this.parent;
+        prop.field = this.field;
+        prop.fieldName = this.fieldName;
+        prop.privacy = this.privacy;
+        prop.roles = this.roles;
+        prop.users = this.users;
+        return prop;
     }
 
     /**
@@ -258,6 +281,22 @@ export class PolicyDiscussion extends BaseEntity {
                     console.error(`AfterDelete: PolicyComment, ${this._id}, documentFileId`)
                     console.error(reason)
                 });
+        }
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).insert({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'PolicyComment',
+            })
+        } catch (error) {
+            console.error(error);
         }
     }
 }

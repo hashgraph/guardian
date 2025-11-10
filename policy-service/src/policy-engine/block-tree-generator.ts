@@ -360,7 +360,17 @@ export class BlockTreeGenerator extends NatsService {
                         discussion
                     }
                 }
+                PolicyComponentsUtils.backup(policyId);
                 await PolicyComponentsUtils.backupKeys(policyId, options);
+                return new MessageResponse(true);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.CREATE_POLICY_COMMENT, policyId, async (msg: any) => {
+            try {
+                PolicyComponentsUtils.backup(policyId);
                 return new MessageResponse(true);
             } catch (error) {
                 return new MessageError(error, 500);

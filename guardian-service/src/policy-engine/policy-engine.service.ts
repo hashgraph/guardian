@@ -3790,6 +3790,10 @@ export class PolicyEngineService {
 
                     await DatabaseServer.updatePolicyDiscussion(discussion);
 
+                    await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.CREATE_POLICY_COMMENT, policyId, null) as any;
+
+
                     return new MessageResponse(row);
                 } catch (error) {
                     return new MessageError(error);

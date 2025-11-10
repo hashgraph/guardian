@@ -8,6 +8,9 @@ import {
     MintRequest,
     MintTransaction,
     MultiDocuments,
+    PolicyComment,
+    PolicyDiscussion,
+    PolicyInvitations,
     PolicyRoles,
     RestoreEntity,
     Tag,
@@ -88,10 +91,13 @@ export class FileHelper {
     }
 
     public static async deleteFile(id: ObjectId): Promise<void> {
-        if (id) {
-            DataBaseHelper.gridFS
-                .delete(id)
-                .catch(console.error);
+        try {
+            if (id) {
+                console.log(`Delete backup file: ${id}`);
+                await DataBaseHelper.gridFS.delete(id);
+            }
+        } catch (error) {
+            console.error(error);
         }
     }
 
@@ -166,10 +172,20 @@ export class FileHelper {
         const mintTransactionCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
         const mintTransactionCollection = FileHelper._decryptCollection<MintTransaction>(lines, cursor, mintTransactionCollectionSize);
 
-        //MintTransaction
+        //PolicyInvitations
         FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
         const policyInvitationsCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
-        const policyInvitationsCollection = FileHelper._decryptCollection<MintTransaction>(lines, cursor, policyInvitationsCollectionSize);
+        const policyInvitationsCollection = FileHelper._decryptCollection<PolicyInvitations>(lines, cursor, policyInvitationsCollectionSize);
+
+        //PolicyDiscussion
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const policyDiscussionCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const policyDiscussionCollection = FileHelper._decryptCollection<PolicyDiscussion>(lines, cursor, policyDiscussionCollectionSize);
+
+        //PolicyComment
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const policyCommentCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const policyCommentCollection = FileHelper._decryptCollection<PolicyComment>(lines, cursor, policyCommentCollectionSize);
 
         diff.vcCollection = vcCollection;
         diff.vpCollection = vpCollection;
@@ -186,6 +202,8 @@ export class FileHelper {
         diff.mintRequestCollection = mintRequestCollection;
         diff.mintTransactionCollection = mintTransactionCollection;
         diff.policyInvitationsCollection = policyInvitationsCollection;
+        diff.policyDiscussionCollection = policyDiscussionCollection;
+        diff.policyCommentCollection = policyCommentCollection;
     }
 
     private static decryptKeysFile(diff: IPolicyKeysDiff, lines: string[], cursor: Cursor) {
@@ -193,8 +211,6 @@ export class FileHelper {
         FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
         const discussionsKeysSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
         const discussionsKeys = FileHelper._decryptKeys(lines, cursor, discussionsKeysSize);
-
-
         diff.discussionsKeys = discussionsKeys;
     }
 
@@ -245,10 +261,10 @@ export class FileHelper {
         const fullHash = FileHelper._readString(FileHeaders.HASH, lines, cursor);
         const actions: IKeyAction[] = [];
         const start = cursor.index;
-        const end = cursor.index + size;
-        for (let index = start; index < end; index++) {
+        const end = cursor.index + (2 * size);
+        for (let index = start; index < end; index += 2) {
             const target = FileHelper._decryptKey(lines[index]);
-            const key = FileHelper._decryptKey(lines[index]);
+            const key = FileHelper._decryptKey(lines[index + 1]);
             actions.push({ target, key });
         }
         cursor.index = end;
@@ -361,6 +377,9 @@ export class FileHelper {
         result += FileHelper._writeCollection('MintRequest', diff.mintRequestCollection);
         result += FileHelper._writeCollection('MintTransaction', diff.mintTransactionCollection);
         result += FileHelper._writeCollection('PolicyInvitations', diff.policyInvitationsCollection);
+        result += FileHelper._writeCollection('PolicyDiscussion', diff.policyDiscussionCollection);
+        result += FileHelper._writeCollection('PolicyComment', diff.policyCommentCollection);
+
         return result;
     }
 

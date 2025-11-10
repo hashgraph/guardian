@@ -18,6 +18,8 @@ import {
     MintRequestCollectionBackup,
     MintTransactionCollectionBackup,
     PolicyInvitationsCollectionBackup,
+    PolicyDiscussionCollectionBackup,
+    PolicyCommentCollectionBackup,
 
     CommentsKeysBackup
 } from './collections/index.js';
@@ -42,6 +44,8 @@ export class PolicyBackup {
     private readonly mintRequestCollectionBackup: MintRequestCollectionBackup;
     private readonly mintTransactionCollectionBackup: MintTransactionCollectionBackup;
     private readonly policyInvitationsCollectionBackup: PolicyInvitationsCollectionBackup;
+    private readonly policyDiscussionCollectionBackup: PolicyDiscussionCollectionBackup;
+    private readonly policyCommentCollectionBackup: PolicyCommentCollectionBackup;
 
     private readonly commentsKeysBackup: CommentsKeysBackup;
 
@@ -72,6 +76,8 @@ export class PolicyBackup {
         this.mintRequestCollectionBackup = new MintRequestCollectionBackup(this.policyId, this.messageId);
         this.mintTransactionCollectionBackup = new MintTransactionCollectionBackup(this.policyId, this.messageId);
         this.policyInvitationsCollectionBackup = new PolicyInvitationsCollectionBackup(this.policyId, this.messageId);
+        this.policyDiscussionCollectionBackup = new PolicyDiscussionCollectionBackup(this.policyId, this.messageId);
+        this.policyCommentCollectionBackup = new PolicyCommentCollectionBackup(this.policyId, this.messageId);
 
         this.commentsKeysBackup = new CommentsKeysBackup(this.policyId, this.policyOwner, this.messageId);
     }
@@ -134,6 +140,8 @@ export class PolicyBackup {
         const mintRequestCollection = await this.mintRequestCollectionBackup.createCollectionBackup();
         const mintTransactionCollection = await this.mintTransactionCollectionBackup.createCollectionBackup();
         const policyInvitationsCollection = await this.policyInvitationsCollectionBackup.createCollectionBackup();
+        const policyDiscussionCollection = await this.policyDiscussionCollectionBackup.createCollectionBackup();
+        const policyCommentCollection = await this.policyCommentCollectionBackup.createCollectionBackup();
 
         const uuid = GenerateUUIDv4();
         const backup: IPolicyCollectionDiff = {
@@ -156,6 +164,8 @@ export class PolicyBackup {
             mintRequestCollection: mintRequestCollection.backup,
             mintTransactionCollection: mintTransactionCollection.backup,
             policyInvitationsCollection: policyInvitationsCollection.backup,
+            policyDiscussionCollection: policyDiscussionCollection.backup,
+            policyCommentCollection: policyCommentCollection.backup,
         }
         const diff: IPolicyCollectionDiff = {
             uuid,
@@ -177,6 +187,8 @@ export class PolicyBackup {
             mintRequestCollection: mintRequestCollection.diff,
             mintTransactionCollection: mintTransactionCollection.diff,
             policyInvitationsCollection: policyInvitationsCollection.diff,
+            policyDiscussionCollection: policyDiscussionCollection.diff,
+            policyCommentCollection: policyCommentCollection.diff,
         }
         return { backup, diff };
     }
@@ -201,6 +213,8 @@ export class PolicyBackup {
         const mintRequestCollection = await this.mintRequestCollectionBackup.createCollectionDiff(oldDiff.mintRequestCollection, lastUpdate);
         const mintTransactionCollection = await this.mintTransactionCollectionBackup.createCollectionDiff(oldDiff.mintTransactionCollection, lastUpdate);
         const policyInvitationsCollection = await this.policyInvitationsCollectionBackup.createCollectionDiff(oldDiff.policyInvitationsCollection, lastUpdate);
+        const policyDiscussionCollection = await this.policyDiscussionCollectionBackup.createCollectionDiff(oldDiff.policyDiscussionCollection, lastUpdate);
+        const policyCommentCollection = await this.policyCommentCollectionBackup.createCollectionDiff(oldDiff.policyCommentCollection, lastUpdate);
 
         const uuid = GenerateUUIDv4();
         const backup: IPolicyCollectionDiff = {
@@ -223,6 +237,8 @@ export class PolicyBackup {
             mintRequestCollection: mintRequestCollection.backup,
             mintTransactionCollection: mintTransactionCollection.backup,
             policyInvitationsCollection: policyInvitationsCollection.backup,
+            policyDiscussionCollection: policyDiscussionCollection.backup,
+            policyCommentCollection: policyCommentCollection.backup,
         }
         const diff: IPolicyCollectionDiff = {
             uuid,
@@ -244,6 +260,8 @@ export class PolicyBackup {
             mintRequestCollection: mintRequestCollection.diff,
             mintTransactionCollection: mintTransactionCollection.diff,
             policyInvitationsCollection: policyInvitationsCollection.diff,
+            policyDiscussionCollection: policyDiscussionCollection.diff,
+            policyCommentCollection: policyCommentCollection.diff,
         }
         return { backup, diff };
     }

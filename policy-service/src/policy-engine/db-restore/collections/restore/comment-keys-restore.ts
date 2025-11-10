@@ -27,7 +27,7 @@ export class CommentKeysRestore {
         key: string
     ): Promise<void> {
         const wallet = new Wallet();
-        return wallet.setUserKey(
+        return wallet.updateUserKey(
             did,
             KeyType.DISCUSSION,
             discussionId,
@@ -47,12 +47,16 @@ export class CommentKeysRestore {
     }
 
     private async restoreKey(action: IKeyAction): Promise<void> {
-        if (action) {
-            const target = action.target || '';
-            const encryptedKey = action.key || '';
-            const [discussion, did] = target.split('|');
-            const key = await this.decryptKey(encryptedKey, did);
-            await this.setKey(this.policyOwner, discussion, key);
+        try {
+            if (action) {
+                const target = action.target || '';
+                const encryptedKey = action.key || '';
+                const [discussionId, _, did] = target.split('|');
+                const key = await this.decryptKey(encryptedKey, did);
+                await this.setKey(this.policyOwner, discussionId, key);
+            }
+        } catch (error) {
+            console.error(error);
         }
     }
 

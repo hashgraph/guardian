@@ -1,8 +1,9 @@
-import { BaseEntity } from '../models/index.js';
+import { RestoreEntity } from '../models/index.js';
 import { GenerateUUIDv4, IVC } from '@guardian/interfaces';
 import { Entity, Property, BeforeCreate, OnLoad, BeforeUpdate, AfterDelete, AfterUpdate, AfterCreate, Index } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * PolicyComment collection
@@ -13,7 +14,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'relationshipIds_index', properties: ['relationshipIds'] })
 @Index({ name: 'field_index', properties: ['field'] })
 @Index({ name: 'fields_index', properties: ['fields'] })
-export class PolicyComment extends BaseEntity {
+export class PolicyComment extends RestoreEntity {
     /**
      * ID
      */
@@ -225,6 +226,8 @@ export class PolicyComment extends BaseEntity {
             this.documentFileId = await this._createFile(document, 'PolicyComment');
             delete this.document;
         }
+        this._updateDocHash(this.uuid);
+        this._updatePropHash(this.uuid);
     }
 
     /**
@@ -284,6 +287,22 @@ export class PolicyComment extends BaseEntity {
                     console.error(`AfterDelete: PolicyComment, ${this._id}, documentFileId`)
                     console.error(reason)
                 });
+        }
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).insert({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'PolicyComment',
+            })
+        } catch (error) {
+            console.error(error);
         }
     }
 }

@@ -120,7 +120,7 @@ export class CommentsKeysBackup {
             for (const discussionRow of discussionRows) {
                 const messageKey: string = await this.getKey(this.policyOwner, discussion);
                 const key = await this.encryptKey(messageKey, user);
-                const target = `${discussionRow.messageId}|${user}`;
+                const target = `${discussionRow.id}|${discussionRow.messageId}|${user}`;
                 actions.push({ target, key });
             }
         }

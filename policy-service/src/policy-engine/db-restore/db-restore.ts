@@ -17,6 +17,8 @@ import {
     MintRequestCollectionRestore,
     MintTransactionCollectionRestore,
     PolicyInvitationsCollectionRestore,
+    PolicyDiscussionCollectionRestore,
+    PolicyCommentCollectionRestore,
 
     CommentKeysRestore
 } from './collections/index.js';
@@ -41,6 +43,8 @@ export class PolicyRestore {
     private readonly mintRequestCollectionRestore: MintRequestCollectionRestore;
     private readonly mintTransactionCollectionRestore: MintTransactionCollectionRestore;
     private readonly policyInvitationsCollectionRestore: PolicyInvitationsCollectionRestore;
+    private readonly policyDiscussionCollectionRestore: PolicyDiscussionCollectionRestore;
+    private readonly policyCommentCollectionRestore: PolicyCommentCollectionRestore;
 
     private readonly commentKeysRestore: CommentKeysRestore;
 
@@ -71,6 +75,8 @@ export class PolicyRestore {
         this.mintRequestCollectionRestore = new MintRequestCollectionRestore(this.policyId, this.messageId);
         this.mintTransactionCollectionRestore = new MintTransactionCollectionRestore(this.policyId, this.messageId);
         this.policyInvitationsCollectionRestore = new PolicyInvitationsCollectionRestore(this.policyId, this.messageId);
+        this.policyDiscussionCollectionRestore = new PolicyDiscussionCollectionRestore(this.policyId, this.messageId);
+        this.policyCommentCollectionRestore = new PolicyCommentCollectionRestore(this.policyId, this.messageId);
 
         this.commentKeysRestore = new CommentKeysRestore(this.policyId, this.policyOwner, this.messageId);
     }
@@ -118,6 +124,8 @@ export class PolicyRestore {
         oldDiff.mintRequestCollection = await this.mintRequestCollectionRestore.restoreBackup(backup.mintRequestCollection);
         oldDiff.mintTransactionCollection = await this.mintTransactionCollectionRestore.restoreBackup(backup.mintTransactionCollection);
         oldDiff.policyInvitationsCollection = await this.policyInvitationsCollectionRestore.restoreBackup(backup.policyInvitationsCollection);
+        oldDiff.policyDiscussionCollection = await this.policyDiscussionCollectionRestore.restoreBackup(backup.policyDiscussionCollection);
+        oldDiff.policyCommentCollection = await this.policyCommentCollectionRestore.restoreBackup(backup.policyCommentCollection);
 
         await this._saveBackup(oldDiff);
     }
@@ -143,11 +151,14 @@ export class PolicyRestore {
         oldDiff.mintRequestCollection = await this.mintRequestCollectionRestore.restoreDiff(diff.mintRequestCollection, oldDiff.mintRequestCollection);
         oldDiff.mintTransactionCollection = await this.mintTransactionCollectionRestore.restoreDiff(diff.mintTransactionCollection, oldDiff.mintTransactionCollection);
         oldDiff.policyInvitationsCollection = await this.policyInvitationsCollectionRestore.restoreDiff(diff.policyInvitationsCollection, oldDiff.policyInvitationsCollection);
+        oldDiff.policyDiscussionCollection = await this.policyDiscussionCollectionRestore.restoreDiff(diff.policyDiscussionCollection, oldDiff.policyDiscussionCollection);
+        oldDiff.policyCommentCollection = await this.policyCommentCollectionRestore.restoreDiff(diff.policyCommentCollection, oldDiff.policyCommentCollection);
 
         await this._saveBackup(oldDiff);
     }
 
     private async _restoreKeys(diff: IPolicyKeysDiff): Promise<void> {
+        console.log(diff);
         await this.commentKeysRestore.restoreBackup(diff.discussionsKeys);
     }
 
@@ -187,7 +198,9 @@ export class PolicyRestore {
             !!backup.approveCollection &&
             !!backup.mintRequestCollection &&
             !!backup.mintTransactionCollection &&
-            !!backup.policyInvitationsCollection
+            !!backup.policyInvitationsCollection &&
+            !!backup.policyDiscussionCollection &&
+            !!backup.policyCommentCollection
         )
 
         const fileId = await FileHelper.saveFile(backup);

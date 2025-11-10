@@ -13,7 +13,9 @@ import {
     VpDocument,
     MintRequest,
     MintTransaction,
-    PolicyInvitations
+    PolicyInvitations,
+    PolicyDiscussion,
+    PolicyComment
 } from '@guardian/common';
 import { ICollectionDiff, ICollectionKeys } from './../index.js';
 
@@ -38,6 +40,8 @@ export interface IPolicyCollectionDiff {
     mintRequestCollection?: ICollectionDiff<MintRequest>;
     mintTransactionCollection?: ICollectionDiff<MintTransaction>;
     policyInvitationsCollection?: ICollectionDiff<PolicyInvitations>;
+    policyDiscussionCollection?: ICollectionDiff<PolicyDiscussion>;
+    policyCommentCollection?: ICollectionDiff<PolicyComment>;
 }
 
 export interface IPolicyKeysDiff {
