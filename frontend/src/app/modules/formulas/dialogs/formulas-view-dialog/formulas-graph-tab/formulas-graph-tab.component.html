@@ -36,27 +36,53 @@
                     </div>
                 </div>
 
-                <div *ngIf="getItemDescription(item)" class="node-details-section">
-                    <div class="section-label">Description</div>
+                <!-- Formula / value / text -->
+                <div *ngIf="mainValue" class="node-details-section">
+                    <div class="section-label">
+                        {{ mainValueLabel }}
+                    </div>
+                    <div class="section-value" *ngIf="getItemType(item) !== 'formula'">
+                        {{ mainValue }}
+                    </div>
+                    <div class="section-value" *ngIf="getItemType(item) === 'formula'">
+                        <math-live
+                            [value]="mainValue"
+                            [readonly]="true">
+                        </math-live>
+                    </div>
+                </div>
+
+                <div *ngIf="fieldName" class="node-details-section">
+                    <div class="section-label">Field in document</div>
                     <div class="section-value">
-                        {{ getItemDescription(item) }}
+                        {{ fieldName }}
+                        <ng-container *ngIf="fieldValue !== null">
+                            – {{ fieldValue }}
+                        </ng-container>
                     </div>
                 </div>
 
                 <div *ngIf="nodeDocument" class="node-details-section">
-                    <div class="section-label">Document</div>
+                    <div class="section-label">Document (VC)</div>
                     <div class="section-value">
                         {{ nodeDocument }}
                     </div>
                 </div>
 
                 <div *ngIf="parentDocuments?.length" class="node-details-section">
-                    <div class="section-label">Used in documents</div>
+                    <div class="section-label">Parent documents</div>
                     <ul class="section-list">
                         <li *ngFor="let doc of parentDocuments">
                             {{ doc }}
                         </li>
                     </ul>
+                </div>
+
+                <div *ngIf="getItemDescription(item)" class="node-details-section">
+                    <div class="section-label">Description</div>
+                    <div class="section-value">
+                        {{ getItemDescription(item) }}
+                    </div>
                 </div>
 
             </div>
