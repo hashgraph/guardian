@@ -39,8 +39,14 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
     public selectedNode: GraphNode | null = null;
     public selectedItem: FormulaItem | SchemaItem | null = null;
     public selectedTitle: string = '';
+
     public nodeDocument: string | null = null;
     public parentDocuments: string[] = [];
+    public fieldName: string | null = null;
+
+    public mainValue: string | null = null;
+    public mainValueLabel: string | null = null;
+    public fieldValue: any = null;
 
     ngOnInit(): void {
         this.buildGraph();
@@ -57,37 +63,21 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
         this.source = null;
 
         if (!this.tree || !this.schema || !this.path) {
-            console.log('[GraphTab] no inputs', {
-                tree: !!this.tree,
-                schema: this.schema,
-                path: this.path,
-            });
             return;
         }
 
         const items: FormulaItem[] = this.tree.get(this.schema, this.path) || [];
-        console.log('[GraphTab] items.length', items.length);
-
         if (!items || !items.length) {
             return;
         }
 
         const navTree = FormulasTree.createNav(items);
-        console.log('[GraphTab] navTree', navTree);
-
         const nodes: GraphNode[] = [];
 
         const walk = (navNode: any, parent: GraphNode | null) => {
             if (!navNode) {
                 return;
             }
-
-            console.log('[GraphTab] walk navNode', {
-                view: navNode.view,
-                type: navNode.type,
-                name: navNode.name,
-                hasChildren: !!(navNode.children && navNode.children.length),
-            });
 
             const isComponent =
                 String(navNode.view || '').toLowerCase() === 'component';
@@ -106,13 +96,6 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
                 const graphNode = new GraphNode(id, nodeType, data);
                 nodes.push(graphNode);
 
-                console.log('[GraphTab] create GraphNode', {
-                    id,
-                    type: nodeType,
-                    title: data.title,
-                    parentId: parent?.id,
-                });
-
                 if (parent) {
                     parent.addId(graphNode.id);
                 }
@@ -120,7 +103,6 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
                 currentParent = graphNode;
             }
 
-            // Always traverse children, even if current node is not a graph node
             if (Array.isArray(navNode.children)) {
                 for (const child of navNode.children) {
                     walk(child, currentParent);
@@ -128,7 +110,6 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
             }
         };
 
-        // Start from children of the virtual root
         if (Array.isArray(navTree.children) && navTree.children.length) {
             for (const child of navTree.children) {
                 walk(child, null);
@@ -136,8 +117,6 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
         } else {
             walk(navTree, null);
         }
-
-        console.log('[GraphTab] total graph nodes', nodes.length);
 
         if (!nodes.length) {
             return;
@@ -152,10 +131,6 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
         }
     }
 
-    /**
-     * Builds human-readable node title for the graph.
-     * We do not show the "component" word, only type and name.
-     */
     private buildTitle(navNode: any): string {
         const type: string = navNode.type || '';
         const name: string = navNode.name || '';
@@ -163,15 +138,12 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
         if (type && name) {
             return `${type}: ${name}`;
         }
-
         if (name) {
             return name;
         }
-
         if (type) {
             return type;
         }
-
         return 'Item';
     }
 
@@ -183,7 +155,6 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
     }
 
     public onRender(): void {
-        // Reserved for future custom actions on render
     }
 
     public onSelect(node: TreeNode<GraphNodeData> | null): void {
@@ -193,25 +164,69 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
         }
 
         this.selectedNode = node as GraphNode;
-        this.selectedItem = node.data.payload;
+        this.selectedItem = node.data.payload as any;
         this.selectedTitle = node.data.title;
 
         const payload: any = node.data.payload || {};
 
+        // basic info
+        this.mainValue = this.getItemMainValue(payload) || null;
+        this.mainValueLabel = this.getItemMainValueLabel(payload) || null;
+
+        // VC document where this node is linked
         this.nodeDocument =
             payload?.linkEntityName ||
             payload?.entity ||
             payload?._linkEntity?.name ||
             null;
 
+        // field name inside VC
+        this.fieldName =
+            payload?.linkItemName ||
+            payload?._linkItem?.name ||
+            null;
+
+        this.fieldValue = null;
+        const linkItem: any = payload._linkItem || payload.linkItem;
+        if (linkItem) {
+            this.fieldValue =
+                linkItem.value ??
+                linkItem._value ??
+                linkItem.example ??
+                null;
+        }
+
+        // parent VC documents / parent items
         const parentsRaw: any = payload?._parentItems;
         if (Array.isArray(parentsRaw)) {
-            this.parentDocuments = parentsRaw
-                .map((p: any) => p?.name || p?.id || p?.uuid)
-                .filter((x: any) => !!x);
+            const docs = new Set<string>();
+            for (const p of parentsRaw) {
+                const docName =
+                    p?.linkEntityName ||
+                    p?.entity ||
+                    p?._linkEntity?.name ||
+                    p?.name ||
+                    p?.id ||
+                    p?.uuid;
+                if (docName) {
+                    docs.add(docName);
+                }
+            }
+            this.parentDocuments = Array.from(docs);
         } else {
             this.parentDocuments = [];
         }
+
+        console.log('[GraphTab] select payload debug', {
+            type: payload.type,
+            name: payload.name,
+            value: payload.value,
+            mainValue: this.mainValue,
+            fieldName: this.fieldName,
+            fieldValue: this.fieldValue,
+            nodeDocument: this.nodeDocument,
+            parents: this.parentDocuments
+        });
     }
 
     public clearSelection(): void {
@@ -220,6 +235,10 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
         this.selectedTitle = '';
         this.nodeDocument = null;
         this.parentDocuments = [];
+        this.fieldName = null;
+        this.mainValue = null;
+        this.mainValueLabel = null;
+        this.fieldValue = null;
 
         if (this.treeGraph) {
             this.treeGraph.onSelectNode(null);
@@ -232,5 +251,53 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
 
     public getItemDescription(item: FormulaItem | SchemaItem | any): string {
         return item?.description || '';
+    }
+
+    public getItemMainValue(item: FormulaItem | SchemaItem | any): string {
+        if (!item) {
+            return '';
+        }
+
+        const type = String(item.type || '').toLowerCase();
+
+        if (type === 'formula') {
+            return item.value || item._value || '';
+        }
+
+        if (type === 'constant') {
+            return item.value || item._value || '';
+        }
+
+        if (type === 'text') {
+            return item.value || item._value || '';
+        }
+
+        return item.value || item._value || '';
+    }
+
+    public getItemMainValueLabel(item: FormulaItem | SchemaItem | any): string {
+        if (!item) {
+            return '';
+        }
+
+        const type = String(item.type || '').toLowerCase();
+
+        if (type === 'formula') {
+            return 'Formula';
+        }
+
+        if (type === 'constant') {
+            return 'Value';
+        }
+
+        if (type === 'text') {
+            return 'Text';
+        }
+
+        if (type === 'variable') {
+            return 'Value from VC';
+        }
+
+        return 'Value';
     }
 }
