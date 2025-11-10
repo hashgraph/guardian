@@ -93,6 +93,10 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/admin/settings'
             },
             {
+                title: 'Application Branding',
+                routerLink: '/branding'
+            },
+            {
                 title: 'Logs',
                 routerLink: '/admin/logs'
             },
@@ -318,6 +322,12 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             childItems.push({
                 title: 'Settings',
                 routerLink: '/admin/settings'
+            });
+        }
+        if (user.BRANDING_CONFIG_UPDATE) {
+            childItems.push({
+                title: 'Application Branding',
+                routerLink: '/branding'
             });
         }
         if (user.LOG_LOG_READ) {
