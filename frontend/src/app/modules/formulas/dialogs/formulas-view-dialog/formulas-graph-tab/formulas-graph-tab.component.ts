@@ -5,10 +5,7 @@ import {
     OnChanges,
     SimpleChanges,
 } from '@angular/core';
-import {
-    FormulasTree,
-    FormulaItem
-} from '../../../models/formula-tree';
+import { FormulasTree, FormulaItem, SchemaItem } from '../../../models/formula-tree';
 import { TreeGraphComponent } from 'src/app/modules/common/tree-graph/tree-graph.component';
 import { TreeNode } from 'src/app/modules/common/tree-graph/tree-node';
 import { TreeSource } from 'src/app/modules/common/tree-graph/tree-source';
@@ -38,6 +35,12 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
     public source: TreeSource<GraphNode> | null = null;
 
     private treeGraph: TreeGraphComponent | null = null;
+
+    public selectedNode: GraphNode | null = null;
+    public selectedItem: FormulaItem | SchemaItem | null = null;
+    public selectedTitle: string = '';
+    public nodeDocument: string | null = null;
+    public parentDocuments: string[] = [];
 
     ngOnInit(): void {
         this.buildGraph();
@@ -184,8 +187,50 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
     }
 
     public onSelect(node: TreeNode<GraphNodeData> | null): void {
-        if (node) {
-            console.log('[GraphTab] select node', node.data.payload);
+        if (!node) {
+            this.clearSelection();
+            return;
         }
+
+        this.selectedNode = node as GraphNode;
+        this.selectedItem = node.data.payload;
+        this.selectedTitle = node.data.title;
+
+        const payload: any = node.data.payload || {};
+
+        this.nodeDocument =
+            payload?.linkEntityName ||
+            payload?.entity ||
+            payload?._linkEntity?.name ||
+            null;
+
+        const parentsRaw: any = payload?._parentItems;
+        if (Array.isArray(parentsRaw)) {
+            this.parentDocuments = parentsRaw
+                .map((p: any) => p?.name || p?.id || p?.uuid)
+                .filter((x: any) => !!x);
+        } else {
+            this.parentDocuments = [];
+        }
+    }
+
+    public clearSelection(): void {
+        this.selectedNode = null;
+        this.selectedItem = null;
+        this.selectedTitle = '';
+        this.nodeDocument = null;
+        this.parentDocuments = [];
+
+        if (this.treeGraph) {
+            this.treeGraph.onSelectNode(null);
+        }
+    }
+
+    public getItemType(item: FormulaItem | SchemaItem | any): string {
+        return item?.type || '';
+    }
+
+    public getItemDescription(item: FormulaItem | SchemaItem | any): string {
+        return item?.description || '';
     }
 }

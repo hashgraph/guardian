@@ -1,21 +1,66 @@
 <div class="graph-tab" *ngIf="hasData">
-    <div class="tree-container">
-        <app-tree-graph
-            (init)="initGraph($event)"
-            (render)="onRender()"
-            (select)="onSelect($event)"
-        >
-            <ng-template #nodeTemplate let-node="node">
-                <div class="tree-node root-node selected-type-{{node.selected}}">
-                    <div class="node-header">
-                        {{ node.data.title }}
+    <div class="graph-layout">
+
+        <div class="tree-container">
+            <app-tree-graph
+                (init)="initGraph($event)"
+                (render)="onRender()"
+                (select)="onSelect($event)"
+            >
+                <ng-template #nodeTemplate let-node="node">
+                    <div class="tree-node root-node selected-type-{{node.selected}}">
+                        <div class="node-header">
+                            {{ node.data.title }}
+                        </div>
+                    </div>
+                </ng-template>
+            </app-tree-graph>
+        </div>
+
+        <div class="node-details" [attr.hidden-node]="!selectedItem">
+            <div *ngIf="selectedItem as item" class="node-details-container">
+
+                <div class="node-details-header">
+                    <div class="node-details-title">
+                        {{ selectedTitle }}
+                    </div>
+                    <div class="node-details-close" (click)="clearSelection()">
+                        ✕
                     </div>
                 </div>
-            </ng-template>
-        </app-tree-graph>
-    </div>
-</div>
 
-<div class="graph-tab-empty" *ngIf="!hasData">
-    No graph data.
+                <div class="node-details-section">
+                    <div class="section-label">Type</div>
+                    <div class="section-value">
+                        {{ getItemType(item) }}
+                    </div>
+                </div>
+
+                <div *ngIf="getItemDescription(item)" class="node-details-section">
+                    <div class="section-label">Description</div>
+                    <div class="section-value">
+                        {{ getItemDescription(item) }}
+                    </div>
+                </div>
+
+                <div *ngIf="nodeDocument" class="node-details-section">
+                    <div class="section-label">Document</div>
+                    <div class="section-value">
+                        {{ nodeDocument }}
+                    </div>
+                </div>
+
+                <div *ngIf="parentDocuments?.length" class="node-details-section">
+                    <div class="section-label">Used in documents</div>
+                    <ul class="section-list">
+                        <li *ngFor="let doc of parentDocuments">
+                            {{ doc }}
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
 </div>
