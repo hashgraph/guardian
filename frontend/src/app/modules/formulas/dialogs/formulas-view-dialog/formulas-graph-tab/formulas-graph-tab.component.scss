@@ -31,7 +31,9 @@
     border: 1px solid #bac0ce;
     box-shadow: 0px 4px 4px 0px var(--guardian-shadow, #00000014);
     border-radius: 6px;
-    width: 220px;
+
+    width: 200px;
+
     cursor: pointer;
     overflow: hidden;
     user-select: none;
@@ -46,19 +48,28 @@
 
     &.selected-type-selected {
         border: 1px solid var(--guardian-primary-color, #4169E2);
-        box-shadow: 0px 0px 0px 3px var(--guardian-primary-color, #4169E2),
-        0px 6px 6px 0px #00000021;
+        box-shadow:
+            0px 0px 0px 3px var(--guardian-primary-color, #4169E2),
+            0px 6px 6px 0px #00000021;
     }
 
     .node-header {
         width: 100%;
-        padding: 9px 8px 9px 16px;
+        padding: 8px 12px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+
+        white-space: normal;
+        word-break: break-word;
+
         background: var(--guardian-grey-background, #F9FAFC);
         font-family: Inter;
         font-size: 12px;
         font-weight: 600;
-        line-height: 14px;
-        text-align: left;
+        line-height: 16px;
         color: #23252E;
     }
 
