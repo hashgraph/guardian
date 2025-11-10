@@ -63,7 +63,7 @@ export class TemplateToolModel implements IWeightModel {
 
         hashState = new Hash3();
         hashState.hash(this.messageId);
-        
+
         weight = String(hashState.result());
         weights.push(weight);
         weightMap[WeightType.TOPIC_LVL_0] = weight;
