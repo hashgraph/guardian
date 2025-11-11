@@ -1214,7 +1214,7 @@
         }
     },
     {
-        "uuid": "PolicyDiscussion",
+        "uuid": "PolicyDiscussionV2",
         "name": "PolicyDiscussion",
         "entity": "POLICY_DISCUSSION_V2",
         "document": {
