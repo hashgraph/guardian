@@ -69,7 +69,8 @@ export class PolicyCommentCollectionBackup extends CollectionBackup<PolicyCommen
             'messageId',
             'hash',
             'owner',
-            'creator'
+            'creator',
+            'encryptedDocument'
         ];
         for (const key of Object.keys(row)) {
             if (!keys.includes(key)) {
