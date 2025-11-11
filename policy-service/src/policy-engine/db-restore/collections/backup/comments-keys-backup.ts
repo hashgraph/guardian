@@ -93,10 +93,10 @@ export class CommentsKeysBackup {
             const discussionRow = await DatabaseServer.getPolicyDiscussion({
                 _id: DatabaseServer.dbID(discussion),
             });
-            const messageKey: string = await this.getKey(this.policyOwner, discussion);
+            const commentKey: string = await this.getKey(this.policyOwner, discussion);
             const users: any[] = await this.getUsers(discussionRow);
             for (const did of users) {
-                const key = await this.encryptKey(messageKey, did);
+                const key = await this.encryptKey(commentKey, did);
                 const target = `${discussionRow.messageId}|${did}`;
                 actions.push({ target, key });
             }
@@ -118,8 +118,8 @@ export class CommentsKeysBackup {
                 }]
             });
             for (const discussionRow of discussionRows) {
-                const messageKey: string = await this.getKey(this.policyOwner, discussion);
-                const key = await this.encryptKey(messageKey, user);
+                const commentKey: string = await this.getKey(this.policyOwner, discussion);
+                const key = await this.encryptKey(commentKey, user);
                 const target = `${discussionRow.id}|${discussionRow.messageId}|${user}`;
                 actions.push({ target, key });
             }

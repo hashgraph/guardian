@@ -190,6 +190,24 @@ export class PolicyDiscussion extends RestoreEntity {
     _documentFileId?: ObjectId;
 
     /**
+     * Document instance
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    encryptedDocument?: string;
+
+    /**
+     * Document file id
+     */
+    @Property({ nullable: true })
+    encryptedDocumentFileId?: ObjectId;
+
+    /**
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _encryptedDocumentFileId?: ObjectId;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()
@@ -197,8 +215,12 @@ export class PolicyDiscussion extends RestoreEntity {
         this.uuid = this.uuid || GenerateUUIDv4();
         if (this.document) {
             const document = JSON.stringify(this.document);
-            this.documentFileId = await this._createFile(document, 'PolicyComment');
+            this.documentFileId = await this._createFile(document, 'PolicyDiscussion');
             delete this.document;
+        }
+        if (this.encryptedDocument) {
+            this.encryptedDocumentFileId = await this._createFile(this.encryptedDocument, 'PolicyDiscussion');
+            delete this.encryptedDocument;
         }
         this._updateDocHash(this.uuid);
         this._updatePropHash(this.createProp());
@@ -235,6 +257,10 @@ export class PolicyDiscussion extends RestoreEntity {
             const buffer = await this._loadFile(this.documentFileId);
             this.document = JSON.parse(buffer.toString());
         }
+        if (this.encryptedDocumentFileId) {
+            const buffer = await this._loadFile(this.encryptedDocumentFileId)
+            this.encryptedDocument = buffer.toString();
+        }
     }
 
     /**
@@ -244,12 +270,20 @@ export class PolicyDiscussion extends RestoreEntity {
     async updateFiles() {
         if (this.document) {
             const document = JSON.stringify(this.document);
-            const documentFileId = await this._createFile(document, 'PolicyComment');
+            const documentFileId = await this._createFile(document, 'PolicyDiscussion');
             if (documentFileId) {
                 this._documentFileId = this.documentFileId;
                 this.documentFileId = documentFileId;
             }
             delete this.document;
+        }
+        if (this.encryptedDocument) {
+            const encryptedDocumentFileId = await this._createFile(this.encryptedDocument, 'PolicyDiscussion');
+            if (encryptedDocumentFileId) {
+                this._encryptedDocumentFileId = this.encryptedDocumentFileId;
+                this.encryptedDocumentFileId = encryptedDocumentFileId;
+            }
+            delete this.encryptedDocument;
         }
     }
 
@@ -262,10 +296,19 @@ export class PolicyDiscussion extends RestoreEntity {
             DataBaseHelper.gridFS
                 .delete(this._documentFileId)
                 .catch((reason) => {
-                    console.error(`AfterUpdate: PolicyComment, ${this._id}, _documentFileId`)
+                    console.error(`AfterUpdate: PolicyDiscussion, ${this._id}, _documentFileId`)
                     console.error(reason)
                 });
             delete this._documentFileId;
+        }
+        if (this._encryptedDocumentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._encryptedDocumentFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: PolicyDiscussion, ${this._id}, _encryptedDocumentFileId`)
+                    console.error(reason)
+                });
+            delete this._encryptedDocumentFileId;
         }
     }
 
@@ -278,7 +321,15 @@ export class PolicyDiscussion extends RestoreEntity {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
                 .catch((reason) => {
-                    console.error(`AfterDelete: PolicyComment, ${this._id}, documentFileId`)
+                    console.error(`AfterDelete: PolicyDiscussion, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
+        }
+        if (this.encryptedDocumentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.encryptedDocumentFileId)
+                .catch((reason) => {
+                    console.error(`AfterDelete: PolicyDiscussion, ${this._id}, encryptedDocumentFileId`)
                     console.error(reason)
                 });
         }
@@ -293,7 +344,7 @@ export class PolicyDiscussion extends RestoreEntity {
             new DataBaseHelper(DeleteCache).insert({
                 rowId: this._id?.toString(),
                 policyId: this.policyId,
-                collection: 'PolicyComment',
+                collection: 'PolicyDiscussion',
             })
         } catch (error) {
             console.error(error);

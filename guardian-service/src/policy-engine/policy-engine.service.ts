@@ -3675,9 +3675,8 @@ export class PolicyEngineService {
                         throw new Error('Document not found.');
                     }
 
-                    const discussion: any = await PolicyCommentsUtils.createDiscussion(user, policy, vc, data);
-
                     const messageKey: string = PolicyCommentsUtils.generateKey();
+                    const discussion: any = await PolicyCommentsUtils.createDiscussion(user, policy, vc, data, messageKey);
 
                     const userAccount = await this.users.getHederaAccount(user.did, user.id);
                     const topic = await PolicyCommentsUtils.getTopic(policy);
@@ -3758,11 +3757,12 @@ export class PolicyEngineService {
                         throw new Error('Discussion does not exist.');
                     }
 
+                    const messageKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
+
                     const comment: any = await PolicyCommentsUtils
-                        .createComment(user, userRole, policy, vc, discussion, data);
+                        .createComment(user, userRole, policy, vc, discussion, data, messageKey);
 
                     const userAccount = await this.users.getHederaAccount(user.did, user.id);
-                    const messageKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
                     const topic = await PolicyCommentsUtils.getTopic(policy);
                     const message = new CommentMessage(MessageAction.CreateComment);
                     message.setDocument(comment);

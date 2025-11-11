@@ -1,6 +1,5 @@
-import { DataBaseHelper, EncryptVcHelper, PolicyComment } from '@guardian/common';
+import { DataBaseHelper, EncryptVcHelper, KeyType, PolicyComment, Wallet } from '@guardian/common';
 import { CollectionRestore, IDiffAction } from '../../index.js';
-import { UserCredentials } from '../../../policy-user.js';
 
 export class PolicyCommentCollectionRestore extends CollectionRestore<PolicyComment> {
     protected override actionHash(hash: string, action: IDiffAction<PolicyComment>, row?: PolicyComment): string {
@@ -32,25 +31,35 @@ export class PolicyCommentCollectionRestore extends CollectionRestore<PolicyComm
     }
 
     protected override createRow(data: PolicyComment): PolicyComment {
-        // delete data.documentFileId;
-        // delete data.encryptedDocumentFileId;
-        // if (data.document) {
-        //     const document = Buffer.from((data as any).document, 'base64').toString();
-        //     data.document = JSON.parse(document);
-        // }
-        // if (data.encryptedDocument) {
-        //     const document = Buffer.from((data as any).encryptedDocument, 'base64').toString();
-        //     data.encryptedDocument = document;
-        // }
+        console.log('PolicyComment', data);
+        delete data.documentFileId;
+        delete data.encryptedDocumentFileId;
+        if (data.encryptedDocument) {
+            const document = Buffer.from((data as any).encryptedDocument, 'base64').toString();
+            data.encryptedDocument = document;
+        }
         return data;
     }
 
     protected override async decryptRow(row: PolicyComment): Promise<PolicyComment> {
-        // if (row.encryptedDocument) {
-        //     const messageKey = await UserCredentials.loadMessageKey(this.messageId, row.owner, null);
-        //     const data = await EncryptVcHelper.decrypt(row.encryptedDocument, messageKey);
-        //     row.document = JSON.parse(data);
-        // }
+        if (row.encryptedDocument) {
+            const commentKey: string = await this.getKey(this.policyOwner, row.discussionId);
+            const data = await EncryptVcHelper.decrypt(row.encryptedDocument, commentKey);
+            row.document = JSON.parse(data);
+        }
         return row;
+    }
+
+    private getKey(
+        did: string,
+        discussionId: string,
+    ): Promise<string> {
+        const wallet = new Wallet();
+        return wallet.getUserKey(
+            did,
+            KeyType.DISCUSSION,
+            discussionId,
+            null
+        )
     }
 }

@@ -60,23 +60,23 @@ export class PolicyRestore {
         this.messageId = messageId;
         this.lastDiff = null;
 
-        this.vcCollectionRestore = new VcCollectionRestore(this.policyId, this.messageId);
-        this.vpCollectionRestore = new VpCollectionRestore(this.policyId, this.messageId);
-        this.didCollectionRestore = new DidCollectionRestore(this.policyId, this.messageId);
-        this.stateCollectionRestore = new StateCollectionRestore(this.policyId, this.messageId);
-        this.roleCollectionRestore = new RoleCollectionRestore(this.policyId, this.messageId);
-        this.multiDocCollectionRestore = new MultiDocCollectionRestore(this.policyId, this.messageId);
-        this.tokenCollectionRestore = new TokenCollectionRestore(this.policyId, this.messageId);
-        this.tagCollectionRestore = new TagCollectionRestore(this.policyId, this.messageId);
-        this.docStateCollectionRestore = new DocStateCollectionRestore(this.policyId, this.messageId);
-        this.topicCollectionRestore = new TopicCollectionRestore(this.policyId, this.messageId);
-        this.externalCollectionRestore = new ExternalCollectionRestore(this.policyId, this.messageId);
-        this.approveCollectionRestore = new ApproveCollectionRestore(this.policyId, this.messageId);
-        this.mintRequestCollectionRestore = new MintRequestCollectionRestore(this.policyId, this.messageId);
-        this.mintTransactionCollectionRestore = new MintTransactionCollectionRestore(this.policyId, this.messageId);
-        this.policyInvitationsCollectionRestore = new PolicyInvitationsCollectionRestore(this.policyId, this.messageId);
-        this.policyDiscussionCollectionRestore = new PolicyDiscussionCollectionRestore(this.policyId, this.messageId);
-        this.policyCommentCollectionRestore = new PolicyCommentCollectionRestore(this.policyId, this.messageId);
+        this.vcCollectionRestore = new VcCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.vpCollectionRestore = new VpCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.didCollectionRestore = new DidCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.stateCollectionRestore = new StateCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.roleCollectionRestore = new RoleCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.multiDocCollectionRestore = new MultiDocCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.tokenCollectionRestore = new TokenCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.tagCollectionRestore = new TagCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.docStateCollectionRestore = new DocStateCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.topicCollectionRestore = new TopicCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.externalCollectionRestore = new ExternalCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.approveCollectionRestore = new ApproveCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.mintRequestCollectionRestore = new MintRequestCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.mintTransactionCollectionRestore = new MintTransactionCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.policyInvitationsCollectionRestore = new PolicyInvitationsCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.policyDiscussionCollectionRestore = new PolicyDiscussionCollectionRestore(this.policyId, this.policyOwner, this.messageId);
+        this.policyCommentCollectionRestore = new PolicyCommentCollectionRestore(this.policyId, this.policyOwner, this.messageId);
 
         this.commentKeysRestore = new CommentKeysRestore(this.policyId, this.policyOwner, this.messageId);
     }

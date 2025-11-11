@@ -66,25 +66,18 @@ export class PolicyDiscussionCollectionBackup extends CollectionBackup<PolicyDis
 
     protected override async loadFile(row: PolicyDiscussion, i: number = 0): Promise<PolicyDiscussion> {
         try {
-            row = this.prepareRow(row);
+            const newRow = this.prepareRow(row);
             if (i > 10) {
                 console.error('Load file error');
-                return row;
+                return newRow;
             }
-            // delete row.document;
-            // delete row.encryptedDocument;
-            // if (row.encryptedDocumentFileId) {
-            //     const buffer = await DataBaseHelper.loadFile(row.encryptedDocumentFileId);
-            //     if (buffer) {
-            //         (row as any).encryptedDocument = buffer.toString('base64');
-            //     }
-            // } else if (row.documentFileId) {
-            //     const buffer = await DataBaseHelper.loadFile(row.documentFileId);
-            //     if (buffer) {
-            //         (row as any).document = buffer.toString('base64');
-            //     }
-            // }
-            return row;
+            if (row.encryptedDocumentFileId) {
+                const buffer = await DataBaseHelper.loadFile(row.encryptedDocumentFileId);
+                if (buffer) {
+                    (row as any).encryptedDocument = buffer.toString('base64');
+                }
+            }
+            return newRow;
         } catch (error) {
             const newRow = await this.findDocument(row);
             return await this.loadFile(newRow, i + 1);

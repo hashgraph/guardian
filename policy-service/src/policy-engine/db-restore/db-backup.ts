@@ -61,23 +61,23 @@ export class PolicyBackup {
         this.messageId = messageId;
         this.lastDiff = null;
 
-        this.vcCollectionBackup = new VcCollectionBackup(this.policyId, this.messageId);
-        this.vpCollectionBackup = new VpCollectionBackup(this.policyId, this.messageId);
-        this.didCollectionBackup = new DidCollectionBackup(this.policyId, this.messageId);
-        this.stateCollectionBackup = new StateCollectionBackup(this.policyId, this.messageId);
-        this.roleCollectionBackup = new RoleCollectionBackup(this.policyId, this.messageId);
-        this.multiDocCollectionBackup = new MultiDocCollectionBackup(this.policyId, this.messageId);
-        this.tokenCollectionBackup = new TokenCollectionBackup(this.policyId, this.messageId);
-        this.tagCollectionBackup = new TagCollectionBackup(this.policyId, this.messageId);
-        this.docStateCollectionBackup = new DocStateCollectionBackup(this.policyId, this.messageId);
-        this.topicCollectionBackup = new TopicCollectionBackup(this.policyId, this.messageId);
-        this.externalCollectionBackup = new ExternalCollectionBackup(this.policyId, this.messageId);
-        this.approveCollectionBackup = new ApproveCollectionBackup(this.policyId, this.messageId);
-        this.mintRequestCollectionBackup = new MintRequestCollectionBackup(this.policyId, this.messageId);
-        this.mintTransactionCollectionBackup = new MintTransactionCollectionBackup(this.policyId, this.messageId);
-        this.policyInvitationsCollectionBackup = new PolicyInvitationsCollectionBackup(this.policyId, this.messageId);
-        this.policyDiscussionCollectionBackup = new PolicyDiscussionCollectionBackup(this.policyId, this.messageId);
-        this.policyCommentCollectionBackup = new PolicyCommentCollectionBackup(this.policyId, this.messageId);
+        this.vcCollectionBackup = new VcCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.vpCollectionBackup = new VpCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.didCollectionBackup = new DidCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.stateCollectionBackup = new StateCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.roleCollectionBackup = new RoleCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.multiDocCollectionBackup = new MultiDocCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.tokenCollectionBackup = new TokenCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.tagCollectionBackup = new TagCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.docStateCollectionBackup = new DocStateCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.topicCollectionBackup = new TopicCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.externalCollectionBackup = new ExternalCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.approveCollectionBackup = new ApproveCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.mintRequestCollectionBackup = new MintRequestCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.mintTransactionCollectionBackup = new MintTransactionCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.policyInvitationsCollectionBackup = new PolicyInvitationsCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.policyDiscussionCollectionBackup = new PolicyDiscussionCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.policyCommentCollectionBackup = new PolicyCommentCollectionBackup(this.policyId, this.policyOwner, this.messageId);
 
         this.commentsKeysBackup = new CommentsKeysBackup(this.policyId, this.policyOwner, this.messageId);
     }

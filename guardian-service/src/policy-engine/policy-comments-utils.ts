@@ -1,4 +1,4 @@
-import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType } from '@guardian/common';
+import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType, EncryptVcHelper } from '@guardian/common';
 import { EntityOwner, GenerateUUIDv4, PolicyStatus, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 import { PrivateKey } from '@hashgraph/sdk';
@@ -293,7 +293,7 @@ export class PolicyCommentsUtils {
             users?: string[],
             relationships?: string[]
         },
-        system: boolean = false
+        messageKey: string
     ) {
         const name = data?.name || String(Date.now());
         const parent = data?.parent;
@@ -316,6 +316,9 @@ export class PolicyCommentsUtils {
             .update(JSON.stringify(vcDocument))
             .digest('base64')
             .toString();
+
+        const encryptedDocument = await EncryptVcHelper.encrypt(JSON.stringify(vcDocument), messageKey);
+
         const discussion = {
             uuid: GenerateUUIDv4(),
             owner: user.did,
@@ -323,7 +326,7 @@ export class PolicyCommentsUtils {
             policyId: policy.id,
             target: document.messageId,
             targetId: document.id,
-            system,
+            system: false,
             count: 0,
             name,
             parent,
@@ -335,6 +338,7 @@ export class PolicyCommentsUtils {
             relationships,
             relationshipIds,
             document: vcDocument,
+            encryptedDocument,
             hash: documentHash
         };
 
@@ -416,7 +420,8 @@ export class PolicyCommentsUtils {
                 link: string;
                 cid: string;
             }[];
-        }
+        },
+        messageKey: string
     ) {
         const fields = new Set<string>();
         if (Array.isArray(data.fields)) {
@@ -444,6 +449,9 @@ export class PolicyCommentsUtils {
             .update(JSON.stringify(vcDocument))
             .digest('base64')
             .toString();
+
+        const encryptedDocument = await EncryptVcHelper.encrypt(JSON.stringify(vcDocument), messageKey);
+
         const comment = {
             timestamp: Date.now(),
             uuid: GenerateUUIDv4(),
@@ -468,6 +476,7 @@ export class PolicyCommentsUtils {
             isDocumentOwner: user.did === document.owner,
             text: data.text,
             document: vcDocument,
+            encryptedDocument,
             hash: documentHash
         }
 

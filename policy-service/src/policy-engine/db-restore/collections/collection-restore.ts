@@ -5,10 +5,16 @@ import { ObjectId } from '@mikro-orm/mongodb';
 
 export abstract class CollectionRestore<T extends RestoreEntity> {
     protected readonly policyId: string;
+    protected readonly policyOwner: string;
     protected readonly messageId: string;
 
-    constructor(policyId: string, messageId: string) {
+    constructor(
+        policyId: string,
+        policyOwner: string,
+        messageId: string
+    ) {
         this.policyId = policyId;
+        this.policyOwner = policyOwner;
         this.messageId = messageId;
     }
 
