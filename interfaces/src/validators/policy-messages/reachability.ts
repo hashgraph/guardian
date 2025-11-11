@@ -216,7 +216,7 @@ export function computeReachability(
             messages.push({
                 severity: 'warning',
                 code: MSG_REACH_NO_IN,
-                text: 'No inbound links',
+                text: 'No inbound links for this block. Note: not all blocks necessarily require their presence.',
                 blockType: type
             });
         }
@@ -225,7 +225,7 @@ export function computeReachability(
             messages.push({
                 severity: 'warning',
                 code: MSG_REACH_NO_OUT,
-                text: 'No outbound links',
+                text: 'No outbound links for this block. Note: not all blocks necessarily require their presence.',
                 blockType: type
             });
         }
@@ -234,7 +234,7 @@ export function computeReachability(
             messages.push({
                 severity: 'warning',
                 code: MSG_REACH_ISOLATED,
-                text: 'No inbound and outbound links',
+                text: 'No inbound and outbound links for this block. Note: not all blocks necessarily require their presence.',
                 blockType: type
             });
         }
