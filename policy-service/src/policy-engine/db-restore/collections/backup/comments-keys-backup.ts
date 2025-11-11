@@ -97,7 +97,7 @@ export class CommentsKeysBackup {
             const users: any[] = await this.getUsers(discussionRow);
             for (const did of users) {
                 const key = await this.encryptKey(commentKey, did);
-                const target = `${discussionRow.messageId}|${did}`;
+                const target = `${discussionRow.id}|${discussionRow.messageId}|${did}`;
                 actions.push({ target, key });
             }
         } else if (user) {

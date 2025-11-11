@@ -50,30 +50,40 @@ export class PolicyCommentCollectionBackup extends CollectionBackup<PolicyCommen
     }
 
     private prepareRow(row: PolicyComment): PolicyComment {
-        return {
-            _id: row._id,
-            _restoreId: row._restoreId,
-            _docHash: row._docHash,
-            _propHash: row._propHash,
-            id: row.id,
-            topicId: row.topicId,
-            policyId: row.policyId,
-            policyTopicId: row.policyTopicId,
-            policyInstanceTopicId: row.policyInstanceTopicId,
-            targetId: row.targetId,
-            target: row.target,
-            discussionId: row.discussionId,
-            discussionMessageId: row.discussionMessageId,
-            messageId: row.messageId,
-        } as any
+        const keys: string[] = [
+            '_id',
+            '_restoreId',
+            '_docHash',
+            '_propHash',
+            'id',
+            'uuid',
+            'timestamp',
+            'topicId',
+            'policyId',
+            'policyTopicId',
+            'policyInstanceTopicId',
+            'targetId',
+            'target',
+            'discussionId',
+            'discussionMessageId',
+            'messageId',
+            'hash',
+            'owner',
+            'creator'
+        ];
+        for (const key of Object.keys(row)) {
+            if (!keys.includes(key)) {
+                delete row[key];
+            }
+        }
+        return row;
     }
 
     protected override async loadFile(row: PolicyComment, i: number = 0): Promise<PolicyComment> {
         try {
-            const newRow = this.prepareRow(row);
             if (i > 10) {
                 console.error('Load file error');
-                return newRow;
+                return this.prepareRow(row);
             }
             if (row.encryptedDocumentFileId) {
                 const buffer = await DataBaseHelper.loadFile(row.encryptedDocumentFileId);
@@ -81,7 +91,7 @@ export class PolicyCommentCollectionBackup extends CollectionBackup<PolicyCommen
                     (row as any).encryptedDocument = buffer.toString('base64');
                 }
             }
-            return newRow;
+            return this.prepareRow(row);
         } catch (error) {
             const newRow = await this.findDocument(row);
             return await this.loadFile(newRow, i + 1);

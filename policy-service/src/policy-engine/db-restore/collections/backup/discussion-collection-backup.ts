@@ -50,26 +50,36 @@ export class PolicyDiscussionCollectionBackup extends CollectionBackup<PolicyDis
     }
 
     private prepareRow(row: PolicyDiscussion): PolicyDiscussion {
-        return {
-            _id: row._id,
-            _restoreId: row._restoreId,
-            _docHash: row._docHash,
-            _propHash: row._propHash,
-            id: row.id,
-            policyId: row.policyId,
-            targetId: row.targetId,
-            target: row.target,
-            count: row.count,
-            messageId: row.messageId,
-        } as any
+        const keys: string[] = [
+            '_id',
+            '_restoreId',
+            '_docHash',
+            '_propHash',
+            'id',
+            'uuid',
+            'policyId',
+            'targetId',
+            'target',
+            'count',
+            'messageId',
+            'encryptedDocument',
+            'hash',
+            'owner',
+            'creator'
+        ];
+        for (const key of Object.keys(row)) {
+            if (!keys.includes(key)) {
+                delete row[key];
+            }
+        }
+        return row;
     }
 
     protected override async loadFile(row: PolicyDiscussion, i: number = 0): Promise<PolicyDiscussion> {
         try {
-            const newRow = this.prepareRow(row);
             if (i > 10) {
                 console.error('Load file error');
-                return newRow;
+                return this.prepareRow(row);
             }
             if (row.encryptedDocumentFileId) {
                 const buffer = await DataBaseHelper.loadFile(row.encryptedDocumentFileId);
@@ -77,7 +87,7 @@ export class PolicyDiscussionCollectionBackup extends CollectionBackup<PolicyDis
                     (row as any).encryptedDocument = buffer.toString('base64');
                 }
             }
-            return newRow;
+            return this.prepareRow(row);
         } catch (error) {
             const newRow = await this.findDocument(row);
             return await this.loadFile(newRow, i + 1);

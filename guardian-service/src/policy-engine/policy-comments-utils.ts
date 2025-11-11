@@ -378,6 +378,9 @@ export class PolicyCommentsUtils {
         if (data.field) {
             credentialSubject.field = data.field;
         }
+        if (data.fieldName) {
+            credentialSubject.fieldName = data.fieldName;
+        }
         if (data.privacy) {
             credentialSubject.privacy = data.privacy;
         }
@@ -388,7 +391,7 @@ export class PolicyCommentsUtils {
             credentialSubject.users = data.users;
         }
         if (relationships?.length) {
-            credentialSubject.relationships = data.relationships;
+            credentialSubject.relationships = relationships;
         }
         const schema = await PolicyCommentsUtils.getSchema(SchemaEntity.POLICY_DISCUSSION, policy);
         if (schema) {

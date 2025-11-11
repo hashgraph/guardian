@@ -116,6 +116,7 @@ export class PolicyBackup {
             { _id: this.lastDiff._id },
             { $set: { lastUpdate, fileId } }
         )
+        console.log(`save`);
         await FileHelper.deleteFile(this.lastDiff.fileId);
 
         this.lastDiff.fileId = fileId;

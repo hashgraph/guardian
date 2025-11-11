@@ -30,7 +30,7 @@ export class VpCollectionRestore extends CollectionRestore<VpDocument> {
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: VpDocument): VpDocument {
+    protected override createRow(data: VpDocument, id: string): VpDocument {
         delete data.documentFileId;
         if (data.document) {
             const document = Buffer.from((data as any).document, 'base64').toString();
@@ -39,7 +39,7 @@ export class VpCollectionRestore extends CollectionRestore<VpDocument> {
         return data;
     }
 
-    protected override async decryptRow(row: VpDocument): Promise<VpDocument> {
+    protected override async decryptRow(row: VpDocument, id: string): Promise<VpDocument> {
         return row;
     }
 }

@@ -1,4 +1,4 @@
-import { DataBaseHelper, EncryptVcHelper, KeyType, PolicyDiscussion, Wallet } from '@guardian/common';
+import { DataBaseHelper, EncryptVcHelper, KeyType, PolicyDiscussion, VcDocument, Wallet } from '@guardian/common';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class PolicyDiscussionCollectionRestore extends CollectionRestore<PolicyDiscussion> {
@@ -30,8 +30,8 @@ export class PolicyDiscussionCollectionRestore extends CollectionRestore<PolicyD
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: PolicyDiscussion): PolicyDiscussion {
-        console.log('PolicyDiscussion', data);
+    protected override createRow(data: PolicyDiscussion, id: string): PolicyDiscussion {
+        console.log('createRow PolicyDiscussion', data);
         delete data.documentFileId;
         delete data.encryptedDocumentFileId;
         if (data.encryptedDocument) {
@@ -41,13 +41,37 @@ export class PolicyDiscussionCollectionRestore extends CollectionRestore<PolicyD
         return data;
     }
 
-    protected override async decryptRow(row: PolicyDiscussion): Promise<PolicyDiscussion> {
+    protected override async decryptRow(row: PolicyDiscussion, id: string): Promise<PolicyDiscussion> {
+        console.log('decryptRow PolicyDiscussion', row);
         if (row.encryptedDocument) {
-            const commentKey: string = await this.getKey(this.policyOwner, row.id);
+            const commentKey: string = await this.getKey(this.policyOwner, id);
             const data = await EncryptVcHelper.decrypt(row.encryptedDocument, commentKey);
             row.document = JSON.parse(data);
         }
+        if (row.document) {
+            const subject = this.getCredentialSubject(row.document);
+            row.name = subject.name;
+            row.privacy = subject.privacy;
+            row.relationships = subject.relationships || [];
+            row.parent = subject.parent || null;
+            row.field = subject.field || null;
+            row.fieldName = subject.fieldName || null;
+        }
+        if (row.relationships?.length) {
+            const collection = new DataBaseHelper(VcDocument);
+            const vcs = await collection.find({ policyId: this.policyId, messageId: { $in: row.relationships } });
+            row.relationshipIds = vcs.map((vc) => vc.id);
+        }
+        console.log('decryptRow PolicyDiscussion 3', JSON.stringify(row, null, 4));
         return row;
+    }
+
+    private getCredentialSubject(document: any): any {
+        if (Array.isArray(document.credentialSubject)) {
+            return document.credentialSubject[0];
+        } else {
+            return document.credentialSubject;
+        }
     }
 
     private getKey(
@@ -55,6 +79,7 @@ export class PolicyDiscussionCollectionRestore extends CollectionRestore<PolicyD
         discussionId: string,
     ): Promise<string> {
         const wallet = new Wallet();
+        console.log(did, discussionId);
         return wallet.getUserKey(
             did,
             KeyType.DISCUSSION,

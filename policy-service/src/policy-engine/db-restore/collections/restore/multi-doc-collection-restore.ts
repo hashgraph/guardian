@@ -30,7 +30,7 @@ export class MultiDocCollectionRestore extends CollectionRestore<MultiDocuments>
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: MultiDocuments): MultiDocuments {
+    protected override createRow(data: MultiDocuments, id: string): MultiDocuments {
         delete data.documentFileId;
         if (data.document) {
             const document = Buffer.from((data as any).document, 'base64').toString();
@@ -39,7 +39,7 @@ export class MultiDocCollectionRestore extends CollectionRestore<MultiDocuments>
         return data;
     }
 
-    protected override async decryptRow(row: MultiDocuments): Promise<MultiDocuments> {
+    protected override async decryptRow(row: MultiDocuments, id: string): Promise<MultiDocuments> {
         return row;
     }
 }

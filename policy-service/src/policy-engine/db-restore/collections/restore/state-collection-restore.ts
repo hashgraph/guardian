@@ -30,11 +30,11 @@ export class StateCollectionRestore extends CollectionRestore<BlockState> {
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: BlockState): BlockState {
+    protected override createRow(data: BlockState, id: string): BlockState {
         return data;
     }
 
-    protected override async decryptRow(row: BlockState): Promise<BlockState> {
+    protected override async decryptRow(row: BlockState, id: string): Promise<BlockState> {
         return row;
     }
 }
