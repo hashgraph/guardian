@@ -3698,7 +3698,7 @@ export class PolicyEngineService {
                         });
                     discussion.messageId = messageStatus.getId();
 
-                    await PolicyCommentsUtils.saveKey(policy.owner, discussion.messageId, messageKey);
+                    await PolicyCommentsUtils.saveKey(policy.owner, discussion, messageKey);
 
                     const row = await DatabaseServer.createPolicyDiscussion(discussion);
 
