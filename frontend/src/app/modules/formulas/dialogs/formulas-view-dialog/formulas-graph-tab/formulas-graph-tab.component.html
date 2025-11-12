@@ -8,7 +8,13 @@
                 (select)="onSelect($event)"
             >
                 <ng-template #nodeTemplate let-node="node">
-                    <div class="tree-node root-node selected-type-{{node.selected}}">
+                    <div
+                        class="tree-node root-node"
+                        [ngClass]="[
+                            'selected-type-' + node.selected,
+                            getNodeStatusClass(node)
+                        ]"
+                    >
                         <div class="node-header">
                             {{ node.data.title }}
                         </div>
