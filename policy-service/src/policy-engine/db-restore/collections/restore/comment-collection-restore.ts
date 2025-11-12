@@ -16,12 +16,12 @@ export class PolicyCommentCollectionRestore extends CollectionRestore<PolicyComm
 
     protected override async insertDocuments(rows: PolicyComment[]): Promise<void> {
         const collection = new DataBaseHelper(PolicyComment);
-        await collection.insertOrUpdate(rows as PolicyComment[], '_restoreId');
+        await collection.insertOrUpdate(rows as PolicyComment[], 'messageId');
     }
 
     protected override async updateDocuments(rows: PolicyComment[]): Promise<void> {
         const collection = new DataBaseHelper(PolicyComment);
-        await collection.insertOrUpdate(rows as PolicyComment[], '_restoreId');
+        await collection.insertOrUpdate(rows as PolicyComment[], 'messageId');
     }
 
     protected override async deleteDocuments(rows: PolicyComment[]): Promise<void> {

@@ -177,7 +177,6 @@ export class PolicyBackupService {
         }
     }): Promise<void> {
         const diff = await this.controller.keys(options);
-        console.debug(JSON.stringify(diff, null, 4))
         await this.sendDiff(diff);
     }
 }

@@ -1766,12 +1766,12 @@ export class PolicyComponentsUtils {
         if (policy.locationType === LocationType.REMOTE) {
             const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
             const userId = policyUser.userId;
-            return await PolicyActionsUtils.createPolicyDiscussion({ 
-                policyId, 
-                user: policyUser, 
-                discussion, 
+            return await PolicyActionsUtils.createPolicyDiscussion({
+                policyId,
+                user: policyUser,
+                discussion,
                 key,
-                userId 
+                userId
             });
         } else {
             const options = {
@@ -1798,6 +1798,19 @@ export class PolicyComponentsUtils {
         } else {
             PolicyComponentsUtils.backup(policyId);
             return comment;
+        }
+    }
+
+    public static async updateUserRole(policyId: string, did: string) {
+        try {
+            const options = {
+                comments: {
+                    user: did
+                }
+            }
+            await PolicyComponentsUtils.backupKeys(policyId, options);
+        } catch (error) {
+            console.error(error);
         }
     }
 }
