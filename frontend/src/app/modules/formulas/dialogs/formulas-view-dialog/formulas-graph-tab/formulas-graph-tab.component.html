@@ -29,6 +29,7 @@
                     </div>
                 </div>
 
+                <!-- TYPE -->
                 <div class="node-details-section">
                     <div class="section-label">Type</div>
                     <div class="section-value">
@@ -36,7 +37,23 @@
                     </div>
                 </div>
 
-                <!-- Formula / value / text -->
+                <!-- VALUE STATUS -->
+                <div *ngIf="valueStatus" class="node-details-section">
+                    <div class="section-label">Value status</div>
+                    <div class="section-value">
+                        {{ formatValueStatus(valueStatus) }}
+                    </div>
+                </div>
+
+                <!-- FIELD VALUE TYPE -->
+                <div *ngIf="valueKind" class="node-details-section">
+                    <div class="section-label">Field value type</div>
+                    <div class="section-value">
+                        {{ formatValueKind(valueKind) }}
+                    </div>
+                </div>
+
+                <!-- FORMULA / CONSTANT / TEXT -->
                 <div *ngIf="mainValue" class="node-details-section">
                     <div class="section-label">
                         {{ mainValueLabel }}
@@ -52,16 +69,31 @@
                     </div>
                 </div>
 
+                <!-- FIELD NAME IN DOCUMENT -->
                 <div *ngIf="fieldName" class="node-details-section">
-                    <div class="section-label">Field in document</div>
+                    <div class="section-label">Field name in document</div>
                     <div class="section-value">
                         {{ fieldName }}
-                        <ng-container *ngIf="fieldValue !== null">
-                            – {{ fieldValue }}
-                        </ng-container>
                     </div>
                 </div>
 
+                <!-- VALUE FROM VC -->
+                <div *ngIf="fieldValue !== null" class="node-details-section">
+                    <div class="section-label">Field value in VC</div>
+                    <div class="section-value">
+                        {{ fieldValue }}
+                    </div>
+                </div>
+
+                <!-- FIELD PATH -->
+                <div *ngIf="fieldPath" class="node-details-section">
+                    <div class="section-label">Field path</div>
+                    <div class="section-value">
+                        {{ fieldPath }}
+                    </div>
+                </div>
+
+                <!-- DOCUMENT NAME -->
                 <div *ngIf="nodeDocument" class="node-details-section">
                     <div class="section-label">Document (VC)</div>
                     <div class="section-value">
@@ -69,6 +101,7 @@
                     </div>
                 </div>
 
+                <!-- PARENT DOCUMENTS -->
                 <div *ngIf="parentDocuments?.length" class="node-details-section">
                     <div class="section-label">Parent documents</div>
                     <ul class="section-list">
@@ -78,6 +111,7 @@
                     </ul>
                 </div>
 
+                <!-- DESCRIPTION -->
                 <div *ngIf="getItemDescription(item)" class="node-details-section">
                     <div class="section-label">Description</div>
                     <div class="section-value">
