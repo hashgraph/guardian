@@ -136,7 +136,7 @@ context("Tools", { tags: ['tools', 'thirdPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == "toolDryRunTest")
+                    if (element.name == "toolDryRunTest") {
                         policy.config.children.at(0)["children"].splice(2, 0,
                             {
                                 "id": toolBlockConfigUUID,
@@ -174,27 +174,28 @@ context("Tools", { tags: ['tools', 'thirdPool', 'all'] }, () => {
                                 ],
                                 "innerEvents": []
                             });
-                    cy.request({
-                        method: METHOD.PUT,
-                        url: API.ApiServer + API.Policies + policyId,
-                        body: policy,
-                        headers: {
-                            authorization,
-                        },
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.OK);
                         cy.request({
                             method: METHOD.PUT,
-                            url:
-                                API.ApiServer + API.Policies + policyId + "/" + API.DryRun,
+                            url: API.ApiServer + API.Policies + policyId,
+                            body: policy,
                             headers: {
                                 authorization,
                             },
-                            timeout: 180000,
                         }).then((response) => {
-                            expect(response.status).to.eq(STATUS_CODE.OK);
-                        });
-                    })
+                            expect(response.status).eql(STATUS_CODE.OK);
+                            cy.request({
+                                method: METHOD.PUT,
+                                url:
+                                    API.ApiServer + API.Policies + policyId + "/" + API.DryRun,
+                                headers: {
+                                    authorization,
+                                },
+                                timeout: 180000,
+                            }).then((response) => {
+                                expect(response.status).to.eq(STATUS_CODE.OK);
+                            });
+                        })
+                    }
                 });
             })
         });

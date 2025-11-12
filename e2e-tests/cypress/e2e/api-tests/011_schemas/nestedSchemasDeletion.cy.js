@@ -179,7 +179,7 @@ context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                     },
                     qs: {
                         category: "POLICY",
-                        topicId: response.body.at(0).topicId
+                        topicId: topicId
                     }
                 }).then((response) => {
                     expect(response.body.length).eql(1);
@@ -303,7 +303,7 @@ context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                             },
                             qs: {
                                 category: "POLICY",
-                                topicId: response.body.at(0).topicId
+                                topicId: topicId
                             }
                         }).then((response) => {
                             expect(response.body.length).eql(0);
