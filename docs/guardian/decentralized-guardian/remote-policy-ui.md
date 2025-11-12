@@ -8,49 +8,48 @@ icon: computer
 
 To create a policy suitable for operating by users via multiple (different) instances of Guardian, at the publishing stage ‘Public’ availability type must be selected.
 
-![](<../../../.gitbook/assets/0 (25).png>)
+![](<../../.gitbook/assets/0 (25).png>)
 
 Once such policy is published it can be imported into other Guardian instances via its publishing Message ID.
 
-![](<../../../.gitbook/assets/1 (26).png>)
+![](<../../.gitbook/assets/1 (26).png>)
 
 ### **2. Import**
 
 The import of ‘external’ policies is initiated from the **Remote Policies** tab in the Policies grid
 
-![](<../../../.gitbook/assets/2 (28).png>)
+![](<../../.gitbook/assets/2 (28).png>)
 
 \
 The original policy Message ID must be specified in the Search dialogue box.
 
-<figure><img src="../../../.gitbook/assets/3 (24).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/3 (24).png" alt=""><figcaption></figcaption></figure>
 
 The operation must be approved by the Standard Registry
 
-![](<../../../.gitbook/assets/4 (22).png>)
+![](<../../.gitbook/assets/4 (22).png>)
 
 Imported policy will become accessible from the Remote Policies tab alongside the ordinary policies
 
-![](<../../../.gitbook/assets/5 (25).png>)
+![](<../../.gitbook/assets/5 (25).png>)
 
 ### **3. Users**
 
 To enable users to participate in the remote policy workflow they must be registered on the ‘home’ Guardian of the policy (from which it has been published). Such registration involves importing user profile. Please note that private information, such as private keys, are not exported, imported or accessed in any way.
 
-<figure><img src="../../../.gitbook/assets/6 (24).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/6 (24).png" alt=""><figcaption></figcaption></figure>
 
 Profile files can be used to create corresponding Remote Users, which can participate in the policy execution workflow using external (other) Guardian instance as a ‘console’ without exposing users private keys to any Guardian other than user’s home instance.
 
-![](<../../../.gitbook/assets/7 (24).png>)
+![](<../../.gitbook/assets/7 (24).png>)
 
 ### **4. Encryption**
 
 To protect private information all data exchanges between Guardians are encrypted with the addressee public key. Each policy can be configured with a unique key:
 
-1\. Generate the key on the ‘home’ Guardian user account\
+1\. Generate the key on the ‘home’ Guardian user account\\
 
-
-<figure><img src="../../../.gitbook/assets/image (835).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (835).png" alt=""><figcaption></figcaption></figure>
 
 2\. Input the message ID of the Policy for which the key is being prepared
 
@@ -68,8 +67,7 @@ Note: The key is not retrievable after the initial creation. If lost a new one w
 
 ### **5. Policy execution**
 
-Remote policies are used in the same way as those running locally with few differences:\
-
+Remote policies are used in the same way as those running locally with few differences:\\
 
 * **Speed and waiting time**
 
@@ -79,7 +77,7 @@ Synchronization of policy execution state between different Guardian instances i
 
 When user take actions in their home Guardians there is a time delay associated with the remote Guardian instance processing the action request.
 
-![](<../../../.gitbook/assets/8 (24).png>)
+![](<../../.gitbook/assets/8 (24).png>)
 
 * **Action request**
 
@@ -87,6 +85,6 @@ Processing remote user actions may require user private keys for signatures. The
 
 For the avoidance of doubt, such confirmations to do not pass private keys to the remote Guardian instance. The confirmation is performed locally, remote Guardians receive only the result of the actions (e.g. signed documents etc).
 
-![](<../../../.gitbook/assets/9 (21).png>)
+![](<../../.gitbook/assets/9 (21).png>)
 
-![](<../../../.gitbook/assets/10 (22).png>)
+![](<../../.gitbook/assets/10 (22).png>)
