@@ -33,7 +33,23 @@ export class AIManager {
             throw new Error('Bad openAIApiKey');
         }
 
-        this.model = new ChatOpenAI({modelName: this.versionGPT, temperature: 0, openAIApiKey});
+        // Models that don't support temperature parameter
+        const noTemperatureModels = ['o1', 'o3', 'o4', 'gpt-5'];
+        const supportsTemperature = !noTemperatureModels.some(model =>
+            this.versionGPT.toLowerCase().startsWith(model)
+        );
+
+        // Configure model with or without temperature based on model support
+        const modelConfig: any = {
+            modelName: this.versionGPT,
+            openAIApiKey
+        };
+
+        if (supportsTemperature) {
+            modelConfig.temperature = 0;
+        }
+
+        this.model = new ChatOpenAI(modelConfig);
         this.vector = null;
         this.chain = null;
     }
