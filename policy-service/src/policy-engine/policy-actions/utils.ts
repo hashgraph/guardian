@@ -79,15 +79,16 @@ export class PolicyActionsUtils {
     public static async complete(
         remoteAction: PolicyAction,
         user: PolicyUser,
-        userId: string | null
+        policyOwner: string,
+        policyOwnerId: string | null
     ) {
         const type = remoteAction?.document?.type;
         switch (type) {
             case PolicyActionType.AddRelayerAccount: {
-                return await RelayerAccountAction.complete(remoteAction, user, userId);
+                return await RelayerAccountAction.complete(remoteAction, user, policyOwnerId);
             }
             case PolicyActionType.CreatePolicyDiscussion: {
-                return await PolicyDiscussionAction.complete(remoteAction);
+                return await PolicyDiscussionAction.complete(remoteAction, policyOwner);
             }
             case PolicyActionType.CreatePolicyComment: {
                 return await PolicyCommentAction.complete(remoteAction);
@@ -538,7 +539,7 @@ export class PolicyActionsUtils {
     public static async setRelayerAccount(options: {
         ref: AnyBlockType,
         user: PolicyUser,
-        relayerAccount: any
+        relayerAccount: any,
         userId: string | null
     }): Promise<void> {
         const { ref, user } = options;
@@ -550,7 +551,8 @@ export class PolicyActionsUtils {
     public static async createPolicyDiscussion(options: {
         policyId: string,
         user: PolicyUser,
-        discussion: PolicyDiscussion
+        discussion: PolicyDiscussion,
+        key: string,
         userId: string | null
     }): Promise<PolicyDiscussion> {
         const { policyId, user } = options;
@@ -562,7 +564,7 @@ export class PolicyActionsUtils {
     public static async createPolicyComment(options: {
         policyId: string,
         user: PolicyUser,
-        comment: PolicyComment
+        comment: PolicyComment,
         userId: string | null
     }): Promise<PolicyComment> {
         const { policyId, user } = options;

@@ -3703,7 +3703,11 @@ export class PolicyEngineService {
                     const row = await DatabaseServer.createPolicyDiscussion(discussion);
 
                     await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.CREATE_POLICY_DISCUSSION, policyId, { user, discussion: row });
+                        .sendPolicyMessage(PolicyEvents.CREATE_POLICY_DISCUSSION, policyId, { 
+                            user, 
+                            discussion: row,
+                            key: messageKey
+                        });
 
                     return new MessageResponse(row);
                 } catch (error) {

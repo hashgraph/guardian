@@ -18,7 +18,7 @@ export class PolicyCommentAction {
     public static async complete(
         row: PolicyAction
     ): Promise<PolicyComment> {
-        const data = row?.document;
+        const data = row?.document?.comment;
         const commentRow = await DatabaseServer.createPolicyComment(data);
         const discussion = await DatabaseServer.getPolicyDiscussion({
             _id: DatabaseServer.dbID(commentRow.discussionId),

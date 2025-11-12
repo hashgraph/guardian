@@ -664,7 +664,7 @@ export class PolicyActionsService {
     }
 
     private async executeRemoteAction(row: PolicyAction, policyUser: PolicyUser) {
-        const result = await PolicyActionsUtils.complete(row, policyUser, this.policyOwnerId);
+        const result = await PolicyActionsUtils.complete(row, policyUser, this.policyOwner, this.policyOwnerId);
         this.policyInstance.backup();
         await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
     }

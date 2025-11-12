@@ -354,8 +354,8 @@ export class BlockTreeGenerator extends NatsService {
 
         this.getPolicyMessages(PolicyEvents.CREATE_POLICY_DISCUSSION, policyId, async (msg: any) => {
             try {
-                const { user, discussion } = msg;
-                const row = await PolicyComponentsUtils.createPolicyDiscussion(policyInstance, policyId, discussion, user);
+                const { user, discussion, key } = msg;
+                const row = await PolicyComponentsUtils.createPolicyDiscussion(policyInstance, policyId, discussion, key, user);
                 return new MessageResponse(row);
             } catch (error) {
                 return new MessageError(error, 500);

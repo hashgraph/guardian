@@ -1760,12 +1760,19 @@ export class PolicyComponentsUtils {
         policy: IPolicyInstance | AnyBlockType,
         policyId: string,
         discussion: PolicyDiscussion,
+        key: string,
         user: IUser,
     ) {
         if (policy.locationType === LocationType.REMOTE) {
             const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
             const userId = policyUser.userId;
-            return await PolicyActionsUtils.createPolicyDiscussion({ policyId, user: policyUser, discussion, userId });
+            return await PolicyActionsUtils.createPolicyDiscussion({ 
+                policyId, 
+                user: policyUser, 
+                discussion, 
+                key,
+                userId 
+            });
         } else {
             const options = {
                 comments: {

@@ -121,6 +121,9 @@ export class PolicyCommentsUtils {
                 topicId: policy.topicId
             });
         }
+        if (!schema && policy.locationType === LocationType.REMOTE) {
+            throw new Error('Schema not found.');
+        }
         if (schema) {
             return schema;
         } else {
