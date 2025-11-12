@@ -24,7 +24,7 @@ export class AIManager {
 
     constructor(private readonly logger: PinoLogger) {
         this.docPath = process.env.DOCS_STORAGE_PATH || './data/generated-data';
-        this.versionGPT = process.env.GPT_VERSION || 'gpt-3.5-turbo';
+        this.versionGPT = process.env.GPT_VERSION || 'gpt-5-nano';
         this.vectorPath = process.env.VECTOR_STORAGE_PATH || './faiss-vector';
         this.categories = [];
         this.policies = [];
