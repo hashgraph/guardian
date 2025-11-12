@@ -1,4 +1,4 @@
-import { IDocumentOptions, Message, PolicyAction, RoleMessage, Token, TopicConfig, VcDocumentDefinition } from '@guardian/common';
+import { IDocumentOptions, Message, PolicyAction, PolicyComment, PolicyDiscussion, RoleMessage, Token, TopicConfig, VcDocumentDefinition } from '@guardian/common';
 import { LocationType, PolicyActionStatus, PolicyAvailability, PolicyStatus, TopicType } from '@guardian/interfaces';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -15,6 +15,8 @@ import { AssociateToken } from './associate-token.js';
 import { DissociateToken } from './dissociate-token.js';
 import { SendMessages } from './send-messages.js';
 import { RelayerAccountAction } from './relayer-account.js';
+import { PolicyDiscussionAction } from './policy-discussion.js';
+import { PolicyCommentAction } from './policy-comment.js';
 
 export class PolicyActionsUtils {
     private static needKey(status: PolicyStatus, availability: PolicyAvailability): boolean {
@@ -83,6 +85,12 @@ export class PolicyActionsUtils {
         switch (type) {
             case PolicyActionType.AddRelayerAccount: {
                 return await RelayerAccountAction.complete(remoteAction, user, userId);
+            }
+            case PolicyActionType.CreatePolicyDiscussion: {
+                return await PolicyDiscussionAction.complete(remoteAction);
+            }
+            case PolicyActionType.CreatePolicyComment: {
+                return await PolicyCommentAction.complete(remoteAction);
             }
             default:
                 return false;
@@ -537,5 +545,29 @@ export class PolicyActionsUtils {
         const data = await RelayerAccountAction.request(options);
         const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
         await controller.sendRemoteAction(user, data)
+    }
+
+    public static async createPolicyDiscussion(options: {
+        policyId: string,
+        user: PolicyUser,
+        discussion: PolicyDiscussion
+        userId: string | null
+    }): Promise<PolicyDiscussion> {
+        const { policyId, user } = options;
+        const data = await PolicyDiscussionAction.request(options);
+        const controller = PolicyComponentsUtils.getActionsController(policyId);
+        return await controller.sendRemoteAction(user, data, true);
+    }
+
+    public static async createPolicyComment(options: {
+        policyId: string,
+        user: PolicyUser,
+        comment: PolicyComment
+        userId: string | null
+    }): Promise<PolicyComment> {
+        const { policyId, user } = options;
+        const data = await PolicyCommentAction.request(options);
+        const controller = PolicyComponentsUtils.getActionsController(policyId);
+        return await controller.sendRemoteAction(user, data, true);
     }
 }

@@ -261,7 +261,7 @@ export class FileHelper {
         const fullHash = FileHelper._readString(FileHeaders.HASH, lines, cursor);
         const actions: IKeyAction[] = [];
         const start = cursor.index;
-        const end = cursor.index + (2 * size);
+        const end = cursor.index + (size * 2);
         for (let index = start; index < end; index += 2) {
             const target = FileHelper._decryptKey(lines[index]);
             const key = FileHelper._decryptKey(lines[index + 1]);

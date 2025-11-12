@@ -3698,12 +3698,12 @@ export class PolicyEngineService {
                         });
                     discussion.messageId = messageStatus.getId();
 
+                    await PolicyCommentsUtils.saveKey(policy.owner, discussion.messageId, messageKey);
+
                     const row = await DatabaseServer.createPolicyDiscussion(discussion);
 
-                    await PolicyCommentsUtils.saveKey(policy.owner, row.id, messageKey);
-
                     await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.CREATE_POLICY_DISCUSSION, policyId, { discussion: row.id }) as any;
+                        .sendPolicyMessage(PolicyEvents.CREATE_POLICY_DISCUSSION, policyId, { user, discussion: row });
 
                     return new MessageResponse(row);
                 } catch (error) {
@@ -3757,12 +3757,13 @@ export class PolicyEngineService {
                         throw new Error('Discussion does not exist.');
                     }
 
-                    const messageKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
+                    const messageKey: string = await PolicyCommentsUtils.getKey(policy, discussion, user);
 
                     const comment: any = await PolicyCommentsUtils
                         .createComment(user, userRole, policy, vc, discussion, data, messageKey);
 
                     const userAccount = await this.users.getHederaAccount(user.did, user.id);
+
                     const topic = await PolicyCommentsUtils.getTopic(policy);
                     const message = new CommentMessage(MessageAction.CreateComment);
                     message.setDocument(comment);
@@ -3791,8 +3792,7 @@ export class PolicyEngineService {
                     await DatabaseServer.updatePolicyDiscussion(discussion);
 
                     await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.CREATE_POLICY_COMMENT, policyId, null) as any;
-
+                        .sendPolicyMessage(PolicyEvents.CREATE_POLICY_COMMENT, policyId, { user, comment: row });
 
                     return new MessageResponse(row);
                 } catch (error) {
@@ -3986,7 +3986,7 @@ export class PolicyEngineService {
                         throw new Error('Discussion does not exist.');
                     }
 
-                    const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
+                    const encryptKey: string = await PolicyCommentsUtils.getKey(policy, discussion, user);
                     const encryptBuffer = await EncryptUtils.encrypt(buffer, encryptKey);
 
                     if (PolicyCommentsUtils.isDryRun(policy)) {
@@ -4066,7 +4066,7 @@ export class PolicyEngineService {
                         });
                     }
 
-                    const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
+                    const encryptKey: string = await PolicyCommentsUtils.getKey(policy, discussion, user);
                     const buffer = await EncryptUtils.decrypt(encryptBuffer, encryptKey);
 
                     return new MessageResponse(buffer);
@@ -4119,7 +4119,7 @@ export class PolicyEngineService {
 
                     const result: any = [];
                     for (const discussion of discussions) {
-                        const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussion.id?.toString());
+                        const encryptKey: string = await PolicyCommentsUtils.getKey(policy, discussion, user);
                         result.push({ discussion: discussion.messageId, key: encryptKey });
                     }
                     const buffer = Buffer.from(JSON.stringify(result), 'utf-8');

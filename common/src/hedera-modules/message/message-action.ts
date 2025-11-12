@@ -47,6 +47,8 @@ export enum MessageAction {
     PublishPolicyKeys = 'publish-keys',
     CreatePolicyAction = 'create-policy-action',
     CreateRemotePolicyAction = 'create-remote-policy-action',
+    UpdateRemotePolicyAction = 'update-remote-policy-action',
+    ErrorRemotePolicyAction = 'error-remote-policy-action',
     UpdatePolicyAction = 'update-policy-action',
     ErrorPolicyAction = 'error-policy-action',
     CreatePolicyRequest = 'create-policy-request',

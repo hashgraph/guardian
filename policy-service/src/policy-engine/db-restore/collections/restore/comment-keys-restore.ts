@@ -1,7 +1,4 @@
-import { DataBaseHelper, DeleteCache, EncryptVcHelper, KeyType, VcDocument, Wallet } from '@guardian/common';
-import { FindCursor } from 'mongodb';
-import { CollectionBackup } from '../collection-backup.js';
-import { IDiffAction } from '../../interfaces/action.interface.js';
+import { EncryptVcHelper, KeyType, Wallet } from '@guardian/common';
 import { ICollectionKeys } from '../../interfaces/collection-diff.interface.js';
 import { IKeyAction } from '../../interfaces/action.interface.js';
 import { UserCredentials } from '../../../policy-user.js';
@@ -23,14 +20,14 @@ export class CommentKeysRestore {
 
     private async setKey(
         did: string,
-        discussionId: string,
+        messageId: string,
         key: string
     ): Promise<void> {
         const wallet = new Wallet();
         return wallet.updateUserKey(
             did,
             KeyType.DISCUSSION,
-            discussionId,
+            messageId,
             key,
             null
         )
@@ -51,9 +48,9 @@ export class CommentKeysRestore {
             if (action) {
                 const target = action.target || '';
                 const encryptedKey = action.key || '';
-                const [discussionId, _, did] = target.split('|');
+                const [_, messageId, did] = target.split('|');
                 const key = await this.decryptKey(encryptedKey, did);
-                await this.setKey(this.policyOwner, discussionId, key);
+                await this.setKey(this.policyOwner, messageId, key);
             }
         } catch (error) {
             console.error(error);

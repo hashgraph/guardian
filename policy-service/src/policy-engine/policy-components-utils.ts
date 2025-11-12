@@ -8,7 +8,7 @@ import {
     PolicyOutputEventType,
     PolicyTagMap
 } from './interfaces/index.js';
-import { BlockType, GenerateUUIDv4, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, IUser, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
 import {
     ActionType,
     AnyBlockType,
@@ -21,7 +21,7 @@ import {
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface.js';
-import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyAction, PolicyRoles, PolicyTool, Users } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyAction, PolicyComment, PolicyDiscussion, PolicyRoles, PolicyTool, Users } from '@guardian/common';
 import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
@@ -1755,4 +1755,42 @@ export class PolicyComponentsUtils {
     public static async sentRestoreNotification(policyId: string) {
         restoreNotificationEvent(policyId);
     };
+
+    public static async createPolicyDiscussion(
+        policy: IPolicyInstance | AnyBlockType,
+        policyId: string,
+        discussion: PolicyDiscussion,
+        user: IUser,
+    ) {
+        if (policy.locationType === LocationType.REMOTE) {
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
+            const userId = policyUser.userId;
+            return await PolicyActionsUtils.createPolicyDiscussion({ policyId, user: policyUser, discussion, userId });
+        } else {
+            const options = {
+                comments: {
+                    discussion: discussion.id
+                }
+            }
+            await PolicyComponentsUtils.backupKeys(policyId, options);
+            PolicyComponentsUtils.backup(policyId);
+            return discussion;
+        }
+    }
+
+    public static async createPolicyComment(
+        policy: IPolicyInstance | AnyBlockType,
+        policyId: string,
+        comment: PolicyComment,
+        user: IUser,
+    ) {
+        if (policy.locationType === LocationType.REMOTE) {
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
+            const userId = policyUser.userId;
+            return await PolicyActionsUtils.createPolicyComment({ policyId, user: policyUser, comment, userId });
+        } else {
+            PolicyComponentsUtils.backup(policyId);
+            return comment;
+        }
+    }
 }

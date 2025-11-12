@@ -354,15 +354,9 @@ export class BlockTreeGenerator extends NatsService {
 
         this.getPolicyMessages(PolicyEvents.CREATE_POLICY_DISCUSSION, policyId, async (msg: any) => {
             try {
-                const { discussion } = msg;
-                const options = {
-                    comments: {
-                        discussion
-                    }
-                }
-                await PolicyComponentsUtils.backupKeys(policyId, options);
-                PolicyComponentsUtils.backup(policyId);
-                return new MessageResponse(true);
+                const { user, discussion } = msg;
+                const row = await PolicyComponentsUtils.createPolicyDiscussion(policyInstance, policyId, discussion, user);
+                return new MessageResponse(row);
             } catch (error) {
                 return new MessageError(error, 500);
             }
@@ -370,8 +364,9 @@ export class BlockTreeGenerator extends NatsService {
 
         this.getPolicyMessages(PolicyEvents.CREATE_POLICY_COMMENT, policyId, async (msg: any) => {
             try {
-                PolicyComponentsUtils.backup(policyId);
-                return new MessageResponse(true);
+                const { user, comment } = msg;
+                const row = await PolicyComponentsUtils.createPolicyComment(policyInstance, policyId, comment, user);
+                return new MessageResponse(row);
             } catch (error) {
                 return new MessageError(error, 500);
             }

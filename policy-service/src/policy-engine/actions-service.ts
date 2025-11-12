@@ -184,7 +184,8 @@ export class PolicyActionsService {
 
     public async sendRemoteAction(
         user: PolicyUser,
-        data: any
+        data: any,
+        needResult: boolean = false
     ): Promise<any> {
         const userCred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did, user.userId);
         const userHederaCred = await userCred.loadHederaCredentials(this.policyInstance, user.userId);
@@ -239,6 +240,12 @@ export class PolicyActionsService {
         await collection.insertOrUpdate([newRow], 'messageId');
         await this.updateLastStatus(row);
         await this.sentNotification(row);
+
+        if (needResult) {
+            return new Promise<any>((resolve, reject) => {
+                this.actions.set(row.startMessageId, { resolve, reject });
+            });
+        }
     }
 
     public async sendRequest(
@@ -408,6 +415,30 @@ export class PolicyActionsService {
                         await this.executeAction(row);
                     } else {
                         await this.sentNotification(row);
+                    }
+                    break;
+                }
+                case MessageAction.UpdateRemotePolicyAction: {
+                    const row = await this.savePolicyAction(message, PolicyActionType.REMOTE_ACTION, PolicyActionStatus.COMPLETED);
+                    if (!this.isLocal) {
+                        await this.sentNotification(row);
+                    }
+                    const promise = this.actions.get(row.startMessageId);
+                    if (promise) {
+                        this.actions.delete(row.startMessageId);
+                        promise.resolve(row.document);
+                    }
+                    break;
+                }
+                case MessageAction.ErrorRemotePolicyAction: {
+                    const row = await this.savePolicyAction(message, PolicyActionType.REMOTE_ACTION, PolicyActionStatus.ERROR);
+                    if (!this.isLocal) {
+                        await this.sentNotification(row);
+                    }
+                    const promise = this.actions.get(row.startMessageId);
+                    if (promise) {
+                        this.actions.delete(row.startMessageId);
+                        promise.reject(row.document);
                     }
                     break;
                 }
@@ -633,7 +664,9 @@ export class PolicyActionsService {
     }
 
     private async executeRemoteAction(row: PolicyAction, policyUser: PolicyUser) {
-        await PolicyActionsUtils.complete(row, policyUser, this.policyOwnerId);
+        const result = await PolicyActionsUtils.complete(row, policyUser, this.policyOwnerId);
+        this.policyInstance.backup();
+        await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
     }
 
     private async sentCompleteMessage(

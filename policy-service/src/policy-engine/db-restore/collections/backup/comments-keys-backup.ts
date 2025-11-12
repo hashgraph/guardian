@@ -1,6 +1,4 @@
-import { DataBaseHelper, DatabaseServer, DeleteCache, EncryptVcHelper, KeyType, PolicyDiscussion, Users, VcDocument, Wallet } from '@guardian/common';
-import { FindCursor } from 'mongodb';
-import { CollectionBackup } from '../collection-backup.js';
+import { DatabaseServer, EncryptVcHelper, KeyType, PolicyDiscussion, Users, Wallet } from '@guardian/common';
 import { ICollectionKeys } from '../../interfaces/collection-diff.interface.js';
 import { IKeyAction } from '../../interfaces/action.interface.js';
 import { UserCredentials } from '../../../policy-user.js';
@@ -22,13 +20,13 @@ export class CommentsKeysBackup {
 
     private getKey(
         did: string,
-        discussionId: string,
+        messageId: string,
     ): Promise<string> {
         const wallet = new Wallet();
         return wallet.getUserKey(
             did,
             KeyType.DISCUSSION,
-            discussionId,
+            messageId,
             null
         )
     }
@@ -93,7 +91,7 @@ export class CommentsKeysBackup {
             const discussionRow = await DatabaseServer.getPolicyDiscussion({
                 _id: DatabaseServer.dbID(discussion),
             });
-            const commentKey: string = await this.getKey(this.policyOwner, discussion);
+            const commentKey: string = await this.getKey(this.policyOwner, discussionRow.messageId);
             const users: any[] = await this.getUsers(discussionRow);
             for (const did of users) {
                 const key = await this.encryptKey(commentKey, did);
@@ -118,7 +116,7 @@ export class CommentsKeysBackup {
                 }]
             });
             for (const discussionRow of discussionRows) {
-                const commentKey: string = await this.getKey(this.policyOwner, discussion);
+                const commentKey: string = await this.getKey(this.policyOwner, discussionRow.messageId);
                 const key = await this.encryptKey(commentKey, user);
                 const target = `${discussionRow.id}|${discussionRow.messageId}|${user}`;
                 actions.push({ target, key });

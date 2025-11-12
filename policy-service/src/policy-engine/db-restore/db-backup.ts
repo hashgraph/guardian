@@ -1,5 +1,5 @@
 import { DataBaseHelper, DatabaseServer, Policy, PolicyDiff } from '@guardian/common';
-import { IPolicyCollectionDiff, IPolicyDiff, IPolicyKeysDiff } from './index.js';
+import { IPolicyCollectionDiff, IPolicyKeysDiff } from './index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { FileHelper } from './file-helper.js';
 import {
@@ -116,7 +116,6 @@ export class PolicyBackup {
             { _id: this.lastDiff._id },
             { $set: { lastUpdate, fileId } }
         )
-        console.log(`save`);
         await FileHelper.deleteFile(this.lastDiff.fileId);
 
         this.lastDiff.fileId = fileId;

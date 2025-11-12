@@ -31,7 +31,6 @@ export class PolicyCommentCollectionRestore extends CollectionRestore<PolicyComm
     }
 
     protected override createRow(data: PolicyComment, id: string): PolicyComment {
-        console.log('PolicyComment', data);
         delete data.documentFileId;
         delete data.encryptedDocumentFileId;
         if (data.encryptedDocument) {
@@ -43,7 +42,7 @@ export class PolicyCommentCollectionRestore extends CollectionRestore<PolicyComm
 
     protected override async decryptRow(row: PolicyComment, id: string): Promise<PolicyComment> {
         if (row.encryptedDocument) {
-            const commentKey: string = await this.getKey(this.policyOwner, row.discussionId);
+            const commentKey: string = await this.getKey(this.policyOwner, row.discussionMessageId);
             const data = await EncryptVcHelper.decrypt(row.encryptedDocument, commentKey);
             row.document = JSON.parse(data);
         }
@@ -72,7 +71,6 @@ export class PolicyCommentCollectionRestore extends CollectionRestore<PolicyComm
                 row.isDocumentOwner = vc.owner === row.owner;
             }
         }
-        console.log('decryptRow PolicyComment 3', JSON.stringify(row, null, 4));
         return row;
     }
 
@@ -86,13 +84,13 @@ export class PolicyCommentCollectionRestore extends CollectionRestore<PolicyComm
 
     private getKey(
         did: string,
-        discussionId: string,
+        messageId: string,
     ): Promise<string> {
         const wallet = new Wallet();
         return wallet.getUserKey(
             did,
             KeyType.DISCUSSION,
-            discussionId,
+            messageId,
             null
         )
     }
