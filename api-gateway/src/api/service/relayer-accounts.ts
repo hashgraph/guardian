@@ -6,6 +6,10 @@ import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse,
 import {
     Examples,
     InternalServerErrorDTO,
+    NewRelayerAccountDTO,
+    pageHeader,
+    RelayerAccountDTO,
+    VcDocumentDTO,
 } from '#middlewares';
 
 @Controller('relayer-accounts')
@@ -15,14 +19,13 @@ export class RelayerAccountsApi {
     }
 
     /**
-     *
+     * Get Relayer Accounts
      */
     @Get('/')
-    @Auth(
-    )
+    @Auth()
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Returns the list of Relayer Accounts of the active user.',
+        description: 'Returns the list of Relayer Accounts of the active user.'
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -47,20 +50,23 @@ export class RelayerAccountsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        isArray: true,
+        headers: pageHeader,
+        type: RelayerAccountDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRelayerAccounts(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
         @Query('search') search?: string,
-    ): Promise<any> {
+    ): Promise<RelayerAccountDTO[]> {
         try {
             const users = new Users();
             const filters = {
@@ -68,43 +74,40 @@ export class RelayerAccountsApi {
                 pageIndex,
                 pageSize
             }
-            return await users.getRelayerAccounts(user, filters);
+            const { items, count } = await users.getRelayerAccounts(user, filters);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
     }
 
     /**
-     *
+     * Create Relayer Account
      */
     @Post('/')
     @Auth()
     @ApiOperation({
-        summary: '',
-        description: '',
+        summary: 'Adds a new Relayer Account for the active user.',
+        description: 'Adds a new Relayer Account for the active user.',
     })
     @ApiBody({
-        description: '',
-        type: Object
+        description: 'New Relayer Account',
+        type: NewRelayerAccountDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        type: RelayerAccountDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async createRelayerAccount(
         @AuthUser() user: IAuthUser,
-        @Body() body: {
-            name?: string,
-            account?: string,
-            key?: string,
-        }
-    ): Promise<any> {
+        @Body() body: RelayerAccountDTO
+    ): Promise<RelayerAccountDTO> {
         try {
             const users = new Users();
             return await users.createRelayerAccount(user, body);
@@ -115,28 +118,28 @@ export class RelayerAccountsApi {
     }
 
     /**
-     *
+     * Get current Relayer Account
      */
     @Get('/current')
     @Auth(
     )
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Returns current Relayer Account of the active user.',
+        description: 'Returns current Relayer Account of the active user.'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        type: RelayerAccountDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getCurrentRelayerAccount(
         @AuthUser() user: IAuthUser,
-    ): Promise<any> {
+    ): Promise<RelayerAccountDTO> {
         try {
             const users = new Users();
             return await users.getCurrentRelayerAccount(user);
@@ -146,28 +149,29 @@ export class RelayerAccountsApi {
     }
 
     /**
-     *
+     * Get all Relayer Accounts
      */
     @Get('/all')
     @Auth(
     )
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Returns the list of Relayer Accounts available for use in the Policy by the active user.',
+        description: 'Returns the list of Relayer Accounts available for use in the Policy by the active user.'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        isArray: true,
+        type: RelayerAccountDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRelayerAccountsAll(
         @AuthUser() user: IAuthUser,
-    ): Promise<any> {
+    ): Promise<RelayerAccountDTO[]> {
         try {
             const users = new Users();
             return await users.getRelayerAccountsAll(user);
@@ -177,14 +181,14 @@ export class RelayerAccountsApi {
     }
 
     /**
-     *
+     * Get Relayer Account balance
      */
     @Get('/:account/balance')
     @Auth(
     )
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Returns current hbar balance of the specified Relayer Account.',
+        description: 'Returns current hbar balance of the specified Relayer Account.'
     })
     @ApiParam({
         name: 'account',
@@ -216,13 +220,13 @@ export class RelayerAccountsApi {
     }
 
     /**
-     *
+     * Generate Relayer Account
      */
     @Post('/generate')
     @Auth()
     @ApiOperation({
-        summary: '',
-        description: '',
+        summary: 'Generate a new Relayer Account.',
+        description: 'Generate a new Relayer Account.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -247,14 +251,14 @@ export class RelayerAccountsApi {
     }
 
     /**
-     *
+     * Get Relayer Accounts
      */
     @Get('/accounts')
     @Auth(
     )
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Return the list of Relayer Accounts for the user. If the active user is a Standard Registry return the list of all Relayer Accounts of its users.',
+        description: 'Return the list of Relayer Accounts for the user. If the active user is a Standard Registry return the list of all Relayer Accounts of its users.'
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -279,20 +283,23 @@ export class RelayerAccountsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        isArray: true,
+        headers: pageHeader,
+        type: RelayerAccountDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getUserRelayerAccounts(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
         @Query('search') search?: string,
-    ): Promise<any> {
+    ): Promise<RelayerAccountDTO[]> {
         try {
             const users = new Users();
             const filters = {
@@ -300,21 +307,22 @@ export class RelayerAccountsApi {
                 pageIndex,
                 pageSize
             }
-            return await users.getUserRelayerAccounts(user, filters);
+            const { items, count } = await users.getUserRelayerAccounts(user, filters);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
     }
 
     /**
-     *
+     * Get relationships
      */
     @Get('/:relayerAccountId/relationships')
     @Auth(
     )
     @ApiOperation({
-        summary: '',
-        description: ''
+        summary: 'Return the list of VC documents which are associated with the selected Relayer Account.',
+        description: 'Return the list of VC documents which are associated with the selected Relayer Account.'
     })
     @ApiParam({
         name: 'relayerAccountId',
@@ -339,13 +347,15 @@ export class RelayerAccountsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        isArray: true,
+        headers: pageHeader,
+        type: VcDocumentDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(VcDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRelayerAccountRelationships(
         @AuthUser() user: IAuthUser,
@@ -353,7 +363,7 @@ export class RelayerAccountsApi {
         @Param('relayerAccountId') relayerAccountId: string,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
-    ): Promise<any> {
+    ): Promise<VcDocumentDTO[]> {
         try {
             const filters = {
                 pageIndex,

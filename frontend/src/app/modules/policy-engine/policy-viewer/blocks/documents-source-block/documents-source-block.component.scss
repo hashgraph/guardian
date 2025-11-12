@@ -32,27 +32,9 @@
     flex-wrap: wrap;
 }
 
-
-.table-container {
-    overflow: scroll;
-
-    ::ng-deep {
-        .mat-table {
-            border-collapse: separate;
-            border-spacing: 0 8px;
-            background: var(--color-grey-1);
-        }
-
-        .mat-row {
-            background: var(--color-grey-white);
-            box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
-        }
-
-        .mat-row:hover {
-            background: var(--color-grey-white);
-        }
-    }
-}
+// .table-container {
+//     overflow: scroll;
+// }
 
 .table {
     width: 100%;
@@ -195,11 +177,7 @@
 }
 
 .text {
-    overflow: hidden;
     white-space: nowrap;
-    max-width: 400px;
-    display: inline-block;
-    text-overflow: ellipsis;
 }
 
 .array.text {
@@ -216,18 +194,35 @@
     cursor: pointer;
 }
 
+.serials-container {
+    position: absolute;
+    left: 1em;
+    top: 1em;
+    bottom: 1em;
+    right: 1em;
+    display: inline-block;
+    padding: 6px 0px;
+}
+
 .serials {
-    max-width: 12vw;
-    padding-right: 25px;
     position: relative;
+    max-width: 100%;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding-right: 25px;
 }
 
 .serials i,
 .serials svg {
     position: absolute;
-    right: 0;
-    top: 0;
+    right: 1px;
+    top: 1px;
     cursor: pointer;
+    width: 20px;
+    height: 20px;
+    padding: 4px;
 }
 
 .serials hedera-explorer {
@@ -339,24 +334,44 @@ tr.revoked td:not(.mat-column-history) {
     white-space: nowrap;
 }
 
-::ng-deep .table.no-hover th,
-::ng-deep .p-datatable .p-sortable-column.p-highlight:hover {
-    background-color: transparent;
-    cursor: default;
-    color: var(--color-grey-5, #495057);
+.content::ng-deep .table.no-hover th,
+.content::ng-deep .p-datatable {
+    .p-datatable-wrapper {
+        overflow: inherit;
+    }
+
+    .p-sortable-column.p-highlight:hover {
+        background-color: transparent;
+        cursor: default;
+        color: var(--color-grey-5, #495057);
+    }
+
+    tr>td {
+        position: relative;
+    }
 }
 
-::ng-deep .p-datatable-thead {
+
+.content::ng-deep .p-datatable-thead {
     font-size: 14px;
     font-weight: 400;
 }
 
-::ng-deep .p-datatable-tbody .pi {
+.content::ng-deep .p-datatable-tbody .pi {
     font-size: 0.75rem;
 }
 
 .text-container {
     overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    position: absolute;
+    left: 1em;
+    top: 1em;
+    bottom: 1em;
+    right: 1em;
+    display: inline-block;
+    padding: 6px 0px;
 }
 
 *[readonly-block="true"] {
@@ -369,6 +384,7 @@ tr.revoked td:not(.mat-column-history) {
     display: flex;
     flex-direction: row;
     align-items: center;
+    min-width: fit-content;
 
     svg-icon.icon-btn {
         margin-right: 8px;
@@ -377,8 +393,9 @@ tr.revoked td:not(.mat-column-history) {
     .comments-button {
         display: flex;
         align-items: center;
-        width: 74px;
-        min-width: 74px;
+        width: 68px;
+        min-width: 68px;
+        margin-left: 8px;
     }
 
     .comments-count {
@@ -392,4 +409,8 @@ tr.revoked td:not(.mat-column-history) {
         width: 34px;
         overflow: hidden;
     }
+}
+
+.button-container {
+    min-width: fit-content;
 }

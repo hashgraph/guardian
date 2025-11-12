@@ -11,7 +11,7 @@ x-service-template: &service-template
 
 services:
     mongo:
-        image: mongo:6.0.25
+        image: mongo:6.0.26
         #command: "--setParameter allowDiskUseByDefault=true"
         # This command line options gets rid of mongodb messages in the logs, so you can see more clearly what's happening
         command: "--setParameter allowDiskUseByDefault=true  --quiet --logpath /dev/null"
@@ -20,14 +20,13 @@ services:
             - 27017
 
     cache:
-        image: registry.redict.io/redict
-        platform: linux/amd64
+        image: registry.redict.io/redict:7.3.6-alpine
         restart: always
         expose:
             - 6379
 
     ipfs-node:
-        image: ipfs/kubo:v0.36.0
+        image: ipfs/kubo:v0.38.2
         ports:
             - "5001:5001"
             - "4001:4001"

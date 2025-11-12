@@ -185,7 +185,56 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.paginationAddon = null;
             this.hasHistory = false;
         }
+        this.updateColumns();
     }
+
+    private updateColumns() {
+        if (this.hasHistory) {
+            this.fields.unshift({
+                type: 'history',
+                title: 'History',
+                width: '80px'
+            });
+        }
+        let autoCol = 0;
+        let minCol = 0;
+        for (const field of this.fields) {
+            if (field.width) {
+                if (field.type === 'block' || field.type === 'button') {
+                    minCol++;
+                } else {
+                    autoCol++;
+                }
+            }
+        }
+        const autoSize = Math.round((100 - minCol) / autoCol);
+        for (const field of this.fields) {
+            field.__sortable = field.type === 'text' && field.name;
+            if (field.width) {
+                field.__width = field.width;
+                field.__minWidth = field.width;
+                field.__maxWidth = field.width;
+            } else {
+                if (field.type === 'block' || field.type === 'button') {
+                    field.__width = `1%`;
+                    field.__minWidth = '100px';
+                    field.__maxWidth = 'auto';
+                } else {
+                    field.__width = `${autoSize}%`;
+                    field.__minWidth = '150px';
+                    field.__maxWidth = 'auto';
+                }
+            }
+        }
+    }
+
+    public getRowClass(row: any) {
+        return {
+            'has-history-row': row.history,
+            'revoked': row.option?.status === 'Revoked'
+        }
+    }
+
 
     sortHistory(documents: any) {
         if (!documents) {
@@ -270,6 +319,10 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     getText(row: any, field: any) {
         try {
+            if (field.type == 'serials') {
+                const serials = this.getArray(row, field);
+                return serials?.map((s: any) => s.serial)?.join(', ');
+            }
             if (field.content) {
                 return field.content;
             }
@@ -323,6 +376,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     getGroup(row: any, field: any): any | null {
+        if (field.type === 'history') {
+            return null;
+        }
         const items = this.fieldMap[field.title];
         if (items) {
             for (let i = 0; i < items.length; i++) {
@@ -432,7 +488,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }
         }
         const dialogRef = this.dialog.open(ViewerDialog, {
+            showHeader: false,
             width: '850px',
+            styleClass: 'guardian-dialog',
             data: {
                 title: field.title,
                 type: 'LINK',
@@ -513,6 +571,12 @@ export class DocumentsSourceBlockComponent implements OnInit {
     getClass(type: string): string {
         if (type === 'text') {
             return 'text-container';
+        }
+        if (type === 'button') {
+            return 'button-container';
+        }
+        if (type === 'serials') {
+            return 'serials-container';
         }
         return ''
     }
