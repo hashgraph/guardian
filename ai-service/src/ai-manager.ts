@@ -1,6 +1,5 @@
 import { FilesManager } from './helpers/files-manager-helper.js';
 import { FaissStore } from '@langchain/community/vectorstores/faiss';
-import { RetrievalQAChain } from 'langchain/chains';
 import { ChatOpenAI } from '@langchain/openai';
 import { OpenAIConnect } from './helpers/openai-helper.js';
 import { VectorStorage } from './helpers/vector-storage-helper.js';
@@ -17,7 +16,7 @@ export class AIManager {
     vectorPath: string;
     policies: Policy[];
     categories: PolicyCategory[];
-    chain: RetrievalQAChain | null;
+    chain: any;
     vector: FaissStore | null;
     model: ChatOpenAI;
     policyDescriptions: PolicyDescription[];
@@ -82,6 +81,5 @@ export class AIManager {
 
         this.policyDescriptions = await dbRequests.getFieldDescriptions(this.policies);
         await this.logger.info('fetched fields descriptions', ['AI_SERVICE']);
-
     }
 }
