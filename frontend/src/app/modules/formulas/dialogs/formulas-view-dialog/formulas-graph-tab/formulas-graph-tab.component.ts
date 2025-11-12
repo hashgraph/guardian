@@ -14,13 +14,14 @@ import { TreeGraphComponent } from 'src/app/modules/common/tree-graph/tree-graph
 import { TreeNode } from 'src/app/modules/common/tree-graph/tree-node';
 import { TreeSource } from 'src/app/modules/common/tree-graph/tree-source';
 
+type ValueStatus = 'missing' | 'default' | 'asSuggested' | 'notNull';
+type ValueKind = 'scalar' | 'data-structure';
+
 interface GraphNodeData {
     title: string;
     payload: FormulaItem | SchemaItem | any;
+    valueStatus: ValueStatus | null;
 }
-
-type ValueStatus = 'missing' | 'default' | 'asSuggested' | 'notNull';
-type ValueKind = 'scalar' | 'data-structure';
 
 class GraphNode extends TreeNode<GraphNodeData> {
     constructor(
@@ -120,9 +121,13 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
                 const nodeType: 'root' | 'sub' =
                     parentGraphNode ? 'sub' : 'root';
 
+                const nodeValueStatus: ValueStatus | null =
+                    this.getNodeValueStatusFromPayload(navigationNode.data);
+
                 const nodeData: GraphNodeData = {
                     title: this.buildTitle(navigationNode),
                     payload: navigationNode.data,
+                    valueStatus: nodeValueStatus,
                 };
 
                 const graphNode: GraphNode = new GraphNode(
@@ -394,6 +399,84 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
         }
     }
 
+    private getNodeValueStatusFromPayload(
+        payload: any,
+    ): ValueStatus | null {
+        if (!payload) {
+            return null;
+        }
+
+        const linkItem: any = payload._linkItem || payload.linkItem;
+
+        if (!linkItem) {
+            return null;
+        }
+
+        let fieldValue: any =
+            linkItem.value ??
+            linkItem._value ??
+            linkItem.example ??
+            null;
+
+        if (this.isEmptyValue(fieldValue)) {
+            fieldValue = null;
+        }
+
+        const fieldMeta: any = linkItem._field || linkItem.field || {};
+        const rawSchemaField: any = this.resolveSchemaFieldFromLink(linkItem);
+
+        const metaComment: any =
+            fieldMeta.$comment !== undefined
+                ? fieldMeta.$comment
+                : fieldMeta.comment;
+
+        const schemaComment: any =
+            rawSchemaField && (rawSchemaField.$comment || rawSchemaField.comment);
+
+        let schemaDefault: any = null;
+
+        if (fieldMeta.default !== undefined) {
+            schemaDefault = fieldMeta.default;
+        } else if (rawSchemaField && rawSchemaField.default !== undefined) {
+            schemaDefault = rawSchemaField.default;
+        }
+
+        const directSuggestedValue: any =
+            fieldMeta.suggest ??
+            rawSchemaField?.suggest ??
+            null;
+
+        const metaCommentSuggestedValue: any = this.extractSuggestFromComment(
+            metaComment,
+        );
+        const schemaCommentSuggestedValue: any = this.extractSuggestFromComment(
+            schemaComment,
+        );
+
+        const commentSuggestedValue: any =
+            schemaCommentSuggestedValue ?? metaCommentSuggestedValue ?? null;
+
+        const finalSuggestedValue: any =
+            directSuggestedValue ??
+            commentSuggestedValue ??
+            schemaDefault;
+
+        const schemaFieldType: string = String(
+            fieldMeta.type ||
+            rawSchemaField?.type ||
+            '',
+        ).toLowerCase();
+
+        const valueStatus: ValueStatus = this.calcValueStatus(
+            fieldValue,
+            schemaDefault,
+            finalSuggestedValue,
+            schemaFieldType,
+        );
+
+        return valueStatus;
+    }
+
     private resolveSchemaFieldFromLink(linkItem: any): any {
         if (!linkItem) {
             return null;
@@ -657,5 +740,122 @@ export class FormulasGraphTabComponent implements OnInit, OnChanges {
         }
 
         return 'Data structure';
+    }
+
+    public getNodeStatusCssClass(node: TreeNode<GraphNodeData> | any): string {
+        if (!node || !node.data) {
+            return 'status-none';
+        }
+
+        const payload: any = node.data.payload || {};
+        const itemType: string = String(payload.type || '').toLowerCase();
+
+        if (itemType !== 'variable' && itemType !== 'text') {
+            return 'status-none';
+        }
+
+        const valueStatus: ValueStatus | null = node.data.valueStatus || null;
+
+        if (!valueStatus) {
+            return 'status-none';
+        }
+
+        return 'status-' + valueStatus;
+    }
+
+    public getNodeStatusClass(rawNode: any): string {
+        const node: GraphNode | null = rawNode as GraphNode;
+
+        if (!node || !node.data || !node.data.payload) {
+            return 'status-none';
+        }
+
+        const payload: any = node.data.payload;
+        const itemType: string = String(payload.type || '').toLowerCase();
+
+        if (itemType !== 'variable' && itemType !== 'text') {
+            return 'status-none';
+        }
+
+        const linkItem: any = payload._linkItem || payload.linkItem;
+
+        if (!linkItem) {
+            return 'status-missing';
+        }
+
+        let fieldValue: any =
+            linkItem.value ??
+            linkItem._value ??
+            linkItem.example ??
+            null;
+
+        if (this.isEmptyValue(fieldValue)) {
+            fieldValue = null;
+        }
+
+        const fieldMeta: any = linkItem._field || linkItem.field || {};
+        const rawSchemaField: any = this.resolveSchemaFieldFromLink(linkItem);
+
+        const metaComment: any =
+            fieldMeta.$comment !== undefined
+                ? fieldMeta.$comment
+                : fieldMeta.comment;
+
+        const schemaComment: any =
+            rawSchemaField && (rawSchemaField.$comment || rawSchemaField.comment);
+
+        let schemaDefault: any = null;
+
+        if (fieldMeta.default !== undefined) {
+            schemaDefault = fieldMeta.default;
+        } else if (rawSchemaField && rawSchemaField.default !== undefined) {
+            schemaDefault = rawSchemaField.default;
+        }
+
+        const directSuggestedValue: any =
+            fieldMeta.suggest ??
+            rawSchemaField?.suggest ??
+            null;
+
+        const metaCommentSuggestedValue: any = this.extractSuggestFromComment(
+            metaComment,
+        );
+        const schemaCommentSuggestedValue: any = this.extractSuggestFromComment(
+            schemaComment,
+        );
+
+        const commentSuggestedValue: any =
+            schemaCommentSuggestedValue ?? metaCommentSuggestedValue ?? null;
+
+        const finalSuggestedValue: any =
+            directSuggestedValue ??
+            commentSuggestedValue ??
+            schemaDefault;
+
+        const schemaFieldType: string = String(
+            fieldMeta.type ||
+            rawSchemaField?.type ||
+            '',
+        ).toLowerCase();
+
+        const valueStatus: ValueStatus = this.calcValueStatus(
+            fieldValue,
+            schemaDefault,
+            finalSuggestedValue,
+            schemaFieldType,
+        );
+
+        switch (valueStatus) {
+            case 'missing':
+                return 'status-missing';
+            case 'default':
+                return 'status-default';
+            case 'asSuggested':
+                return 'status-asSuggested';
+            case 'notNull':
+                return 'status-notNull';
+            default:
+                return 'status-none';
+        }
     }
 }
