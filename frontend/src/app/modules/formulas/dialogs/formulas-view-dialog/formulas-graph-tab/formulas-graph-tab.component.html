@@ -1,4 +1,4 @@
-<div class="graph-tab" *ngIf="hasData">
+<div class="graph-tab" *ngIf="source">
     <div class="graph-layout">
 
         <div class="tree-container">
@@ -23,23 +23,16 @@
             </app-tree-graph>
         </div>
 
-        <div class="node-details" [attr.hidden-node]="!selectedItem">
-            <div *ngIf="selectedItem as item" class="node-details-container">
+        <div class="node-details" [attr.hidden-node]="!selectedNode">
+            <div *ngIf="selectedNode as item" class="node-details-container">
 
-                <div class="node-details-header">
+                <!--TITLE -->
+                <div *ngIf="title" class="node-details-header">
                     <div class="node-details-title">
-                        {{ selectedTitle }}
+                        {{ title }}
                     </div>
                     <div class="node-details-close" (click)="clearSelection()">
                         ✕
-                    </div>
-                </div>
-
-                <!-- TYPE -->
-                <div class="node-details-section">
-                    <div class="section-label">Type</div>
-                    <div class="section-value">
-                        {{ getItemType(item) }}
                     </div>
                 </div>
 
@@ -47,31 +40,28 @@
                 <div *ngIf="valueStatus" class="node-details-section">
                     <div class="section-label">Value status</div>
                     <div class="section-value">
-                        {{ formatValueStatus(valueStatus) }}
+                        {{ valueStatus }}
                     </div>
                 </div>
 
                 <!-- FIELD VALUE TYPE -->
-                <div *ngIf="valueKind" class="node-details-section">
+                <div *ngIf="fieldType" class="node-details-section">
                     <div class="section-label">Field value type</div>
                     <div class="section-value">
-                        {{ formatValueKind(valueKind) }}
+                        {{ fieldType }}
                     </div>
                 </div>
 
-                <!-- FORMULA / CONSTANT / TEXT -->
-                <div *ngIf="mainValue" class="node-details-section">
+                <!-- FORMULA -->
+                <div *ngIf="itemValue" class="node-details-section">
                     <div class="section-label">
-                        {{ mainValueLabel }}
+                        {{ itemType }}
                     </div>
-                    <div class="section-value" *ngIf="getItemType(item) !== 'formula'">
-                        {{ mainValue }}
+                    <div class="section-value" *ngIf="itemType !== 'formula'">
+                        {{ itemValue }}
                     </div>
-                    <div class="section-value" *ngIf="getItemType(item) === 'formula'">
-                        <math-live
-                            [value]="mainValue"
-                            [readonly]="true">
-                        </math-live>
+                    <div class="section-value" *ngIf="itemType === 'formula'">
+                        <math-live [value]="itemValue" [readonly]="true"></math-live>
                     </div>
                 </div>
 
@@ -84,7 +74,7 @@
                 </div>
 
                 <!-- VALUE FROM VC -->
-                <div *ngIf="fieldValue !== null" class="node-details-section">
+                <div *ngIf="fieldValue" class="node-details-section">
                     <div class="section-label">Field value in VC</div>
                     <div class="section-value">
                         {{ fieldValue }}
@@ -115,14 +105,6 @@
                             {{ doc }}
                         </li>
                     </ul>
-                </div>
-
-                <!-- DESCRIPTION -->
-                <div *ngIf="getItemDescription(item)" class="node-details-section">
-                    <div class="section-label">Description</div>
-                    <div class="section-value">
-                        {{ getItemDescription(item) }}
-                    </div>
                 </div>
 
             </div>
