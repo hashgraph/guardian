@@ -4,7 +4,7 @@
         "@aws-sdk/client-secrets-manager": "^3.812.0",
         "@azure/identity": "^4.10.0",
         "@azure/keyvault-secrets": "^4.9.0",
-        "@google-cloud/secret-manager": "^4.2.2",
+        "@google-cloud/secret-manager": "^6.1.1",
         "@guardian/interfaces": "3.4.0-rc",
         "@hashgraph/sdk": "2.72.0",
         "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
