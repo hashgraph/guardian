@@ -3459,16 +3459,34 @@ export class PolicyEngineService {
 
                     const policyOwner = await (new Users()).getUserById(policy.owner, user.id);
                     const documentOwner = await (new Users()).getUserById(vc.owner, user.id);
-                    groups.unshift({
-                        username: policyOwner?.username,
-                        did: policyOwner.did,
-                        role: 'Administrator',
-                    })
-                    groups.unshift({
-                        username: documentOwner?.username,
-                        did: documentOwner.did,
-                        role: 'Document Owner',
-                    })
+
+                    if (policyOwner) {
+                        groups.unshift({
+                            username: policyOwner.username,
+                            did: policyOwner.did,
+                            role: 'Administrator',
+                        })
+                    } else {
+                        groups.unshift({
+                            username: 'Administrator',
+                            did: policy.owner,
+                            role: 'Administrator',
+                        })
+                    }
+
+                    if (documentOwner) {
+                        groups.unshift({
+                            username: documentOwner?.username,
+                            did: documentOwner.did,
+                            role: 'Document Owner',
+                        })
+                    } else {
+                        groups.unshift({
+                            username: 'DocumentOwner',
+                            did: vc.owner,
+                            role: 'Document Owner',
+                        })
+                    }
 
                     const users = new Map<string, any>();
                     for (const group of groups) {
@@ -3636,12 +3654,6 @@ export class PolicyEngineService {
                         (discussion as any).historyIds = targets;
                     }
 
-                    // const commonDiscussion = await PolicyCommentsUtils.getCommonDiscussion(policy, vc, params.audit);
-                    // if (commonDiscussion) {
-                    //     discussions = discussions.filter((d)=>d.id === commonDiscussion.id);
-                    //     discussions.unshift(commonDiscussion);
-                    // }
-
                     return new MessageResponse(discussions);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
@@ -3703,8 +3715,8 @@ export class PolicyEngineService {
                     const row = await DatabaseServer.createPolicyDiscussion(discussion);
 
                     await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.CREATE_POLICY_DISCUSSION, policyId, { 
-                            user, 
+                        .sendPolicyMessage(PolicyEvents.CREATE_POLICY_DISCUSSION, policyId, {
+                            user,
                             discussion: row,
                             key: messageKey
                         });

@@ -7,15 +7,13 @@ export class PolicyDiscussionCollectionBackup extends CollectionBackup<PolicyDis
     private readonly collectionName: string = 'PolicyDiscussion';
 
     protected override async findDocument(row: PolicyDiscussion): Promise<PolicyDiscussion> {
-        const vcCollection = DataBaseHelper.orm.em.getCollection(this.collectionName);
-        const vcRow = await vcCollection.findOne<any>({ policyId: this.policyId, _id: row._id });
-        return vcRow;
+        const collection = DataBaseHelper.orm.em.getCollection(this.collectionName);
+        return await collection.findOne<any>({ policyId: this.policyId, _id: row._id });
     }
 
     protected override findDocuments(lastUpdate?: Date): FindCursor<PolicyDiscussion> {
-        const vcCollection = DataBaseHelper.orm.em.getCollection(this.collectionName);
-        const vcRows = vcCollection.find<any>({ policyId: this.policyId });
-        return vcRows;
+        const collection = DataBaseHelper.orm.em.getCollection(this.collectionName);
+        return collection.find<any>({ policyId: this.policyId });
     }
 
     protected override findDeletedDocuments(): FindCursor<DeleteCache> {
