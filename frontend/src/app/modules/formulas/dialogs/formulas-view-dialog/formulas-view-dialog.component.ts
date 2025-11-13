@@ -20,7 +20,7 @@ export class FormulasViewDialog {
 
     public viewDocumentOptions = [
         { label: 'Formulas', key: 'formulas', icon: 'function' },
-        { label: 'Graph',    key: 'graph',    icon: 'graph' },
+        { label: 'Diagram',    key: 'diagram',    icon: 'graph' },
         { label: 'Files',    key: 'files',    icon: 'file' }
     ];
 

@@ -35,7 +35,7 @@
 .tree-node {
     background: var(--guardian-background, #ffffff);
     border: 1px solid #bac0ce;
-    box-shadow: 0px 4px 4px 0px var(--guardian-shadow, #00000014);
+    box-shadow: 0 4px 4px 0 var(--guardian-shadow, #00000014);
     border-radius: 6px;
 
     width: 200px;
@@ -65,7 +65,6 @@
         word-break: break-word;
 
         background: transparent;
-        font-family: Inter;
         font-size: 12px;
         font-weight: 600;
         line-height: 16px;
@@ -74,7 +73,6 @@
 
     .node-fields {
         border-top: 1px solid var(--guardian-border-color, #e1e7ef);
-        font-family: Inter;
         font-size: 12px;
         font-weight: 400;
         line-height: 14px;
