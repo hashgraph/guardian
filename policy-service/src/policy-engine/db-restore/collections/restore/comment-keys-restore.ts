@@ -50,7 +50,9 @@ export class CommentKeysRestore {
                 const encryptedKey = action.key || '';
                 const [_, messageId, did] = target.split('|');
                 const key = await this.decryptKey(encryptedKey, did);
-                await this.setKey(this.policyOwner, messageId, key);
+                if (key) {
+                    await this.setKey(this.policyOwner, messageId, key);
+                }
             }
         } catch (error) {
             console.error(error);

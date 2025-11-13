@@ -134,10 +134,13 @@ export class Wallet extends NatsService {
         }
 
         const user = new Users();
-        const { walletToken } = await user.getUserById(did, userId);
-        const wallet = new WalletManager();
+        const fullUser = await user.getUserById(did, userId);
+        if (!fullUser) {
+            return null;
+        }
 
-        return await wallet.getKey(walletToken, keyType, entityId)
+        const wallet = new WalletManager();
+        return await wallet.getKey(fullUser.walletToken, keyType, entityId)
     }
 
     /**

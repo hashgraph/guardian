@@ -43,8 +43,10 @@ export class PolicyDiscussionCollectionRestore extends CollectionRestore<PolicyD
     protected override async decryptRow(row: PolicyDiscussion, id: string): Promise<PolicyDiscussion> {
         if (row.encryptedDocument) {
             const commentKey: string = await this.getKey(this.policyOwner, row.messageId);
-            const data = await EncryptVcHelper.decrypt(row.encryptedDocument, commentKey);
-            row.document = JSON.parse(data);
+            if (commentKey) {
+                const data = await EncryptVcHelper.decrypt(row.encryptedDocument, commentKey);
+                row.document = JSON.parse(data);
+            }
         }
         if (row.document) {
             const subject = this.getCredentialSubject(row.document);
