@@ -107,6 +107,7 @@ services:
         environment:
             - OPERATOR_ID=${OPERATOR_ID}
             - OPERATOR_KEY=${OPERATOR_KEY}
+            - GUARDIAN_ENV=${GUARDIAN_ENV}
 
     auth-service:
         <<: *service-template
@@ -172,6 +173,7 @@ services:
         environment:
             - OPERATOR_ID=${OPERATOR_ID}
             - OPERATOR_KEY=${OPERATOR_KEY}
+            - GUARDIAN_ENV=${GUARDIAN_ENV}
 
     topic-viewer:
         image: gcr.io/hedera-registry/topic-viewer:${GUARDIAN_VERSION:-latest}
