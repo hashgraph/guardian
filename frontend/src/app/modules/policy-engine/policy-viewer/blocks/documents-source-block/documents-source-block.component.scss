@@ -30,6 +30,7 @@
     gap: 16px;
     background-color: #f9fafc;
     flex-wrap: wrap;
+    height: 40px;
 }
 
 // .table-container {
@@ -413,4 +414,8 @@ tr.revoked td:not(.mat-column-history) {
 
 .button-container {
     min-width: fit-content;
+}
+
+.col-container {
+    min-height: 37px;
 }

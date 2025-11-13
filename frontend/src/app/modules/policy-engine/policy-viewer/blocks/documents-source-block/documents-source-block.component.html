@@ -51,7 +51,7 @@
                                         <i [ngClass]="statusDetailed === element ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
                                     </div>
                                 </ng-container>
-                                <ng-container *ngIf="getGroup(element, field) as option">
+                                <div *ngIf="getGroup(element, field) as option" class="col-container">
                                     <div [style.width]="field.width" [class]="getClass(option.type)">
                                         <span 
                                             *ngIf="option.type == 'text'" 
@@ -136,7 +136,7 @@
                                             </render-block>
                                         </div>
                                     </div>
-                                </ng-container>
+                                </div>
                             </td>
                         </ng-container>
                     </tr>
