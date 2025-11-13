@@ -58,7 +58,7 @@
         "@types/glob": "^8.1.0",
         "@types/ws": "^8.2.2",
         "chai": "^4.3.4",
-        "cross-env": "^7.0.3",
+        "cross-env": "^10.1.0",
         "mocha": "^9.2.0",
         "mocha-junit-reporter": "^2.0.2",
         "nodemon": "^2.0.12",
