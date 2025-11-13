@@ -811,7 +811,7 @@ export interface PolicyDiffMessageBody extends MessageBody {
     /**
      * Diff type
      */
-    diffType: string;
+    diffType: 'backup' | 'diff' | 'keys';
     /**
      * Diff index
      */

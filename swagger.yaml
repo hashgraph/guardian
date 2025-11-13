@@ -19152,7 +19152,7 @@ components:
             - TOKEN_DATA_SOURCE
             - ROLE
             - USER_PERMISSIONS
-            - POLICY_DISCUSSION
+            - POLICY_DISCUSSION_V2
             - POLICY_COMMENT
           example: POLICY
         iri:

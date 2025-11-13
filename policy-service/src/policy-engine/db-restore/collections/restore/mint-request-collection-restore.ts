@@ -30,12 +30,12 @@ export class MintRequestCollectionRestore extends CollectionRestore<MintRequest>
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: MintRequest): MintRequest {
+    protected override createRow(data: MintRequest, id: string): MintRequest {
         data.readonly = true
         return data;
     }
 
-    protected override async decryptRow(row: MintRequest): Promise<MintRequest> {
+    protected override async decryptRow(row: MintRequest, id: string): Promise<MintRequest> {
         return row;
     }
 }

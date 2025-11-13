@@ -40,23 +40,28 @@ export class RelayerAccountsService extends NatsService {
                     const { user, account } = msg;
 
                     const entityRepository = new DatabaseServer();
-                    const relayerAccountRow = await entityRepository.findOne(RelayerAccount, { account });
+                    const relayerAccountRow = await entityRepository.findOne(RelayerAccount, {
+                        account,
+                        $or: [{
+                            owner: user.did
+                        }, {
+                            parent: user.did
+                        }]
+                    });
 
                     let relayerAccount: string;
                     if (relayerAccountRow) {
-                        if (relayerAccountRow.owner === user.did) {
-                            relayerAccount = relayerAccountRow.account;
-                        } else {
-                            const owner = await entityRepository.findOne(User, { did: relayerAccountRow.owner });
-                            if (owner && (owner.did === user.did || owner.parent === user.did)) {
-                                relayerAccount = relayerAccountRow.account;
-                            } else {
-                                return new MessageError('Relayer account does not exist.');
-                            }
-                        }
+                        relayerAccount = relayerAccountRow.account;
                     } else {
-                        const userAccount = await entityRepository.findOne(User, { hederaAccountId: account });
-                        if (userAccount && (userAccount.did === user.did || userAccount.parent === user.did)) {
+                        const userAccount = await entityRepository.findOne(User, {
+                            hederaAccountId: account,
+                            $or: [{
+                                did: user.did
+                            }, {
+                                parent: user.did
+                            }]
+                        });
+                        if (userAccount) {
                             relayerAccount = userAccount.hederaAccountId;
                         } else {
                             return new MessageError('Relayer account does not exist.');

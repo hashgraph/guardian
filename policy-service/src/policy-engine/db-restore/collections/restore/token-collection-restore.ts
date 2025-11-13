@@ -30,12 +30,12 @@ export class TokenCollectionRestore extends CollectionRestore<Token> {
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: Token): Token {
+    protected override createRow(data: Token, id: string): Token {
         data.view = true;
         return data;
     }
 
-    protected override async decryptRow(row: Token): Promise<Token> {
+    protected override async decryptRow(row: Token, id: string): Promise<Token> {
         return row;
     }
 }

@@ -30,11 +30,11 @@ export class TagCollectionRestore extends CollectionRestore<Tag> {
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: Tag): Tag {
+    protected override createRow(data: Tag, id: string): Tag {
         return data;
     }
 
-    protected override async decryptRow(row: Tag): Promise<Tag> {
+    protected override async decryptRow(row: Tag, id: string): Promise<Tag> {
         return row;
     }
 }

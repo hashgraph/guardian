@@ -30,11 +30,11 @@ export class TopicCollectionRestore extends CollectionRestore<Topic> {
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: Topic): Topic {
+    protected override createRow(data: Topic, id: string): Topic {
         return data;
     }
 
-    protected override async decryptRow(row: Topic): Promise<Topic> {
+    protected override async decryptRow(row: Topic, id: string): Promise<Topic> {
         return row;
     }
 }

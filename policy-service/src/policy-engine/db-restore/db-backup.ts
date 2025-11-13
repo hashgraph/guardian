@@ -1,5 +1,5 @@
 import { DataBaseHelper, DatabaseServer, Policy, PolicyDiff } from '@guardian/common';
-import { IPolicyDiff } from './index.js';
+import { IPolicyCollectionDiff, IPolicyKeysDiff } from './index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { FileHelper } from './file-helper.js';
 import {
@@ -17,12 +17,17 @@ import {
     ApproveCollectionBackup,
     MintRequestCollectionBackup,
     MintTransactionCollectionBackup,
-    PolicyInvitationsCollectionBackup
+    PolicyInvitationsCollectionBackup,
+    PolicyDiscussionCollectionBackup,
+    PolicyCommentCollectionBackup,
+
+    CommentsKeysBackup
 } from './collections/index.js';
 
 export class PolicyBackup {
     private readonly policyId: string;
     private readonly messageId: string;
+    private readonly policyOwner: string;
 
     private readonly vcCollectionBackup: VcCollectionBackup;
     private readonly vpCollectionBackup: VpCollectionBackup;
@@ -39,29 +44,42 @@ export class PolicyBackup {
     private readonly mintRequestCollectionBackup: MintRequestCollectionBackup;
     private readonly mintTransactionCollectionBackup: MintTransactionCollectionBackup;
     private readonly policyInvitationsCollectionBackup: PolicyInvitationsCollectionBackup;
+    private readonly policyDiscussionCollectionBackup: PolicyDiscussionCollectionBackup;
+    private readonly policyCommentCollectionBackup: PolicyCommentCollectionBackup;
+
+    private readonly commentsKeysBackup: CommentsKeysBackup;
 
     private lastDiff: PolicyDiff | null;
 
-    constructor(policyId: string, messageId: string) {
+    constructor(
+        policyId: string,
+        policyOwner: string,
+        messageId: string
+    ) {
         this.policyId = policyId;
+        this.policyOwner = policyOwner;
         this.messageId = messageId;
         this.lastDiff = null;
 
-        this.vcCollectionBackup = new VcCollectionBackup(this.policyId, this.messageId);
-        this.vpCollectionBackup = new VpCollectionBackup(this.policyId, this.messageId);
-        this.didCollectionBackup = new DidCollectionBackup(this.policyId, this.messageId);
-        this.stateCollectionBackup = new StateCollectionBackup(this.policyId, this.messageId);
-        this.roleCollectionBackup = new RoleCollectionBackup(this.policyId, this.messageId);
-        this.multiDocCollectionBackup = new MultiDocCollectionBackup(this.policyId, this.messageId);
-        this.tokenCollectionBackup = new TokenCollectionBackup(this.policyId, this.messageId);
-        this.tagCollectionBackup = new TagCollectionBackup(this.policyId, this.messageId);
-        this.docStateCollectionBackup = new DocStateCollectionBackup(this.policyId, this.messageId);
-        this.topicCollectionBackup = new TopicCollectionBackup(this.policyId, this.messageId);
-        this.externalCollectionBackup = new ExternalCollectionBackup(this.policyId, this.messageId);
-        this.approveCollectionBackup = new ApproveCollectionBackup(this.policyId, this.messageId);
-        this.mintRequestCollectionBackup = new MintRequestCollectionBackup(this.policyId, this.messageId);
-        this.mintTransactionCollectionBackup = new MintTransactionCollectionBackup(this.policyId, this.messageId);
-        this.policyInvitationsCollectionBackup = new PolicyInvitationsCollectionBackup(this.policyId, this.messageId);
+        this.vcCollectionBackup = new VcCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.vpCollectionBackup = new VpCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.didCollectionBackup = new DidCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.stateCollectionBackup = new StateCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.roleCollectionBackup = new RoleCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.multiDocCollectionBackup = new MultiDocCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.tokenCollectionBackup = new TokenCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.tagCollectionBackup = new TagCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.docStateCollectionBackup = new DocStateCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.topicCollectionBackup = new TopicCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.externalCollectionBackup = new ExternalCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.approveCollectionBackup = new ApproveCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.mintRequestCollectionBackup = new MintRequestCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.mintTransactionCollectionBackup = new MintTransactionCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.policyInvitationsCollectionBackup = new PolicyInvitationsCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.policyDiscussionCollectionBackup = new PolicyDiscussionCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+        this.policyCommentCollectionBackup = new PolicyCommentCollectionBackup(this.policyId, this.policyOwner, this.messageId);
+
+        this.commentsKeysBackup = new CommentsKeysBackup(this.policyId, this.policyOwner, this.messageId);
     }
 
     public async init(): Promise<void> {
@@ -73,7 +91,7 @@ export class PolicyBackup {
         }
     }
 
-    public async create(full = false): Promise<{ backup: IPolicyDiff, diff: IPolicyDiff }> {
+    public async create(full = false): Promise<{ backup: IPolicyCollectionDiff, diff: IPolicyCollectionDiff }> {
         if (this.lastDiff.file && !full) {
             return await this._createDiff(this.lastDiff.file);
         } else {
@@ -81,7 +99,16 @@ export class PolicyBackup {
         }
     }
 
-    public async save(backup: IPolicyDiff) {
+    public async keys(options: {
+        comments: {
+            discussion?: string,
+            user?: string,
+        }
+    }): Promise<IPolicyKeysDiff> {
+        return await this._createKeysBackup(options);
+    }
+
+    public async save(backup: IPolicyCollectionDiff) {
         const fileId = await FileHelper.saveFile(backup);
         const lastUpdate = backup.lastUpdate;
         const collection = DataBaseHelper.orm.em.getCollection<PolicyDiff>('PolicyDiff');
@@ -96,7 +123,7 @@ export class PolicyBackup {
         this.lastDiff.file = backup;
     }
 
-    private async _createFullBackup(): Promise<{ backup: IPolicyDiff, diff: IPolicyDiff }> {
+    private async _createFullBackup(): Promise<{ backup: IPolicyCollectionDiff, diff: IPolicyCollectionDiff }> {
         const lastUpdate = new Date();
         const vcResult = await this.vcCollectionBackup.createCollectionBackup();
         const vpResult = await this.vpCollectionBackup.createCollectionBackup();
@@ -113,9 +140,11 @@ export class PolicyBackup {
         const mintRequestCollection = await this.mintRequestCollectionBackup.createCollectionBackup();
         const mintTransactionCollection = await this.mintTransactionCollectionBackup.createCollectionBackup();
         const policyInvitationsCollection = await this.policyInvitationsCollectionBackup.createCollectionBackup();
+        const policyDiscussionCollection = await this.policyDiscussionCollectionBackup.createCollectionBackup();
+        const policyCommentCollection = await this.policyCommentCollectionBackup.createCollectionBackup();
 
         const uuid = GenerateUUIDv4();
-        const backup: IPolicyDiff = {
+        const backup: IPolicyCollectionDiff = {
             uuid,
             type: 'backup',
             index: 0,
@@ -135,8 +164,10 @@ export class PolicyBackup {
             mintRequestCollection: mintRequestCollection.backup,
             mintTransactionCollection: mintTransactionCollection.backup,
             policyInvitationsCollection: policyInvitationsCollection.backup,
+            policyDiscussionCollection: policyDiscussionCollection.backup,
+            policyCommentCollection: policyCommentCollection.backup,
         }
-        const diff: IPolicyDiff = {
+        const diff: IPolicyCollectionDiff = {
             uuid,
             type: 'backup',
             index: 0,
@@ -156,11 +187,16 @@ export class PolicyBackup {
             mintRequestCollection: mintRequestCollection.diff,
             mintTransactionCollection: mintTransactionCollection.diff,
             policyInvitationsCollection: policyInvitationsCollection.diff,
+            policyDiscussionCollection: policyDiscussionCollection.diff,
+            policyCommentCollection: policyCommentCollection.diff,
         }
         return { backup, diff };
     }
 
-    private async _createDiff(oldDiff: IPolicyDiff): Promise<{ backup: IPolicyDiff, diff: IPolicyDiff }> {
+    private async _createDiff(oldDiff: IPolicyCollectionDiff): Promise<{
+        backup: IPolicyCollectionDiff,
+        diff: IPolicyCollectionDiff
+    }> {
         const lastUpdate = new Date();
         const vcResult = await this.vcCollectionBackup.createCollectionDiff(oldDiff.vcCollection, lastUpdate);
         const vpResult = await this.vpCollectionBackup.createCollectionDiff(oldDiff.vpCollection, lastUpdate);
@@ -177,9 +213,11 @@ export class PolicyBackup {
         const mintRequestCollection = await this.mintRequestCollectionBackup.createCollectionDiff(oldDiff.mintRequestCollection, lastUpdate);
         const mintTransactionCollection = await this.mintTransactionCollectionBackup.createCollectionDiff(oldDiff.mintTransactionCollection, lastUpdate);
         const policyInvitationsCollection = await this.policyInvitationsCollectionBackup.createCollectionDiff(oldDiff.policyInvitationsCollection, lastUpdate);
+        const policyDiscussionCollection = await this.policyDiscussionCollectionBackup.createCollectionDiff(oldDiff.policyDiscussionCollection, lastUpdate);
+        const policyCommentCollection = await this.policyCommentCollectionBackup.createCollectionDiff(oldDiff.policyCommentCollection, lastUpdate);
 
         const uuid = GenerateUUIDv4();
-        const backup: IPolicyDiff = {
+        const backup: IPolicyCollectionDiff = {
             uuid,
             type: 'backup',
             index: (oldDiff.index || 0) + 1,
@@ -199,8 +237,10 @@ export class PolicyBackup {
             mintRequestCollection: mintRequestCollection.backup,
             mintTransactionCollection: mintTransactionCollection.backup,
             policyInvitationsCollection: policyInvitationsCollection.backup,
+            policyDiscussionCollection: policyDiscussionCollection.backup,
+            policyCommentCollection: policyCommentCollection.backup,
         }
-        const diff: IPolicyDiff = {
+        const diff: IPolicyCollectionDiff = {
             uuid,
             type: 'diff',
             index: (oldDiff.index || 0) + 1,
@@ -220,6 +260,8 @@ export class PolicyBackup {
             mintRequestCollection: mintRequestCollection.diff,
             mintTransactionCollection: mintTransactionCollection.diff,
             policyInvitationsCollection: policyInvitationsCollection.diff,
+            policyDiscussionCollection: policyDiscussionCollection.diff,
+            policyCommentCollection: policyCommentCollection.diff,
         }
         return { backup, diff };
     }
@@ -240,5 +282,28 @@ export class PolicyBackup {
             row.file = await FileHelper.loadFile(row.fileId);
         }
         this.lastDiff = row;
+    }
+
+    private async _createKeysBackup(options: {
+        comments: {
+            discussion?: string,
+            user?: string,
+        }
+    }): Promise<IPolicyKeysDiff> {
+        const uuid = GenerateUUIDv4();
+        const lastUpdate = new Date();
+        const diff: IPolicyKeysDiff = {
+            uuid,
+            type: 'keys',
+            index: 0,
+            lastUpdate,
+        }
+
+        if (options?.comments) {
+            const discussionsKeys = await this.commentsKeysBackup.createDiff(options.comments, lastUpdate);
+            diff.discussionsKeys = discussionsKeys;
+        }
+
+        return diff;
     }
 }
