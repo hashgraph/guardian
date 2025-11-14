@@ -139,6 +139,6 @@ export class SettingsApi {
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getAbout(): Promise<AboutInterface> {
-        return { version: process.env.npm_package_version };
+        return { version: "3.4.0" };
     }
 }
