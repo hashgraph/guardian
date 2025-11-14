@@ -20,7 +20,7 @@
         "@types/gulp": "^4",
         "@types/gulp-rename": "^2",
         "@types/jszip": "^3.4.1",
-        "@types/node": "^22.15.19",
+        "@types/node": "^24.10.1",
         "@types/glob": "^8.1.0",
         "mocha-junit-reporter": "^2.0.2",
         "tslint": "^6.1.3",
