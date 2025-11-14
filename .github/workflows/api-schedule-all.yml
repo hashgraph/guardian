@@ -1,7 +1,7 @@
 name: Guardian CI API Tests (Daily) - All tests
 on:
   schedule:
-    - cron: '0 0 * * 1,3,5,7'
+    - cron: '0 0 * * 1,3,5,0'
 
 jobs:
   buildAndTest:
