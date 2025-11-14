@@ -239,8 +239,8 @@ context("Savepoints CRUD", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
 
     it("Delete savepoint without auth - Negative", () => {
         cy.request({
-            method: METHOD.DELETE,
-            url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint,
+            method: METHOD.POST,
+            url: API.ApiServer + API.Policies + policyId + "/" + API.SavepointDelete,
             body: {
                 "savepointPath": [sv1]
             },
@@ -254,8 +254,8 @@ context("Savepoints CRUD", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
 
     it("Delete savepoint with incorrect auth - Negative", () => {
         cy.request({
-            method: METHOD.DELETE,
-            url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint,
+            method: METHOD.POST,
+            url: API.ApiServer + API.Policies + policyId + "/" + API.SavepointDelete,
             body: {
                 "savepointPath": [sv1]
             },
@@ -270,8 +270,8 @@ context("Savepoints CRUD", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
 
     it("Delete savepoint with empty auth - Negative", () => {
         cy.request({
-            method: METHOD.DELETE,
-            url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint,
+            method: METHOD.POST,
+            url: API.ApiServer + API.Policies + policyId + "/" + API.SavepointDelete,
             body: {
                 "savepointPath": [sv1]
             },
@@ -287,8 +287,8 @@ context("Savepoints CRUD", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
     it('Delete savepoint', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                method: METHOD.DELETE,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint,
+                method: METHOD.POST,
+                url: API.ApiServer + API.Policies + policyId + "/" + API.SavepointDelete,
                 headers: {
                     authorization
                 },

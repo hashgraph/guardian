@@ -8,7 +8,7 @@ x-service-template: &service-template
 
 services:
   mongo:
-    image: mongo:6.0.16
+    image: mongo:6.0.26
     command: "--setParameter allowDiskUseByDefault=true"
     restart: always
     expose:
@@ -26,7 +26,7 @@ services:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:v0.36.0
+    image: ipfs/kubo:v0.38.2
 
   ipfs-check:
     image: ghcr.io/ipfs/ipfs-check:main-latest

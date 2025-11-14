@@ -2155,7 +2155,8 @@ export class EntityService {
     ): Promise<AnyResponse<Page<any>>> {
         try {
             const options = parsePageParams(msg);
-            const { messageId, discussionId } = msg;
+            const { discussionId } = msg;
+            options.orderBy = { consensusTimestamp: 1 } as any;
             const em = DataBaseHelper.getEntityManager();
             const [rows, count] = (await em.findAndCount(Message, {
                 type: MessageType.POLICY_COMMENT,

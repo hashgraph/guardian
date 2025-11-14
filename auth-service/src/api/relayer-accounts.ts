@@ -40,23 +40,28 @@ export class RelayerAccountsService extends NatsService {
                     const { user, account } = msg;
 
                     const entityRepository = new DatabaseServer();
-                    const relayerAccountRow = await entityRepository.findOne(RelayerAccount, { account });
+                    const relayerAccountRow = await entityRepository.findOne(RelayerAccount, {
+                        account,
+                        $or: [{
+                            owner: user.did
+                        }, {
+                            parent: user.did
+                        }]
+                    });
 
                     let relayerAccount: string;
                     if (relayerAccountRow) {
-                        if (relayerAccountRow.owner === user.did) {
-                            relayerAccount = relayerAccountRow.account;
-                        } else {
-                            const owner = await entityRepository.findOne(User, { did: relayerAccountRow.owner });
-                            if (owner && (owner.did === user.did || owner.parent === user.did)) {
-                                relayerAccount = relayerAccountRow.account;
-                            } else {
-                                return new MessageError('Relayer account does not exist.');
-                            }
-                        }
+                        relayerAccount = relayerAccountRow.account;
                     } else {
-                        const userAccount = await entityRepository.findOne(User, { hederaAccountId: account });
-                        if (userAccount && (userAccount.did === user.did || userAccount.parent === user.did)) {
+                        const userAccount = await entityRepository.findOne(User, {
+                            hederaAccountId: account,
+                            $or: [{
+                                did: user.did
+                            }, {
+                                parent: user.did
+                            }]
+                        });
+                        if (userAccount) {
                             relayerAccount = userAccount.hederaAccountId;
                         } else {
                             return new MessageError('Relayer account does not exist.');
@@ -164,9 +169,9 @@ export class RelayerAccountsService extends NatsService {
                         }]
                     }
 
-                    const results = await entityRepository.find(RelayerAccount, query, otherOptions);
+                    const [items, count] = await entityRepository.findAndCount(RelayerAccount, query, otherOptions);
 
-                    return new MessageResponse(results);
+                    return new MessageResponse({ items, count });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
@@ -421,18 +426,6 @@ export class RelayerAccountsService extends NatsService {
                         }
                     }];
 
-                    if (otherOptions.offset) {
-                        aggregate.push({
-                            $skip: otherOptions.offset
-                        })
-                    }
-
-                    if (otherOptions.limit) {
-                        aggregate.push({
-                            $limit: otherOptions.limit
-                        })
-                    }
-
                     if (search) {
                         aggregate.push({
                             $match: {
@@ -449,9 +442,36 @@ export class RelayerAccountsService extends NatsService {
                         })
                     }
 
-                    const results = await entityRepository.aggregate(User, aggregate);
+                    if (otherOptions.offset) {
+                        aggregate.push({
+                            $skip: otherOptions.offset
+                        })
+                    }
 
-                    return new MessageResponse(results);
+                    if (otherOptions.limit) {
+                        aggregate.push({
+                            $limit: otherOptions.limit
+                        })
+                    }
+
+                    const userCount = await entityRepository.count(User, {
+                        $or: [{
+                            parent: user.did
+                        }, {
+                            did: user.did
+                        }]
+                    });
+                    const accountCount = await entityRepository.count(RelayerAccount, {
+                        $or: [{
+                            parent: user.did
+                        }, {
+                            owner: user.did
+                        }]
+                    });
+                    const count = userCount + accountCount;
+                    const items = await entityRepository.aggregate(User, aggregate);
+
+                    return new MessageResponse({ items, count });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);

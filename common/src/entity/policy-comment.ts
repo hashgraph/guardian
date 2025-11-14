@@ -1,8 +1,9 @@
-import { BaseEntity } from '../models/index.js';
+import { RestoreEntity } from '../models/index.js';
 import { GenerateUUIDv4, IVC } from '@guardian/interfaces';
 import { Entity, Property, BeforeCreate, OnLoad, BeforeUpdate, AfterDelete, AfterUpdate, AfterCreate, Index } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * PolicyComment collection
@@ -13,7 +14,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'relationshipIds_index', properties: ['relationshipIds'] })
 @Index({ name: 'field_index', properties: ['field'] })
 @Index({ name: 'fields_index', properties: ['fields'] })
-export class PolicyComment extends BaseEntity {
+export class PolicyComment extends RestoreEntity {
     /**
      * ID
      */
@@ -215,6 +216,24 @@ export class PolicyComment extends BaseEntity {
     _documentFileId?: ObjectId;
 
     /**
+     * Document instance
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    encryptedDocument?: string;
+
+    /**
+     * Document file id
+     */
+    @Property({ nullable: true })
+    encryptedDocumentFileId?: ObjectId;
+
+    /**
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _encryptedDocumentFileId?: ObjectId;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()
@@ -225,6 +244,12 @@ export class PolicyComment extends BaseEntity {
             this.documentFileId = await this._createFile(document, 'PolicyComment');
             delete this.document;
         }
+        if (this.encryptedDocument) {
+            this.encryptedDocumentFileId = await this._createFile(this.encryptedDocument, 'PolicyComment');
+            delete this.encryptedDocument;
+        }
+        this._updateDocHash(this.uuid);
+        this._updatePropHash(this.uuid);
     }
 
     /**
@@ -237,6 +262,10 @@ export class PolicyComment extends BaseEntity {
         if (this.documentFileId) {
             const buffer = await this._loadFile(this.documentFileId);
             this.document = JSON.parse(buffer.toString());
+        }
+        if (this.encryptedDocumentFileId) {
+            const buffer = await this._loadFile(this.encryptedDocumentFileId)
+            this.encryptedDocument = buffer.toString();
         }
     }
 
@@ -254,6 +283,14 @@ export class PolicyComment extends BaseEntity {
             }
             delete this.document;
         }
+        if (this.encryptedDocument) {
+            const encryptedDocumentFileId = await this._createFile(this.encryptedDocument, 'PolicyComment');
+            if (encryptedDocumentFileId) {
+                this._encryptedDocumentFileId = this.encryptedDocumentFileId;
+                this.encryptedDocumentFileId = encryptedDocumentFileId;
+            }
+            delete this.encryptedDocument;
+        }
     }
 
     /**
@@ -270,6 +307,15 @@ export class PolicyComment extends BaseEntity {
                 });
             delete this._documentFileId;
         }
+        if (this._encryptedDocumentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._encryptedDocumentFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: PolicyComment, ${this._id}, _encryptedDocumentFileId`)
+                    console.error(reason)
+                });
+            delete this._encryptedDocumentFileId;
+        }
     }
 
     /**
@@ -284,6 +330,30 @@ export class PolicyComment extends BaseEntity {
                     console.error(`AfterDelete: PolicyComment, ${this._id}, documentFileId`)
                     console.error(reason)
                 });
+        }
+        if (this.encryptedDocumentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.encryptedDocumentFileId)
+                .catch((reason) => {
+                    console.error(`AfterDelete: PolicyComment, ${this._id}, encryptedDocumentFileId`)
+                    console.error(reason)
+                });
+        }
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).insert({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'PolicyComment',
+            })
+        } catch (error) {
+            console.error(error);
         }
     }
 }

@@ -5,10 +5,16 @@ import { ObjectId } from '@mikro-orm/mongodb';
 
 export abstract class CollectionRestore<T extends RestoreEntity> {
     protected readonly policyId: string;
+    protected readonly policyOwner: string;
     protected readonly messageId: string;
 
-    constructor(policyId: string, messageId: string) {
+    constructor(
+        policyId: string,
+        policyOwner: string,
+        messageId: string
+    ) {
         this.policyId = policyId;
+        this.policyOwner = policyOwner;
         this.messageId = messageId;
     }
 
@@ -22,8 +28,8 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
         let hash = '';
         const rows: T[] = [];
         for (const action of backup.actions) {
-            const row = this.createRow(action.data);
-            await this.decryptRow(row);
+            const row = this.createRow(action.data, action.id);
+            await this.decryptRow(row, action.id);
             this.setRowId(row, action);
             rows.push(row);
             hash = this.actionHash(hash, action, row);
@@ -56,8 +62,8 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
 
         let hash = '';
         for (const action of diff.actions) {
-            const row = this.createRow(action.data);
-            await this.decryptRow(row);
+            const row = this.createRow(action.data, action.id);
+            await this.decryptRow(row, action.id);
             this.setRowId(row, action);
 
             if (action.type === DiffActionType.Delete) {
@@ -114,8 +120,8 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
 
     protected abstract actionHash(hash: string, action: IDiffAction<T>, row?: T): string;
 
-    protected abstract createRow(data: any): T;
-    protected abstract decryptRow(row: T): Promise<T>;
+    protected abstract createRow(data: any, id: string): T;
+    protected abstract decryptRow(row: T, id: string): Promise<T>;
 
     protected abstract clearCollection(): Promise<void>;
     protected abstract insertDocuments(rows: T[]): Promise<void>;

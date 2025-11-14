@@ -402,9 +402,10 @@ export class RecordControllerComponent implements OnInit {
     public showResult() {
         this._resultDialog = this.dialog.open(RecordResultDialog, {
             width: '700px',
-            styleClass: 'g-dialog',
+            styleClass: 'guardian-dialog',
             modal: true,
             closable: false,
+            showHeader: false,
             data: {
                 recordId: this.recordId,
                 policyId: this.policyId

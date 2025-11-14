@@ -1,8 +1,8 @@
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { FaissStore } from '@langchain/community/vectorstores/faiss';
-import { DirectoryLoader } from 'langchain/document_loaders/fs/directory';
-import { TextLoader } from 'langchain/document_loaders/fs/text';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { DirectoryLoader } from '@langchain/classic/document_loaders/fs/directory';
+import { TextLoader } from '@langchain/classic/document_loaders/fs/text';
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { PinoLogger } from '@guardian/common';
 
 export class VectorStorage {

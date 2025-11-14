@@ -95,7 +95,7 @@ export class PolicyBackupService {
         this.policyOwnerId = policyOwnerId;
         this.messageId = policy.messageId;
         this.policyId = policyId;
-        this.controller = new PolicyBackup(this.policyId, this.messageId);
+        this.controller = new PolicyBackup(this.policyId, this.owner, this.messageId);
         this.timer = new Timer(30 * 1000, 120 * 1000);
         this.timer.subscribe(this.task.bind(this));
     }
@@ -142,7 +142,14 @@ export class PolicyBackupService {
         const file = FileHelper.encryptFile(diff);
         const buffer = await FileHelper.zipFile(file);
 
-        const type = diff.type === 'backup' ? MessageAction.PublishPolicyBackup : MessageAction.PublishPolicyDiff;
+        let type: MessageAction;
+        if (diff.type === 'backup') {
+            type = MessageAction.PublishPolicyBackup;
+        } else if (diff.type === 'diff') {
+            type = MessageAction.PublishPolicyDiff;
+        } else {
+            type = MessageAction.PublishPolicyKeys;
+        }
         const message = new PolicyDiffMessage(MessageType.PolicyDiff, type);
         message.setDocument({
             uuid: diff.uuid,
@@ -162,11 +169,21 @@ export class PolicyBackupService {
 
         diff.messageId = result.getId();
     }
+
+    public async backupKeys(options: {
+        comments: {
+            discussion?: string,
+            user?: string,
+        }
+    }): Promise<void> {
+        const diff = await this.controller.keys(options);
+        await this.sendDiff(diff);
+    }
 }
 
 export class PolicyRestoreService {
     private readonly topicId: string;
-    // private readonly owner: string;
+    private readonly owner: string;
     private readonly controller: PolicyRestore;
     private readonly messageId: string;
     private readonly policyId: string;
@@ -174,13 +191,17 @@ export class PolicyRestoreService {
     // private readonly policyOwnerId: string;
     private topicListener: TopicListener;
 
-    constructor(policyId: string, policy: Policy, policyOwnerId: string | null) {
+    constructor(
+        policyId: string,
+        policy: Policy,
+        policyOwnerId: string | null
+    ) {
         this.messageId = policy.messageId;
         this.policyId = policyId;
         this.topicId = policy.restoreTopicId;
-        // this.owner = policy.owner;
+        this.owner = policy.owner;
         // this.policyOwnerId = policy.policyOwnerId;
-        this.controller = new PolicyRestore(this.policyId, this.messageId);
+        this.controller = new PolicyRestore(this.policyId, this.owner, this.messageId);
     }
 
     public async init(): Promise<void> {

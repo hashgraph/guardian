@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <Placemark>
+      <name>Lisbon</name>
+      <Point>
+        <coordinates>-9.142685,38.736946,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Tokyo</name>
+      <Point>
+        <coordinates>139.6917,35.6895,0</coordinates>
+      </Point>
+    </Placemark>
+  </Document>
+</kml>

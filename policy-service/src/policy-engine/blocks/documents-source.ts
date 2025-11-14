@@ -302,7 +302,7 @@ export class InterfaceDocumentsSource {
         }
 
         for (const d of data) {
-            (d as any).comments = await ref.components.getPolicyCommentsCount(d);
+            (d as any).comments = await ref.components.getPolicyCommentsCount(d, user);
         }
 
         if (filterIds) {

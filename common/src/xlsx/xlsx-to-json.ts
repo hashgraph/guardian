@@ -200,8 +200,26 @@ export class XlsxToJson {
             table.setEnd(endCol, row);
 
             if (table.getRow(Dictionary.SCHEMA_NAME) !== -1) {
+                const nameRow = table.getRow(Dictionary.SCHEMA_NAME);
+
                 schema.name = worksheet.getValue<string>(startCol, table.getRow(Dictionary.SCHEMA_NAME));
+
+                const normalizedName = schema.name?.trim();
+                if (!normalizedName) {
+                    xlsxResult.addError({
+                        type: 'error',
+                        text: 'Schema name is empty.',
+                        message: `Schema name is empty on sheet "${worksheet.name}".`,
+                        worksheet: worksheet.name,
+                        cell: worksheet.getPath(startCol, nameRow),
+                        row: nameRow,
+                        col: startCol,
+                    }, schema);
+
+                    schema.name = worksheet.name
+                }
             }
+
             if (table.getRow(Dictionary.SCHEMA_DESCRIPTION) !== -1) {
                 schema.description = worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
             }

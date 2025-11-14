@@ -579,6 +579,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 const stateEntity = await this.databaseServer.getBlockState(this.policyId, this.uuid, this.tag);
 
                 if (!stateEntity) {
+                    if (typeof (this as any).onEmptyBlockState === 'function') {
+                        try {
+                            (this as any).onEmptyBlockState();
+                        } catch (e: any) {
+                            this.warn(`onEmptyBlockState error: ${e?.message ?? e}`);
+                        }
+                    }
                     return;
                 }
 
