@@ -70,10 +70,13 @@ const API = {
     SchemaImport: "schemas/import/",
     SchemasType: "schemas/type",
     SchemasWithSubSchemas: "schema-with-sub-schemas/",
+    Topic: "topic/",
 
     //Tools
-    Tools: "tools",
+    Tools: "tools/",
     ToolsImportMsg: "tools/import/message",
+    ToolsImportFile: "tools/import/file",
+    ToolsAsBlock: "tools/menu/all",
 
     //TrustChains
     Trustchains: "trust-chains/",
