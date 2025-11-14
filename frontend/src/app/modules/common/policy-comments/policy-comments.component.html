@@ -21,23 +21,16 @@
         </div>
 
         <div *ngIf="currentTab === 'messages'" class="header-container back" (click)="selectDiscussion()">
-            <!-- <svg-icon
-                class="icon-btn"
-                src="/assets/images/icons/left-arrow.svg"
-                [svgClass]="'icon-color-primary'">
-            </svg-icon> -->
-            <div class="component-name">
-                {{currentDiscussion?.name}}
-            </div>
+            <div 
+                class="component-name"
+                pTooltip="{{currentDiscussion?.name}}"
+                tooltipStyleClass="guardian-tooltip"
+                tooltipPosition="top"
+                [showDelay]="500"
+                [hideDelay]="100"
+            >{{currentDiscussion?.name}}</div>
         </div>
 
-        <!-- <div *ngIf="currentTab === 'discussions'" class="header-icon">
-            <div class="component-close" (click)="onClose()">
-                <svg-icon
-                    src="/assets/images/icons/close.svg"
-                    svgClass="icon-color-close"></svg-icon>
-            </div>
-        </div> -->
         <div *ngIf="currentTab === 'discussions'" class="header-toolbar">
             <button
                 *ngIf="key"
@@ -48,11 +41,6 @@
                     svgClass="icon-color-grey-color-3">
                 </svg-icon>
             </button>
-            <!-- <div class="component-close" (click)="onClose()">
-                <svg-icon
-                    src="/assets/images/icons/close.svg"
-                    svgClass="icon-color-close"></svg-icon>
-            </div> -->
         </div>
         <div *ngIf="currentTab === 'messages' && currentDiscussion" class="header-toolbar">
             <button
@@ -95,20 +83,6 @@
             </p-overlayPanel>
         </div>
     </div>
-    <!-- <div *ngIf="loading" class="guardian-loading">
-        <div class="guardian-loading-image"></div>
-    </div> -->
-
-    <!-- <div *ngIf="currentTab === 'messages'" class="header-back" (click)="selectDiscussion()">
-        <svg-icon
-            class="icon-btn"
-            src="/assets/images/icons/left-arrow.svg"
-            [svgClass]="'icon-color-primary'">
-        </svg-icon>
-        <div class="component-name">
-            {{currentDiscussion?.name}}
-        </div>
-    </div> -->
 
     <ng-container *ngIf="currentTab === 'new-discussion'">
         <div class="new-discussion">
@@ -307,7 +281,14 @@
                             </div>
                         </div>
                         <div class="discussion-body">
-                            <div class="discussion-name">
+                            <div 
+                                class="discussion-name" 
+                                pTooltip="{{discussion.name}}"
+                                tooltipStyleClass="guardian-tooltip"
+                                tooltipPosition="top"
+                                [showDelay]="500"
+                                [hideDelay]="100"
+                            >
                                 {{discussion.name}}
                             </div>
                             <div *ngIf="discussion.field" class="discussion-field">
@@ -470,14 +451,6 @@
                     <div class="guardian-button-label">More</div>
                 </button> 
             </div>
-            <!-- <div *ngIf="loading" class="loading-placeholder reverse">
-                <div *ngFor="let i of loadingItems" class="placeholder-item type-{{i.type}}">
-                    <div class="placeholder-item-body">
-                        <div class="placeholder-item-time"></div>
-                        <div class="placeholder-item-message size-{{i.size}}"></div>
-                    </div>
-                </div>
-            </div> -->
         </div>
         <div *ngIf="!readonly" class="toolbar" (drop)="onDrop($event)">
             <div class="guardian-textarea-container toolbar-textarea">
@@ -567,11 +540,6 @@
 
 <div *ngIf="collapse" class="collapse-container" [attr.loading]="loading">
     <div class="header">
-        <!-- <svg-icon
-            class="icon-btn svg-icon"
-            src="/assets/images/icons/chat-1.svg"
-            [svgClass]="'icon-color-primary'">
-        </svg-icon> -->
         <button
             (click)="onOpen()"
             class="guardian-icon-button big header-collapse">
