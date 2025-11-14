@@ -13,13 +13,13 @@ There are four types of Schemas:
 
 To display System / Policy Schemas in the GUI, we have added a toggle in the Schemas tab.
 
-<figure><img src="../../../.gitbook/assets/image (37) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (223) (2).png" alt=""><figcaption></figcaption></figure>
 
 ## System Schemas
 
 Whenever an account is created, System Schemas are generated automatically.
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (16) (3) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: By default System Schemas cannot be edited/deleted.
@@ -31,7 +31,7 @@ This is the second option in the Schemas tab. This option displays all the Polic
 
 The below screenshot shows the Policy Schemas of an imported Policy (i.e. iRec).
 
-<figure><img src="../../../.gitbook/assets/image (36) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (9) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 We also have a filter, where by default, all the Schemas of Policies are shown. We can also select a particular Policy to show the Schemas of the selected Policy.
 

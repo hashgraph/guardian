@@ -14,7 +14,7 @@ icon: cart-plus
 * From the left-hand navigation panel, go to **Manage** **Schemas**.
 * You’ll see system schemas (default ones) and any custom schemas already created.
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### **3. Create a New Schema**
 
@@ -25,7 +25,7 @@ icon: cart-plus
   * **Description** → short explanation of what the schema will be used for
   * For(Entity) → Select the relevant document.&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### **4. Define Schema Fields**
 
@@ -39,17 +39,17 @@ icon: cart-plus
 * Example fields for a Project Schema:
   * `projectId` → number (required)
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 We can also customize the Field keys and Field Title by clicking on Advanced Tab.
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Schemas can be defined/changed by editing their JSON definitions
 
 <figure><img src="../../../.gitbook/assets/image (103).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Schema JSON definition contains the following editable fields
 
@@ -81,6 +81,12 @@ Schema JSON definition contains the following editable fields
       2. **value** – comparison value for the field value
    2. **then** – array of fields which is shown when the condition resolves to true (the same format as _fields_)
    3. **else** – array of fields which is shown when the condition resolves to false (the same format as _fields_)
+   4. **IF OR** – at least one rule must be met, and you can add unlimited fields
+   5. **IF AND** – all rules must be met, and you can add unlimited fields
+
+<figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **5. Save & Publish the Schema**
 
@@ -88,7 +94,7 @@ Schema JSON definition contains the following editable fields
 * To make it usable in policies, click **Publish**.
   * Publishing makes the schema immutable and available to others.
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 6. #### Version
 

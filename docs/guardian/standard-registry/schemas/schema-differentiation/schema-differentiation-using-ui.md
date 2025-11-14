@@ -14,7 +14,7 @@ We click on **Compare** button (last one) <img src="../../../../.gitbook/assets/
 
 Select two schemas for compare
 
-<figure><img src="../../../../.gitbook/assets/image (431).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (430) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Comparison View
 

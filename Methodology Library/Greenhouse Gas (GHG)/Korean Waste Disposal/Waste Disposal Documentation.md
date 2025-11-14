@@ -1,6 +1,6 @@
 # **Waste Treatment**
 
-**Policy Summary**
+### **Tool Summary**
 
 This methodology provides guidance on how companies can measure,
 calculate, and report greenhouse gas emissions generated from waste
@@ -11,10 +11,9 @@ waste management practices.
 
 The methodology follows the national guidelines of the Greenhouse Gas
 Inventory and Research Center of Korea (GIR), ensuring transparency,
-consistency in reporting, and compliance with verification and
-regulatory requirements.
+and consistency in reporting. 
 
-**This methodology is applicable for**
+### **This methodology is applicable for**
 
 - Scope 1 (Direct emissions): Waste Disposal
 
@@ -22,16 +21,17 @@ regulatory requirements.
 are not included in Scope 1 but must be accounted for under Scope 3
 category 5.
 
-**User Inputs**
+### **User Inputs**
 
 - Waste disposal type
 
 \- Incineration / Landfilling of solid waste / Biological treatment of
 solid waste
+<br><br>
 
 ## **Waste Incineration**
 
-**User Inputs**
+### **User Inputs**
 
 - Applicable reporting year
 
@@ -55,14 +55,15 @@ as a Waste type
 - If waste disposal is reported through the Allbaro system
   (<https://www.allbaro.or.kr/index.jsp>), incineration and treatment
   data can be retrieved directly from the platform.
+<br><br>
 
-**Applied Emission Factors**
+### **Applied Emission Factors**
 
-- CO~2~ Emission Factor
+- CO₂ Emission Factor
 
-\- Solid Waste
+**Solid Waste**
 
-| household waste       |      |      |      |
+| Household waste       |      |      |      |
 | --------------------- | ---- | ---- | ---- |
 | Waste characteristics | dm   | CF   | FCF  |
 | paper                 | 0.9  | 0.46 | 0.01 |
@@ -88,7 +89,7 @@ Source: Greenhouse Gas Inventory and Research Center of Korea
 </colgroup>
 <thead>
 <tr class="header">
-<th colspan="4">household waste</th>
+<th colspan="4">Industrial waste</th>
 </tr>
 </thead>
 <tbody>
@@ -169,15 +170,18 @@ Source: Greenhouse Gas Inventory and Research Center of Korea
 </table>
 
 Source: Greenhouse Gas Inventory and Research Center of Korea
+<br><br>
 
-\- Liquid waste  
+**Liquid waste**
+
 The carbon content value (CLi) for liquid waste is 0.8. However, liquid
 waste refers to waste legally classified as liquid, such as waste oil
 and waste organic solvents.
 
 Source: Greenhouse Gas Inventory and Research Center of Korea
+<br><br>
 
-\- Gaseous waste
+**Gaseous waste**
 
 <table>
 <colgroup>
@@ -204,11 +208,12 @@ Source: Greenhouse Gas Inventory and Research Center of Korea
 </table>
 
 Source: Greenhouse Gas Inventory and Research Center of Korea
+<br><br>
 
-- CH~4~ , N~2~O Emission Factor
-  - Default CH~4~ emission factors by incineration technology:
+- CH₄ , N₂O Emission Factor
+  - Default CH₄ emission factors by incineration technology:
 
-| incineration technology |          | CH4 Emission Factors (kgCH4/t-Waste) |
+| incineration technology |          | CH₄ Emission Factors (kgCH₄/t-Waste) |
 | ----------------------- | -------- | ------------------------------------ |
 | continuous              | Fixed    | 0.0002                               |
 |                         | Fludised | 0                                    |
@@ -219,18 +224,19 @@ Source: Greenhouse Gas Inventory and Research Center of Korea
 
 Source: Greenhouse Gas Inventory and Research Center of Korea
 
-\- Tier1 CH~4~ , N~2~O Emission Factor
+\- Tier1 CH₄ , N₂O Emission Factor
 
-| incineration technology | CH4 (kgCH4/t-Waste) | N2O (gCH4/t-Waste) |
+| incineration technology | CH₄ (kgCH₄/t-Waste) | N₂O (gN₂O/t-Waste) |
 | ----------------------- | ------------------- | ------------------ |
 | exhaust gas             | 0.1935              | 3.87               |
 | Biogas (methane)        | 0.252               | 5.04               |
 
 Source: Greenhouse Gas Inventory and Research Center of Korea
+<br><br>
 
-**Emission Calculation**
+### **Emission Calculation**
 
-1\) CO~2~ Emissions
+1\)  CO₂ Emissions
 
 <table>
 <colgroup>
@@ -278,7 +284,7 @@ between 0 and 1)</p></th>
 </tbody>
 </table>
 
-2\) CH~4~, N~2~O Emissions
+2\) CH₄, N₂O Emissions
 
 <table>
 <colgroup>
@@ -303,7 +309,7 @@ N<sub>2</sub>O/t-Waste)</p></th>
 </tbody>
 </table>
 
-## **Use case: Calculation of Waste Incineration Emissions for General Companies**
+### **Use case: Calculation of Waste Incineration Emissions for General Companies**
 
 Scenario
 
@@ -334,16 +340,15 @@ Waste activity data collection
 
 **3)** Emission Calculation Procedure
 
-1.  Aggregate monthly or annual incineration data by waste type.
+- Aggregate incineration data by waste type.
 
-2.  Apply formulas by GHG type:
+- Apply formulas by GHG type:
 
-    A. CO~2~ Emissions (solid waste) = (SW~i~ × dm~i~ × CF~i~ × FCF~i~
-    × OF~i~) × 3.664
+    A. CO₂ Emissions (solid waste) = (SW<sub>i</sub> × dm<sub>i</sub> × CF<sub>i</sub> × FCF<sub>i</sub> × OF<sub>i</sub>) × 3.664
 
-    B. CH~4~ Emissions = IW × EF × 10^-3^
+    B. CH₄ Emissions = IW × EF × 10<sup>-3</sup>
 
-    C. N~2~O Emissions = IW × EF × 10^-3^
+    C. N₂O Emissions = IW × EF × 10<sup>-3</sup>
 
 **4)** Result Application
 
@@ -357,12 +362,13 @@ Waste activity data collection
   design efficient treatment strategies.
 
 > ![텍스트, 스크린샷, 도표, 라인이(가) 표시된 사진 자동 생성된
-설명](./image.png){width="5.154472878390202in"
-> height="9.006356080489939in"}
+설명](./image_5.jpg)
+
+<br><br>
 
 ## **Waste Landfilling**
 
-**User Inputs**
+### **User Inputs**
 
 - Applicable reporting year
 
@@ -385,8 +391,9 @@ can be retrieved directly from the platform.
 - Degradable organic carbon fraction (DOC)
 
 - Methane recovered this year (tCH4)
+<br><br>
 
-**Applied Emission Factors**
+### **Applied Emission Factors**
 
 - DOC (Degradable Organic Carbon ratio) and k (Methane Generation Rate
   Constant)
@@ -545,19 +552,14 @@ Source: Greenhouse Gas Inventory and Research Center of Korea
 | Landfill sites covered with soil, compost, etc. | 0.1 |
 | others                                          | 0   |
 
-Source: Greenhouse Gas Inventory and Research Center of Korea
-
-F (methane volume fraction)  
-If actual measurement data on methane content in LFG is available, the
-actual measurement value shall be applied first. If no actual
-measurement data is available, the default value of 0.5 specified in the
-IPCC guidelines shall be applied.
+F (methane volume fraction) : If actual measurement data on methane content in LFG is available, the actual measurement value shall be applied first. If no actual measurement data is available, the default value of 0.5 specified in the IPCC guidelines shall be applied.
 
 Source: Greenhouse Gas Inventory and Research Center of Korea
+<br><br>
 
-Emission Calculation
+### **Emission Calculation**
 
-1\) CH~4~ Emission
+1\) CH<sub>4</sub> Emission
 
 <table>
 <colgroup>
@@ -624,9 +626,9 @@ value.</p></th>
 <tbody>
 </tbody>
 </table>
+<br><br>
 
-**Use Case: Calculation of Direct Emissions from Landfilling of Solid
-waste by a General Company**
+### **Use Case: Calculation of Direct Emissions from Landfilling of Solid Waste by a General Company**
 
 **Scenario**
 
@@ -659,43 +661,33 @@ Collection of waste activity data
 
 **3) Emission Calculation Procedure**
 
-1.  Aggregate monthly or annual landfilled waste volumes by type (deduct
-    quantities removed for reprocessing, if applicable)
+- Aggregate landfilled waste volumes by type (deduct quantities removed for reprocessing, if applicable)
 
-2.  Set DOC, k, and MCF: Select from standard values based on waste type
+- Set DOC, k, and MCF: Select from standard values based on waste type and facility type
 
-    > and facility type
+- Apply methane generation calculation formula: 
+    > DDOC<sub>m,decomp(T)</sub> = DDOCma<sub>T-1</sub> × (1 - e<sup>-k</sup>)
 
-3.  Apply methane generation calculation formula:  
-    DDOC~m,decomp(T)~ = DDOCma~T-1~ × (1 -- e^-k^)
-
-4.  Apply methane emission calculation formula reflection recovery rate
-    > and oxidant factor:  
-    > CH4 EmissionsT = \[ CH4 generatedx,T -- RT \] × (1-OX)
+- Apply methane emission calculation formula reflection recovery rate and oxidant factor:  
+    > CH4 EmissionsT = [ CH4 generatedT - RT \] × (1-OX)
 
 **4) Reporting and Utilization**
 
-- **Sustainability Report and ESG Disclosure:** Reflect as Scope 1
+- **Sustainability Report and ESG Disclosure:** Reflect as Scope 1 emissions
 
-  > emissions
+- **Internal Management:** Assess emission intensity by waste type and landfill characteristics to establish reduction strategies such as gas recovery and cover improvement
 
-- **Internal Management:** Assess emission intensity by waste type and
-
-  > landfill characteristics to establish reduction strategies such as
-  > gas recovery and cover improvement
-
-- **Project Evaluation:** Quantify reduction effects of LFG recovery and
-  > power generation facilities, and review investment feasibility
+- **Project Evaluation:** Quantify reduction effects of LFG recovery and power generation facilities, and review investment feasibility
 
 ![텍스트, 도표, 스크린샷, 라인이(가) 표시된 사진 AI 생성 콘텐츠는
 정확하지 않을 수
-있습니다.](./image_2_3.png){width="5.7281933508311464in"
-height="9.357074584426947in"}
+있습니다.](./image_2_3.png)
 
-| **Biological Treatment of Solid Waste** |
-| --------------------------------------- |
+<br><br>
 
-**User Inputs**
+## **Biological Treatment of Solid Waste** 
+
+### **User Inputs**
 
 - Applicable reporting year
 
@@ -714,8 +706,9 @@ height="9.357074584426947in"}
 can be retrieved directly from the platform.
 
 - Methane Recovery Amount (tCH₄)
+<br><br>
 
-**Applied Emission Factors**
+### **Applied Emission Factors**
 
 |                               |                     |                  |                     |                  |
 | ----------------------------- | ------------------- | ---------------- | ------------------- | ---------------- |
@@ -724,12 +717,59 @@ can be retrieved directly from the platform.
 | composting                    | 10                  | 4                | 0.6                 | 0.3              |
 | anaerobic digestion           | 2                   | 1                | 0                   | 0                |
 
-**Emissions calculation**
+Source: Greenhouse Gas Inventory and Research Center of Korea
+<br><br>
 
-![](image_3.png)
+### **Emissions calculation**
 
-Use Case: Calculation of Direct Emission from biological treatment of
-solid waste
+<p><strong><em>CH<sub>4</sub> Emissions = Σ<sub>i</sub>(M<sub>i</sub> × EF<sub>i</sub>) × 10<sup>-3</sup> − R</em></strong></p>
+
+<p><strong>CH<sub>4</sub> Emissions</strong> : Bio-treatment emissions (<strong>tCH<sub>4</sub></strong>)</p>
+
+<p><strong>M<sub>i</sub></strong> : Waste mass (<strong>ton</strong>)</p>
+
+<p><strong>EF<sub>i</sub></strong> : CH<sub>4</sub> emission factor for treatment type <em>i</em> (<strong>gCH<sub>4</sub>/kg-waste</strong>)</p>
+
+<p><strong>i</strong> : Treatment type, such as composting or anaerobic digestion</p>
+
+<p><strong>R</strong> : Methane recovery ratio (<strong>tCH<sub>4</sub></strong>)</p>
+
+**(a)** If  
+<p style="margin-left: 20px;">
+  <em>
+    <sup>R</sup> / (<sub>M<sub>i</sub></sub> × EF<sub>i</sub> × 10<sup>-3</sup>)
+  </em> ≤ 0.95,
+</p>  
+calculate the amount generated and emitted according to the Tier 1 calculation method.  
+
+<br>
+
+**(b)** If  
+<p style="margin-left: 20px;">
+  <em>
+    <sup>R</sup> / (<sub>M<sub>i</sub></sub> × EF<sub>i</sub> × 10<sup>-3</sup>)
+  </em> > 0.95,
+</p>  
+emissions shall be applied as follows.
+
+- <p><strong><em>CH<sub>4</sub> Emissions = Σ<sub>i</sub>(M<sub>i</sub> × EF<sub>i</sub>) × 10<sup>3</sup> × 0.05</em></strong></p>
+
+<p><strong>R</strong> (Methane recovery amount, <strong>tCH<sub>4</sub></strong>) = Annual biogas recovery amount (<strong>m<sup>3</sup> Bio-gas</strong>) × Annual average methane concentration of biogas (%, V/V) × γ (Conversion factor for m<sup>3</sup> to t of CH<sub>4</sub> at 0°C and 1 atm, 0.7156 × 10<sup>-3</sup>)</p>
+
+<br>
+
+- <p><strong><em>N<sub>2</sub>O Emissions = Σ<sub>i</sub>(M<sub>i</sub> × EF<sub>i</sub>) × 10<sup>3</sup></em></strong></p>
+
+<p><strong>N<sub>2</sub>O Emissions</strong> : Bio-treatment emissions (<strong>tN<sub>2</sub>O</strong>)</p>
+
+<p><strong>M<sub>i</sub></strong> : Waste mass (<strong>ton</strong>)</p>
+
+<p><strong>EF<sub>i</sub></strong> : N<sub>2</sub>O emission factor for treatment type <em>i</em> (<strong>gN<sub>2</sub>O/kg-waste</strong>)</p>
+
+<p><strong>i</strong> : Treatment type, such as composting or anaerobic digestion</p>
+<br><br>
+
+### **Use Case: Calculation of Direct Emission from biological treatment of solid waste**
 
 **Scenario Overview**
 
@@ -758,7 +798,7 @@ calculate greenhouse gas emissions from its production process as Scope
 
 **3) Emission Calculation Procedure**
 
-3.  Aggregation of monthly or annual organic waste volumes by treatment
+3.  Aggregation of organic waste volumes by treatment
     method
 
 4.  Application of emission factors appropriate for the treatment method
@@ -789,5 +829,4 @@ calculate greenhouse gas emissions from its production process as Scope
   higher-recovery-efficiency methods
 
 ![텍스트, 스크린샷, 도표, 평행이(가) 표시된 사진 자동 생성된
-설명](./image_4.png){width="5.100694444444445in"
-height="9.511805555555556in"}
+설명](./image_6.jpg)

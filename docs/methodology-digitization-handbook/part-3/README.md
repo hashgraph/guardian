@@ -1,4 +1,4 @@
-# рџЏ—пёЏ Part III: Schema Design and Development
+# 🏗️ Part III: Schema Design and Development
 
 > Practical schema development using Excel-first approach and Guardian's schema management features
 

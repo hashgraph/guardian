@@ -78,7 +78,7 @@ This block provides a way to specify multiple signators for a single VC document
 
 4.1.1 multiSignBlock must be used with Groups.
 
-<figure><img src="../../../../../.gitbook/assets/image (13) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (13) (1) (1) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 4.1.2 multiSignBlock must be child block of grid block to receive all data it requires to operate.
 
@@ -90,7 +90,7 @@ This block provides a way to specify multiple signators for a single VC document
 
 We have an option of Signing/ Declining the document by clicking on "Sign" or "Decline" button for the document as shown below:
 
-<figure><img src="../../../../../.gitbook/assets/image (21) (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (20) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 5.2 Threshold Display
 
@@ -108,7 +108,7 @@ To get detailed information on Signature status, we have an info icon near the t
 
 To get the final Signature Result with detailed information such as which users have Signed / Declined, we need to hover on the Status as shown below:
 
-<figure><img src="../../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (1) (3) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### API Parameters
 

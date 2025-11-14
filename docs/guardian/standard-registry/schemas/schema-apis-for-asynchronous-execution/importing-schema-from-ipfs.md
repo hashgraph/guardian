@@ -9,6 +9,7 @@ Imports new schema from IPFS into the local DB. Only users with the Standard Reg
 | Name                                      | Type   | Description |
 | ----------------------------------------- | ------ | ----------- |
 | topicId<mark style="color:red;">\*</mark> | String | Topic ID    |
+| schemas<mark style="color:red;">\*</mark> | String | schema      |
 
 #### Request Body
 

@@ -8,8 +8,8 @@ The high-level flow of the actions which configure token retirement is illustrat
 
 <figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-Guardian contains a full production retirement system implementation which allows the configuration of arbitrary pools of tokens (two-sided, one-sides, with arbitrary ‘exchange rates’ etc), issued by different SRs, operating on different Guardian instances, to be configured for retirement with arbitrary additional rules further controlling their lifecycle.&#x20;
+Guardian contains a full production retirement system implementation which allows the configuration of arbitrary pools of tokens (two-sided, one-sides, with arbitrary ‘exchange rates’ etc), issued by different SRs, operating on different Guardian instances, to be configured for retirement with arbitrary additional rules further controlling their lifecycle.
 
 A simplified architecture diagram of the retirement contracts implementation is shown on the diagram below.
 
-<figure><img src="../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>

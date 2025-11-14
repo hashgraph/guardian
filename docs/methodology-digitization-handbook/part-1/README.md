@@ -1,4 +1,4 @@
-# рџЏ—пёЏ Part I: Foundation and Preparation
+# 🏗️ Part I: Foundation and Preparation
 
 > Establishing the foundational knowledge for methodology digitization on Guardian platform
 
