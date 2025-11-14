@@ -4,7 +4,6 @@ import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse,
 import { SettingsDTO, InternalServerErrorDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { Guardians, InternalException } from '#helpers';
-import process from 'process';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 
 @Controller('settings')
@@ -139,6 +138,6 @@ export class SettingsApi {
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getAbout(): Promise<AboutInterface> {
-        return { version: "3.4.0" };
+        return { version: '3.4.0' };
     }
 }
