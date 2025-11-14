@@ -1,0 +1,289 @@
+import {
+    Component,
+    Input,
+    OnChanges,
+} from '@angular/core';
+import {
+    FormulasTree,
+    FormulaItem,
+    SchemaItem,
+} from '../../../models/formula-tree';
+import {TreeGraphComponent} from 'src/app/modules/common/tree-graph/tree-graph.component';
+import {TreeNode} from 'src/app/modules/common/tree-graph/tree-node';
+import {TreeSource} from 'src/app/modules/common/tree-graph/tree-source';
+
+type ValueStatus = 'Missing' | 'Default' | 'As suggested' | 'Not null';
+
+interface GraphNodeData {
+    title: string;
+    payload: FormulaItem | SchemaItem | any;
+    valueStatus: ValueStatus | null;
+}
+
+class GraphNode extends TreeNode<GraphNodeData> {
+    constructor(
+        id: string,
+        type: 'root' | 'sub',
+        data: GraphNodeData,
+    ) {
+        super(id, type, data);
+    }
+}
+
+@Component({
+    selector: 'formulas-graph-tab',
+    templateUrl: './formulas-graph-tab.component.html',
+    styleUrls: ['./formulas-graph-tab.component.scss'],
+})
+export class FormulasGraphTabComponent implements OnChanges {
+    @Input()
+    public tree!: FormulasTree;
+    @Input()
+    public schema!: string;
+    @Input()
+    public path!: string;
+
+    public source: TreeSource<GraphNode> | null = null;
+    private treeGraph: TreeGraphComponent | null = null;
+    public selectedNode: GraphNode | null = null;
+    public title: string | null = null
+    public nodeDocument: string | null = null;
+    public parentDocuments: string[] = [];
+    public fieldName: string | null = null;
+    public fieldPath: string | null = null;
+    public fieldValue: any = null;
+    public itemType: string | null = null;
+    public itemValue: any = null;
+    public valueStatus: ValueStatus | null = null;
+    public fieldType: string | null = null;
+
+    public ngOnChanges(): void {
+        this.source = this.buildGraph(this.tree, this.schema, this.path);
+
+        if (this.treeGraph && this.source) {
+            this.treeGraph.setData(this.source);
+            this.treeGraph.move(18, 46);
+        }
+    }
+
+    private buildTitle(node: any): string {
+        const {type, name} = node;
+
+        if (type && name) {
+            return `${type}: ${name}`;
+        }
+
+        return name || type;
+    }
+
+    private buildGraph(tree: FormulasTree, schema: string, path: string): TreeSource<GraphNode> | null {
+        const items = tree.get(schema, path);
+        if (!items?.length) {
+            return null;
+        }
+
+        const navigationTree = FormulasTree.createNav(items);
+        const graphNodes: GraphNode[] = [];
+
+        const walk = (node: Record<string, any>, parent: GraphNode | null): void => {
+            const isComponent = String(node.view || '').toLowerCase() === 'component';
+            let currentParent = parent;
+
+            if (isComponent) {
+                const id = node.id;
+                const type = parent ? 'sub' : 'root';
+                const data: GraphNodeData = {
+                    title: this.buildTitle(node),
+                    payload: node.data,
+                    valueStatus: null,
+                };
+
+                const gNode = new TreeNode<GraphNodeData>(id, type, data);
+                graphNodes.push(gNode);
+                parent?.addId(gNode.id);
+                currentParent = gNode;
+            }
+
+            for (const child of node.children ?? []) {
+                walk(child, currentParent);
+            }
+        };
+
+        walk(navigationTree, null);
+
+        return graphNodes.length ? new TreeSource<GraphNode>(graphNodes) : null;
+    }
+
+    public initGraph(treeGraphComponent: TreeGraphComponent): void {
+        this.treeGraph = treeGraphComponent;
+
+        if (this.source) {
+            this.treeGraph.setData(this.source);
+        }
+    }
+
+    public onRender(): void {
+        return;
+    }
+
+    private parseJSON(value: any): any {
+        if (value === null || value === undefined) {
+            return null;
+        }
+
+        if (typeof value === 'string') {
+            try {
+                const parsed = JSON.parse(value);
+
+                if (Array.isArray(parsed)) {
+                    return 'array';
+                }
+                return typeof parsed;
+            } catch {
+                return typeof value;
+            }
+        }
+
+        return typeof value;
+    }
+
+    private buildSchemaNamesChain(schema: any, path: string): string[] {
+        const names: string[] = [];
+        let node = schema;
+        const parts = path.split('.');
+
+        for (const key of parts) {
+            if (!node) {
+                break;
+            }
+
+            if (Array.isArray(node.fields)) {
+                names.push(node.title ?? node.name);
+                node = node.fields.find((f: any) => f.name === key);
+            } else {
+                break;
+            }
+        }
+
+        return names;
+    }
+
+    private isEmptyValue(value: any): boolean {
+        if (value === null || value === undefined) {
+            return true;
+        }
+
+        if (typeof value === 'string') {
+            return value.trim().length === 0;
+        }
+
+        if (Array.isArray(value)) {
+            return value.length === 0;
+        }
+
+        if (typeof value === 'object') {
+            return Object.keys(value).length === 0;
+        }
+
+        return false;
+    }
+
+    private valuesEqual(first: any, second: any): boolean {
+        return JSON.stringify(first) === JSON.stringify(second);
+    }
+
+    private calcValueStatus(
+        value: any,
+        schemaDefault: any,
+        schemaSuggested: any
+    ): ValueStatus {
+        if (this.isEmptyValue(value)) {
+            return 'Missing';
+        }
+
+        if (this.valuesEqual(value, schemaDefault)) {
+            return 'Default';
+        }
+
+        if (this.valuesEqual(value, schemaSuggested)) {
+            return 'As suggested';
+        }
+
+        return 'Not null';
+    }
+
+    public onSelect(node: TreeNode<GraphNodeData> | null): void {
+        if (!node) {
+            this.clearSelection();
+            return;
+        }
+
+        this.selectedNode = node;
+
+        this.title = node.data.title.toUpperCase();
+        const payload = node.data.payload;
+        const linkItem = payload._linkItem;
+        this.fieldValue = linkItem.value
+
+        this.fieldPath = linkItem._path;
+        this.fieldName = linkItem._field.title
+
+        const schemaDefault = linkItem._field.default;
+
+        this.itemType = payload.type;
+        this.itemValue = payload.value;
+
+        const fieldMeta = linkItem._field;
+        this.fieldType = this.parseJSON(this.fieldValue);
+
+        const schemaSuggested = fieldMeta?.suggest;
+
+        this.valueStatus = this.calcValueStatus(
+            linkItem.value,
+            schemaDefault,
+            schemaSuggested,
+        );
+
+        const schemaNamesChain = this.buildSchemaNamesChain(linkItem._schema, linkItem._path);
+        this.nodeDocument = schemaNamesChain.at(-1) ?? null;
+        schemaNamesChain.pop();
+        this.parentDocuments = schemaNamesChain;
+    }
+
+    public clearSelection(): void {
+        this.selectedNode = null;
+    }
+
+    public getNodeStatusClass(rawNode: GraphNode): string {
+        const payload = rawNode.data.payload;
+        const itemType = payload.type;
+
+        if (itemType !== 'variable' && itemType !== 'text') {
+            return 'status-none';
+        }
+
+        const linkItem = payload._linkItem;
+        if (!linkItem) {
+            return 'status-none';
+        }
+
+        const value = linkItem.value;
+        const def = linkItem._field?.default;
+        const suggest = linkItem._field?.suggest;
+
+        const status = this.calcValueStatus(value, def, suggest);
+
+        switch (status) {
+            case 'Missing':
+                return 'status-missing';
+            case 'Default':
+                return 'status-default';
+            case 'As suggested':
+                return 'status-asSuggested';
+            case 'Not null':
+                return 'status-notNull';
+            default:
+                return 'status-none';
+        }
+    }
+}

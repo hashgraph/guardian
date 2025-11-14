@@ -1,0 +1,114 @@
+<div class="graph-tab" *ngIf="source">
+    <div class="graph-layout">
+
+        <div class="tree-container">
+            <app-tree-graph
+                (init)="initGraph($event)"
+                (render)="onRender()"
+                (select)="onSelect($event)"
+            >
+                <ng-template #nodeTemplate let-node="node">
+                    <div
+                        class="tree-node root-node"
+                        [ngClass]="[
+                            'selected-type-' + node.selected,
+                            getNodeStatusClass(node)
+                        ]"
+                    >
+                        <div class="node-header">
+                            {{ node.data.title }}
+                        </div>
+                    </div>
+                </ng-template>
+            </app-tree-graph>
+        </div>
+
+        <div class="node-details" [attr.hidden-node]="!selectedNode">
+            <div *ngIf="selectedNode as item" class="node-details-container">
+
+                <!--TITLE -->
+                <div *ngIf="title" class="node-details-header">
+                    <div class="node-details-title">
+                        {{ title }}
+                    </div>
+                    <div class="node-details-close" (click)="clearSelection()">
+                        ✕
+                    </div>
+                </div>
+
+                <!-- VALUE STATUS -->
+                <div *ngIf="valueStatus" class="node-details-section">
+                    <div class="section-label">Value status</div>
+                    <div class="section-value">
+                        {{ valueStatus }}
+                    </div>
+                </div>
+
+                <!-- FIELD VALUE TYPE -->
+                <div *ngIf="fieldType" class="node-details-section">
+                    <div class="section-label">Field value type</div>
+                    <div class="section-value">
+                        {{ fieldType }}
+                    </div>
+                </div>
+
+                <!-- FORMULA -->
+                <div *ngIf="itemValue" class="node-details-section">
+                    <div class="section-label">
+                        {{ itemType }}
+                    </div>
+                    <div class="section-value" *ngIf="itemType !== 'formula'">
+                        {{ itemValue }}
+                    </div>
+                    <div class="section-value" *ngIf="itemType === 'formula'">
+                        <math-live [value]="itemValue" [readonly]="true"></math-live>
+                    </div>
+                </div>
+
+                <!-- FIELD NAME IN DOCUMENT -->
+                <div *ngIf="fieldName" class="node-details-section">
+                    <div class="section-label">Field name in document</div>
+                    <div class="section-value">
+                        {{ fieldName }}
+                    </div>
+                </div>
+
+                <!-- VALUE FROM VC -->
+                <div *ngIf="fieldValue" class="node-details-section">
+                    <div class="section-label">Field value in VC</div>
+                    <div class="section-value">
+                        {{ fieldValue }}
+                    </div>
+                </div>
+
+                <!-- FIELD PATH -->
+                <div *ngIf="fieldPath" class="node-details-section">
+                    <div class="section-label">Field path</div>
+                    <div class="section-value">
+                        {{ fieldPath }}
+                    </div>
+                </div>
+
+                <!-- DOCUMENT NAME -->
+                <div *ngIf="nodeDocument" class="node-details-section">
+                    <div class="section-label">Document (VC)</div>
+                    <div class="section-value">
+                        {{ nodeDocument }}
+                    </div>
+                </div>
+
+                <!-- PARENT DOCUMENTS -->
+                <div *ngIf="parentDocuments?.length" class="node-details-section">
+                    <div class="section-label">Parent documents</div>
+                    <ul class="section-list">
+                        <li *ngFor="let doc of parentDocuments">
+                            {{ doc }}
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
