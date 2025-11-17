@@ -38,7 +38,7 @@
                 </div>
 
                 <!-- VALUE (value + status) -->
-                <div *ngIf="fieldValue || valueStatus === 'Missing'" class="node-details-section">
+                <div *ngIf="fieldValue !== null && fieldValue !== undefined || valueStatus === 'Missing'" class="node-details-section">
                     <div class="section-label">Value</div>
                     <div class="section-value">
                         {{ fieldValue }}

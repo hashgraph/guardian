@@ -234,8 +234,6 @@ export class FormulasGraphTabComponent implements OnChanges {
             return;
         }
 
-        console.log('node', node)
-
         this.clearSelection();
 
         this.selectedNode = node;
@@ -283,7 +281,7 @@ export class FormulasGraphTabComponent implements OnChanges {
         const payload = rawNode.data.payload;
         const itemType = payload.type;
 
-        if (itemType === 'Not null') {
+        if (itemType === 'constant') {
             return 'status-none';
         }
 
