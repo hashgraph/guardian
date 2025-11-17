@@ -12,7 +12,7 @@ import {TreeGraphComponent} from 'src/app/modules/common/tree-graph/tree-graph.c
 import {TreeNode} from 'src/app/modules/common/tree-graph/tree-node';
 import {TreeSource} from 'src/app/modules/common/tree-graph/tree-source';
 
-type ValueStatus = 'Missing' | 'Default' | 'As suggested' | 'Not null';
+type ValueStatus = 'Missing' | 'Default' | 'Suggested' | 'Not null';
 
 interface GraphNodeData {
     title: string;
@@ -49,13 +49,14 @@ export class FormulasGraphTabComponent implements OnChanges {
     public title: string | null = null
     public nodeDocument: string | null = null;
     public parentDocuments: string[] = [];
-    public fieldName: string | null = null;
+    public fieldDescription: string | null = null;
     public fieldPath: string | null = null;
     public fieldValue: any = null;
     public itemType: string | null = null;
     public itemValue: any = null;
     public valueStatus: ValueStatus | null = null;
     public fieldType: string | null = null;
+    public showTechnicalDetails = false;
 
     public ngOnChanges(): void {
         this.source = this.buildGraph(this.tree, this.schema, this.path);
@@ -206,10 +207,25 @@ export class FormulasGraphTabComponent implements OnChanges {
         }
 
         if (this.valuesEqual(value, schemaSuggested)) {
-            return 'As suggested';
+            return 'Suggested';
         }
 
         return 'Not null';
+    }
+
+    public clearSelection(): void {
+        this.selectedNode = null;
+        this.title = null;
+        this.nodeDocument = null;
+        this.parentDocuments = [];
+        this.fieldDescription = null;
+        this.fieldPath = null;
+        this.fieldValue = null;
+        this.itemType = null;
+        this.itemValue = null;
+        this.valueStatus = null;
+        this.fieldType = null;
+        this.showTechnicalDetails = false;
     }
 
     public onSelect(node: TreeNode<GraphNodeData> | null): void {
@@ -218,47 +234,56 @@ export class FormulasGraphTabComponent implements OnChanges {
             return;
         }
 
-        this.selectedNode = node;
+        console.log('node', node)
 
-        this.title = node.data.title.toUpperCase();
+        this.clearSelection();
+
+        this.selectedNode = node;
+        this.title = node.data.title;
+
         const payload = node.data.payload;
         const linkItem = payload._linkItem;
-        this.fieldValue = linkItem.value
 
-        this.fieldPath = linkItem._path;
-        this.fieldName = linkItem._field.title
+        this.itemType = payload.type ?? null;
+        this.itemValue = payload.value ?? (payload as any)._value ?? null;
 
-        const schemaDefault = linkItem._field.default;
+        if (linkItem) {
+            this.fieldValue = linkItem.value;
+            this.fieldPath = linkItem._path;
+            this.fieldDescription = linkItem._field.description ?? null;
 
-        this.itemType = payload.type;
-        this.itemValue = payload.value;
+            const schemaDefault = linkItem._field.default;
+            const schemaSuggested = linkItem._field.suggest;
 
-        const fieldMeta = linkItem._field;
-        this.fieldType = this.parseJSON(this.fieldValue);
+            this.valueStatus = this.calcValueStatus(
+                linkItem.value,
+                schemaDefault,
+                schemaSuggested,
+            );
 
-        const schemaSuggested = fieldMeta?.suggest;
+            this.fieldType = this.parseJSON(linkItem.value);
 
-        this.valueStatus = this.calcValueStatus(
-            linkItem.value,
-            schemaDefault,
-            schemaSuggested,
-        );
-
-        const schemaNamesChain = this.buildSchemaNamesChain(linkItem._schema, linkItem._path);
-        this.nodeDocument = schemaNamesChain.at(-1) ?? null;
-        schemaNamesChain.pop();
-        this.parentDocuments = schemaNamesChain;
-    }
-
-    public clearSelection(): void {
-        this.selectedNode = null;
+            const schemaNamesChain = this.buildSchemaNamesChain(linkItem._schema, linkItem._path);
+            this.nodeDocument = schemaNamesChain.at(-1) ?? null;
+            schemaNamesChain.pop();
+            this.parentDocuments = schemaNamesChain;
+        } else {
+            this.fieldValue = null;
+            this.fieldPath = null;
+            this.fieldDescription = null;
+            this.fieldType = null;
+            this.valueStatus = null;
+            this.nodeDocument = null;
+            this.parentDocuments = [];
+            this.showTechnicalDetails = false;
+        }
     }
 
     public getNodeStatusClass(rawNode: GraphNode): string {
         const payload = rawNode.data.payload;
         const itemType = payload.type;
 
-        if (itemType !== 'variable' && itemType !== 'text') {
+        if (itemType === 'Not null') {
             return 'status-none';
         }
 
@@ -278,12 +303,16 @@ export class FormulasGraphTabComponent implements OnChanges {
                 return 'status-missing';
             case 'Default':
                 return 'status-default';
-            case 'As suggested':
-                return 'status-asSuggested';
+            case 'Suggested':
+                return 'status-as-suggested';
             case 'Not null':
                 return 'status-notNull';
             default:
                 return 'status-none';
         }
+    }
+
+    public toggleTechnicalDetails(): void {
+        this.showTechnicalDetails = !this.showTechnicalDetails;
     }
 }

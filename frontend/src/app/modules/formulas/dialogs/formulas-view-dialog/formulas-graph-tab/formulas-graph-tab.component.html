@@ -3,6 +3,7 @@
 
         <div class="tree-container">
             <app-tree-graph
+                [width]="220"
                 (init)="initGraph($event)"
                 (render)="onRender()"
                 (select)="onSelect($event)"
@@ -23,7 +24,7 @@
             </app-tree-graph>
         </div>
 
-        <div class="node-details" [attr.hidden-node]="!selectedNode">
+        <div *ngIf="selectedNode" class="node-details">
             <div *ngIf="selectedNode as item" class="node-details-container">
 
                 <!--TITLE -->
@@ -36,19 +37,27 @@
                     </div>
                 </div>
 
-                <!-- VALUE STATUS -->
-                <div *ngIf="valueStatus" class="node-details-section">
-                    <div class="section-label">Value status</div>
+                <!-- VALUE (value + status) -->
+                <div *ngIf="fieldValue || valueStatus === 'Missing'" class="node-details-section">
+                    <div class="section-label">Value</div>
                     <div class="section-value">
-                        {{ valueStatus }}
+                        {{ fieldValue }}
+
+                        <span
+                            *ngIf="valueStatus && valueStatus !== 'Not null'"
+                            class="value-status-chip"
+                            [ngClass]="selectedNode ? getNodeStatusClass(selectedNode) : null"
+                        >
+                            {{ valueStatus }}
+                        </span>
                     </div>
                 </div>
 
-                <!-- FIELD VALUE TYPE -->
-                <div *ngIf="fieldType" class="node-details-section">
-                    <div class="section-label">Field value type</div>
+                <!-- FIELD DESCRIPTION IN DOCUMENT -->
+                <div *ngIf="fieldDescription" class="node-details-section">
+                    <div class="section-label">Field description</div>
                     <div class="section-value">
-                        {{ fieldType }}
+                        {{ fieldDescription }}
                     </div>
                 </div>
 
@@ -60,32 +69,11 @@
                     <div class="section-value" *ngIf="itemType !== 'formula'">
                         {{ itemValue }}
                     </div>
-                    <div class="section-value" *ngIf="itemType === 'formula'">
-                        <math-live [value]="itemValue" [readonly]="true"></math-live>
-                    </div>
-                </div>
-
-                <!-- FIELD NAME IN DOCUMENT -->
-                <div *ngIf="fieldName" class="node-details-section">
-                    <div class="section-label">Field name in document</div>
-                    <div class="section-value">
-                        {{ fieldName }}
-                    </div>
-                </div>
-
-                <!-- VALUE FROM VC -->
-                <div *ngIf="fieldValue" class="node-details-section">
-                    <div class="section-label">Field value in VC</div>
-                    <div class="section-value">
-                        {{ fieldValue }}
-                    </div>
-                </div>
-
-                <!-- FIELD PATH -->
-                <div *ngIf="fieldPath" class="node-details-section">
-                    <div class="section-label">Field path</div>
-                    <div class="section-value">
-                        {{ fieldPath }}
+                    <div class="section-value formula-value" *ngIf="itemType === 'formula'">
+                        <math-live
+                            [value]="itemValue"
+                            [readonly]="true">
+                        </math-live>
                     </div>
                 </div>
 
@@ -105,6 +93,39 @@
                             {{ doc }}
                         </li>
                     </ul>
+                </div>
+
+                <!-- TECHNICAL DETAILS SECTION -->
+                <div *ngIf="fieldType || fieldPath" class="technical-section">
+                    <div class="technical-header" (click)="toggleTechnicalDetails()">
+                        <div class="technical-title">
+                            Technical details
+                        </div>
+                        <div class="technical-icon">
+                            <i
+                                class="pi"
+                                [ngClass]="showTechnicalDetails ? 'pi-chevron-up' : 'pi-chevron-down'"
+                            ></i>
+                        </div>
+                    </div>
+
+                    <div *ngIf="showTechnicalDetails" class="technical-content">
+                        <!-- FIELD VALUE TYPE -->
+                        <div *ngIf="fieldType" class="node-details-section">
+                            <div class="section-label">Field value type</div>
+                            <div class="section-value">
+                                {{ fieldType }}
+                            </div>
+                        </div>
+
+                        <!-- FIELD PATH -->
+                        <div *ngIf="fieldPath" class="node-details-section">
+                            <div class="section-label">Field path</div>
+                            <div class="section-value">
+                                {{ fieldPath }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div>
