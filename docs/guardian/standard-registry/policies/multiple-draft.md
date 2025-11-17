@@ -30,11 +30,11 @@ This action creates a _VC document_ in the Guardian database that:
 A Project Developer begins filling the _Project Data_ section but lacks some measurements.\
 They can select Save Draft to store progress safely, then return later to complete and validate the form.
 
-<figure><img src="../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Saved drafts can be edited, an additional option ‘EditType’ has been added to the request block for this purpose
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Draft Event Logic in Configurator
 
@@ -51,7 +51,7 @@ Example Implementation
 
 This structure ensures consistent validation flow and prevents overwriting finalized records.
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3. UI Enhancements — Auto-Save
 
@@ -75,4 +75,4 @@ When reopening an AMS-III.AR form, Guardian prompts:
 
 This ensures the user can always recover recent unsaved progress.
 
-<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1).png" alt=""><figcaption></figcaption></figure>

@@ -1,3 +1,7 @@
+---
+icon: house-tsunami
+---
+
 # VM0033 Methodology for Tidal Wetland and Seagrass Restoration
 
 [Introduction](vm0033-methodology-for-tidal-wetland-and-seagrass-restoration.md#introduction)
@@ -33,7 +37,7 @@ Key features of VM0033 include:
 
 By providing a standardized approach to quantifying GHG benefits from these restoration activities, VM0033 enables project developers to access carbon finance, potentially making more restoration projects economically viable. This methodology thus represents an important tool in the global effort to mitigate climate change while protecting and enhancing critical coastal and marine ecosystems.
 
-## Need and Use for the VM0033&#x20;
+## Need and Use for the VM0033
 
 The need for VM0033 arises from the urgent global imperatives of climate change mitigation and coastal ecosystem protection. Tidal wetlands and seagrass meadows are among the most productive ecosystems on Earth, capable of sequestering carbon at rates far exceeding those of many terrestrial forests. However, these "blue carbon" ecosystems are also among the most threatened, facing pressures from coastal development, pollution, and sea level rise.
 
@@ -84,15 +88,100 @@ Verified Carbon Units (VCUs), each equivalent to one tonne of CO2 equivalent emi
 
 ## Step By Step
 
-1. Project Proponent creates an account and initiates a new project.
-2. Project Proponent submits the Project Description and supporting documentation.
-3. Verra reviews the submission for completeness and assigns a VVB.
-4. VVB conducts validation of the project documentation.
-5. Upon successful validation, Verra registers the project.
-6. Project Proponent implements the project and collects monitoring data.
-7. Project Proponent submits a Monitoring Report.
-8. VVB verifies the Monitoring Report and emission reduction calculations.
-9. Upon successful verification, Verra issues VCUs to the Project Proponent.
-10. The issued VCUs are recorded on the Hedera ledger, ensuring transparency and traceability.
+1. Import the policy using a policy file, IPFS timestamp, or by selecting a policy from the open-source library.
 
-\[TODO: Detailed steps with screenshots to be added]
+<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+2. Set the policy to Dry-Run for quick testing, or publish the policy once it has passed UAT.
+
+<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+
+3. In Dry-Run, create a user by selecting the Create User button. Then open the user dropdown and select Virtual User 1.
+
+<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+
+4. Assign Virtual User 1 a role. The available roles include Project Proponent or VVB.
+
+<figure><img src="../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+
+5. If you assign the Project Proponent role, the user can now create a project. A form will appear, and the user can choose either the VCS Project Description v4.4 template or the VCS-CCB Project Description v4.4/v3.0 template.
+
+<figure><img src="../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+
+6. Once the form is submitted, the project will appear as a new row in the UI.
+
+<figure><img src="../../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
+
+7. To create a VVB role, select Create User again and choose Virtual User 2 in the user dropdown. Assign the VVB role to Virtual User 2.
+
+<figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+
+8. Switch to the Administrator role using the user dropdown. As the Administrator, approve the VVB user and add the project to the project pipeline. All documents submitted by each user are visible to the Administrator by selecting VC Document.
+
+<figure><img src="../../../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
+
+9. To assign the project for validation, switch back to the Project Proponent account and select the appropriate VVB in the Assign dropdown.
+
+<figure><img src="../../../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
+
+10. The VVB can now view the submitted Project Description by selecting VC Document. If everything is correct, the VVB can approve it. A Validation Report button will then appear, allowing the VVB to submit a validation report using either the VCS template or the VCS-CCB template.
+
+<figure><img src="../../../.gitbook/assets/image (20).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (22).png" alt=""><figcaption></figcaption></figure>
+
+11. Switch back to the Administrator role. The Administrator will now be able to see and approve the submitted validation report. The updated status will be displayed for the Project Proponent.
+
+<figure><img src="../../../.gitbook/assets/image (23).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (24).png" alt=""><figcaption></figcaption></figure>
+
+12. The Project Proponent can now submit the Monitoring Report and assign it to the VVB for verification.
+
+<figure><img src="../../../.gitbook/assets/image (25).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (26).png" alt=""><figcaption></figcaption></figure>
+
+13. The verification process follows a similar flow. The VVB can open the VC to confirm that the Monitoring Report is correct and complete. Once approved, the VVB can submit a Verification Report.
+
+<figure><img src="../../../.gitbook/assets/image (27).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (28).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (29).png" alt=""><figcaption></figcaption></figure>
+
+14. The Administrator can review and approve the Verification Report. Once approved, the Administrator can issue credits based on the Monitoring Report's calculation results for ERRs. The verified status will also be displayed for the Project Proponent.
+
+<figure><img src="../../../.gitbook/assets/image (30).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (31).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (32).png" alt=""><figcaption></figcaption></figure>
+
+15. A TrustChain will be available once the credits are issued and will display all information associated with the data and workflow steps that led to the ERRs.
+
+<figure><img src="../../../.gitbook/assets/image (33).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (34).png" alt=""><figcaption></figcaption></figure>

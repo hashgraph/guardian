@@ -23,7 +23,7 @@ This is used for setting Permissions for a block, which limits which users can s
 
 <figure><img src="../../../../.gitbook/assets/image (1) (4).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (33) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (33) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:** Permissions do not affect the Block via Events.
@@ -70,7 +70,7 @@ Groups are separate sets of documents access , which can be limited to users who
 
 When a policy contains multiple groups, users have an option to switch between those they are included in. The selection menu also allows to switch to the ‘no group’ default state, i.e. the state in which the user is not acting as a member of any group.
 
-<figure><img src="../../../../.gitbook/assets/image (32).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (32) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Demo Video
 

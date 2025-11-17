@@ -28,7 +28,7 @@
 
 4\) At the token creation the system can be configured to delegate all permissions for wiping tokens to a specific wiping contract
 
-<figure><img src="../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 5\) _SRs_ can add pools with tokens which have a wipe contract (Set pool operation in retire contract).
 
@@ -46,7 +46,7 @@ Also you can check “without approval” to set retirement tokens as immediate 
 
 Now, we should be able to configure Hedera and Token Identifier during creation oof Wipe requests.
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 8\) To execute the retirement Guardian users which hold USER role navigate to the ‘Retire’ tab and click on ‘Retire’ button, choose appropriate pool and set token count/serials
 

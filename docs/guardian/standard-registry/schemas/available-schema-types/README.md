@@ -100,14 +100,13 @@ For all fields of type string with different formats (e.g., `url`, `uri`, `file`
 * The validation is applied only for published policies. For draft policies, validation is disabled.
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
-For geoJSON fields :\
-
+For geoJSON fields :\\
 
 * A new property `availableOptions` has been added.
-* On the UI, a dropdown list is displayed to select which geoJSON types are available.&#x20;
+* On the UI, a dropdown list is displayed to select which geoJSON types are available.
 * If certain types are selected, then when creating a document, the `geoJSON` field will only allow choosing those specific types.
 * Validation has also been added for the `geoJSON` field to ensure that values comply with the rules of the selected geoJSON type.
 {% endhint %}

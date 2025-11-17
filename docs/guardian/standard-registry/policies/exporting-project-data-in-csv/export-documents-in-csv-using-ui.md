@@ -20,7 +20,7 @@ icon: computer
 * Filters include schemes, owners (for the **SR** role), tokens, and related documents.
 * To filter by related documents, first select one or more documents from the table, then click **"Find all related"**.
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. Users can also access the **"Export documents"** page directly from the document dialog window during policy execution.\
    \&#xNAN;_(See screenshot 4)_

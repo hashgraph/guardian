@@ -55,7 +55,7 @@ Associate owner with CET (Click on tokens from the nav link and click on the ass
 
 Open policy `Tymlez CET` and fill in the owner information when the screen has loaded and select role as `TOKEN_OWNER`
 
-<figure><img src="../../../.gitbook/assets/image (32) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (32) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 After confirming the roles, enter the Project Owner information in the dialog.
 
