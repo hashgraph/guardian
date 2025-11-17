@@ -69,6 +69,8 @@
         font-weight: 600;
         line-height: 16px;
         color: #23252e;
+
+        text-transform: capitalize;
     }
 
     .node-fields {
@@ -93,14 +95,22 @@
 
 .node-details {
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 320px;
-    height: 100%;
+    top: 24px;
+    right: 24px;
+    bottom: 24px;
+    width: 340px;
+
     background: var(--guardian-background, #ffffff);
     border-left: 1px solid var(--guardian-border-color, #e1e7ef);
-    box-shadow: -4px 0 8px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
+    border-radius: 12px;
+
+    padding: 24px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
     z-index: 2;
 }
 
@@ -112,7 +122,6 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 16px 16px 24px 16px;
     box-sizing: border-box;
     font-family: Inter, sans-serif;
     font-size: 12px;
@@ -130,12 +139,13 @@
     font-size: 14px;
     font-weight: 600;
     line-height: 18px;
+    text-transform: capitalize;
 }
 
 .node-details-close {
     cursor: pointer;
-    font-size: 16px;
-    line-height: 16px;
+    font-size: 20px;
+    line-height: 20px;
     padding: 4px;
     border-radius: 4px;
 
@@ -145,15 +155,14 @@
 }
 
 .node-details-section {
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .section-label {
     font-size: 11px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    color: #848fa9;
-    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #23252e;
 }
 
 .section-value {
@@ -188,17 +197,20 @@
     background-color: #ffffff;
 }
 
-.tree-node.status-missing {
+.tree-node.status-missing,
+.value-status-chip.status-missing {
     border-color: #e53935;
     background-color: #ffebee;
 }
 
-.tree-node.status-default {
+.tree-node.status-default,
+.value-status-chip.status-default {
     border-color: #fdd835;
     background-color: #fffde7;
 }
 
-.tree-node.status-asSuggested {
+.tree-node.status-as-suggested,
+.value-status-chip.status-as-suggested{
     border-color: #fb8c00;
     background-color: #fff3e0;
 }
@@ -206,4 +218,57 @@
 .tree-node.status-notNull {
     border-color: #43a047;
     background-color: #e8f5e9;
+}
+
+:host ::ng-deep math-field {
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+    min-height: 20px !important;
+}
+.value-status-chip {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 8px;
+
+    background: #edf1f7;
+    color: #23252e;
+
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.tree-node.selected-type-selected {
+    border-width: 3px;
+    transform: translateY(-1px);
+}
+
+.technical-section {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--guardian-border-color, #e1e7ef);
+}
+
+.technical-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.technical-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #23252e;
+}
+
+.technical-icon {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+}
+
+.technical-content {
+    margin-top: 8px;
 }
