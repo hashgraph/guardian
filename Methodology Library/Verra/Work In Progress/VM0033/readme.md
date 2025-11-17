@@ -6,9 +6,9 @@
   - [Introduction](#introduction)
   - [Need and Use for the VM0033 Policy](#need-and-use-for-the-vm0033-policy)
   - [Policy Guide](#policy-guide)
-    - [Available Roles](#available-roles)
-    - [Important Documents \& Schemas](#important-documents--schemas)
-    - [Token (Verified Carbon Unit)](#token-verified-carbon-unit)
+  - [Available Roles](#available-roles)
+  - [Important Documents \& Schemas](#important-documents--schemas)
+  - [Token (Verified Carbon Unit)](#token-verified-carbon-unit)
   - [Step by Step](#step-by-step)
 
 ## Introduction
