@@ -8,8 +8,6 @@ icon: house-tsunami
 
 [Need and Use for the VM0033](vm0033-methodology-for-tidal-wetland-and-seagrass-restoration.md#need-and-use-for-the-vm0033)
 
-[Policy Workflow](vm0033-methodology-for-tidal-wetland-and-seagrass-restoration.md#policy-workflow)
-
 [Policy Guide](vm0033-methodology-for-tidal-wetland-and-seagrass-restoration.md#policy-guide)
 
 [Available Roles](vm0033-methodology-for-tidal-wetland-and-seagrass-restoration.md#available-roles)
@@ -57,10 +55,6 @@ The digitization of VM0033 on the **Hedera Guardian** enhances its utility by:
 4. Facilitating Monitoring: Enabling more efficient and accurate monitoring of project outcomes over time.
 
 VM0033 on Guardian platform is set to become a powerful tool for scaling up tidal wetland and seagrass restoration efforts globally, contributing significantly to both climate change mitigation and coastal ecosystem conservation.
-
-## Policy Workflow
-
-TBD
 
 ## Policy Guide
 
