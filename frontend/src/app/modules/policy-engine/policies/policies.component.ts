@@ -85,7 +85,13 @@ class MenuButton {
     }
 }
 
-const columns = [{
+const columns = [ {
+    id: 'select',
+    size: '50',
+    permissions: (user: UserPermissions, type: LocationType) => {
+        return user.POLICIES_POLICY_DELETE;
+    }
+},  {
     id: 'name',
     permissions: (user: UserPermissions, type: LocationType) => {
         return true;
@@ -215,6 +221,10 @@ export class PoliciesComponent implements OnInit {
     public noFilterResults: boolean = false;
     private columns: string[] = [];
     private columnSize = new Map<string, string | undefined>();
+
+    public isAllSelected: boolean = false;
+    public selectedItems: any[] = [];
+
     private publishMenuOption = [
         {
             id: 'Publish',
@@ -1790,5 +1800,95 @@ export class PoliciesComponent implements OnInit {
             },
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => { });
+    }
+
+    public onSelectAllItems(event: any) {
+        if (event.checked) {
+            this.selectedItems = [...this.policiesList.filter((item: any) => item.status === PolicyStatus.DRAFT ||
+                 item.status === PolicyStatus.DEMO)];
+        } else {
+            this.selectedItems = [];
+        }
+    }
+
+    public onSelectItem(item: any) {
+        const index = this.selectedItems.indexOf(item);
+        if (index === -1) {
+            this.selectedItems.push(item);
+        } else {
+            this.selectedItems.splice(index, 1);
+        }
+
+        this.isAllSelected = this.selectedItems.length === this.policiesList.length;
+    }
+
+    public isSelected(item: any) {
+        return this.selectedItems.includes(item);
+    }
+
+    public isAnyItemSelected() {
+        return this.selectedItems.length > 0;
+    }
+
+    public isAnyDeleteDisabled() {
+        return !this.policiesList.some(item => item.status === PolicyStatus.DRAFT || item.status === PolicyStatus.DEMO);
+    }
+
+    public isDeleteDisabled(item: any) {
+        return item.status !== PolicyStatus.DRAFT && item.status !== PolicyStatus.DEMO;
+    }
+
+    public onDeleteItems() {
+        if (this.selectedItems?.length > 0) {
+            const dialogRef = this.dialogService.open(DeletePolicyDialogComponent, {
+                header: 'Delete Policies',
+                width: '720px',
+                styleClass: 'custom-dialog',
+                data: {
+                    notificationText: 'Are you sure want to delete these policies?',
+                    itemNames: this.selectedItems.map(item => item.name),
+                },
+            });
+            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
+                if (!result) {
+                    return;
+                }
+
+                this.loading = true;
+                this.policyEngineService.pushDeleteMultiple(this.selectedItems.map(item => item.id)).pipe(takeUntil(this._destroy$)).subscribe(
+                    async (result) => {
+                        // todo indexer delete
+                        // await this.indexedDb.delete(DB_NAME.GUARDIAN, STORES_NAME.POLICY_STORAGE, policy?.id);
+
+                        // const databaseName = DB_NAME.TABLES;
+                        // const storeNames = [
+                        //     STORES_NAME.FILES_STORE,
+                        //     STORES_NAME.DRAFT_STORE
+                        // ];
+                        // const keyPrefix = `${policy?.id}__`;
+
+                        // await this.indexedDb.clearByKeyPrefixAcrossStores(
+                        //     databaseName,
+                        //     storeNames,
+                        //     keyPrefix
+                        // );
+
+                        // this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policy.id).catch(() =>{
+                        //     //
+                        // })
+
+                        const { taskId, expectation } = result;
+                        this.router.navigate(['task', taskId], {
+                            queryParams: {
+                                last: btoa(location.href),
+                            },
+                        });
+                    },
+                    (e) => {
+                        this.loading = false;
+                    }
+                );
+            });
+        }
     }
 }

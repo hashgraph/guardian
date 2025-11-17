@@ -261,6 +261,16 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Async delete tokens
+     * @param tokenId
+     * @param task
+     */
+    public async deleteTokensAsync(tokenIds: string[], owner: IOwner, task: NewTask): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.DELETE_TOKENS_ASYNC, { tokenIds, owner, task });
+    }
+
+
+    /**
      * Freeze token
      * @param tokenId
      * @param username

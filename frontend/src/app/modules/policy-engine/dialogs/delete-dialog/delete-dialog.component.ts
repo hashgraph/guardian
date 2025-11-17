@@ -2,19 +2,21 @@ import { Component, OnInit } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
-    selector: 'app-delete-policy-dialog',
-    templateUrl: './delete-policy-dialog.component.html',
-    styleUrls: ['./delete-policy-dialog.component.scss'],
+    selector: 'app-delete-dialog',
+    templateUrl: './delete-dialog.component.html',
+    styleUrls: ['./delete-dialog.component.scss'],
 })
-export class DeletePolicyDialogComponent implements OnInit {
+export class DeleteDialogComponent implements OnInit {
     loading = true;
     notificationText: string;
+    itemNames: string[];
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig
     ) {
         this.notificationText = this.config.data.notificationText;
+        this.itemNames = this.config.data.itemNames;
     }
 
     ngOnInit() {

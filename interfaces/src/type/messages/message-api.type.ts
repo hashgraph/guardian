@@ -18,6 +18,7 @@ export enum MessageAPI {
     UPDATE_TOKEN = 'update-token',
     UPDATE_TOKEN_ASYNC = 'update-token-async',
     DELETE_TOKEN_ASYNC = 'delete-token-async',
+    DELETE_TOKENS_ASYNC = 'delete-tokens-async',
     IMPORT_TOKENS = 'import-tokens',
     GET_VP_DOCUMENTS = 'get-vp-documents',
     GET_CHAIN = 'get-chain',

@@ -45,6 +45,7 @@ export enum PolicyEngineEvents {
     DRY_RUN_BLOCK_HISTORY = 'policy-engine-event-dry-run-block-history',
     GET_VIRTUAL_DOCUMENTS = 'policy-engine-event-get-virtual-documents',
     DELETE_POLICY_ASYNC = 'policy-engine-event-delete-policy-async',
+    DELETE_POLICIES_ASYNC = "policy-engine-event-delete-policies-async",
     GET_INVITE = 'policy-engine-event-get-invite',
     GET_POLICY_GROUPS = 'policy-engine-event-get-policy-groups',
     SELECT_POLICY_GROUP = 'policy-engine-event-select-policy-group',

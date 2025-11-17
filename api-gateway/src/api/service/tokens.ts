@@ -606,6 +606,78 @@ export class TokensApi {
             await InternalException(error, this.logger, user.id);
         }
     }
+    
+    /**
+     * Delete tokens
+     */
+    @Post('/push/delete-multiple')
+    @Auth(
+        Permissions.TOKENS_TOKEN_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Delete multiple tokens.',
+        description: 'Delete multiple tokens by their IDs.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'tokenIds',
+        type: [String],
+        description: 'Token Ids',
+        required: true,
+        example: [Examples.DB_ID]
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async deleteTokensAsync(
+        @AuthUser() user: IAuthUser,
+        @Body('tokenIds') tokenIds: string[],
+        @Req() req
+    ): Promise<any> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            
+            const tokenObjects = await guardians.getTokens({ ids: tokenIds }, owner);
+
+            if (tokenObjects?.length <= 0) {
+                throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
+            }
+
+            if (tokenObjects.some(token => token.owner !== owner.owner)) {
+                throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN);
+            }
+
+            const engineService = new PolicyEngine();
+            const map = await engineService.getTokensMap(owner);
+            setTokensPolicies(tokenObjects, map, undefined, false);
+
+            var canDeleteResult = tokenObjects.find(token => !token.canDelete);
+            if (canDeleteResult) {
+                throw new HttpException(`Token ${canDeleteResult.tokenName} (${canDeleteResult.tokenId}) cannot be deleted.`, HttpStatus.FORBIDDEN);
+            }
+
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.DELETE_TOKENS, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                await guardians.deleteTokensAsync(tokenIds, owner, task);
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+            });
+
+            return task;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
 
     /**
      * Associate

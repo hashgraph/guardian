@@ -147,6 +147,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 this.toHome();
                 return;
             case TaskAction.DELETE_TOKEN:
+            case TaskAction.DELETE_TOKENS:
             case TaskAction.UPDATE_TOKEN:
             case TaskAction.CREATE_TOKEN:
                 setTimeout(() => {
@@ -323,6 +324,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }
                 break;
             case TaskAction.DELETE_POLICY:
+            case TaskAction.DELETE_POLICIES:
             case TaskAction.MIGRATE_DATA:
                 if (result?.length > 0) {
                     this.informService.warnMessage(
@@ -387,6 +389,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 this.toHome();
                 break;
             case TaskAction.DELETE_TOKEN:
+            case TaskAction.DELETE_TOKENS:
             case TaskAction.UPDATE_TOKEN:
             case TaskAction.CREATE_TOKEN:
                 setTimeout(() => {
@@ -404,6 +407,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.WIZARD_CREATE_POLICY:
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:
+            case TaskAction.DELETE_POLICIES:
             case TaskAction.MIGRATE_DATA:
                 setTimeout(() => {
                     this.router.navigate(['policy-viewer'], {
