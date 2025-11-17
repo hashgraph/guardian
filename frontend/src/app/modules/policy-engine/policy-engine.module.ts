@@ -131,7 +131,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { TabViewModule } from 'primeng/tabview';
 import { DialogModule } from 'primeng/dialog';
-import { DeletePolicyDialogComponent } from './dialogs/delete-policy-dialog/delete-policy-dialog.component';
+import { DeleteDialogComponent } from './dialogs/delete-dialog/delete-dialog.component';
 import { ProgressTrackerComponent } from './policy-viewer/progress-tracker/progress-tracker.component';
 import { PolicyProgressService } from './services/policy-progress.service';
 import { InputSwitchModule } from 'primeng/inputswitch';
@@ -260,7 +260,7 @@ import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialo
         MessagesReportBlockComponent,
         ViewerDialog,
         SearchBlocksComponent,
-        DeletePolicyDialogComponent,
+        DeleteDialogComponent,
         ProgressTrackerComponent,
         RecordControllerComponent,
         RecordResultDialog,

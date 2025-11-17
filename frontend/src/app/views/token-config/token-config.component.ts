@@ -14,7 +14,7 @@ import { UntypedFormGroup } from '@angular/forms';
 import { ContractService } from 'src/app/services/contract.service';
 import { TokenDialogComponent } from 'src/app/components/token-dialog/token-dialog.component';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
-import { DeletePolicyDialogComponent } from 'src/app/modules/policy-engine/dialogs/delete-policy-dialog/delete-policy-dialog.component';
+import { DeleteDialogComponent } from 'src/app/modules/policy-engine/dialogs/delete-dialog/delete-dialog.component';
 
 enum OperationMode {
     None, Kyc, Freeze
@@ -507,7 +507,7 @@ export class TokenConfigComponent implements OnInit {
     }
 
     public questToDeleteToken(token: any) {
-        const dialogRef = this.dialog.open(DeletePolicyDialogComponent, {
+        const dialogRef = this.dialog.open(DeleteDialogComponent, {
             header: 'Delete Tokens',
             width: '720px',
             styleClass: 'custom-dialog',
@@ -683,7 +683,7 @@ export class TokenConfigComponent implements OnInit {
 
     public onDeleteItems() {
         if (this.selectedItems?.length > 0) {
-            const dialogRef = this.dialog.open(DeletePolicyDialogComponent, {
+            const dialogRef = this.dialog.open(DeleteDialogComponent, {
                 header: 'Delete Tokens',
                 width: '720px',
                 styleClass: 'custom-dialog',

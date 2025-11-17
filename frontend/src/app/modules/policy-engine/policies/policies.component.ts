@@ -33,7 +33,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
-import { DeletePolicyDialogComponent } from '../dialogs/delete-policy-dialog/delete-policy-dialog.component';
+import { DeleteDialogComponent } from '../dialogs/delete-dialog/delete-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
 import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
@@ -973,7 +973,7 @@ export class PoliciesComponent implements OnInit {
     }
 
     public deletePolicy(policy?: any) {
-        const dialogRef = this.dialogService.open(DeletePolicyDialogComponent, {
+        const dialogRef = this.dialogService.open(DeleteDialogComponent, {
             header: 'Delete Policy',
             width: '720px',
             styleClass: 'custom-dialog',
@@ -1025,7 +1025,7 @@ export class PoliciesComponent implements OnInit {
     }
 
     public deleteAllSchemas(policy?: any) {
-        const dialogRef = this.dialogService.open(DeletePolicyDialogComponent, {
+        const dialogRef = this.dialogService.open(DeleteDialogComponent, {
             header: 'Delete Schemas',
             width: '720px',
             styleClass: 'custom-dialog',
@@ -1840,7 +1840,7 @@ export class PoliciesComponent implements OnInit {
 
     public onDeleteItems() {
         if (this.selectedItems?.length > 0) {
-            const dialogRef = this.dialogService.open(DeletePolicyDialogComponent, {
+            const dialogRef = this.dialogService.open(DeleteDialogComponent, {
                 header: 'Delete Policies',
                 width: '720px',
                 styleClass: 'custom-dialog',
