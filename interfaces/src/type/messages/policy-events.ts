@@ -50,4 +50,6 @@ export enum PolicyEvents {
     RESTORE_UPDATE_BROADCAST = 'policy-event-restore-update-broadcast',
     DRY_RUN_BLOCK = 'policy-event-dry-run-block',
     APPLY_SAVEPOINT = 'apply-savepoint',
+    CREATE_POLICY_DISCUSSION = 'policy-event-create-policy-discussion',
+    CREATE_POLICY_COMMENT = 'policy-event-create-policy-comment',
 }

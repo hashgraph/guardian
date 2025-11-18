@@ -4,15 +4,6 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyAction, Users } from '@guardian/common';
 
 export class RelayerAccountAction {
-    public static async local(options: {
-        ref: AnyBlockType,
-        user: PolicyUser,
-        relayerAccount: any
-        userId: string | null
-    }): Promise<void> {
-        return;
-    }
-
     public static async request(options: {
         ref: AnyBlockType,
         user: PolicyUser,
@@ -41,13 +32,10 @@ export class RelayerAccountAction {
         row: PolicyAction,
         user: PolicyUser,
         userId: string | null
-    ): Promise<void> {
-        try {
-            const data = row?.document;
-            const relayerAccount = data?.relayerAccount;
-            await (new Users()).createRelayerAccount({ did: user.did, id: userId }, relayerAccount, userId);
-        } catch (error) {
-            return;
-        }
+    ): Promise<boolean> {
+        const data = row?.document;
+        const relayerAccount = data?.relayerAccount;
+        await (new Users()).createRelayerAccount({ did: user.did, id: userId }, relayerAccount, userId);
+        return true;
     }
 }

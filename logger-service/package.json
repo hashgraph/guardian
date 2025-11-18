@@ -5,8 +5,8 @@
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "3.4.0-rc",
-        "@guardian/interfaces": "3.4.0-rc",
+        "@guardian/common": "3.4.0",
+        "@guardian/interfaces": "3.4.0",
         "@mikro-orm/core": "6.4.16",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
@@ -45,5 +45,5 @@
         "watch": "nodemon src/index.ts"
     },
     "type": "module",
-    "version": "3.4.0-rc"
+    "version": "3.4.0"
 }

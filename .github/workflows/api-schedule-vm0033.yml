@@ -18,7 +18,7 @@ jobs:
         mongodb-version: [ 7.0.21 ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
         with:
           egress-policy: audit
 
@@ -82,7 +82,7 @@ jobs:
           port: '4222'
 
       - name: Start MongoDB
-        uses: step-security/mongodb-github-action@248506e2dee6d9dc04e639a3eaeab706cda5abbb # v1.12.2
+        uses: step-security/mongodb-github-action@7263579321780efeb685cdd6a2a356aad687ebab # v1.12.3
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
 
@@ -176,7 +176,7 @@ jobs:
           docker rm -f cypress-test-run || true
 
       - name: Publish API Test Results
-        uses: step-security/publish-unit-test-result-action@5d195d4dec0b9fa7b51a3dbc4298362a021247c7 # v2.20.4
+        uses: step-security/publish-unit-test-result-action@c8537a200a435e2560109a6a8ed9cac838b62656 # v2.20.5
         if: always()
         with:
           files: e2e-tests/cypress/test_results/**/*.xml

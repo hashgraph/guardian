@@ -2618,8 +2618,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public async getPolicyGroups(policyId: string, options?: unknown): Promise<PolicyRolesCollection[]> {
-        return await this.find(PolicyRolesCollection, { policyId }, options);
+    public async getPolicyGroups(filters: any, options?: unknown): Promise<PolicyRolesCollection[]> {
+        return await this.find(PolicyRolesCollection, filters, options);
     }
 
     /**
@@ -5301,5 +5301,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getDebugContexts(policyId: string, tag: string): Promise<DryRun[]> {
         return await new DataBaseHelper(DryRun).find({ policyId, tag });
+    }
+
+    /**
+     * Get Groups
+     * @param filters
+     * @param options
+     *
+     */
+    public static async getPolicyGroups(filters: any, options?: unknown): Promise<PolicyRolesCollection[]> {
+        return await new DataBaseHelper(PolicyRolesCollection).find(filters, options);
     }
 }

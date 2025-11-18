@@ -336,7 +336,6 @@ export class Workers extends NatsService {
         const addTaskToQueue = async (): Promise<void> => {
             const result = await this.sendMessage<any>(QueueEvents.ADD_TASK_TO_QUEUE, task);
             if (!result?.ok) {
-                console.log(result);
                 await addTaskToQueue();
             }
         }

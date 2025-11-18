@@ -1,4 +1,4 @@
-# рџ”Ќ Part II: Analysis and Planning
+# 🔍 Part II: Analysis and Planning
 
 > Methodology analysis and digitization planning using the approach developed during VM0033 digitization
 

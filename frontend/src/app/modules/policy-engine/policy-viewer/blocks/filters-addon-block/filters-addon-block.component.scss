@@ -37,7 +37,7 @@
     flex-direction: column;
     align-self: flex-end;
     flex: 1;
-    height: 38px;
+    height: 40px;
 
     &[valid="false"] ::ng-deep {
         .p-multiselect {
@@ -80,7 +80,7 @@ p-calendar {
 .common-prefix-dropdown {
     background-color: white;
     display: block;
-    height: 38px;
+    height: 40px;
     border: 1px solid #ced4da;
     padding: 9px 6px 9px 12px;
     color: #848FA9;

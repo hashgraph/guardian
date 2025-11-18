@@ -22,5 +22,5 @@
         "prepack": "npm run build"
     },
     "type": "module",
-    "version": "3.4.0-rc"
+    "version": "3.4.0"
 }

@@ -17,6 +17,7 @@ import {
     IStandardRegistryUserResponse,
     IUpdateUserMessage,
     IUser,
+    LocationType,
     UserRole
 } from '@guardian/interfaces';
 import { UserUtils, UserPassword, PasswordType, UserAccessTokenService, UserProp } from '#utils';
@@ -144,6 +145,25 @@ export class AccountService extends NatsService {
                 const { did, userId } = msg;
                 try {
                     const users = await UserUtils.getUsers({ parent: did }, UserProp.WITH_KEYS);
+                    return new MessageResponse(users);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Return remote users
+         * @param did - Parent DID
+         */
+        this.getMessages<any, IGetAllUserResponse[]>(AuthEvents.GET_REMOTE_USERS,
+            async (msg: { did: string, userId: string | null }) => {
+                const { did, userId } = msg;
+                try {
+                    const users = await UserUtils.getUsers({
+                        parent: did,
+                        location: LocationType.REMOTE
+                    }, UserProp.WITH_KEYS);
                     return new MessageResponse(users);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE'], userId);

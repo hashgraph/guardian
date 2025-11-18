@@ -23,7 +23,7 @@ The .env file contains the following parameters:
 | Parameter             | Meaning                                                    |
 | --------------------- | ---------------------------------------------------------- |
 | OPENAI\_API\_KEY      | OpenAI API Key                                             |
-| GPT\_VERSION          | GPT version; by default, it is set to 'gpt-3.5-turbo'      |
+| GPT\_VERSION          | GPT version; by default, it is set to 'gpt-5-nano'      |
 | VECTOR\_STORAGE\_PATH | The path where vector will be stored                       |
 | DOCS\_STORAGE\_PATH   | The path where generated methodology files will be stored. |
 

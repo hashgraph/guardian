@@ -6,3 +6,8 @@ export interface IDiffAction<T extends RestoreEntity> {
     id: string;
     data: T;
 }
+
+export interface IKeyAction {
+    target: string;
+    key: string;
+}

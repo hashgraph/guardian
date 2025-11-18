@@ -8,7 +8,7 @@ icon: trash-can-xmark
 
 When a user attempts to delete a schema from the grid page, a modal window appears to confirm the action and display relevant dependency information.
 
-<figure><img src="../../../.gitbook/assets/image (438).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (438) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Functional Details
 

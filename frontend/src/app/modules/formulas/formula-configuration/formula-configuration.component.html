@@ -19,7 +19,7 @@
                         svgClass="icon-color-secondary">
                     </svg-icon>
                 </div>
-                <div class="guardian-button-label">Back to Policies</div>
+                <div class="guardian-button-label">Back to Formulas</div>
             </button>
         </div>
     
@@ -98,6 +98,7 @@
                 cdkDropList
                 [cdkDropListData]="config.data"
                 (cdkDropListDropped)="drop($event)"
+                cdkScrollable
             >
                 <div 
                     *ngFor="let item of config.data" 

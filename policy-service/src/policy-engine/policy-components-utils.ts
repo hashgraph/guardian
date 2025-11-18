@@ -8,7 +8,7 @@ import {
     PolicyOutputEventType,
     PolicyTagMap
 } from './interfaces/index.js';
-import { BlockType, GenerateUUIDv4, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, IUser, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
 import {
     ActionType,
     AnyBlockType,
@@ -21,7 +21,7 @@ import {
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface.js';
-import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyAction, PolicyRoles, PolicyTool, Users } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyAction, PolicyComment, PolicyDiscussion, PolicyRoles, PolicyTool, Users } from '@guardian/common';
 import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
@@ -723,7 +723,7 @@ export class PolicyComponentsUtils {
         if (block.blockType === BlockType.Tool) {
             block.children = [];
             const tool = await DatabaseServer.getTool({
-                status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN]},
+                status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN] },
                 messageId: block.messageId,
                 hash: block.hash
             });
@@ -1493,6 +1493,24 @@ export class PolicyComponentsUtils {
         }
     }
 
+    /**
+     * Create new diff
+     * @param policyId
+     */
+    public static async backupKeys(
+        policyId: string,
+        options: {
+            comments: {
+                discussion?: string,
+                user?: string,
+            }
+        }
+    ) {
+        if (PolicyComponentsUtils.BackupControllers.has(policyId)) {
+            await PolicyComponentsUtils.BackupControllers.get(policyId).backupKeys(options);
+        }
+    }
+
     public static async restoreState(policyId: string) {
         const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
         for (const uuid of blockList) {
@@ -1737,4 +1755,62 @@ export class PolicyComponentsUtils {
     public static async sentRestoreNotification(policyId: string) {
         restoreNotificationEvent(policyId);
     };
+
+    public static async createPolicyDiscussion(
+        policy: IPolicyInstance | AnyBlockType,
+        policyId: string,
+        discussion: PolicyDiscussion,
+        key: string,
+        user: IUser,
+    ) {
+        if (policy.locationType === LocationType.REMOTE) {
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
+            const userId = policyUser.userId;
+            return await PolicyActionsUtils.createPolicyDiscussion({
+                policyId,
+                user: policyUser,
+                discussion,
+                key,
+                userId
+            });
+        } else {
+            const options = {
+                comments: {
+                    discussion: discussion.id
+                }
+            }
+            await PolicyComponentsUtils.backupKeys(policyId, options);
+            PolicyComponentsUtils.backup(policyId);
+            return discussion;
+        }
+    }
+
+    public static async createPolicyComment(
+        policy: IPolicyInstance | AnyBlockType,
+        policyId: string,
+        comment: PolicyComment,
+        user: IUser,
+    ) {
+        if (policy.locationType === LocationType.REMOTE) {
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
+            const userId = policyUser.userId;
+            return await PolicyActionsUtils.createPolicyComment({ policyId, user: policyUser, comment, userId });
+        } else {
+            PolicyComponentsUtils.backup(policyId);
+            return comment;
+        }
+    }
+
+    public static async updateUserRole(policyId: string, did: string) {
+        try {
+            const options = {
+                comments: {
+                    user: did
+                }
+            }
+            await PolicyComponentsUtils.backupKeys(policyId, options);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 }

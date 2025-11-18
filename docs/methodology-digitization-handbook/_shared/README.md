@@ -1,4 +1,4 @@
-# рџ”§ Shared Resources
+# 🔧 Shared Resources
 
 > Common templates, frameworks, and systems used across all parts of the Methodology Digitization Handbook
 
@@ -23,11 +23,12 @@ System for linking handbook content with existing Guardian documentation
 ### [Artifacts Collection](artifacts/)
 
 Comprehensive collection of test artifacts, Guardian implementations, calculation tools, and validation materials including:
-- **VM0033 Reference Materials**: Complete methodology documentation and Guardian policy implementation
-- **Test Data & Validation**: Official test cases, real project data, and Guardian VC documents  
-- **Guardian Tools & Code**: Production implementations including AR Tool 14 and calculation JavaScript
-- **Schema Templates**: Excel-first schema development templates for Guardian integration
-- **Development Tools**: Python extractors and validation utilities
+
+* **VM0033 Reference Materials**: Complete methodology documentation and Guardian policy implementation
+* **Test Data & Validation**: Official test cases, real project data, and Guardian VC documents
+* **Guardian Tools & Code**: Production implementations including AR Tool 14 and calculation JavaScript
+* **Schema Templates**: Excel-first schema development templates for Guardian integration
+* **Development Tools**: Python extractors and validation utilities
 
 ## Usage Guidelines
 
@@ -89,7 +90,7 @@ All examples and implementations in this part are validated against:
 ### Quality Assurance
 
 * **Calculation Accuracy**: All artifacts validated against methodology requirements
-* **Guardian Compatibility**: Production code tested in Guardian environment  
+* **Guardian Compatibility**: Production code tested in Guardian environment
 * **Test Coverage**: Comprehensive test cases covering all calculation scenarios
 * **Documentation Quality**: All artifacts include usage instructions and integration examples
 * **Version Consistency**: Shared resources maintain compatibility across handbook parts

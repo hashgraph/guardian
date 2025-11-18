@@ -56,11 +56,11 @@ Tools that have not been published can only be edited.
 
 While importing tool via file, or policy via file or IPFS, you can change used tools in preview dialog, it will change tools references in schemas and config automatically.
 
-<figure><img src="../../../../.gitbook/assets/image (588).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (587) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 1.7 Status changed to Dry Run mode
 
-Users can now update the status of a tool directly from the Tools Page.&#x20;
+Users can now update the status of a tool directly from the Tools Page.
 
 #### **1.7.1 How to Enable Dry Run:**
 
@@ -68,16 +68,16 @@ Users can now update the status of a tool directly from the Tools Page.&#x20;
 
 1. Navigate to the Tools Page.
 
-<figure><img src="../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (438).png" alt=""><figcaption></figcaption></figure>
 
 2. Find the tool you want to test.
 3. Toggle the **Dry Run** switch to **ON**.
 
-<figure><img src="../../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (12).png" alt=""><figcaption></figcaption></figure>
 
 **1.7.2 Through Policy Configurator Page:**
 
-<figure><img src="../../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (7).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Schemas
 

@@ -4,21 +4,21 @@ First, note that we are in the Policies Configuration Tab of the Guardian interf
 
 Second, you click on the blue **Create Policy** button!
 
-![](../../../../../.gitbook/assets/PW\_image\_1.png)
+![](../../../../../.gitbook/assets/PW_image_1.png)
 
 {% hint style="info" %}
 **Note :** The "tag" field is important to be able to reference this policy in possibly other policies as a dependent policy
 {% endhint %}
 
-![](../../../../../.gitbook/assets/PW\_image\_2.png)
+![](../../../../../.gitbook/assets/PW_image_2.png)
 
 Once we have created the Draft of the policy – notice the status field showing draft – click on the “Edit” link on the right.
 
-![](../../../../../.gitbook/assets/PW\_image\_3.png)
+![](../../../../../.gitbook/assets/PW_image_3.png)
 
 The edit screen will open and you will notice two boxes on the right side of the screen. The top Policy box is static and offers the ability to add high-level “Policy properties.” You can edit the name, Policy Tag, etc. Note that you can also create custom roles that are specific to your policy.
 
-![](../../../../../.gitbook/assets/PW\_image\_4.png)
+![](<../../../../../.gitbook/assets/image 5 (1).png>)
 
 The second Interface ContainerBlock is specific to the first workflow block. We will begin editing this block to build our policy!
 
@@ -33,7 +33,7 @@ But in the Permissions we can choose only: policy roles, any role, no role, owne
 
 Then we select the “type” of UI we want to utilize. In our example, we choose the “Blank” template.
 
-![](<../../../../../.gitbook/assets/image 5.png>)
+![](<../../../../../.gitbook/assets/image 5 (1).png>)
 
 **Programmatically you begin like this:**
 
@@ -70,7 +70,7 @@ Then we select the “type” of UI we want to utilize. In our example, we choos
 **Note:** In Guardian Version 1.0.2 there was new functionality implemented that allows for creation of choose Role Block.
 {% endhint %}
 
-![](../../../../../.gitbook/assets/PW\_image\_5.png)
+![](../../../../../.gitbook/assets/PW_image_5.png)
 
 **Programmatically you begin like this:**
 

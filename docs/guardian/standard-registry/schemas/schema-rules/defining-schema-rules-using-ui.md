@@ -49,8 +49,7 @@ To source data from documents rule creators need to specify which fields from wh
 
 **1.3.2.1 Search**
 
-In complex policies the complexity of schema structures can be difficult to navigate, rules creators could use search tool to optimize their work.\
-
+In complex policies the complexity of schema structures can be difficult to navigate, rules creators could use search tool to optimize their work.\\
 
 <figure><img src="../../../../.gitbook/assets/6 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -61,12 +60,11 @@ Clicking on a schema box opens the side menu which lists all the fields availabl
 ![](<../../../../.gitbook/assets/7 (1) (1).png>)
 
 \
-&#xNAN;_&#x4E;ote: sub-schemas do not produce corresponding document, when such sub-schema is selected in the schema view the right hand panel shows the fields from the parent schema of which this sub-schema is a part._
+\&#xNAN;_Note: sub-schemas do not produce corresponding document, when such sub-schema is selected in the schema view the right hand panel shows the fields from the parent schema of which this sub-schema is a part._
 
 **1.3.2.3 Properties**
 
-By default searching for fields is performed on the basis of the values in their description field, however it is possible to search for matches in their ‘property’ values by navigating into the corresponding tab.\
-
+By default searching for fields is performed on the basis of the values in their description field, however it is possible to search for matches in their ‘property’ values by navigating into the corresponding tab.\\
 
 <figure><img src="../../../../.gitbook/assets/8 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -84,8 +82,7 @@ The system automatically creates short variable names for the target fields, eac
 
 <figure><img src="../../../../.gitbook/assets/10 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-There are a number of templates that can be used when configuring or editing rules. When a template is not selected for an existing rule it indicates that the rule is effectively non-existent for this field.\
-
+There are a number of templates that can be used when configuring or editing rules. When a template is not selected for an existing rule it indicates that the rule is effectively non-existent for this field.\\
 
 <figure><img src="../../../../.gitbook/assets/11 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -146,7 +143,7 @@ If the evaluation was successful the result field would be highlighted in amber 
 
 ![](<../../../../.gitbook/assets/19 (1) (1).png>)
 
-![](<../../../../.gitbook/assets/20 (1) (1).png>)
+![](<../../../../.gitbook/assets/19 (1) (1) (2).png>)
 
 Once all editing is done the template must be saved.
 

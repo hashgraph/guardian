@@ -346,10 +346,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 );
             })
             .then(async (rules) => {
-                if (Array.isArray(rules) && rules.length > 0) {
+                if (Array.isArray(rules)) {
                     this.ignoreRules = rules;
                     return;
                 }
+
                 this.ignoreRules = this.getDefaultIgnoreRules();
 
                 try {
@@ -1710,7 +1711,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         const json = this.policyTemplate.getJSON();
 
-        const ignoreRules = (this.ignoreRules && this.ignoreRules.length > 0)
+        const ignoreRules = Array.isArray(this.ignoreRules)
             ? this.ignoreRules
             : this.getDefaultIgnoreRules();
 

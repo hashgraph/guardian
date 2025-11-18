@@ -743,7 +743,7 @@ export class PolicyUtils {
                     user.did,
                     KeyType.TOKEN_TREASURY_KEY,
                     createdToken.tokenId,
-                    createdToken.adminKey,
+                    createdToken.treasuryKey,
                     userId
                 ),
                 walletHelper.setUserKey(

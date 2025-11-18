@@ -53,6 +53,7 @@ import { takeUntil } from 'rxjs/operators';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
 import { ToastrService } from 'ngx-toastr';
+import { UserPolicyDialog } from '../dialogs/user-policy-dialog/user-policy-dialog.component';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -569,6 +570,19 @@ export class PoliciesComponent implements OnInit {
                     })
                 ]
             }, {
+                tooltip: 'Users',
+                group: false,
+                visible: true,
+                buttons: [
+                    new MenuButton({
+                        visible: this.user.PERMISSIONS_ROLE_MANAGE || this.user.DELEGATION_ROLE_MANAGE,
+                        disabled: false,
+                        tooltip: 'User Manage',
+                        icon: 'group',
+                        click: () => this.userPolicyManage(policy)
+                    })
+                ]
+            }, {
                 tooltip: 'Delete',
                 group: false,
                 visible: true,
@@ -943,7 +957,9 @@ export class PoliciesComponent implements OnInit {
             keyPrefix
         );
 
-        this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, element.id)
+        this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, element.id).catch(() => {
+            //
+        })
     }
 
     public deletePolicy(policy?: any) {
@@ -980,7 +996,9 @@ export class PoliciesComponent implements OnInit {
                         keyPrefix
                     );
 
-                    await this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policy?.id)
+                    this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policy.id).catch(() => {
+                        //
+                    })
 
                     const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
@@ -1011,7 +1029,7 @@ export class PoliciesComponent implements OnInit {
             }
 
             this.loading = true;
-            
+
             this.schemaService.deleteSchemasByTopicId(policy?.topicId).pipe(takeUntil(this._destroy$)).subscribe(
                 async (result) => {
                     this.loading = false;
@@ -1759,5 +1777,18 @@ export class PoliciesComponent implements OnInit {
 
     private handleCopyToClipboard(text: string): void {
         navigator.clipboard.writeText(text || '');
+    }
+
+    public userPolicyManage(policy?: any) {
+        this.policySubMenu?.hide();
+        const dialogRef = this.dialogService.open(UserPolicyDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy
+            },
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => { });
     }
 }

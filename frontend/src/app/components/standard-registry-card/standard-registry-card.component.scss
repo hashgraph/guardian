@@ -89,6 +89,7 @@
     list-style: none;
     max-height: 230px;
     margin: 0;
+    overflow: auto;
 
     &__item {
         padding: 8px 16px;

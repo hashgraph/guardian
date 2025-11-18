@@ -1,6 +1,6 @@
 {
     "name": "application-events",
-    "version": "3.4.0-rc",
+    "version": "3.4.0",
     "description": "",
     "main": "index.js",
     "scripts": {
@@ -24,8 +24,8 @@
         "#constants": "./dist/constants/index.js"
     },
     "dependencies": {
-        "@guardian/common": "3.4.0-rc",
-        "@guardian/interfaces": "3.4.0-rc",
+        "@guardian/common": "3.4.0",
+        "@guardian/interfaces": "3.4.0",
         "@types/express": "^4.17.17",
         "@types/morgan": "^1.9.4",
         "axios": "^1.8.3",

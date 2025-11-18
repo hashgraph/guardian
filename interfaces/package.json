@@ -26,5 +26,5 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "type": "module",
-    "version": "3.4.0-rc"
+    "version": "3.4.0"
 }

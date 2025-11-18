@@ -319,6 +319,10 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     getText(row: any, field: any) {
         try {
+            if (field.type == 'serials') {
+                const serials = this.getArray(row, field);
+                return serials?.map((s: any) => s.serial)?.join(', ');
+            }
             if (field.content) {
                 return field.content;
             }
@@ -484,7 +488,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }
         }
         const dialogRef = this.dialog.open(ViewerDialog, {
+            showHeader: false,
             width: '850px',
+            styleClass: 'guardian-dialog',
             data: {
                 title: field.title,
                 type: 'LINK',
@@ -568,6 +574,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
         if (type === 'button') {
             return 'button-container';
+        }
+        if (type === 'serials') {
+            return 'serials-container';
         }
         return ''
     }

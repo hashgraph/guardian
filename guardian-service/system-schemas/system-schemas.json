@@ -1214,9 +1214,9 @@
         }
     },
     {
-        "uuid": "PolicyDiscussion",
+        "uuid": "PolicyDiscussionV2",
         "name": "PolicyDiscussion",
-        "entity": "POLICY_DISCUSSION",
+        "entity": "POLICY_DISCUSSION_V2",
         "document": {
             "$id": "#PolicyDiscussion",
             "$comment": "{ \"term\": \"PolicyDiscussion\", \"@id\": \"#PolicyDiscussion\" }",
@@ -1288,6 +1288,13 @@
                     "$comment": "{\"term\": \"field\", \"@id\": \"https://www.schema.org/text\"}",
                     "title": "field",
                     "description": "Field",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "fieldName": {
+                    "$comment": "{\"term\": \"fieldName\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "fieldName",
+                    "description": "Field Name",
                     "type": "string",
                     "readOnly": false
                 },

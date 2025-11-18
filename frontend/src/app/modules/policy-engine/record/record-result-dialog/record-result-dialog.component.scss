@@ -75,9 +75,10 @@
 }
 
 .results-body {
-    padding: 0px 0px 32px 18px;
+    padding: 0px 0px 0px 18px;
     max-height: 200px;
     overflow: auto;
+    margin-bottom: 32px;
 }
 
 .dialog-actions {
@@ -110,46 +111,10 @@
     padding-top: 30px;
 }
 
-::ng-deep .g-dialog .g-dialog-header .g-dialog-cancel-btn {
-    width: 28px;
-    height: 28px;
-    padding-top: 2px;
-}
-
 .g-dialog-cancel-btn i {
     font-size: 20px;
 }
 
-::ng-deep .p-dialog {
-    border-radius: 18px !important;
-}
-
-::ng-deep .p-dialog-header {
-    display: none;
-}
-
 .dialog-actions {
     column-gap: 8px;
-}
-
-::ng-deep .mat-raised-button,
-::ng-deep .mat-button {
-    border: none;
-    width: 138px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--color-grey-black-1);
-    background: var(--color-grey-white);
-}
-
-::ng-deep .mat-raised-button {
-    border: none;
-    width: 138px;
-    color: var(--color-grey-white);
-    font-size: 14px;
-    font-weight: 500;
-}
-
-::ng-deep .p-dialog-content {
-    border-radius: 18px !important;
 }

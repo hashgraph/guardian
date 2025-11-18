@@ -9,7 +9,7 @@
 
 Data migration feature allows transfer of some or all policy artefacts and/or state into another policy (on the same of different Guardian instance) by exporting into and then importing the .data file.
 
-To perform export press ‘**Export policy data**’ option in the Policy menu.&#x20;
+To perform export press ‘**Export policy data**’ option in the Policy menu.
 
 The operation is available for dry-run and published policies.
 
@@ -17,15 +17,15 @@ The operation is available for dry-run and published policies.
 
 ## 2. Importing/Exporting Keys for Dry Run Policies
 
-To export/import virtual users’ keys and DID documents for dry-run policies press the corresponding ‘**Export virtual keys**’ or ‘**Import virtual keys**’ menu options.&#x20;
+To export/import virtual users’ keys and DID documents for dry-run policies press the corresponding ‘**Export virtual keys**’ or ‘**Import virtual keys**’ menu options.
 
 They can be imported into another dry-run policy, where data was migrated from the current policy.
 
-<figure><img src="../../../.gitbook/assets/image (594).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (593) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 3. Migrating Policy State to Destination Policy
 
-If Policy state flag is set in the ‘**Migrate Data**’ dialog, the entire policy state gets migrated into the destination policy.&#x20;
+If Policy state flag is set in the ‘**Migrate Data**’ dialog, the entire policy state gets migrated into the destination policy.
 
 This includes block states - steps, timers, multi-signs, split documents, aggregate documents, etc...
 
@@ -53,7 +53,7 @@ When state migration is selected block mapping could be used to optimize the mig
 
 For Policies with dynamic tokens mapping of token templates might be required.
 
-<figure><img src="../../../.gitbook/assets/image (605).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (602) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Demo Video
 

@@ -1,7 +1,7 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "name": "indexer-frontend",
-    "version": "3.4.0-rc",
+    "version": "3.4.0",
     "scripts": {
         "ng": "ng",
         "start": "ng serve --proxy-config ./proxy.conf.json",
