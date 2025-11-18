@@ -881,18 +881,29 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async deleteSchema(id: string, owner: IOwner, needResult = false, includeChildren = false): Promise<ISchema[] | boolean> {
-        return await this.sendMessage(MessageAPI.DELETE_SCHEMA, { id, owner, needResult, includeChildren });
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMAS, { schemaIds: [id], owner, needResult, includeChildren });
     }
 
     /**
-     * Deleting a schema.
+     * Deleting a schemas by topic.
      *
      * @param {string} topicId - topic id
      *
      * @returns {any}
      */
-    public async deleteSchemas(topicId: string, owner: IOwner): Promise<ISchema[] | boolean> {
-        return await this.sendMessage(MessageAPI.DELETE_SCHEMAS, { topicId, owner });
+    public async deleteSchemasByTopic(topicId: string, owner: IOwner): Promise<ISchema[] | boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMAS_BY_TOPIC, { topicId, owner });
+    }
+
+    /**
+     * Deleting a schema.
+     *
+     * @param {string[]} schemaIds - schema id
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async deleteSchemasByIds(schemaIds: string[], owner: IOwner, needResult = false, includeChildren = false): Promise<ISchema[] | boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMAS, { schemaIds, owner, needResult, includeChildren });
     }
 
     /**

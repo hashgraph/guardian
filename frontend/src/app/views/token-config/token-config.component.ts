@@ -71,6 +71,7 @@ export class TokenConfigComponent implements OnInit {
 
     public isAllSelected: boolean = false;
     public selectedItems: any[] = [];
+    public selectedItemIds: string[] = [];
 
     private selectedUser: any;
 
@@ -278,6 +279,8 @@ export class TokenConfigComponent implements OnInit {
             this.tokens = data.map((e: any) => new Token(e));
             this.tokensCount = tokensResponse?.headers.get('X-Total-Count') || this.tokens.length;
             this.loadTagsData();
+
+            this.checkIsAllSelected();
         }, ({ message }) => {
             this.loading = false;
             console.error(message);
@@ -648,25 +651,42 @@ export class TokenConfigComponent implements OnInit {
     
     public onSelectAllItems(event: any) {
         if (event.checked) {
-            this.selectedItems = [...this.tokens.filter((item: any) => item.canDelete)];
+            this.selectedItems = [...this.selectedItems, ...this.tokens.filter((item: any) => item.canDelete && !this.selectedItemIds.includes(item.id))];
+            this.selectedItemIds = this.selectedItems.map(item => item.id);
         } else {
-            this.selectedItems = [];
+            this.selectedItems = this.selectedItems.filter(item => !this.tokens.some(token => item.id === token.id));
+            this.selectedItemIds = this.selectedItems.map(item => item.id);
         }
+
+        this.checkIsAllSelected();
     }
 
     public onSelectItem(item: any) {
-        const index = this.selectedItems.indexOf(item);
+        const index = this.selectedItemIds.indexOf(item.id);
         if (index === -1) {
             this.selectedItems.push(item);
+            this.selectedItemIds.push(item.id);
         } else {
             this.selectedItems.splice(index, 1);
+            this.selectedItemIds.splice(index, 1);
         }
 
-        this.isAllSelected = this.selectedItems.length === this.tokens.length;
+        this.checkIsAllSelected();
+    }
+
+    public checkIsAllSelected() {
+        const canDeleteItems = this.tokens.filter(token => token.canDelete);
+        this.isAllSelected = canDeleteItems?.length > 0;
+
+        canDeleteItems.forEach(token => {
+            if (!this.selectedItemIds.includes(token.id)) {
+                this.isAllSelected = false;
+            }
+        })
     }
 
     public isSelected(item: any) {
-        return this.selectedItems.includes(item);
+        return this.selectedItemIds.includes(item.id);
     }
 
     public isAnyItemSelected() {
@@ -698,18 +718,20 @@ export class TokenConfigComponent implements OnInit {
                 }
 
                 this.loading = true;
-                this.tokenService.pushDeleteMultiple(this.selectedItems.map(item => item.tokenId)).pipe(takeUntil(this._destroy$)).subscribe(
-                    async (result) => {
-                        const { taskId, expectation } = result;
-                        this.router.navigate(['task', taskId], {
-                            queryParams: {
-                                last: btoa(location.href)
-                            }
-                        });
-                    },
-                    (e) => {
-                        this.loading = false;
-                    }
+                this.tokenService.pushDeleteMultiple(this.selectedItems.map(item => item.tokenId))
+                    .pipe(takeUntil(this._destroy$))
+                    .subscribe(
+                        async (result) => {
+                            const { taskId, expectation } = result;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href)
+                                }
+                            });
+                        },
+                        (e) => {
+                            this.loading = false;
+                        }
                 );
             });
         }

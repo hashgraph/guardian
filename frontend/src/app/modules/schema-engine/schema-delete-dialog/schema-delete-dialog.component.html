@@ -12,26 +12,39 @@
         <div class="preloader-image preloader-image-l-size"></div>
     </div>
 
-    <div *ngIf="(!deletableChildren?.length || deletableChildren.length <= 0) && (!blockedChildren?.length && blockedChildren.length <= 0)" class="delete-text">
-        {{ text }}
-    </div>
+    <ng-container *ngIf="itemNames && itemNames.length && itemNames.length > 0; else notItemsToDelete">
+        <div class="delete-text">
+            {{ text }}
+        </div>
+
+        <div *ngIf="itemNames && itemNames.length && itemNames.length >= 0" class="delete-text">
+            <ul>
+                <li *ngFor="let item of itemNames">
+                    <p>{{ item }}</p>
+                </li>
+            </ul>
+        </div>
+    </ng-container>
+    <ng-template #notItemsToDelete>
+        There are no items to delete.
+    </ng-template>
 
     <div class="child-schemas-block" *ngIf="(deletableChildren?.length && deletableChildren.length > 0) || (blockedChildren?.length && blockedChildren.length > 0)">
         <ng-container *ngIf="deletableChildren?.length && deletableChildren.length > 0">
             <p class="delete-text">The following child schemas would also be deleted:</p>
             <div class="schemas-block">
-                <span class="child-item">
-                    {{ deletableChildren.join(', ') }}
-                </span>
+                <p class="child-item" *ngFor="let item of deletableChildren">
+                    {{ item }}
+                </p>
             </div>
         </ng-container>
 
         <ng-container *ngIf="blockedChildren?.length && blockedChildren.length > 0">
-            <p class="delete-text">Child schemas referenced by other parents (will not be deleted):</p>
+            <p class="delete-text">Schemas referenced by other parents (will not be deleted):</p>
             <div class="schemas-block">
-                <span class="child-cant-delete-item" *ngFor="let item of blockedChildren">
+                <p class="child-cant-delete-item" *ngFor="let item of blockedChildren">
                     {{ item?.schema?.name + ' (depends on: ' + item?.blockingSchemas?.join(', ') + ')' }}
-                </span>
+                </p>
             </div>
         </ng-container>
         

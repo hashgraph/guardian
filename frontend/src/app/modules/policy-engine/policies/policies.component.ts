@@ -224,6 +224,7 @@ export class PoliciesComponent implements OnInit {
 
     public isAllSelected: boolean = false;
     public selectedItems: any[] = [];
+    public selectedItemIds: string[] = [];
 
     private publishMenuOption = [
         {
@@ -801,6 +802,8 @@ export class PoliciesComponent implements OnInit {
                 } else {
                     this.columnSize.set('instance', '150')
                 }
+
+                this.checkIsAllSelected();
 
                 this.loadPolicyTags(this.policies);
             }, (e) => {
@@ -1804,26 +1807,44 @@ export class PoliciesComponent implements OnInit {
 
     public onSelectAllItems(event: any) {
         if (event.checked) {
-            this.selectedItems = [...this.policiesList.filter((item: any) => item.status === PolicyStatus.DRAFT ||
-                 item.status === PolicyStatus.DEMO)];
+            this.selectedItems = [...this.selectedItems, ...this.policiesList.filter((item: any) => (item.status === PolicyStatus.DRAFT ||
+                 item.status === PolicyStatus.DEMO) && !this.selectedItemIds.includes(item.id))];
+            this.selectedItemIds = this.selectedItems.map(item => item.id);
         } else {
-            this.selectedItems = [];
+            this.selectedItems = this.selectedItems.filter(item => !this.policiesList.some(policy => item.id === policy.id));
+            this.selectedItemIds = this.selectedItems.map(item => item.id);
         }
+
+        this.checkIsAllSelected();
     }
 
     public onSelectItem(item: any) {
-        const index = this.selectedItems.indexOf(item);
+        const index = this.selectedItemIds.indexOf(item.id);
         if (index === -1) {
             this.selectedItems.push(item);
+            this.selectedItemIds.push(item.id);
         } else {
             this.selectedItems.splice(index, 1);
+            this.selectedItemIds.splice(index, 1);
         }
 
-        this.isAllSelected = this.selectedItems.length === this.policiesList.length;
+        this.checkIsAllSelected();
+    }
+
+    public checkIsAllSelected() {
+        const canDeleteItems = this.policiesList.filter(policy => policy.status === PolicyStatus.DRAFT ||
+            policy.status === PolicyStatus.DEMO);
+        this.isAllSelected = canDeleteItems?.length > 0;
+
+        canDeleteItems.forEach(policy => {
+            if (!this.selectedItemIds.includes(policy.id)) {
+                this.isAllSelected = false;
+            }
+        })
     }
 
     public isSelected(item: any) {
-        return this.selectedItems.includes(item);
+        return this.selectedItemIds.includes(item.id);
     }
 
     public isAnyItemSelected() {
@@ -1854,40 +1875,45 @@ export class PoliciesComponent implements OnInit {
                     return;
                 }
 
+                const policyIds = this.selectedItems.map(item => item.id);
+
                 this.loading = true;
-                this.policyEngineService.pushDeleteMultiple(this.selectedItems.map(item => item.id)).pipe(takeUntil(this._destroy$)).subscribe(
-                    async (result) => {
-                        // todo indexer delete
-                        // await this.indexedDb.delete(DB_NAME.GUARDIAN, STORES_NAME.POLICY_STORAGE, policy?.id);
+                this.policyEngineService.pushDeleteMultiple(policyIds)
+                    .pipe(takeUntil(this._destroy$))
+                    .subscribe(
+                        async (result) => {
+                            for (const policyId of policyIds) {
+                                await this.indexedDb.delete(DB_NAME.GUARDIAN, STORES_NAME.POLICY_STORAGE, policyId);
 
-                        // const databaseName = DB_NAME.TABLES;
-                        // const storeNames = [
-                        //     STORES_NAME.FILES_STORE,
-                        //     STORES_NAME.DRAFT_STORE
-                        // ];
-                        // const keyPrefix = `${policy?.id}__`;
+                                const databaseName = DB_NAME.TABLES;
+                                const storeNames = [
+                                    STORES_NAME.FILES_STORE,
+                                    STORES_NAME.DRAFT_STORE
+                                ];
+                                const keyPrefix = `${policyId}__`;
 
-                        // await this.indexedDb.clearByKeyPrefixAcrossStores(
-                        //     databaseName,
-                        //     storeNames,
-                        //     keyPrefix
-                        // );
+                                await this.indexedDb.clearByKeyPrefixAcrossStores(
+                                    databaseName,
+                                    storeNames,
+                                    keyPrefix
+                                );
 
-                        // this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policy.id).catch(() =>{
-                        //     //
-                        // })
+                                this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policyId).catch(() =>{
+                                    //
+                                })
+                            }
 
-                        const { taskId, expectation } = result;
-                        this.router.navigate(['task', taskId], {
-                            queryParams: {
-                                last: btoa(location.href),
-                            },
-                        });
-                    },
-                    (e) => {
-                        this.loading = false;
-                    }
-                );
+                            const { taskId, expectation } = result;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href),
+                                },
+                            });
+                        },
+                        (e) => {
+                            this.loading = false;
+                        }
+                    );
             });
         }
     }
