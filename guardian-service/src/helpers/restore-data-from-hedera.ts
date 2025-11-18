@@ -833,12 +833,12 @@ export class RestoreDataFromHedera {
         const allTopics = this.findMessagesByType(MessageType.Topic, allMessages) as TopicMessage[];
 
         // Restore tools
-        for (const topicMessage of allTopics) {
-            if (topicMessage.messageType !== TopicType.ToolTopic || !topicMessage.childId) {
+        for (const topic of allTopics) {
+            if (topic.messageType !== TopicType.ToolTopic || !topic.childId) {
                 continue
             }
             await this.restoreTool(
-                topicMessage.childId,
+                topic.childId,
                 did,
                 user,
                 hederaAccountKey,
@@ -997,16 +997,11 @@ export class RestoreDataFromHedera {
         toolMessages: Message[],
         hederaAccountKey: string,
     ) {
-        const dataBaseServer = new DatabaseServer();
-
         await this.loadIPFS(toolMessage);
         const parsedToolFile = await ToolImportExport.parseZipFile(toolMessage.document);
-        
-        // Import Tools todo
-        // const toolsResults = await importSubTools(hederaAccountKey, parsedToolFile.tools);
 
         const toolObject = parsedToolFile.tool;
-    
+
         toolObject.hash = toolMessage.hash;
         toolObject.uuid = toolMessage.uuid;
         toolObject.creator = toolMessage.owner;
@@ -1018,10 +1013,10 @@ export class RestoreDataFromHedera {
         await updateToolConfig(toolObject);
 
         const result = await DatabaseServer.createTool(toolObject);
-        
+
         if (Array.isArray(parsedToolFile.schemas)) {
             const schemaObjects = []
-    
+
             for (const schema of parsedToolFile.schemas) {
                 const schemaObject = DatabaseServer.createSchema(schema);
                 parsedToolFile.tool.creator = toolMessage.owner;
@@ -1029,13 +1024,13 @@ export class RestoreDataFromHedera {
                 parsedToolFile.tool.topicId = toolMessage.topicId.toString();
                 schemaObject.status = SchemaStatus.PUBLISHED;
                 schemaObject.category = SchemaCategory.TOOL;
-    
+
                 schemaObjects.push(schemaObject);
             }
-    
+
             await DatabaseServer.saveSchemas(schemaObjects);
         }
-    
+
         const toolTags = parsedToolFile.tags?.filter((t: any) => t.entity === TagType.Tool) || [];
         if (toolMessage.tagsTopicId) {
             const tagMessages = this.findMessagesByType<TagMessage>(MessageType.Tag, toolMessages)
@@ -1061,7 +1056,7 @@ export class RestoreDataFromHedera {
                 }
             }
         }
-    
+
         await importTag(toolTags, result.id.toString());
     }
 

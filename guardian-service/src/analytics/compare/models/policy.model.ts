@@ -139,7 +139,7 @@ export class PolicyModel {
         this.topics = this.createTopics(policy.policyTopics, this.options);
         this.tokens = this.createTokens(policy.policyTokens, this.options);
         this.tools = this.createTools(policy.tools, this.options);
-        
+
         this._type = 'id';
     }
 
