@@ -687,8 +687,8 @@ export class Guardians extends NatsService {
      * @param id Schema identifier
      * @returns Schemas
      */
-    public async getSchemaDeletionPreview(id: string, topicId: string, owner: IOwner): Promise<ISchemaDeletionPreview> {
-        return await this.sendMessage(MessageAPI.GET_SCHEMA_DELETION_PREVIEW, { id, topicId, owner });
+    public async getSchemaDeletionPreview(schemaIds: string[], owner: IOwner): Promise<ISchemaDeletionPreview> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_DELETION_PREVIEW, { schemaIds, owner });
     }
 
     /**

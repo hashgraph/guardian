@@ -24,6 +24,7 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import process from 'process';
 import { FilterObject } from '@mikro-orm/core';
+import { toArray } from 'rxjs';
 
 @Controller()
 export class SchemaService { }
@@ -233,8 +234,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      */
     ApiResponse(MessageAPI.GET_SCHEMA_DELETION_PREVIEW,
         async (msg: {
-            id: string,
-            topicId: string,
+            schemaIds: string[],
             owner: IOwner
         }) => {
             try {
@@ -242,79 +242,116 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid load schema parameter');
                 }
 
-                const { id, topicId, owner } = msg;
-                if (!id) {
-                    return new MessageError('Invalid schema id');
+                const { schemaIds, owner } = msg;
+                if (!schemaIds || schemaIds?.length <= 0) {
+                    return new MessageError('Invalid schema ids');
                 }
                 if (!owner) {
                     return new MessageError('Invalid schema owner');
                 }
 
-                const schema = await DatabaseServer.getSchema({
-                    id,
+                const schemas = await DatabaseServer.getSchemas({
+                    id: { $in: schemaIds },
                     owner: owner.owner
                 });
-                if (!schema) {
-                    return new MessageError('Schema is not found');
+                if (!schemas || schemas?.length <= 0) {
+                    return new MessageError('Schemas is not found');
                 }
 
-                const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
-                const defsIds = defs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
-
-                const childSchemasFilter: any = {
-                    uuid: { $in: defsIds },
-                    status: ModuleStatus.DRAFT,
-                }
-                const childSchemas = await DatabaseServer.getSchemas(childSchemasFilter, {
-                    fields: [
-                        'uuid',
-                        'name',
-                        'version',
-                        'sourceVersion',
-                        'status'
-                    ]
-                })
+                const childSchemas = new Map<string, SchemaCollection>();
 
                 const blockedChildren: IChildSchemaDeletionBlock[] = [];
                 const blockedChildrenIds = new Set<string>();
+                const policyPassed = new Set<string>();
 
-                if (topicId) {
-                    const policySchemasFilter: any = {
-                        topicId,
-                        readonly: false,
-                        system: false,
+                for (const schema of schemas) {
+                    const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
+                    const defsIds = defs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
+
+                    const childSchemasFilter: any = {
+                        uuid: { $in: defsIds },
                         status: ModuleStatus.DRAFT,
-                        category: SchemaCategory.POLICY
                     }
-                    const allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
+                    const childSchemasDefs = await DatabaseServer.getSchemas(childSchemasFilter, {
+                        fields: [
+                            'uuid',
+                            'name',
+                            'version',
+                            'sourceVersion',
+                            'status'
+                        ]
+                    })
 
-                    if (allPolicySchemas?.length > 0) {
-                        allPolicySchemas.forEach(item => {
-                            if (schema.uuid !== item.uuid && !childSchemas.some(child => child.uuid === item.uuid)) {
-                                const schemaDefs = Array.isArray(item.defs) ? item.defs : [item.defs];
-                                const schemaDefsIds = schemaDefs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
-
-                                const childSchemaUsedInAnotherSchema = childSchemas.find(child => schemaDefsIds.includes(child.uuid));
-                                if (childSchemaUsedInAnotherSchema) {
-                                    const alreadyExist = blockedChildren.find(x => x.schema.uuid === childSchemaUsedInAnotherSchema.uuid);
-
-                                    if (alreadyExist) {
-                                        alreadyExist.blockingSchemas.push(item);
-                                    } else {
-                                        blockedChildren.push({
-                                            schema: childSchemaUsedInAnotherSchema,
-                                            blockingSchemas: [item]
-                                        });
-
-                                        blockedChildrenIds.add(childSchemaUsedInAnotherSchema.uuid);
-                                    }
-                                }
-                            }
-                        })
+                    for (const childSchema of childSchemasDefs) {
+                        childSchemas.set(childSchema.id, childSchema);
                     }
                 }
 
-                const deletableChildren = childSchemas.filter(item => !blockedChildrenIds.has(item.uuid))
+                for (const schema of schemas) {
+                    const topicId = schema.topicId;
+
+                    if (topicId && !policyPassed.has(topicId)) {
+                        policyPassed.add(topicId);
+                        
+                        const policySchemasFilter: any = {
+                            topicId,
+                            readonly: false,
+                            system: false,
+                            status: ModuleStatus.DRAFT,
+                            category: SchemaCategory.POLICY
+                        }
+                        const allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
+
+                        if (allPolicySchemas?.length > 0) {
+                            allPolicySchemas.forEach(policySchema => {
+                                if (schema.uuid !== policySchema.uuid
+                                    && !childSchemas.has(policySchema.uuid)
+                                    && !schemas.some(item => item.uuid === policySchema.uuid)) {
+
+                                    const schemaDefs = Array.isArray(policySchema.defs) ? policySchema.defs : [policySchema.defs];
+                                    const schemaDefsIds = schemaDefs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
+
+                                    if (schemaDefsIds.includes(schema.uuid)) {
+                                        const alreadyExist = blockedChildren.find(x => x.schema.uuid === schema.uuid);
+                                        if (alreadyExist) {
+                                            alreadyExist.blockingSchemas.push(policySchema);
+                                        } else {
+                                            blockedChildren.push({
+                                                schema: schema,
+                                                blockingSchemas: [policySchema]
+                                            });
+
+                                            blockedChildrenIds.add(schema.uuid);
+                                        }
+                                    } else {
+                                        for (const childSchema of Array.from(childSchemas.values())) {
+                                            if (!schemaDefsIds.includes(childSchema.uuid)) {
+                                                continue;
+                                            }
+
+                                            const alreadyExist = blockedChildren.find(x => x.schema.uuid === childSchema.uuid);
+                                            if (alreadyExist) {
+                                                alreadyExist.blockingSchemas.push(policySchema);
+                                            } else {
+                                                blockedChildren.push({
+                                                    schema: childSchema,
+                                                    blockingSchemas: [policySchema]
+                                                });
+
+                                                blockedChildrenIds.add(childSchema.uuid);
+                                            }
+                                        }
+                                    }
+                                }
+                            })
+                        }
+                    }
+                }
+
+                const deletableChildren = Array.from(childSchemas.values())
+                    .filter(child => 
+                        !blockedChildrenIds.has(child.uuid)
+                        && !schemas.some(schema => schema.uuid === child.uuid))
 
                 return new MessageResponse({
                     deletableChildren,

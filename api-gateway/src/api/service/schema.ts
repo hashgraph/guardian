@@ -6,7 +6,7 @@ import { Auth, AuthUser } from '#auth';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { Examples, ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, pageHeader, SchemaDTO, SystemSchemaDTO, SchemaDeletionPreviewDTO, TaskDTO, VersionSchemaDTO } from '#middlewares';
 import { CACHE, PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
-import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache } from '#helpers';
+import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, parseSavepointIdsJson, SchemaUtils, ServiceError, TaskManager, UseCache } from '#helpers';
 import process from 'process';
 
 @Controller('schema')
@@ -173,7 +173,7 @@ export class SingleSchemaApi {
     /**
      * Returns schema deletion preview
      */
-    @Get('/:schemaId/deletionPreview')
+    @Get('/deletionPreview')
     @Auth(
         Permissions.SCHEMAS_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY,
@@ -184,17 +184,12 @@ export class SingleSchemaApi {
         summary: 'Returns all child schemas.',
         description: 'Returns all child schemas.',
     })
-    @ApiParam({
-        name: 'schemaId',
-        type: String,
-        description: 'Schema identifier',
-        required: true
-    })
     @ApiQuery({
-        name: 'topicId',
+        name: 'schemaIds',
+        required: true,
         type: String,
-        description: 'Policy topic Id',
-        required: false
+        isArray: true,
+        example: [Examples.DB_ID],
     })
     @ApiOkResponse({
         description: 'Schema deletion preview.',
@@ -209,13 +204,14 @@ export class SingleSchemaApi {
     @HttpCode(HttpStatus.OK)
     async getSchemaDeletionPreview(
         @AuthUser() user: IAuthUser,
-        @Param('schemaId') schemaId: string,
-        @Query('topicId') topicId?: string,
+        @Query('schemaIds') schemaIds: string,
     ): Promise<SchemaDeletionPreviewDTO> {
         try {
+            const ids = parseSavepointIdsJson(schemaIds);
+            
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const result = await guardians.getSchemaDeletionPreview(schemaId, topicId, owner);
+            const result = await guardians.getSchemaDeletionPreview(ids, owner);
 
             return result;
         } catch (error) {

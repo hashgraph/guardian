@@ -222,9 +222,12 @@ export class SchemaService {
         return this.http.get<SchemaNode>(`${this.singleSchemaUrl}/${id}/tree`);
     }
 
-    public getSchemaDeletionPreview(id: string, topicId?: string): Observable<ISchemaDeletionPreview> {
-        const options = topicId ? { params: { topicId } } : {};
-        return this.http.get<ISchemaDeletionPreview>(`${this.singleSchemaUrl}/${id}/deletionPreview`, options);
+    public getSchemaDeletionPreview(schemaIds: string[]): Observable<ISchemaDeletionPreview> {
+        let params = new HttpParams();
+        if (schemaIds?.length) {
+            params = params.set('schemaIds', JSON.stringify(schemaIds));
+        }
+        return this.http.get<ISchemaDeletionPreview>(`${this.singleSchemaUrl}/deletionPreview`, { params });
     }
 
     public deleteSchemasByTopicId(topicId: string): Observable<any> {
