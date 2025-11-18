@@ -39,8 +39,8 @@ export class LocalSchemaContextLoader extends DocumentLoader {
             throw new Error(`Context not found: ${iri}`);
         }
 
-        if ("@vocab" in schema.context["@context"]) {
-            schema.context["@context"]["@vocab"] = 'https://w3id.org/traceability/#undefinedTerm';
+        if ('@vocab' in schema.context['@context']) {
+            schema.context['@context']['@vocab'] = 'https://w3id.org/traceability/#undefinedTerm';
         }
 
         return schema.context;
