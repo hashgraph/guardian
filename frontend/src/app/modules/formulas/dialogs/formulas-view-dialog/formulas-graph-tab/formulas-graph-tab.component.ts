@@ -57,6 +57,7 @@ export class FormulasGraphTabComponent implements OnChanges {
     public valueStatus: ValueStatus | null = null;
     public fieldType: string | null = null;
     public showTechnicalDetails = false;
+    public isJsonExpanded = false;
 
     public ngOnChanges(): void {
         this.source = this.buildGraph(this.tree, this.schema, this.path);
@@ -226,6 +227,7 @@ export class FormulasGraphTabComponent implements OnChanges {
         this.valueStatus = null;
         this.fieldType = null;
         this.showTechnicalDetails = false;
+        this.isJsonExpanded = false;
     }
 
     public onSelect(node: TreeNode<GraphNodeData> | null): void {
@@ -312,5 +314,21 @@ export class FormulasGraphTabComponent implements OnChanges {
 
     public toggleTechnicalDetails(): void {
         this.showTechnicalDetails = !this.showTechnicalDetails;
+    }
+
+    public formatValueForJson(value: any): any {
+        if (typeof value !== 'string') {
+            return value;
+        }
+
+        try {
+            return JSON.parse(value);
+        } catch {
+            return value;
+        }
+    }
+
+    public toggleJsonExpanded(): void {
+        this.isJsonExpanded = !this.isJsonExpanded;
     }
 }

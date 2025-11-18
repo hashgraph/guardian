@@ -45,7 +45,7 @@
     user-select: none;
 
     &:hover {
-        border: 1px solid var(--guardian-primary-color, #4169e2);
+        border: 1px solid var(--color-primary, #4169e2);
     }
 
     * {
@@ -271,4 +271,42 @@
 
 .technical-content {
     margin-top: 8px;
+}
+
+.value-json {
+    margin: 0;
+    padding: 8px 12px;
+    background: #f7f9fc;
+    border: 1px solid #d0d4dc;
+    border-radius: 8px;
+
+    font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 1.4;
+    white-space: pre;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-height: 72px;
+}
+
+.value-json[data-expanded='true'] {
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.json-toggle {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-primary, #4169e2);
+    cursor: pointer;
+    user-select: none;
+
+    .pi {
+        font-size: 11px;
+        margin-left: 4px;
+    }
 }

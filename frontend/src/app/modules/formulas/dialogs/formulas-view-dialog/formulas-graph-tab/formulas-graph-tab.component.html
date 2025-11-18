@@ -38,11 +38,17 @@
                 </div>
 
                 <!-- VALUE (value + status) -->
-                <div *ngIf="fieldValue !== null && fieldValue !== undefined || valueStatus === 'Missing'" class="node-details-section">
+                <div
+                    *ngIf="fieldValue !== null && fieldValue !== undefined || valueStatus === 'Missing'"
+                    class="node-details-section"
+                >
                     <div class="section-label">Value</div>
-                    <div class="section-value">
-                        {{ fieldValue }}
 
+                    <div
+                        class="section-value"
+                        *ngIf="fieldType !== 'object' && fieldType !== 'array'; else objectValue"
+                    >
+                        {{ fieldValue }}
                         <span
                             *ngIf="valueStatus && valueStatus !== 'Not null'"
                             class="value-status-chip"
@@ -51,6 +57,32 @@
                             {{ valueStatus }}
                         </span>
                     </div>
+
+                    <ng-template #objectValue>
+                        <div class="section-value">
+                            <pre
+                                class="value-json"
+                                [attr.data-expanded]="isJsonExpanded"
+                            >{{ formatValueForJson(fieldValue) | json }}</pre>
+                            <div class="json-toggle" (click)="toggleJsonExpanded()">
+                                <span class="json-toggle-label">
+                                    {{ isJsonExpanded ? 'Show less' : 'Show more' }}
+                                </span>
+                                <i
+                                    class="pi"
+                                    [ngClass]="isJsonExpanded ? 'pi-chevron-up' : 'pi-chevron-down'"
+                                ></i>
+                            </div>
+
+                            <span
+                                *ngIf="valueStatus && valueStatus !== 'Not null'"
+                                class="value-status-chip"
+                                [ngClass]="selectedNode ? getNodeStatusClass(selectedNode) : null"
+                            >
+                                {{ valueStatus }}
+                            </span>
+                        </div>
+                    </ng-template>
                 </div>
 
                 <!-- FIELD DESCRIPTION IN DOCUMENT -->
@@ -62,14 +94,11 @@
                 </div>
 
                 <!-- FORMULA -->
-                <div *ngIf="itemValue" class="node-details-section">
+                <div *ngIf="itemType === 'formula' && itemValue" class="node-details-section">
                     <div class="section-label">
-                        {{ itemType }}
+                        Formula
                     </div>
-                    <div class="section-value" *ngIf="itemType !== 'formula'">
-                        {{ itemValue }}
-                    </div>
-                    <div class="section-value formula-value" *ngIf="itemType === 'formula'">
+                    <div class="section-value formula-value">
                         <math-live
                             [value]="itemValue"
                             [readonly]="true">
