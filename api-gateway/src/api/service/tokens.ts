@@ -606,7 +606,7 @@ export class TokensApi {
             await InternalException(error, this.logger, user.id);
         }
     }
-    
+
     /**
      * Delete tokens
      */
@@ -644,7 +644,7 @@ export class TokensApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            
+
             const tokenObjects = await guardians.getTokens({ ids: tokenIds }, owner);
 
             if (tokenObjects?.length <= 0) {
@@ -659,7 +659,7 @@ export class TokensApi {
             const map = await engineService.getTokensMap(owner);
             setTokensPolicies(tokenObjects, map, undefined, false);
 
-            var canDeleteResult = tokenObjects.find(token => !token.canDelete);
+            const canDeleteResult = tokenObjects.find(token => !token.canDelete);
             if (canDeleteResult) {
                 throw new HttpException(`Token ${canDeleteResult.tokenName} (${canDeleteResult.tokenId}) cannot be deleted.`, HttpStatus.FORBIDDEN);
             }

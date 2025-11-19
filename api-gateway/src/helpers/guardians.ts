@@ -269,7 +269,6 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.DELETE_TOKENS_ASYNC, { tokenIds, owner, task });
     }
 
-
     /**
      * Freeze token
      * @param tokenId

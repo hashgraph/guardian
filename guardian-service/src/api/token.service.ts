@@ -892,7 +892,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     throw new Error('Invalid Params');
                 }
 
-                const items = await dataBaseServer.find(Token, { tokenId: { $in: tokenIds}, owner: owner.owner });
+                const items = await dataBaseServer.find(Token, { tokenId: { $in: tokenIds }, owner: owner.owner });
                 if (!items || items?.length <= 0) {
                     throw new Error('Token not found');
                 }
@@ -905,13 +905,13 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     const deleteTokenStep = notifier.addStep(STEP_DELETE_TOKEN);
                     stepMap.set(item.tokenId, deleteTokenStep);
                 }
-                
+
                 for (const item of items) {
                     const deleteTokenStep = stepMap.get(item.tokenId);
                     const result = await deleteToken(item, owner, dataBaseServer, deleteTokenStep);
                     results.set(item.tokenId, result);
                 }
-                
+
                 notifier.result(results);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

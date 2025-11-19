@@ -1073,12 +1073,12 @@ export class PolicyEngineService {
                 const { policyIds, owner, task } = msg;
                 const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
-                
-                    const policies = await DatabaseServer.getPolicies({ id: { $in: policyIds}, owner: owner.owner});
+
+                    const policies = await DatabaseServer.getPolicies({ id: { $in: policyIds }, owner: owner.owner });
                     if (!policies || policies?.length <= 0) {
                         throw new Error('Policy not found');
                     }
-                    
+
                     const stepMap = new Map<string, NotificationStep>();
                     const results = new Map<string, boolean>();
 
@@ -1087,12 +1087,12 @@ export class PolicyEngineService {
                         const deletePolicyStep = notifier.addStep(STEP_DELETE_TOKEN);
                         stepMap.set(policy.id, deletePolicyStep);
                     }
-                    
+
                     for (const policy of policies) {
                         await this.policyEngine.accessPolicy(policy, owner, 'delete');
 
                         const deletePolicyStep = stepMap.get(policy.id);
-                        
+
                         if (policy.status === PolicyStatus.DEMO) {
                             const result = await this.policyEngine.deleteDemoPolicy(policy, owner, deletePolicyStep, logger);
                             results.set(policy.id, result);
@@ -1101,7 +1101,7 @@ export class PolicyEngineService {
                             results.set(policy.id, result);
                         }
                     }
-                    
+
                     notifier.result(results);
                 }, async (error) => {
                     notifier.fail(error);

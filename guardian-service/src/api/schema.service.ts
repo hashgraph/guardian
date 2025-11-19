@@ -24,7 +24,6 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import process from 'process';
 import { FilterObject } from '@mikro-orm/core';
-import { toArray } from 'rxjs';
 
 @Controller()
 export class SchemaService { }
@@ -291,7 +290,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                     if (topicId && !policyPassed.has(topicId)) {
                         policyPassed.add(topicId);
-                        
+
                         const policySchemasFilter: any = {
                             topicId,
                             readonly: false,
@@ -316,7 +315,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                             alreadyExist.blockingSchemas.push(policySchema);
                                         } else {
                                             blockedChildren.push({
-                                                schema: schema,
+                                                schema,
                                                 blockingSchemas: [policySchema]
                                             });
 
@@ -336,7 +335,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                                     schema: childSchema,
                                                     blockingSchemas: [policySchema]
                                                 });
-                                                
+
                                                 blockedSchemaIds.add(childSchema.uuid);
                                             }
                                         }
@@ -362,7 +361,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                     schema: childSchema,
                                     blockingSchemas: [blockedSchema]
                                 });
-                                
+
                                 blockedSchemaIds.add(childSchema.uuid);
                             }
                         }
@@ -370,7 +369,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const deletableChildren = Array.from(childSchemas.values())
-                    .filter(child => 
+                    .filter(child =>
                         !blockedSchemaIds.has(child.uuid)
                         && !schemas.some(schema => schema.uuid === child.uuid))
 
@@ -933,7 +932,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                     if (topicId && !policyPassed.has(topicId)) {
                         policyPassed.add(topicId);
-                        
+
                         const policySchemasFilter: any = {
                             topicId,
                             readonly: false,
@@ -958,7 +957,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                             alreadyExist.blockingSchemas.push(policySchema);
                                         } else {
                                             blockedChildren.push({
-                                                schema: schema,
+                                                schema,
                                                 blockingSchemas: [policySchema]
                                             });
 
@@ -1004,7 +1003,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                     schema: childSchema,
                                     blockingSchemas: [blockedSchema]
                                 });
-                                
+
                                 blockedSchemaIds.add(childSchema.uuid);
                             }
                         }
@@ -1013,7 +1012,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 if (includeChildren) {
                     const deletableChildren = Array.from(childSchemas.values())
-                        .filter(child => 
+                        .filter(child =>
                             !blockedSchemaIds.has(child.uuid)
                             && !schemas.some(schema => schema.uuid === child.uuid))
 
@@ -1031,8 +1030,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 if (needResult) {
-                    const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
-                    return new MessageResponse(schemas);
+                    const result = await DatabaseServer.getSchemas(null, { limit: 100 });
+                    return new MessageResponse(result);
                 } else {
                     return new MessageResponse(true);
                 }
