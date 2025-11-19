@@ -263,7 +263,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const policyPassed = new Set<string>();
 
                 for (const schema of schemas) {
-                    const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
+                    const defs = schema.defs ? (Array.isArray(schema.defs) ? schema.defs : [schema.defs]) : [];
                     const defsIds = defs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
 
                     const childSchemasFilter: any = {
@@ -306,7 +306,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                     && !childSchemas.has(policySchema.id)
                                     && !schemas.some(item => item.uuid === policySchema.uuid)) {
 
-                                    const schemaDefs = Array.isArray(policySchema.defs) ? policySchema.defs : [policySchema.defs];
+                                    const schemaDefs = policySchema.defs ? (Array.isArray(policySchema.defs) ? policySchema.defs : [policySchema.defs]) : [];
                                     const schemaDefsIds = schemaDefs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
 
                                     if (schemaDefsIds.includes(schema.uuid)) {
@@ -905,7 +905,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const policyPassed = new Set<string>();
 
                 for (const schema of schemas) {
-                    const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
+                    const defs = schema.defs ? (Array.isArray(schema.defs) ? schema.defs : [schema.defs]) : [];
                     const defsIds = defs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
 
                     const childSchemasFilter: any = {
@@ -948,7 +948,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                     && !childSchemas.has(policySchema.id)
                                     && !schemas.some(item => item.uuid === policySchema.uuid)) {
 
-                                    const schemaDefs = Array.isArray(policySchema.defs) ? policySchema.defs : [policySchema.defs];
+                                    const schemaDefs = policySchema.defs ? (Array.isArray(policySchema.defs) ? policySchema.defs : [policySchema.defs]) : [];
                                     const schemaDefsIds = schemaDefs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
 
                                     if (schemaDefsIds.includes(schema.uuid)) {
