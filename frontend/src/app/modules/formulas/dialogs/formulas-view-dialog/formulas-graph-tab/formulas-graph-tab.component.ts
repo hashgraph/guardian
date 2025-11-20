@@ -161,7 +161,7 @@ export class FormulasGraphTabComponent implements OnChanges {
             }
 
             if (Array.isArray(node.fields)) {
-                names.push(node.title ?? node.name);
+                names.push(node.description);
                 node = node.fields.find((f: any) => f.name === key);
             } else {
                 break;
@@ -239,6 +239,8 @@ export class FormulasGraphTabComponent implements OnChanges {
         }
 
         this.clearSelection();
+
+        console.log('node', node)
 
         this.selectedNode = node;
         this.title = node.data.title;
