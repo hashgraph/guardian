@@ -106,17 +106,49 @@
                     </div>
                 </div>
 
-                <!-- DOCUMENT NAME -->
+                <!-- CONSTANT VALUE -->
+                <div
+                    *ngIf="itemType === 'constant' && itemValue !== null && itemValue !== undefined"
+                    class="node-details-section"
+                >
+                    <div class="section-label">Value</div>
+                    <div class="section-value">
+                        {{ itemValue }}
+                    </div>
+                </div>
+
+                <!-- TEXT NODE CONTENT -->
+                <div
+                    *ngIf="itemType === 'text' && itemValue"
+                    class="node-details-section"
+                >
+                    <div class="section-label">Text</div>
+                    <div class="section-value">
+                        {{ itemValue }}
+                    </div>
+                </div>
+
+                <!-- NODE DESCRIPTION -->
+                <div *ngIf="nodeDescription" class="node-details-section">
+                    <div class="section-label">
+                        {{ (itemType || 'node') | titlecase }} description
+                    </div>
+                    <div class="section-value">
+                        {{ nodeDescription }}
+                    </div>
+                </div>
+
+                <!-- SCHEMA NAME -->
                 <div *ngIf="nodeDocument" class="node-details-section">
-                    <div class="section-label">Document (VC)</div>
+                    <div class="section-label">Schema</div>
                     <div class="section-value">
                         {{ nodeDocument }}
                     </div>
                 </div>
 
-                <!-- PARENT DOCUMENTS -->
+                <!-- PARENT SCHEMAS -->
                 <div *ngIf="parentDocuments?.length" class="node-details-section">
-                    <div class="section-label">Parent documents</div>
+                    <div class="section-label">Parent schemas</div>
                     <ul class="section-list">
                         <li *ngFor="let doc of parentDocuments">
                             {{ doc }}

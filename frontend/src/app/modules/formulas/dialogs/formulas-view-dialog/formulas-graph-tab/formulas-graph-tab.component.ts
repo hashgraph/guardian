@@ -58,6 +58,7 @@ export class FormulasGraphTabComponent implements OnChanges {
     public fieldType: string | null = null;
     public showTechnicalDetails = false;
     public isJsonExpanded = false;
+    public nodeDescription: string | null = null;
 
     public ngOnChanges(): void {
         this.source = this.buildGraph(this.tree, this.schema, this.path);
@@ -228,6 +229,7 @@ export class FormulasGraphTabComponent implements OnChanges {
         this.fieldType = null;
         this.showTechnicalDetails = false;
         this.isJsonExpanded = false;
+        this.nodeDescription = null
     }
 
     public onSelect(node: TreeNode<GraphNodeData> | null): void {
@@ -246,6 +248,7 @@ export class FormulasGraphTabComponent implements OnChanges {
 
         this.itemType = payload.type ?? null;
         this.itemValue = payload.value ?? (payload as any)._value ?? null;
+        this.nodeDescription = payload.description ?? null;
 
         if (linkItem) {
             this.fieldValue = linkItem.value;
