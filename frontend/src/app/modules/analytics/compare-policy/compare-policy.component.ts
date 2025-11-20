@@ -28,6 +28,7 @@ export class ComparePolicyComponent implements OnInit {
     public tokens!: any[];
     public groups!: any[];
     public roles!: any[];
+    public tools!: any[];
 
     public displayedColumns: string[] = [];
     public columns: any[] = [];
@@ -64,12 +65,14 @@ export class ComparePolicyComponent implements OnInit {
         const groups = this.value.groups;
         const tokens = this.value.tokens;
         const topics = this.value.topics;
+        const tools = this.value.tools;
 
         this.roles = roles?.report;
         this.groups = groups?.report;
         this.tokens = tokens?.report;
         this.topics = topics?.report;
         this.blocks = blocks?.report;
+        this.tools = tools?.report;
 
         let max = 0;
         for (let i = 0; i < this.blocks.length; i++) {
