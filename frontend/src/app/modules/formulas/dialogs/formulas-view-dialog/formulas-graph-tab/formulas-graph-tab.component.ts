@@ -240,8 +240,6 @@ export class FormulasGraphTabComponent implements OnChanges {
 
         this.clearSelection();
 
-        console.log('node', node)
-
         this.selectedNode = node;
         this.title = node.data.title;
 
