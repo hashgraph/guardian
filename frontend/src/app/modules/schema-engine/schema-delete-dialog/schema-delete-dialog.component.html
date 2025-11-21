@@ -2,7 +2,7 @@
     <div class="header-container">
         <i class="pi pi-exclamation-triangle delete-icon"></i><div class="header-text">{{ header }}</div>
     </div>
-    <div class="header-icon" (click)="onClick()">
+    <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
     </div>
 </div>
@@ -17,7 +17,7 @@
             {{ text }}
         </div>
 
-        <div *ngIf="itemNames && itemNames.length && itemNames.length >= 0" class="delete-text">
+        <div *ngIf="itemNames && itemNames.length && itemNames.length >= 0">
             <ul>
                 <li *ngFor="let item of itemNames">
                     <p>{{ item }}</p>
@@ -26,16 +26,20 @@
         </div>
     </ng-container>
     <ng-template #notItemsToDelete>
-        There are no items to delete.
+        <div class="delete-text">
+            There are no items to delete.
+        </div>
     </ng-template>
 
     <div class="child-schemas-block" *ngIf="(deletableChildren?.length && deletableChildren.length > 0) || (blockedChildren?.length && blockedChildren.length > 0)">
         <ng-container *ngIf="deletableChildren?.length && deletableChildren.length > 0">
             <p class="delete-text">The following child schemas would also be deleted:</p>
             <div class="schemas-block">
-                <p class="child-item" *ngFor="let item of deletableChildren">
-                    {{ item }}
-                </p>
+                <ul>
+                    <li *ngFor="let item of deletableChildren">
+                        <p class="child-item">{{ item }}</p>
+                    </li>
+                </ul>
             </div>
         </ng-container>
 
@@ -64,10 +68,16 @@
 
 <div class="dialog-footer">
     <div class="action-buttons">
-        <div *ngFor="let button of buttons" class="{{button.class}}-button">
-            <button 
-                (click)="onClick(button)" 
-                class="guardian-button guardian-button-{{button.class}}">{{button.name}}</button>
+        <div class="secondary-button">
+            <button
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div *ngIf="itemNames && itemNames.length && itemNames.length > 0"
+            class="delete-button">
+            <button
+                (click)="onDelete()" 
+                class="guardian-button guardian-button-delete">Delete</button>
         </div>
     </div>
 </div>

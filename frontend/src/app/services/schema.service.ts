@@ -136,8 +136,8 @@ export class SchemaService {
         });
     }
 
-    public deleteMultiple(schemaIds: string[], includeChildren?: boolean): Observable<any> {
-        return this.http.post<any>(`${this.url}/delete-multiple`, { schemaIds }, {
+    public deleteMultiple(schemaIds: string[], includeChildren?: boolean): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/delete-multiple`, { schemaIds }, {
             params: {
                 includeChildren: includeChildren ? true : false
             }

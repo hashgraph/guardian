@@ -1120,14 +1120,7 @@ export class SchemaConfigComponent implements OnInit {
                         text: `Are you sure want to delete schema (${element.name})?`,
                         itemNames: element.name,
                         deletableChildren: result.deletableChildren,
-                        blockedChildren: result.blockedChildren,
-                        buttons: [{
-                            name: 'Close',
-                            class: 'secondary'
-                        }, {
-                            name: 'Delete',
-                            class: 'delete'
-                        }]
+                        blockedChildren: result.blockedChildren
                     },
                 });
                 dialogRef.onClose.subscribe((result: any) => {
@@ -1585,7 +1578,9 @@ export class SchemaConfigComponent implements OnInit {
         if (this.selectedItems?.length === 1) {
             this.onCheckDeleteSchema(this.selectedItems[0]);
         } else if (this.selectedItems?.length >= 2) {
+            this.loading = true;
             this.schemaService.getSchemaDeletionPreview(this.selectedItems.map(item => item.id)).subscribe((result: ISchemaDeletionPreview) => {
+                this.loading = false;
                 const dialogRef = this.dialogService.open(SchemaDeleteDialogComponent, {
                     showHeader: false,
                     width: '640px',
@@ -1597,14 +1592,7 @@ export class SchemaConfigComponent implements OnInit {
                             .filter(item => !result.blockedChildren.some(block => item.uuid === block.schema.uuid))
                             .map(item => item.name),
                         deletableChildren: result.deletableChildren,
-                        blockedChildren: result.blockedChildren,
-                        buttons: [{
-                            name: 'Close',
-                            class: 'secondary'
-                        }, {
-                            name: 'Delete',
-                            class: 'delete'
-                        }]
+                        blockedChildren: result.blockedChildren
                     },
                 });
                 dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: any) => {
@@ -1613,9 +1601,12 @@ export class SchemaConfigComponent implements OnInit {
                         this.schemaService.deleteMultiple(this.selectedItems.map(item => item.id), result.includeChildren)
                             .pipe(takeUntil(this._destroy$)).subscribe(
                                 async (result) => {
-                                    this.selectedItems = [];
-                                    this.selectedItemIds = [];
-                                    this.loadSchemas();
+                                    const { taskId, expectation } = result;
+                                    this.router.navigate(['task', taskId], {
+                                        queryParams: {
+                                            last: btoa(location.href)
+                                        }
+                                    });
                                 },
                                 (e) => {
                                     this.loadError(e);

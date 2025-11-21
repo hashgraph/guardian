@@ -1,6 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { Controller } from '@nestjs/common';
-import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, IAuthUser, JsonToXlsx, MessageError, MessageResponse, NewNotifier, PinoLogger, RunFunctionAsync, Schema as SchemaCollection, Users, XlsxToJson } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, IAuthUser, JsonToXlsx, MessageError, MessageResponse, NewNotifier, NotificationStep, PinoLogger, RunFunctionAsync, Schema as SchemaCollection, Users, XlsxToJson } from '@guardian/common';
 import { IOwner, ISchema, IChildSchemaDeletionBlock, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
 import {
     checkForCircularDependency,
@@ -260,7 +260,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const childSchemas = new Map<string, SchemaCollection>();
                 const blockedChildren: IChildSchemaDeletionBlock[] = [];
                 const blockedSchemaIds = new Set<string>();
-                const policyPassed = new Set<string>();
+                const policySchemas = new Map<string, SchemaCollection[]>();
 
                 for (const schema of schemas) {
                     const defs = schema.defs ? (Array.isArray(schema.defs) ? schema.defs : [schema.defs]) : [];
@@ -288,17 +288,21 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 for (const schema of schemas) {
                     const topicId = schema.topicId;
 
-                    if (topicId && !policyPassed.has(topicId)) {
-                        policyPassed.add(topicId);
-
-                        const policySchemasFilter: any = {
-                            topicId,
-                            readonly: false,
-                            system: false,
-                            status: ModuleStatus.DRAFT,
-                            category: SchemaCategory.POLICY
+                    if (topicId) {
+                        let allPolicySchemas: SchemaCollection[] = [];
+                        if (policySchemas.has(topicId)) {
+                            allPolicySchemas = policySchemas.get(topicId);
+                        } else {
+                            const policySchemasFilter: any = {
+                                topicId,
+                                readonly: false,
+                                system: false,
+                                status: ModuleStatus.DRAFT,
+                                category: SchemaCategory.POLICY
+                            }
+                            allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
+                            policySchemas.set(topicId, allPolicySchemas);
                         }
-                        const allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
 
                         if (allPolicySchemas?.length > 0) {
                             allPolicySchemas.forEach(policySchema => {
@@ -875,15 +879,18 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             schemaIds: string[],
             owner: IOwner,
+            task: any,
             needResult: boolean,
             includeChildren: boolean
         }) => {
-            try {
-                if (!msg) {
-                    return new MessageError('Invalid delete schema parameter');
-                }
+            if (!msg) {
+                return new MessageError('Invalid delete schema parameter');
+            }
 
-                const { schemaIds, owner, needResult, includeChildren } = msg;
+            const { schemaIds, owner, task, needResult, includeChildren } = msg;
+            const notifier = await NewNotifier.create(task);
+
+            RunFunctionAsync(async () => {
                 if (!schemaIds || schemaIds?.length <= 0) {
                     return new MessageError('Invalid schema ids');
                 }
@@ -902,7 +909,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const childSchemas = new Map<string, SchemaCollection>();
                 const blockedChildren: IChildSchemaDeletionBlock[] = [];
                 const blockedSchemaIds = new Set<string>();
-                const policyPassed = new Set<string>();
+                const policySchemas = new Map<string, SchemaCollection[]>();
 
                 for (const schema of schemas) {
                     const defs = schema.defs ? (Array.isArray(schema.defs) ? schema.defs : [schema.defs]) : [];
@@ -930,17 +937,21 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 for (const schema of schemas) {
                     const topicId = schema.topicId;
 
-                    if (topicId && !policyPassed.has(topicId)) {
-                        policyPassed.add(topicId);
-
-                        const policySchemasFilter: any = {
-                            topicId,
-                            readonly: false,
-                            system: false,
-                            status: ModuleStatus.DRAFT,
-                            category: SchemaCategory.POLICY
+                    if (topicId) {
+                        let allPolicySchemas: SchemaCollection[] = [];
+                        if (policySchemas.has(topicId)) {
+                            allPolicySchemas = policySchemas.get(topicId);
+                        } else {
+                            const policySchemasFilter: any = {
+                                topicId,
+                                readonly: false,
+                                system: false,
+                                status: ModuleStatus.DRAFT,
+                                category: SchemaCategory.POLICY
+                            }
+                            allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
+                            policySchemas.set(topicId, allPolicySchemas);
                         }
-                        const allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
 
                         if (allPolicySchemas?.length > 0) {
                             allPolicySchemas.forEach(policySchema => {
@@ -1010,14 +1021,22 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                 }
 
+                const stepMap = new Map<string, NotificationStep>();
+                const results = new Map<string, boolean>();
+                const schemasToDelete: SchemaCollection[] = [];
+
                 if (includeChildren) {
                     const deletableChildren = Array.from(childSchemas.values())
                         .filter(child =>
                             !blockedSchemaIds.has(child.uuid)
                             && !schemas.some(schema => schema.uuid === child.uuid))
 
-                    for (const element of deletableChildren) {
-                        await deleteSchema(element.id, owner, NewNotifier.empty());
+                    for (const schema of deletableChildren) {
+                        const STEP_DELETE_SCHEMA = 'DELETE SCHEMA (' + schema.name + ')';
+                        const deleteSchemaStep = notifier.addStep(STEP_DELETE_SCHEMA);
+                        stepMap.set(schema.id, deleteSchemaStep);
+
+                        schemasToDelete.push(schema);
                     }
                 }
 
@@ -1026,18 +1045,26 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         continue;
                     }
 
-                    await deleteSchema(schema.id, owner, NewNotifier.empty());
+                    const STEP_DELETE_SCHEMA = 'DELETE SCHEMA (' + schema.name + ')';
+                    const deleteSchemaStep = notifier.addStep(STEP_DELETE_SCHEMA);
+                    stepMap.set(schema.id, deleteSchemaStep);
+
+                    schemasToDelete.push(schema);
                 }
 
-                if (needResult) {
-                    const result = await DatabaseServer.getSchemas(null, { limit: 100 });
-                    return new MessageResponse(result);
-                } else {
-                    return new MessageResponse(true);
+                for (const schema of schemasToDelete) {
+
+                    const deleteSchemaStep = stepMap.get(schema.id);
+                    const result = await deleteSchema(schema.id, owner, deleteSchemaStep);
+                    results.set(schema.id, result);
                 }
-            } catch (error) {
-                return new MessageError(error);
-            }
+
+                notifier.result(results);
+            }, async (error) => {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                notifier.fail(error);
+            });
+            return new MessageResponse(task);
         });
 
     /**

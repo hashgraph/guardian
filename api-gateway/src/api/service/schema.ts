@@ -2732,59 +2732,61 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        isArray: true,
-        type: SchemaDTO
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSchemas(
         @AuthUser() user: IAuthUser,
         @Body('schemaIds') schemaIds: string[],
         @Query('includeChildren') includeChildren: boolean = false,
         @Req() req
-    ): Promise<SchemaDTO[]> {
-        const guardians = new Guardians();
-        let schema: ISchema;
-        const owner = new EntityOwner(user);
-
-        for (const schemaId of schemaIds) {
-            try {
-                schema = await guardians.getSchemaById(user, schemaId);
-            } catch (error) {
-                await InternalException(error, this.logger, user.id);
-            }
-            if (!schema) {
-                throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
-            }
-            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
-            if (error) {
-                throw new HttpException(error, HttpStatus.FORBIDDEN)
-            }
-            if (schema.status === SchemaStatus.PUBLISHED) {
-                throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
-            if (schema.status === SchemaStatus.DEMO) {
-                throw new HttpException('Schema imported in demo mode.', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
-        }
-
+    ): Promise<any> {
         try {
-            const schemas = (await guardians.deleteSchemasByIds(schemaIds, owner, true, String(includeChildren).toLowerCase() === 'true') as ISchema[]);
-            SchemaHelper.updatePermission(schemas, owner);
+            const guardians = new Guardians();
+            let schema: ISchema;
+            const owner = new EntityOwner(user);
+
+            for (const schemaId of schemaIds) {
+                try {
+                    schema = await guardians.getSchemaById(user, schemaId);
+                } catch (error) {
+                    await InternalException(error, this.logger, user.id);
+                }
+                if (!schema) {
+                    throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
+                }
+                const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
+                if (error) {
+                    throw new HttpException(error, HttpStatus.FORBIDDEN)
+                }
+                if (schema.status === SchemaStatus.PUBLISHED) {
+                    throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
+                }
+                if (schema.status === SchemaStatus.DEMO) {
+                    throw new HttpException('Schema imported in demo mode.', HttpStatus.UNPROCESSABLE_ENTITY)
+                }
+            }
+
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                await guardians.deleteSchemasByIds(schemaIds, owner, task, true, String(includeChildren).toLowerCase() === 'true');
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+            });
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
-            return SchemaUtils.toOld(schemas);
+            return task;
         } catch (error) {
-            console.log(error);
             await InternalException(error, this.logger, user.id);
         }
-        return null;
     }
 }

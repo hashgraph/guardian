@@ -9,6 +9,7 @@ export enum TaskAction {
     IMPORT_SCHEMA_MESSAGE = 'Import schema message',
     CREATE_SCHEMA = 'Create schema',
     PREVIEW_SCHEMA_MESSAGE = 'Preview schema message',
+    DELETE_SCHEMAS = "Delete schemas",
     CREATE_RANDOM_KEY = 'Create random key',
     CONNECT_USER = 'Connect user',
     PREVIEW_POLICY_MESSAGE = 'Preview policy message',

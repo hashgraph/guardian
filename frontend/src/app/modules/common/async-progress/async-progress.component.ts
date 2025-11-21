@@ -140,6 +140,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.completed.emit(result);
             return;
         }
+
         switch (this.action) {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
@@ -343,6 +344,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 localStorage.removeItem('restoreSchemaData');
             case TaskAction.CREATE_SCHEMA:
             case TaskAction.PUBLISH_SCHEMA:
+            case TaskAction.DELETE_SCHEMAS:
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
                 if (this.last) {
