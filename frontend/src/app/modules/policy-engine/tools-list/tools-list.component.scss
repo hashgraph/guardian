@@ -180,25 +180,30 @@
     z-index: 2;
 }
 
-.table-paginator {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    column-gap: 24px;
-    padding: 0 16px 0 0;
+:host ::ng-deep .table-paginator {
+    .p-dropdown {
+        width: 125px;
+        height: 40px;
+        border-radius: 8px;
+    }
 
-    color: var(--color-grey-black-2, #23252e);
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 16px;
-    /* 114.286% */
+    .p-button {
+        border-radius: 8px;
+    }
 
-    height: 64px !important;
-    border-radius: 8px !important;
-    background: #fff;
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
+    .p-inputtext {
+        color: #848fa9;
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        align-self: center;
+    }
+
+    .p-datatable-table {
+        border-collapse: separate;
+        border-spacing: 0 15px;
+    }
 }
 
 .btn-icon-edit,
@@ -605,10 +610,6 @@
     margin-right: 16px;
 }
 
-.policy-grid-paginator {
-    background: #f9fafc;
-}
-
 .policy-grid-header-row {
     background: #f9fafc;
     box-shadow: none !important;
@@ -882,11 +883,6 @@
         font-style: normal;
         font-weight: 400;
         align-self: center;
-    }
-
-    .p-datatable-table {
-        border-collapse: separate;
-        border-spacing: 0 15px;
     }
 }
 
