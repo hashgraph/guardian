@@ -983,7 +983,7 @@ export class PolicyUtils {
     ): Promise<string> {
         if (ref.dryRun) {
             const userFull = await ref.components.getVirtualUser(did);
-            return userFull.hederaAccountId;
+            return userFull?.hederaAccountId;
         } else {
             const config = await PolicyUtils.users.getUserRelayerAccount(did, relayerAccount, userId);
             return config?.account;

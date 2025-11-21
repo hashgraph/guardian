@@ -35,6 +35,9 @@ import {
     GuardianRoleMessage,
     UserPermissionsMessage, PinoLogger, DatabaseServer,
     SchemaPackageMessage,
+    ToolMessage,
+    ToolImportExport,
+    TagMessage,
 } from '@guardian/common';
 import {
     DidDocumentStatus,
@@ -42,16 +45,19 @@ import {
     EntityOwner,
     ISchema,
     MintTransactionStatus,
+    ModuleStatus,
     PolicyStatus,
     SchemaCategory,
     SchemaEntity,
     SchemaStatus,
+    TagType,
     TokenType,
     TopicType,
     UserRole,
     WorkerTaskType
 } from '@guardian/interfaces';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
+import { importTag, updateToolConfig } from './import-helpers/index.js';
 
 /**
  * Restore data from hedera class
@@ -400,6 +406,7 @@ export class RestoreDataFromHedera {
                         message.childId
                     ) {
                         const messages = await this.readTopicMessages(message.childId, user.id);
+
                         const childTopicMessage = messages[0] as TopicMessage;
                         await this.restoreTopic(
                             {
@@ -699,6 +706,7 @@ export class RestoreDataFromHedera {
         topicSubmitKey: string
     ): Promise<void> {
         const db = new DatabaseServer();
+
         const existing = await db.findOne(Topic, { topicId: topic.topicId });
         if (existing) {
             console.log(`Topic already exists: ${topic.topicId}.`);
@@ -822,6 +830,22 @@ export class RestoreDataFromHedera {
         const vcDocumentMessage = this.findMessageByType<VCMessage>(MessageType.VCDocument, allMessages);
         const allPolicies = this.findMessagesByType(MessageType.Policy, allMessages) as PolicyMessage[];
 
+        const allTopics = this.findMessagesByType(MessageType.Topic, allMessages) as TopicMessage[];
+
+        // Restore tools
+        for (const topic of allTopics) {
+            if (topic.messageType !== TopicType.ToolTopic || !topic.childId) {
+                continue
+            }
+            await this.restoreTool(
+                topic.childId,
+                did,
+                user,
+                hederaAccountKey,
+                logger
+            );
+        }
+
         if (!didDocumentMessage) {
             throw new Error('Couldn\'t find DID document.');
         }
@@ -904,6 +928,136 @@ export class RestoreDataFromHedera {
                 logger
             );
         }
+    }
+
+    /**
+     * Restore tool
+     * @param toolTopicId
+     * @param owner
+     * @param user
+     * @param hederaAccountID
+     * @param hederaAccountKey
+     * @param logger
+     * @private
+     */
+    private async restoreTool(
+        toolTopicId: string,
+        owner: string,
+        user: IAuthUser,
+        hederaAccountKey: string,
+        logger: PinoLogger
+    ): Promise<void> {
+        try {
+            const toolMessages = await this.readTopicMessages(toolTopicId, user.id);
+            const toolTopicMessage = toolMessages[0] as TopicMessage;
+            await this.restoreTopic(
+                {
+                    topicId: toolTopicId,
+                    name: toolTopicMessage?.name,
+                    description: toolTopicMessage?.description,
+                    owner,
+                    type: TopicType.ToolTopic,
+                    targetId: null,
+                    targetUUID: null,
+                },
+                user,
+                hederaAccountKey,
+                hederaAccountKey
+            );
+
+            const publishedSchemas = this.findMessagesByType<SchemaMessage>(MessageType.Schema, toolMessages)
+                .filter((m) => m.action === MessageAction.PublishSchema);
+            const publishedSchemaPackages = this.findMessagesByType<SchemaPackageMessage>(MessageType.SchemaPackage, toolMessages)
+                .filter((m) => m.action === MessageAction.PublishSchemas);
+
+            // Restore schemas
+            for (const s of publishedSchemas) {
+                await this.loadIPFS(s);
+                await this.restoreSchema(s);
+            }
+            for (const p of publishedSchemaPackages) {
+                await this.loadIPFS(p);
+                await this.restoreSchemaPackage(p);
+            }
+
+            // Restore policy
+            const publishedTools = this.findMessagesByType<ToolMessage>(MessageType.Tool, toolMessages)
+                .filter((m) => m.action === MessageAction.PublishTool);
+
+            for (const toolMessage of publishedTools) {
+                await this.restoreToolMessage(toolMessage, toolMessages, hederaAccountKey);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    private async restoreToolMessage(
+        toolMessage: ToolMessage,
+        toolMessages: Message[],
+        hederaAccountKey: string,
+    ) {
+        await this.loadIPFS(toolMessage);
+        const parsedToolFile = await ToolImportExport.parseZipFile(toolMessage.document);
+
+        const toolObject = parsedToolFile.tool;
+
+        toolObject.hash = toolMessage.hash;
+        toolObject.uuid = toolMessage.uuid;
+        toolObject.creator = toolMessage.owner;
+        toolObject.owner = toolMessage.owner;
+        toolObject.topicId = toolMessage.topicId.toString();
+        toolObject.messageId = toolMessage.id;
+        toolObject.status = ModuleStatus.PUBLISHED;
+
+        await updateToolConfig(toolObject);
+
+        const result = await DatabaseServer.createTool(toolObject);
+
+        if (Array.isArray(parsedToolFile.schemas)) {
+            const schemaObjects = []
+
+            for (const schema of parsedToolFile.schemas) {
+                const schemaObject = DatabaseServer.createSchema(schema);
+                parsedToolFile.tool.creator = toolMessage.owner;
+                parsedToolFile.tool.owner = toolMessage.owner;
+                parsedToolFile.tool.topicId = toolMessage.topicId.toString();
+                schemaObject.status = SchemaStatus.PUBLISHED;
+                schemaObject.category = SchemaCategory.TOOL;
+
+                schemaObjects.push(schemaObject);
+            }
+
+            await DatabaseServer.saveSchemas(schemaObjects);
+        }
+
+        const toolTags = parsedToolFile.tags?.filter((t: any) => t.entity === TagType.Tool) || [];
+        if (toolMessage.tagsTopicId) {
+            const tagMessages = this.findMessagesByType<TagMessage>(MessageType.Tag, toolMessages)
+                .filter((m) => m.action === MessageAction.PublishTag);
+
+            for (const tag of tagMessages) {
+                if (tag.entity === TagType.Tool && tag.target === toolMessage.id) { // check
+                    toolTags.push({
+                        uuid: tag.uuid,
+                        name: tag.name,
+                        description: tag.description,
+                        owner: tag.owner,
+                        entity: tag.entity,
+                        target: tag.target,
+                        status: 'History',
+                        topicId: tag.topicId,
+                        messageId: tag.id,
+                        date: tag.date,
+                        document: null,
+                        uri: null,
+                        id: null
+                    } as any);
+                }
+            }
+        }
+
+        await importTag(toolTags, result.id.toString());
     }
 
     private async restoreUsers(messages: Message[], owner: string, userId: string | null) {
