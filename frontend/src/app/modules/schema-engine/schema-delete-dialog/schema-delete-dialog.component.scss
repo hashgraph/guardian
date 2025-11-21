@@ -67,7 +67,7 @@
 .delete-text {
     margin-bottom: 16px;
     font-family: Inter, sans-serif;
-    font-weight: 400;
+    font-weight: 600;
     font-style: Regular;
     font-size: 14px;
     line-height: 100%;
@@ -76,6 +76,7 @@
 }
 
 .child-item {
+    margin: 0;
     font-family: Inter, sans-serif;
     font-weight: 700;
     font-style: Bold;
@@ -114,6 +115,7 @@
     }
 
     .child-cant-delete-item {
+        margin: 0;
         font-family: Inter;
         font-weight: 600;
         font-style: Semi Bold;
@@ -121,5 +123,9 @@
         line-height: 24px;
         letter-spacing: 0%;
         color: var(--guardian-failure-color, #FF432A);
+    }
+
+    .schemas-list {
+        padding: 0 24px;
     }
 }

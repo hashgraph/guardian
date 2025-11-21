@@ -90,11 +90,20 @@
     </div>
 
     <ng-container *ngIf="page && page.length > 0; else noData">
-        <div *ngIf="isAny" class="table-container">
-            <p-table [value]="page">
+        <div *ngIf="isAny" class="grid-table-container">
+            <p-table [value]="page" class="grid-table">
                 <ng-template pTemplate="header">
-                    <tr>
+                    <tr class="grid-table-header">
                         <ng-container *ngIf="type === 'policy'">
+                            <th *ngIf="canDisplayColumn('select')" class="header-cell-text" style="min-width: 140px; max-width: 150px;">
+                                <p-checkbox
+                                    (onChange)="onSelectAllItems($event)"
+                                    [disabled]="isAnyDeleteDisabled()"
+                                    [ngModel]="isAllSelected"
+                                    [binary]="true"
+                                >
+                                </p-checkbox>
+                            </th>
                             <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
                                 Policy
                             </th>
@@ -181,9 +190,18 @@
                     </tr>
                 </ng-template>
                 <ng-template let-schema pTemplate="body">
-                    <tr class="schemas-grid-row" [attr.schema-status]="schema.status">
+                    <tr class="grid-table-row" [attr.schema-status]="schema.status">
 
                         <ng-container *ngIf="type === 'policy'">
+                            <td *ngIf="canDisplayColumn('select')" class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
+                                <p-checkbox
+                                    (onChange)="onSelectItem(schema)"
+                                    [disabled]="isDeleteDisabled(schema)"
+                                    [ngModel]="isSelected(schema)"
+                                    [binary]="true"
+                                >
+                                </p-checkbox>
+                            </td>
                             <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
                                 <a
                                     [queryParams]="{ policyId: policyIdByTopic[schema.topicId] }"
@@ -473,6 +491,7 @@
         </div>
 
         <app-paginator
+            class="grid-table-paginator"
             *ngIf="isAny"
             [pageIndex]="pageIndex"
             [pageSize]="pageSize"
@@ -600,3 +619,18 @@
         </p-button>
     </div>
 </p-overlayPanel>
+
+<div *ngIf="isAnyItemSelected()" class="options-footer-container">
+    <div class="options-footer">
+        <div>
+            <p class="selected-info">{{ selectedItems.length | pluralize: 'schema' : 'schemas'}} selected</p>
+        </div>
+        <div>
+            <p-button
+                (click)="onDeleteItems()"
+                severity="danger"
+                label="Delete selected"
+                type="button"></p-button>
+        </div>
+    </div>
+</div>

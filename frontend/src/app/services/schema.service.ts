@@ -136,6 +136,14 @@ export class SchemaService {
         });
     }
 
+    public deleteMultiple(schemaIds: string[], includeChildren?: boolean): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/delete-multiple`, { schemaIds }, {
+            params: {
+                includeChildren: includeChildren ? true : false
+            }
+        });
+    }
+
     public exportInFile(id: string): Observable<ArrayBuffer> {
         return this.http.get(`${this.url}/${id}/export/file`, {
             responseType: 'arraybuffer',
@@ -222,9 +230,8 @@ export class SchemaService {
         return this.http.get<SchemaNode>(`${this.singleSchemaUrl}/${id}/tree`);
     }
 
-    public getSchemaDeletionPreview(id: string, topicId?: string): Observable<ISchemaDeletionPreview> {
-        const options = topicId ? { params: { topicId } } : {};
-        return this.http.get<ISchemaDeletionPreview>(`${this.singleSchemaUrl}/${id}/deletionPreview`, options);
+    public getSchemaDeletionPreview(schemaIds: string[]): Observable<ISchemaDeletionPreview> {
+        return this.http.post<ISchemaDeletionPreview>(`${this.url}/deletionPreview`, { schemaIds });
     }
 
     public deleteSchemasByTopicId(topicId: string): Observable<any> {
