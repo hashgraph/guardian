@@ -35,11 +35,19 @@ export class MathLiveComponent implements OnInit, OnDestroy {
         ];
         this.mfe.mathVirtualKeyboardPolicy = "manual";
         this.mfe.addEventListener("focusin", () => {
+            if (this.readonly) {
+                return;
+            }
+
             this.keyboard.emit(true);
             this.focus.emit(this);
             return mathVirtualKeyboard.show();
         });
         this.mfe.addEventListener("focusout", () => {
+            if (this.readonly) {
+                return;
+            }
+
             this.keyboard.emit(false);
             this.focus.emit(this);
             return mathVirtualKeyboard.hide();
