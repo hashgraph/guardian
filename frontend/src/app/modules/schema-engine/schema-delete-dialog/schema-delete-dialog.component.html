@@ -35,7 +35,7 @@
         <ng-container *ngIf="deletableChildren?.length && deletableChildren.length > 0">
             <p class="delete-text">The following child schemas would also be deleted:</p>
             <div class="schemas-block">
-                <ul>
+                <ul class="schemas-list">
                     <li *ngFor="let item of deletableChildren">
                         <p class="child-item">{{ item }}</p>
                     </li>
@@ -46,9 +46,13 @@
         <ng-container *ngIf="blockedChildren?.length && blockedChildren.length > 0">
             <p class="delete-text">Schemas referenced by other parents (will not be deleted):</p>
             <div class="schemas-block">
-                <p class="child-cant-delete-item" *ngFor="let item of blockedChildren">
-                    {{ item?.schema?.name + ' (depends on: ' + item?.blockingSchemas?.join(', ') + ')' }}
-                </p>
+                <ul class="schemas-list">
+                    <li *ngFor="let item of blockedChildren">
+                        <p class="child-cant-delete-item">
+                            {{ item?.schema?.name + ' (depends on: ' + item?.blockingSchemas?.join(', ') + ')' }}
+                        </p>
+                    </li>
+                </ul>
             </div>
         </ng-container>
         
