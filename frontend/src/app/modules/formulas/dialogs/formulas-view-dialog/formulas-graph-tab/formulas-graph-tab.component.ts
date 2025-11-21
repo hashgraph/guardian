@@ -161,7 +161,8 @@ export class FormulasGraphTabComponent implements OnChanges {
             }
 
             if (Array.isArray(node.fields)) {
-                names.push(node.description);
+                names.push(node.description || node.name);
+
                 node = node.fields.find((f: any) => f.name === key);
             } else {
                 break;
