@@ -123,8 +123,6 @@ export class SearchPolicyDialog {
 
     private getToolOptions(tools: any) {
         if (tools?.length > 0) {
-            console.log(tools);
-            
             return tools.map((tool: any) => ({
                 id: tool.messageId,
                 label: tool.name
@@ -206,7 +204,7 @@ export class SearchPolicyDialog {
             options.minVpCount = filters.vpDocumentsCount || 1;
             this.filtersCount++;
         }
-        if (filters.toolMessageIds) {
+        if (filters.toolMessageIds && filters.toolMessageIds?.length > 0) {
             options.toolMessageIds = filters.toolMessageIds;
             this.filtersCount++;
         }
