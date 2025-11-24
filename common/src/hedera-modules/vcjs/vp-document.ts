@@ -3,7 +3,7 @@ import { IVP } from '@guardian/interfaces';
 import { VcDocument } from './vc-document.js';
 import { Issuer } from './issuer.js';
 import { TimestampUtils } from '../timestamp-utils.js';
-import { Timestamp } from '@hashgraph/sdk';
+import { Timestamp } from '@hiero-ledger/sdk';
 import { CommonDidDocument } from './did/index.js';
 
 /**

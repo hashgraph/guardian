@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { PrivateKey } from '@hashgraph/sdk';
+import { PrivateKey } from '@hiero-ledger/sdk';
 
 import { VCJS } from '../../../../dist/hedera-modules/vcjs/vcjs.js';
 import { DefaultDocumentLoader } from '../../../../dist/hedera-modules/document-loader/document-loader-default.js';

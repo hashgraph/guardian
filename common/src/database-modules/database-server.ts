@@ -1,5 +1,5 @@
 import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus } from '@guardian/interfaces';
-import { TopicId } from '@hashgraph/sdk';
+import { TopicId } from '@hiero-ledger/sdk';
 import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';

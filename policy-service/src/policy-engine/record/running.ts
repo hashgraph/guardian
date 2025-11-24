@@ -9,7 +9,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcDocument as VcDocumentCollection, VcDocument, VcHelper, VpDocument } from '@guardian/common';
 import { RecordItem } from './record-item.js';
 import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, RowDocument, Utils } from './utils.js';
-import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 
 interface RecordOptions {
     mode?: string;

@@ -1,4 +1,4 @@
-import { AccountId, Client } from '@hashgraph/sdk';
+import { AccountId, Client } from '@hiero-ledger/sdk';
 
 /**
  * Environment class
