@@ -1,4 +1,4 @@
-import { AccountId, PrivateKey, TopicId, } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, TopicId, } from '@hiero-ledger/sdk';
 import { GenerateUUIDv4, ISignOptions, SignType, WorkerTaskType } from '@guardian/interfaces';
 import { IPFS, PinoLogger, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
