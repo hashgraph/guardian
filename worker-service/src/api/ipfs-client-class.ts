@@ -4,9 +4,9 @@ import { FilebaseClient } from '@filebase/client';
 import { CarReader } from '@ipld/car';
 import * as Delegation from '@ucanto/core/delegation';
 import * as Signer from '@ucanto/principal/ed25519';
-import * as Client from '@web3-storage/w3up-client';
+import * as Client from '@storacha/client';
 import * as url from 'url';
-import { StoreMemory } from '@web3-storage/access'
+import { StoreMemory } from '@storacha/access'
 import CID from 'cids';
 
 /**
