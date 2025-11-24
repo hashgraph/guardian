@@ -1421,10 +1421,10 @@
     long "^5.2.3"
     protobufjs "7.2.5"
 
-"@hashgraph/sdk@2.72.0":
+"@hiero-ledger/sdk@2.72.0":
   version "2.72.0"
-  resolved "https://registry.yarnpkg.com/@hashgraph/sdk/-/sdk-2.72.0.tgz#f55e905e1cc0e37d8d064c2447c1cfbd93e0cb4e"
-  integrity sha512-w35M77OAkJutENG4CldUGzfT+qubDjEYCQR5Ran75uHB+SLeCodR87AXWJ3ocr5vPaZ7lsflBXEYZLhgCi1G2g==
+  resolved "https://registry.yarnpkg.com/@hiero-ledger/sdk/-/sdk-2.72.0.tgz#98ec5a6591bd005c9efde8aa48786baf3f1c689d"
+  integrity sha512-uY1Z7avAQRCcQyDpqlbnAMfx6VPajQARd6m+LrId6OA/qTsK8Xzdqb/BmyuukKQgPeY6tRgkWaKz9Lt4/TUO4A==
   dependencies:
     "@ethersproject/abi" "^5.8.0"
     "@ethersproject/bignumber" "^5.8.0"
@@ -11456,9 +11456,9 @@ one-webcrypto@^1.0.3:
   resolved "https://registry.yarnpkg.com/one-webcrypto/-/one-webcrypto-1.0.3.tgz#f951243cde29b79b6745ad14966fc598a609997c"
   integrity sha512-fu9ywBVBPx0gS9K0etIROTiCkvI5S1TDjFsYFb3rC1ewFxeOqsbzq7aIMBHsYfrTHBcGXJaONXXjTl8B01cW1Q==
 
-"one-webcrypto@git+https://github.com/web3-storage/one-webcrypto.git":
+"one-webcrypto@https://github.com/web3-storage/one-webcrypto":
   version "1.0.1"
-  resolved "git+https://github.com/web3-storage/one-webcrypto.git#9e029e2fd477bd95bb80abd3553bbac704ccc7a6"
+  resolved "https://github.com/web3-storage/one-webcrypto#9e029e2fd477bd95bb80abd3553bbac704ccc7a6"
 
 onetime@^5.1.0:
   version "5.1.2"

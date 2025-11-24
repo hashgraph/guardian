@@ -1,5 +1,5 @@
 import { IVC, IVCDocument, GenerateUUIDv4, ArtifactType } from '@guardian/interfaces';
-import { Client } from '@hashgraph/sdk';
+import { Client } from '@hiero-ledger/sdk';
 
 /**
  * Transaction response callback

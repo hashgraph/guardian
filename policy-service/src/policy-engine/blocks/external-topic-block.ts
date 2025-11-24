@@ -27,7 +27,7 @@ import {
     ExternalEvent,
     ExternalEventType
 } from '../interfaces/external-event.js';
-import { TopicId } from '@hashgraph/sdk';
+import { TopicId } from '@hiero-ledger/sdk';
 
 /**
  * Search Topic Result

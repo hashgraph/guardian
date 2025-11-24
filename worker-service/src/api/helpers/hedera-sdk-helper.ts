@@ -45,7 +45,7 @@ import {
     TransactionRecord,
     TransactionRecordQuery,
     TransferTransaction
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import { HederaUtils, timeout } from './utils.js';
 import axios, { AxiosResponse } from 'axios';
 import { Environment } from './environment.js';

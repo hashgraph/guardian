@@ -56,7 +56,7 @@ import {
     IgnoreRule,
     SchemaStatus
 } from '@guardian/interfaces';
-import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';

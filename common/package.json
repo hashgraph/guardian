@@ -6,7 +6,7 @@
         "@azure/keyvault-secrets": "^4.9.0",
         "@google-cloud/secret-manager": "^4.2.2",
         "@guardian/interfaces": "3.4.0",
-        "@hashgraph/sdk": "2.72.0",
+        "@hiero-ledger/sdk": "2.72.0",
         "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
         "@meeco/cryppo": "^2.0.2",
         "@mikro-orm/core": "6.4.16",

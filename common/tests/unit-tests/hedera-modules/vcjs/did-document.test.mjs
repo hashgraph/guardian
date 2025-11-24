@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { PrivateKey } from '@hashgraph/sdk';
+import { PrivateKey } from '@hiero-ledger/sdk';
 
 import { DidRootKey, DIDDocument, DidDocumentBase } from '../../../../dist/hedera-modules/vcjs/did-document.js';
 
