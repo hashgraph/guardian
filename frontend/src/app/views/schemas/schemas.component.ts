@@ -856,10 +856,13 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Tool:
             case SchemaType.Policy:
             default: {
-                this.schemaService.delete(id, includeChildren).subscribe((data: any) => {
-                    this.selectedItems = [];
-                    this.selectedItemIds = [];
-                    this.loadSchemas();
+                this.schemaService.delete(id, includeChildren).subscribe(result => {
+                    const { taskId, expectation } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
                 }, (e) => {
                     this.loadError(e);
                 });

@@ -128,8 +128,8 @@ export class SchemaService {
         return this.http.put<any[]>(`${this.url}/${id}/unpublish`, null);
     }
 
-    public delete(id: string, includeChildren?: boolean): Observable<ISchema[]> {
-        return this.http.delete<any[]>(`${this.url}/${id}`, {
+    public delete(id: string, includeChildren?: boolean): Observable<{ taskId: string, expectation: number }> {
+        return this.http.delete<{ taskId: string, expectation: number }>(`${this.url}/${id}`, {
             params: {
                 includeChildren: includeChildren ? true : false
             }

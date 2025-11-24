@@ -880,14 +880,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             schemaIds: string[],
             owner: IOwner,
             task: any,
-            needResult: boolean,
             includeChildren: boolean
         }) => {
             if (!msg) {
                 return new MessageError('Invalid delete schema parameter');
             }
 
-            const { schemaIds, owner, task, needResult, includeChildren } = msg;
+            const { schemaIds, owner, task, includeChildren } = msg;
             const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {

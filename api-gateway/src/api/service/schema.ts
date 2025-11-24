@@ -1082,21 +1082,20 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        isArray: true,
-        type: SchemaDTO
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSchema(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
         @Query('includeChildren') includeChildren: boolean = false,
         @Req() req
-    ): Promise<SchemaDTO[]> {
+    ): Promise<any> {
         const guardians = new Guardians();
         let schema: ISchema;
         const owner = new EntityOwner(user);
@@ -1121,14 +1120,19 @@ export class SchemaApi {
         }
 
         try {
-            const schemas = (await guardians.deleteSchema(schemaId, owner, true, String(includeChildren).toLowerCase() === 'true') as ISchema[]);
-            SchemaHelper.updatePermission(schemas, owner);
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                await guardians.deleteSchema(schemaId, owner, task, true, String(includeChildren).toLowerCase() === 'true');
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+            });
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
-            return SchemaUtils.toOld(schemas);
+            return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -2115,12 +2119,13 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
     async deleteSystemSchema(
         @AuthUser() user: IAuthUser,
@@ -2141,10 +2146,17 @@ export class SchemaApi {
             if (schema.active) {
                 throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            await guardians.deleteSchema(schemaId, owner);
+
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                await guardians.deleteSchema(schemaId, owner, task);
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+            });
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
         } catch (error) {
             await InternalException(error, this.logger, user.id);
