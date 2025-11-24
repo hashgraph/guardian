@@ -8,7 +8,7 @@
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
-        "@web3-storage/access": "^18.1.0",
+        "@web3-storage/access": "^20.3.0",
         "@web3-storage/w3up-client": "^12.0.0",
         "axios": "^1.8.3",
         "dotenv": "^16.0.0",
