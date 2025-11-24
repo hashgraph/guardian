@@ -1123,7 +1123,7 @@ export class SchemaApi {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardians.deleteSchema(schemaId, owner, task, true, String(includeChildren).toLowerCase() === 'true');
+                await guardians.deleteSchema(schemaId, owner, task, String(includeChildren).toLowerCase() === 'true');
             }, async (error) => {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -2787,7 +2787,7 @@ export class SchemaApi {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardians.deleteSchemasByIds(schemaIds, owner, task, true, String(includeChildren).toLowerCase() === 'true');
+                await guardians.deleteSchemasByIds(schemaIds, owner, task, String(includeChildren).toLowerCase() === 'true');
             }, async (error) => {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
