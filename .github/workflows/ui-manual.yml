@@ -183,7 +183,7 @@ jobs:
           path: e2e-tests/cypress/screenshots
 
       - name: Publish API Test Results
-        uses: step-security/publish-unit-test-result-action@c8537a200a435e2560109a6a8ed9cac838b62656 # v2.20.5
+        uses: step-security/publish-unit-test-result-action@32f89bf71205087367e3fe317be553f2ee59a5b0 # v2.21.0
         if: always()
         with:
           files: e2e-tests/cypress/test_results/**/*.xml
