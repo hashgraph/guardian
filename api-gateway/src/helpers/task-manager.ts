@@ -77,6 +77,7 @@ export class TaskManager {
         [TaskAction.GRANT_KYC, 4],
         [TaskAction.REVOKE_KYC, 4],
         [TaskAction.DELETE_POLICY, 3],
+        [TaskAction.DELETE_POLICIES, 3],
         [TaskAction.CLONE_POLICY, 5],
         [TaskAction.CREATE_TOOL, 8],
         [TaskAction.IMPORT_TOOL_FILE, 9],

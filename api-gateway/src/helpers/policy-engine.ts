@@ -145,6 +145,20 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Async delete policy
+     * @param policyId Policy identifier
+     * @param owner User
+     * @param task Task
+     */
+    public async deletePoliciesAsync(
+        policyIds: string[],
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(PolicyEngineEvents.DELETE_POLICIES_ASYNC, { policyIds, owner, task });
+    }
+
+    /**
      * Save policy
      * @param model
      * @param owner

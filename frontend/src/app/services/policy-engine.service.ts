@@ -109,6 +109,10 @@ export class PolicyEngineService {
         return this.http.delete<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}`);
     }
 
+    public pushDeleteMultiple(policyIds: string[]): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/delete-multiple`, { policyIds });
+    }
+
     public validate(policy: any): Observable<any> {
         return this.http.post<any>(`${this.url}/validate`, policy);
     }
