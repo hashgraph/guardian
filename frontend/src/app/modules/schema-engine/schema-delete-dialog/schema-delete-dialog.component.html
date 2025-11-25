@@ -19,7 +19,7 @@
 
         <div *ngIf="itemNames && itemNames.length && itemNames.length > 1">
             <div class="delete-text">
-                Are you want to delete these schemas?
+                You are about to delete the following schemas:
             </div>
             <ul style="margin-top: 0;">
                 <li *ngFor="let item of itemNames">
@@ -37,7 +37,7 @@
     <div class="child-schemas-block" *ngIf="(deletableChildren?.length && deletableChildren.length > 0) || (blockedChildren?.length && blockedChildren.length > 0)">
         <ng-container *ngIf="deletableChildren?.length && deletableChildren.length > 0">
             <p class="delete-text" *ngIf="itemNames && itemNames.length && itemNames.length == 1">The "{{ itemNames[0] }}" schema includes child schemas. Select the checkbox below to also delete the following child schemas:</p>
-            <p class="delete-text" *ngIf="itemNames && itemNames.length && itemNames.length > 1">These schemas includes child schemas. Select the checkbox below to also delete the following child schemas:</p>
+            <p class="delete-text" *ngIf="itemNames && itemNames.length && itemNames.length > 1">These schemas include child schemas. Select the checkbox below to also delete the following child schemas:</p>
             <div class="schemas-block">
                 <ul class="schemas-list">
                     <li *ngFor="let item of deletableChildren">
