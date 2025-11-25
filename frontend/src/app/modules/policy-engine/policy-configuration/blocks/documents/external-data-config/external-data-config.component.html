@@ -19,4 +19,19 @@
                 ></select-schema>
         </td>
     </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Type Of Inheritance</td>
+        <td class="propRowCell">
+            <p-dropdown
+                [(ngModel)]="properties.typeOfInheritance"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select an type"
+                [options]="typesOfInheritance"
+                [appendTo]="'body'"
+            >
+            </p-dropdown>
+        </td>
+    </tr>
 </table>

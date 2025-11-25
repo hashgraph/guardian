@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import { ChangeBlockSettingsDialog } from 'src/app/modules/policy-engine/dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Settings for block of 'requestVcDocument' type.
@@ -47,7 +49,13 @@ export class RequestConfigComponent implements OnInit {
         { label: 'Edit', value: 'edit' }
     ];
 
-    constructor() {
+    public typesOfInheritance = [
+        { label: '', value: '' },
+        { label: 'Inherit', value: 'inherit' },
+        { label: 'Not Inherit', value: 'not_inherit' },
+    ];
+
+    constructor(private dialogService: DialogService) {
         this.presetMap = [];
     }
 
@@ -145,5 +153,35 @@ export class RequestConfigComponent implements OnInit {
             value: item.name,
             title: item.title
         }));
+    }
+
+    public onRelayerAccount() {
+        this.onSave();
+        if (this.properties.relayerAccount) {
+            const blocks = this.currentBlock?.folder
+                ?.find(['requestVcDocumentBlock', 'requestVcDocumentBlockAddon', 'externalDataBlock'])
+                ?.filter(b => !b.properties.typeOfInheritance);
+            if (blocks?.length) {
+                const dialogRef = this.dialogService.open(ChangeBlockSettingsDialog, {
+                    showHeader: false,
+                    width: '720px',
+                    styleClass: 'guardian-dialog',
+                    data: {
+                        title: '1',
+                        action: '2',
+                        blocks
+                    }
+                });
+                dialogRef.onClose.subscribe(async (result: PolicyBlock[] | null) => {
+                    if (result?.length) {
+                        for (const block of result) {
+                            block.change();
+                            block.properties.typeOfInheritance = 'inherit';
+                        }
+                        this.currentBlock?.folder?.emitUpdate();
+                    }
+                });
+            }
+        }
     }
 }

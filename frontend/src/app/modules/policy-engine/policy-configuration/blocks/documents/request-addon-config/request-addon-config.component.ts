@@ -42,10 +42,16 @@ export class RequestAddonConfigComponent implements OnInit {
     presetMap: any;
 
     public idTypeOptions = [
-        {label: '', value: ''},
-        {label: 'DID (New DID)', value: 'DID'},
-        {label: 'UUID (New UUID)', value: 'UUID'},
-        {label: 'Owner (Owner DID)', value: 'OWNER'}
+        { label: '', value: '' },
+        { label: 'DID (New DID)', value: 'DID' },
+        { label: 'UUID (New UUID)', value: 'UUID' },
+        { label: 'Owner (Owner DID)', value: 'OWNER' }
+    ];
+
+    public typesOfInheritance = [
+        { label: '', value: '' },
+        { label: 'Inherit', value: 'inherit' },
+        { label: 'Not Inherit', value: 'not_inherit' },
     ];
 
     constructor() {
@@ -150,5 +156,12 @@ export class RequestAddonConfigComponent implements OnInit {
             label: f.title,
             value: f.name
         }));
+    }
+
+    public onRelayerAccount() {
+        this.onSave();
+        if (this.properties.relayerAccount) {
+            debugger;
+        }
     }
 }

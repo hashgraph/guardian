@@ -1830,25 +1830,47 @@ export class PolicyUtils {
         }
     }
 
-    public static async getRelayerAccount(
+    public static async getRelayerAccountAndOwner(
         ref: AnyBlockType,
-        did: string,
+        user: PolicyUser,
         relayerAccount: string | null | undefined,
         documentRef: IPolicyDocument,
-        userId: string | null
-    ) {
+        typeOfInheritance: string | null | undefined,
+    ): Promise<[string, PolicyUser]> {
         try {
             let account: string;
+            let owner: PolicyUser;
             if (ref.dryRun) {
-                account = await PolicyUtils.getUserRelayerAccount(ref, did, null, userId);
+                account = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, user.userId);
+                owner = user;
+                return [account, owner];
             } else if (relayerAccount) {
                 account = relayerAccount;
+                owner = user;
+                return [account, owner];
             } else if (documentRef) {
-                account = await PolicyUtils.getDocumentRelayerAccount(ref, documentRef, userId);
+                if (typeOfInheritance === 'inherit') {
+                    account = await PolicyUtils.getDocumentRelayerAccount(ref, documentRef, user.userId);
+                    owner = await PolicyUtils.getPolicyUser(ref, documentRef.owner, documentRef.group, user.userId);
+                    return [account, owner];
+                } else if (typeOfInheritance === 'not_inherit') {
+                    account = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, user.userId);
+                    owner = user;
+                    return [account, owner];
+                } else if (documentRef.owner === user.did) {
+                    account = await PolicyUtils.getDocumentRelayerAccount(ref, documentRef, user.userId);
+                    owner = user;
+                    return [account, owner];
+                } else {
+                    account = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, user.userId);
+                    owner = user;
+                    return [account, owner];
+                }
             } else {
-                account = await PolicyUtils.getUserRelayerAccount(ref, did, null, userId);
+                account = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, user.userId);
+                owner = user;
+                return [account, owner];
             }
-            return account;
         } catch (error) {
             throw Error(`Invalid relayer account.`);
         }

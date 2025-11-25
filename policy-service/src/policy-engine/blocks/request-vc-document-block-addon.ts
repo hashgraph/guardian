@@ -204,9 +204,11 @@ export class RequestVcDocumentBlockAddon {
 
                 const _vcHelper = new VcHelper();
                 const idType = ref.options.idType;
+                const typeOfInheritance = ref.options.typeOfInheritance;
 
                 //Relayer Account
-                const relayerAccount = await PolicyUtils.getRelayerAccount(ref, user.did, _data.relayerAccount, documentRef, user.userId);
+                const [relayerAccount, documentOwner]
+                    = await PolicyUtils.getRelayerAccountAndOwner(ref, user, _data.relayerAccount, documentRef, typeOfInheritance);
 
                 const credentialSubject = document;
                 credentialSubject.policyId = ref.policyId;
@@ -256,7 +258,7 @@ export class RequestVcDocumentBlockAddon {
                     options: { uuid, group: groupContext },
                     userId: user.userId
                 });
-                let item = PolicyUtils.createVC(ref, user, vc);
+                let item = PolicyUtils.createVC(ref, documentOwner, vc);
 
                 const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, this._schema);
                 const schemaIRI = ref.options.schema;

@@ -25,9 +25,15 @@ export class ExternalDataConfigComponent implements OnInit {
     properties!: any;
     schemas!: SchemaVariables[];
 
+    public typesOfInheritance = [
+        { label: '', value: '' },
+        { label: 'Inherit', value: 'inherit' },
+        { label: 'Not Inherit', value: 'not_inherit' },
+    ];
+
     constructor(
     ) {
-        
+
     }
 
     ngOnInit(): void {

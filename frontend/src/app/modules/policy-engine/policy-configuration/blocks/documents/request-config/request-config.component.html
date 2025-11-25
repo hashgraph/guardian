@@ -49,8 +49,28 @@
         <td class="propRowCol multi-line"></td>
         <td class="propRowCell multi-line cellName">Custom Relayer Account</td>
         <td class="propRowCell multi-line">
-            <input class="prop-input" type="checkbox" [(ngModel)]="properties.relayerAccount" [readonly]="readonly"
-                   (blur)="onSave()">
+            <input 
+                class="prop-input" 
+                type="checkbox" 
+                [(ngModel)]="properties.relayerAccount" 
+                [readonly]="readonly"
+                (change)="onRelayerAccount()">
+        </td>
+    </tr>
+
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Type Of Inheritance</td>
+        <td class="propRowCell">
+            <p-dropdown
+                [(ngModel)]="properties.typeOfInheritance"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select an type"
+                [options]="typesOfInheritance"
+                [appendTo]="'body'"
+            >
+            </p-dropdown>
         </td>
     </tr>
 
