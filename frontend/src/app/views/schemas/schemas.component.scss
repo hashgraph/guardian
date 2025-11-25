@@ -690,6 +690,22 @@ a {
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
     background: #FFF;
 
+    .selected-info-block {
+        align-content: center;
+
+        a {
+            margin-left: 8px;
+            font-family: Inter, sans-serif;
+            font-weight: 400;
+            font-style: Regular;
+            font-size: 14px;
+            line-height: 100%;
+            letter-spacing: 0%;
+            vertical-align: middle;
+            color: var(--color-grey-5, #848FA9);
+        }
+    }
+
     .selected-info {
         font-family: Inter, sans-serif;
         font-weight: 400;

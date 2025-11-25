@@ -65,12 +65,11 @@
 }
 
 .delete-text {
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     font-family: Inter, sans-serif;
     font-weight: 600;
     font-style: Regular;
     font-size: 14px;
-    line-height: 100%;
     letter-spacing: 0%;
     white-space: pre-line;
 }
@@ -127,5 +126,6 @@
 
     .schemas-list {
         padding: 0 24px;
+        margin: 0;
     }
 }

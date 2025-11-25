@@ -1120,8 +1120,7 @@ export class SchemaConfigComponent implements OnInit {
                     styleClass: 'guardian-dialog',
                     data: {
                         header: 'Delete Schema',
-                        text: `Are you sure want to delete schema (${element.name})?`,
-                        itemNames: element.name,
+                        itemNames: [element.name],
                         deletableChildren: result.deletableChildren,
                         blockedChildren: result.blockedChildren
                     },
@@ -1619,5 +1618,11 @@ export class SchemaConfigComponent implements OnInit {
                 });
             })
         }
+    }
+
+    public onClearSelection() {
+        this.selectedItems = []
+        this.selectedItemIds = [];
+        this.isAllSelected = false;
     }
 }
