@@ -509,11 +509,11 @@ export class TagsApi {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(user, schemaId);
-            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
-            if (error) {
-                throw new HttpException(error, HttpStatus.FORBIDDEN);
+            const permissionError = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
+            if (permissionError) {
+                throw new HttpException(permissionError, HttpStatus.FORBIDDEN);
             }
-            
+
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
             RunFunctionAsync<ServiceError>(async () => {
