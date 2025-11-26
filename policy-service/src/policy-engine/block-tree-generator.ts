@@ -515,7 +515,7 @@ export class BlockTreeGenerator extends NatsService {
             await components.registerRoot(rootInstance);
 
             if (!skipRegistration) {
-                await PolicyComponentsUtils.RegisterPolicyInstance(policyId, policy, components);
+                await PolicyComponentsUtils.RegisterPolicyInstance(policyId, policy, components, allInstances);
                 await PolicyComponentsUtils.RegisterBlockTree(allInstances);
                 this.models.set(policyId, rootInstance);
             }

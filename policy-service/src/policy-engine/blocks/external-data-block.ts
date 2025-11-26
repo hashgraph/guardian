@@ -163,11 +163,12 @@ export class ExternalDataBlock {
         const documentRef = await this.getRelationships(ref, data.ref);
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);
-        const typeOfInheritance = ref.options.typeOfInheritance;
+        const forceRelayerAccount = ref.options.forceRelayerAccount;
+        const inheritRelayerAccount = PolicyComponentsUtils.IsInheritRelayerAccount(ref.policyId, forceRelayerAccount);
 
         //Relayer Account
         const [relayerAccount, documentOwner]
-            = await PolicyUtils.getRelayerAccountAndOwner(ref, user, data.relayerAccount, documentRef, typeOfInheritance);
+            = await PolicyUtils.getRelayerAccountAndOwner(ref, user, data.relayerAccount, documentRef, inheritRelayerAccount);
 
         const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, schema);
 

@@ -234,7 +234,10 @@
                 &.multi-line {
                     word-break: break-word;
                     white-space: normal;
-                    height: 50px !important;
+                    height: auto !important;
+                    padding-top: 6px;
+                    padding-bottom: 6px;
+                    padding-right: 6px;
                 }
             }
 

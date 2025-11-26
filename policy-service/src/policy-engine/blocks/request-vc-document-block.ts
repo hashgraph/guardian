@@ -198,13 +198,14 @@ export class RequestVcDocumentBlock {
             const draft = data.draft;
             const draftId = data.draftId;
             const editType = ref.options.editType;
-            const typeOfInheritance = ref.options.typeOfInheritance;
+            const forceRelayerAccount = ref.options.forceRelayerAccount;
+            const inheritRelayerAccount = PolicyComponentsUtils.IsInheritRelayerAccount(ref.policyId, forceRelayerAccount);
 
             const documentRef = await this.getRelationships(ref, data.ref);
 
             //Relayer Account
             const [relayerAccount, documentOwner]
-                = await PolicyUtils.getRelayerAccountAndOwner(ref, user, data.relayerAccount, documentRef, typeOfInheritance);
+                = await PolicyUtils.getRelayerAccountAndOwner(ref, user, data.relayerAccount, documentRef, inheritRelayerAccount);
 
             //Prepare Credential Subject
             const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document);

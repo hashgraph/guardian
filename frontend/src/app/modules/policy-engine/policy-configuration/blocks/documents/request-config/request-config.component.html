@@ -47,23 +47,23 @@
 
     <tr class="propRow">
         <td class="propRowCol multi-line"></td>
-        <td class="propRowCell multi-line cellName">Custom Relayer Account</td>
+        <td class="propRowCell multi-line cellName">Set Relayer Account for Hedera operations</td>
         <td class="propRowCell multi-line">
             <input 
                 class="prop-input" 
                 type="checkbox" 
                 [(ngModel)]="properties.relayerAccount" 
                 [readonly]="readonly"
-                (change)="onRelayerAccount()">
+                (change)="onSave()">
         </td>
     </tr>
 
     <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Type Of Inheritance</td>
-        <td class="propRowCell">
+        <td class="propRowCol multi-line"></td>
+        <td class="propRowCell multi-line cellName">Force User Account for block Hedera operations</td>
+        <td class="propRowCell multi-line">
             <p-dropdown
-                [(ngModel)]="properties.typeOfInheritance"
+                [(ngModel)]="properties.forceRelayerAccount"
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select an type"

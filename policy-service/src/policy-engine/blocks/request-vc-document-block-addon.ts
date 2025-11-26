@@ -204,11 +204,12 @@ export class RequestVcDocumentBlockAddon {
 
                 const _vcHelper = new VcHelper();
                 const idType = ref.options.idType;
-                const typeOfInheritance = ref.options.typeOfInheritance;
+                const forceRelayerAccount = ref.options.forceRelayerAccount;
+                const inheritRelayerAccount = PolicyComponentsUtils.IsInheritRelayerAccount(ref.policyId, forceRelayerAccount);
 
                 //Relayer Account
                 const [relayerAccount, documentOwner]
-                    = await PolicyUtils.getRelayerAccountAndOwner(ref, user, _data.relayerAccount, documentRef, typeOfInheritance);
+                    = await PolicyUtils.getRelayerAccountAndOwner(ref, user, _data.relayerAccount, documentRef, inheritRelayerAccount);
 
                 const credentialSubject = document;
                 credentialSubject.policyId = ref.policyId;

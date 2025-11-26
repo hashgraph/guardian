@@ -157,11 +157,4 @@ export class RequestAddonConfigComponent implements OnInit {
             value: f.name
         }));
     }
-
-    public onRelayerAccount() {
-        this.onSave();
-        if (this.properties.relayerAccount) {
-            debugger;
-        }
-    }
 }

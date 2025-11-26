@@ -804,8 +804,15 @@ export class PolicyComponentsUtils {
     public static async RegisterPolicyInstance(
         policyId: string,
         policy: Policy,
-        components: ComponentsService
+        components: ComponentsService,
+        allInstances: IPolicyBlock[]
     ) {
+        let relayerAccount: boolean = false;
+        for (const instance of allInstances) {
+            if (instance.options?.relayerAccount) {
+                relayerAccount = true;
+            }
+        }
         const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
         const policyInstance: IPolicyInstance = {
             policyId,
@@ -817,7 +824,8 @@ export class PolicyComponentsUtils {
             owner: policy.owner,
             policyOwner: policy.owner,
             policyStatus: policy.status,
-            locationType: policy.locationType
+            locationType: policy.locationType,
+            relayerAccount
         };
         PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
     }
@@ -1811,6 +1819,21 @@ export class PolicyComponentsUtils {
             await PolicyComponentsUtils.backupKeys(policyId, options);
         } catch (error) {
             console.error(error);
+        }
+    }
+
+    public static IsInheritRelayerAccount(policyId: string, forceRelayerAccount: string): boolean {
+        if (forceRelayerAccount === 'inherit') {
+            return true;
+        } else if (forceRelayerAccount === 'not_inherit') {
+            return false;
+        } else {
+            const policy = PolicyComponentsUtils.PolicyById.get(policyId);
+            if (policy?.relayerAccount) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 }

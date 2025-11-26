@@ -1835,7 +1835,7 @@ export class PolicyUtils {
         user: PolicyUser,
         relayerAccount: string | null | undefined,
         documentRef: IPolicyDocument,
-        typeOfInheritance: string | null | undefined,
+        inherit: boolean,
     ): Promise<[string, PolicyUser]> {
         try {
             let account: string;
@@ -1849,17 +1849,13 @@ export class PolicyUtils {
                 owner = user;
                 return [account, owner];
             } else if (documentRef) {
-                if (typeOfInheritance === 'inherit') {
+                if (inherit) {
                     account = await PolicyUtils.getDocumentRelayerAccount(ref, documentRef, user.userId);
-                    owner = await PolicyUtils.getPolicyUser(ref, documentRef.owner, documentRef.group, user.userId);
-                    return [account, owner];
-                } else if (typeOfInheritance === 'not_inherit') {
-                    account = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, user.userId);
-                    owner = user;
-                    return [account, owner];
-                } else if (documentRef.owner === user.did) {
-                    account = await PolicyUtils.getDocumentRelayerAccount(ref, documentRef, user.userId);
-                    owner = user;
+                    if (documentRef.owner === user.did) {
+                        owner = user;
+                    } else {
+                        owner = await PolicyUtils.getPolicyUser(ref, documentRef.owner, documentRef.group, user.userId);
+                    }
                     return [account, owner];
                 } else {
                     account = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, user.userId);
