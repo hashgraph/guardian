@@ -204,6 +204,13 @@
                     white-space: nowrap;
                     text-overflow: ellipsis;
                     display: block;
+                    position: absolute;
+                    left: 0;
+                    right: 0px;
+                    top: 0;
+                    bottom: 0;
+                    align-items: center;
+                    padding: 11px 8px;
                 }
             }
 
