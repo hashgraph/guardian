@@ -1823,9 +1823,9 @@ export class PolicyComponentsUtils {
     }
 
     public static IsInheritRelayerAccount(policyId: string, forceRelayerAccount: string): boolean {
-        if (forceRelayerAccount === 'inherit') {
+        if (forceRelayerAccount === 'preset') {
             return true;
-        } else if (forceRelayerAccount === 'not_inherit') {
+        } else if (forceRelayerAccount === 'current') {
             return false;
         } else {
             const policy = PolicyComponentsUtils.PolicyById.get(policyId);

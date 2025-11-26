@@ -238,6 +238,16 @@
                     padding-top: 6px;
                     padding-bottom: 6px;
                     padding-right: 6px;
+
+                    &::ng-deep {
+                        .p-dropdown {
+                            height: 48px;
+
+                            .p-dropdown-label {
+                                padding-top: 11px;
+                            }
+                        }
+                    }
                 }
             }
 

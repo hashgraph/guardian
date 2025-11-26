@@ -21,7 +21,12 @@
     </tr>
     <tr class="propRow">
         <td class="propRowCol multi-line"></td>
-        <td class="propRowCell multi-line cellName">Set Relayer Account for Hedera operations</td>
+        <td class="propRowCell multi-line cellName" 
+            pTooltip="Set Relayer Account for Hedera operations"
+            tooltipPosition="bottom"
+            [tooltipOptions]="{ showDelay: 500 }"
+            tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
+        >Set Relayer Account</td>
         <td class="propRowCell multi-line">
             <input 
                 class="prop-input" 
@@ -31,16 +36,22 @@
                 (change)="onSave()">
         </td>
     </tr>
+
     <tr class="propRow">
         <td class="propRowCol multi-line"></td>
-        <td class="propRowCell multi-line cellName">Force User Account for block Hedera operations</td>
+        <td class="propRowCell multi-line cellName" 
+            pTooltip="Force User Account for block Hedera operations"
+            tooltipPosition="bottom"
+            [tooltipOptions]="{ showDelay: 500 }"
+            tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
+        >Force User Account</td>
         <td class="propRowCell multi-line">
             <p-dropdown
                 [(ngModel)]="properties.forceRelayerAccount"
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select an type"
-                [options]="typesOfInheritance"
+                [options]="accountTypes"
                 [appendTo]="'body'"
             >
             </p-dropdown>
