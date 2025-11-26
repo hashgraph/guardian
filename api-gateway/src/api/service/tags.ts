@@ -1,10 +1,10 @@
-import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
+import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { Permissions, SchemaCategory, SchemaHelper, TaskAction } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, TaskDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { ONLY_SR, SchemaUtils, Guardians, InternalException, EntityOwner, CacheService, getCacheKey, UseCache } from '#helpers';
+import { ONLY_SR, SchemaUtils, Guardians, InternalException, EntityOwner, CacheService, getCacheKey, UseCache, TaskManager, ServiceError } from '#helpers';
 import { PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
 
 @Controller('tags')
@@ -492,13 +492,13 @@ export class TagsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean,
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSchema(
         @AuthUser() user: IAuthUser,
@@ -509,11 +509,19 @@ export class TagsApi {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(user, schemaId);
-            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
-            if (error) {
-                throw new HttpException(error, HttpStatus.FORBIDDEN);
+            const permissionError = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
+            if (permissionError) {
+                throw new HttpException(permissionError, HttpStatus.FORBIDDEN);
             }
-            await guardians.deleteSchema(schemaId, owner);
+
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                await guardians.deleteSchema(schemaId, owner, task);
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+            });
 
             const invalidedCacheTags = [
                 `${PREFIXES.TAGS}schemas`,

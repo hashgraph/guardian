@@ -142,7 +142,7 @@ jobs:
           SERVICE_JWT_SECRET_KEY_ALL: ${{ secrets.CI_JWT_PRIVATE_KEY }}
           IPFS_NODE_ADDRESS: http://localhost:5001
           IPFS_PROVIDER: web3storage
-          IPFS_PUBLIC_GATEWAY: https://w3s.link/ipfs/${cid}
+          IPFS_PUBLIC_GATEWAY: https://dweb.link/ipfs/${cid}
           IPFS_STORAGE_KEY: ${{ secrets.E2E_IPFS_STORAGE_KEY }}
           IPFS_STORAGE_PROOF: ${{ secrets.E2E_IPFS_STORAGE_PROOF }}
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
@@ -178,7 +178,7 @@ jobs:
           docker rm -f cypress-test-run || true
 
       - name: Publish API Test Results
-        uses: step-security/publish-unit-test-result-action@c8537a200a435e2560109a6a8ed9cac838b62656 # v2.20.5
+        uses: step-security/publish-unit-test-result-action@32f89bf71205087367e3fe317be553f2ee59a5b0 # v2.21.0
         if: always()
         with:
           files: e2e-tests/cypress/test_results/**/*.xml

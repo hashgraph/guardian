@@ -15,7 +15,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                     authorization,
                 }
             }).then((response) => {
-                policyId = response.body.at(0)._id
+                policyId = response.body.at(1)._id
                 cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.PolicySearch,

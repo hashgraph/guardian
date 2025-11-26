@@ -65,17 +65,17 @@
 }
 
 .delete-text {
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     font-family: Inter, sans-serif;
-    font-weight: 400;
+    font-weight: 600;
     font-style: Regular;
     font-size: 14px;
-    line-height: 100%;
     letter-spacing: 0%;
     white-space: pre-line;
 }
 
 .child-item {
+    margin: 0;
     font-family: Inter, sans-serif;
     font-weight: 700;
     font-style: Bold;
@@ -114,6 +114,7 @@
     }
 
     .child-cant-delete-item {
+        margin: 0;
         font-family: Inter;
         font-weight: 600;
         font-style: Semi Bold;
@@ -121,5 +122,10 @@
         line-height: 24px;
         letter-spacing: 0%;
         color: var(--guardian-failure-color, #FF432A);
+    }
+
+    .schemas-list {
+        padding: 0 24px;
+        margin: 0;
     }
 }

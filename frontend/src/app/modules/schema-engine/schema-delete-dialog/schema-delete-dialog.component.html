@@ -2,7 +2,7 @@
     <div class="header-container">
         <i class="pi pi-exclamation-triangle delete-icon"></i><div class="header-text">{{ header }}</div>
     </div>
-    <div class="header-icon" (click)="onClick()">
+    <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
     </div>
 </div>
@@ -12,26 +12,51 @@
         <div class="preloader-image preloader-image-l-size"></div>
     </div>
 
-    <div *ngIf="(!deletableChildren?.length || deletableChildren.length <= 0) && (!blockedChildren?.length && blockedChildren.length <= 0)" class="delete-text">
-        {{ text }}
-    </div>
+    <ng-container *ngIf="itemNames && itemNames.length && itemNames.length > 0; else notItemsToDelete">
+        <div class="delete-text" *ngIf="itemNames && itemNames.length && itemNames.length == 1">
+            Are you want to delete the "{{ itemNames[0] }}" schema?
+        </div>
+
+        <div *ngIf="itemNames && itemNames.length && itemNames.length > 1">
+            <div class="delete-text">
+                You are about to delete the following schemas:
+            </div>
+            <ul style="margin-top: 0;">
+                <li *ngFor="let item of itemNames">
+                    {{ item }}
+                </li>
+            </ul>
+        </div>
+    </ng-container>
+    <ng-template #notItemsToDelete>
+        <div class="delete-text">
+            There are no items to delete.
+        </div>
+    </ng-template>
 
     <div class="child-schemas-block" *ngIf="(deletableChildren?.length && deletableChildren.length > 0) || (blockedChildren?.length && blockedChildren.length > 0)">
         <ng-container *ngIf="deletableChildren?.length && deletableChildren.length > 0">
-            <p class="delete-text">The following child schemas would also be deleted:</p>
+            <p class="delete-text" *ngIf="itemNames && itemNames.length && itemNames.length == 1">The "{{ itemNames[0] }}" schema includes child schemas. Select the checkbox below to also delete the following child schemas:</p>
+            <p class="delete-text" *ngIf="itemNames && itemNames.length && itemNames.length > 1">These schemas include child schemas. Select the checkbox below to also delete the following child schemas:</p>
             <div class="schemas-block">
-                <span class="child-item">
-                    {{ deletableChildren.join(', ') }}
-                </span>
+                <ul class="schemas-list">
+                    <li *ngFor="let item of deletableChildren">
+                        <p class="child-item">{{ item }}</p>
+                    </li>
+                </ul>
             </div>
         </ng-container>
 
         <ng-container *ngIf="blockedChildren?.length && blockedChildren.length > 0">
-            <p class="delete-text">Child schemas referenced by other parents (will not be deleted):</p>
+            <p class="delete-text">Schemas referenced by other parents (will not be deleted):</p>
             <div class="schemas-block">
-                <span class="child-cant-delete-item" *ngFor="let item of blockedChildren">
-                    {{ item?.schema?.name + ' (depends on: ' + item?.blockingSchemas?.join(', ') + ')' }}
-                </span>
+                <ul class="schemas-list">
+                    <li *ngFor="let item of blockedChildren">
+                        <p class="child-cant-delete-item">
+                            {{ item?.schema?.name + ' (depends on: ' + item?.blockingSchemas?.join(', ') + ')' }}
+                        </p>
+                    </li>
+                </ul>
             </div>
         </ng-container>
         
@@ -42,7 +67,7 @@
                     [(ngModel)]="includeChildren"
                     [binary]="true"
                     [styleClass]="'primary-checkbox'"
-                    label="Delete child schemas as well"
+                    label="Delete child schemas"
                 ></p-checkbox>
             </div>
         </ng-container>
@@ -51,10 +76,16 @@
 
 <div class="dialog-footer">
     <div class="action-buttons">
-        <div *ngFor="let button of buttons" class="{{button.class}}-button">
-            <button 
-                (click)="onClick(button)" 
-                class="guardian-button guardian-button-{{button.class}}">{{button.name}}</button>
+        <div class="secondary-button">
+            <button
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div *ngIf="itemNames && itemNames.length && itemNames.length > 0"
+            class="delete-button">
+            <button
+                (click)="onDelete()" 
+                class="guardian-button guardian-button-delete">Delete</button>
         </div>
     </div>
 </div>

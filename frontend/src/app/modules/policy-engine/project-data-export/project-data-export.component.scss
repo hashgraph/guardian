@@ -513,3 +513,15 @@ a {
     width: 80%;
     height: 80%;
 }
+
+.guardian-grid-container {
+    ::ng-deep .guardian-grid-table {
+        .p-datatable-wrapper {
+            max-height: calc(-420px + 100vh);
+        }
+    }
+
+    ::ng-deep .p-checkbox {
+        height: 16px;
+    }
+}

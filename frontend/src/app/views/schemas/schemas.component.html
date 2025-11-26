@@ -98,6 +98,15 @@
                 <ng-template pTemplate="header">
                     <tr class="guardian-grid-header">
                         <ng-container *ngIf="type === 'policy'">
+                            <th *ngIf="canDisplayColumn('select')" class="header-cell-text" style="min-width: 140px; max-width: 150px;">
+                                <p-checkbox
+                                    (onChange)="onSelectAllItems($event)"
+                                    [disabled]="isAnyDeleteDisabled()"
+                                    [ngModel]="isAllSelected"
+                                    [binary]="true"
+                                >
+                                </p-checkbox>
+                            </th>
                             <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
                                 Policy
                             </th>
@@ -187,6 +196,15 @@
                     <tr class="guardian-grid-row" [attr.schema-status]="schema.status">
 
                         <ng-container *ngIf="type === 'policy'">
+                            <td *ngIf="canDisplayColumn('select')" class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
+                                <p-checkbox
+                                    (onChange)="onSelectItem(schema)"
+                                    [disabled]="isDeleteDisabled(schema)"
+                                    [ngModel]="isSelected(schema)"
+                                    [binary]="true"
+                                >
+                                </p-checkbox>
+                            </td>
                             <td class="row-cell-text col-200">
                                 <a class="text-truncate"
                                     [queryParams]="{ policyId: policyIdByTopic[schema.topicId] }"
@@ -606,3 +624,19 @@
         </p-button>
     </div>
 </p-overlayPanel>
+
+<div *ngIf="isAnyItemSelected()" class="options-footer-container">
+    <div class="options-footer">
+        <div class="selected-info-block">
+            <span class="selected-info">{{ selectedItems.length | pluralize: 'schema' : 'schemas'}} selected</span>
+            <a (click)="onClearSelection()">Clear selection</a>
+        </div>
+        <div>
+            <p-button
+                (click)="onDeleteItems()"
+                severity="danger"
+                label="Delete selected"
+                type="button"></p-button>
+        </div>
+    </div>
+</div>

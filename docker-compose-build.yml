@@ -211,7 +211,6 @@ services:
       - message-broker
       - auth-service
     expose:
-      - 50000-60000
       - 5006
     volumes:
       - ./policy-service/tls:/usr/local/app/tls:ro
@@ -240,14 +239,13 @@ services:
     build:
       context: .
       dockerfile: application-events/Dockerfile
-    init: true
     depends_on:
       - mongo
       - message-broker
       - guardian-service
       - auth-service
     expose:
-    - 3012
+      - 3012
 
   mrv-sender:
     build:
