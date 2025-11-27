@@ -27,3 +27,7 @@ export function getPageOptions(msg: {
 
     return otherOptions;
 }
+
+export function escapeRegExp(text) {
+    return text.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, '\\$&');
+}

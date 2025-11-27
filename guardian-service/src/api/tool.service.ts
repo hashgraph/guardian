@@ -7,6 +7,7 @@ import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-co
 import * as crypto from 'crypto';
 import { FilterObject } from '@mikro-orm/core';
 import { deleteSchema, findAndDryRunSchema, importToolByFile, importToolByMessage, importToolErrors, PolicyImportExportHelper, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
+import { escapeRegExp } from './helpers/api-helper.js';
 
 /**
  * Sha256
@@ -748,7 +749,8 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 if (search) {
-                    filter.name = { $regex: `.*${search.trim()}.*`, $options: 'i' };
+                    const sanitizedSearch = escapeRegExp(search.trim());
+                    filter.name = { $regex: `.*${sanitizedSearch}.*`, $options: 'i' };
                 }
 
                 const _pageSize = parseInt(pageSize, 10);
