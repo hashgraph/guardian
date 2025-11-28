@@ -27,7 +27,7 @@ import {
     SchemaEntity,
     SignatureType,
 } from '@guardian/interfaces';
-import { PrivateKey, TopicId } from '@hashgraph/sdk';
+import { PrivateKey, TopicId } from '@hiero-ledger/sdk';
 import {
     BbsBlsSignatureProof2020,
     Bls12381G2KeyPair,
