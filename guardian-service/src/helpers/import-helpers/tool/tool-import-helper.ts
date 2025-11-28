@@ -357,6 +357,7 @@ export async function importToolByFile(
     delete tool.id;
     delete tool.messageId;
     delete tool.createDate;
+    delete tool.tagsTopicId;
     tool.uuid = GenerateUUIDv4();
     tool.creator = user.creator;
     tool.owner = user.owner;

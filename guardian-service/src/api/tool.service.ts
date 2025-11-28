@@ -581,6 +581,7 @@ export async function dryRunTool(
         tool.status = ModuleStatus.DRY_RUN;
         tool.messageId = result.getId();
         tool.version = version;
+        tool.tagsTopicId = null;
         const retVal = await DatabaseServer.updateTool(tool);
 
         await logger.info('Dry-run mode for tool enabled', ['GUARDIAN_SERVICE'], user.id);
@@ -1270,7 +1271,10 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 model.status = ModuleStatus.DRAFT;
-                model.version = '';
+                model.version = null;
+                model.hash = null;
+                model.messageId = null;
+                model.tagsTopicId = null;
 
                 await DatabaseServer.updateTool(model);
 
