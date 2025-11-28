@@ -206,6 +206,13 @@ export class ToolsApi {
         required: false,
         example: 'text'
     })
+    @ApiQuery({
+        name: 'tag',
+        type: String,
+        description: 'Tag',
+        required: false,
+        example: 'text'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -224,7 +231,8 @@ export class ToolsApi {
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
-        @Query('search') search?: string
+        @Query('search') search?: string,
+        @Query('tag') tag?: string
     ): Promise<ToolDTO[]> {
         try {
             const owner = new EntityOwner(user);
@@ -235,6 +243,7 @@ export class ToolsApi {
                 pageIndex,
                 pageSize,
                 search,
+                tag
             }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {

@@ -160,7 +160,46 @@
                 </div>
                 <div class="filter-row">
                     <div class="filter">
-                        <span class="p-input-icon-right">
+                        <p-multiSelect
+                            formControlName="toolMessageIds"
+                            [options]="tools"
+                            optionLabel="label"
+                            optionValue="id"
+                            [filter]="false"
+                            [showHeader]="true"
+                            [showToggleAll]="false"
+                            placeholder="Tool Not selected"
+                            display="comma"
+                            class="type-multiselect"
+                            panelStyleClass="tool-ms-panel"
+                            [virtualScroll]="true"
+                            [virtualScrollOptions]="{ itemSize: 40 }"
+                            [lazy]="true"
+                            (onLazyLoad)="onLazyLoad($event)"
+                            [loading]="loading"
+                            appendTo="body"
+                        >
+                            <ng-template pTemplate="header">
+                                <div class="tool-ms-header">
+                                    <span class="p-input-icon-left">
+                                        <i class="pi pi-search"></i>
+                                        <input
+                                        pInputText
+                                        type="text"
+                                        [formControl]="searchCtrl"
+                                        placeholder="Search by tool name"
+                                        />
+                                    </span>
+                                    <p-progressSpinner *ngIf="loading" styleClass="ms-spinner"></p-progressSpinner>
+                                </div>
+                            </ng-template>
+
+                            <ng-template let-option pTemplate="item">
+                                <div class="p-multiselect-item-content">{{ option.label }}</div>
+                            </ng-template>
+                        </p-multiSelect>
+
+                        <!-- <span class="p-input-icon-right">
                             <input
                                 class="search-policy-input"
                                 formControlName="toolName"
@@ -168,7 +207,9 @@
                                 placeholder="Tool Name"
                                 type="text" />
                             <i class="pi pi-search search-icon"></i>
-                        </span>
+                        </span> -->
+                    </div>
+                    <div class="filter">
                     </div>
                 </div>
                 <div class="filter-row" style="justify-content: flex-end">

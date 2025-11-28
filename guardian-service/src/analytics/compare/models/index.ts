@@ -18,6 +18,7 @@ export * from './role.model.js';
 export * from './schema-document.model.js';
 export * from './schema.model.js';
 export * from './template-token.model.js';
+export * from './template-tool.model.js';
 export * from './token.model.js';
 export * from './tool.model.js';
 export * from './topic.model.js';

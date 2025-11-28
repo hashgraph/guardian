@@ -3770,6 +3770,13 @@ paths:
           schema:
             example: text
             type: string
+        - name: tag
+          required: false
+          in: query
+          description: Tag
+          schema:
+            example: text
+            type: string
       responses:
         '200':
           description: Successful operation.
@@ -18324,6 +18331,13 @@ components:
           minimum: 0
           maximum: 100
           example: 0
+        toolMessageIds:
+          example:
+            - '000000000000000000000001'
+            - '000000000000000000000001'
+          type: array
+          items:
+            type: string
         toolName:
           type: string
           example: >-
