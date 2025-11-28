@@ -32,11 +32,20 @@ Note 2: make sure that the private key of the generated account is securely save
 
 ### 1.2 Configuration
 
-To enable Guardian users to use Relayer Accounts when executing policy workflow, the policy must have ‘Custom Relayer Account’ option switched on in the corresponding _requestVcDocumentBlock_, for example that which is responsible for project document. 
+To enable Guardian users to use Relayer Accounts when executing policy workflow, the policy must have ‘Set Relayer Account’ option switched on in the corresponding _requestVcDocumentBlock_, for example that which is responsible for project document. 
 
-<figure><img src="../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (257).png" alt=""><figcaption></figcaption></figure>
 
 All linked documents will inherit parent’s Relayer Account, there is no need to configure this setting for each of them specifically. I.e. it is only required to be set for the main (i.e. project) document.
+
+When ‘Set Relayer Account’ option is selected in a policy block, at the execution time all other policy blocks performing transactions on Hedera (such as publishing documents) would be using parent document owner’s Hedera account for financing such transactions if it has been specified earlier in the workflow.
+
+<figure><img src="../../.gitbook/assets/image (260).png" alt=""><figcaption></figcaption></figure>
+
+Force User Account’ option allows the change default downstream behaviour for when ‘Set Relayer Account’ is selected.<br>
+
+* ‘Pre-set user account’ - the block will use parent document owner’s Hedera account regardless of current user context.
+* ‘Current user account’ - the block will user current user’s account regardless of other settings and parent document owner’s account configurations.
 
 ### 1.3 Usage
 

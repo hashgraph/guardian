@@ -8,31 +8,33 @@ This chapter details how to build Guardian Tools - think of them as mini policie
 
 After completing this chapter, you will be able to:
 
-- Understand Guardian's Tools architecture as re-usable mini policies with data extraction and calculation blocks
-- Analyze AR Tool 14's production implementation in Guardian format
-- Build extractDataBlock workflows for schema input/output operations
-- Implement standardized calculation logic using customLogicBlock
-- Create modular, reusable tools for integration across multiple methodologies
-- Test and validate tool calculations against methodology test artifacts
+* Understand Guardian's Tools architecture as re-usable mini policies with data extraction and calculation blocks
+* Analyze AR Tool 14's production implementation in Guardian format
+* Build extractDataBlock workflows for schema input/output operations
+* Implement standardized calculation logic using customLogicBlock
+* Create modular, reusable tools for integration across multiple methodologies
+* Test and validate tool calculations against methodology test artifacts
 
 ## Prerequisites
 
-- Completed Chapter 18: Custom Logic Block Development
-- Understanding of Guardian workflow blocks from Part IV
-- Access to AR Tool 14 artifacts: [AR-Tool-14.json](../../_shared/artifacts/AR-Tool-14.json) and [ar-am-tool-14-v4.1.pdf](../../_shared/artifacts/ar-am-tool-14-v4.1.pdf)
-- Familiarity with [extractDataBlock documentation](../../../guardian/standard-registry/policies/policy-creation/introduction/externaldatablock.md)
+* Completed Chapter 18: Custom Logic Block Development
+* Understanding of Guardian workflow blocks from Part IV
+* Access to AR Tool 14 artifacts: [AR-Tool-14.json](../../_shared/artifacts/AR-Tool-14.json) and [ar-am-tool-14-v4.1.pdf](../../_shared/artifacts/ar-am-tool-14-v4.1.pdf)
+* Familiarity with [extractDataBlock documentation](../../../guardian/standard-registry/policies/policy-creation/introduction/externaldatablock.md)
 
 ## What is AR Tool 14?
 
 AR Tool 14 is a **CDM (Clean Development Mechanism) methodological tool** for "Estimation of carbon stocks and change in carbon stocks of trees and shrubs in A/R CDM project activities." It provides standardized methods for:
 
 ### Primary Purpose
-- **Tree biomass estimation** using allometric equations, sampling plots, or proportionate crown cover
-- **Shrub biomass estimation** based on crown cover measurements
-- **Carbon stock changes** calculated between two points in time or as annual changes
-- **Uncertainty management** with discount factors for conservative estimates
+
+* **Tree biomass estimation** using allometric equations, sampling plots, or proportionate crown cover
+* **Shrub biomass estimation** based on crown cover measurements
+* **Carbon stock changes** calculated between two points in time or as annual changes
+* **Uncertainty management** with discount factors for conservative estimates
 
 ### Key Calculation Methods
+
 From the [AR Tool 14 PDF](../../_shared/artifacts/ar-am-tool-14-v4.1.pdf), the tool supports multiple approaches:
 
 1. **Measurement of sample plots** - Stratified random sampling and double sampling
@@ -42,7 +44,7 @@ From the [AR Tool 14 PDF](../../_shared/artifacts/ar-am-tool-14-v4.1.pdf), the t
 
 ## Guardian Tools Architecture
 
-![AR Tool 14 within policy editor](images/README/image.png)
+![AR Tool 14 within policy editor](<../../../.gitbook/assets/image (90).png>)
 
 ### Mini-Policy Pattern
 
@@ -102,10 +104,10 @@ In our AR Tool 14 implementation, the extractDataBlock references schema `#632fd
 
 This extracts the AR Tool 14 input data structure from the parent document, containing parameters like:
 
-- **Tree measurements** - DBH, height, species data
-- **Plot information** - Area, sampling design, stratum details
-- **Calculation methods** - Selected approaches for biomass estimation
-- **Uncertainty parameters** - Confidence levels and discount factors
+* **Tree measurements** - DBH, height, species data
+* **Plot information** - Area, sampling design, stratum details
+* **Calculation methods** - Selected approaches for biomass estimation
+* **Uncertainty parameters** - Confidence levels and discount factors
 
 ### Data Extraction Process
 
@@ -400,7 +402,7 @@ function performCalculations(data) {
 
 Guardian Tools are designed to be called from parent methodology policies. Here's how VM0033 would integrate AR Tool 14:
 
-![Tool integration in new project submission flow](images/README/image-1.png)
+![Tool integration in new project submission flow](<../../../.gitbook/assets/image-1 (8).png>)
 
 ### Tool Event Configuration
 
@@ -483,13 +485,13 @@ function testARTool14StratifiedSampling() {
 
 Guardian Tools provide a powerful architecture for implementing standardized calculation methodologies as reusable mini policies. Key concepts:
 
-- **Tools are like mini policies** that follow the extractDataBlock → customLogicBlock → extractDataBlock pattern
-- **AR Tool 14 demonstrates** complete implementation of complex biomass calculations with uncertainty management
-- **extractDataBlock handles** schema-based data input and output operations automatically
-- **customLogicBlock contains** the actual methodology calculation logic in JavaScript
-- **Production examples** from AR Tool 14 show real implementation patterns for stratified sampling, uncertainty discounts, and error handling
-- **Integration patterns** enable tools to be called from parent methodology policies
-- **Testing frameworks** ensure calculation accuracy against methodology test artifacts
+* **Tools are like mini policies** that follow the extractDataBlock → customLogicBlock → extractDataBlock pattern
+* **AR Tool 14 demonstrates** complete implementation of complex biomass calculations with uncertainty management
+* **extractDataBlock handles** schema-based data input and output operations automatically
+* **customLogicBlock contains** the actual methodology calculation logic in JavaScript
+* **Production examples** from AR Tool 14 show real implementation patterns for stratified sampling, uncertainty discounts, and error handling
+* **Integration patterns** enable tools to be called from parent methodology policies
+* **Testing frameworks** ensure calculation accuracy against methodology test artifacts
 
 ### Next Steps
 
@@ -497,12 +499,12 @@ Chapter 21 will demonstrate comprehensive testing and validation frameworks for 
 
 ## References and Further Reading
 
-- [AR Tool 14 Guardian Implementation](../../_shared/artifacts/AR-Tool-14.json) - Complete tool policy configuration
-- [AR Tool 14 PDF Methodology](../../_shared/artifacts/ar-am-tool-14-v4.1.pdf) - Original CDM methodology document
-- [Guardian extractDataBlock Documentation](../../../guardian/standard-registry/policies/policy-creation/introduction/externaldatablock.md)
-- [Guardian customLogicBlock Documentation](../../../available-policy-workflow-blocks/customlogicblock.md)
+* [AR Tool 14 Guardian Implementation](../../_shared/artifacts/AR-Tool-14.json) - Complete tool policy configuration
+* [AR Tool 14 PDF Methodology](../../_shared/artifacts/ar-am-tool-14-v4.1.pdf) - Original CDM methodology document
+* [Guardian extractDataBlock Documentation](../../../guardian/standard-registry/policies/policy-creation/introduction/externaldatablock.md)
+* [Guardian customLogicBlock Documentation](../../../available-policy-workflow-blocks/customlogicblock.md)
 
----
+***
 
 {% hint style="success" %}
 **Tool Building Success**: You now understand how to build complete Guardian Tools using the extractDataBlock and customLogicBlock pattern. The AR Tool 14 example provides a production-ready template for implementing any standardized calculation methodology in Guardian.

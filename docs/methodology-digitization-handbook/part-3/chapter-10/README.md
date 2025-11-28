@@ -8,14 +8,14 @@ By the end of this chapter, you'll know how to create the [VM0033 Monitoring sch
 
 Monitoring schemas extend your PDD implementation to handle ongoing project operations over crediting periods. Unlike PDD schemas that capture initial project design, monitoring schemas handle:
 
-- **Annual Data Collection**: Time-series parameter measurements across project lifetime
-- **Calculation Updates**: Dynamic recalculation of emission reductions based on new monitoring data
-- **Quality Control**: Data validation and evidence documentation for verification activities
-- **Temporal Relationships**: Maintaining connections between annual data and cumulative results
+* **Annual Data Collection**: Time-series parameter measurements across project lifetime
+* **Calculation Updates**: Dynamic recalculation of emission reductions based on new monitoring data
+* **Quality Control**: Data validation and evidence documentation for verification activities
+* **Temporal Relationships**: Maintaining connections between annual data and cumulative results
 
 Usually, there's always a section on methodology PDF(including VM0033) on data and parameters to be monitored. Typcially, those fields are submitted as part of Monitoring report.
 
-![Subsection of Herbaceous Vegetation Stratum Data for Project in MR schema](images/README/image.png)
+![Subsection of Herbaceous Vegetation Stratum Data for Project in MR schema](<../../../.gitbook/assets/image (38).png>)
 
 ## Building the Primary Monitoring Schema
 
@@ -70,7 +70,7 @@ Yes | Number | | | Monitoring year | No | 7
 Yes | (New) MP Herbaceous Vegetat 1 | | | Measurements for each stratum | Yes |
 ```
 
-![Monitoring Period Inputs Sheet](images/README/image-1.png)
+![Monitoring Period Inputs Sheet](<../../../.gitbook/assets/image-1 (2).png>)
 
 ## Implementing Stratum-Level Data Collection
 
@@ -347,27 +347,29 @@ Guardian provides built-in validation when importing Excel schemas and testing s
 ### Validation Checklist for Monitoring Schemas
 
 Before deploying, verify:
-- [ ] Temporal fields properly identify monitoring periods
-- [ ] Parameter names match PDD schema conventions
-- [ ] Calculation fields properly reference annual data
-- [ ] Quality control fields support verification requirements
-- [ ] Evidence fields accept appropriate file types
-- [ ] Sub-schemas properly handle stratum-level data
-- [ ] Conditional logic aligns with PDD method selections
+
+* [ ] Temporal fields properly identify monitoring periods
+* [ ] Parameter names match PDD schema conventions
+* [ ] Calculation fields properly reference annual data
+* [ ] Quality control fields support verification requirements
+* [ ] Evidence fields accept appropriate file types
+* [ ] Sub-schemas properly handle stratum-level data
+* [ ] Conditional logic aligns with PDD method selections
 
 #### Important: Field Key Management for Monitoring Schemas
 
 Just like PDD schemas, Guardian generates default field keys when importing monitoring Excel schemas. This is especially important for monitoring schemas since they often have time-series calculations.
 
 **After Import - Review and Rename Field Keys**:
+
 1. Navigate to schema management in Guardian
 2. Open your imported monitoring schema for editing
 3. Review each field's "Field Key" property
 4. Rename keys for calculation-friendly monitoring code:
-   - `monitoring_year_t` instead of `G5`
-   - `carbon_stock_current_period` instead of `carbonStockCurrentPeriod`
-   - `emission_reduction_annual` instead of `emissionReductionAnnual`
-   - `biomass_change_since_baseline` instead of `biomassChangeSinceBaseline`
+   * `monitoring_year_t` instead of `G5`
+   * `carbon_stock_current_period` instead of `carbonStockCurrentPeriod`
+   * `emission_reduction_annual` instead of `emissionReductionAnnual`
+   * `biomass_change_since_baseline` instead of `biomassChangeSinceBaseline`
 
 **Why This Matters for Monitoring**: Time-series calculations rely heavily on clear field naming:
 
@@ -391,15 +393,15 @@ const cumulativeER = data.field8 + annualChange;
 
 ### Trigger Automatic Calculations
 
-- Monitoring data submission triggers emission reduction calculations
-- Updated results flow to token minting calculations
-- Quality control validation occurs before calculation updates
+* Monitoring data submission triggers emission reduction calculations
+* Updated results flow to token minting calculations
+* Quality control validation occurs before calculation updates
 
 ### Support Verification Processes
 
-- VVB receives monitoring data with evidence documentation
-- Verification decisions update project status and calculation eligibility
-- Approved monitoring data enables token issuance for the monitoring period
+* VVB receives monitoring data with evidence documentation
+* Verification decisions update project status and calculation eligibility
+* Approved monitoring data enables token issuance for the monitoring period
 
 ## Best Practices for Monitoring Schema Development
 
