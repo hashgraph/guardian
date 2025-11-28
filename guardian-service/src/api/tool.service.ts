@@ -1,6 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, Hashing, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, NewNotifier, PinoLogger, Policy, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
-import { IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyStatus, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
@@ -733,7 +733,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid load tools parameter');
                 }
                 const { fields, filters, owner } = msg;
-                const { pageIndex, pageSize, search } = filters;
+                const { pageIndex, pageSize, search, tag } = filters;
 
                 const otherOptions: any = { fields };
 
@@ -751,6 +751,16 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 if (search) {
                     const sanitizedSearch = escapeRegExp(search.trim());
                     filter.name = { $regex: `.*${sanitizedSearch}.*`, $options: 'i' };
+                }
+
+                if (tag) {
+                    const filterTags: any = {
+                        name: tag,
+                        entity: TagType.Tool
+                    }
+                    const tags = await DatabaseServer.getTags(filterTags);
+                    const toolTagIds = tags.map((t) => t.localTarget);
+                    filter.id = { $in: toolTagIds };
                 }
 
                 const _pageSize = parseInt(pageSize, 10);

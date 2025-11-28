@@ -21,9 +21,9 @@
                 </span>
                 <p-dropdown
                     [options]="tagOptions"
+                    [(ngModel)]="tagFilter"
                     appendTo="body"
                     class="tags-dropdown"
-                    formControlName="tag"
                     placeholder="Tags"
                     [appendTo]="'body'"
                 ></p-dropdown>
@@ -32,7 +32,7 @@
                         label="Apply Filters"
                         pButton></button>
                 <button (click)="clearFilters()"
-                        [disabled]="!textSearch"
+                        [disabled]="!textSearch && !tagFilter"
                         class="button secondary ml-8"
                         label="Clear filters"
                         pButton></button>
