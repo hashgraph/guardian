@@ -14,9 +14,9 @@ Users can add Relayer Accounts using the corresponding button on their profile p
 
 To add an existing account, the account name, the Hedera account ID, and its private key must be provided.
 
-<figure><img src="../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 It is also possible to create a new Hedera account and set it up as one of the relayer account for the user.
 

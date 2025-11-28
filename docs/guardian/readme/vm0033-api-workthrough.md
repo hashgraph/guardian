@@ -418,7 +418,7 @@ Successful response looks like:
 
 **Wait for the request to finish processing:**
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <mark style="color:red;">`GET`</mark> `http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/project_grid_pp_2/blocks`
 
@@ -681,7 +681,7 @@ Waiting while `data.option.status` would be equal "Waiting to be Added":
 
 #### 4.2 Choose VVB Role
 
-<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/image (3) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -2019,7 +2019,7 @@ Successful response looks like:
 
 #### 6.4 Assign Report
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Get the report reference by saving the response data:**
 
@@ -2226,7 +2226,7 @@ With body:
 
 #### 6.6 Approve Report
 
-<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Wait until the report status changes to “Waiting for Verification”:**
 

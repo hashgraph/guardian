@@ -1,8 +1,8 @@
-# Deletes all schemas by topic id. Only users with the Standard Registry are allowed.
+# Delete multiple tokens by their IDs.
 
-<mark style="color:red;">`DELETE`</mark> `/schemas/topic/{topicId}`
+<mark style="color:green;">`POST`</mark> `/tokens/push/delete-multiple`
 
-Deletes all schema by topic ID.
+Delete multiple tokens by their IDs. Only users with Standard Registry role are allowed to make this request.
 
 **Headers**
 
@@ -13,10 +13,9 @@ Deletes all schema by topic ID.
 
 **Body**
 
-| Name    | Type   | Description     |
-| ------- | ------ | --------------- |
-| topicId | string | Topic ID        |
-| `age`   | number | Age of the user |
+| Name     | Type   | Description |
+| -------- | ------ | ----------- |
+| tokenIds | string | Token IDs   |
 
 **Response**
 
@@ -27,9 +26,7 @@ description: Successful operation.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SchemaDTO'
+                $ref: '#/components/schemas/TaskDTO'
 ```
 {% endtab %}
 

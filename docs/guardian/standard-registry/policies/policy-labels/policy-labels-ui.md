@@ -137,7 +137,7 @@ Existing labels can be used as components of other (higher order) labels. The in
 
 It is recommended to frequently use ‘Save’ button to preserve the current state of the Label being edited.
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **2.3.5 Preview**
 

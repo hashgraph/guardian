@@ -1,8 +1,8 @@
-# Deletes all schemas by topic id. Only users with the Standard Registry are allowed.
+# Deletes the schema with the provided schema ID
 
-<mark style="color:red;">`DELETE`</mark> `/schemas/topic/{topicId}`
+<mark style="color:green;">`POST`</mark> `/schemas/delete-multiple`
 
-Deletes all schema by topic ID.
+Deletes the schema with the provided schema ID. Only users with the Standard Registry role is allowed to make this request.
 
 **Headers**
 
@@ -13,23 +13,23 @@ Deletes all schema by topic ID.
 
 **Body**
 
-| Name    | Type   | Description     |
-| ------- | ------ | --------------- |
-| topicId | string | Topic ID        |
-| `age`   | number | Age of the user |
+| Name            | Type   | Description           |
+| --------------- | ------ | --------------------- |
+| includeChildren | string | Include Child Schemas |
+| schemaIds       | string | Schema IDs            |
 
 **Response**
 
 {% tabs %}
 {% tab title="200" %}
 ```json5
-description: Successful operation.
+{
+  description: Successful operation.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SchemaDTO'
+                $ref: '#/components/schemas/TaskDTO'
+}
 ```
 {% endtab %}
 
