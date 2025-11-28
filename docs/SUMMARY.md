@@ -502,6 +502,7 @@
         * [Retrieve linked Label documents by ID](guardian/standard-registry/policies/policy-labels/apis-related-to-policy-labels/retrieve-linked-label-documents-by-id.md)
     * [Formula Linked Definitions](guardian/standard-registry/policies/formula-linked-definitions/README.md)
       * [Formula Linked Definitions using UI](guardian/standard-registry/policies/formula-linked-definitions/formula-linked-definitions-using-ui.md)
+      * [Formulas Graphical View](guardian/standard-registry/policies/formula-linked-definitions/formulas-graphical-view.md)
       * [APIs related to Formula Linked](guardian/standard-registry/policies/formula-linked-definitions/apis-related-to-formula-linked/README.md)
         * [Creating a new formula](guardian/standard-registry/policies/formula-linked-definitions/apis-related-to-formula-linked/creating-a-new-formula.md)
         * [Returns a list of formulas](guardian/standard-registry/policies/formula-linked-definitions/apis-related-to-formula-linked/returns-a-list-of-formulas.md)
