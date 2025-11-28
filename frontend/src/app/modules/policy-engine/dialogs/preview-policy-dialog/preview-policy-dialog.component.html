@@ -12,6 +12,17 @@
     </div>
 
     <div *ngIf="policy">
+        <div class="field-container" *ngIf="canImportRecords">
+            <div class="field-value checkbox-field">
+                <p-checkbox
+                    [(ngModel)]="importRecords"
+                    inputId="import-records"
+                    binary="true"
+                    tabindex="-1"
+                ></p-checkbox>
+                <label for="import-records">Import existing records for this policy</label>
+            </div>
+        </div>
         <div class="group-container">
             <div class="group-header">Import mode</div>
             <div class="field-container">

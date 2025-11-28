@@ -67,6 +67,35 @@ export class Record extends BaseEntity {
      */
     @Property({ nullable: true })
     documentFileId?: ObjectId;
+    /**
+     * IPFS CID
+     */
+    @Property({ nullable: true })
+    ipfsCid?: string;
+
+    /**
+     * IPFS URL
+     */
+    @Property({ nullable: true })
+    ipfsUrl?: string;
+
+    /**
+     * IPFS timestamp
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    ipfsTimestamp?: Date;
+
+    /**
+     * Source policy for copied record
+     */
+    @Property({ nullable: true })
+    fromPolicyId?: string;
+
+    /**
+     * Original record id when copied
+     */
+    @Property({ nullable: true })
+    copiedRecordId?: string;
 
     /**
      * old file id

@@ -206,6 +206,46 @@ export class PolicyEngineService {
         }
     }
 
+    private extractPolicyIdFromPreview(policyPreview: any): string | null {
+        const policy = policyPreview?.policy;
+        const idCandidate = policy?.id || policy?._id || policyPreview?.policyId;
+        if (!idCandidate) {
+            return null;
+        }
+        if (typeof idCandidate === 'string') {
+            return idCandidate;
+        }
+        if (idCandidate?.toString) {
+            return idCandidate.toString();
+        }
+        return null;
+    }
+
+    private async hasIpfsRecordsForPreview(
+        policyPreview: any,
+        logger: PinoLogger,
+        userId: string | null
+    ): Promise<boolean> {
+        try {
+            const policyId = this.extractPolicyIdFromPreview(policyPreview);
+            if (!policyId) {
+                return false;
+            }
+            const records = await DatabaseServer.getRecord({
+                policyId,
+                ipfsCid: { $exists: true, $ne: null }
+            }, { limit: 1, fields: ['_id', 'uuid'] } as any);
+            return Array.isArray(records) && records.length > 0;
+        } catch (error) {
+            await logger.warn(
+                typeof error?.message === 'string' ? error.message : 'Failed to determine policy records',
+                ['GUARDIAN_SERVICE'],
+                userId
+            );
+            return false;
+        }
+    }
+
     private async getBlockRoot(id: string) {
         const policy = await DatabaseServer.getPolicyById(id);
         if (policy) {
@@ -752,6 +792,16 @@ export class PolicyEngineService {
                     const userFull = await (new Users()).getUserById(userDid, owner.id);
                     await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
                 }
+
+                if (policy.status !== PolicyStatus.PUBLISH && policy.status !== PolicyStatus.DISCONTINUED) {
+                    const records = await DatabaseServer.getRecord({
+                        policyId: policy.id,
+                        copiedRecordId: { $exists: true, $ne: null }
+                    }, { limit: 1, fields: ['_id', 'uuid'] } as any);
+
+                    result.withRecords = Array.isArray(records) && !!records.length;
+                }
+
                 return new MessageResponse(result);
             });
 
@@ -1563,6 +1613,7 @@ export class PolicyEngineService {
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
                     policyToImport.similar = similarPolicies;
+                    policyToImport.withRecords = await this.hasIpfsRecordsForPreview(policyToImport, logger, owner?.id);
                     return new MessageResponse(policyToImport);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1586,6 +1637,7 @@ export class PolicyEngineService {
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
                     policyToImport.similar = similarPolicies;
+                    policyToImport.withRecords = await this.hasIpfsRecordsForPreview(policyToImport, logger, owner?.id);
                     notifier.result(policyToImport);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1625,6 +1677,7 @@ export class PolicyEngineService {
                             .setComponents(policyToImport)
                             .setUser(owner)
                             .setParentPolicyTopic(versionOfTopicId)
+                            .setImportRecords(metadata?.importRecords)
                             .setMetadata(metadata),
                         notifier.getStep(STEP_IMPORT_POLICY),
                         owner.id
@@ -1689,6 +1742,7 @@ export class PolicyEngineService {
                                 .setComponents(policyToImport)
                                 .setUser(owner)
                                 .setParentPolicyTopic(versionOfTopicId)
+                                .setImportRecords(metadata?.importRecords)
                                 .setMetadata(metadata),
                             notifier.getStep(STEP_IMPORT_POLICY),
                             owner.id

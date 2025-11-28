@@ -1178,11 +1178,12 @@ export class PoliciesComponent implements OnInit {
                 const versionOfTopicId = result.versionOfTopicId || null;
                 const demo = result.demo || false;
                 const tools = result.tools;
+                const importRecords = !!result.importRecords;
 
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService
-                        .pushImportByMessage(data, versionOfTopicId, { tools }, demo)
+                        .pushImportByMessage(data, versionOfTopicId, { tools, importRecords }, demo)
                         .pipe(takeUntil(this._destroy$))
                         .subscribe((result) => {
                             const { taskId, expectation } = result;

@@ -38,6 +38,8 @@ export class PreviewPolicyDialog {
         [messageId: string]: '' | 'load' | 'valid' | 'invalid'
     } = {};
     public validTools: boolean = true;
+    public importRecords: boolean = false;
+    public canImportRecords: boolean = false;
     private _destroy$ = new Subject<void>();
     private _destroyMap: any = {};
     private _map = new Map<string, boolean>();
@@ -108,6 +110,7 @@ export class PreviewPolicyDialog {
                 .join(', ');
 
             this.toolConfigs = importFile.tools || [];
+            this.canImportRecords = !!importFile.withRecords;
             for (const toolConfigs of this.toolConfigs) {
                 this.toolForm.addControl(
                     toolConfigs.messageId,
@@ -238,7 +241,8 @@ export class PreviewPolicyDialog {
         this.ref.close({
             versionOfTopicId: this.versionOfTopicId,
             tools: this.toolForm?.value,
-            demo: this.mode === 'demo'
+            demo: this.mode === 'demo',
+            importRecords: this.canImportRecords ? this.importRecords : false
         });
     }
 
