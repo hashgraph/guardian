@@ -3770,6 +3770,13 @@ paths:
           schema:
             example: text
             type: string
+        - name: tag
+          required: false
+          in: query
+          description: Tag
+          schema:
+            example: text
+            type: string
       responses:
         '200':
           description: Successful operation.
