@@ -20,6 +20,7 @@ import {
 export class RecordControllerComponent implements OnInit {
     @Input('policyId') policyId!: string;
     @Output('update') update = new EventEmitter();
+    @Input() withRecords?: boolean | null;
 
     @Input('active') active!: boolean;
     @Output('activeChange') activeChange = new EventEmitter<boolean>();
@@ -143,13 +144,14 @@ export class RecordControllerComponent implements OnInit {
         });
     }
 
-    public runRecord() {
+public runRecord() {
         const dialogRef = this.dialogService.open(ImportEntityDialog, {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
             data: {
-                type: ImportEntityType.Record
+                type: ImportEntityType.Record,
+                withRecords: this.withRecords
             }
         });
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
@@ -157,7 +159,14 @@ export class RecordControllerComponent implements OnInit {
                 this.loading = true;
                 this.recordItems = [];
                 this.overlay = null;
-                this.recordService.runRecord(this.policyId, result.data).subscribe((result) => {
+                const options: any = {};
+                if ((result as any)?.importRecords) {
+                    options.importRecords = true;
+                }
+                if ((result as any)?.syncNewRecords) {
+                    options.syncNewRecords = true;
+                }
+                this.recordService.runRecord(this.policyId, result.data, options).subscribe((result) => {
                     this.running = !!result;
                     this.updateActive();
                     this.loading = false;
@@ -171,6 +180,7 @@ export class RecordControllerComponent implements OnInit {
             }
         });
     }
+
 
     public stopRunning() {
         this.loading = true;
@@ -360,7 +370,7 @@ export class RecordControllerComponent implements OnInit {
         for (let index = 0; index < this.recordItems.length; index++) {
             const item = this.recordItems[index];
             const user = this.getActionUser(item, userMap);
-            item._time = this.convertMsToTime(item.time - startTime);
+            item._time = this.convertMsToTime(new Date(item.time).getTime() - new Date(startTime).getTime());
             item._index = index + 1;
             item._selected = index === lastIndex;
             item._title = this.getActionTitle(item, user);

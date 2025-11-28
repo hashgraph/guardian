@@ -12891,6 +12891,16 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
+        - name: importRecords
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: syncNewRecords
+          required: true
+          in: query
+          schema:
+            type: string
       requestBody:
         required: true
         description: A zip file containing record to be run.

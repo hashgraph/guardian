@@ -503,6 +503,7 @@ export class BlockTreeGenerator extends NatsService {
             const { tools } = await PolicyComponentsUtils.RegeneratePolicy(policy);
 
             const components = new ComponentsService(policy, policyId);
+            await components.ensureAutoStartRecord();
             await components.registerPolicy(policy);
             for (const tool of tools) {
                 await components.registerTool(tool);
