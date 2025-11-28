@@ -5310,6 +5310,42 @@ paths:
       summary: Remove policy.
       tags:
         - policies
+  /policies/push/delete-multiple:
+    post:
+      description: >-
+        Remove multiple policies by their IDs. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: PolicyApi_deletePoliciesAsync
+      parameters:
+        - name: policyIds
+          required: true
+          in: path
+          description: Policy Ids
+          schema:
+            example:
+              - '000000000000000000000001'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Remove multiple policies.
+      tags:
+        - policies
   /policies/{policyId}:
     get:
       description: >-
@@ -8461,47 +8497,6 @@ paths:
       summary: Returns schema tree.
       tags:
         - schema
-  /schema/{schemaId}/deletionPreview:
-    get:
-      description: Returns all child schemas.
-      operationId: SingleSchemaApi_getSchemaDeletionPreview
-      parameters:
-        - name: schemaId
-          required: true
-          in: path
-          description: Schema identifier
-          schema:
-            type: string
-        - name: topicId
-          required: false
-          in: query
-          description: Policy topic Id
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Schema deletion preview.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SchemaDeletionPreviewDTO'
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      security:
-        - bearer: []
-      summary: Returns all child schemas.
-      tags:
-        - schema
   /schemas:
     get:
       description: Returns all schemas.
@@ -9036,9 +9031,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SchemaDTO'
+                $ref: '#/components/schemas/TaskDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -9707,6 +9700,10 @@ paths:
       responses:
         '200':
           description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -10072,6 +10069,84 @@ paths:
       security:
         - bearer: []
       summary: Deletes all schemas by topic id.
+      tags:
+        - schemas
+  /schemas/deletionPreview:
+    post:
+      description: Returns all child schemas.
+      operationId: SchemaApi_getSchemaDeletionPreview
+      parameters:
+        - name: schemaIds
+          required: true
+          in: path
+          description: Schema Ids
+          schema:
+            example:
+              - '000000000000000000000001'
+      responses:
+        '200':
+          description: Schema deletion preview.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDeletionPreviewDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns all child schemas.
+      tags:
+        - schemas
+  /schemas/delete-multiple:
+    post:
+      description: >-
+        Deletes the schema with the provided schema ID. Only users with the
+        Standard Registry role are allowed to make the request.
+      operationId: SchemaApi_deleteSchemas
+      parameters:
+        - name: includeChildren
+          required: false
+          in: query
+          description: Include child schemas
+          schema:
+            type: boolean
+        - name: schemaIds
+          required: true
+          in: path
+          description: Schema Ids
+          schema:
+            example:
+              - '000000000000000000000001'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Deletes the schema with the provided schema ID.
       tags:
         - schemas
   /settings:
@@ -10441,7 +10516,7 @@ paths:
           content:
             application/json:
               schema:
-                type: boolean
+                $ref: '#/components/schemas/TaskDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -10897,6 +10972,42 @@ paths:
       security:
         - bearer: []
       summary: Deletes the token with the provided schema ID.
+      tags:
+        - tokens
+  /tokens/push/delete-multiple:
+    post:
+      description: >-
+        Delete multiple tokens by their IDs. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: TokensApi_deleteTokensAsync
+      parameters:
+        - name: tokenIds
+          required: true
+          in: path
+          description: Token Ids
+          schema:
+            example:
+              - '000000000000000000000001'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Delete multiple tokens.
       tags:
         - tokens
   /tokens/{tokenId}/associate:
@@ -20069,36 +20180,6 @@ components:
         - id
         - name
         - type
-    ChildSchemaDeletionBlockDTO:
-      type: object
-      properties:
-        schema:
-          nullable: true
-          allOf:
-            - $ref: '#/components/schemas/SchemaDTO'
-        blockingSchemas:
-          nullable: true
-          allOf:
-            - $ref: '#/components/schemas/SchemaDTO'
-      required:
-        - schema
-        - blockingSchemas
-    SchemaDeletionPreviewDTO:
-      type: object
-      properties:
-        deletableChildren:
-          nullable: true
-          type: array
-          items:
-            $ref: '#/components/schemas/SchemaDTO'
-        blockedChildren:
-          nullable: true
-          type: array
-          items:
-            $ref: '#/components/schemas/ChildSchemaDeletionBlockDTO'
-      required:
-        - deletableChildren
-        - blockedChildren
     VersionSchemaDTO:
       type: object
       properties:
@@ -20159,6 +20240,36 @@ components:
       required:
         - name
         - entity
+    ChildSchemaDeletionBlockDTO:
+      type: object
+      properties:
+        schema:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SchemaDTO'
+        blockingSchemas:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SchemaDTO'
+      required:
+        - schema
+        - blockingSchemas
+    SchemaDeletionPreviewDTO:
+      type: object
+      properties:
+        deletableChildren:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+        blockedChildren:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/ChildSchemaDeletionBlockDTO'
+      required:
+        - deletableChildren
+        - blockedChildren
     SettingsDTO:
       type: object
       properties:

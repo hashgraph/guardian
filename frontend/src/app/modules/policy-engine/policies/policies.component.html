@@ -181,6 +181,18 @@
                         <ng-template pTemplate="header">
                             <tr class="grid-table-header">
                                 <th
+                                    *ngIf="canDisplayColumn('select')"
+                                    class="header-cell-text cell-150"
+                                    pFrozenColumn>
+                                        <p-checkbox
+                                            (onChange)="onSelectAllItems($event)"
+                                            [disabled]="isAnyDeleteDisabled()"
+                                            [ngModel]="isAllSelected"
+                                            [binary]="true"
+                                        >
+                                        </p-checkbox>
+                                </th>
+                                <th
                                     *ngIf="canDisplayColumn('name')"
                                     class="header-cell-text cell-150"
                                     pFrozenColumn>Name
@@ -244,6 +256,19 @@
                         </ng-template>
                         <ng-template let-policy pTemplate="body">
                             <tr class="grid-table-row">
+                                <td
+                                    *ngIf="canDisplayColumn('select')"
+                                    pFrozenColumn
+                                >
+                                    <p-checkbox
+                                        (onChange)="onSelectItem(policy)"
+                                        [disabled]="isDeleteDisabled(policy)"
+                                        [ngModel]="isSelected(policy)"
+                                        [binary]="true"
+                                    >
+                                    </p-checkbox>
+                                </td>
+
                                 <td
                                     *ngIf="canDisplayColumn('name')"
                                     class="text-truncate cell-150"
@@ -566,6 +591,22 @@
         <span class="info-text">Please create a new policy to see the data</span>
     </div>
 </ng-template>
+
+<div *ngIf="isAnyItemSelected()" class="options-footer-container">
+    <div class="options-footer">
+        <div>
+            <p class="selected-info">{{ selectedItems.length | pluralize: 'policy' : 'policies'}} selected</p>
+        </div>
+        <div>
+            <button
+                (click)="onDeleteItems()"
+                class="p-button-danger"
+                label="Delete selected"
+                pButton
+                type="button"></button>
+        </div>
+    </div>
+</div>
 
 <ng-template #preloader>
     <div class="preloader-image"></div>
