@@ -20,7 +20,7 @@
         "dotenv": "^16.3.1",
         "express": "^5.1.0",
         "faiss-node": "0.5.1",
-        "langchain": "1.0.4",
+        "langchain": "1.0.6",
         "module-alias": "2.2.3",
         "prebuild": "13.0.1",
         "rxjs": "^7.8.1",
