@@ -23,7 +23,7 @@
         "@types/node": "^22.15.19",
         "@types/glob": "^8.1.0",
         "chai": "4.3.4",
-        "concurrently": "^8.2.2",
+        "concurrently": "^9.2.1",
         "gulp": "^5.0.0",
         "gulp-copy": "^4.0.1",
         "gulp-rename": "^2.0.0",
