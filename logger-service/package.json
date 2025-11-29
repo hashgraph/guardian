@@ -7,7 +7,7 @@
     "dependencies": {
         "@guardian/common": "3.4.0",
         "@guardian/interfaces": "3.4.0",
-        "@mikro-orm/core": "6.4.16",
+        "@mikro-orm/core": "6.6.0",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",

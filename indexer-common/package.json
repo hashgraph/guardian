@@ -10,7 +10,7 @@
         "reflect-metadata": "^0.1.13",
         "nats": "^2.6.1",
         "mongodb": "6.16.0",
-        "@mikro-orm/core": "6.4.16",
+        "@mikro-orm/core": "6.6.0",
         "@mikro-orm/mongodb": "6.4.16",
         "@mikro-orm/migrations-mongodb": "6.4.16"
     },
