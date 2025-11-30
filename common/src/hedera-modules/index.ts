@@ -12,3 +12,4 @@ export { Hashing } from './hashing.js';
 export { MessageMemo } from './memo-mappings/message-memo.js';
 export { TopicMemo } from './memo-mappings/topic-memo.js';
 export { checkHederaKey } from './utils.js';
+export { RegistryStreamMessage } from './registry-message';
