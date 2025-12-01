@@ -79,6 +79,7 @@ async function localSearch(
             hashMap: any;
             threshold: number;
         },
+        toolMessageIds?: string[],
         toolName?: string,
         toolVersion?: string
     }
@@ -118,6 +119,11 @@ async function localSearch(
     if (options.owner) {
         filter.$and.push({
             owner: options.owner
+        });
+    }
+    if (options.toolMessageIds) {
+        filter.$and.push({
+            ['tools.messageId']: { $in: options.toolMessageIds }
         });
     }
     if (options.toolName) {
@@ -276,6 +282,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 const comparator = new PolicyComparator(compareOptions);
                 const results = comparator.compare(compareModels);
                 const result = comparator.to(results, type);
+
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
@@ -408,6 +415,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 text?: string;
                 owner?: string;
                 threshold?: number;
+                toolMessageIds?: string[];
                 toolName?: string;
                 toolVersion?: string;
             },
@@ -425,6 +433,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     minVpCount,
                     minTokensCount,
                     threshold,
+                    toolMessageIds,
                     toolName,
                     toolVersion
                 } = filters;
@@ -435,9 +444,11 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     minVpCount,
                     minTokensCount,
                     blocks: undefined,
+                    toolMessageIds,
                     toolName,
                     toolVersion
                 }
+
                 const result: any = {
                     target: null,
                     result: []
