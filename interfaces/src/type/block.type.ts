@@ -18,6 +18,7 @@ export enum BlockType {
     Wipe = 'retirementDocumentBlock',
     FiltersAddon = 'filtersAddon',
     DocumentsSourceAddon = 'documentsSourceAddon',
+    MathBlock = 'mathBlock',
     Calculate = 'calculateContainerBlock',
     CalculateMathAddon = 'calculateMathAddon',
     Report = 'reportBlock',

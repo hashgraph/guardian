@@ -166,6 +166,7 @@ import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-c
 import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
+import { MathConfigComponent } from './policy-configuration/blocks/calculate/math-config/math-config.component';
 
 @NgModule({
     declarations: [
@@ -206,6 +207,7 @@ import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialo
         PreviewPolicyDialog,
         ReplaceSchemasDialogComponent,
         ExportPolicyDialog,
+        MathConfigComponent,
         CalculateConfigComponent,
         CalculateMathConfigComponent,
         JsonPropertiesComponent,

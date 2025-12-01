@@ -11,6 +11,7 @@
         "@angular/platform-browser": "^18.2.12",
         "@angular/platform-browser-dynamic": "^18.2.12",
         "@angular/router": "^18.2.12",
+        "@cortex-js/compute-engine": "^0.27.0",
         "@ctrl/ngx-codemirror": "^5.1.1",
         "@formulajs/formulajs": "4.5.1",
         "@guardian/interfaces": "file:../interfaces",

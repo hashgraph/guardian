@@ -63,6 +63,7 @@ export class CompareModuleComponent implements OnInit {
         'tokenConfirmationBlock': 'pi-key',
         'impactAddon': 'pi-file',
         'calculateContainerBlock': 'pi-chart-bar',
+        'mathBlock': 'pi-chart-bar',
         'customLogicBlock': 'pi-chart-bar',
         'calculateMathAddon': 'pi-calculator',
         'calculateMathVariables': 'pi-hashtag',

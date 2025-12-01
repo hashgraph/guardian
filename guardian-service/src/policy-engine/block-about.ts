@@ -136,6 +136,39 @@ export const BlockAbout = {
             }
         ]
     },
+    'mathBlock': {
+        'label': 'Math',
+        'title': 'Add \'Math\' Block',
+        'post': false,
+        'get': false,
+        'children': 'Special',
+        'control': 'Server',
+        'input': [
+            'RunEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent',
+            'ErrorEvent'
+        ],
+        'defaultEvent': true,
+        'properties': [{
+            'name': 'inputSchema',
+            'label': 'Input Schema',
+            'title': 'Input Schema',
+            'type': 'Schemas'
+        }, {
+            'name': 'outputSchema',
+            'label': 'Output Schema',
+            'title': 'Output Schema',
+            'type': 'Schemas'
+        }, {
+            'name': 'unsigned',
+            'label': 'Unsigned VC',
+            'title': 'Unsigned document',
+            'type': 'Checkbox'
+        }]
+    },
     'calculateContainerBlock': {
         'label': 'Calculate',
         'title': 'Add \'Calculate\' Block',

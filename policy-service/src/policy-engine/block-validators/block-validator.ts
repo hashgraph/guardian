@@ -5,6 +5,7 @@ import { IBlockProp } from './interfaces/block-prop.interface.js';
 import { InterfaceDocumentActionBlock } from './blocks/action-block.js';
 import { AggregateBlock } from './blocks/aggregate-block.js';
 import { ButtonBlock } from './blocks/button-block.js';
+import { MathBlock } from './blocks/math-block.js';
 import { CalculateContainerBlock } from './blocks/calculate-block.js';
 import { CalculateMathAddon } from './blocks/calculate-math-addon.js';
 import { CalculateMathVariables } from './blocks/calculate-math-variables.js';
@@ -66,6 +67,7 @@ export const validators = [
     ButtonBlock,
     TransformationButtonBlock,
     IntegrationButtonBlock,
+    MathBlock,
     CalculateContainerBlock,
     CalculateMathAddon,
     CalculateMathVariables,

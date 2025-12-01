@@ -37,6 +37,7 @@ const Tool: IBlockSetting = {
         { type: BlockType.TimerBlock },
         { type: BlockType.Mint },
         { type: BlockType.Wipe },
+        { type: BlockType.MathBlock },
         { type: BlockType.Calculate },
         { type: BlockType.CustomLogicBlock },
         { type: BlockType.Report },

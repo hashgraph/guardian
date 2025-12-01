@@ -57,6 +57,7 @@ import { IntegrationButtonBlockComponent } from '../policy-viewer/blocks/integra
 import { HttpRequestUIAddonCode } from '../policy-viewer/code/http-request-ui-addon';
 import { TransformationUIAddonCode } from '../policy-viewer/code/transformation-ui-addon';
 import { WipeConfigComponent } from '../policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
+import { MathConfigComponent } from '../policy-configuration/blocks/calculate/math-config/math-config.component';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -85,6 +86,7 @@ const Container: IBlockSetting = {
         { type: BlockType.TimerBlock },
         { type: BlockType.Mint },
         { type: BlockType.Wipe },
+        { type: BlockType.MathBlock },
         { type: BlockType.Calculate },
         { type: BlockType.CustomLogicBlock },
         { type: BlockType.Report },
@@ -134,6 +136,7 @@ const Step: IBlockSetting = {
         { type: BlockType.TimerBlock },
         { type: BlockType.Mint },
         { type: BlockType.Wipe },
+        { type: BlockType.MathBlock },
         { type: BlockType.Calculate },
         { type: BlockType.CustomLogicBlock },
         { type: BlockType.Report },
@@ -698,6 +701,16 @@ const ImpactAddon: IBlockSetting = {
     code: null,
 }
 
+const MathBlock: IBlockSetting = {
+    type: BlockType.MathBlock,
+    icon: BlockIcons[BlockType.MathBlock],
+    group: BlockGroup.Calculate,
+    header: BlockHeaders.ServerBlocks,
+    factory: null,
+    property: MathConfigComponent,
+    code: null
+}
+
 const Calculate: IBlockSetting = {
     type: BlockType.Calculate,
     icon: BlockIcons[BlockType.Calculate],
@@ -852,6 +865,7 @@ export default [
     TokenActionBlock,
     TokenConfirmationBlock,
     ImpactAddon,
+    MathBlock,
     Calculate,
     CustomLogicBlock,
     CalculateMathAddon,
