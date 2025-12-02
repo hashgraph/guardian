@@ -149,7 +149,7 @@ jobs:
           MIN_PASSWORD_LENGTH: 4
           PASSWORD_COMPLEXITY: easy
           INITIAL_BALANCE: 5
-          INITIAL_STANDARD_REGISTRY_BALANCE: 100
+          INITIAL_STANDARD_REGISTRY_BALANCE: 140
 
       - name: Build Cypress Docker image
         run: docker build -t cypress-runner ./e2e-tests
