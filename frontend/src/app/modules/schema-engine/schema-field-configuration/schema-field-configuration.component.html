@@ -243,6 +243,14 @@
                         label="Allow multiple answers"></p-checkbox>
                 </div>
 
+                <div class="checkbox-field-container">
+                    <p-checkbox 
+                        class="guardian-checkbox-secondary checkbox-24"
+                        [formControl]="field.isUpdatable" 
+                        [binary]="true"
+                        label="Updatable Field"></p-checkbox>
+                </div>
+
                 <div *ngIf="field.autocalculated.value" class="checkbox-field-container auto-calculate">
                     <label class="form-label">Required</label>
                     <button
