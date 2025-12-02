@@ -20,6 +20,7 @@ import {
     MessageType,
     NatsService,
     NewNotifier,
+    NotificationStep,
     PinoLogger,
     Policy,
     PolicyAction,
@@ -202,6 +203,46 @@ export class PolicyEngineService {
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE, HASH'], userId);
             return null;
+        }
+    }
+
+    private extractPolicyIdFromPreview(policyPreview: any): string | null {
+        const policy = policyPreview?.policy;
+        const idCandidate = policy?.id || policy?._id || policyPreview?.policyId;
+        if (!idCandidate) {
+            return null;
+        }
+        if (typeof idCandidate === 'string') {
+            return idCandidate;
+        }
+        if (idCandidate?.toString) {
+            return idCandidate.toString();
+        }
+        return null;
+    }
+
+    private async hasIpfsRecordsForPreview(
+        policyPreview: any,
+        logger: PinoLogger,
+        userId: string | null
+    ): Promise<boolean> {
+        try {
+            const policyId = this.extractPolicyIdFromPreview(policyPreview);
+            if (!policyId) {
+                return false;
+            }
+            const records = await DatabaseServer.getRecord({
+                policyId,
+                ipfsCid: { $exists: true, $ne: null }
+            }, { limit: 1, fields: ['_id', 'uuid'] } as any);
+            return Array.isArray(records) && records.length > 0;
+        } catch (error) {
+            await logger.warn(
+                typeof error?.message === 'string' ? error.message : 'Failed to determine policy records',
+                ['GUARDIAN_SERVICE'],
+                userId
+            );
+            return false;
         }
     }
 
@@ -751,6 +792,16 @@ export class PolicyEngineService {
                     const userFull = await (new Users()).getUserById(userDid, owner.id);
                     await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
                 }
+
+                if (policy.status !== PolicyStatus.PUBLISH && policy.status !== PolicyStatus.DISCONTINUED) {
+                    const records = await DatabaseServer.getRecord({
+                        policyId: policy.id,
+                        copiedRecordId: { $exists: true, $ne: null }
+                    }, { limit: 1, fields: ['_id', 'uuid'] } as any);
+
+                    result.withRecords = Array.isArray(records) && !!records.length;
+                }
+
                 return new MessageResponse(result);
             });
 
@@ -1061,6 +1112,47 @@ export class PolicyEngineService {
                     } else {
                         notifier.result(await this.policyEngine.deletePolicy(policy, owner, notifier, logger));
                     }
+                }, async (error) => {
+                    notifier.fail(error);
+                });
+                return new MessageResponse(task);
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DELETE_POLICIES_ASYNC,
+            async (msg: { policyIds: string[], owner: IOwner, task: any }): Promise<IMessageResponse<any>> => {
+                const { policyIds, owner, task } = msg;
+                const notifier = await NewNotifier.create(task);
+                RunFunctionAsync(async () => {
+
+                    const policies = await DatabaseServer.getPolicies({ id: { $in: policyIds }, owner: owner.owner });
+                    if (!policies || policies?.length <= 0) {
+                        throw new Error('Policy not found');
+                    }
+
+                    const stepMap = new Map<string, NotificationStep>();
+                    const results = new Map<string, boolean>();
+
+                    for (const policy of policies) {
+                        const STEP_DELETE_TOKEN = 'DELETE POLICY (' + policy.name + ')';
+                        const deletePolicyStep = notifier.addStep(STEP_DELETE_TOKEN);
+                        stepMap.set(policy.id, deletePolicyStep);
+                    }
+
+                    for (const policy of policies) {
+                        await this.policyEngine.accessPolicy(policy, owner, 'delete');
+
+                        const deletePolicyStep = stepMap.get(policy.id);
+
+                        if (policy.status === PolicyStatus.DEMO) {
+                            const result = await this.policyEngine.deleteDemoPolicy(policy, owner, deletePolicyStep, logger);
+                            results.set(policy.id, result);
+                        } else {
+                            const result = await this.policyEngine.deletePolicy(policy, owner, deletePolicyStep, logger);
+                            results.set(policy.id, result);
+                        }
+                    }
+
+                    notifier.result(results);
                 }, async (error) => {
                     notifier.fail(error);
                 });
@@ -1521,6 +1613,7 @@ export class PolicyEngineService {
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
                     policyToImport.similar = similarPolicies;
+                    policyToImport.withRecords = await this.hasIpfsRecordsForPreview(policyToImport, logger, owner?.id);
                     return new MessageResponse(policyToImport);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1544,6 +1637,7 @@ export class PolicyEngineService {
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
                     policyToImport.similar = similarPolicies;
+                    policyToImport.withRecords = await this.hasIpfsRecordsForPreview(policyToImport, logger, owner?.id);
                     notifier.result(policyToImport);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1583,6 +1677,7 @@ export class PolicyEngineService {
                             .setComponents(policyToImport)
                             .setUser(owner)
                             .setParentPolicyTopic(versionOfTopicId)
+                            .setImportRecords(metadata?.importRecords)
                             .setMetadata(metadata),
                         notifier.getStep(STEP_IMPORT_POLICY),
                         owner.id
@@ -1647,6 +1742,7 @@ export class PolicyEngineService {
                                 .setComponents(policyToImport)
                                 .setUser(owner)
                                 .setParentPolicyTopic(versionOfTopicId)
+                                .setImportRecords(metadata?.importRecords)
                                 .setMetadata(metadata),
                             notifier.getStep(STEP_IMPORT_POLICY),
                             owner.id

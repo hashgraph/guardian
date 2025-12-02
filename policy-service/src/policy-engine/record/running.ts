@@ -798,10 +798,10 @@ export class Running {
      * Get current and recorded results
      * @public
      */
-    public async getResults(): Promise<any> {
+    public async getResults(policyId?: string): Promise<any> {
         if (this._id) {
             const results = await RecordImportExport
-                .loadRecordResults(this.policyId, this._startTime, this._endTime);
+            .loadRecordResults(policyId || this.policyId, this._startTime, this._endTime);
             return {
                 documents: results,
                 recorded: this._results

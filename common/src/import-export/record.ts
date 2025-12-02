@@ -119,6 +119,24 @@ export class RecordImportExport {
      * Record filename
      */
     public static readonly recordFileName = 'actions.csv';
+    /**
+     * Generate archive for single record entry
+     * @param record
+     */
+    public static async generateSingleRecordZip(
+    record: Record,
+    results?: IRecordResult[]): Promise<JSZip> {
+        const baseTime = record.time ? Number(record.time) : Date.now();
+
+        await DatabaseServer.createRecord
+        const components: IRecordComponents = {
+            records: [record],
+            results: results || [],
+            time: baseTime,
+            duration: 0
+        };
+        return await RecordImportExport.generateZipFile(components);
+    }
 
     /**
      * Get full time

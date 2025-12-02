@@ -498,6 +498,59 @@ export class PolicyApi {
     }
 
     /**
+     * Delete policies
+     */
+    @Post('/push/delete-multiple')
+    @Auth(
+        Permissions.POLICIES_POLICY_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Remove multiple policies.',
+        description: 'Remove multiple policies by their IDs.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyIds',
+        type: [String],
+        description: 'Policy Ids',
+        required: true,
+        example: [Examples.DB_ID]
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async deletePoliciesAsync(
+        @AuthUser() user: IAuthUser,
+        @Body('policyIds') policyIds: string[],
+        @Req() req
+    ): Promise<any> {
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.DELETE_POLICIES, user.id);
+
+        RunFunctionAsync<ServiceError>(async () => {
+            const engineService = new PolicyEngine();
+            await engineService.deletePoliciesAsync(policyIds, new EntityOwner(user), task);
+        }, async (error) => {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            taskManager.addError(task.taskId, { code: 500, message: error.message });
+        });
+
+        for (const policyId of policyIds) {
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyIds}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+        }
+
+        return task;
+    }
+
+    /**
      * Get policy configuration
      */
     @Get('/:policyId')

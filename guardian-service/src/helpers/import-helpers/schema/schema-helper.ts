@@ -474,8 +474,12 @@ export async function deleteSchema(
     owner: IOwner,
     notifier: INotificationStep,
 ) {
-    notifier.start();
+    // <-- Steps
+    const STEP_DELETE_SCHEMA = 'Delete schema';
+    // Steps -->
 
+    notifier.addStep(STEP_DELETE_SCHEMA);
+    notifier.start();
     if (!schemaId) {
         return;
     }
@@ -496,9 +500,13 @@ export async function deleteSchema(
     //         await sendSchemaMessage(owner, root, topic, MessageAction.DeleteSchema, item);
     //     }
     // }
+    notifier.startStep(STEP_DELETE_SCHEMA);
     await DatabaseServer.deleteSchemas(item.id);
+    notifier.completeStep(STEP_DELETE_SCHEMA);
 
     notifier.complete();
+
+    return true;
 }
 
 /**

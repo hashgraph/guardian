@@ -73,6 +73,13 @@ export class ImportEntityDialog {
 
     public type: ImportEntityType = ImportEntityType.Policy;
     public importType: ImportType = ImportType.FILE;
+    public recordSource: 'file' | 'imported' = 'file';
+    public canUseImportedRecords = false;
+    public recordSourceOptions = [
+        { label: 'Import from file', value: 'file' },
+        { label: 'Use records imported with this policy', value: 'imported' },
+    ];
+    public syncNewRecords: boolean = false;
 
     public dataForm = this.fb.group({
         timestamp: ['', Validators.required],
@@ -92,6 +99,7 @@ export class ImportEntityDialog {
         public config: DynamicDialogConfig<{
             type?: string,
             timeStamp?: string,
+            withRecords?: boolean,
         }>,
         //Form
         private fb: UntypedFormBuilder,
@@ -108,7 +116,7 @@ export class ImportEntityDialog {
         private formulasService: FormulasService,
     ) {
         const _config = this.config.data || {};
-
+        this.canUseImportedRecords = !!_config.withRecords;
         switch (_config.type) {
             case 'policy':
                 this.type = ImportEntityType.Policy;
@@ -149,6 +157,8 @@ export class ImportEntityDialog {
                 this.title = 'Open Record';
                 this.fileExtension = 'record';
                 this.placeholder = 'Import Record .record file';
+                this.canUseImportedRecords = this.canUseImportedRecords;
+                this.recordSource = 'file';
                 break;
             case 'schema-rule':
                 this.type = ImportEntityType.SchemaRule;
@@ -370,6 +380,36 @@ export class ImportEntityDialog {
                 this.loading = false;
                 this.taskId = undefined;
             });
+    }
+    
+    public onRecordSourceChange(value: 'file' | 'imported'): void {
+        this.recordSource = value;
+        if (this.recordSource !== 'imported') {
+            this.syncNewRecords = false;
+        }
+    }
+
+    public onPrimaryAction(): void {
+        if (this.type === ImportEntityType.Record && this.recordSource === 'imported') {
+            this.setResult({
+                type: 'message',
+                data: '',
+                importRecords: true,
+                syncNewRecords: this.syncNewRecords
+            } as any);
+            return;
+        }
+        this.importFromMessage();
+    }
+
+    public isPrimaryActionDisabled(): boolean {
+        if (this.type === ImportEntityType.Record) {
+            return this.recordSource !== 'imported';
+        }
+        if (this.importType === ImportType.FILE) {
+            return true;
+        }
+        return this.dataForm.invalid;
     }
 
     private policyFromFile(arrayBuffer: any) {
