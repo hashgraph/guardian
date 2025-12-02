@@ -684,7 +684,6 @@ export class ExternalTopicBlock {
             if (verify) {
                 verify = await VCHelper.verifyVC(document);
             }
-            verify = await VCHelper.verifyVC(document);
         } catch (error) {
             verify = false;
         }
