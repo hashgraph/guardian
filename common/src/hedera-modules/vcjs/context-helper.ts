@@ -1,3 +1,5 @@
+import { Schema } from '@guardian/interfaces';
+
 export class ContextHelper {
     private static readonly types: string[] = [
         'Polygon',
@@ -83,5 +85,40 @@ export class ContextHelper {
             }
         }
         return vc;
+    }
+
+    public static setContext(vc: any, schema: Schema | null) {
+        const context = vc['@context'];
+        const items = ContextHelper._getItems(vc, '', []);
+        for (const item of items) {
+            if (schema) {
+                const field = schema.getField(item.__path);
+                if (field?.isRef) {
+                    const fieldContext = field.context;
+                    item.type = fieldContext?.type;
+                    item['@context'] = context;
+                }
+            }
+            delete item.__path;
+        }
+        return vc;
+    }
+
+    private static _getItems(root: any, key: string, items: any[]) {
+        if (Array.isArray(root)) {
+            for (const item of root) {
+                ContextHelper._getItems(item, key, items);
+            }
+            return items;
+        } else if (typeof root === 'object') {
+            root.__path = key;
+            items.push(root);
+            for (const prop of Object.keys(root)) {
+                ContextHelper._getItems(root[prop], key ? `${key}.${prop}` : prop, items);
+            }
+            return items;
+        } else {
+            return items;
+        }
     }
 }

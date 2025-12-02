@@ -679,11 +679,11 @@ export class ExternalTopicBlock {
         let verify: boolean;
         try {
             const VCHelper = new VcHelper();
-            // const res = await VCHelper.verifySchema(document);
-            // verify = res.ok;
-            // if (verify) {
-            //     verify = await VCHelper.verifyVC(document);
-            // }
+            const res = await VCHelper.verifySchema(document);
+            verify = res.ok;
+            if (verify) {
+                verify = await VCHelper.verifyVC(document);
+            }
             verify = await VCHelper.verifyVC(document);
         } catch (error) {
             verify = false;
