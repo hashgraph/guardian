@@ -176,7 +176,7 @@ jobs:
           docker rm -f cypress-test-run || true
 
       - name: Publish API Test Results
-        uses: step-security/publish-unit-test-result-action@32f89bf71205087367e3fe317be553f2ee59a5b0 # v2.21.0
+        uses: step-security/publish-unit-test-result-action@914f0f642c242f38335a491805adfc9bd64b1cbb # v2.21.1
         if: always()
         with:
           files: e2e-tests/cypress/test_results/**/*.xml
