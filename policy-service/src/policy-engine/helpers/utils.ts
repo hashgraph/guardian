@@ -20,7 +20,7 @@ import {
     SchemaConverterUtils
 } from '@guardian/common';
 import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SchemaField, SignatureType, TopicType, WorkerTaskType } from '@guardian/interfaces';
-import { TokenId, TopicId } from '@hashgraph/sdk';
+import { TokenId, TopicId } from '@hiero-ledger/sdk';
 import { FilterQuery } from '@mikro-orm/core';
 import * as mathjs from 'mathjs';
 import { DocumentType } from '../interfaces/document.type.js';

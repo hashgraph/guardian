@@ -1,4 +1,4 @@
-import { PrivateKey, TopicId } from '@hashgraph/sdk';
+import { PrivateKey, TopicId } from '@hiero-ledger/sdk';
 import { DocumentContext } from './components/document-context.js';
 import { HederaDid } from './hedera-did.js';
 import { CommonDidDocument } from './common-did-document.js';

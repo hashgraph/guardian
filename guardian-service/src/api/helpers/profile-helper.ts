@@ -43,7 +43,7 @@ import {
     Wallet,
     Workers,
 } from '@guardian/common';
-import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { serDefaultRole } from '../permission.service.js';
 import { publishSystemSchema } from '../../helpers/import-helpers/index.js';
 
