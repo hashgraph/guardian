@@ -70,12 +70,14 @@ To get a local copy up and running quickly, follow the steps below. Please refer
 
 ### 2.1 Universal software
 
-1. **[Git](https://git-scm.com/downloads)** – source-control tooling  
-2. **[Docker](https://www.docker.com/)** – one-command build & run (recommended)  
-3. **[MongoDB v6](https://www.mongodb.com/)**, **[Node.js v16](https://nodejs.org/en)**, and **[NATS 1.12.2](https://nats.io/)** – auto-installed when using Docker-Compose  
-4. **[Web3.Storage account](https://web3.storage/)** – IPFS pinning service  
-5. **[Filebase account](https://filebase.com/)** – S3-compatible IPFS pinning (optional but recommended)  
-6. **[Redis 7.3.0](https://redict.io/)** – in-memory cache & message broker (auto-provisioned by the Docker stack)
+1. **[Git](https://git-scm.com/downloads)** – source-control tooling
+2. **[Docker](https://www.docker.com/)** – one-command build & run (recommended)
+3. **[MongoDB v6](https://www.mongodb.com/)**, **[Node.js v20.19](https://nodejs.org/en/download)**, and **[NATS 2.9.25](https://nats.io/)** – auto-provisioned when using Docker Compose
+4. **[IPFS storage](https://docs.ipfs.tech/concepts/what-is-ipfs/)** (choose one):
+ - **[Storacha account](https://storacha.network/)** – IPFS pinning service (formerly Web3.Storage)
+ - **[Filebase account](https://filebase.com/)** – S3-compatible IPFS pinning
+ - Local IPFS node (e.g., **[Kubo](https://github.com/ipfs/kubo)**) – auto-provisioned when using Docker Compose
+5. **[Redict](https://redict.io/)** – in-memory cache & message broker, independent fork of Redis® (auto-provisioned by the Docker stack)
 
 When building the reference implementation, you can [manually build every component](#manual-installation) or run a single command with Docker.
 
@@ -91,10 +93,10 @@ When building the reference implementation, you can [manually build every compon
 
 ## 2.3. Preparing a Mainnet Account & Keys
 
-1. Install a Hedera-enabled wallet (e.g., [HashPack](https://www.hashpack.app/)).  
-2. Create a Mainnet account and note the Account ID (`0.0.x`).  
-3. Export the ED25519 key pair  
-   - *HashPack path*: Settings → Manage Accounts → Export Private Key (DER format).  
+1. Install a Hedera-enabled wallet (e.g., [HashPack](https://www.hashpack.app/)).
+2. Create a Mainnet account and note the Account ID (`0.0.x`).
+3. Export the ED25519 key pair
+   - *HashPack path*: Settings → Manage Accounts → Export Private Key (DER format).
 4. Update your `.env`
 
    ```dotenv
@@ -123,7 +125,7 @@ When building the reference implementation, you can [manually build every compon
 
 * [Docker](https://www.docker.com)
 
-If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V20](https://nodejs.org), [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable) and [Nats 1.12.2](https://nats.io/) will be installed and configured automatically.
+If you build with docker [MongoDB V6](https://www.mongodb.com), [Node.js v20.19](https://nodejs.org), [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable) and [Nats 2.9.25](https://nats.io/) will be installed and configured automatically.
 
 ## Installation
 
@@ -249,11 +251,11 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 
 ##### 3.2. Setting up JWT keys in /.env file
 
-To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using this service https://travistidwell.com/jsencrypt/demo/.
+To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using [this service](https://travistidwell.com/jsencrypt/demo/).
 
 ##### 3.3. Setting up JWT keys for each service in the .env file
 
-To start all services, you need to create a 2048-bit RSA key pair for each service. You can generate a key pair in any convenient way—for example, using the online tool at https://mkjwk.org/ with the following settings:
+To start all services, you need to create a 2048-bit RSA key pair for each service. You can generate a key pair in any convenient way—for example, using [the online tool](https://mkjwk.org/) with the following settings:
    - key size: 2048
    - key use: signature
    - algorithm: RS256: RSA
@@ -275,14 +277,15 @@ For each service, you must add its secret key `SERVICE_JWT_SECRET_KEY` and a lis
 
 Alternatively, you can create a single key pair and, instead of adding the public keys for each individual service, you can add `SERVICE_JWT_SECRET_KEY_ALL` and `SERVICE_JWT_PUBLIC_KEY_ALL` to use the same keys for all services. However, it is recommended to generate a separate key pair for each service.
 
-#### 4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node 3. Filebase Bucket.
+#### 4. Now, we have these options to setup IPFS storage:
+ - Local IPFS node
+ - Storacha
+ - Filebase bucket
 
-##### 4.1 Setting up IPFS Local node:
+##### 4.1 Setting up Local IPFS node:
 
-   - 4.1.1 We need to install and configure any IPFS node. [example](https://github.com/yeasy/docker-ipfs)
-
+   - 4.1.1 We need to install and configure any IPFS node (e.g., [Kubo](https://github.com/ipfs/kubo))
    - 4.1.2 For setup IPFS local node you need to set variables in the same file `./configs/.env.develop.guardian.system`
-
 
    ```
    IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5001"
@@ -290,11 +293,11 @@ Alternatively, you can create a single key pair and, instead of adding the publi
    IPFS_PROVIDER="local"
    ```
 
-##### 4.2 Setting up IPFS Web3Storage node:
+##### 4.2 Setting up Storacha account:
 
 To select this option ensure that `IPFS_PROVIDER="web3storage"` setting exists in your `./configs/.env.<environment>.guardian.system` file.
 
-To configure access to the [w3up](https://github.com/web3-storage/w3up) IPFS upload API from web3.storage for your Guardian instance you need to set correct values to the following variables in the `./configs/.env.<environment>.guardian.system` file:
+To configure access to the [Storacha upload service](https://github.com/storacha/upload-service) (a w3up protocol implementation) for your Guardian instance you need to set correct values to the following variables in the `./configs/.env.<environment>.guardian.system` file:
 
    ```
    IPFS_STORAGE_KEY="..."
@@ -304,26 +307,21 @@ To configure access to the [w3up](https://github.com/web3-storage/w3up) IPFS upl
 > **_NOTE:_**  When Windows OS is used for creating the IPFS values, please use bash shell to prevent issues with base64 encoding.
 
 To obtain the values for these variables please follow the steps below:
-- Create an account on https://web3.storage, please specify the email you have access to as the account authentication is based on the email validation. Make sure to follow through the registration process to the end, choose an appropriate billing plan for your needs (e.g. 'starter') and enter your payment details.
-- Install w3cli as described in the [corresponding section](https://web3.storage/docs/w3cli/#install) of the web3.storage documentation.
-- Create your 'space' as described in the ['Create your first space'](https://web3.storage/docs/w3cli/#create-your-first-space) section of the documentation.
-- Execute the following to set the Space you intend on delegating access to:
-  `w3 space use`.
-- Execute the following command to retrieve your Agent private key and DID:
-`npx ucan-key ed`.
-The private key (starting with `Mg...`) is the value to be used in the environment variable `IPFS_STORAGE_KEY`.
-- Retrieve the PROOF by executing the following:
-  ```w3 delegation create <did_from_ucan-key_command_above> | base64```.
-  The output of this command is the value to be used in the environment variable `IPFS_STORAGE_PROOF`.
+- Create an account on https://storacha.network, please specify the email you have access to as the account authentication is based on the email validation. Make sure to follow through the registration process to the end, choose an appropriate billing plan for your needs (e.g. 'STARTER') and enter your payment details.
+- Install CLI as described in the [corresponding section](https://docs.storacha.network/cli/) of the Storacha documentation.
+- Create your 'space' as described in the ['Create a Space'](https://docs.storacha.network/how-to/create-space/) section of the documentation.
+- Execute the following to set the Space you intend on delegating access to: `storacha space use <space_did>`.
+- The following command returns what will be your Agent private key and DID: `storacha key create`. The private key (starting with `Mg...`) is the value to be used in the environment variable `IPFS_STORAGE_KEY`.
+- Retrieve the PROOF by executing the following: ```storacha delegation create <did_from_ucan-key_command_above> --base64```. The output of this command is the value to be used in the environment variable `IPFS_STORAGE_PROOF`.
 
-To summarise, the process of configuring delegated access to the w3up API consists of execution the following command sequence:
-1. `w3 login`
-2. `w3 space create`
-3. `w3 space use`
-4. `npx ucan-key ed`
-5. `w3 delegation`
+To summarise, the process of configuring a UCAN delegated access to the Space you intend on delegating access to consists of execution the following command sequence:
+1. `storacha login`
+2. `storacha space create`
+3. `storacha space use`
+4. `storacha key create`
+5. `storacha delegation`
 
-The complete guide to using the new w3up web3.storage API is available at https://web3.storage/docs/w3up-client.
+The complete guide to using the new Storacha client is available at https://docs.storacha.network/how-to/upload/.
 
 #### 4.3 Setting up IPFS Filebase Bucket:
 
@@ -403,11 +401,11 @@ If you want to manually build every component with debug information, then build
 ### Prerequisites for manual installation
 
 * [MongoDB V6](https://www.mongodb.com)
-* [NodeJS V20](https://nodejs.org)
+* [Node.js v20.19](https://nodejs.org)
 * [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
-* [Nats 1.12.2](https://nats.io/)
-* [Redict 7.3.0](https://redict.io/)
-* [Seq 2024.3 - optional for logging](https://datalust.co/seq)
+* [Nats 2.9.25](https://nats.io/)
+* [Redict](https://redict.io/)
+* [Seq 2025.2 - optional for logging](https://datalust.co/seq)
 
 ### Build and start each component
 
@@ -794,7 +792,7 @@ npm --workspace=ai-service start
 #### 2. Start local development using docker compose
 
    ```shell
-   docker compose -f docker-compose-dev.yml up --build
+   docker compose -f docker-compose-build.yml up --build
    ```
 
 #### 3. Access local development using http://localhost:3000 or http://localhost:4200
@@ -847,7 +845,7 @@ Please refer to <https://docs.hedera.com/guardian> for complete documentation ab
 * Reference Implementation
 * Technologies Built on
 * Roadmap
-* Change Log
+* Changelog
 * Contributing
 * License
 * Security
