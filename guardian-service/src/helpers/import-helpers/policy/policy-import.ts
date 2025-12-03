@@ -76,6 +76,8 @@ export class PolicyImport {
     private topicId: string;
     private formulasResult: ImportFormulaResult;
     private formulasMapping: Map<string, string>;
+    private sourcePolicyId: string | null = null;
+    private importRecords = false;
 
     constructor(mode: ImportMode, notifier: INotificationStep) {
         this.mode = mode;
@@ -699,6 +701,14 @@ export class PolicyImport {
         const additionalPolicyConfig = options.additionalPolicyConfig;
         const metadata = options.metadata;
         const logger = options.logger;
+        this.importRecords = !!options.importRecords;
+        this.sourcePolicyId = policy?.id
+            ? policy.id.toString()
+            : (policy as any)?._id
+                ? (policy as any)._id.toString()
+                : (policy as any)?.policyId
+                    ? String((policy as any).policyId)
+                    : null;
 
         // <-- Steps
         const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
@@ -817,10 +827,48 @@ export class PolicyImport {
         step.complete();
 
         await this.importTags(row, tags, this.notifier.getStep(STEP_IMPORT_TAGS));
+        await this.copyPolicyRecords(row, logger);
 
         this.notifier.complete();
 
         const errors = await this.getErrors();
         return { policy: row, errors };
+    }
+
+    private async copyPolicyRecords(policy: Policy, logger: PinoLogger): Promise<void> {
+        if (!this.importRecords || !this.sourcePolicyId) {
+            return;
+        }
+        try {
+            const records = await DatabaseServer.getRecord({ policyId: this.sourcePolicyId });
+            if (!records || !records.length) {
+                return;
+            }
+            const targetPolicyId = policy?.id?.toString?.();
+            if (!targetPolicyId) {
+                return;
+            }
+            for (const record of records) {
+                const clone: any = {
+                    uuid: record.uuid,
+                    policyId: targetPolicyId,
+                    method: record.method,
+                    action: record.action,
+                    time: record.time,
+                    user: record.user,
+                    target: record.target,
+                    document: record.document,
+                    ipfsCid: record.ipfsCid,
+                    ipfsUrl: record.ipfsUrl,
+                    ipfsTimestamp: record.ipfsTimestamp,
+                    fromPolicyId: this.sourcePolicyId,
+                    copiedRecordId: record.id?.toString?.()
+                };
+                await DatabaseServer.createRecord(clone);
+            }
+        } catch (error) {
+            await logger.error(`Failed to copy policy records: ${error?.message || error}`, ['POLICY_IMPORT'], null);
+            throw error;
+        }
     }
 }

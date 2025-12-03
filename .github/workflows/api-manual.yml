@@ -149,7 +149,7 @@ jobs:
           MIN_PASSWORD_LENGTH: 4
           PASSWORD_COMPLEXITY: easy
           INITIAL_BALANCE: 5
-          INITIAL_STANDARD_REGISTRY_BALANCE: 100
+          INITIAL_STANDARD_REGISTRY_BALANCE: 140
 
       - name: Build Cypress Docker image
         run: docker build -t cypress-runner ./e2e-tests
@@ -178,7 +178,7 @@ jobs:
           docker rm -f cypress-test-run || true
 
       - name: Publish API Test Results
-        uses: step-security/publish-unit-test-result-action@c8537a200a435e2560109a6a8ed9cac838b62656 # v2.20.5
+        uses: step-security/publish-unit-test-result-action@914f0f642c242f38335a491805adfc9bd64b1cbb # v2.21.1
         if: always()
         with:
           files: e2e-tests/cypress/test_results/**/*.xml
