@@ -55,4 +55,5 @@ export { RequestVcDocumentBlockAddon } from './request-vc-document-block-addon.j
 export { DataTransformationAddon } from './data-transformation-addon.js';
 export { HttpRequestUIAddon } from './http-request-ui-addon.js';
 export { TransformationUIAddon } from './transformation-ui-addon.js';
-export { ExternalEventsBlock } from './external-events-block';
+export { GlobalTopicWriterBlock } from './global-topic-writer-block.js';
+// export { ExternalEventsBlock } from './external-events-block';
