@@ -1,7 +1,7 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "express": "^5.1.0",
+        "express": "^4.22.0",
         "prom-client": "^14.1.1"
     },
     "description": "",
