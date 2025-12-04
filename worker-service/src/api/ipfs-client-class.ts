@@ -72,12 +72,15 @@ export class IpfsClientClass {
 
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.WEB3STORAGE: {
+                if (!this.options.w3s) {
+                    throw new Error('Web3Storage key and proof are not set');
+                }
                 const principal = Signer.parse(this.options.w3s.key);
                 client = await Client.create({
                     principal,
                     store: new StoreMemory()
                 });
-                const proof = await Proof.parse(this.options.w3s.proof);
+                const proof = await Proof.parse(this.options.w3s.proof.replace(/[\r\n]+/g, ''));
                 const space = await client.addSpace(proof);
                 await client.setCurrentSpace(space.did());
                 break;
