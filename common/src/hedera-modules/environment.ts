@@ -254,12 +254,12 @@ export class Environment {
 
         if (Environment._mirrorNodes && Environment._mirrorNodes.length > 0) {
             const mirrornode = Environment._mirrorNodes[0];
-            Environment._messagesApi = `${mirrornode}/api/v1/topics/messages`;
-            Environment._topicsApi = `${mirrornode}/api/v1/topics/`;
-            Environment._accountsApi = `${mirrornode}/api/v1/accounts/`;
-            Environment._balancesApi = `${mirrornode}/api/v1/balances/`;
-            Environment._contractsApi = `${mirrornode}/api/v1/contracts/`;
-            Environment._tokensApi = `${mirrornode}/api/v1/tokens/`;
+            Environment._messagesApi = `https://${mirrornode}/api/v1/topics/messages`;
+            Environment._topicsApi = `https://${mirrornode}/api/v1/topics/`;
+            Environment._accountsApi = `https://${mirrornode}/api/v1/accounts/`;
+            Environment._balancesApi = `https://${mirrornode}/api/v1/balances/`;
+            Environment._contractsApi = `https://${mirrornode}/api/v1/contracts/`;
+            Environment._tokensApi = `https://${mirrornode}/api/v1/tokens/`;
         }
     }
 
