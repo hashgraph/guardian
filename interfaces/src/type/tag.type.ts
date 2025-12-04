@@ -8,5 +8,6 @@ export enum TagType {
     Module = 'Module',
     PolicyDocument = 'PolicyDocument',
     Contract = 'Contract',
-    Tool = 'Tool'
+    Tool = 'Tool',
+    PolicyBlock = 'PolicyBlock',
 }

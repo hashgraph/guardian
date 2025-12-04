@@ -144,6 +144,23 @@ export async function getTarget(entity: TagType, id: string): Promise<{
                 return null;
             }
         }
+        case TagType.PolicyBlock: {
+            const policyId = id.split('#')[0];
+            const targetId = id.split('#')[1];
+            console.log(id);
+            console.log(policyId);
+            
+            const item = await DatabaseServer.getPolicyById(policyId);
+            if (item) {
+                return {
+                    id,
+                    target: targetId,
+                    topicId: item.topicId
+                };
+            } else {
+                return null;
+            }
+        }
         default:
             return null;
     }
@@ -242,10 +259,12 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid load tags parameter');
                 }
                 const { targets, entity } = msg;
+
                 const filter: any = {
                     localTarget: { $in: targets },
                     entity
                 }
+
                 const items = await DatabaseServer.getTags(filter);
                 return new MessageResponse(items);
             } catch (error) {

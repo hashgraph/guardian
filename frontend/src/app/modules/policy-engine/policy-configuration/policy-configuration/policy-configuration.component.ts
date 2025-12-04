@@ -1,7 +1,7 @@
 import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ContractType, IContract, PolicyAvailability, PolicyCategoryType, Schema, SchemaHelper, Token, UserPermissions } from '@guardian/interfaces';
+import { ContractType, IContract, LocationType, PolicyAvailability, PolicyCategoryType, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { DialogService } from 'primeng/dynamicdialog';
 import { forkJoin, Observable, Subject } from 'rxjs';
@@ -37,6 +37,10 @@ import { DB_NAME, STORES_NAME } from 'src/app/constants';
 import { IgnoreRule } from '@guardian/interfaces';
 import { IgnoreRulesDialog } from "../../dialogs/ignore-rules-dialog/ignore-rules-dialog.component";
 import { SaveToolDialog, ToolSaveAction } from '../../dialogs/save-tool-dialog/save-tool-dialog.component';
+import { TagsService } from 'src/app/services/tag.service';
+import { TagCreateDialog } from 'src/app/modules/tag-engine/tags-create-dialog/tags-create-dialog.component';
+import { TagsHistory } from 'src/app/modules/tag-engine/models/tags-history';
+import { TagsExplorerDialog } from 'src/app/modules/tag-engine/tags-explorer-dialog/tags-explorer-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -201,6 +205,14 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     ];
 
+    public allBlocks: PolicyItem[] = [];
+    public selectedBlocks = new Map<string, any>();
+    public blockTagHistories = new Map<string, TagsHistory>();
+    public blockTagEntity = TagType.PolicyBlock;
+    public tagSchemas: any[] = [];
+    public tagOptions: string[] = [];
+    public policy: any;
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -220,6 +232,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private analyticsService: AnalyticsService,
         private profileService: ProfileService,
         private contractService: ContractService,
+        private tagsService: TagsService,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>,
         storage: IndexedDbRegistryService
@@ -403,9 +416,13 @@ export class PolicyConfigurationComponent implements OnInit {
         this.rootId = this.policyId;
         forkJoin([
             this.profileService.getProfile(),
-            this.policyEngineService.policy(this.policyId)
-        ]).pipe(takeUntil(this._destroy$)).subscribe(([user, policy]) => {
+            this.policyEngineService.policy(this.policyId),
+            this.tagsService.getPublishedSchemas()
+        ]).pipe(takeUntil(this._destroy$)).subscribe(([user, policy, tagSchemas]) => {
             this.user = new UserPermissions(user);
+            this.owner = this.user?.did;
+
+            this.tagSchemas = SchemaHelper.map(tagSchemas || []);
 
             if (!policy) {
                 this.policyTemplate = new PolicyTemplate();
@@ -416,6 +433,10 @@ export class PolicyConfigurationComponent implements OnInit {
 
             this.policyTemplate = new PolicyTemplate(policy);
             this.onOpenRoot(this.policyTemplate);
+
+            this.policy = policy;
+            this.allBlocks = this.policyTemplate.allBlocks;
+
             if (!this.policyTemplate.valid) {
                 this.loading = false;
                 return;
@@ -480,6 +501,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         }
                     })
                 }
+                this.loadTagsData();
             }, ({ message }) => {
                 this.loading = false;
                 console.error(message);
@@ -488,6 +510,65 @@ export class PolicyConfigurationComponent implements OnInit {
             this.loading = false;
             console.error(message);
         });
+    }
+
+    private loadTagsData() {
+        if (this.user.TAGS_TAG_READ) {
+            const ids = this.allBlocks?.map(e => this.policy.id + '#' + e.id) || [];
+            this.tagsService.search(this.blockTagEntity, ids).subscribe((data) => {
+                console.log(data);
+                
+                if (this.allBlocks) {
+                    for (const block of this.allBlocks) {
+                        (block as any)._tags = data[this.policy.id + '#' + block.id];
+                        console.log((block as any)._tags);
+                        
+                        data[block.id]?.tags.forEach((tag: any) => {
+                            const totalTagOptions = [
+                                ...this.tagOptions,
+                                tag.name,
+                            ];
+                            this.tagOptions = [
+                                ...new Set(totalTagOptions),
+                            ];
+                        });
+
+                        const entity = this.blockTagEntity;
+                        const target = this.policy.id + '#' + block.id;
+                        let history: TagsHistory;
+                        if ((block as any)._tags) {
+                            history = new TagsHistory(
+                                (block as any)._tags.entity || entity,
+                                (block as any)._tags.target || target,
+                                this.owner,
+                                this.policy.location || LocationType.LOCAL
+                            );
+                            history.setData((block as any)._tags.tags);
+                            history.setDate((block as any)._tags.refreshDate);
+
+                        } else {
+                            history = new TagsHistory(
+                                entity,
+                                target,
+                                this.owner,
+                                this.policy.location || LocationType.LOCAL
+                            );
+                        }
+                        this.blockTagHistories.set(block.id, history);
+                    }
+                }
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }
     }
 
     private loadModule(): void {
@@ -613,7 +694,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
         root.subscribe(this.onConfigChange.bind(this));
 
-        this.onSelect(this.openFolder.root);
+        this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
         this.updateComponents();
         this.updateModules();
         this.updateTools();
@@ -747,6 +828,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.openFolder =
                 this.rootTemplate.getModule(this.openFolder) ||
                 this.rootTemplate.getRootModule();
+
             this.currentBlock = this.openFolder.root;
             this.updateMenuStatus();
         }
@@ -1258,6 +1340,8 @@ export class PolicyConfigurationComponent implements OnInit {
         }, ({ message }) => {
             console.error(message);
         });
+
+        this.handleTagsUpdate();
     }
 
     public async ngOnDestroy(): Promise<void> {
@@ -1315,7 +1399,13 @@ export class PolicyConfigurationComponent implements OnInit {
         this.options.save();
     }
 
-    public onSelect(block?: PolicyItem): boolean {
+    
+    public owner: string;
+
+    public onSelect(event: { block?: PolicyItem, isMultiSelect: boolean }): boolean {
+        const block = event.block;
+        const isMultiSelect = event.isMultiSelect;
+
         this.nextBlock = null;
         this.nestedBlock = null;
         this.currentBlock = this.openFolder.getBlock(block);
@@ -1325,6 +1415,20 @@ export class PolicyConfigurationComponent implements OnInit {
         // this.changeDetector.detectChanges();
         this.findSuggestedBlocks(this.currentBlock);
         this.updateMenuStatus();
+
+        if (this.currentBlock) {
+            if (isMultiSelect) {
+                if (!this.selectedBlocks.has(this.currentBlock.id)) {
+                    this.selectedBlocks.set(this.currentBlock.id, this.currentBlock);
+                } else {
+                    this.selectedBlocks.delete(this.currentBlock.id);
+                }
+            } else {
+                this.selectedBlocks.clear();
+                this.selectedBlocks.set(this.currentBlock.id, this.currentBlock);
+            }
+        }
+
         return false;
     }
 
@@ -1420,14 +1524,14 @@ export class PolicyConfigurationComponent implements OnInit {
             nested ? this.currentBlock : this.currentBlock?.parent,
             type
         );
-        this.onSelect(this.currentBlock);
+        this.onSelect({ block: this.currentBlock, isMultiSelect: false});
         this.updateMenuStatus();
     }
 
     public onSuggestionsClick() {
         this.isSuggestionsEnabled = !this.isSuggestionsEnabled;
         if (this.isSuggestionsEnabled && this.currentBlock) {
-            this.onSelect(this.currentBlock);
+            this.onSelect({ block: this.currentBlock, isMultiSelect: false});
         }
     }
 
@@ -1471,7 +1575,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public onDelete(block: any) {
         this.openFolder.removeBlock(block);
         this.updateTemporarySchemas();
-        this.onSelect(this.openFolder.root);
+        this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
         return false;
     }
 
@@ -1731,7 +1835,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const config = policy.config;
             this.policyTemplate.rebuild(config);
             this.setErrors(results, 'policy');
-            this.onSelect(this.openFolder.root);
+            this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
             this.loading = false;
         }, (e) => {
             this.loading = false;
@@ -2004,7 +2108,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.moduleTemplate.rebuild(module);
             this.setErrors(results, 'module');
             this.onOpenRoot(this.moduleTemplate);
-            this.onSelect(this.openFolder.root);
+            this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
             this.loading = false;
         }, (e) => {
             this.loading = false;
@@ -2126,7 +2230,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.toolTemplate.rebuild(tool);
             this.setErrors(results, 'tool');
             this.onOpenRoot(this.toolTemplate);
-            this.onSelect(this.openFolder.root);
+            this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
             this.loading = false;
         }, (e) => {
             this.loading = false;
@@ -2321,5 +2425,81 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.validationRuleOptions.map(
             (option) => option.rule as IgnoreRule
         );
+    }
+
+    public getSelectedBlock(): any {
+        return this.currentBlock as any;
+    }
+
+    public onAddTag() {
+        if (this.currentBlock) {
+            const tagHistory = this.blockTagHistories.get(this.currentBlock.id);
+            console.log(tagHistory);
+            
+            if (tagHistory) {
+                const dialogRef = this.dialog.open(TagsExplorerDialog, {
+                    width: '750px',
+                    height: '600px',
+                    closable: false,
+                    header: 'Tags',
+                    data: {
+                        user: this.user,
+                        service: this.tagsService,
+                        history: tagHistory,
+                        schemas: this.schemas
+                    }
+                });
+                dialogRef
+                .onClose
+                .subscribe(async (result) =>
+                    result ? this.tagsService.tagsUpdated$.next() : null
+                );
+            } else {
+                const dialogRef = this.dialog.open(TagCreateDialog, {
+                    width: '750px',
+                    closable: true,
+                    header: 'New Tag',
+                    data: {
+                        schemas: this.tagSchemas
+                    }
+                });
+                dialogRef.onClose.subscribe(async (result) => {
+                    if (result) {
+                        console.log(result);
+                        
+                        this.onCreateTag(result, this.currentBlock!.id);
+                    }
+                });
+            }
+        }
+    }
+
+    private onCreateTag(tag: any, id: string) {
+        const history = this.blockTagHistories.get(id);
+        
+        if (!history) {
+            return;
+        }
+
+        tag = history.create(tag);
+        console.log(55);
+        console.log(tag);
+        this.loading = true;
+        this.tagsService.create(tag).subscribe((data) => {
+            history.add(data);
+            this.tagsService.tagsUpdated$.next();
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    private handleTagsUpdate(): void {
+        this.tagsService.tagsUpdated$.pipe(takeUntil(this._destroy$)).subscribe({
+            next: () => this.loadData(),
+        });
     }
 }

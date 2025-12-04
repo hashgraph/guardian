@@ -80,6 +80,9 @@
                     </div>
 
                     <div *ngIf="isBlockStyle(item)" class="block-body" [style]="blockStyle(item)">
+                        <div *ngIf="hasTags(item)" class="block-tag-count">
+                            <span>{{ getTagsAmount(item) }}</span>
+                        </div>
                         <div class="block-item" (click)="onSelect($event, item)" theme-all>
                             <div class="block-item-icon">
                                 <i [ngClass]="'pi pi-' + item.icon" class="theme-text"></i>

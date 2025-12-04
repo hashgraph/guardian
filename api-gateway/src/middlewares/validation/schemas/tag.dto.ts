@@ -162,7 +162,8 @@ export class TagFilterDTO {
             'Token',
             'Module',
             'Contract',
-            'PolicyDocument'
+            'PolicyDocument',
+            'PolicyBlock'
         ],
         example: 'PolicyDocument'
     })

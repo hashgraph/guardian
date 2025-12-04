@@ -650,3 +650,33 @@
         linear-gradient(180deg, #838383 3px, #eaffea 3px),
         linear-gradient(180deg, #eaffea 3px, #838383 3px) !important;
 }
+
+.block-body
+.block-tag-count {
+    position: absolute;
+    right: 10px;
+    top: 0;
+    padding: 0 8px;
+    border-radius: 16px;
+    background-color: var(--color-primary, #4169E2);
+    z-index: 10;
+
+    &[selected="true"] {
+        right: 0;
+    }
+
+    span {
+        font-family: Inter, sans-serif;
+        font-weight: 500;
+        font-style: Medium;
+        font-size: 12px;
+        line-height: 20px;
+        letter-spacing: 0%;
+        color: var(--color-grey-white, #FFFFFF);
+    }
+}
+
+.block-container[selected="true"]
+.block-body .block-tag-count {
+    right: 0;
+}

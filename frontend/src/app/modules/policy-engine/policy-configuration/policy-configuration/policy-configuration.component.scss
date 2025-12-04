@@ -940,6 +940,28 @@
                     filter: grayscale(1);
                 }
             }
+
+            .hint-multiselect {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                margin: 16px;
+                padding: 4px 8px;
+                width: auto;
+                border-radius: 16px;
+                background-color: var(--color-grey-white, #FFFFFF);
+
+                font-family: Inter;
+                font-weight: 400;
+                font-style: Regular;
+                font-size: 14px;
+                vertical-align: middle;
+                color: var(--color-grey-5, #848FA9);
+
+                span {
+                    margin-left: 10px;
+                }
+            }
         }
     }
 

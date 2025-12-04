@@ -331,6 +331,11 @@
                 <span>Settings</span>
             </div>
 
+            <div (click)="onAddTag()" class="top-toolbar-btn all-status" title="Settings">
+                <i class="pi pi-plus"></i>
+                <span>Add Tag</span>
+            </div>
+
             <div class="delimiter"></div>
         </div>
 
@@ -765,6 +770,10 @@
                                 <ngx-codemirror (ngModelChange)="saveState()" [(ngModel)]="code"
                                     [options]="codeMirrorOptions">
                                 </ngx-codemirror>
+                            </div>
+                            <div class="hint-multiselect">
+                                <i class="pi pi-info-circle"></i>
+                                <span>Press “Shift” to select multiple blocks</span>
                             </div>
                             <policy-tree
                                 *ngIf="isTree"

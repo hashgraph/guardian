@@ -46,7 +46,7 @@ export class PolicyTreeComponent implements OnInit {
     @Input('currentBlock') currentBlock?: any;
 
     @Output('delete') delete = new EventEmitter();
-    @Output('select') select = new EventEmitter();
+    @Output('select') select = new EventEmitter<{ block: any, isMultiSelect: boolean }>();
     @Output('reorder') reorder = new EventEmitter();
     @Output('open') open = new EventEmitter();
     @Output('init') init = new EventEmitter();
@@ -257,6 +257,7 @@ export class PolicyTreeComponent implements OnInit {
     private rebuildTree(data: PolicyBlock[]) {
         this.root = data[0];
         this.data = this.convertToArray([], data, 0, null);
+
         if (this.currentBlock) {
             this.selectedNode = this.data.find(
                 (item) => item.node === this.currentBlock
@@ -613,10 +614,11 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     public onSelect(event: MouseEvent, node: FlatBlockNode) {
+        const isMultiSelect = event.shiftKey;
         this.selectedNode = node;
         this.currentBlock = node.node;
         this.render();
-        this.select.emit(this.currentBlock);
+        this.select.emit({ block: this.currentBlock, isMultiSelect});
         this.currentBlockChange.emit(this.currentBlock);
         return false;
     }
@@ -1007,5 +1009,13 @@ export class PolicyTreeComponent implements OnInit {
 
     public getNestedOffset(nodeLevel: number) {
         return `${this.paddingLeft * nodeLevel}px`;
+    }
+
+    public hasTags(node: any): boolean {
+        return node?.node?._tags?.tags?.length > 0;
+    }
+
+    public getTagsAmount(node: any): number {
+        return node?.node?._tags?.tags?.length || 0;
     }
 }
