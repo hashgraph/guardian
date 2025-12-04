@@ -253,13 +253,13 @@ export class Environment {
                 throw new Error(`Unknown network: ${network}`)
         }
 
-        if (this._mirrorNodes && this._mirrorNodes.length > 0) {
-            Environment._messagesApi = `${this._mirrorNodes}/api/v1/topics/messages`;
-            Environment._topicsApi = `${this._mirrorNodes}/api/v1/topics/`;
-            Environment._accountsApi = `${this._mirrorNodes}/api/v1/accounts/`;
-            Environment._balancesApi = `${this._mirrorNodes}/api/v1/balances`;
-            Environment._contractsApi = `${this._mirrorNodes}/api/v1/contracts/`;
-            Environment._tokensApi = `${this._mirrorNodes}/api/v1/tokens/`;
+        if (Environment._mirrorNodes && Environment._mirrorNodes.length > 0) {
+            Environment._messagesApi = `${Environment._mirrorNodes}/api/v1/topics/messages`;
+            Environment._topicsApi = `${Environment._mirrorNodes}/api/v1/topics/`;
+            Environment._accountsApi = `${Environment._mirrorNodes}/api/v1/accounts/`;
+            Environment._balancesApi = `${Environment._mirrorNodes}/api/v1/balances`;
+            Environment._contractsApi = `${Environment._mirrorNodes}/api/v1/contracts/`;
+            Environment._tokensApi = `${Environment._mirrorNodes}/api/v1/tokens/`;
         }
     }
 
