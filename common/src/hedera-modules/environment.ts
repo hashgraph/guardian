@@ -203,7 +203,7 @@ export class Environment {
      * @param network
      * @param mirrornode
      */
-    public static setNetwork(network: string, mirrornode?: string) {
+    public static setNetwork(network: string) {
         switch (network) {
             case 'mainnet':
                 Environment._network = 'mainnet';
@@ -252,13 +252,14 @@ export class Environment {
             default:
                 throw new Error(`Unknown network: ${network}`)
         }
-        if (mirrornode) {
-            Environment._messagesApi = `${mirrornode}/api/v1/topics/messages`;
-            Environment._topicsApi = `${mirrornode}/api/v1/topics/`;
-            Environment._accountsApi = `${mirrornode}/api/v1/accounts/`;
-            Environment._balancesApi = `${mirrornode}/api/v1/balances`;
-            Environment._contractsApi = `${mirrornode}/api/v1/contracts/`;
-            Environment._tokensApi = `${mirrornode}/api/v1/tokens/`;
+
+        if (this._mirrorNodes && this._mirrorNodes.length > 0) {
+            Environment._messagesApi = `${this._mirrorNodes}/api/v1/topics/messages`;
+            Environment._topicsApi = `${this._mirrorNodes}/api/v1/topics/`;
+            Environment._accountsApi = `${this._mirrorNodes}/api/v1/accounts/`;
+            Environment._balancesApi = `${this._mirrorNodes}/api/v1/balances`;
+            Environment._contractsApi = `${this._mirrorNodes}/api/v1/contracts/`;
+            Environment._tokensApi = `${this._mirrorNodes}/api/v1/tokens/`;
         }
     }
 
