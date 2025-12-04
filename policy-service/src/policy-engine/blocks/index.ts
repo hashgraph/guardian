@@ -56,4 +56,4 @@ export { DataTransformationAddon } from './data-transformation-addon.js';
 export { HttpRequestUIAddon } from './http-request-ui-addon.js';
 export { TransformationUIAddon } from './transformation-ui-addon.js';
 export { GlobalTopicWriterBlock } from './global-topic-writer-block.js';
-// export { ExternalEventsBlock } from './external-events-block';
+export { GlobalEventsReaderBlock } from './global-events-reader-block.js';
