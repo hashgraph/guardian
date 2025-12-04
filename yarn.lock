@@ -7663,9 +7663,9 @@ genson-js@0.0.5:
   integrity sha512-1i1y9MIGzTRkn4TusWQwLWLu8IJGHgSE+fbQRt1fy68ZKEq2GjDZI/7NUSZFOfTbHz8bgjP4iCIOcdYrgEsMBA==
 
 geotiff@^2.1.4-beta.0:
-  version "2.1.4-beta.0"
-  resolved "https://registry.yarnpkg.com/geotiff/-/geotiff-2.1.4-beta.0.tgz#2340c65530ab9232d98e53e42a89e49079177527"
-  integrity sha512-jb6SYvHMyiCqwqgGGLDAxtig9h1g6O+n1wEyNEE4QgVEXOItYaWrEgPg9SAnwdoZm2yx6DpFtilbGG65hvZgpQ==
+  version "2.1.4-beta.1"
+  resolved "https://registry.yarnpkg.com/geotiff/-/geotiff-2.1.4-beta.1.tgz#902fa407e2e8ea95cf0449d95ea66a5a9796107d"
+  integrity sha512-3cW7V2XjnBWDJ8Gj/vCidvl3xiaN5c3az1Tfym9MBFq0LI3pi37YYWt9YxOjXF7njO135iKRGTJcbbsTiPdk2Q==
   dependencies:
     "@petamoriken/float16" "^3.4.7"
     lerc "^3.0.0"
@@ -11456,9 +11456,10 @@ one-webcrypto@^1.0.3:
   resolved "https://registry.yarnpkg.com/one-webcrypto/-/one-webcrypto-1.0.3.tgz#f951243cde29b79b6745ad14966fc598a609997c"
   integrity sha512-fu9ywBVBPx0gS9K0etIROTiCkvI5S1TDjFsYFb3rC1ewFxeOqsbzq7aIMBHsYfrTHBcGXJaONXXjTl8B01cW1Q==
 
-"one-webcrypto@git+https://github.com/web3-storage/one-webcrypto.git":
+"one-webcrypto@https://github.com/web3-storage/one-webcrypto":
   version "1.0.1"
-  resolved "git+https://github.com/web3-storage/one-webcrypto.git#9e029e2fd477bd95bb80abd3553bbac704ccc7a6"
+  uid "9e029e2fd477bd95bb80abd3553bbac704ccc7a6"
+  resolved "https://github.com/web3-storage/one-webcrypto#9e029e2fd477bd95bb80abd3553bbac704ccc7a6"
 
 onetime@^5.1.0:
   version "5.1.2"
