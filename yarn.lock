@@ -1313,10 +1313,10 @@
     streaming-iterables "^6.0.0"
     throttled-queue "^2.1.2"
 
-"@formulajs/formulajs@4.5.1":
-  version "4.5.1"
-  resolved "https://registry.yarnpkg.com/@formulajs/formulajs/-/formulajs-4.5.1.tgz#8738ac38f4ced71b81efb2b316f95dd0e271ea8b"
-  integrity sha512-Edenag5E8YqYEvOUQ4gKZQ2+udbpG9FGAeMfPlY+JcL0oYGG4ULaDWqE5wRWSGdRXfEmKHroJhB4+QFXyVKDcw==
+"@formulajs/formulajs@4.5.4":
+  version "4.5.4"
+  resolved "https://registry.yarnpkg.com/@formulajs/formulajs/-/formulajs-4.5.4.tgz#020e86acb314897d679eb683153ff4c6796c772a"
+  integrity sha512-7xflX5PVeA1ESmds4NFI80AVqnBZbvGV48ws7wMGl7HqgKrQE3KFk9Eg0mLkjKHM40DpDGQi4pDUa8ivGjFOxw==
   dependencies:
     bessel "^1.0.2"
     jstat "^1.9.6"
@@ -11456,9 +11456,10 @@ one-webcrypto@^1.0.3:
   resolved "https://registry.yarnpkg.com/one-webcrypto/-/one-webcrypto-1.0.3.tgz#f951243cde29b79b6745ad14966fc598a609997c"
   integrity sha512-fu9ywBVBPx0gS9K0etIROTiCkvI5S1TDjFsYFb3rC1ewFxeOqsbzq7aIMBHsYfrTHBcGXJaONXXjTl8B01cW1Q==
 
-"one-webcrypto@git+https://github.com/web3-storage/one-webcrypto.git":
+"one-webcrypto@https://github.com/web3-storage/one-webcrypto":
   version "1.0.1"
-  resolved "git+https://github.com/web3-storage/one-webcrypto.git#9e029e2fd477bd95bb80abd3553bbac704ccc7a6"
+  uid "9e029e2fd477bd95bb80abd3553bbac704ccc7a6"
+  resolved "https://github.com/web3-storage/one-webcrypto#9e029e2fd477bd95bb80abd3553bbac704ccc7a6"
 
 onetime@^5.1.0:
   version "5.1.2"
