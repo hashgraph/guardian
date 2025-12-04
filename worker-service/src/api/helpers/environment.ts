@@ -201,7 +201,6 @@ export class Environment {
     /**
      * Set network
      * @param network
-     * @param mirrornode
      */
     public static setNetwork(network: string) {
         switch (network) {
@@ -254,12 +253,13 @@ export class Environment {
         }
 
         if (Environment._mirrorNodes && Environment._mirrorNodes.length > 0) {
-            Environment._messagesApi = `${Environment._mirrorNodes}/api/v1/topics/messages`;
-            Environment._topicsApi = `${Environment._mirrorNodes}/api/v1/topics/`;
-            Environment._accountsApi = `${Environment._mirrorNodes}/api/v1/accounts/`;
-            Environment._balancesApi = `${Environment._mirrorNodes}/api/v1/balances`;
-            Environment._contractsApi = `${Environment._mirrorNodes}/api/v1/contracts/`;
-            Environment._tokensApi = `${Environment._mirrorNodes}/api/v1/tokens/`;
+            const mirrornode = Environment._mirrorNodes[0];
+            Environment._messagesApi = `${mirrornode}/api/v1/topics/messages`;
+            Environment._topicsApi = `${mirrornode}/api/v1/topics/`;
+            Environment._accountsApi = `${mirrornode}/api/v1/accounts/`;
+            Environment._balancesApi = `${mirrornode}/api/v1/balances/`;
+            Environment._contractsApi = `${mirrornode}/api/v1/contracts/`;
+            Environment._tokensApi = `${mirrornode}/api/v1/tokens/`;
         }
     }
 
