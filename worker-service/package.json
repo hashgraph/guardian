@@ -8,7 +8,7 @@
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
-        "@storacha/client": "^1.8.18",
+        "@storacha/client": "1.8.21",
         "axios": "^1.8.3",
         "cids": "^1.1.9",
         "dotenv": "^16.0.0",
