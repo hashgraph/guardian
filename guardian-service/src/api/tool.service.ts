@@ -1,12 +1,13 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, Hashing, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, NewNotifier, PinoLogger, Policy, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
-import { IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyStatus, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import * as crypto from 'crypto';
 import { FilterObject } from '@mikro-orm/core';
 import { deleteSchema, findAndDryRunSchema, importToolByFile, importToolByMessage, importToolErrors, PolicyImportExportHelper, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
+import { escapeRegExp } from './helpers/api-helper.js';
 
 /**
  * Sha256
@@ -580,6 +581,7 @@ export async function dryRunTool(
         tool.status = ModuleStatus.DRY_RUN;
         tool.messageId = result.getId();
         tool.version = version;
+        tool.tagsTopicId = null;
         const retVal = await DatabaseServer.updateTool(tool);
 
         await logger.info('Dry-run mode for tool enabled', ['GUARDIAN_SERVICE'], user.id);
@@ -732,7 +734,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid load tools parameter');
                 }
                 const { fields, filters, owner } = msg;
-                const { pageIndex, pageSize, search } = filters;
+                const { pageIndex, pageSize, search, tag } = filters;
 
                 const otherOptions: any = { fields };
 
@@ -748,7 +750,18 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 if (search) {
-                    filter.name = { $regex: `.*${search.trim()}.*`, $options: 'i' };
+                    const sanitizedSearch = escapeRegExp(search.trim());
+                    filter.name = { $regex: `.*${sanitizedSearch}.*`, $options: 'i' };
+                }
+
+                if (tag) {
+                    const filterTags: any = {
+                        name: tag,
+                        entity: TagType.Tool
+                    }
+                    const tags = await DatabaseServer.getTags(filterTags);
+                    const toolTagIds = tags.map((t) => t.localTarget);
+                    filter.id = { $in: toolTagIds };
                 }
 
                 const _pageSize = parseInt(pageSize, 10);
@@ -1258,7 +1271,10 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 model.status = ModuleStatus.DRAFT;
-                model.version = '';
+                model.version = null;
+                model.hash = null;
+                model.messageId = null;
+                model.tagsTopicId = null;
 
                 await DatabaseServer.updateTool(model);
 

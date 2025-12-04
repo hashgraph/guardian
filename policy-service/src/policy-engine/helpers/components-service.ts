@@ -8,7 +8,7 @@ import {
     Schema as SchemaCollection,
     VcHelper
 } from '@guardian/common';
-import { GenerateUUIDv4, PolicyHelper, SchemaEntity } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyHelper, PolicyStatus, SchemaEntity } from '@guardian/interfaces';
 import { PrivateKey } from '@hashgraph/sdk';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
@@ -53,6 +53,10 @@ export class ComponentsService {
      */
     private readonly schemasByType: Map<string, SchemaCollection>;
     /**
+     * Automatic recording flag
+     */
+    private readonly _autoRecordingEnabled: boolean;
+    /**
      * Root block
      */
     private root: IPolicyBlock;
@@ -71,6 +75,7 @@ export class ComponentsService {
         this.owner = policy.owner;
         this.policyId = policyId;
         this.topicId = policy.topicId;
+        this._autoRecordingEnabled = policy.status === PolicyStatus.PUBLISH;
         if (PolicyHelper.isDryRunMode(policy)) {
             this.dryRunId = policyId;
         } else {
@@ -82,9 +87,26 @@ export class ComponentsService {
         this.policyRoles = [];
         this.schemasByID = new Map();
         this.schemasByType = new Map();
-        this._recordingController = null;
+        if (this._autoRecordingEnabled) {
+            this._recordingController = new Recording(this.policyId, this.owner, {
+                mode: 'auto',
+                enabled: true,
+                uploadToIpfs: true
+            });
+        } else {
+            this._recordingController = null;
+        }
         this._runningController = null;
         this.logger = new PinoLogger();
+    }
+    public get autoRecordingEnabled(): boolean {
+        return this._autoRecordingEnabled;
+    }
+
+    public async ensureAutoStartRecord(): Promise<void> {
+        if (this._autoRecordingEnabled && this._recordingController) {
+            await this._recordingController.ensureStartRecordForPublishedPolicy();
+        }
     }
 
     /**

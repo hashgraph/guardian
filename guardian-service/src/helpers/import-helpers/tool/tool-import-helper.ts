@@ -129,6 +129,22 @@ export async function importToolByMessage(
             oldTool.hash === message.hash &&
             oldTool.owner === message.owner
         ) {
+            if (message.tagsTopicId) {
+                const topic = await DatabaseServer.getTopicById(message.tagsTopicId);
+                if (!topic) {
+                    const tagsTopic = {
+                        type: TopicType.TagsTopic,
+                        topicId: message.tagsTopicId,
+                        name: message.name || TopicType.TagsTopic,
+                        description: message.description || TopicType.TagsTopic,
+                        owner: user.owner,
+                        policyId: message.id.toString(),
+                        policyUUID: message.uuid
+                    };
+                    await DatabaseServer.saveTopic(tagsTopic);
+                }
+            }
+
             notifier.completeStep(STEP_LOAD_FILE);
             notifier.complete();
             return {
@@ -182,6 +198,17 @@ export async function importToolByMessage(
 
     const toolTags = components.tags?.filter((t: any) => t.entity === TagType.Tool) || [];
     if (message.tagsTopicId) {
+        const tagsTopic = {
+            type: TopicType.TagsTopic,
+            topicId: message.tagsTopicId,
+            name: message.name || TopicType.TagsTopic,
+            description: message.description || TopicType.TagsTopic,
+            owner: user.owner,
+            policyId: message.id.toString(),
+            policyUUID: message.uuid
+        };
+        await DatabaseServer.saveTopic(tagsTopic);
+
         const tagMessages = await messageServer.getMessages<TagMessage>(
             message.tagsTopicId,
             userId,
@@ -356,7 +383,10 @@ export async function importToolByFile(
     delete tool._id;
     delete tool.id;
     delete tool.messageId;
+    delete tool.version;
     delete tool.createDate;
+    delete tool.tagsTopicId;
+
     tool.uuid = GenerateUUIDv4();
     tool.creator = user.creator;
     tool.owner = user.owner;
