@@ -1965,9 +1965,9 @@
     tslib "2.8.1"
 
 "@nestjs/platform-express@^11.0.11":
-  version "11.1.8"
-  resolved "https://registry.yarnpkg.com/@nestjs/platform-express/-/platform-express-11.1.8.tgz#9e97c20d23df70ad8826125424a69c9103b68653"
-  integrity sha512-rL6pZH9BW7BnL5X2eWbJMtt86uloAKjFgyY5+L2UkizgfEp7rgAs0+Z1z0BcW2Pgu5+q8O7RKPNyHJ/9ZNz/ZQ==
+  version "11.1.9"
+  resolved "https://registry.yarnpkg.com/@nestjs/platform-express/-/platform-express-11.1.9.tgz#f3a8c0e0aba6f90584812c9ec1e2025563187b50"
+  integrity sha512-GVd3+0lO0mJq2m1kl9hDDnVrX3Nd4oH3oDfklz0pZEVEVS0KVSp63ufHq2Lu9cyPdSBuelJr9iPm2QQ1yX+Kmw==
   dependencies:
     cors "2.8.5"
     express "5.1.0"
@@ -11456,9 +11456,10 @@ one-webcrypto@^1.0.3:
   resolved "https://registry.yarnpkg.com/one-webcrypto/-/one-webcrypto-1.0.3.tgz#f951243cde29b79b6745ad14966fc598a609997c"
   integrity sha512-fu9ywBVBPx0gS9K0etIROTiCkvI5S1TDjFsYFb3rC1ewFxeOqsbzq7aIMBHsYfrTHBcGXJaONXXjTl8B01cW1Q==
 
-"one-webcrypto@git+https://github.com/web3-storage/one-webcrypto.git":
+"one-webcrypto@https://github.com/web3-storage/one-webcrypto":
   version "1.0.1"
-  resolved "git+https://github.com/web3-storage/one-webcrypto.git#9e029e2fd477bd95bb80abd3553bbac704ccc7a6"
+  uid "9e029e2fd477bd95bb80abd3553bbac704ccc7a6"
+  resolved "https://github.com/web3-storage/one-webcrypto#9e029e2fd477bd95bb80abd3553bbac704ccc7a6"
 
 onetime@^5.1.0:
   version "5.1.2"
