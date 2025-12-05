@@ -1,12 +1,25 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    ViewChild,
+} from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { UserPermissions } from '@guardian/interfaces';
+import {
+    DocumentValidators,
+    Schema,
+    SchemaRuleValidateResult,
+    UserPermissions,
+} from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from 'src/app/services/profile.service';
 import { PolicyComments } from '../../common/policy-comments/policy-comments.component';
 import { forkJoin, Subject, Subscription, takeUntil } from 'rxjs';
 import { DocumentViewComponent } from '../document-view/document-view.component';
 import { CommentsService } from 'src/app/services/comments.service';
+import { FormulasService } from 'src/app/services/formulas.service';
+import { SchemaRulesService } from 'src/app/services/schema-rules.service';
+import { SchemaService } from 'src/app/services/schema.service';
 
 /**
  * Dialog for display json
@@ -14,11 +27,13 @@ import { CommentsService } from 'src/app/services/comments.service';
 @Component({
     selector: 'vc-fullscreen-dialog',
     templateUrl: './vc-fullscreen-dialog.component.html',
-    styleUrls: ['./vc-fullscreen-dialog.component.scss']
+    styleUrls: ['./vc-fullscreen-dialog.component.scss'],
 })
 export class VCFullscreenDialog {
-    @ViewChild('discussionComponent', { static: false }) discussionComponent: PolicyComments;
-    @ViewChild('documentViewComponent', { static: false }) documentViewComponent: DocumentViewComponent;
+    @ViewChild('discussionComponent', { static: false })
+    discussionComponent: PolicyComments;
+    @ViewChild('documentViewComponent', { static: false })
+    documentViewComponent: DocumentViewComponent;
 
     public loading: boolean = true;
 
@@ -51,6 +66,16 @@ export class VCFullscreenDialog {
     public comments: boolean;
     public commentsReadonly: boolean;
 
+    public isCurrentUserIssuer: boolean = false;
+    public isEditMode: boolean = false;
+    public subjects: any[] = [];
+    public schemaMap: { [x: string]: Schema | null } = {};
+    public rules: DocumentValidators;
+    public rulesResults: SchemaRuleValidateResult;
+    public formulasResults: any | null;
+    public pageIndex: number = 0;
+    public pageSize: number = 5;
+
     private _destroy$ = new Subject<void>();
     private _subscription?: Subscription | null;
 
@@ -61,9 +86,12 @@ export class VCFullscreenDialog {
         private commentsService: CommentsService,
         private route: ActivatedRoute,
         private router: Router,
-        private el: ElementRef
-    ) {
-    }
+        private el: ElementRef,
+        private schemaService: SchemaService,
+        private schemaRulesService: SchemaRulesService,
+        private formulasService: FormulasService,
+        private ref: ChangeDetectorRef
+    ) {}
 
     ngOnInit() {
         const {
@@ -80,10 +108,10 @@ export class VCFullscreenDialog {
             comments,
             commentsReadonly,
             openComments,
-            destroy
+            destroy,
         } = this.dialogConfig.data;
 
-        this.backLabel = backLabel || 'Back'
+        this.backLabel = backLabel || 'Back';
 
         if (type === 'VC') {
             this.type = 'VC';
@@ -103,6 +131,7 @@ export class VCFullscreenDialog {
         }
 
         if (row) {
+            this.row = row;
             this.documentId = row.id;
             this.policyId = row.policyId;
             this.messageId = row.messageId;
@@ -118,7 +147,7 @@ export class VCFullscreenDialog {
         this.exportDocument = exportDocument !== false;
         this.key = key === true;
 
-        this.comments = (comments !== false) && !dryRun;
+        this.comments = comments !== false && !dryRun;
         this.commentsReadonly = commentsReadonly === true;
         this.collapse = openComments !== true;
 
@@ -127,7 +156,7 @@ export class VCFullscreenDialog {
             if (typeof document === 'string') {
                 this.json = document;
             } else {
-                this.json = JSON.stringify((document), null, 4);
+                this.json = JSON.stringify(document, null, 4);
             }
         } else {
             this.type = 'JSON';
@@ -137,7 +166,9 @@ export class VCFullscreenDialog {
         }
 
         const fileSizeBytes = new Blob([this.json]).size;
-        this.fileSize = Math.round((fileSizeBytes / (1024 * 1024)));
+        this.fileSize = Math.round(fileSizeBytes / (1024 * 1024));
+
+        this.setSubjects();
 
         this.loadProfile();
 
@@ -146,42 +177,52 @@ export class VCFullscreenDialog {
         }
         this._subscription = this._destroy$.subscribe(() => {
             this.onClose();
-        })
+        });
     }
-
 
     private loadProfile() {
         this.loading = true;
         if (this.comments) {
             forkJoin([
                 this.profileService.getProfile(),
-                this.commentsService.getPolicyCommentsCount(this.policyId, this.documentId),
+                this.commentsService.getPolicyCommentsCount(
+                    this.policyId,
+                    this.documentId
+                ),
             ])
                 .pipe(takeUntil(this._destroy$))
-                .subscribe(([
-                    profile,
-                    count,
-                ]) => {
-                    this.user = new UserPermissions(profile);
-                    this.discussionData = count?.fields || {};
+                .subscribe(
+                    ([profile, count]) => {
+                        this.user = new UserPermissions(profile);
+                        this.discussionData = count?.fields || {};
+                        this.isCurrentUserIssuer =
+                            this.user?.did === this.document?.issuer;
 
-                    setTimeout(() => {
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    },
+                    (e) => {
                         this.loading = false;
-                    }, 500);
-                }, (e) => {
-                    this.loading = false;
-                });
+                    }
+                );
         } else {
-            this.profileService.getProfile()
+            this.profileService
+                .getProfile()
                 .pipe(takeUntil(this._destroy$))
-                .subscribe((profile) => {
-                    this.user = new UserPermissions(profile);
-                    setTimeout(() => {
+                .subscribe(
+                    (profile) => {
+                        this.user = new UserPermissions(profile);
+                        this.isCurrentUserIssuer =
+                            this.user?.did === this.document?.issuer;
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    },
+                    (e) => {
                         this.loading = false;
-                    }, 500);
-                }, (e) => {
-                    this.loading = false;
-                });
+                    }
+                );
         }
     }
 
@@ -191,9 +232,9 @@ export class VCFullscreenDialog {
 
     public get isCompare(): boolean {
         return (
-            (!this.dryRun) &&
-            (!!this.id) &&
-            (!!this.user?.ANALYTIC_DOCUMENT_READ) &&
+            !this.dryRun &&
+            !!this.id &&
+            !!this.user?.ANALYTIC_DOCUMENT_READ &&
             (this.type === 'VC' || this.type === 'VP')
         );
     }
@@ -201,8 +242,8 @@ export class VCFullscreenDialog {
     public get isExport(): boolean {
         return (
             this.exportDocument &&
-            (!this.dryRun) &&
-            (!!this.messageId) &&
+            !this.dryRun &&
+            !!this.messageId &&
             (this.type === 'VC' || this.type === 'VP')
         );
     }
@@ -226,7 +267,7 @@ export class VCFullscreenDialog {
                 schemas: null,
                 owners: null,
                 tokens: null,
-                related: this.messageId
+                related: this.messageId,
             },
             queryParamsHandling: 'merge',
         });
@@ -277,6 +318,130 @@ export class VCFullscreenDialog {
             this.discussionAction = !this.commentsReadonly;
         } else {
             this.discussionAction = false;
+        }
+    }
+
+    public onEditMode() {
+        if (!this.isEditMode) {
+            this.loadData();
+        }
+        this.isEditMode = !this.isEditMode;
+    }
+
+    setSubjects() {
+        if (Array.isArray(this.document.credentialSubject)) {
+            for (const s of this.document.credentialSubject) {
+                this.subjects.push(s);
+            }
+        } else {
+            this.subjects.push(this.document.credentialSubject);
+        }
+    }
+
+    private loadData() {
+        const requests: any = {};
+
+        //Load Schemas
+        if (this.type === 'VC') {
+            const schemas: any[] = [];
+            for (const credentialSubject of this.subjects) {
+                const type: string = credentialSubject.type;
+                if (!this.schemaMap[type]) {
+                    this.schemaMap[type] = null;
+                }
+                if (!this.schemaId) {
+                    this.schemaId = `#${type}`;
+                }
+            }
+            for (const [type, schema] of Object.entries(this.schemaMap)) {
+                if (!schema) {
+                    if (this.getByUser) {
+                        schemas.push(
+                            this.schemaService
+                                .getSchemasByTypeAndUser(type)
+                                .pipe(takeUntil(this._destroy$))
+                        );
+                    } else {
+                        schemas.push(
+                            this.schemaService
+                                .getSchemasByType(type)
+                                .pipe(takeUntil(this._destroy$))
+                        );
+                    }
+                }
+            }
+            for (let i = 0; i < schemas.length; i++) {
+                requests[i] = schemas[i];
+            }
+        }
+
+        //Load Rules
+        if (this.type === 'VC') {
+            requests.rules = this.schemaRulesService
+                .getSchemaRuleData({
+                    policyId: this.policyId,
+                    schemaId: this.schemaId,
+                    documentId: this.documentId,
+                })
+                .pipe(takeUntil(this._destroy$));
+        }
+
+        //Load Formulas
+        if (this.documentId) {
+            requests.formulas = this.formulasService
+                .getFormulasData({
+                    policyId: this.policyId,
+                    schemaId: this.schemaId,
+                    documentId: this.documentId,
+                })
+                .pipe(takeUntil(this._destroy$));
+        }
+
+        this.loading = true;
+        forkJoin(requests).subscribe(
+            (results: any) => {
+                //Load Rules
+                if (results.rules) {
+                    const rules = results.rules;
+                    this.rules = new DocumentValidators(rules);
+                    this.rulesResults = this.rules.validateVC(
+                        this.schemaId,
+                        this.document
+                    );
+                    delete results.rules;
+                }
+                //Load Schemas
+                for (const schema of Object.values<any>(results)) {
+                    if (schema) {
+                        try {
+                            let type = schema.iri || '';
+                            if (type.startsWith('#')) {
+                                type = type.substr(1);
+                            }
+                            this.schemaMap[type] = new Schema(schema);
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    }
+                }
+
+                setTimeout(() => {
+                    this.loading = false;
+                    this.ref.detectChanges();
+                }, 500);
+            },
+            (e) => {
+                this.loading = false;
+                this.ref.detectChanges();
+            }
+        );
+    }
+
+    public getCredentialSubject(item: any): string {
+        if (this.subjects.length > 1) {
+            return `Credential Subject #${this.subjects.indexOf(item) + 1}`;
+        } else {
+            return 'Credential Subject';
         }
     }
 }

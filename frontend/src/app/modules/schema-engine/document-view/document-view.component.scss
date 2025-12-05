@@ -168,6 +168,12 @@ form {
     }
 }
 
+*[readonly] {
+    pointer-events: none !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
+
 .guardian-accordion-container::ng-deep .guardian-accordion-container {
     background: #F9FAFC;
 }

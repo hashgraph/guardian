@@ -43,6 +43,7 @@ export class SchemaFormRootComponent implements OnInit {
     @Input() isFormForFinishSetup: boolean = false;
     @Input() isFormForRequestBlock: boolean = false;
     @Input() lastSavedAt?: Date;
+    @Input() isEditMode: boolean = false;
 
     @Output('form') form = new EventEmitter<UntypedFormGroup>();
     @Output('change') change = new EventEmitter<Schema | null>();

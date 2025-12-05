@@ -1,49 +1,65 @@
 <div class="vc-fullscreen-dialog">
-
-
     <div class="vc-fullscreen-dialog-header">
-
         <div class="back-button">
-            <button 
-                (click)="onClose()" 
-                class="guardian-button guardian-button-secondary">
+            <button
+                (click)="onClose()"
+                class="guardian-button guardian-button-secondary"
+            >
                 <div class="guardian-button-icon">
-                    <svg-icon class="icon-btn svg-icon"
+                    <svg-icon
+                        class="icon-btn svg-icon"
                         src="/assets/images/icons/left-arrow.svg"
-                        svgClass="icon-color-primary">
+                        svgClass="icon-color-primary"
+                    >
                     </svg-icon>
                 </div>
-                <div class="guardian-button-label">{{backLabel}}</div>
+                <div class="guardian-button-label">{{ backLabel }}</div>
             </button>
         </div>
 
         <div class="header-text">
-            {{title}}
+            {{ title }}
         </div>
 
         <div class="header-toolbar">
-            <button 
-                (click)="onDownloadJsonFile()" 
-                class="guardian-button guardian-button-secondary download-btn">Download</button>
+            <button
+                *ngIf="!isEditMode"
+                (click)="onDownloadJsonFile()"
+                class="guardian-button guardian-button-secondary download-btn"
+            >
+                Download
+            </button>
 
-            <button 
-                *ngIf="isExport"
-                (click)="onFindInExport()" 
-                class="guardian-button guardian-button-secondary export-btn">Export</button>
+            <button
+                *ngIf="isExport && !isEditMode"
+                (click)="onFindInExport()"
+                class="guardian-button guardian-button-secondary export-btn"
+            >
+                Export
+            </button>
 
-            <app-compare-btn 
-                *ngIf="isCompare"
-                [id]="id" 
-                type="document" 
+            <app-compare-btn
+                *ngIf="isCompare && !isEditMode"
+                [id]="id"
+                type="document"
                 class="compare-container compare-btn"
-                buttonStyle="guardian"></app-compare-btn>
+                buttonStyle="guardian"
+            ></app-compare-btn>
+
+            <button
+                *ngIf="isCurrentUserIssuer"
+                (click)="onEditMode()"
+                class="guardian-button guardian-button-secondary mode-btn"
+            >
+                {{ isEditMode ? "Switch to View Mode" : "Switch to Edit Mode" }}
+            </button>
         </div>
 
         <!-- <div class="header-icon" (click)="onClose()">
             <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
         </div> -->
     </div>
-    <div class="vc-fullscreen-dialog-body">
+    <div *ngIf="!isEditMode" class="vc-fullscreen-dialog-body">
         <div *ngIf="loading" class="guardian-loading">
             <div class="guardian-loading-image"></div>
         </div>
@@ -51,23 +67,29 @@
         <div *ngIf="toggle" class="tab-container">
             <div class="guardian-step-container">
                 <div class="guardian-stepper horizontal-stepper">
-                    <div class="guardian-step" 
+                    <div
+                        class="guardian-step"
                         [attr.action]="currentTab === 0"
                         (click)="onToggle(0)"
                     >
                         <div class="guardian-step-icon">
-                            <svg-icon class="icon-btn svg-icon-16"
-                                src="/assets/images/icons/16/file.svg"></svg-icon>
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/file.svg"
+                            ></svg-icon>
                         </div>
                         <div class="guardian-step-name">Form View</div>
                     </div>
-                    <div class="guardian-step" 
+                    <div
+                        class="guardian-step"
                         [attr.action]="currentTab === 1"
                         (click)="onToggle(1)"
                     >
                         <div class="guardian-step-icon">
-                            <svg-icon class="icon-btn svg-icon-16" 
-                                src="/assets/images/icons/16/number.svg"></svg-icon>
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/number.svg"
+                            ></svg-icon>
                         </div>
                         <div class="guardian-step-name">Code View</div>
                     </div>
@@ -78,11 +100,11 @@
         <div class="step-body-container" [attr.collapse]="collapse">
             <div class="document-content" [attr.comments]="comments">
                 <div *ngIf="currentTab === 0" class="document-view">
-                    <app-document-view 
+                    <app-document-view
                         *ngIf="type === 'VP' || type === 'VC'"
                         #documentViewComponent
                         class="document-viewer"
-                        [dryRun]="dryRun" 
+                        [dryRun]="dryRun"
                         [policyId]="policyId"
                         [documentId]="documentId"
                         [schemaId]="schemaId"
@@ -94,17 +116,28 @@
                         [discussion]="discussionData"
                         [discussion-view]="true"
                         [discussion-action]="discussionAction"
-                        (discussion-action)="onDiscussionAction($event)"></app-document-view>
+                        (discussion-action)="onDiscussionAction($event)"
+                    ></app-document-view>
                 </div>
                 <div *ngIf="currentTab === 1" class="json-container">
-                    <ng-container *ngIf="fileSize <= 1; else fileIsTooBigTemplate">
+                    <ng-container
+                        *ngIf="fileSize <= 1; else fileIsTooBigTemplate"
+                    >
                         <div class="json">
                             {{ json }}
                         </div>
                     </ng-container>
                     <ng-template #fileIsTooBigTemplate>
-                        <b class="form-label">This file is too large to view. ({{ fileSize }} MB)</b>
-                        <p class="form-label ">File exceeds in-browser preview limits. To view it, please download the file and open it locally.</p>
+                        <b class="form-label"
+                            >This file is too large to view. ({{
+                                fileSize
+                            }}
+                            MB)</b
+                        >
+                        <p class="form-label">
+                            File exceeds in-browser preview limits. To view it,
+                            please download the file and open it locally.
+                        </p>
                     </ng-template>
                 </div>
             </div>
@@ -123,6 +156,37 @@
                 ></policy-comments>
             </div>
         </div>
+    </div>
 
+    <div *ngIf="isEditMode" class="vc-fullscreen-dialog-body">
+        <div
+            *ngFor="let item of subjects"
+            class="guardian-accordion-container"
+        >
+            <p-accordion
+                [multiple]="true"
+                [activeIndex]="[0]"
+                class="guardian-accordion"
+            >
+                <p-accordionTab header="{{ getCredentialSubject(item) }}">
+                    <app-schema-form-root
+                        tabindex="0"
+                        [schema]="schemaMap[item.type]!"
+                        [dryRun]="dryRun"
+                        [policyId]="policyId || ''"
+                        [blockId]="id"
+                        [preset]="item"
+                        [submitText]="'save'"
+                        [rules]="rulesResults"
+                        [paginationHidden]="false"
+                        [saveShown]="false"
+                        [isFormForRequestBlock]="true"
+                        [isEditMode]="true"
+                        style="outline: none !important"
+                    >
+                    </app-schema-form-root>
+                </p-accordionTab>
+            </p-accordion>
+        </div>
     </div>
 </div>

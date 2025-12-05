@@ -47,8 +47,8 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
-            border: 1px solid #E1E7EF;
+            background: #f9fafc;
+            border: 1px solid #e1e7ef;
             padding: 16px;
             border-radius: 8px;
         }
@@ -57,8 +57,8 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
-            border: 1px solid #E1E7EF;
+            background: #f9fafc;
+            border: 1px solid #e1e7ef;
             padding: 16px;
             border-radius: 8px;
         }
@@ -78,8 +78,8 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
-            border: 1px solid #E1E7EF;
+            background: #f9fafc;
+            border: 1px solid #e1e7ef;
             padding: 16px;
             border-radius: 8px;
         }
@@ -102,7 +102,6 @@ form {
             display: flex;
             width: 100%;
             flex-direction: row;
-
 
             .form-field-prefix {
                 padding: 0px 14px 0px 2px;
@@ -153,7 +152,7 @@ form {
 
                     img {
                         width: 100%;
-                        border: 1px solid #E1E7EF;
+                        border: 1px solid #e1e7ef;
                     }
                 }
             }
@@ -214,14 +213,14 @@ form {
                 .icon-count {
                     pointer-events: none !important;
                     position: absolute;
-                    background: #FF432A;
+                    background: #ff432a;
                     border-radius: 16px;
                     height: 20px;
                     font-family: Inter;
                     font-weight: 500;
                     font-size: 12px;
                     line-height: 20px;
-                    color: #FFFFFF;
+                    color: #ffffff;
                     top: -4px;
                     right: -4px;
                     padding: 0px 4px;
@@ -260,40 +259,38 @@ form {
             &[rules-status="Error"],
             &[rules-status="Failure"] {
                 input {
-                    border-color: var(--guardian-warning-color, #DA9B22);
+                    border-color: var(--guardian-warning-color, #da9b22);
                 }
 
                 p-calendar::ng-deep {
-
                     button,
                     input {
-                        border-color: var(--guardian-warning-color, #DA9B22);
+                        border-color: var(--guardian-warning-color, #da9b22);
                     }
                 }
 
                 p-dropdown::ng-deep {
                     .p-dropdown {
-                        border-color: var(--guardian-warning-color, #DA9B22);
+                        border-color: var(--guardian-warning-color, #da9b22);
                     }
                 }
             }
 
             &[rules-status="Success"] {
                 input {
-                    border-color: var(--guardian-success-color, #19BE47);
+                    border-color: var(--guardian-success-color, #19be47);
                 }
 
                 p-calendar::ng-deep {
-
                     button,
                     input {
-                        border-color: var(--guardian-success-color, #19BE47);
+                        border-color: var(--guardian-success-color, #19be47);
                     }
                 }
 
                 p-dropdown::ng-deep {
                     .p-dropdown {
-                        border-color: var(--guardian-warning-color, #19BE47);
+                        border-color: var(--guardian-warning-color, #19be47);
                     }
                 }
             }
@@ -320,6 +317,11 @@ form {
     }
 }
 
+*[readonly] {
+    pointer-events: none !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
 /* form {
     display: flex;
     flex-direction: column;
