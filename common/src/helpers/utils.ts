@@ -355,3 +355,22 @@ export function toBuffer(arrayBuffer?: Buffer | ArrayBuffer): Buffer | undefined
         return undefined;
     }
 }
+
+export function ensurePrefix(text: string, prefixes: string | string[], defaultPrefix: string): string {
+    const list = Array.isArray(prefixes) ? prefixes : [prefixes];
+    if (list.some(p => text.startsWith(p))) {
+        return text;
+    }
+
+    return defaultPrefix + text;
+}
+
+export function stripPrefix(text: string, prefixes: string | string[]): string {
+    const list = Array.isArray(prefixes) ? prefixes : [prefixes];
+    for (const p of list) {
+        if (text.startsWith(p)) {
+            return text.slice(p.length);
+        }
+    }
+    return text
+}

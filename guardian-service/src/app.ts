@@ -196,7 +196,6 @@ Promise.all([
 
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
-    Environment.setNetwork(process.env.HEDERA_NET);
     if (process.env.HEDERA_CUSTOM_NODES) {
         try {
             const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
@@ -225,6 +224,7 @@ Promise.all([
             console.warn(error);
         }
     }
+    Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
     // TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);
     IPFS.setChannel(channel);

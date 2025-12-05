@@ -1,3 +1,4 @@
+import { ensurePrefix, stripPrefix } from '@guardian/common';
 import { AccountId, Client } from '@hashgraph/sdk';
 
 /**
@@ -201,9 +202,8 @@ export class Environment {
     /**
      * Set network
      * @param network
-     * @param mirrornode
      */
-    public static setNetwork(network: string, mirrornode?: string) {
+    public static setNetwork(network: string) {
         switch (network) {
             case 'mainnet':
                 Environment._network = 'mainnet';
@@ -252,13 +252,15 @@ export class Environment {
             default:
                 throw new Error(`Unknown network: ${network}`)
         }
-        if (mirrornode) {
-            Environment._messagesApi = `${mirrornode}/api/v1/topics/messages`;
-            Environment._topicsApi = `${mirrornode}/api/v1/topics/`;
-            Environment._accountsApi = `${mirrornode}/api/v1/accounts/`;
-            Environment._balancesApi = `${mirrornode}/api/v1/balances`;
-            Environment._contractsApi = `${mirrornode}/api/v1/contracts/`;
-            Environment._tokensApi = `${mirrornode}/api/v1/tokens/`;
+
+        if (Environment._mirrorNodes && Environment._mirrorNodes.length > 0) {
+            const mirrornodeUrl = ensurePrefix(Environment._mirrorNodes[0], ['http://', 'https://'], 'https://');
+            Environment._messagesApi = `${mirrornodeUrl}/api/v1/topics/messages`;
+            Environment._topicsApi = `${mirrornodeUrl}/api/v1/topics/`;
+            Environment._accountsApi = `${mirrornodeUrl}/api/v1/accounts/`;
+            Environment._balancesApi = `${mirrornodeUrl}/api/v1/balances/`;
+            Environment._contractsApi = `${mirrornodeUrl}/api/v1/contracts/`;
+            Environment._tokensApi = `${mirrornodeUrl}/api/v1/tokens/`;
         }
     }
 
@@ -328,7 +330,8 @@ export class Environment {
             client.setNetwork(Environment._nodes);
         }
         if (Environment._mirrorNodes?.length) {
-            client.setMirrorNetwork(Environment._mirrorNodes);
+            const mirrornodeUrls = Environment._mirrorNodes.map(node => stripPrefix(node, ['http://', 'https://']));
+            client.setMirrorNetwork(mirrornodeUrls);
         }
 
         return client;

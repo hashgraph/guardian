@@ -473,7 +473,9 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.GET_USER_BALANCE_REST: {
                     const {hederaAccountId} = task.data;
-                    result.data = await HederaSDKHelper.balanceRest(hederaAccountId);
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .balanceRest(hederaAccountId);
 
                     break;
                 }
@@ -488,13 +490,17 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.GET_ACCOUNT_TOKENS_REST: {
                     const {hederaAccountId} = task.data;
-                    result.data = await HederaSDKHelper.accountTokensInfo(hederaAccountId);
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .accountTokensInfo(hederaAccountId);
                     break;
                 }
 
                 case WorkerTaskType.GET_ACCOUNT_INFO_REST: {
                     const {hederaAccountId} = task.data;
-                    result.data = await HederaSDKHelper.accountInfo(hederaAccountId);
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .accountInfo(hederaAccountId);
                     break;
                 }
 
@@ -1110,7 +1116,9 @@ export class Worker extends NatsService {
                     const {
                         contractId,
                     } = task.data;
-                    const info = await HederaSDKHelper.getContractInfo(contractId);
+                    const info = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getContractInfo(contractId);
                     result.data = {
                         memo: info.memo
                     };
@@ -1124,7 +1132,9 @@ export class Worker extends NatsService {
                         contractId,
                         order,
                     } = task.data;
-                    result.data = await HederaSDKHelper.getContractEvents(contractId, timestamp, order);
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getContractEvents(contractId, timestamp, order);
                     break;
                 }
 
@@ -1154,7 +1164,9 @@ export class Worker extends NatsService {
                         filter,
                         limit
                     } = task.data;
-                    const nfts = await HederaSDKHelper.getNFTTokenSerials(tokenId, accountId, serialnumber, order, filter, limit);
+                    const nfts = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getNFTTokenSerials(tokenId, accountId, serialnumber, order, filter, limit);
                     result.data = nfts?.map(nft => nft.serial_number) || [];
                     break;
                 }
@@ -1168,7 +1180,9 @@ export class Worker extends NatsService {
                         filter,
                         limit,
                     } = task.data;
-                    const transactions = await HederaSDKHelper.getTransactions(accountId, transactiontype, timestamp, order, filter, limit);
+                    const transactions = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getTransactions(accountId, transactiontype, timestamp, order, filter, limit);
                     result.data = transactions || [];
                     break;
                 }
