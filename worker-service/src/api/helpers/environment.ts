@@ -1,3 +1,4 @@
+import { ensurePrefix, stripPrefix } from '@guardian/common';
 import { AccountId, Client } from '@hashgraph/sdk';
 
 /**
@@ -253,13 +254,13 @@ export class Environment {
         }
 
         if (Environment._mirrorNodes && Environment._mirrorNodes.length > 0) {
-            const mirrornode = Environment._mirrorNodes[0];
-            Environment._messagesApi = `https://${mirrornode}/api/v1/topics/messages`;
-            Environment._topicsApi = `https://${mirrornode}/api/v1/topics/`;
-            Environment._accountsApi = `https://${mirrornode}/api/v1/accounts/`;
-            Environment._balancesApi = `https://${mirrornode}/api/v1/balances/`;
-            Environment._contractsApi = `https://${mirrornode}/api/v1/contracts/`;
-            Environment._tokensApi = `https://${mirrornode}/api/v1/tokens/`;
+            const mirrornodeUrl = ensurePrefix(Environment._mirrorNodes[0], ['http://', 'https://'], 'https://');
+            Environment._messagesApi = `${mirrornodeUrl}/api/v1/topics/messages`;
+            Environment._topicsApi = `${mirrornodeUrl}/api/v1/topics/`;
+            Environment._accountsApi = `${mirrornodeUrl}/api/v1/accounts/`;
+            Environment._balancesApi = `${mirrornodeUrl}/api/v1/balances/`;
+            Environment._contractsApi = `${mirrornodeUrl}/api/v1/contracts/`;
+            Environment._tokensApi = `${mirrornodeUrl}/api/v1/tokens/`;
         }
     }
 
@@ -329,7 +330,8 @@ export class Environment {
             client.setNetwork(Environment._nodes);
         }
         if (Environment._mirrorNodes?.length) {
-            client.setMirrorNetwork(Environment._mirrorNodes);
+            const mirrornodeUrls = Environment._mirrorNodes.map(node => stripPrefix(node, ['http://', 'https://']));
+            client.setMirrorNetwork(mirrornodeUrls);
         }
 
         return client;
