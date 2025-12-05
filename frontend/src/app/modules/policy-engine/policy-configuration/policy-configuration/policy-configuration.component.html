@@ -94,10 +94,9 @@
                 </div>
 
                 <div
-                    *ngIf="policyTemplate.isDryRun"
+                    *ngIf="policyTemplate.isRun"
                     [routerLink]="['/policy-viewer', policyId]"
                     class="top-toolbar-btn all-status"
-                    title="Open Dry Run"
                 >
                     <i class="pi pi-angle-double-right"></i>
                     <span>Go</span>

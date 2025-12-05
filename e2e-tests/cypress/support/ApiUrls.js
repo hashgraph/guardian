@@ -70,10 +70,13 @@ const API = {
     SchemaImport: "schemas/import/",
     SchemasType: "schemas/type",
     SchemasWithSubSchemas: "schema-with-sub-schemas/",
+    Topic: "topic/",
 
     //Tools
-    Tools: "tools",
+    Tools: "tools/",
     ToolsImportMsg: "tools/import/message",
+    ToolsImportFile: "tools/import/file",
+    ToolsAsBlock: "tools/menu/all",
 
     //TrustChains
     Trustchains: "trust-chains/",
@@ -151,6 +154,7 @@ const API = {
     ApproveValidationReportBtn: "tag/approve_validation_report_btn/blocks",
     RegWorkflowSteps: "tag/registrants_workflow_steps/blocks",
     Savepoint: "savepoints/",
+    SavepointDelete: "savepoints/delete",
 
     //Records
     Record: "record/",
@@ -168,6 +172,7 @@ const API = {
 
     //Artifacts
     Artifacts: "artifacts/",
+    ArtifactsFiles: "artifacts/files/",
 
     //Tags
     Tags: "tags/",

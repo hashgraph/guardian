@@ -13,7 +13,7 @@ x-service-template: &service-template
 
 services:
   mongo:
-    image: mongo:6.0.16
+    image: mongo:6.0.26
     command: "--setParameter allowDiskUseByDefault=true"
     restart: always
     expose:
@@ -31,8 +31,7 @@ services:
       - mongo
 
   cache:
-    image: registry.redict.io/redict
-    platform: linux/amd64
+    image: registry.redict.io/redict:7.3.6-alpine
     restart: always
     expose:
       - 6379
@@ -48,7 +47,7 @@ services:
 #      - seq_data:/data
 
   ipfs-node:
-    image: ipfs/kubo:v0.36.0
+    image: ipfs/kubo:v0.38.2
     ports:
       - "5001:5001"
       - "4001:4001"

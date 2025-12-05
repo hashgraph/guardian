@@ -134,10 +134,13 @@ export class Wallet extends NatsService {
         }
 
         const user = new Users();
-        const { walletToken } = await user.getUserById(did, userId);
-        const wallet = new WalletManager();
+        const fullUser = await user.getUserById(did, userId);
+        if (!fullUser) {
+            return null;
+        }
 
-        return await wallet.getKey(walletToken, keyType, entityId)
+        const wallet = new WalletManager();
+        return await wallet.getKey(fullUser.walletToken, keyType, entityId)
     }
 
     /**
@@ -160,6 +163,31 @@ export class Wallet extends NatsService {
 
         const wallet = new WalletManager();
         await wallet.setKey(walletToken, keyType, entityId, keyValue);
+    }
+
+    /**
+     * Set key
+     * @param did
+     * @param keyType
+     * @param entityId
+     * @param keyValue
+     * @param userId
+     */
+    public async updateUserKey(
+        did: string,
+        keyType: KeyType,
+        entityId: string,
+        keyValue: any,
+        userId: string | null
+    ) {
+        const user = new Users();
+        const { walletToken } = await user.getUserById(did, userId);
+
+        const wallet = new WalletManager();
+        const key = await wallet.getKey(walletToken, keyType, entityId);
+        if (key !== keyValue) {
+            await wallet.setKey(walletToken, keyType, entityId, keyValue);
+        }
     }
 
     /**

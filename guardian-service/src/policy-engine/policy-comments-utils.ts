@@ -1,5 +1,5 @@
-import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType } from '@guardian/common';
-import { EntityOwner, GenerateUUIDv4, PolicyStatus, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
+import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType, EncryptVcHelper } from '@guardian/common';
+import { EntityOwner, GenerateUUIDv4, LocationType, PolicyStatus, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 import { PrivateKey } from '@hashgraph/sdk';
 import * as crypto from 'crypto';
@@ -22,37 +22,62 @@ export class PolicyCommentsUtils {
 
     public static saveKey(
         did: string,
-        discussionId: string,
+        discussion: PolicyDiscussion,
         key: string,
     ): Promise<void> {
         const wallet = new Wallet();
         return wallet.setUserKey(
             did,
             KeyType.DISCUSSION,
-            discussionId,
+            discussion.messageId,
             key,
             null
         )
     }
 
-    public static getKey(
-        did: string,
-        discussionId: string,
+    public static async getKey(
+        policy: Policy,
+        discussion: PolicyDiscussion,
+        user: IAuthUser,
     ): Promise<string> {
         const wallet = new Wallet();
-        return wallet.getUserKey(
-            did,
-            KeyType.DISCUSSION,
-            discussionId,
-            null
-        )
+        let did: string;
+        if (policy.locationType === LocationType.REMOTE) {
+            did = user.did;
+        } else {
+            did = policy.owner;
+        }
+        let key: string;
+        if (discussion.messageId) {
+            key = await wallet.getUserKey(
+                did,
+                KeyType.DISCUSSION,
+                discussion.messageId,
+                user.id
+            )
+        }
+        if (!key) {
+            key = await wallet.getUserKey(
+                did,
+                KeyType.DISCUSSION,
+                discussion.id?.toString(),
+                user.id
+            )
+        }
+        if (!key) {
+            throw new Error('Discussion key not found.');
+        }
+        return key;
     }
 
     public static async getTopic(policy: Policy): Promise<TopicConfig> {
         let topicConfig: TopicConfig;
         if (policy.commentsTopicId) {
             const topic = await DatabaseServer.getTopicById(policy.commentsTopicId);
-            topicConfig = await TopicConfig.fromObject(topic, true, null);
+            topicConfig = await TopicConfig.fromObject(topic, false, null);
+        }
+        if (!topicConfig && policy.locationType === LocationType.REMOTE) {
+            throw new Error('Topic not found.');
         }
         if (!topicConfig) {
             const users = new Users();
@@ -95,6 +120,9 @@ export class PolicyCommentsUtils {
                 readonly: true,
                 topicId: policy.topicId
             });
+        }
+        if (!schema && policy.locationType === LocationType.REMOTE) {
+            throw new Error('Schema not found.');
         }
         if (schema) {
             return schema;
@@ -293,7 +321,7 @@ export class PolicyCommentsUtils {
             users?: string[],
             relationships?: string[]
         },
-        system: boolean = false
+        messageKey: string
     ) {
         const name = data?.name || String(Date.now());
         const parent = data?.parent;
@@ -316,6 +344,9 @@ export class PolicyCommentsUtils {
             .update(JSON.stringify(vcDocument))
             .digest('base64')
             .toString();
+
+        const encryptedDocument = await EncryptVcHelper.encrypt(JSON.stringify(vcDocument), messageKey);
+
         const discussion = {
             uuid: GenerateUUIDv4(),
             owner: user.did,
@@ -323,7 +354,7 @@ export class PolicyCommentsUtils {
             policyId: policy.id,
             target: document.messageId,
             targetId: document.id,
-            system,
+            system: false,
             count: 0,
             name,
             parent,
@@ -335,6 +366,7 @@ export class PolicyCommentsUtils {
             relationships,
             relationshipIds,
             document: vcDocument,
+            encryptedDocument,
             hash: documentHash
         };
 
@@ -374,6 +406,9 @@ export class PolicyCommentsUtils {
         if (data.field) {
             credentialSubject.field = data.field;
         }
+        if (data.fieldName) {
+            credentialSubject.fieldName = data.fieldName;
+        }
         if (data.privacy) {
             credentialSubject.privacy = data.privacy;
         }
@@ -384,7 +419,7 @@ export class PolicyCommentsUtils {
             credentialSubject.users = data.users;
         }
         if (relationships?.length) {
-            credentialSubject.relationships = data.relationships;
+            credentialSubject.relationships = relationships;
         }
         const schema = await PolicyCommentsUtils.getSchema(SchemaEntity.POLICY_DISCUSSION, policy);
         if (schema) {
@@ -416,7 +451,8 @@ export class PolicyCommentsUtils {
                 link: string;
                 cid: string;
             }[];
-        }
+        },
+        messageKey: string
     ) {
         const fields = new Set<string>();
         if (Array.isArray(data.fields)) {
@@ -444,6 +480,9 @@ export class PolicyCommentsUtils {
             .update(JSON.stringify(vcDocument))
             .digest('base64')
             .toString();
+
+        const encryptedDocument = await EncryptVcHelper.encrypt(JSON.stringify(vcDocument), messageKey);
+
         const comment = {
             timestamp: Date.now(),
             uuid: GenerateUUIDv4(),
@@ -468,6 +507,7 @@ export class PolicyCommentsUtils {
             isDocumentOwner: user.did === document.owner,
             text: data.text,
             document: vcDocument,
+            encryptedDocument,
             hash: documentHash
         }
 

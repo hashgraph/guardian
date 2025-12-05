@@ -134,7 +134,7 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.backButton).click({ force: true });
     }
 
-    backToPoliciesList() {
+    backToPoliciesListBtn() {
         Checks.waitForLoading();
         cy.contains(PoliciesPageLocators.BackToManagePolicies).click({ force: true });
     }

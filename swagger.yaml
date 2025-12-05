@@ -17167,7 +17167,7 @@ paths:
         - policy-repository
   /relayer-accounts:
     get:
-      description: ''
+      description: Returns the list of Relayer Accounts of the active user.
       operationId: RelayerAccountsApi_getRelayerAccounts
       parameters:
         - name: pageIndex
@@ -17196,10 +17196,17 @@ paths:
       responses:
         '200':
           description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/RelayerAccountDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -17212,27 +17219,27 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Returns the list of Relayer Accounts of the active user.
       tags:
         - relayer-accounts
     post:
-      description: ''
+      description: Adds a new Relayer Account for the active user.
       operationId: RelayerAccountsApi_createRelayerAccount
       parameters: []
       requestBody:
         required: true
-        description: ''
+        description: New Relayer Account
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Object'
+              $ref: '#/components/schemas/NewRelayerAccountDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/RelayerAccountDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -17245,12 +17252,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Adds a new Relayer Account for the active user.
       tags:
         - relayer-accounts
   /relayer-accounts/current:
     get:
-      description: ''
+      description: Returns current Relayer Account of the active user.
       operationId: RelayerAccountsApi_getCurrentRelayerAccount
       parameters: []
       responses:
@@ -17259,7 +17266,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/RelayerAccountDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -17272,12 +17279,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Returns current Relayer Account of the active user.
       tags:
         - relayer-accounts
   /relayer-accounts/all:
     get:
-      description: ''
+      description: >-
+        Returns the list of Relayer Accounts available for use in the Policy by
+        the active user.
       operationId: RelayerAccountsApi_getRelayerAccountsAll
       parameters: []
       responses:
@@ -17286,7 +17295,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/RelayerAccountDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -17299,12 +17310,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: >-
+        Returns the list of Relayer Accounts available for use in the Policy by
+        the active user.
       tags:
         - relayer-accounts
   /relayer-accounts/{account}/balance:
     get:
-      description: ''
+      description: Returns current hbar balance of the specified Relayer Account.
       operationId: RelayerAccountsApi_getRelayerAccountBalance
       parameters:
         - name: account
@@ -17333,12 +17346,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Returns current hbar balance of the specified Relayer Account.
       tags:
         - relayer-accounts
   /relayer-accounts/generate:
     post:
-      description: ''
+      description: Generate a new Relayer Account.
       operationId: RelayerAccountsApi_generateRelayerAccount
       parameters: []
       responses:
@@ -17360,12 +17373,15 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Generate a new Relayer Account.
       tags:
         - relayer-accounts
   /relayer-accounts/accounts:
     get:
-      description: ''
+      description: >-
+        Return the list of Relayer Accounts for the user. If the active user is
+        a Standard Registry return the list of all Relayer Accounts of its
+        users.
       operationId: RelayerAccountsApi_getUserRelayerAccounts
       parameters:
         - name: pageIndex
@@ -17394,10 +17410,17 @@ paths:
       responses:
         '200':
           description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/RelayerAccountDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -17410,12 +17433,17 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: >-
+        Return the list of Relayer Accounts for the user. If the active user is
+        a Standard Registry return the list of all Relayer Accounts of its
+        users.
       tags:
         - relayer-accounts
   /relayer-accounts/{relayerAccountId}/relationships:
     get:
-      description: ''
+      description: >-
+        Return the list of VC documents which are associated with the selected
+        Relayer Account.
       operationId: RelayerAccountsApi_getRelayerAccountRelationships
       parameters:
         - name: relayerAccountId
@@ -17444,10 +17472,17 @@ paths:
       responses:
         '200':
           description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/VcDocumentDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -17460,7 +17495,9 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: >-
+        Return the list of VC documents which are associated with the selected
+        Relayer Account.
       tags:
         - relayer-accounts
   /worker-tasks:
@@ -17581,7 +17618,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 3.4.0-rc
+  version: 3.4.0
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -19115,7 +19152,7 @@ components:
             - TOKEN_DATA_SOURCE
             - ROLE
             - USER_PERMISSIONS
-            - POLICY_DISCUSSION
+            - POLICY_DISCUSSION_V2
             - POLICY_COMMENT
           example: POLICY
         iri:
@@ -22224,6 +22261,42 @@ components:
         count:
           type: string
           example: 0
+    RelayerAccountDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        name:
+          type: string
+          example: name
+        username:
+          type: string
+          example: username
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        parent:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        account:
+          type: string
+          example: 0.0.1
+      required:
+        - id
+    NewRelayerAccountDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: name
+        account:
+          type: string
+          example: 0.0.1
+        key:
+          type: string
     WorkersTasksDTO:
       type: object
       properties:

@@ -2105,6 +2105,12 @@ export class PolicyEngineService {
                     await DatabaseServer.removeDryRunWithEmptySavepoint(policyId)
                     await DatabaseServer.setCurrentSavepoint(policyId, savepointId);
 
+                    await new GuardiansService().sendPolicyMessage(
+                        PolicyEvents.APPLY_SAVEPOINT,
+                        policyId,
+                        { savepointId }
+                    );
+
                     const updated = await DatabaseServer.getSavepointById(policyId, savepointId);
                     return new MessageResponse({ savepoint: updated });
                 } catch (error) {
@@ -2221,7 +2227,7 @@ export class PolicyEngineService {
                     const deletedIds = await DatabaseServer.deleteSavepoints(policyId, savepointIds);
 
                     if (deletedIds.length) {
-                        await DatabaseServer.removeBlockStateSnapshots(policyId, deletedIds);
+                        await DatabaseServer.removeBlockStateSnapshots(deletedIds);
                         await DatabaseServer.deleteDryRunBySavepoints(policyId, deletedIds);
                         await DatabaseServer.deleteSnapshotsBySavepoints(policyId, deletedIds);
                     }
@@ -3447,22 +3453,40 @@ export class PolicyEngineService {
 
                     const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
                     const db = new DatabaseServer(dryRun);
-                    const groups: any[] = await db.getPolicyGroups(policyId, {
+                    const groups: any[] = await db.getPolicyGroups({ policyId }, {
                         fields: ['username', 'did', 'role']
                     });
 
                     const policyOwner = await (new Users()).getUserById(policy.owner, user.id);
                     const documentOwner = await (new Users()).getUserById(vc.owner, user.id);
-                    groups.unshift({
-                        username: policyOwner?.username,
-                        did: policyOwner.did,
-                        role: 'Administrator',
-                    })
-                    groups.unshift({
-                        username: documentOwner?.username,
-                        did: documentOwner.did,
-                        role: 'Document Owner',
-                    })
+
+                    if (policyOwner) {
+                        groups.unshift({
+                            username: policyOwner.username,
+                            did: policyOwner.did,
+                            role: 'Administrator',
+                        })
+                    } else {
+                        groups.unshift({
+                            username: 'Administrator',
+                            did: policy.owner,
+                            role: 'Administrator',
+                        })
+                    }
+
+                    if (documentOwner) {
+                        groups.unshift({
+                            username: documentOwner?.username,
+                            did: documentOwner.did,
+                            role: 'Document Owner',
+                        })
+                    } else {
+                        groups.unshift({
+                            username: 'DocumentOwner',
+                            did: vc.owner,
+                            role: 'Document Owner',
+                        })
+                    }
 
                     const users = new Map<string, any>();
                     for (const group of groups) {
@@ -3630,12 +3654,6 @@ export class PolicyEngineService {
                         (discussion as any).historyIds = targets;
                     }
 
-                    // const commonDiscussion = await PolicyCommentsUtils.getCommonDiscussion(policy, vc, params.audit);
-                    // if (commonDiscussion) {
-                    //     discussions = discussions.filter((d)=>d.id === commonDiscussion.id);
-                    //     discussions.unshift(commonDiscussion);
-                    // }
-
                     return new MessageResponse(discussions);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
@@ -3669,9 +3687,8 @@ export class PolicyEngineService {
                         throw new Error('Document not found.');
                     }
 
-                    const discussion: any = await PolicyCommentsUtils.createDiscussion(user, policy, vc, data);
-
                     const messageKey: string = PolicyCommentsUtils.generateKey();
+                    const discussion: any = await PolicyCommentsUtils.createDiscussion(user, policy, vc, data, messageKey);
 
                     const userAccount = await this.users.getHederaAccount(user.did, user.id);
                     const topic = await PolicyCommentsUtils.getTopic(policy);
@@ -3693,9 +3710,16 @@ export class PolicyEngineService {
                         });
                     discussion.messageId = messageStatus.getId();
 
+                    await PolicyCommentsUtils.saveKey(policy.owner, discussion, messageKey);
+
                     const row = await DatabaseServer.createPolicyDiscussion(discussion);
 
-                    await PolicyCommentsUtils.saveKey(policy.owner, row.id, messageKey);
+                    await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.CREATE_POLICY_DISCUSSION, policyId, {
+                            user,
+                            discussion: row,
+                            key: messageKey
+                        });
 
                     return new MessageResponse(row);
                 } catch (error) {
@@ -3749,11 +3773,13 @@ export class PolicyEngineService {
                         throw new Error('Discussion does not exist.');
                     }
 
+                    const messageKey: string = await PolicyCommentsUtils.getKey(policy, discussion, user);
+
                     const comment: any = await PolicyCommentsUtils
-                        .createComment(user, userRole, policy, vc, discussion, data);
+                        .createComment(user, userRole, policy, vc, discussion, data, messageKey);
 
                     const userAccount = await this.users.getHederaAccount(user.did, user.id);
-                    const messageKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
+
                     const topic = await PolicyCommentsUtils.getTopic(policy);
                     const message = new CommentMessage(MessageAction.CreateComment);
                     message.setDocument(comment);
@@ -3780,6 +3806,9 @@ export class PolicyEngineService {
                     })
 
                     await DatabaseServer.updatePolicyDiscussion(discussion);
+
+                    await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.CREATE_POLICY_COMMENT, policyId, { user, comment: row });
 
                     return new MessageResponse(row);
                 } catch (error) {
@@ -3973,7 +4002,7 @@ export class PolicyEngineService {
                         throw new Error('Discussion does not exist.');
                     }
 
-                    const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
+                    const encryptKey: string = await PolicyCommentsUtils.getKey(policy, discussion, user);
                     const encryptBuffer = await EncryptUtils.encrypt(buffer, encryptKey);
 
                     if (PolicyCommentsUtils.isDryRun(policy)) {
@@ -4053,7 +4082,7 @@ export class PolicyEngineService {
                         });
                     }
 
-                    const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussionId);
+                    const encryptKey: string = await PolicyCommentsUtils.getKey(policy, discussion, user);
                     const buffer = await EncryptUtils.decrypt(encryptBuffer, encryptKey);
 
                     return new MessageResponse(buffer);
@@ -4106,7 +4135,7 @@ export class PolicyEngineService {
 
                     const result: any = [];
                     for (const discussion of discussions) {
-                        const encryptKey: string = await PolicyCommentsUtils.getKey(policy.owner, discussion.id?.toString());
+                        const encryptKey: string = await PolicyCommentsUtils.getKey(policy, discussion, user);
                         result.push({ discussion: discussion.messageId, key: encryptKey });
                     }
                     const buffer = Buffer.from(JSON.stringify(result), 'utf-8');
@@ -4135,7 +4164,7 @@ export class PolicyEngineService {
                     const items: any = [];
                     const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
                     const db = new DatabaseServer(dryRun);
-                    const groups: any[] = await db.getPolicyGroups(policyId, {
+                    const groups: any[] = await db.getPolicyGroups({ policyId }, {
                         fields: ['username', 'did', 'role']
                     });
 

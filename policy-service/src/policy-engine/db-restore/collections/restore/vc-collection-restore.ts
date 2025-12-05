@@ -31,7 +31,7 @@ export class VcCollectionRestore extends CollectionRestore<VcDocument> {
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: VcDocument): VcDocument {
+    protected override createRow(data: VcDocument, id: string): VcDocument {
         delete data.documentFileId;
         delete data.encryptedDocumentFileId;
         if (data.document) {
@@ -45,11 +45,13 @@ export class VcCollectionRestore extends CollectionRestore<VcDocument> {
         return data;
     }
 
-    protected override async decryptRow(row: VcDocument): Promise<VcDocument> {
+    protected override async decryptRow(row: VcDocument, id: string): Promise<VcDocument> {
         if (row.encryptedDocument) {
             const messageKey = await UserCredentials.loadMessageKey(this.messageId, row.owner, null);
-            const data = await EncryptVcHelper.decrypt(row.encryptedDocument, messageKey);
-            row.document = JSON.parse(data);
+            if (messageKey) {
+                const data = await EncryptVcHelper.decrypt(row.encryptedDocument, messageKey);
+                row.document = JSON.parse(data);
+            }
         }
         return row;
     }

@@ -16,6 +16,8 @@ export * from './backup/approve-collection-backup.js'
 export * from './backup/mint-request-collection-backup.js'
 export * from './backup/mint-transaction-collection-backup.js'
 export * from './backup/invitation-collection-backup.js'
+export * from './backup/comment-collection-backup.js'
+export * from './backup/discussion-collection-backup.js'
 
 export * from './restore/vc-collection-restore.js'
 export * from './restore/vp-collection-restore.js'
@@ -32,3 +34,9 @@ export * from './restore/approve-collection-restore.js'
 export * from './restore/mint-request-collection-restore.js'
 export * from './restore/mint-transaction-collection-restore.js'
 export * from './restore/invitation-collection-restore.js'
+export * from './restore/comment-collection-restore.js'
+export * from './restore/discussion-collection-restore.js'
+
+export * from './backup/comments-keys-backup.js'
+
+export * from './restore/comment-keys-restore.js'

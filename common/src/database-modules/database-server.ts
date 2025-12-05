@@ -393,7 +393,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *  Create Savepoint States
      */
     public static async createSavepointStates(policyId: string, savepointId: string): Promise<void> {
-        const blockStates = await new DataBaseHelper(BlockState).find({ policyId });
+        const dryRunRepo = new DataBaseHelper(DryRun);
+        const blockStates = await dryRunRepo.find({ policyId, dryRunClass: 'BlockState' });
 
         if (!blockStates?.length) {
             return
@@ -401,14 +402,47 @@ export class DatabaseServer extends AbstractDatabaseServer {
 
         const blockStatesSavepoint = new DataBaseHelper(BlockStateSavepoint);
 
-        const docs = blockStates
-            .filter(s => s.blockId && s.blockState !== null)
-            .map(s => blockStatesSavepoint.create({
+        const fieldsToKeep = [
+            '_id',
+            'createDate',
+            'updateDate',
+            'dryRunId',
+            'savepointId',
+            'dryRunClass',
+            'policyId',
+            'blockId',
+            'blockState',
+            'status',
+            'signature',
+            'option',
+            'hederaStatus',
+            'uuid',
+            'entity',
+            'iri',
+            'readonly',
+            'system',
+            'active',
+            'codeVersion',
+            'isMintNeeded',
+            'isTransferNeeded',
+            'wasTransferNeeded'
+        ];
+
+        const docs = blockStates.map(raw => {
+            const clean: any = {};
+            for (const key of fieldsToKeep) {
+                if (raw[key] !== undefined) {
+                    clean[key] = raw[key];
+                }
+            }
+
+            return blockStatesSavepoint.create({
                 policyId,
                 savepointId,
-                blockId: s.blockId,
-                blockState: s.blockState,
-            }));
+                blockId: raw.uuid,
+                blockStateDryRunRecord: clean
+            });
+        });
 
         if (docs.length) {
             await blockStatesSavepoint.saveMany(docs);
@@ -455,28 +489,36 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *   RestoreSavepointStates
      */
     public static async restoreSavepointStates(policyId: string, savepointId: string): Promise<void> {
-        const snaps = await new DataBaseHelper(BlockStateSavepoint)
-            .find({ policyId, savepointId }, { fields: ['blockId', 'blockState'] } as any);
+        const snapsRepo = new DataBaseHelper(BlockStateSavepoint);
+
+        const snaps = await snapsRepo.find(
+            { policyId, savepointId },
+            {
+                orderBy: {
+                    createDate: 1,
+                    _id: 1,
+                },
+            }
+        );
+
+        const dryRunRepo = new DataBaseHelper(DryRun);
+
+        await dryRunRepo.delete({
+            policyId,
+            dryRunClass: 'BlockState',
+        });
 
         if (!snaps?.length) {
             return;
         };
 
-        const blockState = new DataBaseHelper(BlockState);
-        const docs = [];
+        const docs = snaps.map(snap =>
+            dryRunRepo.create(snap.blockStateDryRunRecord)
+        );
 
-        for (const s of snaps) {
-            let row = await blockState.findOne({ policyId, blockId: s.blockId });
-
-            if (row) {
-                row.blockState = s.blockState;
-            } else {
-                row = blockState.create({ policyId, blockId: s.blockId, blockState: s.blockState });
-            }
-
-            docs.push(row);
+        if (docs.length > 0) {
+            await dryRunRepo.saveMany(docs);
         }
-        await blockState.saveMany(docs);
     }
 
     /**
@@ -659,7 +701,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return Array.from(deleted);
     }
 
-    public static async removeBlockStateSnapshots(policyId: string, savepointIds: string[]): Promise<void> {
+    public static async removeBlockStateSnapshots(savepointIds: string[]): Promise<void> {
         const unique = Array.from(new Set(savepointIds)).filter(Boolean);
         if (unique.length === 0) {
             return;
@@ -2576,8 +2618,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public async getPolicyGroups(policyId: string, options?: unknown): Promise<PolicyRolesCollection[]> {
-        return await this.find(PolicyRolesCollection, { policyId }, options);
+    public async getPolicyGroups(filters: any, options?: unknown): Promise<PolicyRolesCollection[]> {
+        return await this.find(PolicyRolesCollection, filters, options);
     }
 
     /**
@@ -5259,5 +5301,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getDebugContexts(policyId: string, tag: string): Promise<DryRun[]> {
         return await new DataBaseHelper(DryRun).find({ policyId, tag });
+    }
+
+    /**
+     * Get Groups
+     * @param filters
+     * @param options
+     *
+     */
+    public static async getPolicyGroups(filters: any, options?: unknown): Promise<PolicyRolesCollection[]> {
+        return await new DataBaseHelper(PolicyRolesCollection).find(filters, options);
     }
 }

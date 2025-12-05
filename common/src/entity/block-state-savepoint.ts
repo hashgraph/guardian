@@ -1,4 +1,4 @@
-import { Entity, Property, Index } from '@mikro-orm/core';
+import {Entity, Property, Index} from '@mikro-orm/core';
 
 import { BaseEntity } from '../models/base-entity.js';
 
@@ -15,5 +15,5 @@ export class BlockStateSavepoint extends BaseEntity {
     blockId!: string;
 
     @Property()
-    blockState!: string;
+    blockStateDryRunRecord!: unknown;
 }

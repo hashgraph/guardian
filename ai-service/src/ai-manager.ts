@@ -1,6 +1,5 @@
 import { FilesManager } from './helpers/files-manager-helper.js';
 import { FaissStore } from '@langchain/community/vectorstores/faiss';
-import { RetrievalQAChain } from 'langchain/chains';
 import { ChatOpenAI } from '@langchain/openai';
 import { OpenAIConnect } from './helpers/openai-helper.js';
 import { VectorStorage } from './helpers/vector-storage-helper.js';
@@ -17,14 +16,14 @@ export class AIManager {
     vectorPath: string;
     policies: Policy[];
     categories: PolicyCategory[];
-    chain: RetrievalQAChain | null;
+    chain: any;
     vector: FaissStore | null;
     model: ChatOpenAI;
     policyDescriptions: PolicyDescription[];
 
     constructor(private readonly logger: PinoLogger) {
         this.docPath = process.env.DOCS_STORAGE_PATH || './data/generated-data';
-        this.versionGPT = process.env.GPT_VERSION || 'gpt-3.5-turbo';
+        this.versionGPT = process.env.GPT_VERSION || 'gpt-5-nano';
         this.vectorPath = process.env.VECTOR_STORAGE_PATH || './faiss-vector';
         this.categories = [];
         this.policies = [];
@@ -34,7 +33,23 @@ export class AIManager {
             throw new Error('Bad openAIApiKey');
         }
 
-        this.model = new ChatOpenAI({modelName: this.versionGPT, temperature: 0, openAIApiKey});
+        // Models that don't support temperature parameter
+        const noTemperatureModels = ['o1', 'o3', 'o4', 'gpt-5'];
+        const supportsTemperature = !noTemperatureModels.some(model =>
+            this.versionGPT.toLowerCase().startsWith(model)
+        );
+
+        // Configure model with or without temperature based on model support
+        const modelConfig: any = {
+            modelName: this.versionGPT,
+            openAIApiKey
+        };
+
+        if (supportsTemperature) {
+            modelConfig.temperature = 0;
+        }
+
+        this.model = new ChatOpenAI(modelConfig);
         this.vector = null;
         this.chain = null;
     }
@@ -82,6 +97,5 @@ export class AIManager {
 
         this.policyDescriptions = await dbRequests.getFieldDescriptions(this.policies);
         await this.logger.info('fetched fields descriptions', ['AI_SERVICE']);
-
     }
 }

@@ -447,6 +447,8 @@ export class PolicyRolesBlock {
         }));
         ref.backup();
 
+        PolicyComponentsUtils.updateUserRole(ref.policyId, user.did).then();
+
         return true;
     }
 }

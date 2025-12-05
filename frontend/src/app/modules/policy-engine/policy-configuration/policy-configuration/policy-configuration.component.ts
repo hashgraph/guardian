@@ -252,8 +252,17 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public get hasActiveRules(): boolean {
-        const ignoredCount = this.ignoreRules?.length || 0;
-        return ignoredCount < this.validationRuleOptions.length;
+        const rules = this.ignoreRules ?? [];
+        const defaultRules = this.getDefaultIgnoreRules();
+
+        if (rules.length !== defaultRules.length) {
+            return true;
+        }
+
+        const serialize = (r: IgnoreRule) => JSON.stringify(r);
+        const defaultSet = new Set(defaultRules.map(serialize));
+
+        return rules.some(r => !defaultSet.has(serialize(r)));
     }
 
     private _disableComponentMenu: boolean = true;
@@ -336,11 +345,27 @@ export class PolicyConfigurationComponent implements OnInit {
                     this.policyId
                 );
             })
-            .then((rules) => {
-                this.ignoreRules = Array.isArray(rules) ? rules : [];
+            .then(async (rules) => {
+                if (Array.isArray(rules)) {
+                    this.ignoreRules = rules;
+                    return;
+                }
+
+                this.ignoreRules = this.getDefaultIgnoreRules();
+
+                try {
+                    const db = await this.indexedDb.getDB(DB_NAME.POLICY_WARNINGS);
+                    await db.put(
+                        STORES_NAME.IGNORE_RULES_STORE,
+                        this.ignoreRules,
+                        this.policyId
+                    );
+                } catch {
+                    //
+                }
             })
             .catch(() => {
-                this.ignoreRules = [];
+                this.ignoreRules = this.getDefaultIgnoreRules();
             });
 
         if (this._configurationErrors.has(this.policyId)) {
@@ -1686,9 +1711,9 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         const json = this.policyTemplate.getJSON();
 
-        const ignoreRules = this.ignoreRules && this.ignoreRules.length > 0
+        const ignoreRules = Array.isArray(this.ignoreRules)
             ? this.ignoreRules
-            : undefined
+            : this.getDefaultIgnoreRules();
 
         const object = {
             topicId: this.policyTemplate.topicId,
@@ -2004,7 +2029,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
                 const json = this.toolTemplate.getJSON();
                 const tool = Object.assign({}, json, result.tool);
-                
+
                 if (result.action === ToolSaveAction.CREATE_NEW_TOOL) {
                     delete tool._id;
                     delete tool.id;
@@ -2290,5 +2315,11 @@ export class PolicyConfigurationComponent implements OnInit {
 
                 this.ignoreRules = result;
             });
+    }
+
+    private getDefaultIgnoreRules(): IgnoreRule[] {
+        return this.validationRuleOptions.map(
+            (option) => option.rule as IgnoreRule
+        );
     }
 }

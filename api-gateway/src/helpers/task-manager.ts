@@ -91,6 +91,11 @@ export class TaskManager {
     private readonly notifyTaskLock: Set<string> = new Set();
 
     /**
+     * Callbacks
+     */
+    private readonly callbacks: Map<string, (task: Task) => Promise<void>> = new Map();
+
+    /**
      * Notify task progress
      * @param taskId
      */
@@ -240,6 +245,31 @@ export class TaskManager {
     }
 
     /**
+     * Cleanup After Callback
+     * @param taskId
+     */
+    private cleanupAfterCallback(taskId: string): void {
+        this.notifyTaskProgress(taskId);
+        this.callbacks.delete(taskId);
+    }
+
+    /**
+     * Handle Callback
+     * @param taskId
+     * @param task
+     */
+    private handleCallback(taskId: string, task: Task): void {
+        const callback = this.callbacks.get(task.taskId);
+        if (!callback) {
+            this.notifyTaskProgress(taskId);
+            return;
+        }
+
+        callback(task)
+            .finally(() => this.cleanupAfterCallback(taskId));
+    }
+
+    /**
      * Set result for task
      * @param taskId
      * @param result
@@ -253,7 +283,8 @@ export class TaskManager {
         const task = this.tasks[taskId];
         if (task) {
             task.result = result;
-            this.notifyTaskProgress(taskId);
+
+            this.handleCallback(taskId, task);
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -275,7 +306,8 @@ export class TaskManager {
         const task = this.tasks[taskId];
         if (task) {
             task.error = error;
-            this.notifyTaskProgress(taskId);
+
+            this.handleCallback(taskId, task);
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -316,6 +348,15 @@ export class TaskManager {
             TaskManager.expectationMap.set(action, expectation);
         }
         return expectation;
+    }
+
+    /**
+     * Register Callback
+     * @param task
+     * @param callback
+     */
+    public registerCallback(task: NewTask, callback: (task: Task) => Promise<void>) {
+        this.callbacks.set(task.taskId, callback);
     }
 }
 

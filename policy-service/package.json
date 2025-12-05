@@ -15,8 +15,8 @@
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "3.4.0-rc",
-        "@guardian/interfaces": "3.4.0-rc",
+        "@guardian/common": "3.4.0",
+        "@guardian/interfaces": "3.4.0",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
         "@nestjs/common": "^11.0.11",
@@ -77,5 +77,5 @@
         "test:stability": "mocha tests/stability.test.js"
     },
     "type": "module",
-    "version": "3.4.0-rc"
+    "version": "3.4.0"
 }

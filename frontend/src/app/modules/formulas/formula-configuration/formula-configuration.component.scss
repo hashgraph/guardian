@@ -120,6 +120,18 @@
                 --checkbox-button-on-second-color: var(--formula-text-background, #d7f5e2);
             }
         }
+
+        .formula-items {
+            position: relative;
+            height: 100%;
+            max-height: 90%;
+            overflow-y: auto;
+            padding-right: 8px;
+
+            .formula-item:last-child {
+                margin-bottom: 0;
+            }
+        }
     }
 
     &[keyboard="true"] {

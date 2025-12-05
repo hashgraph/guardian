@@ -30,7 +30,7 @@ This block enables the owner of the private key for the account to manually perf
 
 ![JSON View of the Block](<../../../../../.gitbook/assets/image (9) (3) (2).png>)
 
-![Configuring tokenConfirmationBlock](<../../../../../.gitbook/assets/image (33).png>)
+![Configuring tokenConfirmationBlock](<../../../../../.gitbook/assets/image (33) (1).png>)
 
 ![Creating Event to move to next step](<../../../../../.gitbook/assets/image (16) (5).png>)
 
@@ -46,20 +46,17 @@ The user need to input the private key for the account to enable Guardian to per
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{policyId}/blocks/{uuid}`
 
-{% endswagger-description %}
+#### Path Parameters
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| policyId<mark style="color:red;">\*</mark> | String | Policy ID   |
+| uuid<mark style="color:red;">\*</mark>     | String | Block UUID  |
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block UUID
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```
 {
   "id": "484c57c2-5ceb-41ed-97b3-61c52fce473e",
@@ -72,27 +69,21 @@ Block UUID
 }
 
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{policyId}/blocks/{uuid}`
 
-{% endswagger-description %}
+#### Path Parameters
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy Id
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| policyId<mark style="color:red;">\*</mark> | String | Policy Id   |
+| uuid<mark style="color:red;">\*</mark>     | String | Block UUID  |
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block UUID
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="body" name="action" type="String" required="true" %}
-action
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="hederaAccountKey" type="String" required="true" %}
-Hedera Account Private Key
-{% endswagger-parameter %}
-{% endswagger %}
+| Name                                               | Type   | Description                |
+| -------------------------------------------------- | ------ | -------------------------- |
+| action<mark style="color:red;">\*</mark>           | String | action                     |
+| hederaAccountKey<mark style="color:red;">\*</mark> | String | Hedera Account Private Key |
