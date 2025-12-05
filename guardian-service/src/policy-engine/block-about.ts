@@ -1528,6 +1528,44 @@ export const BlockAbout = {
             }
         ]
     },
+    'globalTopicWriterBlock': {
+        'label': 'Global Topic Writer',
+        'title': 'Add \'Global Topic Writer\' Block',
+        'post': false,
+        'get': false,
+        'children': 'None',
+        'control': 'Server',
+        'input': [
+            'RunEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent',
+            'ErrorEvent',
+            'ReleaseEvent',
+        ],
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'topicId',
+                'label': 'Global topic id',
+                'title': 'Hedera topic where notifications are published',
+                'type': 'Input'
+            },
+            {
+                'name': 'senderTag',
+                'label': 'Sender tag',
+                'title': 'Optional tag to include in notification',
+                'type': 'Input'
+            },
+            {
+                'name': 'routingHint',
+                'label': 'Routing hint',
+                'title': 'Optional routing hint for downstream consumers',
+                'type': 'Input'
+            }
+        ]
+    },
 }
 
 /**
