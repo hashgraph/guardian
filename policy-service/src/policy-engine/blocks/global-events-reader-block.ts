@@ -1,33 +1,22 @@
-import { CronJob } from 'cron';
-import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
-import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyGetData, IPolicyValidatorBlock } from '../policy-engine.interface.js';
-import { BlockActionError } from '../errors/index.js';
-import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IHederaCredentials, PolicyUser } from '../policy-user.js';
-import { PolicyUtils } from '../helpers/utils.js';
-import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
-import { LocationType, Schema, SchemaField, TopicType } from '@guardian/interfaces';
+import {CronJob} from 'cron';
+import {EventBlock} from '../helpers/decorators/index.js';
+import {PolicyInputEventType, PolicyOutputEventType} from '../interfaces/index.js';
 import {
-    ExternalDocuments,
-    ExternalEvent,
-    ExternalEventType
-} from '../interfaces/external-event.js';
-import {
-    MessageServer,
-    MessageType,
-    VCMessage,
-    VcHelper,
-    GlobalEventsStream
-} from '@guardian/common';
-import { TopicId } from '@hashgraph/sdk';
-import {
-    Client,
-    PrivateKey,
-    TopicMessageQuery,
-    Timestamp,
-    AccountId
-} from '@hashgraph/sdk';
+    AnyBlockType,
+    IPolicyDocument,
+    IPolicyEventState,
+    IPolicyGetData,
+    IPolicyValidatorBlock
+} from '../policy-engine.interface.js';
+import {BlockActionError} from '../errors/index.js';
+import {PolicyComponentsUtils} from '../policy-components-utils.js';
+import {PolicyUser} from '../policy-user.js';
+import {PolicyUtils} from '../helpers/utils.js';
+import {ChildrenType, ControlType, PropertyType} from '../interfaces/block-about.js';
+import {LocationType, Schema} from '@guardian/interfaces';
+import {ExternalDocuments, ExternalEvent, ExternalEventType} from '../interfaces/external-event.js';
+import {GlobalEventsStream, MessageServer, MessageType, VcHelper, VCMessage} from '@guardian/common';
+import {AccountId, Client, PrivateKey, Timestamp, TopicId, TopicMessageQuery} from '@hashgraph/sdk';
 
 enum GlobalNotificationStatus {
     Free = 'FREE',
@@ -44,13 +33,14 @@ interface GlobalTopicMessage {
 
 interface GlobalVsNotification {
     documentMessageId: string;
+    documentTopicId: string;
     policyId: string;
     sourceBlockTag: string;
     documentSourceTag?: string;
     routingHint?: string;
     vcId?: string;
     hash?: string;
-    topicId?: string;
+    // topicId?: string;
     relationships?: string[];
     owner?: string;
     timestamp: string;
@@ -68,6 +58,7 @@ interface GlobalVsNotification {
         children: ChildrenType.Special,
         control: ControlType.Server,
         input: [
+            PolicyInputEventType.RunEvent,
             PolicyInputEventType.TimerEvent
         ],
         output: [
@@ -103,6 +94,19 @@ export class GlobalEventsReaderBlock {
     protected async afterInit(): Promise<void> {
         const cronMask = process.env.GLOBAL_NOTIFICATIONS_SCHEDULER || '0 */5 * * * *';
         console.log('afterInit-reader')
+        setTimeout(() => {
+            this.run(null).catch((error) => {
+                try {
+                    const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+                    ref.error(
+                        `globalTopicReader: initial run failed: ${PolicyUtils.getErrorMessage(error)}`
+                    );
+                } catch (e) {
+                    console.error('globalTopicReader: initial run failed', error);
+                }
+            });
+        }, 30_000);
+
         this.job = new CronJob(cronMask, () => {
             this.run(null).then();
         }, null, false, 'UTC');
@@ -170,12 +174,65 @@ export class GlobalEventsReaderBlock {
     public async run(userId: string | null): Promise<void> {
         console.log('run-reader')
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const streams = await ref.databaseServer.getActiveGlobalEventsStreams(ref.policyId, ref.uuid);
-        if (!streams || !streams.length) {
+
+        const options: any = ref.options || {};
+
+        const topicIds: string[] = Array.isArray(options.topicIds)
+            ? options.topicIds
+            : [];
+
+        console.log('topicIds', topicIds)
+
+        const streams = await ref.databaseServer.getGlobalEventsStreams(ref.policyId, ref.uuid);
+        console.log('streams', streams)
+
+        const existingTopicIds = new Set<string>();
+
+        for (const stream of streams) {
+            if (stream.globalTopicId) {
+                existingTopicIds.add(stream.globalTopicId);
+            }
+        }
+
+        for (const rawTopicId of topicIds) {
+            const topicId = (rawTopicId || '').trim();
+
+            if (!topicId) {
+                continue;
+            }
+
+            if (existingTopicIds.has(topicId)) {
+                continue;
+            }
+
+            console.log('ref.policyOwner', ref.policyOwner)
+
+            const newStream = await ref.databaseServer.createGlobalEventsStream({
+                policyId: ref.policyId,
+                blockId: ref.uuid,
+                globalTopicId: topicId,
+                ownerDid: ref.policyOwner,
+                routingHint: null,
+                lastMessage: '',
+                lastUpdate: '',
+                active: true,
+                status: GlobalNotificationStatus.Free
+            });
+
+            streams.push(newStream);
+            existingTopicIds.add(topicId);
+        }
+
+        const activeStreams = streams.filter((s) => s.active);
+
+        console.log('activeStreams', activeStreams);
+
+        if (!activeStreams.length) {
             return;
         }
-        for (const stream of streams) {
-            if (stream.status === GlobalNotificationStatus.Free && stream.active) {
+
+        for (const stream of activeStreams) {
+            if (stream.status === GlobalNotificationStatus.Free) {
                 await this.runByStream(stream, userId);
             }
         }
@@ -189,7 +246,7 @@ export class GlobalEventsReaderBlock {
         const policyUser = await PolicyComponentsUtils.GetPolicyUserByDID(stream.ownerDid || null, null, ref, userId);
         this.updateStatus(ref, stream, policyUser);
         try {
-            await this.receiveNotificationsForStream(stream, policyUser);
+            await this.receiveNotificationsForStream(stream, policyUser, userId);
             stream.status = GlobalNotificationStatus.Free;
             stream.lastUpdate = new Date().toISOString();
             await ref.databaseServer.updateGlobalEventsStream(stream);
@@ -201,26 +258,93 @@ export class GlobalEventsReaderBlock {
         this.updateStatus(ref, stream, policyUser);
     }
 
-    private async receiveNotificationsForStream(stream: GlobalEventsStream, policyUser: PolicyUser): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const userCred = await PolicyUtils.getUserCredentials(ref, stream.ownerDid || policyUser.did, policyUser.userId);
-        const hederaCred = await userCred.loadHederaCredentials(ref, policyUser.userId);
+    private async tryLoadHederaCredentials(
+        ref: AnyBlockType,
+        stream: GlobalEventsStream,
+        policyUser: PolicyUser,
+        userId: string | null
+    ): Promise<any | null> {
+        try {
+            const userCred = await PolicyUtils.getUserCredentials(
+                ref,
+                stream.ownerDid || policyUser.did,
+                userId
+            );
 
-        const messages = await this.getGlobalTopicMessages(
-            stream.globalTopicId,
-            stream.lastMessage,
-            hederaCred.hederaAccountId,
-            hederaCred.hederaAccountKey
-        );
+            const hederaCred = await userCred.loadHederaCredentials(ref, userId);
+
+            return hederaCred;
+        } catch (error) {
+            const message = PolicyUtils.getErrorMessage(error);
+
+            console.error('globalTopicReader: credentials error', {
+                error,
+                message,
+                ownerDid: stream.ownerDid,
+                policyId: ref.policyId
+            });
+
+            if (message === 'Initialization') {
+                console.warn('globalTopicReader: skip stream processing due to Initialization error', {
+                    policyId: ref.policyId,
+                    blockId: ref.uuid
+                });
+
+                return null;
+            }
+
+            throw error;
+        }
+    }
+
+    private async receiveNotificationsForStream(
+        stream: GlobalEventsStream,
+        policyUser: PolicyUser,
+        userId: string | null
+    ): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+
+        let hederaCred: any;
+        try {
+            hederaCred = await this.tryLoadHederaCredentials(
+                ref,
+                stream,
+                policyUser,
+                userId
+            );
+
+            if (!hederaCred) {
+                return;
+            }
+        } catch (error) {
+            console.error('globalTopicReader: credentials error', error);
+            throw error;
+        }
+
+        let messages: GlobalTopicMessage[];
+        try {
+            messages = await this.getGlobalTopicMessages(
+                stream.globalTopicId,
+                stream.lastMessage,
+                hederaCred.hederaAccountId,
+                hederaCred.hederaAccountKey
+            );
+            console.log('globalTopicReader: messages from topic', messages);
+        } catch (error) {
+            console.error('globalTopicReader: getGlobalTopicMessages error', error);
+            throw error;
+        }
 
         for (const msg of messages) {
             if (stream.lastMessage && stream.lastMessage === msg.id) {
                 continue;
             }
+
             const payload = this.parseNotification(msg.message);
-            if (!payload || !payload.topicId || !payload.documentMessageId) {
+            if (!payload || !payload.documentTopicId || !payload.documentMessageId) {
                 continue;
             }
+
             try {
                 await this.processNotification(ref, policyUser, payload, hederaCred);
                 stream.lastMessage = msg.id;
@@ -240,57 +364,305 @@ export class GlobalEventsReaderBlock {
         }
     }
 
+    private resolveValidAnchorFromPayload(
+        payload: GlobalVsNotification
+    ): { topicId: string; messageId: string; queryStartTime: string | undefined } | null {
+        const topicId: string = payload.documentTopicId as string;
+        const timeStamp: string = payload.documentMessageId as string;
+
+        if (!topicId || !timeStamp) {
+            console.warn('globalTopicReader: missing topicId or timeStamp in payload', {
+                payload,
+                topicId,
+                timeStamp
+            });
+            return null;
+        }
+
+        // Validate topicId format via SDK
+        try {
+            TopicId.fromString(topicId);
+        } catch (error) {
+            console.error('globalTopicReader: invalid topicId format', {
+                payload,
+                topicId,
+                errorMessage: PolicyUtils.getErrorMessage(error)
+            });
+            return null;
+        }
+
+        const topicParts = topicId.split('.');
+        const topicNumStr = topicParts[2] || '';
+        const topicNum = Number(topicNumStr);
+
+        if (!Number.isFinite(topicNum) || topicNum <= 0 || topicNum > 1_000_000_000_000) {
+            console.warn('globalTopicReader: topicId looks like corrupted timestamp-derived value', {
+                payload,
+                topicId,
+                topicNum
+            });
+            return null;
+        }
+
+        if (typeof timeStamp !== 'string' || !timeStamp.includes('.')) {
+            console.error('globalTopicReader: invalid timeStamp format (no dot)', {
+                payload,
+                timeStamp
+            });
+            return null;
+        }
+
+        const [secondsStr, nanosStr] = timeStamp.split('.');
+
+        if (
+            !secondsStr ||
+            !nanosStr ||
+            !/^\d+$/.test(secondsStr) ||
+            !/^\d+$/.test(nanosStr)
+        ) {
+            console.error('globalTopicReader: invalid timeStamp parts (non-digit)', {
+                payload,
+                timeStamp
+            });
+            return null;
+        }
+
+        if (nanosStr.length !== 9) {
+            console.warn('globalTopicReader: unexpected nanos length in timeStamp', {
+                payload,
+                timeStamp,
+                nanosLength: nanosStr.length
+            });
+            return null;
+        }
+
+        const seconds = Number(secondsStr);
+
+        if (!Number.isFinite(seconds) || seconds < 1_600_000_000) {
+            console.warn('globalTopicReader: timeStamp seconds look too small (probably corrupted)', {
+                payload,
+                timeStamp,
+                seconds
+            });
+            return null;
+        }
+
+        const queryStartSeconds = seconds > 0 ? seconds - 1 : 0;
+        const queryStartTime = `${queryStartSeconds}.000000000`;
+
+        return {
+            topicId,
+            messageId: timeStamp,
+            queryStartTime
+        };
+    }
+
     private async processNotification(
         ref: AnyBlockType,
         user: PolicyUser,
         payload: GlobalVsNotification,
         hederaCred: any
     ): Promise<void> {
-        const vcMessages: VCMessage[] = await MessageServer.getTopicMessages({
-            topicId: payload.topicId,
-            userId: user.userId,
-            timeStamp: payload.documentMessageId
-        });
-        if (!vcMessages || !vcMessages.length) {
+        console.log('globalTopicReader.processNotification: payload', payload);
+
+        const anchor = this.resolveValidAnchorFromPayload(payload);
+        if (!anchor) {
+            // Already logged inside resolveValidAnchorFromPayload
             return;
         }
-        const message = vcMessages[0];
-        await MessageServer.loadDocument(message, hederaCred.hederaAccountKey);
+
+        let vcMessages: VCMessage[];
+        try {
+            vcMessages = await MessageServer.getTopicMessages({
+                topicId: anchor.topicId,
+                userId: payload.owner,
+                timeStamp: anchor.queryStartTime
+            });
+        } catch (error) {
+            console.error('globalTopicReader: getTopicMessages failed', {
+                payload,
+                topicId: anchor.topicId,
+                timeStamp: anchor.queryStartTime,
+                errorMessage: PolicyUtils.getErrorMessage(error),
+                status: (error as any)?.response?.status,
+                data: (error as any)?.response?.data,
+                url: (error as any)?.config?.url
+            });
+            return;
+        }
+
+        if (!vcMessages || !vcMessages.length) {
+            console.warn('globalTopicReader: no VC messages for payload', {
+                payload,
+                topicId: anchor.topicId,
+                timeStamp: anchor.queryStartTime
+            });
+            return;
+        }
+
+        const vcMessage = vcMessages.find((item) => {
+            const anyItem: any = item;
+
+            if (typeof anyItem.hash === 'string' && typeof payload.hash === 'string') {
+                if (anyItem.hash === payload.hash) {
+                    return true;
+                }
+            }
+
+            if (typeof anyItem.getId === 'function') {
+                const id = anyItem.getId();
+                if (typeof id === 'string' && id === payload.documentMessageId) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        if (!vcMessage) {
+            console.warn('globalTopicReader: VC message not found by hash or id for payload', {
+                payload,
+                available: vcMessages.map((item: any) => ({
+                    id: typeof item.getId === 'function' ? item.getId() : item.id,
+                    hash: item.hash
+                }))
+            });
+            return;
+        }
+
+        const message = vcMessage;
+
+        try {
+            await MessageServer.loadDocument(message, hederaCred.hederaAccountKey);
+        } catch (error) {
+            console.error('globalTopicReader: loadDocument failed', {
+                payload,
+                messageId: message.getId?.(),
+                errorMessage: PolicyUtils.getErrorMessage(error),
+                status: (error as any)?.response?.status,
+                data: (error as any)?.response?.data,
+                url: (error as any)?.config?.url
+            });
+            return;
+        }
+
         if (message.type !== MessageType.VCDocument) {
+            console.warn('globalTopicReader: message is not VCDocument', {
+                payload,
+                type: message.type
+            });
             return;
         }
 
         const document = message.getDocument();
         if (!document) {
+            console.warn('globalTopicReader: empty document', {
+                payload,
+                messageId: message.getId?.()
+            });
             return;
         }
 
         const schema = await this.getSchema();
         if (schema && !this.verifyContext(document, schema)) {
+            console.warn('globalTopicReader: context mismatch', {
+                payload,
+                schemaIri: schema.iri
+            });
             return;
         }
 
         const vcHelper = new VcHelper();
-        const verifySchema = await vcHelper.verifySchema(document);
-        if (!verifySchema.ok) {
-            return;
-        }
-        const verify = await vcHelper.verifyVC(document);
-        if (!verify) {
+
+        let verifySchema;
+        try {
+            verifySchema = await vcHelper.verifySchema(document);
+        } catch (error) {
+            console.error('globalTopicReader: verifySchema failed', {
+                payload,
+                errorMessage: PolicyUtils.getErrorMessage(error),
+                status: (error as any)?.response?.status,
+                data: (error as any)?.response?.data,
+                url: (error as any)?.config?.url
+            });
             return;
         }
 
-        const relationships = await this.getRelationships(ref, user);
-        const relayerAccount = await PolicyUtils.getRefRelayerAccount(
-            ref,
-            user.did,
-            null,
-            relationships,
-            user.userId
-        );
+        if (!verifySchema.ok) {
+            console.warn('globalTopicReader: verifySchema not ok', {
+                payload,
+                details: verifySchema
+            });
+            return;
+        }
+
+        let verify;
+        try {
+            verify = await vcHelper.verifyVC(document);
+        } catch (error) {
+            console.error('globalTopicReader: verifyVC failed', {
+                payload,
+                errorMessage: PolicyUtils.getErrorMessage(error),
+                status: (error as any)?.response?.status,
+                data: (error as any)?.response?.data,
+                url: (error as any)?.config?.url
+            });
+            return;
+        }
+
+        if (!verify) {
+            console.warn('globalTopicReader: verifyVC returned false', { payload });
+            return;
+        }
+
+        let relationships;
+        try {
+            relationships = await this.getRelationships(ref, user);
+        } catch (error) {
+            console.error('globalTopicReader: getRelationships failed', {
+                payload,
+                errorMessage: PolicyUtils.getErrorMessage(error)
+            });
+            return;
+        }
+
+        let relayerAccount;
+        try {
+            relayerAccount = await PolicyUtils.getRefRelayerAccount(
+                ref,
+                user.did,
+                null,
+                relationships,
+                user.userId
+            );
+        } catch (error) {
+            console.error('globalTopicReader: getRefRelayerAccount failed', {
+                payload,
+                errorMessage: PolicyUtils.getErrorMessage(error),
+                status: (error as any)?.response?.status,
+                data: (error as any)?.response?.data,
+                url: (error as any)?.config?.url
+            });
+            return;
+        }
+
         const policyDocument: IPolicyDocument = PolicyUtils.createPolicyDocument(ref, user, document);
         policyDocument.schema = ref.options.schema;
         policyDocument.relayerAccount = relayerAccount;
+
+        console.log(
+            'GlobalEventsReaderBlock.processNotification policyDocument',
+            {
+                payload,
+                policyId: policyDocument.policyId,
+                schema: policyDocument.schema,
+                topicId: policyDocument.topicId,
+                messageId: policyDocument.messageId,
+                hash: policyDocument.hash,
+                owner: policyDocument.owner,
+            }
+        );
+
         if (relationships) {
             PolicyUtils.setDocumentRef(policyDocument, relationships);
         }
@@ -398,9 +770,15 @@ export class GlobalEventsReaderBlock {
 
         const result: GlobalTopicMessage[] = [];
 
-        return new Promise<GlobalTopicMessage[]>((resolve, reject) => {
+        return new Promise<GlobalTopicMessage[]>((resolve) => {
             const subscription = query.subscribe(
                 client,
+                (error) => {
+                    console.error('globalTopicReader: subscribe error', error);
+                    subscription.unsubscribe();
+                    client.close();
+                    resolve(result);
+                },
                 (message) => {
                     try {
                         const text = Buffer
@@ -411,28 +789,17 @@ export class GlobalEventsReaderBlock {
                         const ms = consensusDate.getTime();
 
                         result.push({
-                            id: ms.toString(),                                  // value to be stored in lastMessage
+                            id: ms.toString(),
                             sequenceNumber: Number(message.sequenceNumber.toString()),
-                            consensusTimestamp: consensusDate.toISOString(),    // for debugging / UI
+                            consensusTimestamp: consensusDate.toISOString(),
                             message: text
                         });
                     } catch (error) {
-                        subscription.unsubscribe();
-                        client.close();
-                        reject(error);
+                        console.error('globalTopicReader: message handler error', error);
                     }
-                },
-                (error) => {
-                    subscription.unsubscribe();
-                    client.close();
-                    reject(error);
                 }
             );
 
-            /**
-             * Simple timeout guard to avoid keeping the subscription open indefinitely.
-             * Can be replaced with a more robust mechanism (limit, explicit close, etc.) if needed.
-             */
             setTimeout(() => {
                 subscription.unsubscribe();
                 client.close();
@@ -482,7 +849,7 @@ export class GlobalEventsReaderBlock {
                     policyId: ref.policyId,
                     blockId: ref.uuid,
                     globalTopicId: topicId,
-                    ownerDid: null,
+                    ownerDid: user.did,
                     routingHint: item.routingHint || null,
                     lastMessage: '',
                     lastUpdate: '',

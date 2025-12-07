@@ -22,13 +22,14 @@ import { TopicId } from '@hashgraph/sdk';
 
 interface GlobalVsNotification {
     documentMessageId: string;
+    documentTopicId: string;
     policyId: string;
     sourceBlockTag: string;
     documentSourceTag?: string;
     routingHint?: string;
     vcId?: string;
     hash?: string;
-    topicId?: string;
+    // topicId?: string;
     relationships?: string[];
     owner?: string;
     timestamp: string;
@@ -102,17 +103,20 @@ export class GlobalTopicWriterBlock {
             (event as any)?.data || (event as any);
         const doc: IPolicyDocument = state?.data as IPolicyDocument;
 
+        console.log('GlobalTopicWriter doc.topicId', doc.topicId);
+        console.log('GlobalTopicWriter doc.messageId', doc.messageId);
+
         if (!doc) {
             throw new BlockActionError('Document is required', ref.blockType, ref.uuid);
         }
 
-        const topicId: string | undefined = ref.options?.topicId;
-        if (!topicId) {
+        const globalTopicId: string | undefined = ref.options?.topicId;
+        if (!globalTopicId) {
             throw new BlockActionError('Global topic id is not configured', ref.blockType, ref.uuid);
         }
 
         try {
-            TopicId.fromString(topicId);
+            TopicId.fromString(globalTopicId);
         } catch (err) {
             throw new BlockActionError('Invalid topic id format', ref.blockType, ref.uuid);
         }
@@ -122,23 +126,32 @@ export class GlobalTopicWriterBlock {
             throw new BlockActionError('Canonical document address (messageId) is missing', ref.blockType, ref.uuid);
         }
 
+        if (!doc.topicId) {
+            throw new BlockActionError(
+                'Document topicId is missing',
+                ref.blockType,
+                ref.uuid
+            );
+        }
+
         const documentSourceTag: string | undefined = (doc as any).__sourceTag__ || (doc as any).tag;
 
         const payload: GlobalVsNotification = {
             documentMessageId,
+            documentTopicId: doc.topicId,
             policyId: ref.policyId,
             sourceBlockTag: ref.options?.senderTag || ref.tag,
             documentSourceTag,
             routingHint: ref.options?.routingHint || ref.options?.senderTag,
             vcId: doc.document?.id,
             hash: doc.hash,
-            topicId: doc.topicId,
+            // topicId: doc.topicId,
             relationships: doc.relationships,
             owner: doc.owner,
             timestamp: new Date().toISOString(),
         };
 
-        await this.publish(ref, user, topicId, payload);
+        await this.publish(ref, user, globalTopicId, payload);
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
@@ -151,18 +164,6 @@ export class GlobalTopicWriterBlock {
     private extractCanonicalAddress(doc: IPolicyDocument): string {
         if (doc.messageId) {
             return doc.messageId;
-        }
-
-        if (doc.document?.id) {
-            return doc.document.id;
-        }
-
-        if (doc.hash) {
-            return doc.hash;
-        }
-
-        if (Array.isArray(doc.relationships) && doc.relationships.length) {
-            return doc.relationships[0];
         }
 
         return '';
@@ -179,7 +180,7 @@ export class GlobalTopicWriterBlock {
     private async publish(
         ref: AnyBlockType,
         user: PolicyUser,
-        topicId: string,
+        globalTopicId: string,
         payload: GlobalVsNotification
     ): Promise<void> {
         try {
@@ -202,7 +203,7 @@ export class GlobalTopicWriterBlock {
              * Configure topic metadata.
              * TopicConfig will resolve submitKey (if any) from stored config.
              */
-            const topic = new TopicConfig({ topicId }, null, null);
+            const topic = new TopicConfig({ topicId: globalTopicId }, null, null);
 
             console.log('GlobalTopicWriter hederaAccount', {
                 hederaAccountId: hederaAccount.hederaAccountId,

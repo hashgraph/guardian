@@ -1269,7 +1269,8 @@ export const BlockAbout = {
         'children': 'None',
         'control': 'Server',
         'input': [
-            'RunEvent'
+            'RunEvent',
+            'TimerEvent'
         ],
         'output': [
             'RunEvent'
@@ -1563,6 +1564,38 @@ export const BlockAbout = {
                 'label': 'Routing hint',
                 'title': 'Optional routing hint for downstream consumers',
                 'type': 'Input'
+            }
+        ]
+    },
+    'globalTopicReaderBlock': {
+        'label': 'Global Notifications',
+        'title': `Add 'Global Notifications' Block`,
+        'post': false,
+        'get': true,
+        'children': 'Special',
+        'control': 'Server',
+        'input': [
+            'TimerEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent',
+            'ErrorEvent',
+            'ReleaseEvent'
+        ],
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'topics',
+                'label': 'Global topics',
+                'title': 'Global topics (list or JSON array)',
+                'type': 'Input'
+            },
+            {
+                'name': 'schema',
+                'label': 'Schema',
+                'title': 'Expected schema',
+                'type': 'Schemas'
             }
         ]
     },
