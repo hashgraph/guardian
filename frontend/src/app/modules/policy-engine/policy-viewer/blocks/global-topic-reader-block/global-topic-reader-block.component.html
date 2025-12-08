@@ -1,0 +1,87 @@
+<div class="global-topic-reader-block">
+    <div class="header">
+        <h4>Global topics</h4>
+
+        <button
+            type="button"
+            class="btn btn-sm btn-primary"
+            (click)="addRow()"
+            [disabled]="readonly || loading">
+            + Add topic
+        </button>
+
+        <button
+            type="button"
+            class="btn btn-sm btn-success"
+            (click)="save()"
+            [disabled]="readonly || loading">
+            Save
+        </button>
+    </div>
+
+    <table class="table table-sm table-striped table-bordered">
+        <thead>
+        <tr>
+            <th style="width: 260px;">Topic ID</th>
+            <th style="width: 220px;">Routing hint</th>
+            <th style="width: 120px;">Status</th>
+            <th style="width: 160px;">Last update</th>
+            <th style="width: 80px;">Active</th>
+            <th style="width: 60px;"></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr *ngFor="let row of rows; let i = index">
+            <td>
+                <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="row.globalTopicId"
+                    [readonly]="readonly">
+            </td>
+            <td>
+                <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="row.routingHint"
+                    [readonly]="readonly">
+            </td>
+            <td>
+                <span class="badge"
+                      [ngClass]="{
+                        'badge-success': row.status === 'FREE',
+                        'badge-danger': row.status === 'ERROR',
+                        'badge-warning': row.status === 'PROCESSING'
+                      }">
+                    {{ row.status || '-' }}
+                </span>
+            </td>
+            <td>
+                <span>{{ row.lastUpdate || '-' }}</span>
+            </td>
+            <td class="text-center">
+                <input
+                    type="checkbox"
+                    [(ngModel)]="row.active"
+                    [disabled]="readonly">
+            </td>
+            <td class="text-center">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="removeRow(i)"
+                    [disabled]="readonly || loading">
+                    ✕
+                </button>
+            </td>
+        </tr>
+
+        <tr *ngIf="rows.length === 0">
+            <td colspan="6" class="text-center text-muted">
+                No streams configured yet.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

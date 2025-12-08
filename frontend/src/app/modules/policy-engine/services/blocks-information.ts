@@ -57,6 +57,8 @@ import { IntegrationButtonBlockComponent } from '../policy-viewer/blocks/integra
 import { HttpRequestUIAddonCode } from '../policy-viewer/code/http-request-ui-addon';
 import { TransformationUIAddonCode } from '../policy-viewer/code/transformation-ui-addon';
 import { WipeConfigComponent } from '../policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
+import { GlobalTopicReaderBlockComponent } from '../policy-viewer/blocks/global-topic-reader-block/global-topic-reader-block.component';
+
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -104,6 +106,7 @@ const Container: IBlockSetting = {
         { type: BlockType.MessagesReportBlock },
         { type: BlockType.NotificationBlock },
         { type: BlockType.ExtractDataBlock },
+        { type: BlockType.GlobalTopicReaderBlock },
     ]
 }
 
@@ -153,6 +156,7 @@ const Step: IBlockSetting = {
         { type: BlockType.MessagesReportBlock },
         { type: BlockType.NotificationBlock },
         { type: BlockType.ExtractDataBlock },
+        { type: BlockType.GlobalTopicReaderBlock },
     ]
 }
 
@@ -467,6 +471,16 @@ const ExternalTopic: IBlockSetting = {
         type: BlockType.DocumentValidatorBlock,
         group: BlockGroup.UnGrouped
     }]
+}
+
+const GlobalTopicReaderBlock: IBlockSetting = {
+    type: BlockType.GlobalTopicReaderBlock,
+    icon: BlockIcons[BlockType.GlobalTopicReaderBlock],
+    group: BlockGroup.Documents,
+    header: BlockHeaders.UIComponents,
+    factory: GlobalTopicReaderBlockComponent,
+    property: null,
+    code: null
 }
 
 const AggregateDocument: IBlockSetting = {
@@ -862,6 +876,7 @@ export default [
     SelectiveAttributes,
     TagManager,
     ExternalTopic,
+    GlobalTopicReaderBlock,
     AutoReport,
     NotificationBlock,
     ExtractData,

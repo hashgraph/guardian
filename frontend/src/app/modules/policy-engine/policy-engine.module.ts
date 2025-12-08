@@ -79,6 +79,7 @@ import { TagsManagerBlockComponent } from './policy-viewer/blocks/tags-manager-b
 import { MessagesReportBlockComponent } from './policy-viewer/blocks/messages-report-block/messages-report-block.component';
 import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-topic-block/external-topic-block.component';
 import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
+import { GlobalTopicReaderBlockComponent } from "./policy-viewer/blocks/global-topic-reader-block/global-topic-reader-block.component";
 //Helpers
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
 import { SavePolicyDialog } from './dialogs/save-policy-dialog/save-policy-dialog.component';
@@ -289,7 +290,8 @@ import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialo
         IgnoreRulesDialog,
         OnLoadSavepointDialog,
         PolicyRepositoryComponent,
-        UserPolicyDialog
+        UserPolicyDialog,
+        GlobalTopicReaderBlockComponent
     ],
     imports: [
         CommonModule,
