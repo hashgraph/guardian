@@ -514,7 +514,7 @@
         * [Export selected formulas into a file](guardian/standard-registry/policies/formula-linked-definitions/apis-related-to-formula-linked/export-selected-formulas-into-a-file.md)
         * [Loads (import) a file and return its preview](guardian/standard-registry/policies/formula-linked-definitions/apis-related-to-formula-linked/loads-import-a-file-and-return-its-preview.md)
         * [Publish a formula](guardian/standard-registry/policies/formula-linked-definitions/apis-related-to-formula-linked/publish-a-formula.md)
-        * [Retrieve all data from documents that needed for displaying the formula](guardian/standard-registry/policies/formula-linked-definitions/apis-related-to-formula-linked/retrieve-all-data-from-documents-that-needed-for-displaying-the-formula.md)
+        * [Retrieve all the data from the documents that are needed to display the formulas](guardian/standard-registry/policies/formula-linked-definitions/apis-related-to-formula-linked/retrieve-all-data-from-documents-that-needed-for-displaying-the-formula.md)
     * [Exporting Project Data in CSV](guardian/standard-registry/policies/exporting-project-data-in-csv/README.md)
       * [Export Documents in CSV using UI](guardian/standard-registry/policies/exporting-project-data-in-csv/export-documents-in-csv-using-ui.md)
       * [APIs](guardian/standard-registry/policies/exporting-project-data-in-csv/apis/README.md)
