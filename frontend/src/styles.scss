@@ -707,3 +707,20 @@ svg-icon.svg-icon-32 {
         border: 1px solid #cbcbcb;
     }
 }
+
+.dialog-keyboard {
+    .ML__keyboard {
+        position: absolute !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        height: auto !important;
+        width: auto !important;
+
+        .MLK__backdrop {
+            width: 100% !important;
+            margin-left: 0px !important;
+        }
+    }
+}

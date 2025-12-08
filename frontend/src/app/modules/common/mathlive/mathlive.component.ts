@@ -12,6 +12,7 @@ export class MathLiveComponent implements OnInit, OnDestroy {
     @ViewChild('mathLiveContent', { static: true }) mathLiveContent: ElementRef;
     @Input('readonly') readonly: boolean = false;
     @Input('value') value!: string;
+    @Input('keyboardContainer') keyboardContainer?: ElementRef;
     @Output('valueChange') valueChange = new EventEmitter<string>();
     @Output('keyboard') keyboard = new EventEmitter<boolean>();
     @Output('focus') focus = new EventEmitter<MathLiveComponent>();
@@ -38,7 +39,11 @@ export class MathLiveComponent implements OnInit, OnDestroy {
             if (this.readonly) {
                 return;
             }
-
+            if (mathVirtualKeyboard && this.keyboardContainer) {
+                mathVirtualKeyboard.container = this.keyboardContainer.nativeElement;
+            } else {
+                mathVirtualKeyboard.container = window.document.body;
+            }
             this.keyboard.emit(true);
             this.focus.emit(this);
             return mathVirtualKeyboard.show();

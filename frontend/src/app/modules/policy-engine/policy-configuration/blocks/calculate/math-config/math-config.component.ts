@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
 import { ComputeEngine } from "@cortex-js/compute-engine";
+import { DialogService } from 'primeng/dynamicdialog';
+import { MathEditorDialogComponent } from 'src/app/modules/policy-engine/dialogs/math-editor-dialog/math-editor-dialog.component';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -25,7 +27,9 @@ export class MathConfigComponent implements OnInit {
     properties!: any;
     schemas!: SchemaVariables[];
 
-    constructor() {
+    constructor(
+        private dialog: DialogService,
+    ) {
 
     }
 
@@ -84,5 +88,25 @@ export class MathConfigComponent implements OnInit {
         // const ev = ce.parse('\\sum_{i=0}^{n}x_{i}').evaluate().print();
         // debugger;
         // ce.parse(`\\sum_{k=1}^{\\operatorname{\\mathrm{km}}}\\sum_{m=1}^{\\operatorname{\\mathrm{mm}}}\\left(x_{k,m}\\right)`).evaluate().print()
+    }
+
+    public editExpression($event: MouseEvent) {
+        const dialogRef = this.dialog.open(MathEditorDialogComponent, {
+            showHeader: false,
+            width: '80%',
+            styleClass: 'guardian-dialog',
+            data: {
+                test: true,
+                block: this.currentBlock,
+                expression: this.properties.expression,
+                readonly: this.readonly
+            }
+        })
+        dialogRef.onClose.subscribe(result => {
+            if (result) {
+                this.properties.expression = result.expression;
+                this.onSave();
+            }
+        })
     }
 }

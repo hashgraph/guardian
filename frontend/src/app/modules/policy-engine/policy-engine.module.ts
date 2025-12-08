@@ -167,6 +167,7 @@ import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-di
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
 import { MathConfigComponent } from './policy-configuration/blocks/calculate/math-config/math-config.component';
+import { MathEditorDialogComponent } from './dialogs/math-editor-dialog/math-editor-dialog.component';
 
 @NgModule({
     declarations: [
@@ -291,7 +292,8 @@ import { MathConfigComponent } from './policy-configuration/blocks/calculate/mat
         IgnoreRulesDialog,
         OnLoadSavepointDialog,
         PolicyRepositoryComponent,
-        UserPolicyDialog
+        UserPolicyDialog,
+        MathEditorDialogComponent
     ],
     imports: [
         CommonModule,
