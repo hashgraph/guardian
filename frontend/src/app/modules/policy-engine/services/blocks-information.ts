@@ -484,7 +484,23 @@ const GlobalTopicReaderBlock: IBlockSetting = {
     allowedChildren: [{
         type: BlockType.DocumentValidatorBlock,
         group: BlockGroup.UnGrouped
-    }]
+    }],
+    about: {
+        output: (value: any, block: PolicyBlock) => {
+            const result = value ? value.slice() : [];
+
+            const messageTypes = (block as any).properties?.messageTypes;
+            if (Array.isArray(messageTypes)) {
+                for (const mt of messageTypes) {
+                    if (mt && typeof mt.messageType === 'string' && mt.messageType.trim()) {
+                        result.push(mt.messageType.trim());
+                    }
+                }
+            }
+
+            return result;
+        }
+    }
 }
 
 const AggregateDocument: IBlockSetting = {

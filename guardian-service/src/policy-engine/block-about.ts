@@ -1578,12 +1578,7 @@ export const BlockAbout = {
             'RunEvent',
             'TimerEvent'
         ],
-        'output': [
-            'RunEvent',
-            'RefreshEvent',
-            'ErrorEvent',
-            'ReleaseEvent'
-        ],
+        'output': null,
         'defaultEvent': true,
         'properties': [
             {
@@ -1597,6 +1592,36 @@ export const BlockAbout = {
                 'label': 'Schema',
                 'title': 'Expected schema',
                 'type': 'Schemas'
+            },
+            {
+                'name': 'messageTypes',
+                'label': 'Message types',
+                'title': 'Message type mappings',
+                'type': 'Array',
+                'items': {
+                    'label': 'Message type',
+                    'value': '@filterField @filterValue @messageType',
+                    'properties': [
+                        {
+                            'name': 'filterField',
+                            'label': 'Filter field',
+                            'title': 'Filter field (VC path or @message.<field>)',
+                            'type': 'Input'
+                        },
+                        {
+                            'name': 'filterValue',
+                            'label': 'Filter value',
+                            'title': 'Filter value',
+                            'type': 'Input'
+                        },
+                        {
+                            'name': 'messageType',
+                            'label': 'Message type',
+                            'title': 'Message type name used in Events tab',
+                            'type': 'Input'
+                        }
+                    ]
+                }
             }
         ]
     },

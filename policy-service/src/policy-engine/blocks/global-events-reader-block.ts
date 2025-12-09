@@ -61,12 +61,7 @@ interface GlobalVsNotification {
             PolicyInputEventType.RunEvent,
             PolicyInputEventType.TimerEvent
         ],
-        output: [
-            PolicyOutputEventType.RunEvent,
-            PolicyOutputEventType.RefreshEvent,
-            PolicyOutputEventType.ErrorEvent,
-            PolicyOutputEventType.ReleaseEvent
-        ],
+        output: null,
         defaultEvent: true,
         properties: [
             {
@@ -80,6 +75,36 @@ interface GlobalVsNotification {
                 label: 'Schema',
                 title: 'Expected schema',
                 type: PropertyType.Schemas
+            },
+            {
+                name: 'messageTypes',
+                label: 'Message types',
+                title: 'Message type mappings',
+                type: PropertyType.Array,
+                items: {
+                    label: 'Message type',
+                    value: '@filterField @filterValue @messageType',
+                    properties: [
+                        {
+                            name: 'filterField',
+                            label: 'Filter field',
+                            title: 'Filter field (VC path or @message.<field>)',
+                            type: PropertyType.Input
+                        },
+                        {
+                            name: 'filterValue',
+                            label: 'Filter value',
+                            title: 'Filter value',
+                            type: PropertyType.Input
+                        },
+                        {
+                            name: 'messageType',
+                            label: 'Message type',
+                            title: 'Message type name used in Events tab',
+                            type: PropertyType.Input
+                        }
+                    ]
+                }
             }
         ]
     },
@@ -457,6 +482,30 @@ export class GlobalEventsReaderBlock {
         };
     }
 
+    private getFieldValue(source: any, path: string): any {
+        if (!source || typeof source !== 'object') {
+            return undefined;
+        }
+
+        if (!path || typeof path !== 'string') {
+            return undefined;
+        }
+
+        const segments = path.split('.');
+
+        let current: any = source;
+
+        for (const segment of segments) {
+            if (current == null) {
+                return undefined;
+            }
+
+            current = current[segment];
+        }
+
+        return current;
+    }
+
     private async processNotification(
         ref: AnyBlockType,
         user: PolicyUser,
@@ -678,9 +727,52 @@ export class GlobalEventsReaderBlock {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+        const options: any = ref.options || {};
+        const messageTypesConfig: any[] = Array.isArray(options.messageTypes)
+            ? options.messageTypes
+            : [];
+
+        let matchedMessageType: boolean = false;
+
+        for (const configItem of messageTypesConfig) {
+            if (!configItem) {
+                continue;
+            }
+
+            const filterField: string | undefined = configItem.filterField;
+            const filterValue: string | undefined = configItem.filterValue;
+            const messageType: string | undefined = configItem.messageType;
+
+            if (!messageType) {
+                continue;
+            }
+
+            let actualValue: any = undefined;
+
+            if (filterField && typeof filterField === 'string') {
+                if (filterField.startsWith('@message.')) {
+                    const messagePath: string = filterField.slice('@message.'.length);
+                    actualValue = this.getFieldValue(payload as any, messagePath);
+                } else {
+                    actualValue = this.getFieldValue(document, filterField);
+                }
+            }
+
+            const isMatch: boolean = !filterField || actualValue === filterValue;
+
+            if (isMatch) {
+                ref.triggerEvents(messageType, user, state);
+                matchedMessageType = true;
+            }
+        }
+
+        if (!matchedMessageType) {
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+        }
+
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(policyDocument)
         }));
