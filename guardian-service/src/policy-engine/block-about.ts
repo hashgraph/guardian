@@ -1568,13 +1568,14 @@ export const BlockAbout = {
         ]
     },
     'globalTopicReaderBlock': {
-        'label': 'Global Notifications',
-        'title': `Add 'Global Notifications' Block`,
-        'post': false,
+        'label': 'Global Topic Reader',
+        'title': `Add 'Global Topic Reader' Block`,
+        'post': true,
         'get': true,
         'children': 'Special',
-        'control': 'Server',
+        'control': 'UI',
         'input': [
+            'RunEvent',
             'TimerEvent'
         ],
         'output': [

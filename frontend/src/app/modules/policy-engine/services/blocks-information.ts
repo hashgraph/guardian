@@ -480,7 +480,11 @@ const GlobalTopicReaderBlock: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: GlobalTopicReaderBlockComponent,
     property: null,
-    code: null
+    code: null,
+    allowedChildren: [{
+        type: BlockType.DocumentValidatorBlock,
+        group: BlockGroup.UnGrouped
+    }]
 }
 
 const AggregateDocument: IBlockSetting = {

@@ -33,6 +33,7 @@ export const defaultTheme = {
                 'tagsManager',
                 'tokenConfirmationBlock',
                 'externalTopicBlock',
+                'globalTopicReaderBlock',
                 'messagesReportBlock'
             ]
         },

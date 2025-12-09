@@ -51,12 +51,12 @@ interface GlobalVsNotification {
     commonBlock: false,
     actionType: LocationType.REMOTE,
     about: {
-        label: 'Global Notifications',
-        title: `Add 'Global Notifications' Block`,
+        label: 'Global Topic Reader',
+        title: `Add 'Global Topic Reader' Block`,
         post: true,
         get: true,
         children: ChildrenType.Special,
-        control: ControlType.Server,
+        control: ControlType.UI,
         input: [
             PolicyInputEventType.RunEvent,
             PolicyInputEventType.TimerEvent
