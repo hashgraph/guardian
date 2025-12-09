@@ -44,7 +44,7 @@
         "papaparse": "5.5.3",
         "reflect-metadata": "^0.1.13",
         "ws": "^8.2.1",
-        "@formulajs/formulajs": "4.5.1",
+        "@formulajs/formulajs": "4.5.4",
         "prom-client": "^14.1.1",
         "seq-logging": "^2.2.0"
     },
