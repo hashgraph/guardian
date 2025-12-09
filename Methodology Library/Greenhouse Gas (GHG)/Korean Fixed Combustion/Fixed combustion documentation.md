@@ -21,21 +21,21 @@ This methodology provides guidance on how companies can measure and report green
 
 - Business type
 
-\- Energy / Manufacturing / Construction / Commercial / Public / Home
+  - Energy / Manufacturing / Construction / Commercial / Public / Home
 
 - Calculation method
 
-\- Cost-based / Usage-based
+  - Cost-based / Usage-based
 
 - Applicable reporting year
 
 - Fuel type
 
-\- LNG / City LNG / LPG
+  - LNG / City LNG / LPG
 
 - Fuel consumption (amount)
 
-\- If usage data is difficult to obtain, purchase quantity data may be used as a reference.
+  - If usage data is difficult to obtain, purchase quantity data may be used as a reference.
 
 - Energy purchase cost (KRW) <br><br>
   
@@ -56,18 +56,32 @@ This methodology provides guidance on how companies can measure and report green
 Source: Greenhouse Gas Inventory and Research Center of Korea <br><br>
 
 ### **Emission Calculation**
+**Usage-based**
 
 Eᵢⱼ = Qᵢ × ECᵢ × EFᵢⱼ × fᵢ
 
 | Symbol | Description |
 |---------|--------------|
 | **Eᵢⱼ** | Total greenhouse gas (*j*) emissions (**kgGHG**) from fixed combustion (*i*) |
-| **Qᵢ** | Fuel (*i*) consumption (amount) = Energy purchase cost / Average fuel (*i*) cost (**KRW/unit**)* |
+| **Qᵢ** | Fuel (*i*) consumption (amount) |
+| **ECᵢ** | Calorific value of fuel (*i*) (**TJ/unit**) |
+| **EFᵢⱼ** | Greenhouse gas *j* emission factor of fuel (*i*) (**kgGHG/TJ**) |
+| **fᵢ** | Oxidation factor of fuel (*i*) *(CH₄, N₂O not applicable)* | <br>
+<br>
+
+**Cost-based**
+
+Eᵢⱼ = (C/Pᵢ) × ECᵢ × EFᵢⱼ × fᵢ
+
+| Symbol | Description |
+|---------|--------------|
+| **Eᵢⱼ** | Total greenhouse gas (*j*) emissions (**kgGHG**) from fixed combustion (*i*) |
+| **C** | Energy purchase cost (**KRW**) |
+| **Pᵢ** | Average fuel (*i*) cost (**KRW/unit**)* |
 | **ECᵢ** | Calorific value of fuel (*i*) (**TJ/unit**) |
 | **EFᵢⱼ** | Greenhouse gas *j* emission factor of fuel (*i*) (**kgGHG/TJ**) |
 | **fᵢ** | Oxidation factor of fuel (*i*) *(CH₄, N₂O not applicable)* |
 
-*'Fuel (*i*) consumption (amount)' is used for usage-based while 'Energy purchase cost / Average fuel (*i*) cost' is used for cost-based calculation method.
 <br><br>
 ### **Use case: Calculation of Fixed Combustion from Gaseous Fuel for General Companies**
 
@@ -96,8 +110,7 @@ Priority 2 --- Cost-based estimation:
 
 - Distinguish by fuel type and GHG type (CO₂, CH₄, N₂O)
 
-- Apply oxidation factor (f) where applicable (not applied for CH₄ and
-  N₂O)
+- Apply oxidation factor (f) where applicable (not applied for CH₄ and N₂O)
 
 3\) Emission Calculation Procedure
 
@@ -123,7 +136,7 @@ Calculation Example:
 
 - ƒi = 0.995
 
-- Emissions (ECO₂) = 2,500,000 nm³ × 0.0000389 TJ/nm³ × 56,100 kgCO₂/TJ × 0.995 ≈ 5,428,446.38 kgCO₂ ≈ 5,428.45 tCO₂
+- Emissions (CO₂) = 2,500,000 nm³ × 0.0000389 TJ/nm³ × 56,100 kgCO₂/TJ × 0.995 ≈ 5,428,446.38 kgCO₂ ≈ 5,428.45 tCO₂
 
 4\) Result Application
 
@@ -189,18 +202,32 @@ Calculation Example:
 Source: Greenhouse Gas Inventory and Research Center of Korea <br><br>
 
 ### **Emission Calculation**
+**Usage-based**
 
 Eᵢⱼ = Qᵢ × ECᵢ × EFᵢⱼ × fᵢ
 
 | Symbol | Description |
 |---------|--------------|
 | **Eᵢⱼ** | Total greenhouse gas (*j*) emissions (**kgGHG**) from fixed combustion (*i*) |
-| **Qᵢ** | Fuel (*i*) consumption (amount) = Energy purchase cost / Average fuel (*i*) cost (**KRW/unit**) |
+| **Qᵢ** | Fuel (*i*) consumption (amount) |
+| **ECᵢ** | Calorific value of fuel (*i*) (**TJ/unit**) |
+| **EFᵢⱼ** | Greenhouse gas *j* emission factor of fuel (*i*) (**kgGHG/TJ**) |
+| **fᵢ** | Oxidation factor of fuel (*i*) *(CH₄, N₂O not applicable)* | <br>
+<br>
+
+**Cost-based**
+
+Eᵢⱼ = (C/Pᵢ) × ECᵢ × EFᵢⱼ × fᵢ
+
+| Symbol | Description |
+|---------|--------------|
+| **Eᵢⱼ** | Total greenhouse gas (*j*) emissions (**kgGHG**) from fixed combustion (*i*) |
+| **C** | Energy purchase cost (**KRW**) |
+| **Pᵢ** | Average fuel (*i*) cost (**KRW/unit**)* |
 | **ECᵢ** | Calorific value of fuel (*i*) (**TJ/unit**) |
 | **EFᵢⱼ** | Greenhouse gas *j* emission factor of fuel (*i*) (**kgGHG/TJ**) |
 | **fᵢ** | Oxidation factor of fuel (*i*) *(CH₄, N₂O not applicable)* |
 
-*'Fuel (*i*) consumption (amount)' is used for usage-based while 'Energy purchase cost / Average fuel (*i*) cost' is used for cost-based calculation method.
 <br><br>
 
 ### **Use case: Calculation of Fixed Combustion from Liquid Fuel for General Companies**
@@ -307,22 +334,36 @@ Calculation Example:
 | Bituminous coal (Raw)     | 0.0000280    | 95,100         | 1                        | 10                                           | 10                                 | 10                             | 300                                                  | 1.5                                              |
 | Sub-bituminous coal       | 0.0000199    | 97,000         | 1                        | 10                                           | 10                                 | 10                             | 300                                                  | 1.5                                              |
 
-Source: Greenhouse Gas Inventory and Research Center of Koreass
+Source: Greenhouse Gas Inventory and Research Center of Korea
 <br><br>
 
-## **Emission Calculation**
+### **Emission Calculation**
+**Usage-based**
 
 Eᵢⱼ = Qᵢ × ECᵢ × EFᵢⱼ × fᵢ
 
-| Symbol | Description |ㄴ
+| Symbol | Description |
 |---------|--------------|
 | **Eᵢⱼ** | Total greenhouse gas (*j*) emissions (**kgGHG**) from fixed combustion (*i*) |
-| **Qᵢ** | Fuel (*i*) consumption (amount) = Energy purchase cost / Average fuel (*i*) cost (**KRW/unit**) |
+| **Qᵢ** | Fuel (*i*) consumption (amount) |
+| **ECᵢ** | Calorific value of fuel (*i*) (**TJ/unit**) |
+| **EFᵢⱼ** | Greenhouse gas *j* emission factor of fuel (*i*) (**kgGHG/TJ**) |
+| **fᵢ** | Oxidation factor of fuel (*i*) *(CH₄, N₂O not applicable)* | <br>
+<br>
+
+**Cost-based**
+
+Eᵢⱼ = (C/Pᵢ) × ECᵢ × EFᵢⱼ × fᵢ
+
+| Symbol | Description |
+|---------|--------------|
+| **Eᵢⱼ** | Total greenhouse gas (*j*) emissions (**kgGHG**) from fixed combustion (*i*) |
+| **C** | Energy purchase cost (**KRW**) |
+| **Pᵢ** | Average fuel (*i*) cost (**KRW/unit**)* |
 | **ECᵢ** | Calorific value of fuel (*i*) (**TJ/unit**) |
 | **EFᵢⱼ** | Greenhouse gas *j* emission factor of fuel (*i*) (**kgGHG/TJ**) |
 | **fᵢ** | Oxidation factor of fuel (*i*) *(CH₄, N₂O not applicable)* |
 
-*'Fuel (*i*) consumption (amount)' is used for usage-based while 'Energy purchase cost / Average fuel (*i*) cost' is used for cost-based calculation method.
 <br><br>
 
 ## **Use case: Calculation of Fixed Combustion from Solid Fuel for General Companies**
