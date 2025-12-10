@@ -146,7 +146,7 @@ jobs:
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
           MIN_PASSWORD_LENGTH: 4
           PASSWORD_COMPLEXITY: easy
-          INITIAL_BALANCE: 5
+          INITIAL_BALANCE: 10
           INITIAL_STANDARD_REGISTRY_BALANCE: 140
 
       - name: Build Cypress Docker image
