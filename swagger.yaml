@@ -19991,6 +19991,10 @@ components:
             - private
             - public
           example: private
+        recordingEnabled:
+          type: boolean
+          example: false
+          description: Record policy actions
       required:
         - policyVersion
     PolicyValidationDTO:
