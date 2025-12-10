@@ -6,6 +6,8 @@ import {
     Policy as PolicyCollection,
     PolicyTool as PolicyToolCollection,
     Schema as SchemaCollection,
+    TopicConfig,
+    Users,
     VcHelper
 } from '@guardian/common';
 import { GenerateUUIDv4, PolicyHelper, PolicyStatus, SchemaEntity } from '@guardian/interfaces';
@@ -28,6 +30,18 @@ export class ComponentsService {
      * Policy Owner
      */
     public readonly owner: string;
+    /**
+     * Policy Owner Id
+     */
+    public readonly ownerId: string | null;
+    /**
+     * Policy actions topic
+     */
+    public readonly actionsTopicId: string | null;
+    /**
+     * Policy message id
+     */
+    public readonly policyMessageId: string | null;
     /**
      * Policy ID
      */
@@ -73,9 +87,12 @@ export class ComponentsService {
 
     constructor(policy: PolicyCollection, policyId: string) {
         this.owner = policy.owner;
+        this.ownerId = policy.ownerId || null;
         this.policyId = policyId;
         this.topicId = policy.topicId;
-        this._autoRecordingEnabled = policy.status === PolicyStatus.PUBLISH;
+        this.actionsTopicId = policy.actionsTopicId || null;
+        this.policyMessageId = policy.messageId || null;
+        this._autoRecordingEnabled = policy.status === PolicyStatus.PUBLISH && !!policy.autoRecordSteps;
         if (PolicyHelper.isDryRunMode(policy)) {
             this.dryRunId = policyId;
         } else {
@@ -91,7 +108,9 @@ export class ComponentsService {
             this._recordingController = new Recording(this.policyId, this.owner, {
                 mode: 'auto',
                 enabled: true,
-                uploadToIpfs: true
+                uploadToIpfs: true,
+                storeInDb: false,
+                policyMessageId: this.policyMessageId
             });
         } else {
             this._recordingController = null;
@@ -103,9 +122,44 @@ export class ComponentsService {
         return this._autoRecordingEnabled;
     }
 
+    private async prepareRecordingTransport(): Promise<void> {
+        // if (!this._recordingController || this.recordingTransportReady) {
+        if (!this._recordingController) {
+            return;
+        }
+        if (!this.actionsTopicId) {
+            return;
+        }
+        try {
+            const users = new Users();
+            const ownerAccount = await users.getHederaAccount(this.owner, this.ownerId);
+            const topicRow = await DatabaseServer.getTopicById(this.actionsTopicId);
+            const topicConfig = topicRow
+                ? await TopicConfig.fromObject(topicRow, false, this.ownerId)
+                : null;
+
+            this._recordingController.setHederaOptions({
+                topicId: this.actionsTopicId,
+                submitKey: topicConfig?.submitKey?.toString?.() ?? null,
+                operatorId: ownerAccount.hederaAccountId,
+                operatorKey: ownerAccount.hederaAccountKey,
+                signOptions: ownerAccount.signOptions,
+                dryRun: this.dryRunId
+            }, this.policyMessageId);
+            // this.recordingTransportReady = true;
+        } catch (error: any) {
+            this.logger.error(
+                `prepareRecordingTransport failed: ${error?.message || error}`,
+                ['RECORDING', this.policyId],
+                this.ownerId
+            );
+        }
+    }
+
     public async ensureAutoStartRecord(): Promise<void> {
         if (this._autoRecordingEnabled && this._recordingController) {
-            await this._recordingController.ensureStartRecordForPublishedPolicy();
+            await this.prepareRecordingTransport();
+            // await this._recordingController.ensureStartRecordForPublishedPolicy();
         }
     }
 
@@ -269,6 +323,10 @@ export class ComponentsService {
      * Recording Controller
      */
     private _recordingController: Recording;
+    // /**
+    //  * Hedera options configured flag
+    //  */
+    // private recordingTransportReady = false;
 
     /**
      * Running Controller
@@ -296,7 +354,13 @@ export class ComponentsService {
         }
         if (!this._recordingController) {
             this._recordingController = new Recording(this.policyId, this.owner);
+            // this._recordingController = new Recording(this.policyId, this.owner, {
+            //     policyMessageId: this.policyMessageId
+            // });
+            // this.recordingTransportReady = false;
+            // await this.prepareRecordingTransport();
         }
+        // await this.prepareRecordingTransport();
         return await this._recordingController.start();
     }
 
@@ -307,6 +371,7 @@ export class ComponentsService {
         if (this._recordingController) {
             const old = this._recordingController;
             this._recordingController = null;
+            // this.recordingTransportReady = false;
             return await old.stop();
         }
         if (this._runningController) {
@@ -324,6 +389,7 @@ export class ComponentsService {
         if (this._recordingController) {
             const old = this._recordingController;
             this._recordingController = null;
+            // this.recordingTransportReady = false;
             return await old.stop();
         }
         if (this._runningController) {
@@ -341,6 +407,7 @@ export class ComponentsService {
         if (this._recordingController) {
             const old = this._recordingController;
             this._recordingController = null;
+            // this.recordingTransportReady = false;
             return await old.destroy();
         }
         if (this._runningController) {
@@ -358,6 +425,7 @@ export class ComponentsService {
         if (this._recordingController) {
             const old = this._recordingController;
             this._recordingController = null;
+            // this.recordingTransportReady = false;
             return await old.destroy();
         }
         if (this._runningController) {

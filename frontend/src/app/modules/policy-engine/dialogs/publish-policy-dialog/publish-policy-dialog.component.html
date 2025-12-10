@@ -20,12 +20,12 @@
         </div>
         <div>
             <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">* Availability</label>
+                <label class="form-label" htmlFor="availability">* Availability</label>
                 <p-dropdown
                     [(ngModel)]="currentType"
                     [options]="types"
                     [showClear]="false"
-                    optionLabel="label" 
+                    optionLabel="label"
                     optionValue="value"
                     class="guardian-dropdown"
                     appendTo="body"
@@ -36,7 +36,7 @@
         </div>
         <div>
             <div class="form-input-container">
-                <label class="form-label" htmlFor="version">Policy Tests</label>
+                <label class="form-label" htmlFor="policy-tests">Policy Tests</label>
                 <ng-container *ngIf="policy?.tests?.length; else elseTemplate">
                     <div class="tests-container">
                         {{policy.tests.length}} test data file[s]
@@ -49,6 +49,20 @@
                 </ng-template>
             </div>
         </div>
+
+        <div>
+            <div class="recording-container">
+                <p-checkbox
+                    name="recordingEnabled"
+                    binary="true"
+                    [(ngModel)]="recordingEnabled"
+                    inputId="recordingEnabled">
+                </p-checkbox>
+                <label class="form-label recording-label" htmlFor="recordingEnabled">
+                    Record policy actions
+                </label>
+            </div>
+        </div>
     </div>
 </div>
 <div class="dialog-footer">
@@ -57,8 +71,8 @@
             <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
         </div>
         <div class="dialog-button publish-button">
-            <button 
-                (click)="onSubmit()" 
+            <button
+                (click)="onSubmit()"
                 class="guardian-button guardian-button-primary"
                 [disabled]="isPublishDisabled">Publish</button>
         </div>

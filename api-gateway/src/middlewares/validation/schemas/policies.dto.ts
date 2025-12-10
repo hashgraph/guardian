@@ -523,6 +523,16 @@ export class PolicyVersionDTO {
     @IsString()
     @IsOptional()
     policyAvailability?: PolicyAvailability;
+
+    @ApiProperty({
+        type: 'boolean',
+        required: false,
+        example: false,
+        description: 'Record policy actions',
+    })
+    @IsBoolean()
+    @IsOptional()
+    recordingEnabled?: boolean;
 }
 
 export class DebugBlockDataDTO {

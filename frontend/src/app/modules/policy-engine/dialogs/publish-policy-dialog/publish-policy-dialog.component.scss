@@ -53,3 +53,15 @@
         line-height: 14px;
     }
 }
+
+.recording-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 2px;
+    margin-bottom: 2px;
+}
+
+.recording-label {
+    margin: 0px;
+}

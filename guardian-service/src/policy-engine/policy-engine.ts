@@ -986,7 +986,8 @@ export class PolicyEngine extends NatsService {
         availability: PolicyAvailability,
         notifier: INotificationStep,
         logger: PinoLogger,
-        userId: string | null
+        userId: string | null,
+        recordingEnabled: boolean,
     ): Promise<Policy> {
         // <-- Steps
         const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
@@ -1086,6 +1087,8 @@ export class PolicyEngine extends NatsService {
             throw error;
         }
         notifier.completeStep(STEP_PUBLISH_FORMULAS);
+
+        const fromMessageId = model.fromMessageId || '';
 
         try {
             this.regenerateIds(model.config);
@@ -1265,7 +1268,9 @@ export class PolicyEngine extends NatsService {
 
             const configToPublish = structuredClone(model.config);
             this.cleanHeadersRecursive(configToPublish, ['httpRequestBlock']);
-
+            model.autoRecordSteps = !!recordingEnabled;
+            model.fromMessageId = '';
+            console.log(model, 'model');
             const modelToPublish = Object.assign(Object.create(Object.getPrototypeOf(model)), model);
             modelToPublish.config = configToPublish;
 
@@ -1332,6 +1337,8 @@ export class PolicyEngine extends NatsService {
             model.status = PolicyStatus.PUBLISH_ERROR;
             model.version = '';
             model.hash = '';
+            model.autoRecordSteps = false;
+            model.fromMessageId = fromMessageId;
             model = await DatabaseServer.updatePolicy(model);
             throw error
         }
@@ -1519,7 +1526,8 @@ export class PolicyEngine extends NatsService {
     public async validateAndPublishPolicy(
         options: {
             policyVersion: string,
-            policyAvailability?: PolicyAvailability
+            policyAvailability?: PolicyAvailability,
+            recordingEnabled?: boolean,
         },
         policyId: string,
         owner: IOwner,
@@ -1542,6 +1550,7 @@ export class PolicyEngine extends NatsService {
 
         const version = options.policyVersion;
         const availability = options.policyAvailability || PolicyAvailability.PRIVATE;
+        const recordingEnabled = !!options.recordingEnabled;
 
         notifier.startStep(STEP_FIND_POLICY);
         const policy = await DatabaseServer.getPolicyById(policyId);
@@ -1610,7 +1619,8 @@ export class PolicyEngine extends NatsService {
                 availability,
                 notifier.getStep(STEP_PUBLISH_POLICY),
                 logger,
-                userId
+                userId,
+                recordingEnabled
             );
             notifier.completeStep(STEP_PUBLISH_POLICY);
 

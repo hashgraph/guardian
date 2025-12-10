@@ -100,7 +100,7 @@ export class PolicyEngineService {
 
     public pushPublish(
         policyId: string,
-        options: { policyVersion: string, policyAvailability: PolicyAvailability }
+        options: { policyVersion: string, policyAvailability: PolicyAvailability, recordingEnabled: boolean }
     ): Observable<{ taskId: string, expectation: number }> {
         return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/publish`, options);
     }

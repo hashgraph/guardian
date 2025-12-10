@@ -33,6 +33,7 @@ import { INotificationStep, NewNotifier } from '../../notification/index.js';
 import { SchemaPackageMessage } from './schema-package-message.js';
 import { CommentMessage } from './comment-message.js';
 import { DiscussionMessage } from './discussion-message.js';
+import { PolicyRecordMessage } from './policy-record-message.js';
 
 interface LoadMessageOptions {
     messageId: string,
@@ -182,6 +183,8 @@ export class MessageServer {
             notifier.completeStep(STEP_SEND_FILES);
         }
 
+        console.log(this.dryRun, 'this.dryRun this.dryRun');
+        // console.log(message, 'message message');
         notifier.startStep(STEP_SEND_MESSAGES);
         message = await this.sendHedera(message, options);
         notifier.completeStep(STEP_SEND_MESSAGES);
@@ -189,6 +192,7 @@ export class MessageServer {
         if (this.dryRun) {
             await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
         }
+        console.log(message, 'message message 222');
 
         notifier.complete();
         return message;
@@ -469,6 +473,9 @@ export class MessageServer {
             case MessageType.PolicyDiscussion:
                 message = DiscussionMessage.fromMessageObject(json);
                 break;
+            case MessageType.PolicyRecordStep:
+                message = PolicyRecordMessage.fromMessageObject(json);
+                break;
 
             // Default schemas
             case 'schema-document':
@@ -563,6 +570,9 @@ export class MessageServer {
                 break;
             case MessageType.PolicyDiscussion:
                 message = DiscussionMessage.fromJson(json);
+                break;
+            case MessageType.PolicyRecordStep:
+                message = PolicyRecordMessage.fromJson(json);
                 break;
             // Default schemas
             case 'schema-document':

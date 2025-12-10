@@ -261,6 +261,24 @@ export class Policy extends BaseEntity {
     @Property({ nullable: true })
     actionsTopicId?: string;
 
+    // /**
+    //  * Source actions topic id
+    //  */
+    // @Property({ nullable: true })
+    // fromActionsTopicId?: string;
+
+    /**
+     * Source message id
+     */
+    @Property({ nullable: true })
+    fromMessageId?: string;
+
+    /**
+     * Automatically record policy steps
+     */
+    @Property({ nullable: true })
+    autoRecordSteps?: boolean;
+
     /**
      * old file id
      */
