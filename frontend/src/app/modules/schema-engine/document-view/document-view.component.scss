@@ -171,3 +171,7 @@ form {
 .guardian-accordion-container::ng-deep .guardian-accordion-container {
     background: #F9FAFC;
 }
+
+:host ::ng-deep .form-field-table {
+    width: 100%;
+}

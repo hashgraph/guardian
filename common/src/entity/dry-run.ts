@@ -1,8 +1,8 @@
 import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity } from '@guardian/interfaces';
 import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, Index, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { DataBaseHelper } from '../helpers/index.js';
-import { BaseEntity } from '../models/index.js';
+import { DataBaseHelper, extractTableFileIds } from '../helpers/index.js';
+import { BaseEntity } from '../models/base-entity.js';
 
 /**
  * DryRun document
@@ -36,11 +36,11 @@ export class DryRun extends BaseEntity {
     dryRunId?: string;
 
     /**
-     * Savepoint
-     * @type {boolean}
+     * SavepointId
+     * @type {string}
      */
     @Property({ nullable: true })
-    savepoint?: boolean;
+    savepointId?: string | null;
 
     /**
      * Class
@@ -119,6 +119,12 @@ export class DryRun extends BaseEntity {
      */
     @Property({ nullable: true, type: 'unknown' })
     messageId?: any;
+
+    /**
+     * Parent message id
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    startMessageId?: any;
 
     /**
      * Topic id
@@ -751,10 +757,52 @@ export class DryRun extends BaseEntity {
     _contextFileId?: ObjectId;
 
     /**
+     * Edited
+     */
+    @Property({ nullable: true })
+    edited?: boolean;
+
+    /**
+     * is draft
+     */
+    @Property({ nullable: true })
+    draft?: boolean;
+
+    /**
+     * draft id
+     */
+    @Property({ nullable: true })
+    draftId?: string;
+
+    /**
+     * draft ref
+     */
+    @Property({ nullable: true })
+    draftRef?: string;
+
+    /**
+     * Relayer Account
+     */
+    @Property({ nullable: true })
+    relayerAccount?: string;
+
+    /**
      * old file id
      */
     @Property({ persist: false, nullable: true })
     _configFileId?: ObjectId;
+
+    /**
+     * old file id
+     */
+    @Property({ nullable: true })
+    tableFileIds?: ObjectId[];
+
+    /**
+     * Old Table File Ids
+     */
+    @Property({ persist: false, nullable: true })
+    _oldTableFileIds?: ObjectId[];
 
     /**
      * Set defaults
@@ -775,13 +823,18 @@ export class DryRun extends BaseEntity {
         this.signature = this.signature || DocumentSignature.NEW;
 
         if (this.document) {
+            this.tableFileIds = extractTableFileIds(this.document);
+
             const document = JSON.stringify(this.document);
             this.documentFileId = await this._createFile(document, 'DryRun');
             this.document = this._createFieldCache(this.document, this.documentFields);
             if (!this.document) {
                 delete this.document;
             }
+        } else {
+            this.tableFileIds = undefined;
         }
+
         if (this.context) {
             const context = JSON.stringify(this.context);
             this.contextFileId = await this._createFile(context, 'DryRun');
@@ -821,6 +874,17 @@ export class DryRun extends BaseEntity {
     @BeforeUpdate()
     async updateFiles() {
         if (this.document) {
+            const nextTableFileIds = extractTableFileIds(this.document) || [];
+            const currentTableFileIds = this.tableFileIds || [];
+
+            const removedTableFileIds = currentTableFileIds.filter((existingId) => {
+                const existing = String(existingId);
+                return !nextTableFileIds.some((nextId) => String(nextId) === existing);
+            });
+
+            this._oldTableFileIds = removedTableFileIds.length ? removedTableFileIds : undefined;
+            this.tableFileIds = nextTableFileIds;
+
             const document = JSON.stringify(this.document);
             const documentFileId = await this._createFile(document, 'DryRun');
             if (documentFileId) {
@@ -831,7 +895,11 @@ export class DryRun extends BaseEntity {
             if (!this.document) {
                 delete this.document;
             }
+        } else if (this.tableFileIds && this.tableFileIds.length) {
+            this._oldTableFileIds = this.tableFileIds;
+            this.tableFileIds = undefined;
         }
+
         if (this.context) {
             const context = JSON.stringify(this.context);
             const contextFileId = await this._createFile(context, 'DryRun');
@@ -884,6 +952,18 @@ export class DryRun extends BaseEntity {
                 });
             delete this._configFileId;
         }
+
+        if (this._oldTableFileIds && this._oldTableFileIds.length) {
+            for (const fileId of this._oldTableFileIds) {
+                DataBaseHelper.gridFS
+                    .delete(fileId)
+                    .catch((reason) => {
+                        console.error(`AfterUpdate: DryRun, ${this._id}, _oldTableFileIds`);
+                        console.error(reason);
+                    });
+            }
+            delete this._oldTableFileIds;
+        }
     }
 
     /**
@@ -914,6 +994,17 @@ export class DryRun extends BaseEntity {
                     console.error(`AfterDelete: DryRun, ${this._id}, configFileId`)
                     console.error(reason)
                 });
+        }
+
+        if (this.tableFileIds && this.tableFileIds.length) {
+            for (const fileId of this.tableFileIds) {
+                DataBaseHelper.gridFS
+                    .delete(fileId)
+                    .catch((reason) => {
+                        console.error(`AfterDelete: DryRun, ${this._id}, tableFileIds`);
+                        console.error(reason);
+                    });
+            }
         }
     }
 }

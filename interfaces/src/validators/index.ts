@@ -26,3 +26,5 @@ export * from './statistic-validator/variables.js';
 export * from './statistic-validator/formula.js';
 export * from './statistic-validator/score.js';
 export * from './utils/formula.js';
+export * from './deprecations/index.js';
+export * from './policy-messages/index.js';

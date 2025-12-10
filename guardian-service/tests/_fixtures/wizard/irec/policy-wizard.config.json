@@ -59,6 +59,7 @@
                                         "action": "dialog",
                                         "content": "View Document",
                                         "uiClass": "link",
+                                        "hideWhenDiscontinued": false,
                                         "dialogContent": "VC",
                                         "dialogClass": "",
                                         "dialogType": "json"
@@ -170,7 +171,8 @@
                                         "filters": [],
                                         "field": "option.status",
                                         "value": "Approved",
-                                        "uiClass": "btn-approve"
+                                        "uiClass": "btn-approve",
+                                        "hideWhenDiscontinued": false
                                     },
                                     {
                                         "tag": "Button_1",
@@ -181,7 +183,8 @@
                                         "value": "Rejected",
                                         "uiClass": "btn-reject",
                                         "title": "Reject",
-                                        "description": "Enter reject reason"
+                                        "description": "Enter reject reason",
+                                        "hideWhenDiscontinued": false
                                     }
                                 ]
                             },
@@ -379,6 +382,7 @@
                                         "action": "dialog",
                                         "content": "View Document",
                                         "uiClass": "link",
+                                        "hideWhenDiscontinued": false,
                                         "dialogContent": "VC",
                                         "dialogClass": "",
                                         "dialogType": "json"
@@ -490,7 +494,8 @@
                                         "filters": [],
                                         "field": "option.status",
                                         "value": "Approved",
-                                        "uiClass": "btn-approve"
+                                        "uiClass": "btn-approve",
+                                        "hideWhenDiscontinued": false
                                     },
                                     {
                                         "tag": "Button_1",
@@ -501,7 +506,8 @@
                                         "value": "Rejected",
                                         "uiClass": "btn-reject",
                                         "title": "Reject",
-                                        "description": "Enter reject reason"
+                                        "description": "Enter reject reason",
+                                        "hideWhenDiscontinued": false
                                     }
                                 ]
                             },
@@ -699,6 +705,7 @@
                                         "action": "dialog",
                                         "content": "View Document",
                                         "uiClass": "link",
+                                        "hideWhenDiscontinued": false,
                                         "dialogContent": "VC",
                                         "dialogClass": "",
                                         "dialogType": "json"
@@ -810,7 +817,8 @@
                                         "filters": [],
                                         "field": "option.status",
                                         "value": "Approved",
-                                        "uiClass": "btn-approve"
+                                        "uiClass": "btn-approve",
+                                        "hideWhenDiscontinued": false
                                     },
                                     {
                                         "tag": "Button_1",
@@ -821,7 +829,8 @@
                                         "value": "Rejected",
                                         "uiClass": "btn-reject",
                                         "title": "Reject",
-                                        "description": "Enter reject reason"
+                                        "description": "Enter reject reason",
+                                        "hideWhenDiscontinued": false
                                     }
                                 ]
                             },
@@ -1448,6 +1457,7 @@
                                                 "action": "dialog",
                                                 "content": "View Document",
                                                 "uiClass": "link",
+                                                "hideWhenDiscontinued": false,
                                                 "dialogContent": "VC",
                                                 "dialogClass": "",
                                                 "dialogType": "json"
@@ -1728,6 +1738,7 @@
                                                 "action": "dialog",
                                                 "content": "View Document",
                                                 "uiClass": "link",
+                                                "hideWhenDiscontinued": false,
                                                 "dialogContent": "VC",
                                                 "dialogClass": "",
                                                 "dialogType": "json"

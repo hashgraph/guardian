@@ -9,6 +9,9 @@
     --pc-active-icon-color: #3f51b5;
     --pc-header-color: #555555;
     --pc-error-color: #dd0a0a;
+    --pc-error-border-strong: #b80000;
+    --pc-error-bg-strong: #ffb3b3;
+    --pc-error-shadow: #b80000cc;
     --pc-event-color: #bd9012;
     --pc-event-icon-color: #ffc107;
     --pc-prop-border-color: #e5e5e5;
@@ -16,6 +19,9 @@
     --pc-required-color: #eb0303;
     --pc-readonly-text-color: rgba(0, 0, 0, .45);
     --pc-background-color: #fff;
+    --pc-warning-border-light: #ff6b6b;
+    --pc-warning-bg-light: #ffe9ea;
+    --pc-warning-shadow: #ff6b6bcc;
 
     .properties {
         --col-name-width: 155px;
@@ -223,6 +229,12 @@
                     top: 0;
                     bottom: 0;
                     right: 0;
+                }
+
+                &.multi-line {
+                    word-break: break-word;
+                    white-space: normal;
+                    height: 50px !important;
                 }
             }
 

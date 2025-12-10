@@ -154,8 +154,13 @@ export class NotificationStep implements INotificationStep {
         return step;
     }
 
-    public addStep(name: string, size: number = 1): NotificationStep {
+    public addStep(
+        name: string,
+        size: number = 1,
+        minimized: boolean = false
+    ): NotificationStep {
         const step = new NotificationStep(name, size);
+        step.minimize(minimized);
         step.setParent(this.notify);
         this.steps.push(step);
         return step;
@@ -166,6 +171,7 @@ export class NotificationStep implements INotificationStep {
     }
 
     public info(): INotificationInfo {
+        const steps = this.steps.map((s) => s.info());
         const info = {
             name: this.name,
             started: this.started,
@@ -174,8 +180,8 @@ export class NotificationStep implements INotificationStep {
             skipped: this.skipped,
             error: this.error,
             size: this.size,
-            estimate: Math.max(this.steps.length, this.estimate),
-            steps: this.steps.map((s) => s.info()),
+            estimate: Math.max(steps.length, this.estimate),
+            steps: this.minimized ? [] : steps,
             startDate: this.startDate,
             stopDate: this.stopDate,
             minimized: this.minimized,
@@ -183,6 +189,7 @@ export class NotificationStep implements INotificationStep {
             progress: -1,
             message: ''
         };
+
         if (this.completed || this.skipped) {
             info.progress = 100;
             info.index = info.estimate;
@@ -198,7 +205,7 @@ export class NotificationStep implements INotificationStep {
             let total: number = 0;
             let completed: number = 0;
             for (let index = 0; index < info.estimate; index++) {
-                const step = info.steps[index];
+                const step = steps[index];
                 if (step) {
                     total = total + step.size;
                     if (step.started) {

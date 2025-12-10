@@ -15,6 +15,7 @@ import { LoadingQueueService } from './api/loading-queue.service.js';
 import { SynchronizationAll } from './helpers/synchronizers/index.js';
 import { fixtures } from './helpers/fixtures.js';
 import { AnalyticsTask } from './helpers/analytics-task.js';
+import {ArtifactsService} from './api/artifacts.service.js';
 
 const channelName = (
     process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`
@@ -84,6 +85,7 @@ async function updateIndexes() {
         AnalyticsService,
         SettingsService,
         LoadingQueueService,
+        ArtifactsService
     ],
 })
 class AppModule { }
@@ -132,7 +134,7 @@ Promise.all([
          * Listen
          */
         app.listen();
-        
+
         try {
             Environment.setNetwork(process.env.HEDERA_NET);
         } catch (error) {
@@ -140,7 +142,7 @@ Promise.all([
         }
 
         await LoadingQueueService.init();
-        
+
         /**
          * Sync tasks
          */

@@ -54,18 +54,17 @@ import { HederaType } from '@components/hedera-explorer/hedera-explorer.componen
 export class DidDocumentsComponent extends BaseGridComponent {
     columns: any[] = [
         {
-            type: ColumnType.HEDERA,
-            field: 'consensusTimestamp',
-            title: 'grid.consensus_timestamp',
-            width: '250px',
-            sort: true,
-            hederaType: HederaType.TRANSACTION,
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
         },
         {
             type: ColumnType.TEXT,
             field: 'consensusTimestamp',
             title: 'grid.date',
-            width: '250px',
+            width: '200px',
             sort: true,
             formatValue: (value: any) => {
                 const fixedTimestamp = Math.floor(value * 1000);
@@ -73,6 +72,12 @@ export class DidDocumentsComponent extends BaseGridComponent {
                 const formattedDate = value.toLocaleString();
                 return formattedDate;
             }
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'options.did',
+            title: 'grid.did',
+            width: '650px',
         },
         {
             type: ColumnType.TEXT,
@@ -85,29 +90,18 @@ export class DidDocumentsComponent extends BaseGridComponent {
             },
         },
         {
-            type: ColumnType.TEXT,
-            field: 'uuid',
-            title: 'grid.uuid',
-            width: '350px',
-        },
-        {
             type: ColumnType.CHIP,
             field: 'status',
             title: 'grid.status',
             width: '100px',
         },
         {
-            type: ColumnType.TEXT,
-            field: 'options.did',
-            title: 'grid.did',
-            width: '650px',
-        },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
+            type: ColumnType.HEDERA,
+            field: 'consensusTimestamp',
+            title: 'grid.consensus_timestamp',
+            width: '200px',
+            sort: true,
+            hederaType: HederaType.TRANSACTION,
         },
     ];
 
@@ -118,6 +112,10 @@ export class DidDocumentsComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(
             new Filter({
                 label: 'grid.filter.topic_id',

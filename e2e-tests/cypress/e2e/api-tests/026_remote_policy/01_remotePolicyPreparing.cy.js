@@ -2,8 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-//context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
-context("Policies", { tags: ['remote_policy', 'secondPool', ] }, () => {
+context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
     const MainSRUsername = Cypress.env('MainSRUser');
     const DepSRUsername = Cypress.env('DepSRUser');
@@ -113,21 +112,16 @@ context("Policies", { tags: ['remote_policy', 'secondPool', ] }, () => {
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                remoteMessageId = response.body.messageId;
                 Authorization.getAccessToken(DepSRUsername).then((authorization) => {
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.ExternalPolicy + policyId + "/" + API.Approve,
-                        body: {
-                            messageId: remoteMessageId,
-                        },
+                        url: API.ApiServer + API.ExternalPolicy + remoteMessageId + "/" + API.Approve,
                         headers: {
                             authorization,
                         },
                         timeout: 180000
                     }).then((response) => {
-                        expect(response.status).to.eq(STATUS_CODE.OK);
-                        remoteMessageId = response.body.messageId;
+                        expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
                     })
                 });
             })
@@ -148,8 +142,8 @@ context("Policies", { tags: ['remote_policy', 'secondPool', ] }, () => {
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                let userKey = response.body.messageId;
-                Authorization.getAccessToken(MainUserUsername, tenantId).then((authorization) => {
+                let userKey = response.body.key;
+                Authorization.getAccessTokenMGS(MainUserUsername, tenantId).then((authorization) => {
                     cy.request({
                         method: METHOD.POST,
                         url: API.ApiMGS + API.Profiles + API.Key,
@@ -163,7 +157,6 @@ context("Policies", { tags: ['remote_policy', 'secondPool', ] }, () => {
                         timeout: 180000
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.OK);
-                        remoteMessageId = response.body.messageId;
                     })
                 });
             })
@@ -171,19 +164,22 @@ context("Policies", { tags: ['remote_policy', 'secondPool', ] }, () => {
     })
 
     it('Assign dep users by main sr', () => {
-        Authorization.getAccessToken(MainSRUsername, tenantId).then((authorization) => {
+        Authorization.getAccessTokenMGS(MainSRUsername, tenantId).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiMGS + API.UsersPermissions + DepUserUsername + "/" + API.Policies + API.Approve,
+                url: API.ApiMGS + API.UsersPermissions + MainUserUsername + "/" + API.Policies + API.Assign,
                 body: {
-                    messageId: remoteMessageId,
+                    "policyIds": [
+                        policyId
+                    ],
+                    "assign": true
                 },
                 headers: {
                     authorization,
                 },
                 timeout: 180000
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
             })
         });
     })
@@ -233,15 +229,10 @@ context("Policies", { tags: ['remote_policy', 'secondPool', ] }, () => {
                         timeout: 180000
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.OK);
-                        response.body.forEach(element => {
-                            if (element.policyIds[0] == policyId) {
-                                tokenId = element.tokenId;
-                            }
-                        })
-                        Authorization.getAccessToken(MainSRUsername, tenantId).then((authorization) => {
+                        Authorization.getAccessTokenMGS(MainSRUsername, tenantId).then((authorization) => {
                             cy.request({
                                 method: METHOD.PUT,
-                                url: API.ApiMGS + API.ListOfTokens + tokenId + "/" + DepUserUsername + "/grant-kyc",
+                                url: API.ApiMGS + API.ListOfTokens + tokenId + "/" + MainUserUsername + "/grant-kyc",
                                 headers: {
                                     authorization,
                                 },
@@ -251,11 +242,6 @@ context("Policies", { tags: ['remote_policy', 'secondPool', ] }, () => {
                                 timeout: 180000
                             }).then((response) => {
                                 expect(response.status).to.eq(STATUS_CODE.OK);
-                                response.body.forEach(element => {
-                                    if (element.policyIds[0] == policyId) {
-                                        tokenId = element.tokenId;
-                                    }
-                                })
                             })
                         })
                     })
@@ -263,5 +249,4 @@ context("Policies", { tags: ['remote_policy', 'secondPool', ] }, () => {
             })
         });
     })
-
 });

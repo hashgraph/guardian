@@ -1349,3 +1349,110 @@
         border-bottom: 3px solid rgba(0, 0, 0, 0);
     }
 }
+
+.top-toolbar {
+    .top-toolbar-btn:not(.validation) {
+        &[errors-count] {
+            color: var(--pc-error-border-strong);
+        }
+
+        &[errors-count="-1"] {
+            color: var(--pc-active-icon-color);
+        }
+
+        &[errors-count="0"] {
+            color: var(--pc-valid-color);
+        }
+    }
+
+    .top-toolbar-group.validation {
+        > .error-count {
+            right: 20px;
+            top: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .expand-group .pi {
+            color: var(--pc-active-icon-color) !important;
+        }
+    }
+
+    .top-toolbar-btn.validation {
+        > .error-count {
+            background: var(--pc-active-icon-color);
+        }
+    }
+
+    /* error */
+    .top-toolbar-btn.validation[validation-level="error"] > .error-count {
+        background: var(--pc-error-border-strong);
+    }
+
+    .top-toolbar-btn.validation[validation-level="error"] {
+        color: var(--pc-error-border-strong);
+    }
+
+    /* warning */
+    .top-toolbar-btn.validation[validation-level="warning"] > .error-count {
+        background: var(--pc-warning-border-light);
+    }
+
+    .top-toolbar-btn.validation[validation-level="warning"] {
+        color: var(--pc-warning-border-light);
+    }
+
+    /* info/success */
+    .top-toolbar-btn.validation[validation-level="info"] > .error-count {
+        background: var(--pc-valid-color);
+    }
+
+    .top-toolbar-btn.validation[validation-level="info"],
+    .top-toolbar-btn.validation[validation-level="success"] {
+        color: var(--pc-valid-color);
+    }
+
+    .top-toolbar-btn.validation[validation-level="ok"] {
+        color: var(--pc-active-icon-color);
+    }
+}
+
+.warnings-properties {
+    max-height: 200px;
+    overflow: auto;
+}
+
+.warnings-property {
+    border-radius: 3px;
+    border: 1px solid var(--pc-warning-border-light);
+    color: var(--pc-text-color);
+    background: var(--pc-warning-bg-light);
+    padding: 5px 10px;
+    margin: 5px;
+    box-sizing: border-box;
+}
+
+.infos-properties {
+    max-height: 200px;
+    overflow: auto;
+}
+
+.infos-property {
+    border-radius: 3px;
+    border: 1px solid var(--pc-valid-color);
+    color: var(--pc-valid-color);
+    background: #eefbf0;
+    padding: 5px 10px;
+    margin: 5px;
+    box-sizing: border-box;
+}
+
+.errors-property {
+    border-radius: 3px;
+    border: 1px solid var(--pc-error-border-strong);
+    color: var(--pc-error-border-strong);
+    background: var(--pc-error-bg-strong);
+    padding: 5px 10px;
+    margin: 5px;
+    box-sizing: border-box;
+}

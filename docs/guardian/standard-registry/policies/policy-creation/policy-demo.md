@@ -2,7 +2,7 @@
 
 Once you login as a Standard Registry and finish the setup, click on Policies tab.
 
-![](<../../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../../.gitbook/assets/image (4) (1) (2) (1) (1).png>)
 
 We have two options to create Policy :
 
@@ -43,7 +43,7 @@ Instead of creating Policy from scratch, there is an option of importing the Pol
 **Note:** Files with **.policy** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
 {% endhint %}
 
-![](<../../../../.gitbook/assets/image (11) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../../.gitbook/assets/image (11) (1) (3) (1).png>)
 
 2.1 Once the .zip file is selected, we get the Policy Import Review screen. Once everything looks good, click on Import Button.
 
@@ -84,3 +84,16 @@ To get complete information about tools, please refer to [Tools](../../../../../
 ### 3. Filtering Policies
 
 On the Policy page, it is now possible to filter the policies list by policy name and tags. All available tags are presented in the dropdown list, which you can create using "Create Tag" for each policy, which makes it easier using the filter.
+
+### 4. Select and Delete Multiple Policies
+
+Users can select and delete policies from the Policies table in Guardian UI and also through the API.
+
+<figure><img src="../../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="info" %}
+Note:
+
+1. Selected items remain selection across pagination.
+2. Dependencies are considered when deleting multiple schemas.
+{% endhint %}

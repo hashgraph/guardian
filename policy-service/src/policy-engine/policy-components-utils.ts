@@ -8,7 +8,7 @@ import {
     PolicyOutputEventType,
     PolicyTagMap
 } from './interfaces/index.js';
-import { BlockType, GenerateUUIDv4, LocationType, ModuleStatus, PolicyEvents, PolicyHelper, PolicyStatus } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, IUser, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
 import {
     ActionType,
     AnyBlockType,
@@ -21,7 +21,7 @@ import {
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface.js';
-import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyAction, PolicyRoles, PolicyTool, Users } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyAction, PolicyComment, PolicyDiscussion, PolicyRoles, PolicyTool, Users } from '@guardian/common';
 import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
@@ -33,6 +33,8 @@ import { PolicyNavigationMap } from './interfaces/block-state.js';
 import { ComponentsService } from './helpers/components-service.js';
 import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
 import { PolicyActionsService } from './actions-service.js';
+import { PolicyActionsUtils } from './policy-actions/utils.js';
+import { PolicyUtils } from './helpers/utils.js';
 
 /**
  * Policy tag helper
@@ -721,7 +723,7 @@ export class PolicyComponentsUtils {
         if (block.blockType === BlockType.Tool) {
             block.children = [];
             const tool = await DatabaseServer.getTool({
-                status: ModuleStatus.PUBLISHED,
+                status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN] },
                 messageId: block.messageId,
                 hash: block.hash
             });
@@ -1065,9 +1067,8 @@ export class PolicyComponentsUtils {
             return null;
         }
         const navMap = PolicyComponentsUtils.NavigationMapByPolicyId.get(policyId);
-        const policy = PolicyComponentsUtils.PolicyById.get(policyId);
         if (!user.role) {
-            if (user.did === policy.owner) {
+            if (user.isAdmin) {
                 return navMap.get('OWNER') as T;
             } else {
                 return navMap.get('NO_ROLE') as T;
@@ -1125,84 +1126,21 @@ export class PolicyComponentsUtils {
      * Get Policy Groups
      * @param policy
      * @param user
+     * @param savepointIds
      */
     public static async GetGroups(
         policy: IPolicyInstance | IPolicyInterfaceBlock,
-        user: PolicyUser
+        user: PolicyUser,
+        savepointIds?: string[]
     ): Promise<PolicyRoles[]> {
         return await policy.components.databaseServer.getGroupsByUser(
             policy.policyId,
             user.did,
             {
                 fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active'],
+                savepointIds,
             }
         );
-    }
-
-    /**
-     * Get Policy Full Info
-     * @param policy
-     * @param did
-     */
-    public static async GetPolicyInfo(
-        policy: Policy,
-        did: string
-    ): Promise<Policy> {
-        const result: any = policy;
-        if (policy && did) {
-            result.userRoles = [];
-            result.userGroups = [];
-            result.userRole = null;
-            result.userGroup = null;
-
-            const policyId = policy.id.toString();
-            const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
-
-            if (dryRun) {
-                const activeUser = await DatabaseServer.getVirtualUser(policyId);
-                if (activeUser) {
-                    did = activeUser.did;
-                }
-            }
-
-            if (policy.owner === did) {
-                result.userRoles.push('Administrator');
-                result.userRole = 'Administrator';
-            }
-
-            const db = new DatabaseServer(dryRun);
-            const groups = await db.getGroupsByUser(policyId, did, {
-                fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active'],
-            });
-            for (const group of groups) {
-                if (group.active !== false) {
-                    result.userRoles.push(group.role);
-                    result.userRole = group.role;
-                    result.userGroup = group;
-                }
-            }
-
-            result.userGroups = groups;
-            if (policy.status === PolicyStatus.PUBLISH || policy.status === PolicyStatus.DISCONTINUED) {
-                const multiPolicy = await DatabaseServer.getMultiPolicy(
-                    policy.instanceTopicId,
-                    did
-                );
-                result.multiPolicyStatus = multiPolicy?.type;
-            }
-        } else {
-            result.userRoles = ['No role'];
-            result.userGroups = [];
-            result.userRole = 'No role';
-            result.userGroup = null;
-        }
-
-        if (!result.userRole) {
-            result.userRoles = ['No role'];
-            result.userRole = 'No role';
-        }
-
-        return result;
     }
 
     /**
@@ -1369,11 +1307,13 @@ export class PolicyComponentsUtils {
      * @param username
      * @param instance
      * @param userId
+     * @param savepointIds
      */
     public static async GetPolicyUserByName(
         username: string,
         instance: IPolicyInstance | AnyBlockType,
-        userId: string | null
+        userId: string | null,
+        savepointIds?: string[],
     ): Promise<PolicyUser> {
         if (!username) {
             return null;
@@ -1396,7 +1336,9 @@ export class PolicyComponentsUtils {
         const groups = await instance
             .components
             .databaseServer
-            .getGroupsByUser(instance.policyId, userFull.did);
+            .getGroupsByUser(instance.policyId, userFull.did, {
+                savepointIds,
+            });
         for (const group of groups) {
             if (group.active !== false) {
                 return userFull.setCurrentGroup(group);
@@ -1551,6 +1493,24 @@ export class PolicyComponentsUtils {
         }
     }
 
+    /**
+     * Create new diff
+     * @param policyId
+     */
+    public static async backupKeys(
+        policyId: string,
+        options: {
+            comments: {
+                discussion?: string,
+                user?: string,
+            }
+        }
+    ) {
+        if (PolicyComponentsUtils.BackupControllers.has(policyId)) {
+            await PolicyComponentsUtils.BackupControllers.get(policyId).backupKeys(options);
+        }
+    }
+
     public static async restoreState(policyId: string) {
         const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
         for (const uuid of blockList) {
@@ -1610,6 +1570,7 @@ export class PolicyComponentsUtils {
         const result = await block.setData(user, data, ActionType.COMMON);
         return new MessageResponse(result);
     }
+
     private static async _blockSetDataRemote(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
@@ -1623,6 +1584,7 @@ export class PolicyComponentsUtils {
             return new MessageError('Invalid policy controller', 500);
         }
     }
+
     private static async _blockSetDataCustom(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
@@ -1638,11 +1600,71 @@ export class PolicyComponentsUtils {
         }
     }
 
+    private static async _checkRelayerAccount(
+        ref: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        data: any
+    ): Promise<string> {
+        if (!data.relayerAccount || ref.dryRun) {
+            return;
+        }
+
+        if (![
+            'requestVcDocumentBlock',
+            'requestVcDocumentBlockAddon',
+            'externalDataBlock'
+        ].includes(ref.blockType)) {
+            return;
+        }
+
+        const relayerAccountConfig = data.relayerAccount;
+
+        const balance = await PolicyUtils.checkAccountBalance(relayerAccountConfig, user.userId);
+        if (balance === false) {
+            return 'The relayer account has insufficient balance.';
+        }
+
+        if (balance === null) {
+            return `Invalid relayer account.`;
+        }
+
+        let relayerAccount: any;
+        if (typeof relayerAccountConfig === 'string') {
+            relayerAccount = await (new Users()).getUserRelayerAccount(user.did, relayerAccountConfig, user.userId);
+        } else {
+            relayerAccount = await (new Users()).createRelayerAccount({ did: user.did, id: user.userId }, relayerAccountConfig, user.userId);
+        }
+        if (!relayerAccount) {
+            return `Invalid relayer account.`;
+        }
+
+        if (ref.locationType === LocationType.REMOTE) {
+            await PolicyComponentsUtils._sendRelayerAccount(ref, user, relayerAccount);
+        }
+
+        data.relayerAccount = relayerAccount.account;
+    }
+
+    private static async _sendRelayerAccount(
+        ref: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        relayerAccount: any
+    ): Promise<void> {
+        const userId = user.userId;
+        const relayerAccountKey = await PolicyUtils.loadRelayerAccount(user.did, relayerAccount.account, ref, userId);
+        relayerAccount.key = relayerAccountKey.hederaAccountKey;
+        await PolicyActionsUtils.setRelayerAccount({ ref, user, relayerAccount, userId });
+    }
+
     public static async blockSetData(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
         data: any
     ): Promise<MessageResponse<any> | MessageError<any>> {
+        const error = await PolicyComponentsUtils._checkRelayerAccount(block, user, data);
+        if (error) {
+            return new MessageError(error, 500);
+        }
         if (block.actionType === LocationType.LOCAL) {
             //Action - local, policy - local|remote, user - local|remote
             return await PolicyComponentsUtils._blockSetDataLocal(block, user, data);
@@ -1733,4 +1755,62 @@ export class PolicyComponentsUtils {
     public static async sentRestoreNotification(policyId: string) {
         restoreNotificationEvent(policyId);
     };
+
+    public static async createPolicyDiscussion(
+        policy: IPolicyInstance | AnyBlockType,
+        policyId: string,
+        discussion: PolicyDiscussion,
+        key: string,
+        user: IUser,
+    ) {
+        if (policy.locationType === LocationType.REMOTE) {
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
+            const userId = policyUser.userId;
+            return await PolicyActionsUtils.createPolicyDiscussion({
+                policyId,
+                user: policyUser,
+                discussion,
+                key,
+                userId
+            });
+        } else {
+            const options = {
+                comments: {
+                    discussion: discussion.id
+                }
+            }
+            await PolicyComponentsUtils.backupKeys(policyId, options);
+            PolicyComponentsUtils.backup(policyId);
+            return discussion;
+        }
+    }
+
+    public static async createPolicyComment(
+        policy: IPolicyInstance | AnyBlockType,
+        policyId: string,
+        comment: PolicyComment,
+        user: IUser,
+    ) {
+        if (policy.locationType === LocationType.REMOTE) {
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
+            const userId = policyUser.userId;
+            return await PolicyActionsUtils.createPolicyComment({ policyId, user: policyUser, comment, userId });
+        } else {
+            PolicyComponentsUtils.backup(policyId);
+            return comment;
+        }
+    }
+
+    public static async updateUserRole(policyId: string, did: string) {
+        try {
+            const options = {
+                comments: {
+                    user: did
+                }
+            }
+            await PolicyComponentsUtils.backupKeys(policyId, options);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 }

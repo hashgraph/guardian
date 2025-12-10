@@ -182,6 +182,72 @@ export class PolicyActionsService {
         });
     }
 
+    public async sendRemoteAction(
+        user: PolicyUser,
+        data: any,
+        needResult: boolean = false
+    ): Promise<any> {
+        const userCred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did, user.userId);
+        const userHederaCred = await userCred.loadHederaCredentials(this.policyInstance, user.userId);
+        const userSignOptions = await userCred.loadSignOptions(this.policyInstance, user.userId);
+        const userMessageKey = await userCred.loadMessageKey(this.policyInstance, user.userId);
+
+        if (!userMessageKey) {
+            throw Error('Decentralized access key is not set');
+        }
+
+        const messageServer = new MessageServer({
+            operatorId: userHederaCred.hederaAccountId,
+            operatorKey: userHederaCred.hederaAccountKey,
+            encryptKey: userMessageKey,
+            signOptions: userSignOptions,
+            dryRun: this.policyInstance.dryRun
+        });
+        const row: any = {
+            uuid: GenerateUUIDv4(),
+            type: PolicyActionType.REMOTE_ACTION,
+            owner: user.did,
+            creator: user.did,
+            topicId: this.topicId,
+            policyId: this.policyId,
+            policyMessageId: this.messageId,
+            status: PolicyActionStatus.NEW,
+            accountId: userHederaCred.hederaAccountId,
+            blockTag: 'RemoteAction',
+            messageId: null,
+            startMessageId: null,
+            sender: null,
+            document: data,
+            lastStatus: PolicyActionStatus.NEW,
+            loaded: true
+        };
+        const message = new PolicyActionMessage(MessageAction.CreateRemotePolicyAction);
+        message.setDocument(row, data);
+
+        const messageResult = await messageServer
+            .setTopicObject(this.topic)
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: null,
+                interception: null
+            });
+        row.messageId = messageResult.getId();
+        row.startMessageId = messageResult.getId();
+        row.sender = messageResult.payer;
+        const collection = new DataBaseHelper(PolicyAction);
+        const newRow = collection.create(row);
+        await collection.insertOrUpdate([newRow], 'messageId');
+        await this.updateLastStatus(row);
+        await this.sentNotification(row);
+
+        if (needResult) {
+            return new Promise<any>((resolve, reject) => {
+                this.actions.set(row.startMessageId, { resolve, reject });
+            });
+        }
+    }
+
     public async sendRequest(
         data: PolicyAction,
         callback: (action: PolicyAction) => Promise<void>,
@@ -205,6 +271,7 @@ export class PolicyActionsService {
             owner: data.owner,
             creator: data.owner,
             accountId: data.accountId,
+            relayerAccount: data.relayerAccount,
             blockTag: data.blockTag,
             topicId: data.topicId,
             policyId: this.policyId,
@@ -256,7 +323,12 @@ export class PolicyActionsService {
             throw new Error('Request not found');
         }
 
-        const data = await PolicyActionsUtils.response(row, user, user.userId);
+        const data = await PolicyActionsUtils.response({
+            row,
+            user,
+            relayerAccount: row.relayerAccount,
+            userId: user.userId
+        });
 
         const userCred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did, user.userId);
         const userHederaCred = await userCred.loadHederaCredentials(this.policyInstance, user.userId);
@@ -276,6 +348,7 @@ export class PolicyActionsService {
             owner: row.owner,
             creator: row.owner,
             accountId: row.accountId,
+            relayerAccount: row.relayerAccount,
             blockTag: row.blockTag,
             messageId: null,
             sender: null,
@@ -336,6 +409,39 @@ export class PolicyActionsService {
             const message = PolicyActionMessage.from(data);
 
             switch (message.action) {
+                case MessageAction.CreateRemotePolicyAction: {
+                    const row = await this.savePolicyAction(message, PolicyActionType.REMOTE_ACTION, PolicyActionStatus.NEW);
+                    if (this.isLocal) {
+                        await this.executeAction(row);
+                    } else {
+                        await this.sentNotification(row);
+                    }
+                    break;
+                }
+                case MessageAction.UpdateRemotePolicyAction: {
+                    const row = await this.savePolicyAction(message, PolicyActionType.REMOTE_ACTION, PolicyActionStatus.COMPLETED);
+                    if (!this.isLocal) {
+                        await this.sentNotification(row);
+                    }
+                    const promise = this.actions.get(row.startMessageId);
+                    if (promise) {
+                        this.actions.delete(row.startMessageId);
+                        promise.resolve(row.document);
+                    }
+                    break;
+                }
+                case MessageAction.ErrorRemotePolicyAction: {
+                    const row = await this.savePolicyAction(message, PolicyActionType.REMOTE_ACTION, PolicyActionStatus.ERROR);
+                    if (!this.isLocal) {
+                        await this.sentNotification(row);
+                    }
+                    const promise = this.actions.get(row.startMessageId);
+                    if (promise) {
+                        this.actions.delete(row.startMessageId);
+                        promise.reject(row.document);
+                    }
+                    break;
+                }
                 case MessageAction.CreatePolicyAction: {
                     const row = await this.savePolicyAction(message, PolicyActionType.ACTION, PolicyActionStatus.NEW);
                     if (this.isLocal) {
@@ -402,7 +508,11 @@ export class PolicyActionsService {
         return true;
     }
 
-    private async savePolicyAction(message: PolicyActionMessage, type: PolicyActionType, status: PolicyActionStatus) {
+    private async savePolicyAction(
+        message: PolicyActionMessage,
+        type: PolicyActionType,
+        status: PolicyActionStatus
+    ) {
         const collection = new DataBaseHelper(PolicyAction);
         let document: any;
         let loaded: boolean = false;
@@ -455,6 +565,7 @@ export class PolicyActionsService {
                 owner: message.owner,
                 creator: message.owner,
                 accountId: message.accountId,
+                relayerAccount: message.relayerAccount,
                 sender: message.payer,
                 blockTag: message.blockTag,
                 messageId: message.id,
@@ -474,6 +585,7 @@ export class PolicyActionsService {
             row.owner = message.owner;
             row.creator = message.owner;
             row.accountId = message.accountId;
+            row.relayerAccount = message.relayerAccount;
             row.sender = message.payer;
             row.topicId = message.topicId?.toString();
             row.blockTag = message.blockTag;
@@ -503,7 +615,7 @@ export class PolicyActionsService {
             if (!policyUser) {
                 return;
             }
-            if (policyUser.hederaAccountId !== row.sender || row.accountId !== row.sender) {
+            if (!this.checkActionSender(row, policyUser)) {
                 return;
             }
 
@@ -516,14 +628,22 @@ export class PolicyActionsService {
                 throw new Error('Insufficient permissions to execute the policy.');
             }
 
-            if (row.blockTag === 'Groups') {
-                await this.executeGroup(row, policyUser);
+            if (row.type === PolicyActionType.REMOTE_ACTION) {
+                await this.executeRemoteAction(row, policyUser);
             } else {
-                await this.executeBlock(row, policyUser);
+                if (row.blockTag === 'Groups') {
+                    await this.executeGroup(row, policyUser);
+                } else {
+                    await this.executeBlock(row, policyUser);
+                }
             }
         } catch (error) {
             await this.sentErrorMessage(row, error, this.policyOwnerId);
         }
+    }
+
+    private async checkActionSender(row: PolicyAction, policyUser: PolicyUser) {
+        return policyUser.hederaAccountId === row.sender && row.accountId === row.sender;
     }
 
     private async executeBlock(row: PolicyAction, policyUser: PolicyUser) {
@@ -539,6 +659,12 @@ export class PolicyActionsService {
 
     private async executeGroup(row: PolicyAction, policyUser: PolicyUser) {
         const result = await this.policyInstance.components.selectGroup(policyUser, row.document?.uuid);
+        this.policyInstance.backup();
+        await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
+    }
+
+    private async executeRemoteAction(row: PolicyAction, policyUser: PolicyUser) {
+        const result = await PolicyActionsUtils.complete(row, policyUser, this.policyOwner, this.policyOwnerId);
         this.policyInstance.backup();
         await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
     }
@@ -687,8 +813,8 @@ export class PolicyActionsService {
         const valid = await PolicyActionsUtils.validate(request, response, this.policyOwnerId);
         if (valid) {
             const callback = this.callback.get(request.messageId);
+            this.callback.delete(request.messageId);
             if (callback) {
-                this.callback.delete(request.messageId)
                 await callback(response);
             }
         }

@@ -20,7 +20,7 @@ Tools can be imported by clicking on "Import" button in Tools page as shown belo
 {% hint style="info" %}
 **Important note on differences between imports of Tools vs. Modules and Policies.**
 
-&#x20;When importing Tools via message IDs:
+When importing Tools via message IDs:
 
 1. Tool is non-editable when it is already published.
 2. A single Tool can only be imported once, if it is already been imported then no additional import can take place.
@@ -56,7 +56,28 @@ Tools that have not been published can only be edited.
 
 While importing tool via file, or policy via file or IPFS, you can change used tools in preview dialog, it will change tools references in schemas and config automatically.
 
-<figure><img src="../../../../.gitbook/assets/image (588).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (587) (1).png" alt=""><figcaption></figcaption></figure>
+
+### 1.7 Status changed to Dry Run mode
+
+Users can now update the status of a tool directly from the Tools Page.
+
+#### **1.7.1 How to Enable Dry Run:**
+
+**1.7.1 Through Tools Page:**
+
+1. Navigate to the Tools Page.
+
+<figure><img src="../../../../.gitbook/assets/image (438).png" alt=""><figcaption></figcaption></figure>
+
+2. Find the tool you want to test.
+3. Toggle the **Dry Run** switch to **ON**.
+
+<figure><img src="../../../../.gitbook/assets/image (2) (12).png" alt=""><figcaption></figcaption></figure>
+
+**1.7.2 Through Policy Configurator Page:**
+
+<figure><img src="../../../../.gitbook/assets/image (3) (7).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Schemas
 
@@ -97,8 +118,6 @@ Variables are used as an external interface of Tools. They allow the usage of na
 Variables can be created/edited by using the right side tab name "Variables" in policy configurator as shown below:
 
 <figure><img src="../../../../.gitbook/assets/image (324).png" alt=""><figcaption></figcaption></figure>
-
-
 
 #### 3.1.3 Input/Output Events
 

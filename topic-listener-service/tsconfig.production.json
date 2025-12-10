@@ -14,11 +14,15 @@
         "skipLibCheck": true,
         "baseUrl": "./src",
         "paths": {
-          "#constants": ["constants/index.js"]
+            "#constants": [
+                "constants/index.js"
+            ]
         }
     },
     "include": [
-        "src/**/*", "../interfaces/src/type/TopicType.ts"],
+        "src/**/*",
+        "../interfaces/src/type/TopicType.ts"
+    ],
     "exclude": [
         "node_modules"
     ],

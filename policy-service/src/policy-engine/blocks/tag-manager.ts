@@ -8,6 +8,7 @@ import { LocationType, SchemaCategory, SchemaHelper, SchemaStatus, TagType } fro
 import { DatabaseServer, MessageAction, MessageServer, MessageType, Tag, TagMessage, VcHelper, } from '@guardian/common';
 import { PopulatePath } from '@mikro-orm/mongodb';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { PolicyUtils } from '../helpers/utils.js';
 
 /**
  * Tag Manager
@@ -135,6 +136,26 @@ export class TagsManagerBlock {
                     throw new BlockActionError(`Invalid tag`, ref.blockType, ref.uuid);
                 }
 
+                //Target
+                const target = await this.getTarget(TagType.PolicyDocument, tag.localTarget || tag.target);
+                if (!target) {
+                    throw new BlockActionError(`Invalid target`, ref.blockType, ref.uuid);
+                }
+
+                const relayerAccount = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, user.userId);
+
+                const tagUUID: string = await ref.components.generateUUID();
+                tag.uuid = tag.uuid || tagUUID;
+                tag.operation = 'Create';
+                tag.entity = TagType.PolicyDocument;
+                tag.target = null;
+                tag.localTarget = target.id;
+                tag.status = 'Draft';
+                tag.owner = user.did;
+                tag.policyId = ref.policyId;
+                tag.date = (new Date()).toISOString();
+                tag.relayerAccount = relayerAccount;
+
                 //Document
                 if (tag.document && typeof tag.document === 'object') {
                     const vcHelper = new VcHelper();
@@ -155,26 +176,18 @@ export class TagsManagerBlock {
                         vcHelper.addDryRunContext(credentialSubject);
                     }
                     const uuid = await ref.components.generateUUID();
-                    const vcObject = await PolicyActionsUtils.signVC(ref, credentialSubject, user.did, { uuid }, user.userId);
+
+                    const vcObject = await PolicyActionsUtils.signVC({
+                        ref,
+                        subject: credentialSubject,
+                        issuer: user.did,
+                        relayerAccount,
+                        options: { uuid },
+                        userId: user.userId
+                    });
                     tag.document = vcObject.getDocument();
                 } else {
                     tag.document = null;
-                }
-
-                const target = await this.getTarget(TagType.PolicyDocument, tag.localTarget || tag.target);
-                if (target) {
-                    const uuid: string = await ref.components.generateUUID();
-                    tag.uuid = tag.uuid || uuid;
-                    tag.operation = 'Create';
-                    tag.entity = TagType.PolicyDocument;
-                    tag.target = null;
-                    tag.localTarget = target.id;
-                    tag.status = 'Draft';
-                    tag.owner = user.did;
-                    tag.policyId = ref.policyId;
-                    tag.date = (new Date()).toISOString();
-                } else {
-                    throw new BlockActionError(`Invalid target`, ref.blockType, ref.uuid);
                 }
 
                 //Message
@@ -297,8 +310,18 @@ export class TagsManagerBlock {
         const message = new TagMessage(MessageAction.PublishTag);
         message.setDocument(item);
 
+        const relayerAccount = await PolicyUtils.getUserRelayerAccount(ref, owner, null, userId);
+
         const topic = await PolicyActionsUtils.getTopicById(ref, topicId, userId);
-        const result = await PolicyActionsUtils.sendMessage(ref, topic, message, owner, true, userId);
+        const result = await PolicyActionsUtils.sendMessage({
+            ref,
+            topic,
+            message,
+            owner,
+            relayerAccount,
+            updateIpfs: true,
+            userId
+        });
 
         item.messageId = result.getId();
         item.topicId = result.getTopicId();
@@ -315,6 +338,8 @@ export class TagsManagerBlock {
     private async deleteTag(item: Tag, topicId: string, owner: string, userId: string | null): Promise<Tag> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
+        const relayerAccount = await PolicyUtils.getUserRelayerAccount(ref, owner, null, userId);
+
         item.operation = 'Delete';
         item.status = 'Published';
         item.date = item.date || (new Date()).toISOString();
@@ -323,7 +348,15 @@ export class TagsManagerBlock {
         message.setDocument(item);
 
         const topic = await PolicyActionsUtils.getTopicById(ref, topicId, userId);
-        const result = await PolicyActionsUtils.sendMessage(ref, topic, message, owner, true, userId);
+        const result = await PolicyActionsUtils.sendMessage({
+            ref,
+            topic,
+            message,
+            owner,
+            relayerAccount,
+            updateIpfs: true,
+            userId
+        });
 
         item.messageId = result.getId();
         item.topicId = result.getTopicId();

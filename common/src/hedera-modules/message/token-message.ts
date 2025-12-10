@@ -95,6 +95,7 @@ export class TokenMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             tokenId: this.tokenId,
             tokenName: this.tokenName,
             tokenSymbol: this.tokenSymbol,
@@ -107,7 +108,7 @@ export class TokenMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         return [];
     }
 

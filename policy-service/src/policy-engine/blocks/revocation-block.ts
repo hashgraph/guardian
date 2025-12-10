@@ -163,7 +163,16 @@ export class RevocationBlock {
             }
         }
 
-        await PolicyActionsUtils.sendMessages(ref, needUpdate, event.user.did, false, userId);
+        const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, doc, userId);
+
+        await PolicyActionsUtils.sendMessages({
+            ref,
+            messages: needUpdate,
+            owner: event.user.did,
+            relayerAccount,
+            updateIpfs: false,
+            userId
+        });
 
         const documents = await this.findDocumentByMessageIds(
             relatedMessages.map((item) => item.id)

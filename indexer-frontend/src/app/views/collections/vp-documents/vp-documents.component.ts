@@ -52,25 +52,32 @@ import { HederaType } from '@components/hedera-explorer/hedera-explorer.componen
 export class VpDocumentsComponent extends BaseGridComponent {
     columns: any[] = [
         {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'analytics.schemaName',
+            title: 'grid.schema',
+            width: '200px',
+        },
+        {
+            type: ColumnType.CHIP,
+            field: 'status',
+            title: 'grid.status',
+            width: '100px',
+            sort: true,
+        },
+        {
             type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
             width: '250px',
             sort: true,
             hederaType: HederaType.TRANSACTION,
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'consensusTimestamp',
-            title: 'grid.date',
-            width: '250px',
-            sort: true,
-            formatValue: (value: any) => {
-                const fixedTimestamp = Math.floor(value * 1000);
-                value = new Date(fixedTimestamp);
-                const formattedDate = value.toLocaleString();
-                return formattedDate;
-            }
         },
         {
             type: ColumnType.TEXT,
@@ -89,25 +96,24 @@ export class VpDocumentsComponent extends BaseGridComponent {
             width: '350px',
         },
         {
-            type: ColumnType.CHIP,
-            field: 'status',
-            title: 'grid.status',
-            width: '100px',
-            sort: true
-        },
-        {
             type: ColumnType.TEXT,
-            field: 'analytics.issuer',
-            title: 'grid.issuer',
-            width: '500px',
+            field: 'consensusTimestamp',
+            title: 'grid.date',
+            width: '250px',
+            sort: true,
+            formatValue: (value: any) => {
+                const fixedTimestamp = Math.floor(value * 1000);
+                value = new Date(fixedTimestamp);
+                const formattedDate = value.toLocaleString();
+                return formattedDate;
+            }
         },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
-        },
+        // {
+        //     type: ColumnType.TEXT,
+        //     field: 'analytics.issuer',
+        //     title: 'grid.issuer',
+        //     width: '500px',
+        // },
     ];
 
     constructor(
@@ -117,6 +123,10 @@ export class VpDocumentsComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(
             new Filter({
                 label: 'grid.filter.topic_id',

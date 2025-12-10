@@ -1,0 +1,43 @@
+<div *ngIf="!errorMessage; else errorTpl" class="grid-modal">
+    <ag-grid-angular
+            [theme]="theme"
+            class="grid"
+            [columnDefs]="columnDefs"
+            [rowData]="rowData"
+            [defaultColDef]="defaultColDef"
+            [singleClickEdit]="!readonly"
+            [undoRedoCellEditing]="!readonly"
+            [enableCellTextSelection]="true"
+            [suppressScrollOnNewData]="true"
+            (gridReady)="onGridReady($event)"
+            (cellEditingStopped)="onCellEditingStopped($event)"
+            (bodyScroll)="onBodyScroll($event)">
+    </ag-grid-angular>
+
+    <div class="modal__footer">
+        <button class="p-button p-component p-button-outlined" (click)="onCancel()">
+            Close
+        </button>
+
+        <button
+            class="p-button p-component p-button-primary"
+            *ngIf="!readonly"
+            (click)="onSave()">
+            Save
+        </button>
+    </div>
+</div>
+
+<ng-template #errorTpl>
+    <div class="p-4">
+        <div style="color: #c00; font-weight: 600;">
+            {{ errorMessage }}
+        </div>
+        <div class="mt-3">
+            <button class="p-button p-component" (click)="onCancel()">
+                OK
+            </button>
+        </div>
+    </div>
+</ng-template>
+

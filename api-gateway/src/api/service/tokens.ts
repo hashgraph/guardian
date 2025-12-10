@@ -646,7 +646,7 @@ export class TokensApi {
             }
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.associateToken(tokenId, owner);
+            return await guardians.associateToken(tokenId, null, owner);
         } catch (error) {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -701,7 +701,7 @@ export class TokensApi {
         const task = taskManager.start(TaskAction.ASSOCIATE_TOKEN, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.associateTokenAsync(tokenId, owner, task);
+            await guardians.associateTokenAsync(tokenId, null, owner, task);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -749,7 +749,7 @@ export class TokensApi {
             }
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.dissociateToken(tokenId, owner);
+            return await guardians.dissociateToken(tokenId, null, owner);
         } catch (error) {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -803,7 +803,7 @@ export class TokensApi {
         const task = taskManager.start(TaskAction.DISSOCIATE_TOKEN, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.dissociateTokenAsync(tokenId, owner, task);
+            await guardians.dissociateTokenAsync(tokenId, null, owner, task);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -1431,4 +1431,306 @@ export class TokensApi {
             await InternalException(error, this.logger, user.id);
         }
     }
+
+    /**
+     * User info
+     */
+    @Get('/:tokenId/relayer-accounts/:relayerAccountId/info')
+    @Auth(
+        Permissions.TOKENS_TOKEN_MANAGE,
+        Permissions.TOKENS_TOKEN_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns user information for the selected token.',
+        description: 'Returns user information for the selected token.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'relayerAccountId',
+        type: String,
+        description: 'Relayer Account Id',
+        required: true,
+        example: Examples.ACCOUNT_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TokenInfoDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getRelayerAccountInfo(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('relayerAccountId') relayerAccountId: string
+    ): Promise<TokenInfoDTO> {
+        try {
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const guardians = new Guardians();
+            if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_MANAGE)) {
+                return await guardians.getRelayerAccountInfo(tokenId, relayerAccountId, null, user);
+            } else {
+                const owner = new EntityOwner(user);
+                return await guardians.getRelayerAccountInfo(tokenId, relayerAccountId, owner, user);
+            }
+        } catch (error) {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            if (error?.message?.toLowerCase().includes('user not found')) {
+                throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
+            }
+            if (error?.message?.toLowerCase().includes('token not found')) {
+                throw new HttpException('Token not registered.', HttpStatus.NOT_FOUND);
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Associate
+     */
+    @Put('/:tokenId/associate/:accountId')
+    @Auth(
+        Permissions.TOKENS_TOKEN_EXECUTE,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Associates the user with the provided Hedera token.',
+        description: 'Associates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'accountId',
+        type: String,
+        description: 'Account ID',
+        required: true,
+        example: Examples.ACCOUNT_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TokenInfoDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async associateWithAccountToken(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('accountId') accountId: string
+    ): Promise<TokenInfoDTO> {
+        try {
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.associateToken(tokenId, accountId, owner);
+        } catch (error) {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            if (error?.message?.toLowerCase().includes('user not found')) {
+                throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
+            }
+            if (error?.message?.toLowerCase().includes('token not found')) {
+                throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
+            }
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Associate
+     */
+    @Put('/push/:tokenId/associate/:accountId')
+    @Auth(
+        Permissions.TOKENS_TOKEN_EXECUTE,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Associates the user with the provided Hedera token.',
+        description: 'Associates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'accountId',
+        type: String,
+        description: 'Account ID',
+        required: true,
+        example: Examples.ACCOUNT_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async associateTokenWithAccountAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('accountId') accountId: string
+    ): Promise<TaskDTO> {
+        if (!user.did) {
+            throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        const owner = new EntityOwner(user);
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.ASSOCIATE_TOKEN, user.id);
+        RunFunctionAsync<ServiceError>(async () => {
+            const guardians = new Guardians();
+            await guardians.associateTokenAsync(tokenId, accountId, owner, task);
+        }, async (error) => {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+        });
+
+        return task;
+    }
+
+    /**
+     * Dissociate
+     */
+    @Put('/:tokenId/dissociate/:accountId')
+    @Auth(
+        Permissions.TOKENS_TOKEN_EXECUTE,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Associate the user with the provided Hedera token.',
+        description: 'Disassociates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'accountId',
+        type: String,
+        description: 'Account ID',
+        required: true,
+        example: Examples.ACCOUNT_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TokenInfoDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async dissociateWithAccountToken(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('accountId') accountId: string
+    ): Promise<TokenInfoDTO> {
+        try {
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.dissociateToken(tokenId, accountId, owner);
+        } catch (error) {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            if (error?.message?.toLowerCase().includes('user not found')) {
+                throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
+            }
+            if (error?.message?.toLowerCase().includes('token not found')) {
+                throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
+            }
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Dissociate
+     */
+    @Put('/push/:tokenId/dissociate/:accountId')
+    @Auth(
+        Permissions.TOKENS_TOKEN_EXECUTE,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Associate the user with the provided Hedera token.',
+        description: 'Disassociates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'accountId',
+        type: String,
+        description: 'Account ID',
+        required: true,
+        example: Examples.ACCOUNT_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async dissociateTokenWithAccountAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('accountId') accountId: string
+    ): Promise<TaskDTO> {
+        if (!user.did) {
+            throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        const owner = new EntityOwner(user);
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.DISSOCIATE_TOKEN, user.id);
+        RunFunctionAsync<ServiceError>(async () => {
+            const guardians = new Guardians();
+            await guardians.dissociateTokenAsync(tokenId, accountId, owner, task);
+        }, async (error) => {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+        });
+        return task;
+    }
+
 }

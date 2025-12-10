@@ -254,11 +254,11 @@
 
                                 <td
                                     *ngIf="canDisplayColumn('instance')"
-                                    class="cell-150"
+                                    class="cell-{{sizeColumn('instance')}}"
                                     [class.cell-last]="!canDisplayColumn('operations')"
                                     pFrozenColumn
                                 >
-                                    <div *ngIf="showInstance(policy) as instanceLabel" class="commands-line">
+                                    <div *ngIf="showInstance(policy) as instanceLabel" class="instances">
                                         <button
                                             [routerLink]="['/policy-viewer', policy.id]"
                                             class="button instance-btn"
@@ -280,6 +280,19 @@
                                             </svg-icon>
                                             <svg-icon
                                                 *ngSwitchDefault
+                                                class="icon-btn svg-icon-16"
+                                                src="/assets/images/icons/16/run.svg"
+                                                svgClass="color-white">
+                                            </svg-icon>
+                                        </button>
+                                        <button
+                                            *ngIf="showAudit(policy)"
+                                            [routerLink]="['/policy-repository', policy.id]"
+                                            class="button repository-btn"
+                                            [label]="'Workflow repository'"
+                                            pButton
+                                        >
+                                            <svg-icon
                                                 class="icon-btn svg-icon-16"
                                                 src="/assets/images/icons/16/run.svg"
                                                 svgClass="color-white">

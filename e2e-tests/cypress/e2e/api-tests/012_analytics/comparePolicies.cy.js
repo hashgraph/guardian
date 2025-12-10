@@ -6,7 +6,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 
-    let policyId1, policyId2, lastPolicy, prelastPolicy;
+    let policyId1, policyId2, preprelastPolicy, prelastPolicy;
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -20,8 +20,6 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                 expect(response.status).to.eq(STATUS_CODE.OK)
                 policyId1 = response.body.at(0).id;
                 policyId2 = response.body.at(1).id;
-                lastPolicy = response.body.at(-1).id;
-                prelastPolicy = response.body.at(-2).id;
             })
         })
     })
@@ -54,26 +52,42 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
     it("Compare equal policies", () => {
         Authorization.getAccessTokenByRefreshToken().then((authorization) => {
             cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.PolicyCompare,
-                body: {
-                    policyId1: lastPolicy,
-                    policyId2: prelastPolicy,
-                    eventsLvl: 1,
-                    propLvl: 2,
-                    childrenLvl: 2,
-                    idLvl: 0
-                },
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies,
                 headers: {
                     authorization,
                 }
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body.left.id).to.eq(lastPolicy);
-                expect(response.body.right.id).to.eq(prelastPolicy);
-                expect(response.body.blocks.report.at(0).type).eq("FULL");
-                expect(response.body.total).eq(100);
+                expect(response.status).to.eq(STATUS_CODE.OK)
+                response.body.forEach(element => {
+                    if (element.name.startsWith("iRec_2_"))
+                        preprelastPolicy = element.id;
+                    if (element.name == "iRec_2")
+                        prelastPolicy = element.id;
+                });
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.PolicyCompare,
+                    body: {
+                        policyId1: preprelastPolicy,
+                        policyId2: prelastPolicy,
+                        eventsLvl: 2,
+                        propLvl: 2,
+                        childrenLvl: 2,
+                        idLvl: 0
+                    },
+                    headers: {
+                        authorization,
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(STATUS_CODE.OK);
+                    expect(response.body.left.id).to.eq(preprelastPolicy);
+                    expect(response.body.right.id).to.eq(prelastPolicy);
+                    expect(response.body.blocks.report.at(0).type).eq("FULL");
+                    expect(response.body.total).eq(100);
+                })
             })
+
         })
     });
 

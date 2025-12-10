@@ -431,3 +431,15 @@ form::ng-deep {
         }
     }
 }
+
+.last-autosave {
+    position: absolute;
+    right: 250px;
+    bottom: 25px;
+    font-size: 14px;
+    color: #8E8E8E;
+}
+
+.table-field-container {
+    width: 100%;
+}

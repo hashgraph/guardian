@@ -1,0 +1,93 @@
+<div class="page-content">
+    <div class="content">
+        <div class="header">
+            @if (itemNumber) {
+                <h1>{{ 'details.schema.header' | transloco }} {{title}} <span>#{{itemNumber}}</span></h1>
+            } @else {
+                <h1>{{ 'details.schema.header' | transloco }} {{title}}</h1>
+            }
+        </div>
+        @if (loading) {
+            <div class="loading">
+                <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
+            </div>
+        } @else {
+            @if (row) {
+            <p-tabView [activeIndex]="tabIndex" (activeIndexChange)="onTab($event)">
+                @if (target) {
+                    <p-tabPanel [header]="'details.schema.tabs.overview' | transloco">
+                        <div class="details-container">
+                            <app-overview-form [target]="target" [fields]="overviewFields"></app-overview-form>
+                        </div>
+                        @if (!target._unpacked) {
+                            <div class="document-container">
+                                <div class="document-container-error">
+                                    <div class="document-container-error-header">
+                                        {{ 'details.schemas_not_unpacked' | transloco }}
+                                    </div>
+                                    <p-button class="document-container-error-btn" [label]="'details.try_unpacked' | transloco" (onClick)="onUnpack(first)"/>
+                                </div>
+                            </div>
+                        }
+                    </p-tabPanel>
+                    <p-tabPanel [header]="'details.schema.tabs.document' | transloco">
+                        @if (first._ipfs) {
+                            <div class="documents-container">
+                                <div *ngFor="let file of first._ipfs; let i=index" class="document-container">
+                                    <div class="document-container-group">
+                                        <div class="document-container-group-header">
+                                            {{ 'details.cid' | transloco }}:
+                                        </div>
+                                        <div class="document-cid">
+                                            <span>{{file.cid}}</span>
+                                        </div>
+                                    </div>
+                                    @if (first._ipfsStatus) {
+                                        <div class="document-container-group">
+                                            <textarea [value]="file.json" readonly pInputTextarea></textarea>
+                                        </div>
+                                    }
+                                </div>
+                                @if (!first._ipfsStatus) {
+                                    <div class="document-container">
+                                        <div class="document-container-error">
+                                            @if (first._ipfs.length<2) {
+                                                <div class="document-container-error-header">
+                                                    {{ 'details.document_not_loaded_header' | transloco }}
+                                                </div>
+                                                <div class="document-container-error-message">
+                                                    {{ 'details.document_not_loaded_message' | transloco }}
+                                                </div>
+                                            } @else {
+                                                <div class="document-container-error-header">
+                                                    {{ 'details.documents_not_loaded_header' | transloco }}
+                                                </div>
+                                                <div class="document-container-error-message">
+                                                    {{ 'details.documents_not_loaded_message' | transloco }}
+                                                </div>
+                                            }
+                                            <p-button class="document-container-error-btn" [label]="'details.try_load' | transloco" (onClick)="onLoadDocument(first)"/>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </p-tabPanel>
+                }
+                <p-tabPanel [header]="'details.schema.tabs.activity' | transloco">
+                    <app-activity [activity]="activityItems" [total]="totalActivity"></app-activity>
+                </p-tabPanel>
+                <p-tabPanel [header]="'details.schema.tabs.raw' | transloco">
+                    <div class="text-area-container">
+                        <textarea [value]="row | json" readonly pInputTextarea>
+                        </textarea>
+                    </div>
+                </p-tabPanel>
+
+            </p-tabView>
+            } @else {
+                <div>{{ 'details.not_found' | transloco }}</div>
+            }
+        }
+    </div>
+</div>

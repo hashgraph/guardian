@@ -1,65 +1,61 @@
-<div class="g-dialog-content">
-    <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onNoClick()">
-                <i class="pi pi-times"></i>
-            </div>
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{ title }}</div>
+    </div>
+    <div class="header-icon" (click)="onNoClick()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+
+<div class="dialog-body">
+    <div *ngIf="loading" class="loading">
+        <p-progressSpinner></p-progressSpinner>
+    </div>
+    <div *ngIf="results" class="results">
+        <div class="results-header">
+            Common
         </div>
-        <div class="g-dialog-title">
-            {{ title }}
+
+        <div class="results-info">
+            <div class="results-info-header">Created documents:</div>
+            <div>{{ info.documents }}</div>
+        </div>
+        <div class="results-info">
+            <div class="results-info-header">Minted tokens:</div>
+            <div>{{ info.tokens }}</div>
+        </div>
+        <div class="results-info">
+            <div class="results-info-header">Total rate:</div>
+            <div [attr.rate-color]="total">{{ total }}%</div>
+        </div>
+
+        <div class="results-header">
+            Documents
+        </div>
+        <div class="results-body">
+            <div *ngFor="let item of results; let i=index" class="results-item">
+                <div class="document-type">{{ item.type }}</div>
+                <div class="document-schema">{{ item.schema }}</div>
+                <div class="document-rate" [attr.rate-color]="item.rate">{{ item.rate }}</div>
+                <div class="document-view">
+                    <a (click)="openDocument(item)">View Document</a>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="g-dialog-body">
-        <div class="context">
-            <div *ngIf="loading" class="loading">
-                <p-progressSpinner></p-progressSpinner>
-            </div>
-            <div *ngIf="results" class="results">
-                <div class="results-header">
-                    Common
-                </div>
+</div>
 
-                <div class="results-info">
-                    <div class="results-info-header">Created documents:</div>
-                    <div>{{ info.documents }}</div>
-                </div>
-                <div class="results-info">
-                    <div class="results-info-header">Minted tokens:</div>
-                    <div>{{ info.tokens }}</div>
-                </div>
-                <div class="results-info">
-                    <div class="results-info-header">Total rate:</div>
-                    <div [attr.rate-color]="total">{{ total }}%</div>
-                </div>
-
-                <div class="results-header">
-                    Documents
-                </div>
-                <div class="results-body">
-                    <div *ngFor="let item of results; let i=index" class="results-item">
-                        <div class="document-type">{{ item.type }}</div>
-                        <div class="document-schema">{{ item.schema }}</div>
-                        <div class="document-rate" [attr.rate-color]="item.rate">{{ item.rate }}</div>
-                        <div class="document-view">
-                            <a (click)="openDocument(item)">View Document</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="dialog-actions">
-                    <p-button
-                        class="mat-raised-button"
-                        label="Details"
-                        (click)="onDetails()"
-                        styleClass="mat-raised-button mat-primary"
-                    ></p-button>
-                    <p-button
-                        class="mat-button"
-                        label="Finish"
-                        (click)="onFinish()"
-                        styleClass="mat-button"
-                    ></p-button>
-                </div>
-            </div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onDetails()" 
+                class="guardian-button guardian-button-primary">Details</button>
+        </div>
+        <div class="dialog-button">
+            <button 
+                (click)="onFinish()" 
+                class="guardian-button guardian-button-secondary">Finish</button>
         </div>
     </div>
 </div>

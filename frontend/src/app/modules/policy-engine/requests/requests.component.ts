@@ -423,6 +423,8 @@ export class PolicyRequestsComponent implements OnInit {
         switch (row.type) {
             case PolicyActionType.ACTION:
                 return 'Action';
+            case PolicyActionType.REMOTE_ACTION:
+                return 'Action';
             case PolicyActionType.REQUEST:
                 return 'Request';
             default:

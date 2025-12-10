@@ -1,6 +1,6 @@
 {
     "name": "api-tests",
-    "version": "3.3.0",
+    "version": "3.4.0",
     "description": "API Tests",
     "main": "index.js",
     "type": "module",

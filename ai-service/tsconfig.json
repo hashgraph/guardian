@@ -10,12 +10,14 @@
         "lib": [
             "es6"
         ],
-        "module": "ESNext",
-        "moduleResolution": "node",
+        "module": "NodeNext",
+        "moduleResolution": "nodenext",
         "outDir": "dist/",
         "target": "es2022",
         "paths": {
-          "#constants/*": ["./src/constants/*"]
+            "#constants/*": [
+                "./src/constants/*"
+            ]
         }
     },
     "exclude": [

@@ -1,6 +1,6 @@
 import { UntypedFormControl, UntypedFormGroup } from "@angular/forms";
 import { Permissions, PermissionCategories } from "@guardian/interfaces";
-import {CategoryAccess, CategoryDelegate, CategoryDetails, CategoryGroup, CategoryLogs} from "./permissions-category";
+import { CategoryAccess, CategoryDelegate, CategoryDetails, CategoryGroup, CategoryLogs, CategoryPolicy } from "./permissions-category";
 import { IAction, ICategory, IPermission } from "./permissions-interface";
 
 export class PermissionsGroup {
@@ -42,6 +42,12 @@ export class PermissionsGroup {
                 }
                 case PermissionCategories.LOG: {
                     const category = new CategoryLogs();
+                    this.map.set(permission.category, category);
+                    this.categories.push(category);
+                    return category;
+                }
+                case PermissionCategories.POLICIES: {
+                    const category = new CategoryPolicy(permission);
                     this.map.set(permission.category, category);
                     this.categories.push(category);
                     return category;

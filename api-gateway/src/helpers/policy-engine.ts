@@ -1,4 +1,4 @@
-import { ExportMessageDTO, PoliciesValidationDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO } from '#middlewares';
+import { ExportMessageDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
@@ -239,9 +239,10 @@ export class PolicyEngine extends NatsService {
      * Get policy blocks
      * @param user
      * @param policyId
+     * @param params
      */
-    public async getPolicyBlocks(user: IAuthUser, policyId: string): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_BLOCKS, { user, policyId });
+    public async getPolicyBlocks(user: IAuthUser, policyId: string, params: any): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_BLOCKS, { user, policyId, params });
     }
 
     /**
@@ -356,7 +357,7 @@ export class PolicyEngine extends NatsService {
     public async exportFile(
         policyId: string,
         owner: IOwner
-    ): Promise<ArrayBuffer> {
+    ): Promise<Buffer> {
         const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_FILE, { policyId, owner }) as any;
         return Buffer.from(file, 'base64');
     }
@@ -381,7 +382,7 @@ export class PolicyEngine extends NatsService {
     public async exportXlsx(
         policyId: string,
         owner: IOwner
-    ): Promise<ArrayBuffer> {
+    ): Promise<Buffer> {
         const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_XLSX, { policyId, owner }) as any;
         return Buffer.from(file, 'base64');
     }
@@ -514,9 +515,10 @@ export class PolicyEngine extends NatsService {
         xlsx: ArrayBuffer,
         owner: IOwner,
         policyId: string,
+        schemasIds: string[],
         task: NewTask
     ) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_ASYNC, { xlsx, owner, policyId, task });
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_ASYNC, { xlsx, owner, policyId, task, schemasIds });
     }
 
     /**
@@ -585,24 +587,29 @@ export class PolicyEngine extends NatsService {
     /**
      * Get Virtual Users by policy id
      * @param policyId
+     * @param owner
+     * @param savepointIds
      */
     public async getVirtualUsers(
         policyId: string,
-        owner: IOwner
+        owner: IOwner,
+        savepointIds?: string[]
     ) {
-        return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId, owner });
+        return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId, owner, savepointIds });
     }
 
     /**
      * Create new Virtual User
      * @param policyId
      * @param owner
+     * @param savepointIds
      */
     public async createVirtualUser(
         policyId: string,
-        owner: IOwner
+        owner: IOwner,
+        savepointIds: string[]
     ) {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, owner });
+        return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, owner, savepointIds });
     }
 
     /**
@@ -661,57 +668,116 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
-     * Create savepoint
-     * @param model
-     * @param owner
+     * Get savepoints for policy
      * @param policyId
+     * @param owner
+     */
+    public async getSavepoints(
+        policyId: string,
+        owner: IOwner
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINTS, { policyId, owner });
+    }
+
+    /**
+     * Get savepoint by id
+     * @param policyId
+     * @param owner
+     * @param savepointId
+     */
+    public async getSavepoint(
+        policyId: string,
+        savepointId: string,
+        owner: IOwner
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINT, { policyId, owner, savepointId });
+    }
+
+    /**
+     * Get savepoints count
+     * @param policyId
+     * @param owner
+     * @param includeDeleted
+     */
+    public async getSavepointsCount(
+        policyId: string,
+        owner: IOwner,
+        includeDeleted?: boolean
+    ): Promise<{ count: number }> {
+        return await this.sendMessage(
+            PolicyEngineEvents.GET_SAVEPOINTS_COUNT,
+            { policyId, owner, includeDeleted }
+        );
+    }
+
+    /**
+     * Select savepoint
+     * @param policyId
+     * @param savepointId
+     * @param owner
+     */
+    public async selectSavepoint(
+        policyId: string,
+        savepointId: string,
+        owner: IOwner
+    ): Promise<{ savepoint: any }> {
+        return await this.sendMessage(
+            PolicyEngineEvents.SELECT_SAVEPOINT,
+            {
+                policyId,
+                savepointId,
+                owner
+            }
+        );
+    }
+
+    /**
+     * Create savepoint
+     * @param policyId
+     * @param owner
+     * @param savepointProps
      */
     public async createSavepoint(
-        model: any,
+        policyId: string,
         owner: IOwner,
-        policyId: string
+        savepointProps: { name: string; savepointPath: string[] },
     ) {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_SAVEPOINT, { model, owner, policyId });
+        return await this.sendMessage(PolicyEngineEvents.CREATE_SAVEPOINT, { policyId, owner, savepointProps });
+    }
+
+    public async updateSavepoint(
+        policyId: string,
+        savepointId: string,
+        owner: IOwner,
+        name: string
+    ) {
+        const message = {
+            policyId,
+            savepointId,
+            owner,
+            name
+        };
+
+        return await this.sendMessage(
+            PolicyEngineEvents.UPDATE_SAVEPOINT,
+            message
+        );
     }
 
     /**
-     * Delete savepoint
-     * @param model
-     * @param owner
+     * Delete savepoints
      * @param policyId
-     */
-    public async deleteSavepoint(
-        model: any,
-        owner: IOwner,
-        policyId: string
-    ) {
-        return await this.sendMessage(PolicyEngineEvents.DELETE_SAVEPOINT, { model, owner, policyId });
-    }
-
-    /**
-     * Restore savepoint
-     * @param model
+     * @param savepointIds
      * @param owner
-     * @param policyId
+     * @param skipCurrentSavepointGuard
      */
-    public async restoreSavepoint(
-        model: any,
+    public async deleteSavepoints(
+        policyId: string,
         owner: IOwner,
-        policyId: string
+        savepointIds: string[],
+        skipCurrentSavepointGuard: boolean
     ) {
-        return await this.sendMessage(PolicyEngineEvents.RESTORE_SAVEPOINT, { model, owner, policyId });
-    }
-
-    /**
-     * Get savepoint state
-     * @param owner
-     * @param policyId
-     */
-    public async getSavepointState(
-        owner: IOwner,
-        policyId: string
-    ) {
-        return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINT, { owner, policyId });
+        return await this.sendMessage(PolicyEngineEvents.DELETE_SAVEPOINTS, { policyId, owner, savepointIds, skipCurrentSavepointGuard });
     }
 
     /**
@@ -742,12 +808,14 @@ export class PolicyEngine extends NatsService {
      *
      * @param user
      * @param policyId
+     * @param params
      */
     public async getNavigation(
         user: IAuthUser,
-        policyId: string
+        policyId: string,
+        params: any
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_NAVIGATION, { user, policyId });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_NAVIGATION, { user, policyId, params });
     }
 
     /**
@@ -755,12 +823,14 @@ export class PolicyEngine extends NatsService {
      *
      * @param user
      * @param policyId
+     * @param savepointIds
      */
     public async getGroups(
         user: IAuthUser,
-        policyId: string
+        policyId: string,
+        savepointIds?: string[]
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_GROUPS, { user, policyId });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_GROUPS, { user, policyId, savepointIds });
     }
 
     /**
@@ -1231,5 +1301,253 @@ export class PolicyEngine extends NatsService {
      */
     public async getRequestDocument(options: any, user: IAuthUser): Promise<PolicyRequestCountDTO> {
         return await this.sendMessage(PolicyEngineEvents.GET_REMOTE_REQUEST_DOCUMENT, { options, user });
+    }
+
+    /**
+     * Create policy users
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getPolicyUsers(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+    ): Promise<PolicyCommentUserDTO[]> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_USERS, { user, policyId, documentId });
+    }
+
+    /**
+     * Create policy users
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getDocumentRelationships(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+    ): Promise<PolicyCommentRelationshipDTO[]> {
+        return await this.sendMessage(PolicyEngineEvents.GET_DOCUMENT_RELATIONSHIPS, { user, policyId, documentId });
+    }
+
+    /**
+     * Create policy schemas
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getDocumentSchemas(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+    ): Promise<SchemaDTO[]> {
+        return await this.sendMessage(PolicyEngineEvents.GET_DOCUMENT_SCHEMAS, { user, policyId, documentId });
+    }
+
+    /**
+     * Get policy discussions
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getPolicyDiscussions(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        params?: {
+            search?: string,
+            field?: string,
+            audit?: boolean
+        }
+    ): Promise<PolicyDiscussionDTO[]> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DISCUSSIONS, { user, policyId, documentId, params });
+    }
+
+    /**
+     * Create policy discussion
+     * @param user
+     * @param policyId
+     * @param documentId
+     * @param data
+     */
+    public async createPolicyDiscussion(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        data: {
+            name?: string,
+            parent?: string,
+            field?: string,
+            fieldName?: string,
+            privacy?: string,
+            roles?: string[],
+            users?: string[],
+            relationships?: string[]
+        }
+    ): Promise<PolicyDiscussionDTO> {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_DISCUSSION, { user, policyId, documentId, data });
+    }
+
+    /**
+     * Create policy comment
+     * @param user
+     * @param policyId
+     * @param documentId
+     * @param data
+     */
+    public async createPolicyComment(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        discussionId: string,
+        data: {
+            anchor?: string;
+            recipients?: string[];
+            fields?: string[];
+            text?: string;
+            files?: string[];
+        }
+    ): Promise<PolicyCommentDTO> {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_COMMENT, { user, policyId, documentId, discussionId, data });
+    }
+
+    /**
+     * Get policy comments
+     * @param user
+     * @param policyId
+     * @param documentId
+     * @param params
+     */
+    public async getPolicyComments(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        discussionId: string,
+        params: {
+            search?: string,
+            field?: string,
+            lt?: string,
+            gt?: string,
+            audit?: boolean,
+        }
+    ): Promise<{ comments: PolicyCommentDTO[], count: number }> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENTS,
+            { user, policyId, documentId, discussionId, params });
+    }
+
+    /**
+     * Create policy discussion
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getPolicyCommentsCount(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string
+    ): Promise<PolicyCommentCountDTO> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENT_COUNT, { user, policyId, documentId });
+    }
+
+    /**
+     * Add file to IPFS
+     * @param buffer File
+     * @returns CID, URL
+     */
+    public async addFileIpfs(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        discussionId: string,
+        buffer: ArrayBuffer
+    ): Promise<{
+        /**
+         * CID
+         */
+        cid: string,
+        /**
+         * URL
+         */
+        url: string
+    }> {
+        return await this.sendMessage(PolicyEngineEvents.IPFS_ADD_FILE, { user, policyId, documentId, discussionId, buffer });
+    }
+
+    /**
+     * Get file from IPFS
+     * @param cid CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public async getFileIpfs(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        discussionId: string,
+        cid: string,
+        responseType: 'json' | 'raw' | 'str'
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.IPFS_GET_FILE, { user, policyId, documentId, discussionId, cid, responseType });
+    }
+
+    /**
+     * Get file from IPFS
+     * @param cid CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public async getDiscussionKey(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        discussionId?: string,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DISCUSSION_KEY, { user, policyId, documentId, discussionId });
+    }
+
+    /**
+     * Create policy users
+     * @param user
+     * @param policyId
+     */
+    public async getPolicyRepositoryUsers(
+        user: IAuthUser,
+        policyId: string,
+    ): Promise<any[]> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_REPOSITORY_USERS, { user, policyId });
+    }
+
+    /**
+     * Create policy schemas
+     * @param user
+     * @param policyId
+     */
+    public async getPolicyRepositorySchemas(
+        user: IAuthUser,
+        policyId: string,
+    ): Promise<any[]> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_REPOSITORY_SCHEMAS, { user, policyId });
+    }
+
+    /**
+     * Get policy documents
+     * @param user
+     * @param policyId
+     * @param filters
+     */
+    public async getPolicyRepositoryDocuments(
+        user: IAuthUser,
+        policyId: string,
+        filters: {
+            type?: string,
+            owner?: string,
+            schema?: string,
+            comments?: boolean,
+            pageIndex?: number | string,
+            pageSize?: number | string
+        }
+    ): Promise<{ documents: any[], count: number }> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_REPOSITORY_DOCUMENTS, { user, policyId, filters });
     }
 }

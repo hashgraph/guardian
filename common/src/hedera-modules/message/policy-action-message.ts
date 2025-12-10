@@ -40,6 +40,10 @@ export class PolicyActionMessage extends Message {
      */
     public accountId: string;
     /**
+     * User account
+     */
+    public relayerAccount: string;
+    /**
      * Block
      */
     public blockTag: string;
@@ -62,6 +66,7 @@ export class PolicyActionMessage extends Message {
         this.owner = action.owner;
         this.policyId = action.policyId;
         this.accountId = action.accountId;
+        this.relayerAccount = action.relayerAccount;
         this.blockTag = action.blockTag;
         this.parent = action.startMessageId;
         this.document = data;
@@ -84,10 +89,12 @@ export class PolicyActionMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             uuid: this.uuid,
             owner: this.owner,
             policyId: this.policyId,
             accountId: this.accountId,
+            relayerAccount: this.relayerAccount,
             blockTag: this.blockTag,
             parent: this.parent,
             cid: this.getDocumentUrl(UrlType.cid),
@@ -98,7 +105,7 @@ export class PolicyActionMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(key: string): Promise<ArrayBuffer[]> {
+    public async toDocuments(key: string): Promise<Buffer[]> {
         const json = JSON.stringify(this.document);
         const encryptedDocument = await encryptWithKeyDerivedFromString({
             passphrase: key,
@@ -152,7 +159,7 @@ export class PolicyActionMessage extends Message {
 
         const json = JSON.parse(data.message);
         const message = PolicyActionMessage.fromMessageObject(json);
-        message.setAccount(data.owner);
+        message.setPayer(data.owner);
         message.setIndex(data.sequenceNumber);
         message.setId(data.consensusTimestamp);
         message.setTopicId(data.topicId);
@@ -176,6 +183,7 @@ export class PolicyActionMessage extends Message {
         message.owner = json.owner;
         message.policyId = json.policyId;
         message.accountId = json.accountId;
+        message.relayerAccount = json.relayerAccount;
         message.blockTag = json.blockTag;
         message.parent = json.parent;
 
@@ -218,6 +226,7 @@ export class PolicyActionMessage extends Message {
         result.owner = this.owner;
         result.policyId = this.policyId;
         result.accountId = this.accountId;
+        result.relayerAccount = this.relayerAccount;
         result.blockTag = this.blockTag;
         result.parent = this.parent;
         result.document = this.document;
@@ -234,6 +243,7 @@ export class PolicyActionMessage extends Message {
         result.owner = json.owner;
         result.policyId = json.policyId;
         result.accountId = json.accountId;
+        result.relayerAccount = json.relayerAccount;
         result.blockTag = json.blockTag;
         result.parent = json.parent;
         result.document = json.document;

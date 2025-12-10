@@ -1,6 +1,7 @@
 import {
     DatabaseServer,
     HederaDidDocument,
+    IAuthUser,
     PinoLogger,
     Policy as PolicyCollection,
     PolicyTool as PolicyToolCollection,
@@ -458,5 +459,56 @@ export class ComponentsService {
      */
     public debugError(tag: string, error: any): void {
         return;
+    }
+
+    /**
+     * Get Virtual User
+     * @param did
+     */
+    public getVirtualUser(did: string): Promise<IAuthUser> {
+        return this.databaseServer.getVirtualUser(did);
+    }
+
+    /**
+     * Get document comments
+     * @param documentId
+     */
+    public async getPolicyCommentsCount(target: any, user: PolicyUser): Promise<number> {
+        try {
+            const ids = new Set<string>();
+            ids.add(target.id?.toString());
+            if (target.startMessageId) {
+                const documents = await DatabaseServer.getVCs({
+                    policyId: this.policyId,
+                    startMessageId: target.startMessageId
+                }, { fields: ['_id', 'id', 'messageId'] } as any);
+                for (const item of documents) {
+                    ids.add(item.id?.toString());
+                }
+            }
+            const discussions = await DatabaseServer.getPolicyDiscussions({
+                policyId: this.policyId,
+                targetId: { $in: Array.from(ids) },
+                $or: [{
+                    privacy: 'public'
+                }, {
+                    privacy: 'roles',
+                    roles: user.role
+                }, {
+                    privacy: 'users',
+                    users: user.did
+                }, {
+                    owner: user.did
+                }]
+            }, { fields: ['count'] } as any);
+            let count = 0;
+            for (const discussion of discussions) {
+                count += discussion.count;
+            }
+            return count;
+        } catch (error) {
+            console.error(error);
+            return 0;
+        }
     }
 }

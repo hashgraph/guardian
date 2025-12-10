@@ -1,0 +1,106 @@
+<div class="comments-content">
+    @if (loading) {
+        <div class="loading">
+            <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
+        </div>
+    }
+    <div class="discussion-header">
+        <div class="discussion-header-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" >
+                <path d="M6 14H18V12H6V14ZM6 11H18V9H6V11ZM6 8H18V6H6V8ZM4 18C3.45 18 2.97933 17.8043 2.588 17.413C2.19667 17.0217 2.00067 16.5507 2 16V4C2 3.45 2.196 2.97933 2.588 2.588C2.98 2.19667 3.45067 2.00067 4 2H20C20.55 2 21.021 2.196 21.413 2.588C21.805 2.98 22.0007 3.45067 22 4V22L18 18H4Z"></path>
+            </svg>
+        </div>
+        <div class="discussion-header-text">
+            {{discussion._name}}
+        </div>
+    </div>
+    <div class="messages" #messages>
+        @for (item of data.items; track $index) {
+            @if (item) {
+                <div class="message">
+                    <div class="message-time">
+                        {{item._date}}
+                    </div>
+                    @if (item._status === 'decrypted') {
+                        <div class="message-body">
+                            <div class="message-header">
+                                <div class="message-name">
+                                    {{item._senderName}}
+                                </div>
+                                @if (item._senderRole) {
+                                    <div class="message-role">
+                                        {{item._senderRole}}
+                                    </div>
+                                }
+                            </div>
+                            @if (item._text) {
+                                <div class="message-text">
+                                    @for (textItem of item._text; track $index) {
+                                        @if (textItem.type === 'text') {
+                                            <span class="text-type-text">{{textItem.label}}</span>
+                                        }
+                                        @if (textItem.type === 'tag') {
+                                            <span class="text-type-tag">{{textItem.label}}</span>
+                                        }
+                                        @if (textItem.type === 'all') {
+                                            <span class="text-type-all">{{textItem.label}}</span>
+                                        }
+                                        @if (textItem.type === 'role') {
+                                            <span class="text-type-role">{{textItem.label}}</span>
+                                        }
+                                        @if (textItem.type === 'user') {
+                                            <span class="text-type-user">{{textItem.label}}</span>
+                                        }
+                                        @if (textItem.type === 'field') {
+                                            <span class="text-type-field" (click)="onLinkText(textItem)">{{textItem.label}}</span>
+                                        }
+                                    }
+                                </div>
+                            }
+                            @if (item._files && item._files.length) {
+                                <div class="message-files">
+                                    @for (file of item._files; track $index) {
+                                        <div class="message-file" (click)="onLoadFile(file)">
+                                            <div class="file-icon">
+                                                @if (file.loading) {
+                                                    <div class="message-file-loading guardian-loading">
+                                                        <div class="guardian-loading-image"></div>
+                                                    </div>
+                                                } @else {
+                                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path fill-rule="evenodd" d="M 6.184205,2 C 4.701755,2 3.5,3.221045 3.5,4.72727 v 14.54538 c 0,1.5063 1.201755,2.7273 2.684205,2.7273 h 11.631511 c 1.482599,0 2.684248,-1.221 2.684248,-2.7273 v -9.09084 c 0,-0.24111 -0.0942,-0.472335 -0.262049,-0.642825 L 13.080035,2.26628 C 12.9944,2.17928 12.89321,2.11172 12.783155,2.066435 12.677495,2.022965 12.563585,2 12.447365,2 Z M 11.55263,3.81818 H 6.184205 c -0.49416,0 -0.894735,0.40701 -0.894735,0.90909 v 14.54538 c 0,0.5022 0.40059,0.90915 0.894735,0.90915 h 11.631511 c 0.494249,0 0.894749,-0.40695 0.894749,-0.90915 V 11.0909 h -6.2631 c -0.49416,0 -0.894735,-0.406995 -0.894735,-0.90909 z M 17.445216,9.27275 13.3421,5.103845 V 9.27275 Z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                }
+                                            </div>
+                                            <div class="file-metadata">
+                                                <div class="file-name">
+                                                    <span>{{file.name}}</span>
+                                                </div>
+                                                <div class="file-size">{{getSize(file.size)}}</div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    } @else {
+                        @if (item._status === 'encrypted') {
+                            <div class="message-body">
+                                encrypted
+                            </div>
+                        } @else {
+                            <div class="message-body">
+                                decrypting...
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        }
+        @if (data.next) {
+            <button 
+                (click)="onNext()" 
+                class="more-btn guardian-button guardian-button-secondary">More</button>
+        }
+    </div>
+</div>

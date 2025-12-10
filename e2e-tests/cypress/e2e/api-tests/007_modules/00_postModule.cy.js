@@ -24,7 +24,7 @@ context("Create Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
         })
     })
 
-    it("Create a new module", { tags: ['tags', 'analytics'] }, () => {
+    it("Create a new module", { tags: ['smoke', 'tags', 'analytics'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,

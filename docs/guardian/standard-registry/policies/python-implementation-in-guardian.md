@@ -12,7 +12,7 @@ The Guardian platform now supports Python scripting within its Custom Logic bloc
 
 A new dropdown setting has been added to the Custom Logic block in the Policy Editor, allowing users to select the desired scripting language.
 
-#### 🔧 Configuration
+#### Configuration
 
 * **Field:** `Script Language`
 * **Options:**
@@ -21,9 +21,9 @@ A new dropdown setting has been added to the Custom Logic block in the Policy Ed
 
 <figure><img src="../../../.gitbook/assets/image (3) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-#### 💡 Use Case
+#### Use Case
 
 Choose "Python" when you want to leverage Python’s expressive syntax and advanced computation libraries for policy logic.
 
@@ -31,13 +31,13 @@ Choose "Python" when you want to leverage Python’s expressive syntax and advan
 
 Guardian now supports Python as a language for defining business logic in Custom Logic blocks.
 
-#### ✅ Capabilities
+#### Capabilities
 
 * Execute Python scripts directly as part of policy execution.
 * Access context variables and input data in Python syntax.
 * Perform conditional logic, calculations, or transformations using Python.
 
-#### 📂 Example
+#### Example
 
 ```python
 pythonCopyEdit# Sample Python logic inside Custom Logic block
@@ -51,11 +51,11 @@ if document['type'] == 'Certificate':
 
 A new default field has been introduced in all Verifiable Credential document schemas: `guardianVersion`.
 
-#### 📝 Purpose
+#### Purpose
 
 This field helps track the Guardian system version that was used to generate or interact with the VC. It is especially useful when managing backward compatibility and knowing which Python packages and versions were available during execution.
 
-#### 🔍 Field Details
+#### Field Details
 
 * **Field Name:** `guardianVersion`
 * **Type:** `string`
@@ -68,3 +68,24 @@ This field helps track the Guardian system version that was used to generate or 
 * Ensure your logic is compatible with the version of Guardian being used, especially when importing Python packages.
 * Python execution is subject to the limitations and security constraints defined in Guardian's runtime.
 {% endhint %}
+
+### 4. Supported Python Libraries and its Versions
+
+| Library Name | Version |
+| :----------: | :-----: |
+|     numpy    |  1.26.4 |
+|     scipy    |  1.12.0 |
+|     sympy    |   1.12  |
+|    pandas    |  2.2.0  |
+|     pint     |  0.25.1 |
+|    duckdb    |  1.0.0  |
+|  sqlalchemy  |  2.0.29 |
+|    cftime    |  1.6.3  |
+|  matplotlib  |  3.5.2  |
+|    seaborn   |  0.13.2 |
+|     bokeh    |  3.4.1  |
+|    altair    |  5.3.0  |
+|    cartopy   |  0.23.0 |
+|    astropy   |  6.0.1  |
+|  statsmodels |  0.14.2 |
+|   networkx   |   3.3   |

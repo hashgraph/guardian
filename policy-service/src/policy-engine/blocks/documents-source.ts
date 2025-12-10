@@ -67,10 +67,17 @@ export class InterfaceDocumentsSource {
         const fields = ref.options?.uiMetaData?.fields?.filter((field) =>
             field?.bindBlocks?.includes(tag)
         );
+
+        const saved = (this.state?.[user.id] as any) || {};
+        const savepointIds = saved.__savepointIds as string[] | undefined;
+
+        const enableCommonSorting =
+            !!ref.options?.uiMetaData?.enableSorting
+
         const sourceAddons = fields
             ?.filter((field) => field.bindGroup)
             .map((field) => field.bindGroup);
-        const documents = (await this._getData(user, ref, ref.options.uiMetaData.enableSorting)) as any[];
+        const documents = (await this._getData(user, ref, enableCommonSorting, {}, null, undefined, savepointIds)) as any[];
         const document = documents.find(
             // tslint:disable-next-line:no-shadowed-variable
             (document) =>
@@ -117,7 +124,8 @@ export class InterfaceDocumentsSource {
         enableCommonSorting: boolean,
         sortState = {},
         paginationData?,
-        history?
+        history?,
+        savepointIds?: string[]
     ) {
         return enableCommonSorting
             ? await this.getDataByAggregationFilters(
@@ -125,9 +133,10 @@ export class InterfaceDocumentsSource {
                 user,
                 sortState,
                 paginationData,
-                history
+                history,
+                savepointIds
             )
-            : await ref.getGlobalSources(user, paginationData);
+            : await ref.getGlobalSources(user, paginationData, undefined, { savepointIds });
     }
 
     /**
@@ -153,7 +162,15 @@ export class InterfaceDocumentsSource {
             queryParams = {};
         }
 
-        const { itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, ...filterIds } = queryParams;
+        const { itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, savepointIds, ...filterIds } = queryParams;
+
+        if (this.state?.[user.id]) {
+            if (savepointIds) {
+                (this.state[user.id] as any).__savepointIds = savepointIds;
+            } else if ((this.state[user.id] as any).__savepointIds) {
+                delete (this.state[user.id] as any).__savepointIds;
+            }
+        }
 
         const filterAddons = ref.getFiltersAddons();
         const filters = filterAddons.map(addon => {
@@ -211,7 +228,8 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField);
+        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField)
+
         let sortState = this.state[user.id] || {};
         if (sortDirection && sortField) {
             sortState = {
@@ -220,7 +238,7 @@ export class InterfaceDocumentsSource {
             };
             this.state[user.id] = sortState;
         }
-        let data: any = await this._getData(user, ref, enableCommonSorting, sortState, paginationData, history);
+        let data: any = await this._getData(user, ref, enableCommonSorting, sortState, paginationData, history, savepointIds);
 
         if (paginationData) {
             ret = Object.assign(ret, {
@@ -236,10 +254,19 @@ export class InterfaceDocumentsSource {
             !enableCommonSorting && history
         ) {
             for (const document of data) {
+                const filter: any = { documentId: document.id };
+
+                if (Array.isArray(savepointIds) && savepointIds.length > 0) {
+                    filter.$or = [
+                        { savepointId: { $in: savepointIds } },
+                        { savepointId: { $exists: false } },
+                        { savepointId: null },
+                        { savepointId: '' }
+                    ];
+                }
+
                 document.history = (
-                    await ref.databaseServer.getDocumentStates({
-                        documentId: document.id,
-                    })
+                    await ref.databaseServer.getDocumentStates(filter)
                 ).map((state) =>
                     Object.assign(
                         {},
@@ -272,6 +299,10 @@ export class InterfaceDocumentsSource {
         if (filterByUUID) {
             const doc = data.find(d => d.document.id === filterByUUID);
             data = [doc];
+        }
+
+        for (const d of data) {
+            (d as any).comments = await ref.components.getPolicyCommentsCount(d, user);
         }
 
         if (filterIds) {
@@ -312,17 +343,29 @@ export class InterfaceDocumentsSource {
      * @param user Policy user
      * @param sortState Sort state
      * @param paginationData Paginaton data
+     * @param history
+     * @param savepointIds
      * @returns Data
      */
-    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history?: IPolicyAddonBlock) {
+    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history?: IPolicyAddonBlock, savepointIds?: string[]) {
         const filtersAndDataType = await ref.getGlobalSourcesFilters(user);
 
         const aggregation = [...filtersAndDataType.filters] as unknown[];
 
+        if (savepointIds) {
+            ref.databaseServer.getDocumentAggregationFilters({
+                aggregation,
+                aggregateMethod: 'unshift',
+                nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.DRY_RUN_SAVEPOINT,
+                savepointIds
+            });
+        }
+
         ref.databaseServer.getDocumentAggregationFilters({
             aggregation,
             aggregateMethod: 'push',
-            nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.BASE
+            nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.BASE,
+            savepointIds
         });
 
         if (history) {
@@ -337,6 +380,7 @@ export class InterfaceDocumentsSource {
                 timelineLabelPath,
                 timelineDescriptionPath,
                 dryRun,
+                savepointIds
             });
         }
 
@@ -370,7 +414,6 @@ export class InterfaceDocumentsSource {
                 aggregateMethod: 'push',
                 nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.PAGINATION,
                 itemsPerPage,
-
                 page
             });
         }
@@ -382,6 +425,7 @@ export class InterfaceDocumentsSource {
                     aggregateMethod: 'unshift',
                     nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.VC_DOCUMENTS,
                     policyId: ref.policyId,
+                    savepointIds
                 });
 
                 return await ref.databaseServer.getVcDocumentsByAggregation(aggregation);

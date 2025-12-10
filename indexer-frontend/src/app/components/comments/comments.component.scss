@@ -1,0 +1,234 @@
+.comments-content {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    z-index: 99;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: #fff;
+}
+
+.discussion-header {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 72px;
+    background: #FFFFFF;
+    padding: 20px 24px 20px 24px;
+    cursor: default;
+    user-select: none;
+    border-bottom: 1px solid #E1E7EF;
+
+    .discussion-header-icon {
+        display: flex;
+        align-items: center;
+        width: 32px;
+        margin-right: 8px;
+
+        svg {
+            fill: #4169e2;
+            color: #4169e2;
+        }
+    }
+
+    .discussion-header-text {
+        font-family: Poppins;
+        font-weight: 600;
+        font-size: 16px;
+        color: #23252E;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 32px;
+    }
+}
+
+.messages {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 74px;
+    bottom: 0px;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    padding: 24px;
+
+    .message {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 16px;
+
+        .message-time {
+            font-family: Inter;
+            font-weight: 500;
+            font-size: 12px;
+            line-height: 14px;
+            vertical-align: middle;
+            color: #6C7791;
+            margin-bottom: 4px;
+        }
+
+        .message-body {
+            padding: 16px;
+            border-radius: 8px;
+            max-width: 80%;
+            text-wrap: wrap;
+            word-break: break-all;
+            border: 1px solid #E1E7EF;
+
+            .message-header {
+                display: flex;
+                flex-direction: row;
+                margin-bottom: 8px;
+
+                .message-name {
+                    font-family: Inter;
+                    font-weight: 700;
+                    font-size: 14px;
+                    vertical-align: middle;
+                    color: #181818;
+                    line-height: 24px;
+                    white-space: nowrap;
+                }
+
+                .message-role {
+                    height: 24px;
+                    border-radius: 4px;
+                    padding-top: 4px;
+                    padding-right: 8px;
+                    padding-bottom: 4px;
+                    padding-left: 8px;
+                    font-family: Inter;
+                    font-weight: 500;
+                    font-size: 12px;
+                    line-height: 16px;
+                    vertical-align: middle;
+                    width: fit-content;
+                    margin-left: 8px;
+                    background: #E1E7EF;
+                    color: #6f7279;
+                    border: none;
+                    white-space: nowrap;
+                }
+            }
+
+            .message-text {
+                font-family: Roboto;
+                font-weight: 400;
+                font-size: 14px;
+                line-height: 20px;
+                vertical-align: middle;
+                color: #181818;
+                white-space: pre-wrap;
+
+                .message-tag,
+                .text-type-all,
+                .text-type-role,
+                .text-type-user,
+                .text-type-tag,
+                .text-type-field {
+                    font-family: Inter;
+                    font-weight: 500;
+                    font-size: 12px;
+                    line-height: 16px;
+                    vertical-align: middle;
+                    color: #4169E2;
+                    margin-bottom: 8px;
+
+                    &:hover {
+                        background: #dae1f4;
+                        border-radius: 4px;
+                        box-shadow: 0px 0px 0px 1px #dae1f4;
+                    }
+                }
+            }
+
+            .message-file {
+                width: 100%;
+                height: 48px;
+                display: flex;
+                flex-direction: row;
+                margin-top: 8px;
+                overflow: hidden;
+                cursor: pointer;
+                user-select: none;
+                position: relative;
+
+                .file-icon {
+                    width: 48px;
+                    height: 48px;
+                    min-width: 48px;
+                    min-height: 48px;
+                    margin-right: 16px;
+                    background: #E1E7EF;
+                    border: 1px solid #AAB7C4;
+                    border-radius: 4px;
+                    padding: 11px 11px;
+                    position: relative;
+
+                    svg {
+                        fill: #848fa9;
+                        color: #848fa9;
+                    }
+                }
+
+                .message-file-loading {
+                    background: #E1E7EF;
+
+                    .guardian-loading-image {
+                        width: 32px;
+                        height: 32px;
+                    }
+                }
+
+                .file-metadata {
+                    width: calc(100% - 64px);
+                    height: 48px;
+                    overflow: hidden;
+
+                    .file-name {
+                        width: 100%;
+                        height: 18px;
+                        font-family: Inter;
+                        font-weight: 700;
+                        font-size: 14px;
+                        line-height: 18px;
+                        vertical-align: middle;
+                        color: #181818;
+                        margin-bottom: 4px;
+                        position: relative;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        margin-top: 3px;
+                    }
+
+                    .file-size {
+                        font-family: Roboto;
+                        font-weight: 400;
+                        font-size: 14px;
+                        line-height: 20px;
+                        vertical-align: middle;
+                        color: #6C7791;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.more-btn {
+    min-height: 40px;
+}

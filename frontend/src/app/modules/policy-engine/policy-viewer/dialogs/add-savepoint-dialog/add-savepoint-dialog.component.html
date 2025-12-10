@@ -1,0 +1,38 @@
+<div class="dialog">
+    <div class="header">
+        <div class="title">Add Savepoint</div>
+        <button class="icon-btn" type="button" (click)="onCancel()" aria-label="Close">
+            <i class="pi pi-times"></i>
+        </button>
+    </div>
+
+    <div class="field">
+        <div class="label">Name</div>
+        <input
+            pInputText
+            [(ngModel)]="name"
+            type="text"
+            placeholder="To save the current position, please enter a name"/>
+    </div>
+
+    <div class="action-buttons footer">
+        <div class="cancel-button">
+            <button
+                (click)="onCancel()"
+                class="button secondary"
+                pButton
+                label="Cancel">
+            </button>
+        </div>
+        <div>
+            <button
+                (click)="onAdd()"
+                class="button"
+                pButton
+                label="Add"
+                [disabled]="!canAdd">
+            </button>
+        </div>
+    </div>
+</div>
+

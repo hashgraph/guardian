@@ -107,6 +107,12 @@
     }
 }
 
+.guardian-dialog.without-padding {
+    .p-dialog-content {
+        padding: 0 !important;
+    }
+}
+
 .draft-dialog {
     .action-buttons button {
         padding: 5px 24px;
@@ -119,11 +125,12 @@
     .dialog-footer {
         padding-top: 32px;
     }
-    .dialog-footer .action-buttons > :nth-child(2) {
+
+    .dialog-footer .action-buttons> :nth-child(2) {
         margin-left: auto;
     }
 
-    .dialog-footer .action-buttons > :nth-child(3) {
+    .dialog-footer .action-buttons> :nth-child(3) {
         margin-left: 16px;
     }
 
@@ -160,6 +167,40 @@
             min-height: calc(100vh - 175px) !important;
             height: calc(100vh - 175px) !important;
             max-height: calc(100vh - 175px) !important;
+        }
+    }
+}
+
+.guardian-fullscreen-dialog {
+    left: var(--header-width) !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    right: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    z-index: 99 !important;
+    transition: none !important;
+    transform: none !important;
+    transform: none !important;
+
+    .guardian-dialog {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: auto !important;
+        height: auto !important;
+        max-width: none !important;
+        max-height: none !important;
+        transition: none !important;
+        transform: none !important;
+
+        .p-dialog-content {
+            border-radius: 0px !important;
+            padding: 0px !important;
+            transition: none !important;
+            transform: none !important;
         }
     }
 }

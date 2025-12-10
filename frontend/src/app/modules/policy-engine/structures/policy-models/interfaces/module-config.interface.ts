@@ -4,6 +4,8 @@ import { IEventConfig } from './event-config.interface';
 export interface IModuleConfig extends IBlockConfig {
     name?: string;
     description?: string;
+    previousVersion?: string;
+    version?: string;
     innerEvents?: IEventConfig[];
     inputEvents?: {
         name: string;

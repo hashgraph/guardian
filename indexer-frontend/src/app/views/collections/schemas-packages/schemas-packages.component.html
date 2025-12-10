@@ -1,0 +1,26 @@
+<div class="page-content">
+    <div class="content">
+        <h1 class="content__header">{{ 'header.schemas' | transloco }}</h1>
+        <div class="content__table">
+            <app-table class="collection-container__table" [loading]="loadingData" [columns]="columns" [data]="items"
+                [pageIndex]="pageIndex" [pageSize]="pageSize" [total]="total" (onPage)="onPage($event)"
+                [sortColumn]="orderField" [sortDirection]="orderDir" (onSort)="onSort($event)">
+                <div class="filters">
+                    <p-chips class="filters__keywords" [formControl]="keywords"
+                        [placeholder]="'grid.filter.keyword' | transloco" />
+                    <div class="filters__fields">
+                        @for (filter of filters; track $index) {
+                        @if (filter.type === 'input') {
+                        <p-inputGroup>
+                            <p-inputGroupAddon>{{ filter.label | transloco }}</p-inputGroupAddon>
+                            <input pInputText [id]="filter.field" [formControl]="filter.control" />
+                        </p-inputGroup>
+                        }
+                        }
+                    </div>
+                </div>
+            </app-table>
+        </div>
+    </div>
+
+</div>

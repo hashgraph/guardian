@@ -54,7 +54,7 @@ export class FormulasComponent implements OnInit {
             id: 'name',
             title: 'Name',
             type: 'text',
-            size: 'auto',
+            size: '250',
             tooltip: true
         }, {
             id: 'policy',

@@ -17,6 +17,7 @@ export class FiltersAddonBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('savepointIds') savepointIds?: string[] | null = null;
 
     loading: boolean = true;
     socket: any;
@@ -81,7 +82,7 @@ export class FiltersAddonBlockComponent implements OnInit {
             }, 500);
         } else {
             this.policyEngineService
-                .getBlockData(this.id, this.policyId)
+                .getBlockData(this.id, this.policyId, this.savepointIds)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }

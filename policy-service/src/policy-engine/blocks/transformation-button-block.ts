@@ -43,6 +43,13 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
                 'type': PropertyType.Input,
                 'default': ''
             },
+            {
+                'name': 'hideWhenDiscontinued',
+                'label': 'Hide when discontinued',
+                'title': 'Hide when discontinued',
+                'type': PropertyType.Checkbox,
+                'default': false
+            },
         ]
     },
     variables: [
@@ -67,7 +74,8 @@ export class TransformationButtonBlock {
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData,
             user: ref.options.user,
-            buttonName: ref.options.buttonName
+            buttonName: ref.options.buttonName,
+            hideWhenDiscontinued: !!ref.options.hideWhenDiscontinued,
         }
         return data;
     }

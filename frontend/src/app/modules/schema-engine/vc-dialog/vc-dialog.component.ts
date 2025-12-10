@@ -47,6 +47,9 @@ export class VCViewerDialog {
         optionValue: string | number | boolean;
     }[];
 
+    public fileSize: number = 0;
+    public canExport: boolean = true;
+
     constructor(
         public dialogRef: DynamicDialogRef,
         public dialogConfig: DynamicDialogConfig,
@@ -83,12 +86,14 @@ export class VCViewerDialog {
             getByUser,
             additionalOptions = [],
             additionalOptionsData,
+            canExport
         } = this.dialogConfig.data;
 
         this.policyId = row?.policyId;
         this.documentId = row?.id;
         this.schemaId = row?.schema;
         this.messageId = row?.messageId;
+        this.canExport = !(canExport === false);
 
         this.getByUser = getByUser;
         this.id = id;
@@ -96,6 +101,10 @@ export class VCViewerDialog {
         this.title = title;
         this.json = document ? JSON.stringify((document), null, 4) : '';
         this.text = document || '';
+
+        const fileSizeBytes = new Blob([typeof document === 'string' ? document : JSON.stringify(document)]).size;
+        this.fileSize = Math.round((fileSizeBytes / (1024 * 1024)));
+
         this.document = document;
         this.type = type || 'JSON';
         this.toggle = toggle !== false;
@@ -162,5 +171,18 @@ export class VCViewerDialog {
             },
             queryParamsHandling: 'merge',
         });
+    }
+
+    public onDownloadJsonFile() {
+        const data = JSON.stringify(this.document, null, 2);
+        const blob = new Blob([data], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = this.document.id + '.json';
+        a.click();
+
+        URL.revokeObjectURL(url);
     }
 }

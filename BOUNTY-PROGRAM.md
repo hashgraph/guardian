@@ -47,18 +47,18 @@ We're offering **$100,000** in bounties annually, paid quarterly, to encourage i
 
 1. **Predefined Bounties**: Explore our list of predefined bounties on the GitHub repository's Issues page. These are tagged with the "bounty" label.
 
-2. **Custom suggestions for Security-related Bugs**: If you have a security-related bug you would like to fix, please send an email to: info@envisionblockchain.com
+2. **Custom suggestions for Security-related Bugs**: If you have a security-related bug you would like to fix, please send an email to: <info@envisionblockchain.com>
 
 3. **Non-Security-related Custom Proposals**: We encourage innovative ideas. If you have a suggestion for an improvement or feature that is not listed in our pre-defined bounties, please follow these steps:
-   a. Create a new issue on our GitHub repository with the title format: "[BOUNTY PROPOSAL] Your Idea Title"
-   b. In the issue description, provide:
+   - Create a new issue on our GitHub repository with the title format: "[BOUNTY PROPOSAL] Your Idea Title"
+   - In the issue description, provide:
       - A detailed description of your proposed improvement or feature
       - The potential impact on the project
       - An estimate of the work involved
       - Any relevant technical details or mock-ups
-   c. Add the "bounty-proposal" label to your issue
-   d. Wait for the maintainers to review your proposal. We aim to respond within 5 business days.
-   e. If approved, we'll add the "bounty" label and assign a bounty value, and you can begin working on it.
+   - Add the "bounty-proposal" label to your issue
+   - Wait for the maintainers to review your proposal. We aim to respond within 5 business days.
+   - If approved, we'll add the "bounty" label and assign a bounty value, and you can begin working on it.
 
 Note: Always create and discuss a proposal before working on a custom idea. This ensures your effort aligns with project goals, and you are eligible for a bounty.
 
@@ -98,4 +98,3 @@ To be eligible to participate and receive the reward, you must:
 - Not violate any national, state, or local law or regulation with respect to any activities directly or indirectly related to the Community Bounty Program.
 - Employees, contractors, or agents of Hashgraph or Hedera are not permitted to participate in the Community Bounty Program.
 - You will be asked to provide your legal identification to receive the bounty.
-

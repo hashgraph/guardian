@@ -4,7 +4,7 @@ import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { LabelMessageBody } from './message-body.interface.js';
 import { PolicyLabel } from '../../entity/index.js';
-import { IPFS } from '../../helpers/index.js';
+import { IPFS, toBuffer } from '../../helpers/index.js';
 
 /**
  * Schema message
@@ -38,7 +38,7 @@ export class LabelMessage extends Message {
     /**
      * Document
      */
-    public config: ArrayBuffer;
+    public config: Buffer;
 
     constructor(action: MessageAction) {
         super(action, MessageType.PolicyLabel);
@@ -48,20 +48,20 @@ export class LabelMessage extends Message {
      * Set document
      * @param item
      */
-    public setDocument(item: PolicyLabel, zip: ArrayBuffer): void {
+    public setDocument(item: PolicyLabel, zip: ArrayBuffer | Buffer): void {
         this.name = item.name;
         this.description = item.description;
         this.owner = item.owner;
         this.uuid = item.uuid;
         this.policyTopicId = item.policyTopicId;
         this.policyInstanceTopicId = item.policyInstanceTopicId;
-        this.config = zip;
+        this.config = toBuffer(zip);
     }
 
     /**
      * Get document
      */
-    public getDocument(): ArrayBuffer {
+    public getDocument(): Buffer {
         return this.config;
     }
 
@@ -75,6 +75,7 @@ export class LabelMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             name: this.name,
             description: this.description,
             owner: this.owner,
@@ -89,7 +90,7 @@ export class LabelMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (this.config) {
             return [this.config];
         }

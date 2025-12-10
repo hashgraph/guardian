@@ -1,5 +1,5 @@
 import { FieldModel } from './field.model.js';
-import { ConditionModel } from './condition.model.js';
+import { ConditionModel, ConditionPredicate } from './condition.model.js';
 import { CompareOptions, ISchemaDocument } from '../interfaces/index.js';
 import { ComparePolicyUtils } from '../utils/compare-policy-utils.js';
 import { Hash3 } from '../hash/utils.js';
@@ -11,7 +11,7 @@ export class SchemaDocumentModel {
      * Fields
      * @public
      */
-    public readonly fields: FieldModel[];
+    public fields: FieldModel[];
 
     /**
      * Conditions
@@ -96,23 +96,89 @@ export class SchemaDocumentModel {
         const combinedDefs = document.$defs || defs;
 
         for (const condition of document.allOf) {
-            if (!condition.if) {
+            if (!condition?.if) {
                 continue;
             }
-            const ifConditionFieldName = Object.keys(condition.if.properties)[0];
-            const field = fieldsMap.get(ifConditionFieldName);
-            if (!field) {
-                continue;
-            }
-            const ifFieldValue = condition.if.properties[ifConditionFieldName].const;
+
             const thenFields = this.parseFields(condition.then, combinedDefs, cache);
             const elseFields = this.parseFields(condition.else, combinedDefs, cache);
-            conditions.push(new ConditionModel(
-                field,
-                ifFieldValue,
-                thenFields,
-                elseFields
-            ));
+
+            if (condition.if.properties && typeof condition.if.properties === 'object') {
+                const ifProps = condition.if.properties;
+                const ifFieldName = Object.keys(ifProps)[0];
+                if (ifFieldName) {
+                    const field = fieldsMap.get(ifFieldName);
+                    if (!field) {
+                        continue;
+                    }
+                    const ifFieldValue = ifProps[ifFieldName]?.const;
+                    conditions.push(new ConditionModel({
+                        field,
+                        fieldValue: ifFieldValue,
+                        thenFields,
+                        elseFields
+                    }));
+                    continue;
+                }
+            }
+
+            if (Array.isArray(condition.if.anyOf)) {
+                const preds: ConditionPredicate[] = [];
+                for (const anyOfItem of condition.if.anyOf) {
+                    const props = anyOfItem?.properties;
+                    if (!props || typeof props !== 'object') {
+                        continue;
+                    }
+                    const name = Object.keys(props)[0];
+                    if (!name) {
+                        continue;
+                    }
+                    const field = fieldsMap.get(name);
+                    if (!field) {
+                        continue;
+                    }
+                    const value = props[name]?.const;
+                    preds.push({ field, value });
+                }
+                if (preds.length) {
+                    conditions.push(new ConditionModel({
+                        operator: 'OR',
+                        predicates: preds,
+                        thenFields,
+                        elseFields
+                    }));
+                }
+                continue;
+            }
+
+            if (Array.isArray(condition.if.allOf)) {
+                const preds: ConditionPredicate[] = [];
+                for (const allOfItem of condition.if.allOf) {
+                    const props = allOfItem?.properties;
+                    if (!props || typeof props !== 'object') {
+                        continue;
+                    }
+                    const name = Object.keys(props)[0];
+                    if (!name) {
+                        continue;
+                    }
+                    const field = fieldsMap.get(name);
+                    if (!field) {
+                        continue;
+                    }
+                    const value = props[name]?.const;
+                    preds.push({ field, value });
+                }
+                if (preds.length) {
+                    conditions.push(new ConditionModel({
+                        operator: 'AND',
+                        predicates: preds,
+                        thenFields,
+                        elseFields
+                    }));
+                }
+                continue;
+            }
         }
         return conditions;
     }
@@ -130,8 +196,9 @@ export class SchemaDocumentModel {
             }
             for (const condition of this.conditions) {
                 for (const field of condition.fields) {
-                    if (map[field.name]) {
-                        this.fields[map[field.name]] = field;
+                    const idx = map[field.name];
+                    if (idx !== undefined) {
+                        this.fields[idx] = field;
                     } else {
                         this.fields.push(field);
                         map[field.name] = this.fields.length - 1;

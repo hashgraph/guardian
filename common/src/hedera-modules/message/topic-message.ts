@@ -94,6 +94,7 @@ export class TopicMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             name: this.name,
             description: this.description,
             owner: this.owner,
@@ -107,7 +108,7 @@ export class TopicMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         return [];
     }
 

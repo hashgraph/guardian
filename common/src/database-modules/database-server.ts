@@ -12,10 +12,12 @@ import {
     AssignEntity,
     BlockCache,
     BlockState,
+    BlockStateSavepoint,
     Contract as ContractCollection,
     DidDocument as DidDocumentCollection,
     DocumentState,
     DryRun,
+    DryRunSavepoint,
     DryRunFiles,
     ExternalDocument,
     Formula,
@@ -51,7 +53,9 @@ import {
     VpDocument as VpDocumentCollection,
     ExternalPolicy,
     PolicyAction,
-    PolicyKey
+    PolicyKey,
+    PolicyComment,
+    PolicyDiscussion
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -61,6 +65,7 @@ import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { BaseEntity } from '../models/index.js';
+import { DryRunSavepointSnapshot } from '../entity/dry-run-savepoint-snapshot.js';
 
 /**
  * Database server
@@ -76,6 +81,14 @@ export class DatabaseServer extends AbstractDatabaseServer {
     private static readonly DOCUMENTS_HANDLING_CHUNK_SIZE = process.env.DOCUMENTS_HANDLING_CHUNK_SIZE
         ? parseInt(process.env.DOCUMENTS_HANDLING_CHUNK_SIZE, 10)
         : 500;
+
+    public static dbID(id: string): ObjectId {
+        try {
+            return new ObjectId(id);
+        } catch (error) {
+            return null;
+        }
+    }
 
     /**
      * Add dry run id
@@ -127,61 +140,604 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Create savepoint
-     * @param dryRunId
-     * @param systemMode
+     * Get savepoint by id
+     * @param policyId
+     * @param savepointId
      */
-    public static async createSavepoint(dryRunId: string): Promise<void> {
-        const limit = { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE };
-        const amount = await new DataBaseHelper(DryRun).count({ dryRunId });
-        const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
-        for (let i = 0; i < naturalCount; i++) {
-            const items = await new DataBaseHelper(DryRun).find({ dryRunId }, limit);
-            for (const item of items) {
-                item.savepoint = true;
+    public static async getSavepointById(
+        policyId: string,
+        savepointId: string
+    ): Promise<DryRunSavepoint | null> {
+        return await new DataBaseHelper(DryRunSavepoint)
+            .findOne({ id: savepointId, policyId });
+    }
+
+    /**
+     * Get savepoints by policy id
+     * @param policyId
+     * @param opts
+     */
+    public static async getSavepointsByPolicyId(
+        policyId: string,
+        opts?: { includeDeleted?: boolean }
+    ): Promise<DryRunSavepoint[]> {
+        const includeDeleted: boolean = !!opts?.includeDeleted;
+
+        const where: any = includeDeleted
+            ? { policyId }
+            : {
+                policyId,
+                $or: [
+                    { isDeleted: { $exists: false } },
+                    { isDeleted: { $ne: true } }
+                ]
+            };
+
+        return await new DataBaseHelper(DryRunSavepoint).find(
+            where,
+            { orderBy: { createDate: 'DESC' } }
+        );
+    }
+
+    /**
+     * Get savepoints count by policy id
+     * @param policyId
+     * @param opts
+     */
+    public static async getSavepointsCount(
+        policyId: string,
+        opts: { includeDeleted?: boolean } = {}
+    ): Promise<number> {
+        const helper = new DataBaseHelper(DryRunSavepoint);
+        const filter: any = { policyId };
+
+        if (!opts.includeDeleted) {
+            filter.isDeleted = { $ne: true };
+        }
+
+        return await helper.count(filter);
+    }
+
+    /**
+     * Set selected savepoint as current (and unset the rest for this policy)
+     * @param policyId
+     * @param savepointId
+     */
+    public static async setCurrentSavepoint(policyId: string, savepointId: string): Promise<void> {
+        const repo = new DataBaseHelper(DryRunSavepoint);
+
+        const all = await repo.find({ policyId });
+
+        if (!all?.length) {
+            throw new Error('No savepoints for this policy');
+        }
+
+        let target: DryRunSavepoint | null = null;
+        const toUpdate: DryRunSavepoint[] = [];
+
+        for (const sp of all) {
+            const shouldBeCurrent = sp.id === savepointId;
+
+            if (shouldBeCurrent) {
+                if (sp.isDeleted === true) {
+                    throw new Error('Savepoint is deleted');
+                }
+                target = sp;
             }
-            await new DataBaseHelper(DryRun).update(items);
-        }
-        const restItems = await new DataBaseHelper(DryRun).find({ dryRunId });
-        for (const item of restItems) {
-            item.savepoint = true;
-        }
-        await new DataBaseHelper(DryRun).update(restItems);
 
-        // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
-        // await new DataBaseHelper(DryRunFiles).remove(files);
+            if (sp.isCurrent !== shouldBeCurrent) {
+                sp.isCurrent = shouldBeCurrent;
+                toUpdate.push(sp);
+            }
+        }
+
+        if (!target) {
+            throw new Error('Savepoint not found');
+        }
+
+        if (toUpdate.length > 0) {
+            await repo.saveMany(toUpdate);
+        }
+    }
+
+    public static async removeDryRunWithEmptySavepoint(policyId: string): Promise<void> {
+        const filter = {
+            dryRunId: policyId,
+            $or: [
+                { savepointId: { $exists: false } },
+                { savepointId: '' }
+            ]
+        };
+
+        await new DataBaseHelper(DryRun).delete(filter);
+    }
+
+    public static async nullifyInitialDryRunSavepointIds(): Promise<void> {
+        const dryRun = new DataBaseHelper(DryRun);
+        await dryRun.updateManyRaw(
+            { savepointId: { $exists: false } },
+            { $set: { savepointId: null } }
+        );
     }
 
     /**
-     * Restore savepoint
-     * @param dryRunId
-     * @param systemMode
+     * Create savepoint
+     * @param policyId
+     * @param savepointProps
      */
-    public static async restoreSavepoint(dryRunId: string): Promise<void> {
+    public static async createSavepoint(policyId: string, savepointProps: { name: string, savepointPath: string[] }): Promise<string> {
+        const { name, savepointPath = [] } = savepointProps
+
+        const dryRunSavepoint = new DataBaseHelper(DryRunSavepoint);
+        await dryRunSavepoint.updateManyRaw(
+            { policyId, isCurrent: true },
+            { $set: { isCurrent: false } }
+        );
+
+        const savepoint = dryRunSavepoint.create({
+            policyId,
+            name,
+            savepointPath: [...savepointPath],
+            isCurrent: true
+        });
+        await dryRunSavepoint.save(savepoint);
+
         const limit = { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE };
-        const amount = await new DataBaseHelper(DryRun).count({ dryRunId, savepoint: { $exists: false } });
-        const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
-        for (let i = 0; i < naturalCount; i++) {
-            const items = await new DataBaseHelper(DryRun).find({ dryRunId, savepoint: { $exists: false } }, limit);
-            await new DataBaseHelper(DryRun).remove(items);
-        }
-        const restItems = await new DataBaseHelper(DryRun).find({ dryRunId, savepoint: { $exists: false } });
-        await new DataBaseHelper(DryRun).remove(restItems);
 
-        // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
-        // await new DataBaseHelper(DryRunFiles).remove(files);
+        const filter = {
+            $and: [
+                {
+                    $or: [
+                        { savepointId: { $exists: false } },
+                    ]
+                }
+            ]
+        };
+        const dryRun = new DataBaseHelper(DryRun);
+
+        const amount = await dryRun.count(filter);
+
+        const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
+
+        for (let i = 0; i < naturalCount; i++) {
+            const items = await dryRun.find(filter, limit);
+
+            for (const item of items) {
+                if (!item.savepointId) {
+                    item.savepointId = savepoint.id;
+                }
+            }
+
+            await dryRun.update(items);
+        }
+
+        const restItems = await dryRun.find(filter);
+
+        for (const item of restItems) {
+            if (!item.savepointId) {
+                item.savepointId = savepoint.id;
+            }
+        }
+
+        await dryRun.update(restItems);
+
+        return savepoint.id
     }
 
     /**
-     * Get savepoint state
-     * @param dryRunId
-     * @param systemMode
+     * Create a full snapshot of DryRun options for the savepoint:
+     * collects all DryRun docs visible at this savepoint (its path + itself)
+     * and writes them into DryRunSavepointSnapshot.
      */
-    public static async getSavepointSate(dryRunId: string): Promise<DryRun> {
-        return await new DataBaseHelper(DryRun).findOne({ dryRunId, savepoint: true });
+    public static async createSavepointSnapshot(
+        policyId: string,
+        savepointId: string
+    ): Promise<void> {
+        const spRepo = new DataBaseHelper(DryRunSavepoint);
+        const snapshotRepo = new DataBaseHelper(DryRunSavepointSnapshot);
+        const dryRun = new DataBaseHelper(DryRun);
 
-        // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
-        // await new DataBaseHelper(DryRunFiles).remove(files);
+        const sp = await spRepo.findOne({ policyId, id: savepointId });
+        if (!sp) {
+            throw new Error('Savepoint not found');
+        }
+
+        const path: string[] = Array.isArray(sp.savepointPath) ? [...sp.savepointPath] : [];
+        if (!path.includes(savepointId)) {
+            path.push(savepointId);
+        }
+        if (path.length === 0) {
+            return;
+        }
+
+        const filter: any = {
+            dryRunId: policyId,
+            $or: [
+                { savepointId: { $in: path } },
+                { savepointId: { $exists: false } },
+                { savepointId: null },
+            ],
+        };
+
+        const total = await dryRun.count(filter);
+        if (!total) {
+            return;
+        }
+
+        const chunkSize = DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE;
+        const pages = Math.ceil(total / chunkSize);
+
+        for (let i = 0; i < pages; i++) {
+            const items = await dryRun.find(
+                filter,
+                { limit: chunkSize, offset: i * chunkSize, orderBy: { _id: 1 } } as any
+            );
+            if (!items?.length) {
+                continue;
+            }
+
+            const snapshots = items.map(item =>
+                snapshotRepo.create({
+                    policyId,
+                    savepointId,
+                    sourceId: item.id,
+                    options: item.option ?? null,
+                })
+            );
+
+            await snapshotRepo.insertMany(snapshots as unknown as DryRunSavepointSnapshot[]);
+        }
+    }
+
+    /**
+     *  Create Savepoint States
+     */
+    public static async createSavepointStates(policyId: string, savepointId: string): Promise<void> {
+        const dryRunRepo = new DataBaseHelper(DryRun);
+        const blockStates = await dryRunRepo.find({ policyId, dryRunClass: 'BlockState' });
+
+        if (!blockStates?.length) {
+            return
+        }
+
+        const blockStatesSavepoint = new DataBaseHelper(BlockStateSavepoint);
+
+        const fieldsToKeep = [
+            '_id',
+            'createDate',
+            'updateDate',
+            'dryRunId',
+            'savepointId',
+            'dryRunClass',
+            'policyId',
+            'blockId',
+            'blockState',
+            'status',
+            'signature',
+            'option',
+            'hederaStatus',
+            'uuid',
+            'entity',
+            'iri',
+            'readonly',
+            'system',
+            'active',
+            'codeVersion',
+            'isMintNeeded',
+            'isTransferNeeded',
+            'wasTransferNeeded'
+        ];
+
+        const docs = blockStates.map(raw => {
+            const clean: any = {};
+            for (const key of fieldsToKeep) {
+                if (raw[key] !== undefined) {
+                    clean[key] = raw[key];
+                }
+            }
+
+            return blockStatesSavepoint.create({
+                policyId,
+                savepointId,
+                blockId: raw.uuid,
+                blockStateDryRunRecord: clean
+            });
+        });
+
+        if (docs.length) {
+            await blockStatesSavepoint.saveMany(docs);
+        }
+    }
+
+    /**
+     *   Update savepoint name
+     */
+    public static async updateSavepointName(
+        policyId: string,
+        savepointId: string,
+        name: string
+    ): Promise<void> {
+        const trimmedName: string = (name ?? '').trim();
+
+        if (!trimmedName) {
+            throw new Error('Name is required');
+        }
+
+        const repo = new DataBaseHelper(DryRunSavepoint);
+
+        const query = {
+            policyId,
+            id: savepointId
+        };
+
+        const sp = await repo.findOne(query);
+
+        if (!sp) {
+            throw new Error('Savepoint not found');
+        }
+
+        if (sp.isDeleted === true) {
+            throw new Error('Savepoint is deleted');
+        }
+
+        sp.name = trimmedName;
+
+        await repo.save(sp);
+    }
+
+    /**
+     *   RestoreSavepointStates
+     */
+    public static async restoreSavepointStates(policyId: string, savepointId: string): Promise<void> {
+        const snapsRepo = new DataBaseHelper(BlockStateSavepoint);
+
+        const snaps = await snapsRepo.find(
+            { policyId, savepointId },
+            {
+                orderBy: {
+                    createDate: 1,
+                    _id: 1,
+                },
+            }
+        );
+
+        const dryRunRepo = new DataBaseHelper(DryRun);
+
+        await dryRunRepo.delete({
+            policyId,
+            dryRunClass: 'BlockState',
+        });
+
+        if (!snaps?.length) {
+            return;
+        };
+
+        const docs = snaps.map(snap =>
+            dryRunRepo.create(snap.blockStateDryRunRecord)
+        );
+
+        if (docs.length > 0) {
+            await dryRunRepo.saveMany(docs);
+        }
+    }
+
+    /**
+     * Restore for DryRun documents from savepoint snapshots
+     */
+    public static async restoreSavepointOptions(policyId: string, savepointId: string): Promise<void> {
+        const spRepo = new DataBaseHelper(DryRunSavepoint);
+        const sp = await spRepo.findOne({ policyId, id: savepointId });
+        if (!sp) {
+            throw new Error(`Savepoint not found: ${savepointId}`);
+        }
+        const path: string[] = sp.savepointPath ?? [savepointId];
+        if (!path.length) {
+            return;
+        }
+
+        const snaps = await new DataBaseHelper(DryRunSavepointSnapshot)
+            .find({ policyId, savepointId: { $in: path } }, { fields: ['sourceId', 'options', 'savepointId'] } as any);
+
+        if (!snaps?.length) {
+            return;
+        }
+
+        const latestOptions = new Map<string, any>();
+        for (const spId of path) {
+            for (const s of snaps) {
+                if (s.savepointId === spId) {
+                    latestOptions.set(s.sourceId, s.options);
+                }
+            }
+        }
+
+        const dryRun = new DataBaseHelper(DryRun);
+        const docs = [];
+        for (const [sourceId, opt] of latestOptions.entries()) {
+            const row = await dryRun.findOne({ id: sourceId });
+            if (row) {
+                row.option = opt;
+                docs.push(row);
+            }
+        }
+
+        if (docs.length) {
+            await dryRun.update(docs);
+        }
+    }
+
+    public static async getCurrentSavepointId(policyId: string): Promise<string | null> {
+        const repo = new DataBaseHelper(DryRunSavepoint);
+        const sp = await repo.findOne({ policyId, isCurrent: true });
+        return sp?.id ?? null;
+    }
+
+    public static async ensureCurrentNotInList(
+        policyId: string,
+        ids: string[] | undefined | null,
+        skip?: boolean
+    ): Promise<void> {
+        if (skip) {
+            return;
+        }
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return;
+        }
+
+        const currentId = await DatabaseServer.getCurrentSavepointId(policyId);
+        if (currentId && ids.includes(currentId)) {
+            throw new Error('Cannot delete the current savepoint');
+        }
+    }
+
+    /**
+     * Delete savepoints
+     * @param policyId
+     * @param savepointIds
+     */
+    public static async deleteSavepoints(
+        policyId: string,
+        savepointIds: string[]
+    ): Promise<string[]> {
+        const ids = Array.isArray(savepointIds)
+            ? Array.from(new Set(savepointIds.filter((v) => typeof v === 'string' && v.trim().length > 0)))
+            : [];
+        if (!ids.length) {
+            return [];
+        }
+
+        const repo = new DataBaseHelper(DryRunSavepoint);
+
+        const all = await repo.find({ policyId });
+
+        type NodeLite = { id: string; parentId: string | null; isDeleted: boolean };
+        const nodes = new Map<string, NodeLite>();
+        const childrenCount = new Map<string, number>();
+
+        for (const sp of all) {
+            const id = sp.id;
+            const parentId = sp.parentSavepointId ?? null;
+            const isDeleted = sp.isDeleted === true;
+            nodes.set(id, { id, parentId, isDeleted });
+            if (parentId) {
+                childrenCount.set(parentId, (childrenCount.get(parentId) ?? 0) + 1);
+            }
+        }
+
+        const toSoftUpdate: NodeLite[] = [];
+        const deleted = new Set<string>();
+
+        const softMark = (n: NodeLite) => {
+            if (!n.isDeleted) {
+                n.isDeleted = true;
+                toSoftUpdate.push(n);
+            }
+        };
+
+        const decChild = (parentId: string | null) => {
+            if (!parentId) {
+                return;
+            }
+            const cur = childrenCount.get(parentId) ?? 0;
+            childrenCount.set(parentId, Math.max(0, cur - 1));
+        };
+
+        const pruneIfLeaf = async (id: string): Promise<void> => {
+            const node = nodes.get(id);
+            if (!node) {
+                return;
+            }
+
+            const hasKids = (childrenCount.get(id) ?? 0) > 0;
+            if (hasKids) {
+                softMark(node);
+                return;
+            }
+
+            await repo.delete({ policyId, id });
+            nodes.delete(id);
+            deleted.add(id);
+            decChild(node.parentId);
+
+            let parentId = node.parentId;
+            while (parentId) {
+                const parent = nodes.get(parentId);
+                if (!parent) {
+                    break;
+                }
+
+                if (!parent.isDeleted) {
+                    break;
+                }
+
+                const parentHasKids = (childrenCount.get(parentId) ?? 0) > 0;
+                if (parentHasKids) {
+                    break;
+                }
+
+                await repo.delete({ policyId, id: parentId });
+                nodes.delete(parentId);
+                deleted.add(parentId);
+
+                const gp = parent.parentId ?? null;
+                decChild(gp);
+                parentId = gp;
+            }
+        };
+
+        for (const id of ids) {
+            await pruneIfLeaf(id);
+        }
+
+        if (toSoftUpdate.length) {
+            const toLoad = toSoftUpdate.map((n) => n.id);
+            const ents = await repo.find({ policyId, id: { $in: toLoad } });
+            for (const e of ents) {
+                (e).isDeleted = true;
+            }
+            await repo.update(ents);
+        }
+
+        return Array.from(deleted);
+    }
+
+    public static async removeBlockStateSnapshots(savepointIds: string[]): Promise<void> {
+        const unique = Array.from(new Set(savepointIds)).filter(Boolean);
+        if (unique.length === 0) {
+            return;
+        }
+
+        const repo = new DataBaseHelper(BlockStateSavepoint);
+        await repo.delete({
+            savepointId: { $in: unique }
+        });
+    }
+
+    public static async deleteDryRunBySavepoints(policyId: string, savepointIds: string[]): Promise<void> {
+        const unique = Array.from(new Set(savepointIds)).filter(Boolean);
+        if (unique.length === 0) {
+            return;
+        }
+
+        const dryRun = new DataBaseHelper(DryRun);
+        await dryRun.delete({
+            savepointId: { $in: unique }
+        });
+    }
+
+    /**
+     * Delete snapshots by savepoints
+     */
+    public static async deleteSnapshotsBySavepoints(policyId: string, savepointIds: string[]): Promise<void> {
+        const unique = Array.from(new Set(savepointIds)).filter(Boolean);
+        if (unique.length === 0) {
+            return;
+        }
+
+        const repo = new DataBaseHelper(DryRunSavepointSnapshot);
+        await repo.delete({
+            savepointId: { $in: unique }
+        });
     }
 
     /**
@@ -490,28 +1046,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Restore States
-     */
-    public static async restoreStates(policyId: string): Promise<void> {
-        const states = await new DataBaseHelper(BlockState).find({ policyId });
-        for (const state of states) {
-            state.blockState = state.savedState;
-            await new DataBaseHelper(BlockState).save(state);
-        }
-    }
-
-    /**
-     * Copy States
-     */
-    public static async copyStates(policyId: string): Promise<void> {
-        const states = await new DataBaseHelper(BlockState).find({ policyId });
-        for (const state of states) {
-            state.savedState = state.blockState;
-            await new DataBaseHelper(BlockState).save(state);
-        }
-    }
-
-    /**
      * Create Formula
      * @param formula
      */
@@ -568,6 +1102,124 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async removeFormula(formula: Formula): Promise<void> {
         return await new DataBaseHelper(Formula).remove(formula);
+    }
+
+    /**
+     * Create Policy Comment
+     * @param comment
+     */
+    public static async createPolicyComment(
+        comment: FilterObject<PolicyComment>
+    ): Promise<PolicyComment> {
+        const item = new DataBaseHelper(PolicyComment).create(comment);
+        return await new DataBaseHelper(PolicyComment).save(item);
+    }
+
+    /**
+     * Get Policy Comments
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyCommentsAndCount(
+        filters?: FilterObject<PolicyComment>,
+        options?: FindOptions<object>
+    ): Promise<[PolicyComment[], number]> {
+        return await new DataBaseHelper(PolicyComment).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Policy Comments
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyCommentsCount(
+        filters?: FilterObject<PolicyComment>,
+        options?: FindOptions<object>
+    ): Promise<number> {
+        return await new DataBaseHelper(PolicyComment).count(filters, options);
+    }
+
+    /**
+     * Get Policy Comment
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyComment(
+        filters: FilterQuery<PolicyComment>,
+        options?: FindOptions<object>
+    ): Promise<PolicyComment | null> {
+        return await new DataBaseHelper(PolicyComment).findOne(filters, options);
+    }
+
+    /**
+     * Get Policy Comments
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyComments(
+        filters: FilterQuery<PolicyComment>,
+        options?: FindOptions<object, never, PopulatePath.ALL, never>
+    ): Promise<PolicyComment[]> {
+        return await new DataBaseHelper(PolicyComment).find(filters, options as any);
+    }
+
+    /**
+     * Update Policy Comment
+     * @param comment
+     */
+    public static async updatePolicyComment(comment: PolicyComment): Promise<PolicyComment> {
+        return await new DataBaseHelper(PolicyComment).update(comment);
+    }
+
+    /**
+     * Delete Policy Comment
+     * @param comment
+     */
+    public static async removePolicyComment(comment: PolicyComment): Promise<void> {
+        return await new DataBaseHelper(PolicyComment).remove(comment);
+    }
+
+    /**
+     * Create Policy discussion
+     * @param discussion
+     */
+    public static async createPolicyDiscussion(
+        discussion: FilterObject<PolicyDiscussion>
+    ): Promise<PolicyDiscussion> {
+        const item = new DataBaseHelper(PolicyDiscussion).create(discussion);
+        return await new DataBaseHelper(PolicyDiscussion).save(item);
+    }
+
+    /**
+     * Get Policy discussions
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyDiscussions(
+        filters: FilterQuery<PolicyDiscussion>,
+        options?: FindOptions<object, never, PopulatePath.ALL, never>
+    ): Promise<PolicyDiscussion[]> {
+        return await new DataBaseHelper(PolicyDiscussion).find(filters, options as any);
+    }
+
+    /**
+     * Get Policy discussion
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyDiscussion(
+        filters: FilterQuery<PolicyDiscussion>,
+        options?: FindOptions<object, never, PopulatePath.ALL, never>
+    ): Promise<PolicyDiscussion | null> {
+        return await new DataBaseHelper(PolicyDiscussion).findOne(filters, options as any);
+    }
+
+    /**
+     * Update Policy discussion
+     * @param discussion
+     */
+    public static async updatePolicyDiscussion(discussion: PolicyDiscussion): Promise<PolicyDiscussion> {
+        return await new DataBaseHelper(PolicyDiscussion).update(discussion);
     }
 
     /**
@@ -908,6 +1560,36 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Clear BlockStateSavepoint rows for policy
+     */
+    public static async clearBlockStateSavepoints(policyId: string): Promise<void> {
+        await new DataBaseHelper(BlockStateSavepoint).delete({ policyId });
+    }
+
+    /**
+     * Clear DryRunSavepointSnapshot rows for policy
+     */
+    public static async clearDryRunSavepointSnapshots(policyId: string): Promise<void> {
+        await new DataBaseHelper(DryRunSavepointSnapshot).delete({ policyId });
+    }
+
+    /**
+     * Clear DryRunSavepoint rows for policy
+     */
+    public static async clearDryRunSavepoints(policyId: string): Promise<void> {
+        await new DataBaseHelper(DryRunSavepoint).delete({ policyId });
+    }
+
+    /**
+     * Clear all savepoint-related collections for policy
+     */
+    public static async clearAllSavepointData(policyId: string): Promise<void> {
+        await DatabaseServer.clearBlockStateSavepoints(policyId);
+        await DatabaseServer.clearDryRunSavepointSnapshots(policyId);
+        await DatabaseServer.clearDryRunSavepoints(policyId);
+    }
+
+    /**
      * Clear policy cache data
      * @param cachePolicyId Cache policy id
      */
@@ -967,6 +1649,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static connectBD(db: MikroORM<MongoDriver>): void {
         DataBaseHelper.connectBD(db);
+
+        // DatabaseServer.startDryRunShadowUpdateWatcher(db);
     }
 
     /**
@@ -1372,11 +2056,13 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async find<T extends BaseEntity>(entityClass: new () => T, filters: FilterQuery<T> | string | ObjectId, options?: unknown): Promise<T[]> {
         if (this.dryRun) {
+            const sp = (options as { savepointId?: string } | undefined)?.savepointId;
 
             const _filters = {
                 ...filters as FilterObject<T>,
                 dryRunId: this.dryRun,
-                dryRunClass: this.classMap.get(entityClass)
+                dryRunClass: this.classMap.get(entityClass),
+                ...(sp ? { savepointId: sp } : {}),
             };
 
             return (await new DataBaseHelper(DryRun).find(_filters, options)) as unknown as T[];
@@ -1904,7 +2590,36 @@ export class DatabaseServer extends AbstractDatabaseServer {
         if (!did) {
             return [];
         }
-        return await this.find(PolicyRolesCollection, { policyId, did }, options);
+
+        const opt: any =
+            options && typeof options === 'object' ? options : undefined;
+
+        const savepointIds: string[] | undefined = opt?.savepointIds
+
+        const where: any = savepointIds
+            ? {
+                policyId,
+                did,
+                $or: [
+                    { savepointId: { $in: savepointIds } },
+                    { savepointId: { $exists: false } },
+                    { savepointId: null },
+                ],
+            }
+            : { policyId, did };
+
+        return await this.find(PolicyRolesCollection, where, options);
+    }
+
+    /**
+     * Get Groups
+     * @param policyId
+     * @param options
+     *
+     * @virtual
+     */
+    public async getPolicyGroups(filters: any, options?: unknown): Promise<PolicyRolesCollection[]> {
+        return await this.find(PolicyRolesCollection, filters, options);
     }
 
     /**
@@ -2129,8 +2844,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public async getPolicy(policyId: string | null): Promise<Policy | null> {
-        return await new DataBaseHelper(Policy).findOne(policyId);
+    public async getPolicy(policyId: string | null, options?: FindOptions<object>): Promise<Policy | null> {
+        return await new DataBaseHelper(Policy).findOne(policyId, options);
     }
 
     /**
@@ -2314,11 +3029,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param iri
      * @param topicId
      */
-    public async getSchemaByIRI(iri: string, topicId?: string): Promise<SchemaCollection | null> {
+    public async getSchemaByIRI(
+        iri: string,
+        topicId?: string,
+        options?: FindOptions<SchemaCollection>
+    ): Promise<SchemaCollection | null> {
         if (topicId) {
-            return await new DataBaseHelper(SchemaCollection).findOne({ iri, topicId });
+            return await new DataBaseHelper(SchemaCollection).findOne({ iri, topicId }, options);
         } else {
-            return await new DataBaseHelper(SchemaCollection).findOne({ iri });
+            return await new DataBaseHelper(SchemaCollection).findOne({ iri }, options);
         }
     }
 
@@ -2791,6 +3510,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Get VCs
+     * @param filters
+     * @param options
+     */
+    public static async getVCsAndCount(
+        filters?: FilterQuery<VcDocumentCollection>,
+        options?: FindOptions<VcDocumentCollection>
+    ): Promise<[VcDocumentCollection[], number]> {
+        return await new DataBaseHelper(VcDocumentCollection).findAndCount(filters, options);
+    }
+
+    /**
      * Get VC
      * @param filters
      * @param options
@@ -2941,6 +3672,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getVPs(filters?: FilterQuery<VpDocumentCollection>, options?: FindOptions<VpDocumentCollection>): Promise<VpDocumentCollection[]> {
         return await new DataBaseHelper(VpDocumentCollection).find(filters, options);
+    }
+
+    /**
+     * Get VCs
+     * @param filters
+     * @param options
+     */
+    public static async getVPsAndCount(
+        filters?: FilterQuery<VpDocumentCollection>,
+        options?: FindOptions<VpDocumentCollection>
+    ): Promise<[VpDocumentCollection[], number]> {
+        return await new DataBaseHelper(VpDocumentCollection).findAndCount(filters, options);
     }
 
     /**
@@ -3168,14 +3911,24 @@ export class DatabaseServer extends AbstractDatabaseServer {
     /**
      * Get All Virtual Users
      * @param policyId
-     *
+     * @param savepointIds
      * @virtual
      */
-    public static async getVirtualUsers(policyId: string): Promise<DryRun[]> {
-        return (await new DataBaseHelper(DryRun).find({
+    public static async getVirtualUsers(policyId: string, savepointIds?: string[]): Promise<DryRun[]> {
+        const filter: any = {
             dryRunId: policyId,
-            dryRunClass: 'VirtualUsers'
-        }, {
+            dryRunClass: 'VirtualUsers',
+            $or: [
+                { savepointId: null },
+                { savepointId: { $exists: false } }
+            ]
+        };
+
+        if (savepointIds) {
+            filter.$or.push({ savepointId: { $in: savepointIds } });
+        }
+
+        return await new DataBaseHelper(DryRun).find(filter, {
             fields: [
                 'id',
                 'did',
@@ -3186,7 +3939,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
             orderBy: {
                 createDate: 1
             }
-        }));
+        });
     }
 
     /**
@@ -3520,6 +4273,48 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async saveFile(uuid: string, buffer: Buffer): Promise<ObjectId> {
         return DataBaseHelper.saveFile(uuid, buffer);
+    }
+
+    public static async upsertGridFile(params: {
+        buffer: Buffer,
+        fileId?: string,
+        filename?: string,
+        contentType?: string
+    }): Promise<{ fileId: string; filename: string; contentType: string }> {
+        const { buffer, fileId, filename, contentType } = params;
+
+        const uuid = GenerateUUIDv4();
+        const name = (filename || 'file').trim();
+        const type = contentType || 'application/octet-stream';
+
+        if (fileId) {
+            const _id = new ObjectId(String(fileId));
+            await DataBaseHelper.overwriteFile(_id, uuid, buffer);
+            return { fileId: _id.toString(), filename: name, contentType: type };
+        } else {
+            const id = await DataBaseHelper.saveFile(uuid, buffer);
+            return { fileId: id.toString(), filename: name, contentType: type };
+        }
+    }
+
+    /**
+     * Get file
+     * @param fileId
+     */
+    public static async getGridFile(fileId: string): Promise<{ buffer: Buffer; filename: string; contentType: string }> {
+        const _id = new ObjectId(String(fileId));
+        const buffer = await DataBaseHelper.loadFile(_id);
+
+        return { buffer, filename: 'file', contentType: 'application/octet-stream' };
+    }
+
+    /**
+     * Save file
+     * @param fileId
+     */
+    public static async deleteGridFile(fileId: string): Promise<void> {
+        const _id = new ObjectId(String(fileId));
+        await DataBaseHelper.deleteFile(_id);
     }
 
     /**
@@ -4506,5 +5301,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getDebugContexts(policyId: string, tag: string): Promise<DryRun[]> {
         return await new DataBaseHelper(DryRun).find({ policyId, tag });
+    }
+
+    /**
+     * Get Groups
+     * @param filters
+     * @param options
+     *
+     */
+    public static async getPolicyGroups(filters: any, options?: unknown): Promise<PolicyRolesCollection[]> {
+        return await new DataBaseHelper(PolicyRolesCollection).find(filters, options);
     }
 }

@@ -233,7 +233,7 @@ export class TransactionLogger extends NatsService {
      * @param id
      * @param file
      */
-    public async virtualFileLog(id: string, file: ArrayBuffer, url: any): Promise<void> {
+    public async virtualFileLog(id: string, file: Buffer, url: any): Promise<void> {
         const date = (new Date()).toISOString();
         if (this.virtualFileCallback) {
             this.virtualFileCallback(date, id, file, url);

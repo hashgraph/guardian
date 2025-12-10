@@ -15,21 +15,21 @@ export class ExternalApi {
      */
     @Post('/:policyId/:blockTag')
     @ApiOperation({
-                      summary: 'Sends data from an external source.',
-                      description: 'Sends data from an external source.',
-                  })
+        summary: 'Sends data from an external source.',
+        description: 'Sends data from an external source.',
+    })
     @ApiBody({
-                 description: 'Object that contains a VC Document.',
-                 type: ExternalDocumentDTO
-             })
+        description: 'Object that contains a VC Document.',
+        type: ExternalDocumentDTO
+    })
     @ApiOkResponse({
-                       description: 'Successful operation.',
-                       type: Boolean
-                   })
+        description: 'Successful operation.',
+        type: Boolean
+    })
     @ApiInternalServerErrorResponse({
-                                        description: 'Internal server error.',
-                                        type: InternalServerErrorDTO
-                                    })
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @ApiExtraModels(ExternalDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async receiveExternalDataCustom(

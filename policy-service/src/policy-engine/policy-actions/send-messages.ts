@@ -7,21 +7,23 @@ import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { PolicyActionType } from './policy-action.type.js';
 
 export class SendMessages {
-    public static async local(
+    public static async local(options: {
         ref: AnyBlockType,
         messages: Message[],
         owner: string,
+        relayerAccount: string,
         updateIpfs: boolean,
         userId: string | null
-    ): Promise<Message[]> {
+    }): Promise<Message[]> {
+        const { ref, messages, owner, relayerAccount, updateIpfs, userId } = options;
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
-        const userSignOptions = await userCred.loadSignOptions(ref, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
         const messageServer = new MessageServer({
-            operatorId: userHederaCred.hederaAccountId,
-            operatorKey: userHederaCred.hederaAccountKey,
+            operatorId: userRelayerAccount.hederaAccountId,
+            operatorKey: userRelayerAccount.hederaAccountKey,
+            signOptions: userRelayerAccount.signOptions,
             encryptKey: userHederaCred.hederaAccountKey,
-            signOptions: userSignOptions,
             dryRun: ref.dryRun
         });
 
@@ -41,13 +43,15 @@ export class SendMessages {
         return results;
     }
 
-    public static async request(
+    public static async request(options: {
         ref: AnyBlockType,
         messages: Message[],
         owner: string,
+        relayerAccount: string,
         updateIpfs: boolean,
         userId: string | null
-    ): Promise<any> {
+    }): Promise<any> {
+        const { ref, messages, owner, relayerAccount, updateIpfs, userId } = options;
         const userAccount = await PolicyUtils.getHederaAccountId(ref, owner, userId);
         const topics: any[] = [];
         const documents: any[] = [];
@@ -61,6 +65,7 @@ export class SendMessages {
             uuid: GenerateUUIDv4(),
             owner,
             accountId: userAccount,
+            relayerAccount,
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.SendMessages,
@@ -74,24 +79,25 @@ export class SendMessages {
         return data;
     }
 
-    public static async response(
+    public static async response(options: {
         row: PolicyAction,
         user: PolicyUser,
+        relayerAccount: string,
         userId: string | null
-    ) {
+    }) {
+        const { row, user, relayerAccount, userId } = options;
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
         const { updateIpfs, topics, documents } = data;
 
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
-        const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
-        const userSignOptions = await userCred.loadSignOptions(ref, userId);
+        const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
         const userMessageKey = await userCred.loadMessageKey(ref, userId);
         const messageServer = new MessageServer({
-            operatorId: userHederaCred.hederaAccountId,
-            operatorKey: userHederaCred.hederaAccountKey,
+            operatorId: userRelayerAccount.hederaAccountId,
+            operatorKey: userRelayerAccount.hederaAccountKey,
+            signOptions: userRelayerAccount.signOptions,
             encryptKey: userMessageKey,
-            signOptions: userSignOptions,
             dryRun: ref.dryRun
         });
 
@@ -139,7 +145,12 @@ export class SendMessages {
             const data = response.document;
             const { updateIpfs, messageIds } = data;
 
-            if (!(request && response && request.accountId === response.accountId)) {
+            if (!(
+                request &&
+                response &&
+                request.accountId === response.accountId &&
+                request.relayerAccount === response.relayerAccount
+            )) {
                 return false;
             }
 

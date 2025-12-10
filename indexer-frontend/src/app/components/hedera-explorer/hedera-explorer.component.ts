@@ -40,10 +40,10 @@ export class HederaExplorer {
                 const subParams = this.subParams ? ('/' + this.subParams) : '';
 
                 this.url = res.networkExplorerLink
-                .replace('/${type}', type)
-                .replace('/${value}', params)
-                .replace('/${subType}', subType)
-                .replace('/${subValue}', subParams);
+                    .replace('/${type}', type)
+                    .replace('/${value}', params)
+                    .replace('/${subType}', subType)
+                    .replace('/${subValue}', subParams);
             }
         });
     }

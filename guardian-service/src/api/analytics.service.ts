@@ -78,7 +78,9 @@ async function localSearch(
             hash: string;
             hashMap: any;
             threshold: number;
-        };
+        },
+        toolName?: string,
+        toolVersion?: string
     }
 ): Promise<ISearchResult[]> {
     const filter: any = {
@@ -116,6 +118,16 @@ async function localSearch(
     if (options.owner) {
         filter.$and.push({
             owner: options.owner
+        });
+    }
+    if (options.toolName) {
+        filter.$and.push({
+            ['tools.name']: { $regex: `.*${options.toolName.trim()}.*`, $options: 'i' }
+        });
+    }
+    if (options.toolVersion) {
+        filter.$and.push({
+            ['tools.version']: { $regex: `.*${options.toolVersion.trim()}.*`, $options: 'i' }
         });
     }
 
@@ -396,6 +408,8 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 text?: string;
                 owner?: string;
                 threshold?: number;
+                toolName?: string;
+                toolVersion?: string;
             },
             userId: string | null
         }) => {
@@ -410,7 +424,9 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     minVcCount,
                     minVpCount,
                     minTokensCount,
-                    threshold
+                    threshold,
+                    toolName,
+                    toolVersion
                 } = filters;
                 const options = {
                     text,
@@ -418,7 +434,9 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     minVcCount,
                     minVpCount,
                     minTokensCount,
-                    blocks: undefined
+                    blocks: undefined,
+                    toolName,
+                    toolVersion
                 }
                 const result: any = {
                     target: null,

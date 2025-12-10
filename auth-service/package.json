@@ -10,8 +10,8 @@
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "^3.3.0",
-        "@guardian/interfaces": "^3.3.0",
+        "@guardian/common": "3.4.0",
+        "@guardian/interfaces": "3.4.0",
         "@meeco/cryppo": "^2.0.2",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
@@ -40,6 +40,7 @@
         "@types/jsonwebtoken": "^8.5.4",
         "@types/node": "^22.15.19",
         "@types/node-vault": "^0",
+        "@types/glob": "^8.1.0",
         "mocha": "^9.2.0",
         "mocha-junit-reporter": "^2.0.2",
         "nodemon": "^2.0.12",
@@ -70,5 +71,5 @@
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
     },
     "type": "module",
-    "version": "3.3.0"
+    "version": "3.4.0"
 }

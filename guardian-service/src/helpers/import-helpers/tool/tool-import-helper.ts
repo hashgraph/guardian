@@ -250,11 +250,12 @@ export async function updateToolConfig(tool: PolicyTool): Promise<PolicyTool> {
     const tools = await DatabaseServer.getTools({
         status: ModuleStatus.PUBLISHED,
         messageId: { $in: Array.from(toolIds.values()) }
-    }, { fields: ['name', 'topicId', 'messageId', 'tools'] });
+    }, { fields: ['name', 'version', 'topicId', 'messageId', 'tools'] });
     const list = [];
     for (const row of tools) {
         list.push({
             name: row.name,
+            version: row.version,
             topicId: row.topicId,
             messageId: row.messageId
         })

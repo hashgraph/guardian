@@ -4,7 +4,7 @@ import { UntypedFormGroup } from '@angular/forms';
 @Component({
     selector: 'app-token-configuration',
     templateUrl: './token-configuration.component.html',
-    styleUrls: ['./token-configuration.component.css'],
+    styleUrls: ['./token-configuration.component.scss'],
 })
 export class TokenConfigurationComponent implements OnChanges {
     @Input('dataForm') dataForm!: UntypedFormGroup;

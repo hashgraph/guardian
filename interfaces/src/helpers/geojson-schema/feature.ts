@@ -10,7 +10,7 @@ import BoundingBox from './ref/bounding-box.js';
 export default {
     title: 'GeoJSON Feature',
     type: 'object',
-    required: ['type', 'properties', 'geometry'],
+    required: ['type', 'geometry'],
     properties: {
         type: {
             type: 'string',

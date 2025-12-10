@@ -41,12 +41,14 @@ export class BlockTreeGenerator extends NatsService {
      * Get user
      * @param policy
      * @param user
+     * @param savepointIds
      */
     public async getUser(
         policy: IPolicyInstance | IPolicyInterfaceBlock,
-        user: IUser
+        user: IUser,
+        savepointIds?: string[],
     ): Promise<PolicyUser> {
-        const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
+        const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id, savepointIds);
         if (!user) {
             throw new Error(`Forbidden`);
         }
@@ -123,23 +125,24 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.GET_POLICY_GROUPS, policyId, async (msg: any) => {
-            const { user } = msg;
+            const { user, savepointIds } = msg;
 
-            const userFull = await this.getUser(policyInstance, user);
+            const userFull = await this.getUser(policyInstance, user, savepointIds);
 
             const templates = policyInstance.components.getGroupTemplates<any>();
             if (templates.length === 0) {
                 return new MessageResponse([]);
             }
 
-            const groups = await PolicyComponentsUtils.GetGroups(policyInstance, userFull);
+            const groups = await PolicyComponentsUtils.GetGroups(policyInstance, userFull, savepointIds);
+
             return new MessageResponse(groups);
         });
 
         this.getPolicyMessages(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, async (msg: any) => {
-            const { user } = msg;
+            const { user, params } = msg;
 
-            const userFull = await this.getUser(policyInstance, user);
+            const userFull = await this.getUser(policyInstance, user, params.savepointIds);
 
             // <-- Available
             const error = await PolicyComponentsUtils.isAvailableGetData(policyInstance, userFull);
@@ -154,7 +157,7 @@ export class BlockTreeGenerator extends NatsService {
         this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA, policyId, async (msg: any) => {
             const { user, blockId, params } = msg;
 
-            const userFull = await this.getUser(policyInstance, user);
+            const userFull = await this.getUser(policyInstance, user, params.savepointIds);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
             // <-- Available
@@ -170,7 +173,7 @@ export class BlockTreeGenerator extends NatsService {
         this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, async (msg: any) => {
             const { user, tag, params } = msg;
 
-            const userFull = await this.getUser(policyInstance, user);
+            const userFull = await this.getUser(policyInstance, user, params.savepointIds);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
 
             // <-- Available
@@ -264,8 +267,8 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.GET_POLICY_NAVIGATION, policyId, async (msg: any) => {
-            const { user } = msg;
-            const userFull = await this.getUser(policyInstance, user);
+            const { user, params } = msg;
+            const userFull = await this.getUser(policyInstance, user, params.savepointIds);
             const navigation = PolicyComponentsUtils.GetNavigation<IPolicyNavigationStep[]>(policyId, userFull);
             return new MessageResponse(navigation);
         });
@@ -329,6 +332,40 @@ export class BlockTreeGenerator extends NatsService {
                 const userFull = await this.getUser(policyInstance, user);
                 const controller = PolicyComponentsUtils.getActionsController(policyId);
                 const row = await controller.loadAction(messageId, userFull);
+                return new MessageResponse(row);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.APPLY_SAVEPOINT, policyId, async (msg: any) => {
+            try {
+                const { savepointId } = msg;
+
+                this.getRoot(policyId);
+                await PolicyComponentsUtils.restoreState(policyId);
+                await PolicyComponentsUtils.sentRestoreNotification(policyId);
+
+                return new MessageResponse({ ok: true, policyId, savepointId });
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.CREATE_POLICY_DISCUSSION, policyId, async (msg: any) => {
+            try {
+                const { user, discussion, key } = msg;
+                const row = await PolicyComponentsUtils.createPolicyDiscussion(policyInstance, policyId, discussion, key, user);
+                return new MessageResponse(row);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.CREATE_POLICY_COMMENT, policyId, async (msg: any) => {
+            try {
+                const { user, comment } = msg;
+                const row = await PolicyComponentsUtils.createPolicyComment(policyInstance, policyId, comment, user);
                 return new MessageResponse(row);
             } catch (error) {
                 return new MessageError(error, 500);

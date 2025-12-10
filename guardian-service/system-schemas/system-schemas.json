@@ -1,4 +1,5 @@
-[{
+[
+    {
         "uuid": "MintNFToken",
         "name": "MintNFToken",
         "entity": "MINT_NFTOKEN",
@@ -10,7 +11,8 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -23,7 +25,8 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -84,7 +87,8 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -97,7 +101,8 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -155,7 +160,8 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -168,7 +174,8 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -272,7 +279,9 @@
                 }
             },
             "required": [
-                "user", "contractId", "tokens"
+                "user",
+                "contractId",
+                "tokens"
             ],
             "additionalProperties": false,
             "$defs": {
@@ -330,7 +339,8 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -343,7 +353,8 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -457,7 +468,8 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -470,7 +482,8 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -528,7 +541,8 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -541,7 +555,8 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -577,6 +592,13 @@
                     "description": "tokenId",
                     "type": "string",
                     "readOnly": false
+                },
+                "serialNumbers": {
+                    "$comment": "{\"term\": \"serialNumbers\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "serialNumbers",
+                    "description": "serialNumbers",
+                    "type": "string",
+                    "readOnly": false
                 }
             },
             "required": [
@@ -599,7 +621,8 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -612,7 +635,8 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -839,7 +863,8 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -852,7 +877,8 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -869,7 +895,8 @@
                     "readOnly": true
                 },
                 "dataSource": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -882,7 +909,8 @@
                     "readOnly": false
                 },
                 "relationships": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -913,7 +941,8 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -926,7 +955,8 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -1005,7 +1035,8 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -1018,7 +1049,8 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -1087,7 +1119,8 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -1100,7 +1133,8 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [{
+                    "oneOf": [
+                        {
                             "type": "string"
                         },
                         {
@@ -1173,6 +1207,322 @@
                         "uuid",
                         "name",
                         "owner"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+        }
+    },
+    {
+        "uuid": "PolicyDiscussionV2",
+        "name": "PolicyDiscussion",
+        "entity": "POLICY_DISCUSSION_V2",
+        "document": {
+            "$id": "#PolicyDiscussion",
+            "$comment": "{ \"term\": \"PolicyDiscussion\", \"@id\": \"#PolicyDiscussion\" }",
+            "title": "PolicyDiscussion",
+            "description": "PolicyDiscussion",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "policy": {
+                    "$comment": "{\"term\": \"policy\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "policy",
+                    "description": "Policy topic",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "document": {
+                    "$comment": "{\"term\": \"document\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "document",
+                    "description": "Document ID",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "name": {
+                    "$comment": "{\"term\": \"name\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "name",
+                    "description": "Name",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "parent": {
+                    "$comment": "{\"term\": \"parent\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "parent",
+                    "description": "Parent",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "field": {
+                    "$comment": "{\"term\": \"field\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "field",
+                    "description": "Field",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "fieldName": {
+                    "$comment": "{\"term\": \"fieldName\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "fieldName",
+                    "description": "Field Name",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "relationships": {
+                    "$comment": "{\"term\": \"relationships\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "relationships",
+                    "description": "Relationships",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "readOnly": false
+                },
+                "privacy": {
+                    "$comment": "{\"term\": \"privacy\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "privacy",
+                    "description": "Privacy",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "roles": {
+                    "$comment": "{\"term\": \"roles\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "roles",
+                    "description": "Roles",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "readOnly": false
+                },
+                "users": {
+                    "$comment": "{\"term\": \"users\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "users",
+                    "description": "Users",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "readOnly": false
+                }
+            },
+            "required": [
+                "policy",
+                "document",
+                "name"
+            ],
+            "additionalProperties": false
+        }
+    },
+    {
+        "uuid": "PolicyComment",
+        "name": "PolicyComment",
+        "entity": "POLICY_COMMENT",
+        "document": {
+            "$id": "#PolicyComment",
+            "$comment": "{ \"term\": \"PolicyComment\", \"@id\": \"#PolicyComment\" }",
+            "title": "PolicyComment",
+            "description": "PolicyComment",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "policy": {
+                    "$comment": "{\"term\": \"policy\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "policy",
+                    "description": "Policy topic",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "document": {
+                    "$comment": "{\"term\": \"document\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "document",
+                    "description": "Document ID",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "discussion": {
+                    "$comment": "{\"term\": \"discussion\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "discussion",
+                    "description": "Discussion ID",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "text": {
+                    "$comment": "{\"term\": \"text\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "text",
+                    "description": "Text",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "files": {
+                    "$comment": "{\"term\": \"files\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "files",
+                    "description": "Files",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#File"
+                    },
+                    "readOnly": false
+                },
+                "users": {
+                    "$comment": "{\"term\": \"users\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "users",
+                    "description": "Users",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "readOnly": false
+                },
+                "fields": {
+                    "$comment": "{\"term\": \"fields\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "fields",
+                    "description": "Fields",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "readOnly": false
+                },
+                "sender": {
+                    "$comment": "{\"term\": \"sender\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "sender",
+                    "description": "Sender",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "senderRole": {
+                    "$comment": "{\"term\": \"senderRole\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "senderRole",
+                    "description": "Sender's Role",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "senderName": {
+                    "$comment": "{\"term\": \"senderName\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "senderName",
+                    "description": "Sender's Name",
+                    "type": "string",
+                    "readOnly": false
+                }
+            },
+            "required": [
+                "policy",
+                "document",
+                "discussion"
+            ],
+            "additionalProperties": false,
+            "$defs": {
+                "#File": {
+                    "$id": "#File",
+                    "$comment": "{ \"@id\": \"#File\", \"term\": \"File\" }",
+                    "title": "File",
+                    "description": "File",
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "$comment": "{\"term\": \"name\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "name",
+                            "description": "Name",
+                            "type": "string",
+                            "readOnly": false
+                        },
+                        "fileType": {
+                            "$comment": "{\"term\": \"fileType\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "type",
+                            "description": "Type",
+                            "type": "string",
+                            "readOnly": false
+                        },
+                        "size": {
+                            "$comment": "{\"term\": \"size\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "size",
+                            "description": "size",
+                            "type": "number",
+                            "readOnly": false
+                        },
+                        "link": {
+                            "$comment": "{\"term\": \"link\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "link",
+                            "description": "Link",
+                            "type": "string",
+                            "readOnly": false
+                        },
+                        "cid": {
+                            "$comment": "{\"term\": \"cid\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "cid",
+                            "description": "CID",
+                            "type": "string",
+                            "readOnly": false
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "fileType",
+                        "size",
+                        "link",
+                        "cid"
                     ],
                     "additionalProperties": false
                 }

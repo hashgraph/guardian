@@ -18,8 +18,11 @@ export class ToolTemplate {
     public readonly status!: string;
     public readonly messageId!: string;
     public readonly topicId!: string;
+    public readonly version!: string;
+    public readonly previousVersion!: string;
 
     public readonly isDraft: boolean = false;
+    public readonly isDryRun: boolean = false;
     public readonly isPublished: boolean = false;
     public readonly isPublishError: boolean = false;
     public readonly readonly: boolean = false;
@@ -46,17 +49,22 @@ export class ToolTemplate {
         this.status = template.status;
         this.messageId = template.messageId;
         this.topicId = template.topicId;
+        this.version = template.version;
+        this.previousVersion = template.previousVersion;
 
         this.buildBlock(template.config);
         this._config.setNameSilently(template.name);
         this._config.setDescriptionSilently(template.description);
+        this._config.setPreviousVersionSilently(template.previousVersion);
+        this._config.setVersionSilently(template.version);
         this._config.setLocalTagSilently(this._config.localTag || 'Tool');
 
         this.isDraft = (this.status === PolicyStatus.DRAFT) || (this.status === ModuleStatus.DRAFT);
+        this.isDryRun = (this.status === PolicyStatus.DRY_RUN) || (this.status === ModuleStatus.DRY_RUN);
         this.isPublished = (this.status === PolicyStatus.PUBLISH) || (this.status === ModuleStatus.PUBLISHED);
         this.isPublishError = this.status === PolicyStatus.PUBLISH_ERROR;
-        this.readonly = this.isPublished || this.isPublishError;
-        this.isTest = this.isDraft;
+        this.readonly = this.isPublished || this.isPublishError || this.isDryRun;
+        this.isTest = this.isDraft || this.isDryRun;
     }
 
     public get name(): string {
@@ -153,6 +161,8 @@ export class ToolTemplate {
             codeVersion: this.codeVersion,
             createDate: this.createDate,
             config: this._config.getJSON(),
+            version: this.version,
+            previousVersion: this.previousVersion,
         };
         return json;
     }

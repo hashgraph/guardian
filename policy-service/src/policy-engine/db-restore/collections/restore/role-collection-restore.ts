@@ -30,11 +30,11 @@ export class RoleCollectionRestore extends CollectionRestore<PolicyRoles> {
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: PolicyRoles): PolicyRoles {
+    protected override createRow(data: PolicyRoles, id: string): PolicyRoles {
         return data;
     }
 
-    protected override async decryptRow(row: PolicyRoles): Promise<PolicyRoles> {
+    protected override async decryptRow(row: PolicyRoles, id: string): Promise<PolicyRoles> {
         return row;
     }
 }

@@ -87,11 +87,18 @@
             width: 24px;
             height: 24px;
             border: 1px solid var(--guardian-grey-color-3, #AAB7C4);
-            background: var(--guardian-grey-color, #EFF3F7);
+            background: var(--guardian-grey-color-3, #AAB7C4);
+            color: #FFF;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
+            font-family: Inter;
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 100%;
+            text-align: center;
+            vertical-align: middle;
 
             svg-icon svg {
                 fill: var(--guardian-grey-color-3, #AAB7C4);
@@ -128,6 +135,10 @@
             background: #f0f3fc;
         }
 
+        &[disabled="true"] {
+            pointer-events: none !important;
+        }
+
         &[action="true"] {
             .guardian-step-icon {
                 svg-icon svg {
@@ -139,6 +150,7 @@
             .guardian-step-marker {
                 background: var(--guardian-primary-color, #4169E2);
                 border: 1px solid var(--guardian-primary-color, #4169E2);
+                color: #FFF;
 
                 svg-icon svg {
                     fill: var(--guardian-secondary-color, #FFFFFF);

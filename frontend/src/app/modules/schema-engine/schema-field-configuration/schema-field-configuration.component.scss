@@ -582,3 +582,10 @@
     display: flex;
     flex-direction: row;
 }
+
+.p-chips-container {
+    flex-wrap: wrap;
+    height: unset;
+    gap: 0.25rem;
+    margin-bottom: 0.25rem;
+}

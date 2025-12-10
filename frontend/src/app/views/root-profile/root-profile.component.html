@@ -26,73 +26,234 @@
 </ng-template>
 
 <ng-template #userInfo>
-    <div class="user-info-container">
-        <div class="item-header">Account</div>
-        <div class="item">
-            <span>User Name</span>
-            <span class="value-text">{{ profile!.username }}</span>
-        </div>
-        <div class="item">
-            <span>Password</span>
-            <div (click)="changePassword(profile)" class="view-document-button">
-                <span>Change Password</span>
-            </div>
-        </div>
-
-
-        <div class="item-header">Hedera</div>
-        <div class="item">
-            <span>Hedera Account ID</span>
-            <div>
-                <hedera-explorer [params]="profile!.hederaAccountId || ''" type="accounts">
-                    {{ profile!.hederaAccountId }}
-                </hedera-explorer>
-            </div>
-        </div>
-        <div *ngIf="profile!.topicId" class="item">
-            <span>User Topic</span>
-            <div>
-                <hedera-explorer [params]="profile!.topicId" type="topics">
-                    {{ profile!.topicId }}
-                </hedera-explorer>
-            </div>
-        </div>
-        <div *ngIf="profile!.parentTopicId" class="item">
-            <span>Initialization Topic</span>
-            <div>
-                <hedera-explorer [params]="profile!.parentTopicId" type="topics">
-                    {{ profile!.parentTopicId }}
-                </hedera-explorer>
-            </div>
-        </div>
-        <div class="item">
-            <span>Balance</span>
-            <span class="value-text">{{ balance }}</span>
-        </div>
-
-
-        <div class="item-header">Documents</div>
-        <div class="item">
-            <span>DID</span>
-            <span class="value-text">{{ profile!.did }}</span>
-        </div>
-        <div class="item">
-            <span>DID Document</span>
-            <div (click)="openDIDDocument(profile!.didDocument, 'DID Document')" class="view-document-button">
-                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg"
-                          svgClass="primary-color"></svg-icon>
-                <span>View document</span>
-            </div>
-        </div>
-        <div class="item">
-            <span>VC Document</span>
-            <div (click)="openVCDocument(profile!.vcDocument, 'VC Document')" class="view-document-button">
-                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg"
-                          svgClass="primary-color"></svg-icon>
-                <span>View document</span>
-            </div>
-        </div>
+    <div class="tabs-nav">
+        <p-tabView [(activeIndex)]="tabIndex" (onChange)="onChangeTab($event)" class="guardian-header-tabs">
+            <p-tabPanel [selected]="tab === 'general'">
+                <ng-template pTemplate="header">
+                    <div class="tabview-label">General</div>
+                </ng-template>
+            </p-tabPanel>
+            <p-tabPanel [selected]="tab === 'relayerAccounts'">
+                <ng-template pTemplate="header">
+                    <div class="tabview-label">Relayer Accounts</div>
+                </ng-template>
+            </p-tabPanel>
+        </p-tabView>
     </div>
+    <ng-container *ngIf="tab === 'general'">
+        <div class="user-info-container">
+            <div class="item-header">Account</div>
+            <div class="item">
+                <span>User Name</span>
+                <span class="value-text">{{ profile!.username }}</span>
+            </div>
+            <div class="item">
+                <span>Password</span>
+                <div (click)="changePassword(profile)" class="view-document-button">
+                    <span>Change Password</span>
+                </div>
+            </div>
+
+
+            <div class="item-header">Hedera</div>
+            <div class="item">
+                <span>Hedera Account ID</span>
+                <div>
+                    <hedera-explorer [params]="profile!.hederaAccountId || ''" type="accounts">
+                        {{ profile!.hederaAccountId }}
+                    </hedera-explorer>
+                </div>
+            </div>
+            <div *ngIf="profile!.topicId" class="item">
+                <span>User Topic</span>
+                <div>
+                    <hedera-explorer [params]="profile!.topicId" type="topics">
+                        {{ profile!.topicId }}
+                    </hedera-explorer>
+                </div>
+            </div>
+            <div *ngIf="profile!.parentTopicId" class="item">
+                <span>Initialization Topic</span>
+                <div>
+                    <hedera-explorer [params]="profile!.parentTopicId" type="topics">
+                        {{ profile!.parentTopicId }}
+                    </hedera-explorer>
+                </div>
+            </div>
+            <div class="item">
+                <span>Balance</span>
+                <span class="value-text">{{ balance }}</span>
+            </div>
+
+
+            <div class="item-header">Documents</div>
+            <div class="item">
+                <span>DID</span>
+                <span class="value-text">{{ profile!.did }}</span>
+            </div>
+            <div class="item">
+                <span>DID Document</span>
+                <div (click)="openDIDDocument(profile!.didDocument, 'DID Document')" class="view-document-button">
+                    <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg"
+                            svgClass="primary-color"></svg-icon>
+                    <span>View document</span>
+                </div>
+            </div>
+            <div class="item">
+                <span>VC Document</span>
+                <div (click)="openVCDocument(profile!.vcDocument, 'VC Document')" class="view-document-button">
+                    <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg"
+                            svgClass="primary-color"></svg-icon>
+                    <span>View document</span>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="tab === 'relayerAccounts'">
+        <div class="guardian-user-page-toolbar">
+            <div class="guardian-user-page-filters">
+                <div class="search-filter">
+                    <input
+                        [(ngModel)]="searchRelayerAccount"
+                        class="guardian-input search-policy-input"
+                        pInputText
+                        placeholder="Search by keyword"
+                        type="text" 
+                        (change)="onRelayerAccountSearch()"/>
+                    <i class="search-icon">
+                        <svg-icon 
+                            class="svg-icon-16" 
+                            src="/assets/images/icons/16/search.svg" 
+                            svgClass="icon-color-close">
+                        </svg-icon>
+                    </i>
+                </div>
+            </div>
+            <div class="guardian-user-page-buttons">
+                <button
+                    (click)="updateAllBalance()"
+                    class="guardian-button guardian-button-secondary">
+                    <div class="guardian-button-icon">
+                        <svg-icon
+                            class="icon-btn"
+                            src="/assets/images/icons/refresh-2.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Update All Accounts</div>
+                </button>
+                <button
+                    (click)="onCreateRelayerAccount()"
+                    class="guardian-button guardian-button-primary">
+                    <div class="guardian-button-icon">
+                        <svg-icon
+                            class="icon-btn"
+                            src="/assets/images/icons/add.svg"
+                            svgClass="icon-color-secondary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Add Relayer Account</div>
+                </button>
+            </div>
+        </div>
+        <div class="guardian-user-page-grid">
+            <ng-container *ngIf="relayerAccountPage && relayerAccountPage.length > 0; else noData">
+                <div class="guardian-grid-container">
+                    <p-table
+                        class="guardian-grid-table"
+                        [value]="relayerAccountPage"
+                        [scrollable]="true"
+                    >
+                        <ng-template pTemplate="header">
+                            <tr class="guardian-grid-header">
+                                <ng-container *ngFor="let column of relayerAccountColumns">
+                                    <th
+                                        *ngIf="!column.canDisplay || column.canDisplay()"
+                                        class="header-cell-{{column.type}} col-{{column.size}}"
+                                    >{{column.title}}</th>
+                                </ng-container>
+                            </tr>
+                        </ng-template>
+                        <ng-template let-row pTemplate="body">
+                            <tr class="guardian-grid-row">
+                                <ng-container *ngFor="let column of relayerAccountColumns">
+                                    <td
+                                        *ngIf="!column.canDisplay || column.canDisplay()"
+                                        class="row-cell-{{column.type}} col-{{column.size}}"
+                                        pTooltip="{{row[column.id]}}"
+                                        [tooltipDisabled]="!column.tooltip"
+                                        tooltipPosition="top"
+                                        [showDelay]="1000"
+                                        [ngSwitch]="column.id"
+                                    >
+                                        <ng-container *ngSwitchCase="'balance'">
+                                            <div class="balance-cell">
+                                                <div *ngIf="row.__loading" class="balance-container">
+                                                    <div class="balance-loading"></div>
+                                                </div>
+                                                <div *ngIf="!row.__loading" class="balance-container">
+                                                    {{getBalance(row)}}
+                                                </div>
+                                            </div>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'refresh'">
+                                            <div class="balance-cell">
+                                                <div 
+                                                    class="guardian-icon-button big balance-button" 
+                                                    [attr.disabled]="row.__loading"
+                                                    (click)="updateBalance(row)">
+                                                    <svg-icon 
+                                                        class="svg-icon"
+                                                        src="/assets/images/icons/refresh-2.svg"
+                                                        [svgClass]="'icon-color-primary'">
+                                                    </svg-icon>
+                                                </div>
+                                                <div class="last-update">{{row.__lastUpdate}}</div>
+                                            </div>
+                                        </ng-container>
+
+                                        <ng-container *ngSwitchCase="'account'">
+                                            <hedera-explorer [params]="row[column.id] || ''" type="accounts">
+                                                {{ row[column.id] }}
+                                            </hedera-explorer>
+                                        </ng-container>
+                                        <ng-container *ngSwitchCase="'options'">
+                                            <button
+                                                (click)="onOpenAccount(row)"
+                                                class="guardian-button guardian-button-secondary grid-btn"
+                                            >Details</button>
+                                        </ng-container>
+                                        <ng-container *ngSwitchDefault>
+                                            <span class="text-truncate">{{row[column.id]}}</span>
+                                        </ng-container>
+                                    </td>
+                                </ng-container>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                    <div class="guardian-grid-paginator">
+                        <app-paginator
+                            class="guardian-grid-paginator"
+                            [pageIndex]="relayerAccountPageIndex"
+                            [pageSize]="relayerAccountPageSize"
+                            [length]="relayerAccountCount"
+                            (page)="onRelayerAccountPage($event)"
+                        ></app-paginator>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-template #noData>
+                <div class="guardian-user-not-data">
+                    <svg-icon
+                        class="svg-icon-32"
+                        src="/assets/images/icons/32/list.svg"
+                        svgClass="icon-color-disabled"></svg-icon>
+                    <span class="guardian-user-not-data__text-strong">There are no accounts created yet</span>
+                    <span class="guardian-user-not-data__text">Please create a new account to see the data</span>
+                </div>
+            </ng-template>
+        </div>
+    </ng-container>
 </ng-template>
 
 <ng-template #registerDID>

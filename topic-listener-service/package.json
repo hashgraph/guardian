@@ -1,9 +1,9 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@guardian/common": "^3.3.0",
-        "@guardian/interfaces": "^3.3.0",
-        "@hashgraph/sdk": "2.63.0",
+        "@guardian/common": "3.4.0",
+        "@guardian/interfaces": "3.4.0",
+        "@hashgraph/sdk": "2.72.0",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
@@ -21,6 +21,7 @@
         "@types/gulp": "^4",
         "@types/gulp-rename": "^2",
         "@types/node": "^22.15.19",
+        "@types/glob": "^8.1.0",
         "chai": "4.3.4",
         "concurrently": "^8.2.2",
         "gulp": "^5.0.0",
@@ -56,5 +57,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.3.0"
+    "version": "3.4.0"
 }

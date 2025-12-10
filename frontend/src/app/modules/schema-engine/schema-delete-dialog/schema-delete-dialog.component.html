@@ -1,0 +1,60 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <i class="pi pi-exclamation-triangle delete-icon"></i><div class="header-text">{{ header }}</div>
+    </div>
+    <div class="header-icon" (click)="onClick()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+
+<div class="dialog-body">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+
+    <div *ngIf="(!deletableChildren?.length || deletableChildren.length <= 0) && (!blockedChildren?.length && blockedChildren.length <= 0)" class="delete-text">
+        {{ text }}
+    </div>
+
+    <div class="child-schemas-block" *ngIf="(deletableChildren?.length && deletableChildren.length > 0) || (blockedChildren?.length && blockedChildren.length > 0)">
+        <ng-container *ngIf="deletableChildren?.length && deletableChildren.length > 0">
+            <p class="delete-text">The following child schemas would also be deleted:</p>
+            <div class="schemas-block">
+                <span class="child-item">
+                    {{ deletableChildren.join(', ') }}
+                </span>
+            </div>
+        </ng-container>
+
+        <ng-container *ngIf="blockedChildren?.length && blockedChildren.length > 0">
+            <p class="delete-text">Child schemas referenced by other parents (will not be deleted):</p>
+            <div class="schemas-block">
+                <span class="child-cant-delete-item" *ngFor="let item of blockedChildren">
+                    {{ item?.schema?.name + ' (depends on: ' + item?.blockingSchemas?.join(', ') + ')' }}
+                </span>
+            </div>
+        </ng-container>
+        
+        <ng-container *ngIf="deletableChildren?.length && deletableChildren.length > 0">
+            <div style="margin-top: 16px;">
+                <p-checkbox
+                    class="guardian-checkbox-secondary checkbox-24"
+                    [(ngModel)]="includeChildren"
+                    [binary]="true"
+                    [styleClass]="'primary-checkbox'"
+                    label="Delete child schemas as well"
+                ></p-checkbox>
+            </div>
+        </ng-container>
+    </div>
+</div>
+
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div *ngFor="let button of buttons" class="{{button.class}}-button">
+            <button 
+                (click)="onClick(button)" 
+                class="guardian-button guardian-button-{{button.class}}">{{button.name}}</button>
+        </div>
+    </div>
+</div>

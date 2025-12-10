@@ -248,6 +248,8 @@
 }
 
 .balance-item {
+    cursor: pointer;
+
     &>span {
         display: flex;
         justify-content: space-between;
@@ -255,6 +257,7 @@
     }
 
     &.collapsed-item {
+
         div,
         span {
             display: none;

@@ -1,10 +1,12 @@
 # Roadmap
 
-<table><thead><tr><th width="188" align="center">Feature</th><th align="center">Release month</th><th width="152" align="center">Develop branch?</th><th align="center">Released?</th><th align="center">Release Version</th></tr></thead><tbody><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/ams-i.e-switch-from-non-renewable-biomass-for-thermal-applications-by-the-user">Development of AMS-I.E and Mass Comparison on Cookstove</a></td><td align="center">July 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/global-indexer/indexer-apis">Indexer API</a></td><td align="center">July 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="../demo-guide/carbon-offsets/verra-vmr0006-energy-efficiency-and-fuel-switch-measures-in-thermal-applications.md">Development of VMR0006</a></td><td align="center">July 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center">Filtering data for blocks is stateful API, introduce stateless data filters for API usage.</td><td align="center">July 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="../standard-registry/policies/auto-testing-of-the-policies/auto-testing-policies-apis/">Auto-testing community submitted policies</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Code audit: support and resolution of issues</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">GHG Scorecards Research</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/tokens/dynamic-token-creation-in-policies/dynamic-token-creation-in-guardian-policies-using-ui">Token action block to work with token templates</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/tokens/dynamic-token-creation-in-policies/dynamic-token-creation-in-guardian-policies-using-ui">Different token IDs for different projects by the same policy</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Enhance MongoDB Integration</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Leverage the pre-built images as the default way to start Guardian locally</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid">Global Carbon Council (GCC) GCCM001</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/schemas/schema-predefined-values-using-ui">Default values for schema-defined fields</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Rationalize API and UI return error codes</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Simplify default SR schema to take out optional properties</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/users/bottom-up-data-traceability/bottom-up-data-traceability-using-ui">Guardian analytics: bottom-up data traceability</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="../standard-registry/policies/versioning-and-deprecation-policy/policy-versioning-and-deprecation-policy.md">API versioning and support/deprecation schedule</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/schemas/schema-rules/defining-schema-rules-using-ui">Data Parameterization and Conditional Review Logic</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Calculation logic for values in 'automatic fields' in schemas</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Verify and Fix the features that got affected by Mirror node changes</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian-dev-1/guardian/demo-guide/carbon-emissions/climate-action-reserves-u.s.-landfill-protocol-version-6.0">Climate Action Reserve's U.S. Landfill Protocol</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center">Scope 3/PCF Referencing Demo (Methodology Breakdown)</td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity">Development of AMS-I.C</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="../standard-registry/show-list-of-hedera-transactions/showing-list-of-hedera-transactions-using.md">API facilities to retrieve unique references (IDs) of results for API-triggered operations</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/policy-labels">Guardian analytics: labels and top down data way points</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center">Trustchain support for contract-based issuance and retirement implementation</td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center">GHGP Version 3</td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide">Enhancements and Bugs of Indexer</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="../standard-registry/policies/formula-linked-definitions/formula-linked-definitions-using-ui.md">Formula Linked Definitions &#x26; Schema Tree Enhancement</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations">Dry-run policy execution 'savepoints' - restart policy dry-run from the list of 'saved' places</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center">Standardize UI on Angular Material, remove/replace PrimeNG</td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center">Enhancing Research on Indexer and Analytics Use Cases</td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/external-events/send-data-using-the-external-data-apis/sends-data-from-an-external-source">Add policy support for more than one external data block</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/external-events#external-events-list">Firing external event when minting process is finished</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="../standard-registry/policies/versioning-and-deprecation-policy/api-versioning-and-deprecation-policy.md">Establish deprecation policy for architectural APIs</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center">Cross-context (API+UI) refresh token invalidation (regression from v2.18.0)</td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center">Business UseCase for Emissions Reduction/Removals (ERRs)Calculation Pre-Calculator in Guardian</td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide">Add capabilities to display complex geoJSON shapes superimposed on maps</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center">Weak Default configuration</td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide">System Logs Accessible by All Registries</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/vm0042-improved-agricultural-land-management-v2.1">Development of VM0042 v2.1: Improved Agricultural Land Management</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide#id-1.2-priority-loading-data-queue">Manual trigger of re-indexing for specific policy, SR, token</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center">Article 6.4 Forms Research</td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center">Session Token in URL</td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/decentralized-guardian/remote-policy-ui">Accessing a Guardian policy from a Guardian instance other than the publishing instance</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/exporting-project-data-in-csv/export-documents-in-csv-using-ui">Exporting Project Data in CSV format</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian-dev-1/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker#id-3.2-setting-up-jwt-keys-in-.env-file">Missing Authentication between Services</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center">Server-Side Request Forgery (SSRF) in Request Data module</td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/password-management/password-policy">No Password Policy</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/vm0033-methodology-for-tidal-wetland-and-seagrass-restoration">Development of VM0033</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center">Detailed Research on Indexer Enhancements</td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui">Guardian policy embedded code testing/debugging facility for Custom Logic, Calculate, etc blocks</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide">Substitute Google maps API in Guardian UI with an OSS alternative</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center">Outdated Software/Libraries</td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="../standard-registry/policies/integrating-3rd-party-data-resources/">Identifying, Implementing and Integrating 3rd Party data resources</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center">Authorization Headers Potentially Leaked through IPFS in Request Data Module</td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/python-implementation-in-guardian">Facilities to use specialist math tooling (such as R language) for calculatio<br>ns in Guardian Policies .</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/schemas/how-to-handle-large-location-files">Payload Shapefile Ingestion</a></td><td align="center">August 2025</td><td align="center">Yes</td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Improvement in the error handling for excel schema exports</td><td align="center">August 2025</td><td align="center">Yes</td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/policies/savepoints/demo-using-ui">Dry-run savepoint[s] to survive exit and policy editing</a></td><td align="center">August 2025</td><td align="center">Yes</td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Locations Data Field enhancement</td><td align="center">August 2025</td><td align="center">Yes</td><td align="center"></td><td align="center"></td></tr><tr><td align="center">SLA Ticket Import and Policy Publish Performance in Guardian</td><td align="center">August 2025</td><td align="center">Yes</td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Validation for project data submission</td><td align="center">September 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Guardian Form UI Improvements</td><td align="center">September 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Make testing easier for subflows</td><td align="center">September 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Complex iterative review and approval workflows​</td><td align="center">October 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Policy warnings</td><td align="center">October 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Schema deletion with child schemas</td><td align="center">October 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Implementing Artifacts such as Schemas/Policies/tokens Deletion all at once​</td><td align="center">October 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Option to delete all schemas for a particular policy in Draft stage​</td><td align="center">October 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Import Excel to check for duplicates by schema name​</td><td align="center">October 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Deterministic compression​</td><td align="center">October 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Project Account Wallet (ex:Project Developer or Accountable Impact Organization)</td><td align="center">October 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Need to implement best practices on Schema Cycle</td><td align="center">October 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Update Walkthroughs in Documentation</td><td align="center">October 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Graphical View of formula linked definitions</td><td align="center">November 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Capture/replay and compare data of published policies</td><td align="center">November 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Formula-linked definitions enhancements​</td><td align="center">November 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Guardian as a multi-workflow engine for independent data streams​</td><td align="center">December 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Tamper-resistant Policy and Module export/import</td><td align="center">December 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Data Entry Updatability</td><td align="center">December 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Fine grained Policy workflow certification labels​</td><td align="center">January 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Extend Policy definition language to include a Formula calculations block​</td><td align="center">January 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">On-demand state proof generation for critical Guardian operations</td><td align="center">January 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Add an option to hide some buttons in case the policy is discontinued</td><td align="center">January 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Next phase of 'Tools' evolution in Guardian Policies</td><td align="center">January 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr></tbody></table>
+<table><thead><tr><th width="188" align="center">Feature</th><th align="center">Release month</th><th width="152" align="center">Develop branch?</th><th align="center">Released?</th><th align="center">Release Version</th></tr></thead><tbody><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/ams-i.e-switch-from-non-renewable-biomass-for-thermal-applications-by-the-user">Development of AMS-I.E and Mass Comparison on Cookstove</a></td><td align="center">July 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/global-indexer/indexer-apis">Indexer API</a></td><td align="center">July 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="../demo-guide/carbon-offsets/verra-vmr0006-energy-efficiency-and-fuel-switch-measures-in-thermal-applications.md">Development of VMR0006</a></td><td align="center">July 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center">Filtering data for blocks is stateful API, introduce stateless data filters for API usage.</td><td align="center">July 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="../standard-registry/policies/auto-testing-of-the-policies/auto-testing-policies-apis/">Auto-testing community submitted policies</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Code audit: support and resolution of issues</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">GHG Scorecards Research</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/tokens/dynamic-token-creation-in-policies/dynamic-token-creation-in-guardian-policies-using-ui">Token action block to work with token templates</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/tokens/dynamic-token-creation-in-policies/dynamic-token-creation-in-guardian-policies-using-ui">Different token IDs for different projects by the same policy</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Enhance MongoDB Integration</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Leverage the pre-built images as the default way to start Guardian locally</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid">Global Carbon Council (GCC) GCCM001</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/schemas/schema-predefined-values-using-ui">Default values for schema-defined fields</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Rationalize API and UI return error codes</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Simplify default SR schema to take out optional properties</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/users/bottom-up-data-traceability/bottom-up-data-traceability-using-ui">Guardian analytics: bottom-up data traceability</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="../standard-registry/policies/versioning-and-deprecation-policy/policy-versioning-and-deprecation-policy.md">API versioning and support/deprecation schedule</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/schemas/schema-rules/defining-schema-rules-using-ui">Data Parameterization and Conditional Review Logic</a></td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Calculation logic for values in 'automatic fields' in schemas</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center">Verify and Fix the features that got affected by Mirror node changes</td><td align="center">October 2024</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian-dev-1/guardian/demo-guide/carbon-emissions/climate-action-reserves-u.s.-landfill-protocol-version-6.0">Climate Action Reserve's U.S. Landfill Protocol</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center">Scope 3/PCF Referencing Demo (Methodology Breakdown)</td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity">Development of AMS-I.C</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="../standard-registry/show-list-of-hedera-transactions/showing-list-of-hedera-transactions-using.md">API facilities to retrieve unique references (IDs) of results for API-triggered operations</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/policy-labels">Guardian analytics: labels and top down data way points</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center">Trustchain support for contract-based issuance and retirement implementation</td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center">GHGP Version 3</td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide">Enhancements and Bugs of Indexer</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="../standard-registry/policies/formula-linked-definitions/formula-linked-definitions-using-ui.md">Formula Linked Definitions &#x26; Schema Tree Enhancement</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations">Dry-run policy execution 'savepoints' - restart policy dry-run from the list of 'saved' places</a></td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center">Standardize UI on Angular Material, remove/replace PrimeNG</td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center">Enhancing Research on Indexer and Analytics Use Cases</td><td align="center">January 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.1</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/external-events/send-data-using-the-external-data-apis/sends-data-from-an-external-source">Add policy support for more than one external data block</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/external-events#external-events-list">Firing external event when minting process is finished</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="../standard-registry/policies/versioning-and-deprecation-policy/api-versioning-and-deprecation-policy.md">Establish deprecation policy for architectural APIs</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center">Cross-context (API+UI) refresh token invalidation (regression from v2.18.0)</td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center">Business UseCase for Emissions Reduction/Removals (ERRs)Calculation Pre-Calculator in Guardian</td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide">Add capabilities to display complex geoJSON shapes superimposed on maps</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center">Weak Default configuration</td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide">System Logs Accessible by All Registries</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/vm0042-improved-agricultural-land-management-v2.1">Development of VM0042 v2.1: Improved Agricultural Land Management</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide#id-1.2-priority-loading-data-queue">Manual trigger of re-indexing for specific policy, SR, token</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center">Article 6.4 Forms Research</td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center">Session Token in URL</td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/decentralized-guardian/remote-policy-ui">Accessing a Guardian policy from a Guardian instance other than the publishing instance</a></td><td align="center">May 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.2</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/exporting-project-data-in-csv/export-documents-in-csv-using-ui">Exporting Project Data in CSV format</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian-dev-1/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker#id-3.2-setting-up-jwt-keys-in-.env-file">Missing Authentication between Services</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center">Server-Side Request Forgery (SSRF) in Request Data module</td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/password-management/password-policy">No Password Policy</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/vm0033-methodology-for-tidal-wetland-and-seagrass-restoration">Development of VM0033</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center">Detailed Research on Indexer Enhancements</td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui">Guardian policy embedded code testing/debugging facility for Custom Logic, Calculate, etc blocks</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide">Substitute Google maps API in Guardian UI with an OSS alternative</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center">Outdated Software/Libraries</td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="../standard-registry/policies/integrating-3rd-party-data-resources/">Identifying, Implementing and Integrating 3rd Party data resources</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center">Authorization Headers Potentially Leaked through IPFS in Request Data Module</td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/python-implementation-in-guardian">Facilities to use specialist math tooling (such as R language) for calculatio<br>ns in Guardian Policies .</a></td><td align="center">July 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.3</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/schemas/how-to-handle-large-location-files">Payload Shapefile Ingestion</a></td><td align="center">August 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center">Improvement in the error handling for excel schema exports</td><td align="center">August 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/policies/savepoints/demo-using-ui">Dry-run savepoint[s] to survive exit and policy editing</a></td><td align="center">August 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center">Locations Data Field enhancement</td><td align="center">August 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center">SLA Ticket Import and Policy Publish Performance in Guardian</td><td align="center">August 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center">Validation for project data submission</td><td align="center">September 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center"><a href="../standard-registry/schemas/available-schema-types/table-data-input-field/">Guardian Form UI Improvements</a></td><td align="center">September 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-creation/introduction/buttonblock">Add an option to hide some buttons in case the policy is discontinued</a></td><td align="center">September 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center">Make testing easier for subflows</td><td align="center">September 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center"><a href="../complex-iterative-review-and-approval-workflows/">Complex iterative review and approval workflows​</a></td><td align="center">October 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center"><a href="../standard-registry/policies/policy-warnings/">Policy warnings</a></td><td align="center">October 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center">Import Excel to check for duplicates by schema name​</td><td align="center">October 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center"><a href="../project-account-relayer-account/">Project (Relayer) Account (ex:Project Developer or Accountable Impact Organization)</a></td><td align="center">October 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center"><a href="https://docs.hedera.com/guardian/guardian/standard-registry/schemas/creating-system-schema-using-ui#id-4.-define-schema-fields">Nested schemas for complex conditions</a></td><td align="center">October 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center"><a href="../standard-registry/schemas/best-practices-to-implement-schema/">Need to implement best practices on Schema Cycle</a></td><td align="center">October 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center"><a href="vm0033-api-workthrough.md">Update Walkthroughs in Documentation</a></td><td align="center">October 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center"><a href="../standard-registry/schemas/deleting-schema.md#id-2.1-deleting-schemas-with-child-schemas">Schema deletion with child schemas</a></td><td align="center">October 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center">Capability to retire tokens by serial number</td><td align="center">October 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center"><a href="../standard-registry/schemas/deleting-schema.md#id-2.3-deleting-all-schemas">Option to delete all schemas for a particular policy in Draft stage​</a></td><td align="center">October 2025</td><td align="center">Yes</td><td align="center">Yes</td><td align="center">3.4</td></tr><tr><td align="center"><a href="../standard-registry/policies/tools/tools-using-ui.md#id-1.7-status-changed-to-dry-run-mode">Next phase of 'Tools' evolution in Guardian Policies</a></td><td align="center">November 2025</td><td align="center">Yes</td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="../standard-registry/policies/policy-creation/policy-demo.md#id-4.-select-and-delete-multiple-policies">Implementing Artifacts such as Schemas/Policies/tokens Deletion all at once​</a></td><td align="center">November 2025</td><td align="center">Yes</td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="../standard-registry/policies/formula-linked-definitions/formulas-graphical-view.md">Graphical View of formula linked definitions</a></td><td align="center">November 2025</td><td align="center">Yes</td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Capture/replay and compare data of published policies</td><td align="center">November 2025</td><td align="center">Yes</td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Formula-linked definitions enhancements​</td><td align="center">November 2025</td><td align="center">Yes</td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of VM0050: Energy Efficiency and Fuel-Switch Measures in Cookstoves, v1.0*</td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of AMS-II.C: Demand-side energy efficiency activities for specific technologies*</td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of VM0045: Improved Forest Management Using Dynamic Matched Baselines from National Forest Inventories, v1.2*</td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of AR-ACM0003 : Afforestation and reforestation of lands except wetlands - Version 2.0*</td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of VM0051 : Improved Management in Rice Production Systems, v1.0*</td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Guardian as a multi-workflow engine for independent data streams​</td><td align="center">December 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Tamper-resistant Policy and Module export/import</td><td align="center">December 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Data Entry Updatability</td><td align="center">December 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of ACM0022: Alternative waste treatment processes --- Version 3.0*</td><td align="center">December 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of AMS-III.C.: Emission reductions by electric and hybrid vehicles --- Version 16.0*</td><td align="center">December 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of AMS-III.F.: Avoidance of methane emissions through controlled biological treatment of biomass --- Version 8.0*</td><td align="center">December 2025</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Fine grained Policy workflow certification labels​</td><td align="center">January 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Extend Policy definition language to include a Formula calculations block​</td><td align="center">January 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">On-demand state proof generation for critical Guardian operations</td><td align="center">January 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of VM0008 Weatherization of Single Family and Multi-Family Buildings, v1.2*</td><td align="center">January 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of VM0043 CO2 Utilization in Concrete Production, v1.1*</td><td align="center">January 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of VM0041 Methodology for the Reduction of Enteric Methane Emissions from Ruminants through the Use of Feed Ingredients, v2.0*</td><td align="center">January 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of VM0044 Biochar Utilization in Soil and Non-Soil Applications, v1.2*</td><td align="center">January 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of ACM0008: Abatement of methane from coal mines --- Version 8.0*</td><td align="center">February 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of ACM0009: Fuel switching from coal or petroleum fuel to natural gas --- Version 5.0*</td><td align="center">February 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr><tr><td align="center">Development of AMS-II.J.: Demand-side activities for efficient lighting technologies --- Version 8.0*</td><td align="center">March 2026</td><td align="center"></td><td align="center"></td><td align="center"></td></tr></tbody></table>
+
+**Note: The above items marked as "\*"are subject to change.**
 
 {% tabs %}
 {% tab title="Upcoming Releases" %}
-#### --— August 2025 ----
+**--— August 2025 ----**
 
 **Payload Shapefile Ingestion**
 
@@ -70,7 +72,7 @@ Add backend logs/metrics to measure:
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5120](https://github.com/hashgraph/guardian/issues/5120)
 
-#### --— September ----
+**--— September ----**
 
 **Validation for project data submission**
 
@@ -95,6 +97,15 @@ Unit and Integration Tests
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5060](https://github.com/hashgraph/guardian/issues/5060)
 
+**Add an option to hide some buttons in case the policy is discontinued**
+
+* Policy developers can flag a button as available only if the policy is not discontinued.
+* Buttons flagged as _hide/WhenDiscontinued_ won't be displayed in the webUI when the policy is discontinued
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4067](https://github.com/hashgraph/guardian/issues/4067)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-creation/introduction/buttonblock](https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-creation/introduction/buttonblock)
+
 **Guardian Form UI Improvements**
 
 These four can be made into their individual issues as well. Let me know, I'd be happy to submit four separate ones.
@@ -106,13 +117,15 @@ These four can be made into their individual issues as well. Let me know, I'd be
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5042](https://github.com/hashgraph/guardian/issues/5042)
 
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/available-schema-types/table-data-input-field](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/available-schema-types/table-data-input-field)
+
 **Make testing easier for subflows**
 
 There should be a way to test the sub-flows similar to unit test paradigm we have in programming. Each unit should be individually runnable and testable. Following the entire workflow for testing takes up \~50-60% of time of policy development.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5045](https://github.com/hashgraph/guardian/issues/5045)
 
-#### --— October ----
+**--— October ----**
 
 **Complex iterative review and approval workflows​**
 
@@ -129,6 +142,8 @@ These actions, steps, message exchanges have to be verifiably traceable, i.e. re
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4548](https://github.com/hashgraph/guardian/issues/4548)
 
+Documentation Link: [https://docs.hedera.com/guardian/guardian/complex-iterative-review-and-approval-workflows](https://docs.hedera.com/guardian/guardian/complex-iterative-review-and-approval-workflows)
+
 **Policy warnings**
 
 * Introduce the generic capability to highlight blocks, elements within them, and groups of blocks
@@ -139,6 +154,8 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4548](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2230](https://github.com/hashgraph/guardian/issues/2230)
 
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-warnings](https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-warnings)
+
 **Schema deletion with child schemas**
 
 Implement a safe way to delete all schemas embedded into the parent schema in one operation such that:
@@ -148,32 +165,9 @@ Implement a safe way to delete all schemas embedded into the parent schema in on
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2692](https://github.com/hashgraph/guardian/issues/2692)
 
-**Implementing Artifacts such as Schemas/Policies/tokens Deletion all at once​**
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/deleting-schema#id-2.1-deleting-schemas-with-child-schemas](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/deleting-schema#id-2.1-deleting-schemas-with-child-schemas)
 
-1. Create a checkbox at the top of the schema/policy/token table, which will allow to select all the artifacts.
-2. Once, all the schemas/policies/tokens are selected, and clicked on delete, we should be able to delete all the schemas/policies/tokens at once
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/3375](https://github.com/hashgraph/guardian/issues/3375)
-
-**Option to delete all schemas for a particular policy in Draft stage​**
-
-There may be another solution/improvement to the excel where it checks for duplicates and provides with an option to replace. Similar to the file system in macOS for example where it doesnt allow 2 folders with the same name at a particular destination. Issue for that created here: [#4754](https://github.com/hashgraph/guardian/issues/4754)
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4753](https://github.com/hashgraph/guardian/issues/4753)
-
-**Import Excel to check for duplicates by schema name​**
-
-But I believe there is one more check which the guardian can do when the excel is imported and that is to check for duplicates and provide the user with an option to either replace the schema or keep both the files.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4754](https://github.com/hashgraph/guardian/issues/4754)
-
-**Deterministic compression​**
-
-Implement deterministic compression for all cases in which compression is applied by Guardian.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4931](https://github.com/hashgraph/guardian/issues/4931)
-
-**Project Account Wallet (ex:Project Developer or Accountable Impact Organisation)**
+**Project (Relayer) Account (ex:Project Developer or Accountable Impact Organisation)**
 
 * Each new Project must have a unique wallet address generated/associated upon creation.
 * The Project wallet must support:
@@ -183,6 +177,8 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4931](https://githu
   * Transactions must be traceable back to the Project wallet for reporting/financial audit.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5044](https://github.com/hashgraph/guardian/issues/5044)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/project-account-relayer-account/demo-using-ui](https://docs.hedera.com/guardian/guardian/standard-registry/project-account-relayer-account/demo-using-ui)
 
 **Need to implement best practices on Schema Cycle**
 
@@ -208,13 +204,66 @@ Schema Mapping
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5062](https://github.com/hashgraph/guardian/issues/5062)
 
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/best-practices-to-implement-schema](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/best-practices-to-implement-schema)
+
 **Update Walkthroughs in Documentation**
 
 A clear and concise description of what you expected to happen.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4507](https://github.com/hashgraph/guardian/issues/4507)
 
-### ---November---
+Documentation Link: [https://docs.hedera.com/guardian/guardian/readme/vm0033-api-workthrough](https://docs.hedera.com/guardian/guardian/readme/vm0033-api-workthrough)
+
+**Option to delete all schemas for a particular policy in Draft stage​**
+
+There may be another solution/improvement to the excel where it checks for duplicates and provides with an option to replace. Similar to the file system in macOS for example where it doesnt allow 2 folders with the same name at a particular destination. Issue for that created here: [#4754](https://github.com/hashgraph/guardian/issues/4754)
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4753](https://github.com/hashgraph/guardian/issues/4753)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/deleting-schema#id-2.3-deleting-all-schemas](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/deleting-schema#id-2.3-deleting-all-schemas)
+
+**Import Excel to check for duplicates by schema name​**
+
+But I believe there is one more check which the guardian can do when the excel is imported and that is to check for duplicates and provide the user with an option to either replace the schema or keep both the files.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4754](https://github.com/hashgraph/guardian/issues/4754)
+
+**Nested schemas for complex conditions**
+
+* Cross-sub-schema referencing:\
+  \- Conditions should be able to reference fields located in other sub-schemas or sections.\
+  \- Example: A “Parameters for Validation” field’s visibility or requirement should depend on the “Application of Methodology” field located in a different sub-schema.
+* Multi-field logic:\
+  \- A single condition should support evaluation of multiple fields simultaneously.\
+  \- Example: A field becomes visible or required only when both “GHG Sources/Carbon Pools” and “Temporal Boundary” fields meet specific values.
+* Chained conditional logic (presentation order):\
+  \- Conditional fields should be able to reference other conditional fields, allowing a sequential display order.\
+  \- Example:\
+  \- If Field 1 is true → show Field 2.\
+  \- If Field 2 is true → show Field 3.
+* Dynamic updates:\
+  \- When a user changes a field value, all dependent conditions across the entire schema should re-evaluate in real time.\
+  \- This ensures immediate UI updates for visibility and requirement changes.
+* Automatic data reset:\
+  \- If a field becomes hidden due to a condition change, all data previously entered in that field should automatically clear.\
+  \- This avoids invalid or inconsistent state retention.
+* User guidance and clarity:\
+  \- Sequential logic and real-time updates should create a natural flow for users.\
+  \- Only relevant questions are displayed based on prior responses, improving data accuracy and reducing confusion.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/5344](https://github.com/hashgraph/guardian/issues/5344)\
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/creating-system-schema-using-ui#id-4.-define-schema-fields](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/creating-system-schema-using-ui#id-4.-define-schema-fields)
+
+**---November---**
+
+**Implementing Artifacts such as Schemas/Policies/tokens Deletion all at once​**
+
+1. Create a checkbox at the top of the schema/policy/token table, which will allow to select all the artifacts.
+2. Once, all the schemas/policies/tokens are selected, and clicked on delete, we should be able to delete all the schemas/policies/tokens at once
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3375](https://github.com/hashgraph/guardian/issues/3375)
+
+Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/policies/policy-creation/policy-demo#id-4.-select-and-delete-multiple-policies](https://guardian.hedera.com/guardian/standard-registry/policies/policy-creation/policy-demo#id-4.-select-and-delete-multiple-policies)
 
 **Graphical View of formula linked definitions**
 
@@ -226,6 +275,8 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4507](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4730](https://github.com/hashgraph/guardian/issues/4730)
 
+Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/policies/formula-linked-definitions/formulas-graphical-view](https://guardian.hedera.com/guardian/standard-registry/policies/formula-linked-definitions/formulas-graphical-view)
+
 **Capture/replay and compare data of published policies**
 
 Introduce the capability to record and publish 'runs' of the policy for published policies such that it would be possible to replay these runs locally (in dry-run mode) and compare the results.
@@ -236,7 +287,7 @@ Make the recording of the runs for published policies executions 'on' by default
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3008](https://github.com/hashgraph/guardian/issues/3008)
 
-#### Formula-linked definitions enhancements
+**Formula-linked definitions enhancements**
 
 1. "Name" column in formula records table should be wider. Now it's unreadable
 2. After creating a formula record I need to find it in a list to edit. It's quite difficult according to point 1
@@ -246,9 +297,9 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3008](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4952](https://github.com/hashgraph/guardian/issues/4952)
 
-### ---December---
+**---December---**
 
-#### Guardian as a multi-workflow engine for independent data streams
+**Guardian as a multi-workflow engine for independent data streams**
 
 Guardian should be able to inject machine-readable product data and process them simultaneously in multiple independent Policy processing streams, each with an independent ruleset, however with the possibility to coordinate and cross reference the artifacts produced by these streams, all while maintaining and referencing the single original instance of the 'master' data.
 
@@ -262,7 +313,7 @@ Guardian should be able to inject machine-readable product data and process them
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5018](https://github.com/hashgraph/guardian/issues/5018)
 
-#### Tamper-resistant Policy and Module export/import
+**Tamper-resistant Policy and Module export/import**
 
 * Introduce the signing of Policies and Policy Modules such that on import their authenticity is evaluated - which proves that they have not been tampered with.
 * In an indicator into the Policy grid (or other appropriate place) which would show whether the Policies (and/or their elements such as schemas, modules etc) that have been imported (whether from the file system or IPFS) have been modified from their original state.
@@ -270,13 +321,15 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5018](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/1887](https://github.com/hashgraph/guardian/issues/1887)
 
-#### Data Entry Updatability
+**Data Entry Updatability**
 
 An ability to make schema data that is non-material to calculations updatable, while not changing the token issuance in flight.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4743](https://github.com/hashgraph/guardian/issues/4743)
 
-#### Fine grained Policy workflow certification labels
+**---January---**
+
+**Fine grained Policy workflow certification labels**
 
 Introduce the capability to select arbitrary sections of Policy workflows and then assign tags to them, which should result in these tags being visible whenever the policy sections or any artefacts produced in these sections are viewed by users such that:
 
@@ -287,7 +340,7 @@ Introduce the capability to select arbitrary sections of Policy workflows and th
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4534](https://github.com/hashgraph/guardian/issues/4534)
 
-#### Extend Policy definition language to include a Formula calculations block​
+**Extend Policy definition language to include a Formula calculations block​**
 
 Introduce a Formula calculation block which would:
 
@@ -303,24 +356,17 @@ Extend Guardian UI to:
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4535](https://github.com/hashgraph/guardian/issues/4535)
 
-#### On-demand state proof generation for critical Guardian operations
+**On-demand state proof generation for critical Guardian operations**
 
 * Introduce the ability to trigger [Hedera State Proof ](https://hedera.com/blog/state-proofs-on-hedera)generation from Guardian interface for particular actions/operations or the general status of the Policy.
 * State proofs are to be generated and presented to users for download. Guardian will not keep any registry or store them on the system.
 * Introduce UI and the backend functionality to verify Hedera State Proofs generated by Guardian, ensure the long-term compatibility of this functionality.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2846](https://github.com/hashgraph/guardian/issues/2846)
-
-#### Add an option to hide some buttons in case the policy is discontinued
-
-* Policy developers can flag a button as available only if the policy is not discontinued.
-* Buttons flagged as _hide/WhenDiscontinued_ won't be displayed in the webUI when the policy is discontinued
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4067](https://github.com/hashgraph/guardian/issues/4067)
 {% endtab %}
 
 {% tab title="Previous Releases" %}
-#### ---- January 2025----
+**---- January 2025----**
 
 **Climate Action Reserve's U.S. Landfill Protocol**
 
@@ -374,7 +420,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/2243](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/tokens/retirement-contract/trustchain-representation-of-token-retirement](https://docs.hedera.com/guardian-dev-1/guardian/tokens/retirement-contract/trustchain-representation-of-token-retirement)
 
-#### American Carbon Registry (ACR) ACR Methodology for Quantifying, Monitoring, Reporting, and Verifying Greenhouse Gas Emissions Reductions and Removals from Landfill Gas Destruction and Beneficial Use Projects
+**American Carbon Registry (ACR) ACR Methodology for Quantifying, Monitoring, Reporting, and Verifying Greenhouse Gas Emissions Reductions and Removals from Landfill Gas Destruction and Beneficial Use Projects**
 
 1. Creating Schema design for this methodology.
 2. Development of the schema and policy.
@@ -390,7 +436,7 @@ Some items that could help take this policy to the next level would be to build 
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3728](https://github.com/hashgraph/guardian/issues/3728)
 
-#### Enhancements and Bugs of Indexer
+**Enhancements and Bugs of Indexer**
 
 We need to enhance Indexer feature by implementing following:
 
@@ -461,7 +507,7 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://gith
 
 Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity)
 
-#### ---- February 2025----
+**---- February 2025----**
 
 **Add policy support for more than one external data block**
 
@@ -526,7 +572,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4375](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide](https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide)
 
-#### ---- March 2025----
+**---- March 2025----**
 
 **Weak Default configuration**
 
@@ -588,7 +634,7 @@ o Determine functionality requirements to implement a “label-type” feature d
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4560](https://github.com/hashgraph/guardian/issues/4560)
 
-#### ---- April 2025----
+**---- April 2025----**
 
 **Session Token in URL**
 
@@ -604,7 +650,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3951](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/decentralized-guardian/remote-policy-ui](https://docs.hedera.com/guardian/guardian/standard-registry/decentralized-guardian/remote-policy-ui)
 
-#### ---- May 2025----
+**---- May 2025----**
 
 **Server-Side Request Forgery (SSRF) in Request Data module**
 
@@ -643,7 +689,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4057](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/password-management/password-policy](https://docs.hedera.com/guardian/guardian/standard-registry/password-management/password-policy)
 
-#### ---- June 2025----
+**---- June 2025----**
 
 **Development of VM0033**
 
@@ -687,7 +733,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3959](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide](https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide)
 
-#### ---- July 2025----
+**---- July 2025----**
 
 **Identifying, Implementing and Integrating 3rd Party data resources**
 
@@ -718,4 +764,3 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3573](https://githu
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/policies/python-implementation-in-guardian](https://docs.hedera.com/guardian/guardian/standard-registry/policies/python-implementation-in-guardian)
 {% endtab %}
 {% endtabs %}
-

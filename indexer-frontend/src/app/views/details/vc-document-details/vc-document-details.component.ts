@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingComponent } from '@components/loading/loading.component';
+import { CommentsComponent } from '@components/comments/comments.component';
 import { MatTabsModule } from '@angular/material/tabs';
 import { EChartsOption } from 'echarts';
 import { NgxEchartsDirective } from 'ngx-echarts';
@@ -18,13 +19,16 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { Schema } from '@indexer/interfaces';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
-import {
-    OverviewFormComponent,
-    OverviewFormField,
-} from '@components/overview-form/overview-form.component';
+import { OverviewFormComponent, OverviewFormField } from '@components/overview-form/overview-form.component';
 import { ButtonModule } from 'primeng/button';
 import { FormulasTree } from '../../../models/formula-tree';
 import { ProjectLocationsComponent } from '@components/project-locations/project-locations.component';
+import { bytesToUtf8, decryptWithKeyDerivedFromString } from '@meeco/cryppo';
+import { DialogService } from 'primeng/dynamicdialog';
+import { VCFullscreenDialog } from '../../../dialogs/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputIconModule } from 'primeng/inputicon';
+import { IconFieldModule } from 'primeng/iconfield';
 
 @Component({
     selector: 'vc-document-details',
@@ -50,11 +54,23 @@ import { ProjectLocationsComponent } from '@components/project-locations/project
         FormsModule,
         OverviewFormComponent,
         ButtonModule,
-        ProjectLocationsComponent
+        ProjectLocationsComponent,
+        CommentsComponent,
+        IconFieldModule,
+        InputIconModule,
+        InputTextModule,
+        VCFullscreenDialog
     ],
+    providers: [DialogService],
 })
 export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     public chartOption: EChartsOption = createChart();
+
+    public discussions: any[] = [];
+    public discussionsCount: number = 0;
+    public commentsCount: number = 0;
+    public discussionsKey: Map<string, string> = new Map<string, string>();
+    public decryptedDiscussions: any[] = [];
 
     overviewFields: OverviewFormField[] = [
         {
@@ -80,7 +96,7 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
             path: 'status',
         },
     ];
-    tabs: any[] = ['overview', 'document', 'history', 'relationships', 'raw'];
+    tabs: any[] = ['overview', 'document', 'comments', 'history', 'relationships', 'raw'];
     historyColumns: any[] = [
         {
             title: 'details.hedera.consensus_timestamp',
@@ -113,6 +129,79 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
             width: '100px',
         },
     ];
+    discussionsColumns: any[] = [
+        {
+            type: ColumnType.TEXT,
+            field: 'consensusTimestamp',
+            title: 'grid.date',
+            width: '250px',
+            minWidth: '250px',
+            maxWidth: '250px',
+            formatValue: (value: any) => {
+                const fixedTimestamp = Math.floor(value * 1000);
+                value = new Date(fixedTimestamp);
+                const formattedDate = value.toLocaleString();
+                return formattedDate;
+            }
+        },
+        {
+            title: 'details.hedera.consensus_timestamp',
+            field: 'consensusTimestamp',
+            type: ColumnType.TEXT,
+            width: '250px',
+            minWidth: '250px',
+            maxWidth: '250px',
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'topicId',
+            title: 'details.hedera.topic_id',
+            width: '150px',
+            minWidth: '150px',
+            maxWidth: '150px',
+            link: {
+                field: 'topicId',
+                url: '/topics',
+            },
+        },
+        {
+            title: 'details.hedera.name',
+            field: '_name',
+            type: ColumnType.TEXT,
+            width: 'calc(100vw - 1130px)',
+        },
+        {
+            title: 'details.hedera.comments',
+            field: '_comments',
+            type: ColumnType.TEXT,
+            width: '150px',
+            minWidth: '150px',
+            maxWidth: '150px',
+        },
+        // {
+        //     title: 'details.hedera.status',
+        //     field: '_status',
+        //     type: ColumnType.CHIP,
+        //     width: '150px',
+        //     minWidth: '150px',
+        //     maxWidth: '150px',
+        //     severity: (row: any) => {
+        //         return row._status === 'decrypted' ? 'success' : 'secondary';
+        //     }
+        // },
+        {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            minWidth: '100px',
+            maxWidth: '100px',
+            disabled: (row: any) => {
+                return row._status !== 'decrypted';
+            },
+            callback: this.onOpenComments.bind(this),
+        },
+    ];
     documentViewOptions = [
         {
             icon: 'pi pi-code',
@@ -133,6 +222,7 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     };
     formulas?: FormulasTree | null;
     formulasResults?: any | null;
+    analytics: any | null
 
     mapTabs: any[] = ['json', 'table'];
     mapTabIndex: number = 0;
@@ -163,22 +253,26 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
             width: '48px',
         },
     ];
+    discussionsSearch: string = '';
 
     constructor(
         entitiesService: EntitiesService,
+        private dialogService: DialogService,
         route: ActivatedRoute,
         router: Router
     ) {
         super(entitiesService, route, router);
+        console.log(1)
     }
 
     protected override setResult(result?: any) {
         super.setResult(result);
-        
+
         try {
             if (result?.schema) {
                 this.schema = new Schema(result?.schema, '');
                 this.documentViewOption = 'document';
+                this.analytics = result?.item?.analytics
 
                 if (result?.item?.documents?.length >= 0) {
                     this.mapPoints = [];
@@ -254,19 +348,227 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     protected override onNavigate(): void {
         if (this.id && this.tab === 'relationships') {
             this.loading = true;
-            this.entitiesService.getVcRelationships(this.id).subscribe({
-                next: (result) => {
-                    this.setRelationships(result);
-                    this.setChartData();
-                    setTimeout(() => {
+            this.entitiesService
+                .getVcRelationships(this.id)
+                .subscribe({
+                    next: (result) => {
+                        this.setRelationships(result);
+                        this.setChartData();
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    },
+                    error: ({ message }) => {
                         this.loading = false;
-                    }, 500);
-                },
-                error: ({ message }) => {
+                        console.error(message);
+                    },
+                });
+        }
+        if (this.id && this.tab === 'comments') {
+            this.loading = true;
+            this.entitiesService
+                .getVcDiscussions(this.id)
+                .subscribe({
+                    next: (result) => {
+                        this.discussions = result || [];
+                        this.updateDiscussions().then(() => {
+                            setTimeout(() => {
+                                this.loading = false;
+                            }, 500);
+                        });
+                    },
+                    error: ({ message }) => {
+                        this.loading = false;
+                        console.error(message);
+                    },
+                });
+        }
+    }
+
+    private async updateDiscussions() {
+        this.discussionsCount = this.discussions.length;
+        this.commentsCount = 0;
+        for (const discussion of this.discussions) {
+            if (discussion.options?.comments) {
+                this.commentsCount += discussion.options?.comments;
+                discussion._comments = discussion.options?.comments;
+            } else {
+                discussion._comments = 0;
+            }
+            discussion._status = 'encrypted';
+            await this.decryptDiscussions(discussion);
+        }
+        this.decryptedDiscussions = [];
+        for (const discussion of this.discussions) {
+            if (discussion._status === 'decrypted') {
+                this.decryptedDiscussions.push(discussion);
+            }
+        }
+    }
+
+    private async decryptDiscussions(discussion: any) {
+        if (discussion._status !== 'decrypted') {
+            const key = this.discussionsKey.get(discussion.consensusTimestamp);
+            if (key) {
+                discussion._status = 'decrypting';
+                try {
+                    const encryptedData = discussion.documents[0];
+                    const decryptedData = await this.decryptData(key, encryptedData);
+                    if (decryptedData) {
+                        discussion._document = decryptedData;
+                        const subject = this.getCredentialSubject(discussion._document);
+                        discussion._name = subject?.name;
+                        discussion._status = 'decrypted';
+                    } else {
+                        discussion._status = 'encrypted';
+                    }
+                } catch (error) {
+                    discussion._status = 'encrypted';
+                }
+            }
+        }
+    }
+
+    public onDecryptDiscussion() {
+        this.openFile((files) => {
+            this.loading = true;
+            for (const file of files) {
+                if (file.text) {
+                    this.addKey(file.text);
+                }
+            }
+            this.updateDiscussions().then(() => {
+                setTimeout(() => {
                     this.loading = false;
-                    console.error(message);
-                },
+                }, 500);
             });
+        })
+    }
+
+    public onDiscussionsSearch() {
+        const search = (this.discussionsSearch || '').toLowerCase();
+        this.decryptedDiscussions = [];
+        for (const discussion of this.discussions) {
+            if (discussion._status === 'decrypted') {
+                this.decryptedDiscussions.push(discussion);
+            }
+        }
+        if (search) {
+            this.decryptedDiscussions = this.decryptedDiscussions.filter((d) => {
+                const name = (d._name || '').toLowerCase();
+                return name.includes(search);
+            })
+        }
+    }
+
+    private openFile(callback: (files: any[]) => void) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.key';
+        input.onchange = (event) => {
+            const files: any[] = [];
+            if (input.files) {
+                for (let i = 0; i < input.files.length; i++) {
+                    const file = input.files[i];
+                    files.push({
+                        loaded: false,
+                        text: null,
+                        error: null,
+                        file
+                    });
+                }
+            }
+            const complete = () => {
+                for (const file of files) {
+                    if (!file.loaded) {
+                        return;
+                    }
+                }
+                callback(files);
+            }
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.readAsText(file.file, "UTF-8");
+                reader.onload = (evt) => {
+                    file.text = evt.target?.result;
+                    file.loaded = true;
+                    complete();
+                }
+                reader.onerror = function (evt) {
+                    file.error = "error reading file";
+                    file.loaded = true;
+                    complete();
+                }
+            }
+            input.remove();
+        }
+        input.oncancel = (event) => {
+            callback([]);
+            input.remove();
+        }
+        input.click();
+    }
+
+    private addKey(text: string) {
+        try {
+            const config = JSON.parse(text);
+            if (Array.isArray(config)) {
+                for (const item of config) {
+                    if (item && item.discussion && item.key) {
+                        this.discussionsKey.set(item.discussion, item.key);
+                    }
+                }
+            } else if (config) {
+                if (config.discussion && config.key) {
+                    this.discussionsKey.set(config.discussion, config.key);
+                }
+            }
+        } catch (error) {
+            console.error('Load key:', error);
+        }
+    }
+
+    private onOpenComments(discussion: any) {
+        const dialogRef = this.dialogService.open(VCFullscreenDialog, {
+            showHeader: false,
+            width: '950px',
+            styleClass: 'guardian-dialog',
+            maskStyleClass: 'guardian-fullscreen-dialog',
+            data: {
+                title: this.schema?.name,
+                schema: this.schema,
+                credentialSubject: this.getDocumentSubject(),
+                formulasResults: this.formulasResults,
+                targetId: this.id,
+                discussionId: discussion.consensusTimestamp,
+                discussion: discussion,
+                key: this.discussionsKey.get(discussion.consensusTimestamp)
+            },
+        });
+        dialogRef.onClose.subscribe((result: any) => { });
+    }
+
+    private getDocumentSubject() {
+        if (this.first && this.first._ipfs && this.first._ipfs[0]) {
+            return this.first._ipfs[0].credentialSubject;
+        }
+        return null;
+    }
+
+    async decryptData(key: string, encryptedData: string): Promise<string | null> {
+        try {
+            if (!encryptedData?.startsWith('Aes256')) {
+                return null;
+            }
+            const decrypted: any = await decryptWithKeyDerivedFromString({
+                serialized: encryptedData,
+                passphrase: key,
+            });
+            const decryptedData = bytesToUtf8(decrypted);
+            return JSON.parse(decryptedData);
+        } catch (error) {
+            console.error('Decryption failed:', error);
+            return null;
         }
     }
 
@@ -427,4 +729,6 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
                 break;
         }
     }
+
+    protected readonly document = document;
 }

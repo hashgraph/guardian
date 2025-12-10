@@ -37,7 +37,8 @@ export class IntegrationButtonBlock {
             ),
             integrationType: ref.options.integrationType || '',
             requestName: ref.options.requestName || '',
-            buttonName: ref.options.buttonName
+            buttonName: ref.options.buttonName,
+            hideWhenDiscontinued: !!ref.options.hideWhenDiscontinued,
         }
         return data;
     }

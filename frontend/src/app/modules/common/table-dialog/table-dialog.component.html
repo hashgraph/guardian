@@ -1,0 +1,29 @@
+<div class="grid-modal">
+    <ag-grid-angular
+            [theme]="theme"
+            class="grid"
+            [columnDefs]="columnDefs"
+            [rowData]="rowData"
+            [defaultColDef]="defaultColDef"
+            [singleClickEdit]="true"
+            [undoRedoCellEditing]="true"
+            [enableCellTextSelection]="true"
+            [suppressScrollOnNewData]="true"
+            (gridReady)="onGridReady($event)"
+            (cellEditingStopped)="onCellEditStop($event)"
+            (bodyScroll)="onBodyScroll($event)">
+    </ag-grid-angular>
+
+    <div class="modal__footer">
+        <button class="p-button p-component p-button-outlined" (click)="cancel()">
+            {{ readOnly ? 'Close' : 'Cancel' }}
+        </button>
+
+        <button
+            *ngIf="!readOnly"
+            class="p-button p-component p-button-primary"
+            (click)="save()">
+            Save
+        </button>
+    </div>
+</div>

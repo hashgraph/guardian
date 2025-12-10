@@ -41,9 +41,7 @@ Templates may or may not include these elements depending on chapter context:
 ### GitBook Formatting Standards
 
 * **Hint Blocks**: `<div data-gb-custom-block data-tag="hint" data-style='info|success|warning|danger'></div>`
-*   **Tabs**: `<div data-gb-custom-block data-tag="tabs"></div>` and \`
-
-
+* **Tabs**: `<div data-gb-custom-block data-tag="tabs"></div>` and \`
 
 \`
 

@@ -12,6 +12,48 @@ import { LocationType } from '@guardian/interfaces';
 import { Token } from '@guardian/common';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
+const IDEMPOTENT_ERROR_MAP: Partial<Record<string, string[]>> = {
+    grantKyc: ['Token already granted kyc'],
+}
+
+function getErrorMessage(err: unknown): string {
+    const e: any = err;
+    return String(
+        e?.message ??
+        e?.response?.data?.message ??
+        e?.data?.message ??
+        e?.error?.message ??
+        err
+    );
+}
+
+function shouldIgnore(action: string, err: unknown, isDryRun: boolean): boolean {
+    if (!isDryRun) {
+        return false;
+    }
+    const list = IDEMPOTENT_ERROR_MAP[action];
+    if (!list?.length) {
+        return false
+    }
+    const msg = getErrorMessage(err).toLowerCase();
+    return list.some((s) => msg.includes(s.toLowerCase()));
+}
+
+async function runIdempotent<T>(
+    ref: IPolicyBlock,
+    action: string,
+    exec: () => Promise<T>
+): Promise<T | null> {
+    try {
+        return await exec();
+    } catch (e) {
+        if (shouldIgnore(action, e, !!ref.dryRun)) {
+            return null;
+        }
+        throw e;
+    }
+}
+
 /**
  * Information block
  */
@@ -92,54 +134,67 @@ export class TokenActionBlock {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        let userHederaAccountId: string = null;
+        let relayerAccount: string = null;
         let userDID: string = null;
-        if (doc) {
-            if (field) {
-                if (doc.accounts) {
-                    userHederaAccountId = doc.accounts[field];
-                }
-            } else {
-                userDID = doc.owner;
-                userHederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner, userId);
-            }
+        if (doc && field && doc.accounts) {
+            relayerAccount = doc.accounts[field];
+        } else if (doc && !field) {
+            userDID = doc.owner;
+            relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, doc, userId);
         }
-        await PolicyUtils.checkAccountId(userHederaAccountId, userId);
+        if (!relayerAccount) {
+            throw new BlockActionError('Hedera Account not found.', ref.blockType, ref.uuid);
+        }
 
         switch (ref.options.action) {
             case 'associate': {
-                await PolicyActionsUtils.associateToken(ref, token, userDID, userId);
+                await PolicyActionsUtils.associateToken({
+                    ref,
+                    token,
+                    user: userDID,
+                    relayerAccount,
+                    userId
+                });
                 break;
             }
             case 'dissociate': {
-                await PolicyActionsUtils.dissociateToken(ref, token, userDID, userId);
+                await PolicyActionsUtils.dissociateToken({
+                    ref,
+                    token,
+                    user: userDID,
+                    relayerAccount,
+                    userId
+                });
                 break;
             }
             case 'freeze': {
+                const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
-                const account = PolicyUtils.createHederaCredentials(userHederaAccountId);
                 await PolicyUtils.freeze(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'unfreeze': {
+                const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
-                const account = PolicyUtils.createHederaCredentials(userHederaAccountId);
                 await PolicyUtils.unfreeze(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'grantKyc': {
+                const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
-                const account = PolicyUtils.createHederaCredentials(userHederaAccountId);
-                await PolicyUtils.grantKyc(ref, token, account, ownerCredentials, userId);
+                await runIdempotent(ref, 'grantKyc', () =>
+                    PolicyUtils.grantKyc(ref, token, account, ownerCredentials, userId)
+                );
+
                 break;
             }
             case 'revokeKyc': {
+                const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
-                const account = PolicyUtils.createHederaCredentials(userHederaAccountId);
                 await PolicyUtils.revokeKyc(ref, token, account, ownerCredentials, userId);
                 break;
             }

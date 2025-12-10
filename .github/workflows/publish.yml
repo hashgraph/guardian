@@ -16,12 +16,12 @@ jobs:
       contents: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
         with:
           egress-policy: audit
 
       - name: Conditional values for Github Action
-        uses: step-security/action-cond@615a91598eb99288b89cf1b3da31ac33cdd72b19 # v1.2.2
+        uses: step-security/action-cond@45aa5a709bd075f11c74285d8b0ca4d527e5fbcf # v1.2.4
         id: latestTag
         with:
           cond: ${{ github.event.release.target_commitish == 'main' }}
@@ -29,31 +29,31 @@ jobs:
           if_false: 'hotfix'
 
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: get-npm-version
         id: package-version
-        uses: step-security/npm-get-version-action@937365306ec087b7af8c059beac03ae4c05533e5 # v1.3.1
+        uses: step-security/npm-get-version-action@f39973dcb0213ee66ce68c57bd29ebd364f4741f # v1.3.3
         with:
           path: guardian-service
 
       # Add support for more platforms with QEMU
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 
       - name: Authenticate to Google Cloud
         id: auth
-        uses: step-security/google-github-auth@40f6deebd366f16c782d7a0ad0844e3b96a032a6 # v2.1.10
+        uses: step-security/google-github-auth@190f7ef9b7a34cc0dfd0c11f0e327365f70071d6 # v2.1.12
         with:
           workload_identity_provider: 'projects/101730247931/locations/global/workloadIdentityPools/hedera-registry-pool/providers/hedera-registry-gh-actions'
           service_account: 'guardian-publisher@hedera-registry.iam.gserviceaccount.com'
           token_format: 'access_token'
 
       - name: Docker Login
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           registry: 'gcr.io' # or REGION-docker.pkg.dev
           username: 'oauth2accesstoken'

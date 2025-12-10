@@ -99,6 +99,7 @@ export class LabelDocumentMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             issuer: this.issuer,
             relationships: this.relationships,
             target: this.target,
@@ -111,7 +112,7 @@ export class LabelDocumentMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(key: string): Promise<ArrayBuffer[]> {
+    public async toDocuments(key: string): Promise<Buffer[]> {
         const document = JSON.stringify(this.document);
         const buffer = Buffer.from(document);
         return [buffer];

@@ -44,6 +44,7 @@ export const NON_RETRYABLE_HEDERA_ERRORS = [
     HederaResponseCode.CANNOT_WIPE_TOKEN_TREASURY_ACCOUNT,
     HederaResponseCode.TOKEN_HAS_NO_WIPE_KEY,
     HederaResponseCode.INVALID_WIPE_KEY,
+    HederaResponseCode.INVALID_NFT_ID,
 
     // Burn type errors
     HederaResponseCode.INVALID_TOKEN_BURN_AMOUNT,
@@ -234,8 +235,21 @@ export class Workers extends NatsService {
                 activeTask.callback(data.data, data.error, data.isTimeoutError);
                 this.tasksCallbacks.delete(data.id)
             }
-
         })
+
+        this.subscribe(WorkerEvents.TASK_COMPLETE, async (data: any) => {
+            if (!data.id) {
+                throw new Error('Message without id');
+            }
+            if (data.error) {
+                console.error(data);
+            }
+            if (this.tasksCallbacks.has(data.id)) {
+                const activeTask = this.tasksCallbacks.get(data.id);
+                activeTask.callback(data.data, data.error, data.isTimeoutError);
+                this.tasksCallbacks.delete(data.id);
+            }
+        });
     }
 
     /**
@@ -322,7 +336,6 @@ export class Workers extends NatsService {
         const addTaskToQueue = async (): Promise<void> => {
             const result = await this.sendMessage<any>(QueueEvents.ADD_TASK_TO_QUEUE, task);
             if (!result?.ok) {
-                console.log(result);
                 await addTaskToQueue();
             }
         }
@@ -370,5 +383,110 @@ export class Workers extends NatsService {
         ipfsStorageApiKey: string
     }) {
         this.publish(WorkerEvents.UPDATE_SETTINGS, settings);
+    }
+
+    private async sendTaskDirect(task: ITask): Promise<boolean> {
+        const availableWorkers = await this.getFreeWorkers();
+
+        if (!availableWorkers.length) {
+            return false;
+        }
+
+        const candidateIndex = availableWorkers.findIndex((candidate) => {
+            return task.priority >= candidate.minPriority && task.priority <= candidate.maxPriority;
+        });
+
+        if (candidateIndex === -1) {
+            return false;
+        }
+
+        const worker = availableWorkers[candidateIndex];
+
+        const response = await this.sendMessage<{ result: boolean }>(
+            worker.subject,
+            {
+                ...task,
+                reply: this.messageQueueName
+            }
+        );
+
+        return Boolean(response?.result);
+    }
+
+    private async addTaskDirectInternal(
+        task: ITask,
+        priority: number,
+        attempts: number,
+        isRetryableTask: boolean,
+        registerCallback: boolean,
+        interception: string | null,
+        userId: string | null
+    ): Promise<any> {
+        const taskId = task.id || GenerateUUIDv4();
+
+        task.id = taskId;
+        task.priority = priority;
+        task.isRetryableTask = isRetryableTask;
+        task.attempts = attempts;
+        task.userId = userId;
+        task.interception = interception;
+
+        const trySendDirect = async (): Promise<void> => {
+            const sent = await this.sendTaskDirect(task);
+            if (!sent) {
+                await new Promise((resolve) => setTimeout(resolve, 200));
+                await trySendDirect();
+            }
+        };
+
+        await trySendDirect();
+
+        return new Promise((resolve, reject) => {
+            if (registerCallback) {
+                this.tasksCallbacks.set(taskId, {
+                    task,
+                    number: 0,
+                    callback: async (data, error, isTimeoutError) => {
+                        if (error) {
+                            reject(this._wrapError(error, isTimeoutError));
+                            return;
+                        }
+                        resolve(data);
+                    }
+                });
+            } else {
+                resolve(null);
+            }
+        });
+    }
+
+    public addRetryableTaskDirect(task: ITask, options: ITaskOptions): Promise<any> {
+        options = this.setDefaultValue(options);
+
+        if (!task.data.network) {
+            task.data.network = Environment.network;
+        }
+        if (!task.data.nodes) {
+            task.data.nodes = Environment.nodes;
+        }
+        if (!task.data.mirrorNodes) {
+            task.data.mirrorNodes = Environment.mirrorNodes;
+        }
+        if (!task.data.localNodeAddress) {
+            task.data.localNodeAddress = Environment.localNodeAddress;
+        }
+        if (!task.data.localNodeProtocol) {
+            task.data.localNodeProtocol = Environment.localNodeProtocol;
+        }
+
+        return this.addTaskDirectInternal(
+            task,
+            options.priority,
+            options.attempts,
+            true,
+            options.registerCallback,
+            options.interception as string,
+            options.userId
+        );
     }
 }

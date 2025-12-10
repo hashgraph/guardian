@@ -1,6 +1,6 @@
 {
     "name": "guardian-e2e-test",
-    "version": "3.3.0",
+    "version": "3.4.0",
     "description": "This a place for quardian e2e automation test suite",
     "main": "index.js",
     "scripts": {
@@ -21,7 +21,8 @@
         "@cypress/grep": "^4.1.0",
         "cy-verify-downloads": "^0.1.14",
         "cypress": "^14.5.1",
-        "cypress-mochawesome-reporter": "^3.5.1"
+        "cypress-mochawesome-reporter": "^3.5.1",
+        "node-fetch": "^2.7.0"
     },
     "dependencies": {
         "@bahmutov/cy-api": "^2.1.3",
@@ -31,5 +32,8 @@
         "mocha-junit-reporter": "^2.2.1",
         "util": "^0.12.4",
         "uuidv4": "^6.2.13"
+    },
+    "overrides": {
+        "is-core-module": "2.13.1"
     }
 }

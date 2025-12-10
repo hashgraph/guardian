@@ -20,7 +20,7 @@ import {
 } from '@guardian/common';
 import { EntityStatus, IOwner, LabelValidators, MessageAPI, PolicyStatus, Schema, SchemaStatus } from '@guardian/interfaces';
 import { findRelationships, generateSchema, generateVpDocument, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
-import { publishSchemas, saveSchemas } from '../helpers/import-helpers/index.js';
+import { publishSchemas } from '../helpers/import-helpers/index.js';
 
 async function publishPolicyLabel(
     item: PolicyLabel,
@@ -74,7 +74,6 @@ async function publishPolicyLabel(
         MessageAction.PublishSchema,
         notifier.getStep(STEP_PUBLISH_SCHEMAS),
     );
-    await saveSchemas(schemaList);
     for (const { node, schema } of schemas) {
         node.schemaId = schema.iri;
     }

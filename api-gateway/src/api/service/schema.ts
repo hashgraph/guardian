@@ -4,7 +4,7 @@ import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse,
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { Auth, AuthUser } from '#auth';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
-import { Examples, ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, pageHeader, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO } from '#middlewares';
+import { Examples, ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, pageHeader, SchemaDTO, SystemSchemaDTO, SchemaDeletionPreviewDTO, TaskDTO, VersionSchemaDTO } from '#middlewares';
 import { CACHE, PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
 import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache } from '#helpers';
 import process from 'process';
@@ -165,6 +165,59 @@ export class SingleSchemaApi {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
             return await guardians.getSchemaTree(schemaId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Returns schema deletion preview
+     */
+    @Get('/:schemaId/deletionPreview')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.AUDITOR ?,
+        // UserRole.USER ?
+    )
+    @ApiOperation({
+        summary: 'Returns all child schemas.',
+        description: 'Returns all child schemas.',
+    })
+    @ApiParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema identifier',
+        required: true
+    })
+    @ApiQuery({
+        name: 'topicId',
+        type: String,
+        description: 'Policy topic Id',
+        required: false
+    })
+    @ApiOkResponse({
+        description: 'Schema deletion preview.',
+        isArray: true,
+        type: SchemaDeletionPreviewDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SchemaDeletionPreviewDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSchemaDeletionPreview(
+        @AuthUser() user: IAuthUser,
+        @Param('schemaId') schemaId: string,
+        @Query('topicId') topicId?: string,
+    ): Promise<SchemaDeletionPreviewDTO> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const result = await guardians.getSchemaDeletionPreview(schemaId, topicId, owner);
+
+            return result;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -1074,6 +1127,12 @@ export class SchemaApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiQuery({
+        name: 'includeChildren',
+        type: Boolean,
+        required: false,
+        description: 'Include child schemas',
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -1088,6 +1147,7 @@ export class SchemaApi {
     async deleteSchema(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
+        @Query('includeChildren') includeChildren: boolean = false,
         @Req() req
     ): Promise<SchemaDTO[]> {
         const guardians = new Guardians();
@@ -1112,8 +1172,9 @@ export class SchemaApi {
         if (schema.status === SchemaStatus.DEMO) {
             throw new HttpException('Schema imported in demo mode.', HttpStatus.UNPROCESSABLE_ENTITY)
         }
+
         try {
-            const schemas = (await guardians.deleteSchema(schemaId, owner, true) as ISchema[]);
+            const schemas = (await guardians.deleteSchema(schemaId, owner, true, String(includeChildren).toLowerCase() === 'true') as ISchema[]);
             SchemaHelper.updatePermission(schemas, owner);
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
@@ -1124,6 +1185,7 @@ export class SchemaApi {
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
+        return null;
     }
 
     /**
@@ -1462,6 +1524,47 @@ export class SchemaApi {
     }
 
     /**
+     * Check for schemas duplicates
+     */
+    @Post('/import/schemas/duplicates')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Previews list of schemas duplicates.',
+        description: 'Previews list of schemas duplicates.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Policy id and list of schema names.',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: SchemaDTO,
+        isArray: true
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async checkForDublicates(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any,
+    ) {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+
+            return await guardians.getSchemasDublicates(body.schemaNames, owner, body.policyId);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Import Schema from IPFS
      */
     @Post('/:topicId/import/message')
@@ -1578,6 +1681,7 @@ export class SchemaApi {
     async importFromMessageAsync(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
+        @Query('schemas') schemas: string,
         @Body() body: MessageSchemaDTO,
         @Req() req
     ): Promise<TaskDTO> {
@@ -1590,7 +1694,8 @@ export class SchemaApi {
         const task = taskManager.start(TaskAction.IMPORT_SCHEMA_MESSAGE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.importSchemasByMessagesAsync([messageId], owner, topicId, task);
+            const schemasIds = (schemas || '').split(',');
+            await guardians.importSchemasByMessagesAsync([messageId], owner, topicId, task, schemasIds);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -1704,6 +1809,7 @@ export class SchemaApi {
     async importToTopicFromFileAsync(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
+        @Query('schemas') schemas: string,
         @Body() zip: any,
         @Req() req
     ): Promise<TaskDTO> {
@@ -1716,7 +1822,8 @@ export class SchemaApi {
         RunFunctionAsync<ServiceError>(async () => {
             const files = await SchemaImportExport.parseZipFile(zip);
             const guardians = new Guardians();
-            await guardians.importSchemasByFileAsync(files, owner, topicId, task);
+            const schemasIds = (schemas || '').split(',');
+            await guardians.importSchemasByFileAsync(files, owner, topicId, task, schemasIds);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -2432,6 +2539,7 @@ export class SchemaApi {
     async importPolicyFromXlsxAsync(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
+        @Query('schemas') schemas: string,
         @Body() file: ArrayBuffer,
         @Response() res: any,
         @Req() req
@@ -2444,7 +2552,8 @@ export class SchemaApi {
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            await guardians.importSchemasByXlsxAsync(owner, topicId, file, task);
+            const schemasIds = (schemas || '').split(',');
+            await guardians.importSchemasByXlsxAsync(owner, topicId, file, task, schemasIds);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
@@ -2547,5 +2656,58 @@ export class SchemaApi {
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
+    }
+
+    /**
+     * Deletes All Schemas by TopicId
+     */
+    @Delete('/topic/:topicId')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Deletes all schemas by topic id.',
+        description: 'Deletes all schemas by topic id.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: true,
+        example: '0.0.1'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: SchemaDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async deleteSchemasByTopicId(
+        @AuthUser() user: IAuthUser,
+        @Param('topicId') topicId: string,
+        @Req() req
+    ): Promise<any> {
+        const guardians = new Guardians();
+        const owner = new EntityOwner(user);
+
+        try {
+            await guardians.deleteSchemas(topicId, owner);
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
+            return true;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+
+        return false;
     }
 }

@@ -69,12 +69,14 @@ Promise.all([
         let IPFS_STORAGE_API_KEY: string;
 
         if (process.env.IPFS_PROVIDER === 'web3storage') {
-            const keyAndProof = await secretManager.getSecrets('apikey/ipfs');
-            if (!keyAndProof?.IPFS_STORAGE_API_KEY) {
-                IPFS_STORAGE_KEY = process.env.IPFS_STORAGE_KEY;
-                IPFS_STORAGE_PROOF = process.env.IPFS_STORAGE_PROOF;
+            IPFS_STORAGE_KEY = process.env.IPFS_STORAGE_KEY;
+            IPFS_STORAGE_PROOF = process.env.IPFS_STORAGE_PROOF;
+
+            if (IPFS_STORAGE_KEY?.length > 4 && IPFS_STORAGE_PROOF?.length > 4) {
                 await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: `${IPFS_STORAGE_KEY};${IPFS_STORAGE_PROOF}` });
             } else {
+                const keyAndProof = await secretManager.getSecrets('apikey/ipfs');
+
                 const [key, proof] = keyAndProof.IPFS_STORAGE_API_KEY.split(';')
                 IPFS_STORAGE_KEY = key;
                 IPFS_STORAGE_PROOF = proof;
@@ -82,11 +84,12 @@ Promise.all([
         }
 
         if (process.env.IPFS_PROVIDER === 'filebase') {
-            const key = await secretManager.getSecrets('apikey/ipfs');
-            if (!key?.IPFS_STORAGE_API_KEY) {
-                IPFS_STORAGE_API_KEY = process.env.IPFS_STORAGE_API_KEY;
+            IPFS_STORAGE_API_KEY = process.env.IPFS_STORAGE_API_KEY;
+
+            if (IPFS_STORAGE_API_KEY?.length > 4) {
                 await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY });
             } else {
+                const key = await secretManager.getSecrets('apikey/ipfs');
                 IPFS_STORAGE_API_KEY = key.IPFS_STORAGE_API_KEY;
             }
         }

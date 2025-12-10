@@ -4,6 +4,7 @@ export interface NavbarMenuItem {
     title: string;
     childItems?: NavbarMenuItem[];
     iconUrl?: string;
+    svgIcon?: string;
     routerLink?: string;
     active?: boolean;
     allowedUserRoles?: UserRole[];
@@ -67,6 +68,13 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
         ],
     },
     {
+        title: 'Relayer Accounts',
+        svgIcon: 'wallet',
+        allowedUserRoles: [UserRole.STANDARD_REGISTRY],
+        active: false,
+        routerLink: '/relayer-accounts'
+    },
+    {
         title: 'Administration',
         allowedUserRoles: [UserRole.STANDARD_REGISTRY],
         active: false,
@@ -83,6 +91,10 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
             {
                 title: 'Settings',
                 routerLink: '/admin/settings'
+            },
+            {
+                title: 'Application Branding',
+                routerLink: '/branding'
             },
             {
                 title: 'Logs',
@@ -310,6 +322,12 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             childItems.push({
                 title: 'Settings',
                 routerLink: '/admin/settings'
+            });
+        }
+        if (user.BRANDING_CONFIG_UPDATE) {
+            childItems.push({
+                title: 'Application Branding',
+                routerLink: '/branding'
             });
         }
         if (user.LOG_LOG_READ) {

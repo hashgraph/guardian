@@ -156,100 +156,145 @@
             >
                 <div *ngFor="let condition of conditions">
                     <div class="condition-item">
-                        <div class="condition-if-container">
-                            <div class="condition-label">IF</div>
-
-                            <div class="if-condition-equality-container">
-                                <div class="if-dropdown-field guardian-input-container">
-                                    <label class="form-label">* Field</label>
+                        <div class="condition-item">
+                            <div class="condition-if-container">
+                                <div class="if-mode-dropdown guardian-input-container" style="min-width: 180px;">
                                     <p-dropdown
                                         class="guardian-dropdown"
                                         panelStyleClass="guardian-dropdown-panel"
-                                        (onChange)="onIfConditionFieldChange(condition, $event)"
-                                        [formControl]="condition.field"
-                                        [options]="getFieldsForCondition()"
+                                        [options]="ifModeOptions"
+                                        [formControl]="getOperatorControl(condition)"
                                         appendTo="body"
-                                        optionLabel="controlDescription.value"
-                                        placeholder="Field"
-                                    ></p-dropdown>
+                                        placeholder="IF mode"
+                                        (onChange)="onIfModeChange(condition)">
+                                    </p-dropdown>
                                 </div>
-
-                                <div *ngIf="condition.field?.value" class="equal-label">=</div>
-                                <div
-                                    *ngIf="isConditionType1(condition)"
-                                    class="input-field-container guardian-input-container"
-                                    style="margin-bottom: unset"
-                                >
-                                    <label class="form-label">Field value</label>
-                                    <input
-                                        [formControl]="condition.fieldValue"
-                                        pInputText
-                                        placeholder="Field value"
-                                        type="text"
-                                    />
-                                </div>
-
-                                <div
-                                    *ngIf="isConditionType2(condition)"
-                                    class="input-field-container guardian-input-container"
-                                    style="margin-bottom: unset"
-                                >
-                                    <label class="form-label">* Field value</label>
-                                    <input
-                                        [formControl]="condition.fieldValue"
-                                        pInputText
-                                        placeholder="Field value"
-                                        step="1"
-                                        type="time"
-                                    />
-                                </div>
-                                <div
-                                    *ngIf="isConditionType3(condition)"
-                                    class="form-group required-form-field guardian-input-container"
-                                >
-                                    <label for="dateTimePicker" class="form-label">Choose a date & time</label>
-                                    <p-calendar
-                                        class="guardian-datepicker"
-                                        [formControl]="condition.fieldValue"
-                                        [showTime]="true"
-                                        [hourFormat]="'12'"
-                                        id="dateTimePicker"
-                                        placeholder="Choose a date & time"
-                                        appendTo="body">
-                                    </p-calendar>
-                                </div>
-                                <div
-                                    *ngIf="isConditionType4(condition)"
-                                    class="form-group example-full-width required-form-field">
-                                    <label for="datePicker" class="form-label">Choose a date</label>
-                                    <p-calendar
-                                        class="guardian-datepicker"
-                                        [formControl]="condition.fieldValue"
-                                        id="datePicker"
-                                        [showTime]="false"
-                                        placeholder="Choose a date"
-                                        appendTo="body">
-                                    </p-calendar>
-                                </div>
-                                <div *ngIf="isConditionType5(condition)" class="radio-button-container">
-                                    <div>
-                                        <p-radioButton
-                                            name="booleanOption"
-                                            [value]="true"
-                                            [formControl]="condition.fieldValue"
-                                            class="guardian-radio-button  boolean-option"
-                                            label="True">
-                                        </p-radioButton>
+                                <ng-container [ngSwitch]="getOperatorValue(condition)">
+                                    <div *ngSwitchCase="'SINGLE'" class="if-label-mode">
+                                        <span class="condition-label if-text-mode">IF</span>
                                     </div>
-                                    <div>
-                                        <p-radioButton
-                                            name="booleanOption"
-                                            [value]="false"
-                                            [formControl]="condition.fieldValue"
-                                            class="guardian-radio-button boolean-option"
-                                            label="False">
-                                        </p-radioButton>
+
+                                    <div *ngSwitchCase="'AND'" class="if-label-mode">
+                                        <span class="condition-label if-text-mode">IF ALL</span><span>of the rules
+                                            match</span>
                                     </div>
+                                    <div *ngSwitchCase="'OR'" class="if-label-mode">
+                                        <span class="condition-label if-text-mode">IF ANY</span><span> rules
+                                            match</span>
+
+                                    </div>
+                                </ng-container>
+
+                                <div class="if-rows">
+                                    <div class="if-condition-equality-container"
+                                        *ngFor="let row of getIfRows(condition); let i = index">
+                                        <div class="if-dropdown-field guardian-input-container">
+                                            <label class="form-label">* Field</label>
+                                            <p-dropdown
+                                                class="guardian-dropdown"
+                                                panelStyleClass="guardian-dropdown-panel"
+                                                [options]="getFieldsForCondition(condition)"
+                                                appendTo="body"
+                                                optionLabel="controlDescription.value"
+                                                placeholder="Field"
+                                                [formControl]="getRowFieldControl(row)"
+                                                (onChange)="onIfRowFieldChange(condition, i, $event)">
+                                            </p-dropdown>
+                                        </div>
+
+                                        <div *ngIf="getRowField(row)" class="equal-label">=</div>
+
+
+                                        <ng-container [ngSwitch]="true">
+                                            <div
+                                                *ngSwitchCase="isFieldType1(getRowField(row))"
+                                                class="input-field-container guardian-input-container"
+                                                style="margin-bottom: unset"
+                                            >
+                                                <label class="form-label">Field value</label>
+                                                <input
+                                                    [formControl]="getRowValueControl(row)"
+                                                    pInputText
+                                                    placeholder="Field value"
+                                                    type="text"
+                                                />
+                                            </div>
+
+                                            <div
+                                                *ngSwitchCase="isFieldType2(getRowField(row))"
+                                                class="input-field-container guardian-input-container"
+                                                style="margin-bottom: unset"
+                                            >
+                                                <label class="form-label">* Field value</label>
+                                                <input
+                                                    [formControl]="getRowValueControl(row)"
+                                                    pInputText
+                                                    placeholder="Field value"
+                                                    step="1"
+                                                    type="time"
+                                                />
+                                            </div>
+
+                                            <div *ngSwitchCase="isFieldType3(getRowField(row))"
+                                                class="form-group required-form-field guardian-input-container">
+                                                <label class="form-label">Choose a date &amp; time</label>
+                                                <p-calendar
+                                                    class="guardian-datepicker"
+                                                    [formControl]="getRowValueControl(row)"
+                                                    [showTime]="true"
+                                                    [hourFormat]="'12'"
+                                                    appendTo="body"></p-calendar>
+                                            </div>
+
+                                            <div *ngSwitchCase="isFieldType4(getRowField(row))"
+                                                class="form-group example-full-width required-form-field">
+                                                <label class="form-label">Choose a date</label>
+                                                <p-calendar
+                                                    class="guardian-datepicker"
+                                                    [formControl]="getRowValueControl(row)"
+                                                    [showTime]="false"
+                                                    appendTo="body"></p-calendar>
+                                            </div>
+
+                                            <div *ngSwitchCase="isFieldType5(getRowField(row))"
+                                                class="radio-button-container">
+                                                <div>
+                                                    <p-radioButton
+                                                        [name]="'booleanOption' + condition.name + i"
+                                                        [value]="true"
+                                                        [formControl]="getRowValueControl(row)"
+                                                        class="guardian-radio-button boolean-option"
+                                                        label="True">
+                                                    </p-radioButton>
+                                                </div>
+                                                <div>
+                                                    <p-radioButton
+                                                        [name]="'booleanOption' + condition.name + i"
+                                                        [value]="false"
+                                                        [formControl]="getRowValueControl(row)"
+                                                        class="guardian-radio-button boolean-option"
+                                                        label="False">
+                                                    </p-radioButton>
+                                                </div>
+                                            </div>
+                                        </ng-container>
+                                        <button
+                                            *ngIf="getOperatorValue(condition) !== 'SINGLE' && getIfRows(condition).length > 1"
+                                            (click)="onIfRowRemove(condition, i)"
+                                            class="guardian-icon-button guardian-button-delete rmv-condition-btn">
+                                            <div class="guardian-button-icon">
+                                                <svg-icon class="icon-btn svg-icon"
+                                                    src="/assets/images/icons/delete.svg" svgClass="icon-color-delete">
+                                                </svg-icon>
+                                            </div>
+                                        </button>
+                                    </div>
+
+                                    <button *ngIf="getOperatorValue(condition) !== 'SINGLE'"
+                                        (click)="onIfRowAdd(condition)"
+                                        class="guardian-button guardian-button-secondary add-rule-btn">
+                                        <div class="guardian-button-label">Add rule</div>
+                                    </button>
                                 </div>
                             </div>
                         </div>

@@ -20,6 +20,7 @@ describe('TopicMessage', function () {
         childId: "testChildId",
         parentId: "testParentId",
         rationale: "testRationale",
+        account: "0.0.1",
         lang: "test"
     }
 
@@ -31,6 +32,7 @@ describe('TopicMessage', function () {
         assert.exists(topicMessage);
 
         topicMessage.setDocument(testTopicMessage);
+        topicMessage.setOwnerAccount('0.0.1');
         assert.hasAllKeys(topicMessage.toMessageObject(), Object.keys(testTopicMessage));
         assert.isTrue(topicMessage.validate());
 

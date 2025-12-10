@@ -53,10 +53,17 @@ import { InputTextModule } from 'primeng/inputtext';
 export class NFTsComponent extends BaseGridComponent {
     columns: any[] = [
         {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+        {
             type: ColumnType.TEXT,
             field: 'tokenId',
             title: 'grid.token_id',
-            width: '250px',
+            width: '300px',
             link: {
                 field: 'tokenId',
                 url: '/tokens',
@@ -97,13 +104,6 @@ export class NFTsComponent extends BaseGridComponent {
             title: 'grid.metadata',
             width: '250px',
         },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
-        },
     ];
 
     constructor(
@@ -113,6 +113,10 @@ export class NFTsComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(new Filter({
             type: 'input',
             field: 'tokenId',

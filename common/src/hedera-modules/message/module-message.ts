@@ -4,7 +4,7 @@ import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { PolicyModule } from '../../entity/index.js';
 import { ModuleMessageBody } from './message-body.interface.js';
-import { IPFS } from '../../helpers/index.js';
+import { IPFS, toBuffer } from '../../helpers/index.js';
 
 /**
  * Module message
@@ -13,7 +13,7 @@ export class ModuleMessage extends Message {
     /**
      * Document
      */
-    public document: ArrayBuffer;
+    public document: Buffer;
 
     /**
      * UUID
@@ -48,19 +48,19 @@ export class ModuleMessage extends Message {
      * @param model
      * @param zip
      */
-    public setDocument(model: PolicyModule, zip?: ArrayBuffer): void {
+    public setDocument(model: PolicyModule, zip?: ArrayBuffer | Buffer): void {
         this.uuid = model.uuid;
         this.name = model.name;
         this.description = model.description;
         this.owner = model.owner;
-        this.document = zip;
+        this.document = toBuffer(zip);
         this.moduleTopicId = model.topicId;
     }
 
     /**
      * Get document
      */
-    public getDocument(): ArrayBuffer {
+    public getDocument(): Buffer {
         return this.document;
     }
 
@@ -74,6 +74,7 @@ export class ModuleMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             uuid: this.uuid,
             name: this.name,
             description: this.description,
@@ -87,7 +88,7 @@ export class ModuleMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (this.document) {
             return [this.document];
         }

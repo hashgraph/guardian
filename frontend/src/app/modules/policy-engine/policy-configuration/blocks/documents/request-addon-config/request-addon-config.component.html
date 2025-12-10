@@ -10,6 +10,20 @@
 
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
+        <td class="propRowCell cellName" title="Hide when discontinued">Hide when discontinued</td>
+        <td class="propRowCell">
+            <p-checkbox
+                [(ngModel)]="properties.hideWhenDiscontinued"
+                [binary]="true"
+                [readonly]="readonly"
+                (blur)="onSave()"
+                [style]="{marginLeft: '8px'}"
+            ></p-checkbox>
+        </td>
+    </tr>
+
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
         <td class="propRowCell cellName">UI Class</td>
         <td class="propRowCell">
             <input class="prop-input" [(ngModel)]="properties.uiClass" [readonly]="readonly" (blur)="onSave()">
@@ -46,6 +60,15 @@
                 [appendTo]="'body'"
             >
             </p-dropdown>
+        </td>
+    </tr>
+
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Custom Relayer Account</td>
+        <td class="propRowCell">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.relayerAccount" [readonly]="readonly"
+                   (blur)="onSave()">
         </td>
     </tr>
 

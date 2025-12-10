@@ -14,10 +14,13 @@ import { IFieldKey } from './interfaces/field-key.interface.js';
 import { IOption } from './interfaces/option.interface.js';
 
 interface ICondition {
-    type: 'const' | 'formulae',
-    fieldPath?: string,
-    value?: any,
-    invert?: boolean,
+    type: 'const' | 'formulae';
+    value?: any;
+    fieldPath?: string;
+    compareValue?: any;
+    op?: 'OR' | 'AND';
+    items?: { fieldPath: string; compareValue: any }[];
+    invert?: boolean;
 }
 
 export class XlsxToJson {
@@ -26,7 +29,7 @@ export class XlsxToJson {
         const xlsxResult = new XlsxResult();
         try {
             const workbook = new Workbook();
-            await workbook.read(buffer)
+            await workbook.read(buffer as any);
             const worksheets = workbook.getWorksheets();
 
             for (const worksheet of worksheets) {
@@ -197,8 +200,26 @@ export class XlsxToJson {
             table.setEnd(endCol, row);
 
             if (table.getRow(Dictionary.SCHEMA_NAME) !== -1) {
+                const nameRow = table.getRow(Dictionary.SCHEMA_NAME);
+
                 schema.name = worksheet.getValue<string>(startCol, table.getRow(Dictionary.SCHEMA_NAME));
+
+                const normalizedName = schema.name?.trim();
+                if (!normalizedName) {
+                    xlsxResult.addError({
+                        type: 'error',
+                        text: 'Schema name is empty.',
+                        message: `Schema name is empty on sheet "${worksheet.name}".`,
+                        worksheet: worksheet.name,
+                        cell: worksheet.getPath(startCol, nameRow),
+                        row: nameRow,
+                        col: startCol,
+                    }, schema);
+
+                    schema.name = worksheet.name
+                }
             }
+
             if (table.getRow(Dictionary.SCHEMA_DESCRIPTION) !== -1) {
                 schema.description = worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
             }
@@ -550,6 +571,18 @@ export class XlsxToJson {
                 field.textBold = font.bold;
                 field.textColor = font.color;
                 field.textSize = font.size;
+
+                if (field.required === true) {
+                    xlsxResult.addError({
+                        type: 'error',
+                        text: `Invalid configuration: "Help Text" cannot be required.`,
+                        message: `Field type "Help Text" must not have "Required Field" = Yes. Set it to No.`,
+                        worksheet: worksheet.name,
+                        cell: worksheet.getPath(table.getCol(Dictionary.REQUIRED_FIELD), row),
+                        row,
+                        col: table.getCol(Dictionary.REQUIRED_FIELD),
+                    }, field);
+                }
             }
 
             if (field.autocalculate && !param) {
@@ -645,21 +678,43 @@ export class XlsxToJson {
 
             if (result.type === 'const') {
                 field.hidden = field.hidden || !result.value;
+                return;
+            }
+
+            if (result.op && Array.isArray(result.items)) {
+                const resolved = result.items.map(it => {
+                    const target = fields.find(f => f.title === it.fieldPath);
+                    if (!target) {
+                        throw new Error(`Invalid target in ${result.op} condition: ${it.fieldPath}`);
+                    }
+                    return { field: target, value: it.compareValue };
+                });
+
+                const conditionKey = { op: result.op, items: resolved };
+                const existed = conditionCache.find(c => (c as any).equal(conditionKey));
+                const holder = existed || new XlsxSchemaConditions(conditionKey as any);
+
+                holder.addField(field, !!result.invert);
+                if (!existed) {
+                    return holder;
+                }
+                return null;
             } else {
                 const target = fields.find((f) => f.title === result.fieldPath);
                 if (!target) {
                     throw new Error('Invalid target');
                 }
-                const condition = conditionCache.find(c => c.equal(target, result.value));
+                const condition = conditionCache.find(c => c.equal(target, result.compareValue));
                 if (condition) {
                     condition.addField(field, result.invert);
                     return null;
                 } else {
-                    const newCondition = new XlsxSchemaConditions(target, result.value);
+                    const newCondition = new XlsxSchemaConditions(target, result.compareValue);
                     newCondition.addField(field, result.invert);
                     return newCondition;
                 }
             }
+
         } catch (error) {
             xlsxResult.addError({
                 type: 'error',
@@ -721,76 +776,83 @@ export class XlsxToJson {
         if (formulae === '') {
             return null;
         }
-        //'TRUE'
-        //'FALSE'
+
         if (formulae === 'TRUE') {
-            return { type: 'const', value: true }
+            return { type: 'const', value: true };
         }
         if (formulae === 'FALSE') {
-            return { type: 'const', value: false }
+            return { type: 'const', value: false };
         }
         if (formulae === 'Hidden') {
-            return { type: 'const', value: false }
+            return { type: 'const', value: false };
         }
         if (formulae === 'Auto') {
-            return { type: 'const', value: true }
+            return { type: 'const', value: true };
         }
 
-        //'EXACT(G11,10)'
-        //'NOT(EXACT(G11,10))'
-        //'EXACT(G11,"10")'
-        //'NOT(EXACT(G11,"10"))'
-        const parsFn = (tree: mathjs.MathNode, invert: boolean): {
-            fieldPath: string,
-            value: any,
-            invert: boolean
-        } => {
-            const fnNode = tree as mathjs.FunctionNode;
-
-            if (tree.type === 'FunctionNode') {
-                if (fnNode.fn.name === 'EXACT' && fnNode.args.length === 2) {
-                    const firstNode = fnNode.args[0] as mathjs.SymbolNode | mathjs.ConstantNode;
-                    const secondNode = fnNode.args[1] as mathjs.SymbolNode | mathjs.ConstantNode;
-
-                    if (
-                        firstNode.type === 'SymbolNode' &&
-                        secondNode.type === 'ConstantNode'
-                    ) {
-                        return {
-                            fieldPath: firstNode.name,
-                            value: secondNode.value,
-                            invert
-                        };
-                    }
-                    if (
-                        firstNode.type === 'ConstantNode' &&
-                        secondNode.type === 'SymbolNode'
-                    ) {
-                        return {
-                            value: firstNode.value,
-                            fieldPath: secondNode.name,
-                            invert
-                        };
-                    }
-                }
-                if (fnNode.fn.name === 'NOT' && fnNode.args.length === 1) {
-                    return parsFn(fnNode.args[0], true);
-                }
-            }
-            return null;
-        }
         const nodes = mathjs.parse(formulae);
-        const node = parsFn(nodes, false);
-        if (node) {
-            return {
-                type: 'formulae',
-                fieldPath: node.fieldPath,
-                value: node.value,
-                invert: node.invert,
+
+        const parseFn = (node: mathjs.MathNode, invert: boolean): ICondition => {
+            if (node.type === 'FunctionNode') {
+                const fn = node as mathjs.FunctionNode;
+                const name = fn.fn.name?.toUpperCase();
+
+                if (name === 'NOT' && fn.args.length === 1) {
+                    return parseFn(fn.args[0], !invert);
+                }
+
+                if (name === 'EXACT' && fn.args.length === 2) {
+                    const a = fn.args[0] as mathjs.SymbolNode | mathjs.ConstantNode;
+                    const b = fn.args[1] as mathjs.SymbolNode | mathjs.ConstantNode;
+
+                    const toPair = (
+                        first: mathjs.SymbolNode | mathjs.ConstantNode,
+                        second: mathjs.SymbolNode | mathjs.ConstantNode
+                    ) => {
+                        if (first.type === 'SymbolNode' && second.type === 'ConstantNode') {
+                            return { fieldPath: first.name, compareValue: (second as mathjs.ConstantNode).value };
+                        }
+                        if (first.type === 'ConstantNode' && second.type === 'SymbolNode') {
+                            return { fieldPath: (second as mathjs.SymbolNode).name, compareValue: (first as mathjs.ConstantNode).value };
+                        }
+                        return null;
+                    };
+
+                    const pair = toPair(a, b);
+                    if (!pair) {
+                        throw new Error(`Unsupported EXACT signature in "${formulae}"`)
+                    };
+
+                    return {
+                        type: 'formulae',
+                        fieldPath: pair.fieldPath,
+                        compareValue: pair.compareValue,
+                        invert
+                    };
+                }
+
+                if ((name === 'OR' || name === 'AND') && fn.args.length >= 2) {
+                    const items: { fieldPath: string; compareValue: any }[] = [];
+                    for (const arg of fn.args) {
+                        const parsed = parseFn(arg, false);
+                        if (!(parsed?.type === 'formulae' && parsed.fieldPath && parsed.compareValue !== undefined && !parsed.op)) {
+                            throw new Error(`Unsupported argument inside ${name} in "${formulae}"`);
+                        }
+                        items.push({ fieldPath: parsed.fieldPath, compareValue: parsed.compareValue });
+                    }
+                    return {
+                        type: 'formulae',
+                        op: name as 'OR' | 'AND',
+                        items,
+                        invert
+                    };
+                }
             }
-        } else {
-            throw new Error(`Failed to parse formulae: ${formulae}.`)
-        }
+
+            throw new Error(`Failed to parse formulae: ${formulae}.`);
+        };
+
+        return parseFn(nodes, false);
     }
 
     private static isAutoCalculate(type: string, field: SchemaField): boolean {

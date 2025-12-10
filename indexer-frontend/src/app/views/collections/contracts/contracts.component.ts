@@ -54,35 +54,11 @@ import { HederaType } from '@components/hedera-explorer/hedera-explorer.componen
 export class ContractsComponent extends BaseGridComponent {
     columns: any[] = [
         {
-            type: ColumnType.HEDERA,
-            field: 'consensusTimestamp',
-            title: 'grid.consensus_timestamp',
-            width: '250px',
-            sort: true,
-            hederaType: HederaType.TRANSACTION,
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'consensusTimestamp',
-            title: 'grid.date',
-            width: '250px',
-            sort: true,
-            formatValue: (value: any) => {
-                const fixedTimestamp = Math.floor(value * 1000);
-                value = new Date(fixedTimestamp);
-                const formattedDate = value.toLocaleString();
-                return formattedDate;
-            }
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'topicId',
-            title: 'grid.topic_id',
-            width: '150px',
-            link: {
-                field: 'topicId',
-                url: '/topics',
-            },
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
         },
         {
             type: ColumnType.TEXT,
@@ -109,11 +85,35 @@ export class ContractsComponent extends BaseGridComponent {
             width: '150px',
         },
         {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
+            type: ColumnType.TEXT,
+            field: 'consensusTimestamp',
+            title: 'grid.date',
+            width: '250px',
+            sort: true,
+            formatValue: (value: any) => {
+                const fixedTimestamp = Math.floor(value * 1000);
+                value = new Date(fixedTimestamp);
+                const formattedDate = value.toLocaleString();
+                return formattedDate;
+            }
+        },
+        {
+            type: ColumnType.HEDERA,
+            field: 'consensusTimestamp',
+            title: 'grid.consensus_timestamp',
+            width: '250px',
+            sort: true,
+            hederaType: HederaType.TRANSACTION,
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'topicId',
+            title: 'grid.topic_id',
+            width: '150px',
+            link: {
+                field: 'topicId',
+                url: '/topics',
+            },
         },
     ];
 
@@ -124,6 +124,10 @@ export class ContractsComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(new Filter({
             type: 'input',
             field: 'topicId',

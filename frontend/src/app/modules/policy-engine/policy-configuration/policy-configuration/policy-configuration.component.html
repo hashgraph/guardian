@@ -70,15 +70,34 @@
 
                 <div class="delimiter"></div>
 
-                <div (click)="validationPolicy()" *ngIf="policyTemplate.isDraft" [attr.errors-count]="errorsCount"
-                    [attr.readonly]="!isTree" class="top-toolbar-btn all-status" title="Validation Policy">
+                <div
+                    *ngIf="policyTemplate.isDraft"
+                    class="top-toolbar-btn top-toolbar-group all-status validation"
+                    [attr.readonly]="!isTree"
+                    [attr.errors-count]="validationCount"
+                    [attr.validation-level]="validationLevel"
+                    (click)="validationPolicy()"
+                    title="Validation"
+                    #validationBtn
+                >
                     <i class="pi pi-check-circle"></i>
                     <span>Validation</span>
-                    <div *ngIf="errorsCount>0" class="error-count">{{ errorsCount }}</div>
+
+                    <div *ngIf="validationCount > 0" class="error-count">{{ validationCount }}</div>
+
+                    <div
+                        class="expand-group"
+                        (click)="$event.stopPropagation(); validationMenu.toggle($event, validationBtn)"
+                    >
+                        <i class="pi pi-sort-down-fill"></i>
+                    </div>
                 </div>
 
-                <div *ngIf="policyTemplate.isRun" [routerLink]="['/policy-viewer', policyId]"
-                    class="top-toolbar-btn all-status">
+                <div
+                    *ngIf="policyTemplate.isRun"
+                    [routerLink]="['/policy-viewer', policyId]"
+                    class="top-toolbar-btn all-status"
+                >
                     <i class="pi pi-angle-double-right"></i>
                     <span>Go</span>
                 </div>
@@ -86,12 +105,11 @@
                 <div class="delimiter"></div>
             </ng-container>
 
-
             <ng-container *ngIf="rootType === 'Module'">
-                <!--                <div (click)="backToModules()" class="top-toolbar-btn all-status" title="Back">-->
-                <!--                    <i class="pi pi-arrow-left"></i>-->
-                <!--                    <span>Back</span>-->
-                <!--                </div>-->
+                <div (click)="backToModules()" class="top-toolbar-btn all-status" title="Back">
+                    <i class="pi pi-arrow-left"></i>
+                    <span>Back</span>
+                </div>
 
                 <div (click)="updateModule()" class="top-toolbar-btn readonly-status" title="Save Module">
                     <i class="pi pi-save"></i>
@@ -130,17 +148,17 @@
             </ng-container>
 
             <ng-container *ngIf="rootType === 'Tool'">
-                <!--                <div (click)="backToTools()" class="top-toolbar-btn all-status" title="Back">-->
-                <!--                    <i class="pi pi-arrow-left"></i>-->
-                <!--                    <span>Back</span>-->
-                <!--                </div>-->
+                <div (click)="backToTools()" class="top-toolbar-btn all-status" title="Back">
+                    <i class="pi pi-arrow-left"></i>
+                    <span>Back</span>
+                </div>
 
                 <div (click)="updateTool()" class="top-toolbar-btn readonly-status" title="Save Tool">
                     <i class="pi pi-save"></i>
                     <span>Save</span>
                 </div>
 
-                <div (click)="saveAsTool()" *ngIf="user.TOOLS_TOOL_CREATE" class="top-toolbar-btn readonly-status"
+                <div (click)="saveAsTool()" *ngIf="user.TOOLS_TOOL_CREATE" class="top-toolbar-btn"
                     title="Save Tool">
                     <i class="pi pi-save"></i>
                     <span>Save As</span>
@@ -151,6 +169,16 @@
                     class="top-toolbar-group all-status">
                     <i class="pi pi-pencil edit-color"></i>
                     <span class="edit-color">Draft</span>
+                    <div class="expand-group">
+                        <i class="pi pi-sort-down-fill"></i>
+                    </div>
+                </div>
+                <div (click)="dryRunMenu2.toggle($event)" *ngIf="toolTemplate.isDryRun"
+                    class="top-toolbar-group all-status" style="width: 80px">
+                    <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build"></svg-icon>
+                    <span class="dry-run-color font-size-xs">
+                        In Dry Run
+                    </span>
                     <div class="expand-group">
                         <i class="pi pi-sort-down-fill"></i>
                     </div>
@@ -754,6 +782,8 @@
                                 [blocks]="openFolder.dataSource"
                                 [connector]="dropListConnector"
                                 [errors]="errorsMap"
+                                [warnings]="warningsMap"
+                                [infos]="infosMap"
                                 [module]="openFolder"
                                 [nestedBlock]="nestedBlock"
                                 [nextBlock]="nextBlock"
@@ -960,6 +990,19 @@
                                                 <span>{{ item }}</span>
                                             </div>
                                         </div>
+
+                                        <div *ngIf="warningsListMap[currentBlock.id]" class="warnings-properties">
+                                            <div *ngFor="let item of warningsListMap[currentBlock.id]" class="warnings-property">
+                                                <span>{{ item }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div *ngIf="infosListMap[currentBlock.id]" class="infos-properties">
+                                            <div *ngFor="let item of infosListMap[currentBlock.id]" class="infos-property">
+                                                <span>{{ item }}</span>
+                                            </div>
+                                        </div>
+
                                         <common-properties
                                             [block]="currentBlock"
                                             [module]="openFolder"
@@ -1055,6 +1098,12 @@
         <i class="pi pi-globe publish-color"></i>
         <span class="publish-color">Publish</span>
     </div>
+
+    <div (click)="tryRunTool(); publishMenu3.hide()" class="toolbar-menu all-status dry-run-color"
+        title="Run without making any persistent changes or executing transaction.">
+        <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build dry-run-color"></svg-icon>
+        <span class="dry-run-color">Dry Run</span>
+    </div>
 </p-overlayPanel>
 
 <p-overlayPanel #dryRunMenu>
@@ -1065,6 +1114,33 @@
     </div>
 
     <div (click)="draftPolicy(); dryRunMenu.hide()" class="toolbar-menu all-status edit-color"
+        title="Return to editing.">
+        <i class="pi pi-pencil edit-color"></i>
+        <span class="edit-color">Stop</span>
+    </div>
+</p-overlayPanel>
+
+<p-overlayPanel #validationMenu
+    (onShow)="publishMenu?.hide(); publishMenu2?.hide(); publishMenu3?.hide();
+    dryRunMenu?.hide(); eventMenu?.hide(); viewMenu?.hide(); themesMenu?.hide()"
+>
+    <div class="toolbar-menu all-status"
+         (click)="setIgnoreRules(); validationMenu.hide()"
+         title="Configuration"
+         [attr.active]="hasActiveRules ? true : null">
+        <i class="pi" [ngClass]="hasActiveRules ? 'pi-filter-fill' : 'pi-filter'"></i>
+        <span>Configuration</span>
+    </div>
+</p-overlayPanel>
+
+<p-overlayPanel #dryRunMenu2>
+    <div (click)="tryPublishTool(); dryRunMenu2.hide()" class="toolbar-menu all-status publish-color"
+        title="Release version into public domain.">
+        <i class="pi pi-globe publish-color"></i>
+        <span class="publish-color">Publish</span>
+    </div>
+
+    <div (click)="draftTool(); dryRunMenu2.hide()" class="toolbar-menu all-status edit-color"
         title="Return to editing.">
         <i class="pi pi-pencil edit-color"></i>
         <span class="edit-color">Stop</span>

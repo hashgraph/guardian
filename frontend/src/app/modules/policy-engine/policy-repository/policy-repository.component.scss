@@ -1,0 +1,65 @@
+.policy-name {
+    color: var(--guardian-disabled-color, #848FA9);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+    position: absolute;
+    top: 34px;
+    right: 0;
+
+    .policy-version {
+        padding-left: 16px;
+    }
+}
+
+.guardian-dropdown {
+    &::ng-deep .p-dropdown {
+        width: 250px;
+    }
+}
+
+.grid-btn {
+    width: 80px;
+    height: 30px;
+    margin-right: 16px;
+
+    &:last-child {
+        margin-right: 0px;
+    }
+}
+
+.guardian-button {
+    height: 32px;
+    padding: 0px 16px;
+    width: 140px;
+}
+
+.guardian-user-page-filters p-dropdown {
+    margin-right: 18px;
+}
+
+.guardian-user-page-header {
+    height: 88px !important;
+}
+
+.comments {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    svg-icon.icon-btn {
+        margin-right: 8px;
+    }
+
+    .comments-count {
+        color: #848FA9;
+        font-family: Inter;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 16px;
+        vertical-align: middle;
+        margin-right: 8px;
+        width: 34px;
+        overflow: hidden;
+    }
+}

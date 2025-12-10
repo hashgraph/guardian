@@ -1037,6 +1037,75 @@ paths:
       summary: Delete artifact.
       tags:
         - artifacts
+  /artifacts/files/{fileId}:
+    get:
+      description: Returns file from GridFS
+      operationId: ArtifactApi_downloadFile
+      parameters:
+        - name: fileId
+          required: true
+          in: path
+          description: File _id
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Download file by id
+      tags:
+        - artifacts
+    delete:
+      description: Deletes file from GridFS by _id
+      operationId: ArtifactApi_deleteFile
+      parameters:
+        - name: fileId
+          required: true
+          in: path
+          description: File _id
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Delete file by id
+      tags:
+        - artifacts
+  /artifacts/files:
+    post:
+      description: Uploads/overwrites file in GridFS
+      operationId: ArtifactApi_upsertFile
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                fileId:
+                  type: string
+                  description: Existing file _id to overwrite (optional)
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Uploads/overwrites file
+      tags:
+        - artifacts
   /contracts:
     get:
       description: Returns all contracts.
@@ -2690,6 +2759,40 @@ paths:
       summary: Add file from ipfs.
       tags:
         - ipfs
+  /ipfs/file/direct:
+    post:
+      description: Add file to ipfs directly.
+      operationId: IpfsApi_postFileDirect
+      parameters: []
+      requestBody:
+        required: true
+        description: Binary data.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Add file to ipfs directly.
+      tags:
+        - ipfs
   /ipfs/file/dry-run/{policyId}:
     post:
       description: Add file from ipfs for dry run mode.
@@ -2763,6 +2866,34 @@ paths:
       security:
         - bearer: []
       summary: Get file from ipfs.
+      tags:
+        - ipfs
+    delete:
+      description: Remove file from ipfs.
+      operationId: IpfsApi_deleteFile
+      parameters:
+        - name: cid
+          required: true
+          in: path
+          description: File cid
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Remove file from ipfs.
       tags:
         - ipfs
   /ipfs/file/{cid}/dry-run:
@@ -3632,6 +3763,13 @@ paths:
           schema:
             example: 20
             type: number
+        - name: search
+          required: false
+          in: query
+          description: Search
+          schema:
+            example: text
+            type: string
       responses:
         '200':
           description: Successful operation.
@@ -3828,11 +3966,11 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Tool configuration.
+        description: Tool version.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ToolDTO'
+              $ref: '#/components/schemas/ToolVersionDTO'
       responses:
         '200':
           description: Successful operation.
@@ -3873,11 +4011,11 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Tool configuration.
+        description: Tool version.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ToolDTO'
+              $ref: '#/components/schemas/ToolVersionDTO'
       responses:
         '200':
           description: Successful operation.
@@ -3898,6 +4036,79 @@ paths:
       security:
         - bearer: []
       summary: Publishes the tool onto IPFS.
+      tags:
+        - tools
+  /tools/{id}/dry-run:
+    put:
+      description: >-
+        Run policy without making any persistent changes or executing
+        transaction. Only users with the Standard Registry role are allowed to
+        make the request.
+      operationId: ToolsApi_dryRunPolicy
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Tool ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolValidationDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Dry Run policy.
+      tags:
+        - tools
+  /tools/{id}/draft:
+    put:
+      description: >-
+        Return policy to editing. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: ToolsApi_draftPolicy
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Tool ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolValidationDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Return policy to editing.
       tags:
         - tools
   /tools/validate:
@@ -5472,6 +5683,11 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
+        - name: savepointIds
+          required: true
+          in: query
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation.
@@ -7026,6 +7242,11 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
+        - name: schemas
+          required: true
+          in: query
+          schema:
+            type: string
       requestBody:
         required: true
         description: A xlsx file containing policy config.
@@ -7105,6 +7326,11 @@ paths:
           description: Policy Id
           schema:
             example: '000000000000000000000001'
+            type: string
+        - name: savepointIds
+          required: true
+          in: query
+          schema:
             type: string
       responses:
         '200':
@@ -7283,30 +7509,65 @@ paths:
       summary: .
       tags:
         - policies
-  /policies/{policyId}/savepoint/create:
+  /policies/{policyId}/savepoints:
+    get:
+      description: Returns the list of savepoints for the policy (Dry Run only).
+      operationId: PolicyApi_getSavepoints
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get dry-run savepoints.
+      tags:
+        - policies
     post:
-      description: >-
-        Create dry-run savepoint. Only users with the Standard Registry role are
-        allowed to make the request.
+      description: Creates a new savepoint for the policy (Dry Run only).
       operationId: PolicyApi_createSavepoint
       parameters:
         - name: policyId
           required: true
           in: path
-          description: Policy Id
           schema:
             example: '000000000000000000000001'
             type: string
       requestBody:
         required: true
-        description: .
+        description: '{ name: string; savepointPath: string[] }'
         content:
           application/json:
             schema:
-              type: string
+              type: object
+              properties:
+                name:
+                  type: string
+                savepointPath:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - name
+                - savepointPath
       responses:
         '200':
-          description: .
+          description: Successful operation.
         '401':
           description: Unauthorized.
         '403':
@@ -7322,62 +7583,25 @@ paths:
       summary: Create dry-run savepoint.
       tags:
         - policies
-  /policies/{policyId}/savepoint/delete:
-    post:
-      description: >-
-        Delete dry-run savepoint. Only users with the Standard Registry role are
-        allowed to make the request.
-      operationId: PolicyApi_deleteSavepoint
-      parameters:
-        - name: policyId
-          required: true
-          in: path
-          description: Policy Id
-          schema:
-            example: '000000000000000000000001'
-            type: string
-      requestBody:
-        required: true
-        description: .
-        content:
-          application/json:
-            schema:
-              type: string
-      responses:
-        '200':
-          description: .
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      security:
-        - bearer: []
-      summary: Delete dry-run savepoint.
-      tags:
-        - policies
-  /policies/{policyId}/savepoint/restore:
+  /policies/{policyId}/savepoints/count:
     get:
-      description: >-
-        Get savepoint state. Only users with the Standard Registry role are
-        allowed to make the request.
-      operationId: PolicyApi_getSavepointState
+      description: Returns the number of savepoints for the policy (Dry Run only).
+      operationId: PolicyApi_getSavepointsCount
       parameters:
         - name: policyId
           required: true
           in: path
-          description: Policy Id
           schema:
             example: '000000000000000000000001'
             type: string
+        - name: includeDeleted
+          required: false
+          in: query
+          schema:
+            type: boolean
       responses:
         '200':
-          description: .
+          description: Successful operation.
         '401':
           description: Unauthorized.
         '403':
@@ -7390,32 +7614,75 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Get savepoint state.
+      summary: Get dry-run savepoints count.
       tags:
         - policies
-    post:
+  /policies/{policyId}/savepoints/{savepointId}:
+    put:
       description: >-
-        Restore dry-run savepoint. Only users with the Standard Registry role
-        are allowed to make the request.
-      operationId: PolicyApi_restoreSavepoint
+        Restores Dry Run state to the selected savepoint and returns its
+        metadata.
+      operationId: PolicyApi_selectSavepoint
       parameters:
         - name: policyId
           required: true
           in: path
-          description: Policy Id
+          schema:
+            type: string
+        - name: savepointId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Apply savepoint
+      tags:
+        - policies
+    patch:
+      description: Updates the name of a Dry Run savepoint for the policy.
+      operationId: PolicyApi_renameSavepoint
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: savepointId
+          required: true
+          in: path
           schema:
             example: '000000000000000000000001'
             type: string
       requestBody:
         required: true
-        description: .
+        description: '{ name: string }'
         content:
           application/json:
             schema:
-              type: string
+              type: object
+              properties:
+                name:
+                  type: string
+              required:
+                - name
       responses:
         '200':
-          description: .
+          description: Successful operation.
         '401':
           description: Unauthorized.
         '403':
@@ -7428,7 +7695,46 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Restore dry-run savepoint.
+      summary: Rename dry-run savepoint.
+      tags:
+        - policies
+  /policies/{policyId}/savepoints/delete:
+    post:
+      description: Deletes the specified savepoints for the policy (Dry Run only).
+      operationId: PolicyApi_deleteSavepoints
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteSavepointsDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSavepointsResultDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Delete dry-run savepoints.
       tags:
         - policies
   /policies/{policyId}/dry-run/restart:
@@ -8155,6 +8461,47 @@ paths:
       summary: Returns schema tree.
       tags:
         - schema
+  /schema/{schemaId}/deletionPreview:
+    get:
+      description: Returns all child schemas.
+      operationId: SingleSchemaApi_getSchemaDeletionPreview
+      parameters:
+        - name: schemaId
+          required: true
+          in: path
+          description: Schema identifier
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Policy topic Id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Schema deletion preview.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDeletionPreviewDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns all child schemas.
+      tags:
+        - schema
   /schemas:
     get:
       description: Returns all schemas.
@@ -8677,6 +9024,12 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
+        - name: includeChildren
+          required: false
+          in: query
+          description: Include child schemas
+          schema:
+            type: boolean
       responses:
         '200':
           description: Successful operation.
@@ -8926,6 +9279,44 @@ paths:
       summary: Previews the schema from a zip file.
       tags:
         - schemas
+  /schemas/import/schemas/duplicates:
+    post:
+      description: >-
+        Previews list of schemas duplicates. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: SchemaApi_checkForDublicates
+      parameters: []
+      requestBody:
+        required: true
+        description: Policy id and list of schema names.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Previews list of schemas duplicates.
+      tags:
+        - schemas
   /schemas/{topicId}/import/message:
     post:
       description: >-
@@ -8993,6 +9384,11 @@ paths:
           description: Topic Id
           schema:
             example: 0.0.1
+            type: string
+        - name: schemas
+          required: true
+          in: query
+          schema:
             type: string
       requestBody:
         required: true
@@ -9090,6 +9486,11 @@ paths:
           description: Topic Id
           schema:
             example: 0.0.1
+            type: string
+        - name: schemas
+          required: true
+          in: query
+          schema:
             type: string
       requestBody:
         required: true
@@ -9535,6 +9936,11 @@ paths:
           schema:
             example: 0.0.1
             type: string
+        - name: schemas
+          required: true
+          in: query
+          schema:
+            type: string
       requestBody:
         required: true
         description: A xlsx file containing schema config.
@@ -9628,6 +10034,44 @@ paths:
       security:
         - bearer: []
       summary: Returns a list of schemas.
+      tags:
+        - schemas
+  /schemas/topic/{topicId}:
+    delete:
+      description: >-
+        Deletes all schemas by topic id. Only users with the Standard Registry
+        role are allowed to make the request.
+      operationId: SchemaApi_deleteSchemasByTopicId
+      parameters:
+        - name: topicId
+          required: true
+          in: path
+          description: Topic Id
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Deletes all schemas by topic id.
       tags:
         - schemas
   /settings:
@@ -11051,6 +11495,221 @@ paths:
       security:
         - bearer: []
       summary: Return a list of tokens.
+      tags:
+        - tokens
+  /tokens/{tokenId}/relayer-accounts/{relayerAccountId}/info:
+    get:
+      description: >-
+        Returns user information for the selected token. Only users with the
+        Standard Registry role are allowed to make the request.
+      operationId: TokensApi_getRelayerAccountInfo
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: relayerAccountId
+          required: true
+          in: path
+          description: Relayer Account Id
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInfoDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns user information for the selected token.
+      tags:
+        - tokens
+  /tokens/{tokenId}/associate/{accountId}:
+    put:
+      description: >-
+        Associates the user with the provided Hedera token. Only users with the
+        Installer role are allowed to make the request.
+      operationId: TokensApi_associateWithAccountToken
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: accountId
+          required: true
+          in: path
+          description: Account ID
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInfoDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Associates the user with the provided Hedera token.
+      tags:
+        - tokens
+  /tokens/push/{tokenId}/associate/{accountId}:
+    put:
+      description: >-
+        Associates the user with the provided Hedera token. Only users with the
+        Installer role are allowed to make the request.
+      operationId: TokensApi_associateTokenWithAccountAsync
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: accountId
+          required: true
+          in: path
+          description: Account ID
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Associates the user with the provided Hedera token.
+      tags:
+        - tokens
+  /tokens/{tokenId}/dissociate/{accountId}:
+    put:
+      description: >-
+        Disassociates the user with the provided Hedera token. Only users with
+        the Installer role are allowed to make the request.
+      operationId: TokensApi_dissociateWithAccountToken
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: accountId
+          required: true
+          in: path
+          description: Account ID
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInfoDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Associate the user with the provided Hedera token.
+      tags:
+        - tokens
+  /tokens/push/{tokenId}/dissociate/{accountId}:
+    put:
+      description: >-
+        Disassociates the user with the provided Hedera token. Only users with
+        the Installer role are allowed to make the request.
+      operationId: TokensApi_dissociateTokenWithAccountAsync
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: accountId
+          required: true
+          in: path
+          description: Account ID
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Associate the user with the provided Hedera token.
       tags:
         - tokens
   /themes:
@@ -15769,6 +16428,1078 @@ paths:
       summary: Retrieves documents relationships.
       tags:
         - policy-labels
+  /policy-comments/{policyId}/{documentId}/users:
+    get:
+      description: >-
+        Returns the list of user names which are present in the target policy
+        and have access to the target document.
+      operationId: PolicyCommentsApi_getUsers
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyCommentUserDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: >-
+        Returns the list of user names which are present in the target policy
+        and have access to the target document.
+      tags:
+        - policy-comments
+  /policy-comments/{policyId}/{documentId}/relationships:
+    get:
+      description: Returns the list of documents linked with the target document
+      operationId: PolicyCommentsApi_getRelationships
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyCommentRelationshipDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the list of documents linked with the target document
+      tags:
+        - policy-comments
+  /policy-comments/{policyId}/{documentId}/schemas:
+    get:
+      description: Returns the list of schemas for the target document
+      operationId: PolicyCommentsApi_getSchemas
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the list of schemas for the target document
+      tags:
+        - policy-comments
+  /policy-comments/{policyId}/{documentId}/discussions:
+    get:
+      description: Returns the list of discussions for the target document
+      operationId: PolicyCommentsApi_getDiscussions
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: search
+          required: false
+          in: query
+          description: Text
+          schema:
+            example: Text
+            type: string
+        - name: field
+          required: false
+          in: query
+          description: Field path
+          schema:
+            example: Field path
+            type: string
+        - name: readonly
+          required: false
+          in: query
+          description: Readonly
+          schema:
+            example: false
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDiscussionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the list of discussions for the target document
+      tags:
+        - policy-comments
+    post:
+      description: Creates a new discussion linked to the target document
+      operationId: PolicyCommentsApi_createDiscussion
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Config
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPolicyDiscussionDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDiscussionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Creates a new discussion linked to the target document
+      tags:
+        - policy-comments
+  /policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments:
+    post:
+      description: Creates a new message in the target discussion
+      operationId: PolicyCommentsApi_createPolicyComment
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: discussionId
+          required: true
+          in: path
+          description: Discussion Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Message
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPolicyCommentDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyCommentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
+      security:
+        - bearer: []
+      summary: Creates a new message in the target discussion.
+      tags:
+        - policy-comments
+  /policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments/search:
+    post:
+      description: Returns the list of messages for the target discussion
+      operationId: PolicyCommentsApi_getPolicyComments
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: discussionId
+          required: true
+          in: path
+          description: Discussion Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: readonly
+          required: false
+          in: query
+          description: Readonly.
+          schema:
+            example: false
+            type: boolean
+      requestBody:
+        required: true
+        description: Search params
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyCommentSearchDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyCommentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the list of messages for the target discussion
+      tags:
+        - policy-comments
+  /policy-comments/{policyId}/{documentId}/comments/count:
+    get:
+      description: Returns the count of the messages in the target discussion
+      operationId: PolicyCommentsApi_getPolicyCommentsCount
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyCommentCountDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the count of the messages in the target discussion
+      tags:
+        - policy-comments
+  /policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments/file:
+    post:
+      description: Encrypts and loads the file into IPFS linked to the target discussion
+      operationId: PolicyCommentsApi_postFile
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: discussionId
+          required: true
+          in: path
+          description: Discussion Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Binary data.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Encrypts and loads the file into IPFS linked to the target discussion
+      tags:
+        - policy-comments
+  /policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments/file/{cid}:
+    get:
+      description: Retrieves and decrypts the file associated with the discussion from IPFS
+      operationId: PolicyCommentsApi_getFile
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: discussionId
+          required: true
+          in: path
+          description: Discussion Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: cid
+          required: true
+          in: path
+          description: File cid
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Retrieves and decrypts the file associated with the discussion from IPFS
+      tags:
+        - policy-comments
+  /policy-comments/{policyId}/{documentId}/keys:
+    get:
+      description: Returns the list of private keys for the target document
+      operationId: PolicyCommentsApi_getKey
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: discussionId
+          required: false
+          in: query
+          description: Discussion Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the list of private keys for the target document
+      tags:
+        - policy-comments
+  /policy-repository/{policyId}/users:
+    get:
+      description: Returns the list of user names which are present in the policy
+      operationId: PolicyRepositoryApi_getUsers
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the list of user names which are present in the policy
+      tags:
+        - policy-repository
+  /policy-repository/{policyId}/schemas:
+    get:
+      description: Returns the list of schemas present in the target policy
+      operationId: PolicyRepositoryApi_getSchemas
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the list of schemas present in the target policy
+      tags:
+        - policy-repository
+  /policy-repository/{policyId}/documents:
+    get:
+      description: Returns the list of documents in the target policy
+      operationId: PolicyRepositoryApi_getDocuments
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+        - name: type
+          required: false
+          in: query
+          description: ''
+          schema:
+            example: VC
+            type: string
+        - name: owner
+          required: false
+          in: query
+          description: Document owner
+          schema:
+            example: >-
+              #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+            type: string
+        - name: schema
+          required: false
+          in: query
+          description: Document schema
+          schema:
+            example: 00000000-0000-0000-0000-000000000000
+            type: string
+        - name: comments
+          required: false
+          in: query
+          description: Load comments
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VcDocumentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the list of documents in the target policy
+      tags:
+        - policy-repository
+  /relayer-accounts:
+    get:
+      description: Returns the list of Relayer Accounts of the active user.
+      operationId: RelayerAccountsApi_getRelayerAccounts
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+        - name: search
+          required: false
+          in: query
+          description: ''
+          schema:
+            example: search
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RelayerAccountDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the list of Relayer Accounts of the active user.
+      tags:
+        - relayer-accounts
+    post:
+      description: Adds a new Relayer Account for the active user.
+      operationId: RelayerAccountsApi_createRelayerAccount
+      parameters: []
+      requestBody:
+        required: true
+        description: New Relayer Account
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewRelayerAccountDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelayerAccountDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Adds a new Relayer Account for the active user.
+      tags:
+        - relayer-accounts
+  /relayer-accounts/current:
+    get:
+      description: Returns current Relayer Account of the active user.
+      operationId: RelayerAccountsApi_getCurrentRelayerAccount
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelayerAccountDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns current Relayer Account of the active user.
+      tags:
+        - relayer-accounts
+  /relayer-accounts/all:
+    get:
+      description: >-
+        Returns the list of Relayer Accounts available for use in the Policy by
+        the active user.
+      operationId: RelayerAccountsApi_getRelayerAccountsAll
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RelayerAccountDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: >-
+        Returns the list of Relayer Accounts available for use in the Policy by
+        the active user.
+      tags:
+        - relayer-accounts
+  /relayer-accounts/{account}/balance:
+    get:
+      description: Returns current hbar balance of the specified Relayer Account.
+      operationId: RelayerAccountsApi_getRelayerAccountBalance
+      parameters:
+        - name: account
+          required: true
+          in: path
+          description: Account
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns current hbar balance of the specified Relayer Account.
+      tags:
+        - relayer-accounts
+  /relayer-accounts/generate:
+    post:
+      description: Generate a new Relayer Account.
+      operationId: RelayerAccountsApi_generateRelayerAccount
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Generate a new Relayer Account.
+      tags:
+        - relayer-accounts
+  /relayer-accounts/accounts:
+    get:
+      description: >-
+        Return the list of Relayer Accounts for the user. If the active user is
+        a Standard Registry return the list of all Relayer Accounts of its
+        users.
+      operationId: RelayerAccountsApi_getUserRelayerAccounts
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+        - name: search
+          required: false
+          in: query
+          description: ''
+          schema:
+            example: search
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RelayerAccountDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: >-
+        Return the list of Relayer Accounts for the user. If the active user is
+        a Standard Registry return the list of all Relayer Accounts of its
+        users.
+      tags:
+        - relayer-accounts
+  /relayer-accounts/{relayerAccountId}/relationships:
+    get:
+      description: >-
+        Return the list of VC documents which are associated with the selected
+        Relayer Account.
+      operationId: RelayerAccountsApi_getRelayerAccountRelationships
+      parameters:
+        - name: relayerAccountId
+          required: true
+          in: path
+          description: Relayer Account Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VcDocumentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: >-
+        Return the list of VC documents which are associated with the selected
+        Relayer Account.
+      tags:
+        - relayer-accounts
   /worker-tasks:
     get:
       description: Returns all worker tasks.
@@ -15887,7 +17618,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 3.3.0
+  version: 3.4.0
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -16189,6 +17920,27 @@ components:
         - progress
         - resultId
         - result
+    IgnoreRuleDTO:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Stable message code, e.g. DEPRECATION_BLOCK
+        blockType:
+          type: string
+          description: Limit by block type
+        property:
+          type: string
+          description: Limit by property
+        contains:
+          type: string
+          description: Substring filter applied to message text
+        severity:
+          type: string
+          description: Type of message
+          enum:
+            - warning
+            - info
     PolicyDTO:
       type: object
       properties:
@@ -16343,6 +18095,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PolicyTestDTO'
+        ignoreRules:
+          description: >-
+            Validation-only rules to hide matching warnings/infos (not
+            persisted)
+          type: array
+          items:
+            $ref: '#/components/schemas/IgnoreRuleDTO'
       required:
         - id
         - uuid
@@ -16444,6 +18203,14 @@ components:
           minimum: 0
           maximum: 100
           example: 0
+        toolName:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        toolVersion:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
     SearchPolicyDTO:
       type: object
       properties:
@@ -17385,6 +19152,8 @@ components:
             - TOKEN_DATA_SOURCE
             - ROLE
             - USER_PERMISSIONS
+            - POLICY_DISCUSSION_V2
+            - POLICY_COMMENT
           example: POLICY
         iri:
           type: string
@@ -17524,6 +19293,14 @@ components:
           type: array
           items:
             type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        infos:
+          type: array
+          items:
+            type: string
         isValid:
           type: boolean
       required:
@@ -17541,6 +19318,14 @@ components:
             $ref: '#/components/schemas/BlockErrorsDTO'
         errors:
           nullable: true
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        infos:
           type: array
           items:
             type: string
@@ -17620,6 +19405,9 @@ components:
           example: '1900-01-01T00:00:00.000Z'
         config:
           $ref: '#/components/schemas/BlockDTO'
+        version:
+          type: string
+          example: 1.0.0
       required:
         - id
         - uuid
@@ -17633,6 +19421,7 @@ components:
         - codeVersion
         - createDate
         - config
+        - version
     ToolValidationDTO:
       type: object
       properties:
@@ -17643,6 +19432,14 @@ components:
       required:
         - tool
         - results
+    ToolVersionDTO:
+      type: object
+      properties:
+        toolVersion:
+          type: string
+          example: 1.0.0
+      required:
+        - toolVersion
     ToolPreviewDTO:
       type: object
       properties:
@@ -18207,6 +20004,32 @@ components:
         - id
         - createDate
         - document
+    DeleteSavepointsDTO:
+      type: object
+      properties:
+        savepointIds:
+          example:
+            - '000000000000000000000001'
+          type: array
+          items:
+            type: string
+        skipCurrentSavepointGuard:
+          type: boolean
+          example: false
+          description: Skip protection for currently selected savepoint
+      required:
+        - savepointIds
+    DeleteSavepointsResultDTO:
+      type: object
+      properties:
+        hardDeletedIds:
+          example:
+            - '000000000000000000000001'
+          type: array
+          items:
+            type: string
+      required:
+        - hardDeletedIds
     RunningDetailsDTO:
       type: object
       properties:
@@ -18239,6 +20062,36 @@ components:
         - id
         - name
         - type
+    ChildSchemaDeletionBlockDTO:
+      type: object
+      properties:
+        schema:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SchemaDTO'
+        blockingSchemas:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SchemaDTO'
+      required:
+        - schema
+        - blockingSchemas
+    SchemaDeletionPreviewDTO:
+      type: object
+      properties:
+        deletableChildren:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+        blockedChildren:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/ChildSchemaDeletionBlockDTO'
+      required:
+        - deletableChildren
+        - blockedChildren
     VersionSchemaDTO:
       type: object
       properties:
@@ -19201,6 +21054,7 @@ components:
             - POLICIES_POLICY_REVIEW
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
+            - POLICIES_POLICY_AUDIT
             - POLICIES_EXTERNAL_POLICY_READ
             - POLICIES_EXTERNAL_POLICY_CREATE
             - POLICIES_EXTERNAL_POLICY_UPDATE
@@ -19283,6 +21137,7 @@ components:
             - POLICIES_POLICY_REVIEW
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
+            - POLICIES_POLICY_AUDIT
             - POLICIES_EXTERNAL_POLICY_READ
             - POLICIES_EXTERNAL_POLICY_CREATE
             - POLICIES_EXTERNAL_POLICY_UPDATE
@@ -19859,6 +21714,7 @@ components:
           enum:
             - ACTION
             - REQUEST
+            - REMOTE_ACTION
           example: ACTION
         messageId:
           type: string
@@ -20116,6 +21972,331 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VcDocumentDTO'
+    PolicyCommentUserDTO:
+      type: object
+      properties:
+        label:
+          type: string
+          example: Administrator
+        value:
+          type: string
+          example: Administrator
+        type:
+          type: string
+          enum:
+            - all
+            - role
+            - user
+          example: role
+      required:
+        - label
+        - value
+        - type
+    PolicyCommentRelationshipDTO:
+      type: object
+      properties:
+        label:
+          type: string
+          example: Description
+        value:
+          type: string
+          example: '0000000000.000000001'
+      required:
+        - label
+        - value
+    PolicyDiscussionDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        target:
+          type: string
+          example: '0000000000.000000001'
+        targetId:
+          type: string
+          example: '000000000000000000000001'
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        parent:
+          type: string
+          example: '0000000000.000000001'
+        hash:
+          type: string
+        name:
+          type: string
+          example: Common
+        field:
+          type: string
+          example: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+        fieldName:
+          type: string
+          example: Field name
+        relationships:
+          example:
+            - '0000000000.000000001'
+          type: array
+          items:
+            type: string
+        relationshipIds:
+          example:
+            - '000000000000000000000001'
+          type: array
+          items:
+            type: string
+        privacy:
+          type: string
+          enum:
+            - public
+            - roles
+            - users
+          example: public
+        roles:
+          type: array
+          items:
+            type: string
+        users:
+          type: array
+          items:
+            type: string
+        system:
+          type: boolean
+          example: true
+        count:
+          type: string
+          example: 0
+        document:
+          nullable: false
+          allOf:
+            - $ref: '#/components/schemas/VcDTO'
+      required:
+        - id
+        - document
+    NewPolicyDiscussionDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Common
+        field:
+          type: string
+          example: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+        fieldName:
+          type: string
+          example: Field name
+        parent:
+          type: string
+          example: '0000000000.000000001'
+        privacy:
+          type: string
+          enum:
+            - public
+            - roles
+            - users
+          example: public
+        roles:
+          type: array
+          items:
+            type: string
+        users:
+          type: array
+          items:
+            type: string
+        relationships:
+          example:
+            - '0000000000.000000001'
+          type: array
+          items:
+            type: string
+    PolicyCommentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        topicId:
+          type: string
+          example: 0.0.1
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
+          type: string
+          example: 0.0.1
+        target:
+          type: string
+          example: '0000000000.000000001'
+        targetId:
+          type: string
+          example: '000000000000000000000001'
+        discussionMessageId:
+          type: string
+          example: '0000000000.000000001'
+        discussionId:
+          type: string
+          example: '000000000000000000000001'
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        timestamp:
+          type: string
+          example: 1759493933458
+        hash:
+          type: string
+        sender:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        senderRole:
+          type: string
+          example: Administrator
+        senderName:
+          type: string
+          example: StandardRegistry
+        recipients:
+          example:
+            - >-
+              #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+          type: array
+          items:
+            type: string
+        fields:
+          example:
+            - '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+          type: array
+          items:
+            type: string
+        text:
+          type: string
+          example: text
+        document:
+          nullable: false
+          allOf:
+            - $ref: '#/components/schemas/VcDTO'
+      required:
+        - id
+        - document
+    NewPolicyCommentDTO:
+      type: object
+      properties:
+        anchor:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        recipients:
+          example:
+            - >-
+              #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+          type: array
+          items:
+            type: string
+        fields:
+          example:
+            - '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+          type: array
+          items:
+            type: string
+        text:
+          type: string
+          example: text
+        files:
+          example:
+            - text
+          type: array
+          items:
+            type: string
+    PolicyCommentSearchDTO:
+      type: object
+      properties:
+        search:
+          type: string
+          example: text
+        field:
+          type: string
+          example: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+        lt:
+          type: string
+          example: '000000000000000000000001'
+        gt:
+          type: string
+          example: '000000000000000000000001'
+    PolicyCommentCountDTO:
+      type: object
+      properties:
+        fields:
+          example:
+            - '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+          type: array
+          items:
+            type: string
+        count:
+          type: string
+          example: 0
+    RelayerAccountDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        name:
+          type: string
+          example: name
+        username:
+          type: string
+          example: username
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        parent:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        account:
+          type: string
+          example: 0.0.1
+      required:
+        - id
+    NewRelayerAccountDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: name
+        account:
+          type: string
+          example: 0.0.1
+        key:
+          type: string
     WorkersTasksDTO:
       type: object
       properties:

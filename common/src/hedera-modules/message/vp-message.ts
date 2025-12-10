@@ -148,6 +148,7 @@ export class VPMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             issuer: this.issuer,
             relationships: this.relationships,
             tag: this.tag,
@@ -161,7 +162,7 @@ export class VPMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         const json = JSON.stringify(this.document);
         const buffer = Buffer.from(json);
         return [buffer];
@@ -190,7 +191,7 @@ export class VPMessage extends Message {
 
         const json = JSON.parse(data.message);
         const message = VPMessage.fromMessageObject(json);
-        message.setAccount(data.owner);
+        message.setPayer(data.owner);
         message.setIndex(data.sequenceNumber);
         message.setId(data.consensusTimestamp);
         message.setTopicId(data.topicId);

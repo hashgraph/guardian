@@ -1,0 +1,184 @@
+.table-field {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.table-field__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.table-field__import-btn {
+    position: relative;
+    background: var(--color-background);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.table-field__import-btn.p-disabled {
+    opacity: .6;
+    pointer-events: none;
+}
+
+.table-field__file-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.table-field__errors {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.table-field__error {
+    color: #d32f2f;
+}
+
+.table-field__placeholder {
+    width: 100%;
+}
+
+.table-field__placeholder-icon {
+    font-size: 18px;
+    margin-bottom: 6px;
+    line-height: 1;
+    margin-right: 8px;
+    color: rgba(0, 0, 0, 0.35);
+}
+
+.table-field__placeholder-title {
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.table-field__placeholder-hint {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.table-field__preview {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.table-field__preview-title {
+    font-size: 16px;
+    font-weight: 500;
+    padding: 0 0 12px 2px;
+}
+
+.table-field__cell {
+    padding: 0 8px;
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    height: var(--row-height);
+}
+
+.table-field__cell:last-child {
+    border-right: none;
+}
+
+.table-field__cell--rownum {
+    justify-content: center;
+    background: #f5f7f9;
+    color: #5f6b7a;
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.table-field__cell--head {
+    justify-content: center;
+    font-weight: 600;
+}
+
+.table-field__placeholder-box {
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 120px;
+    padding: 18px 14px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    background: #f7f9fc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.table-field__placeholder-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.table-field__grid {
+    --row-height: 42px;
+    --header-height: 44px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+    max-height: calc(4 * var(--row-height) + var(--header-height));
+}
+
+.table-field__row {
+    display: grid;
+    grid-template-columns: 48px repeat(8, minmax(80px, 1fr));
+}
+
+.table-field__row--header {
+    background: #f5f7f9;
+    color: #5f6b7a;
+    height: var(--header-height);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    align-items: center;
+}
+
+.table-field__row + .table-field__row .table-field__cell {
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+:host ::ng-deep .p-button {
+    border-radius: 8px;
+}
+
+:host ::ng-deep .primary-btn .p-button {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: var(--color-background);
+    border-radius: 8px;
+}
+
+:host ::ng-deep .secondary-btn .p-button {
+    background: var(--color-background);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    border-radius: 8px;
+}
+
+:host ::ng-deep .pi {
+    margin-right: 8px;
+}
+
+.table-field__cell--data {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 6px;
+}
+
+.table-field__placeholder-box.table-field__invalid {
+    border-color: #d32f2f;
+    box-shadow: inset 0 0 0 1px #d32f2f;
+    background: #fff5f5;
+}

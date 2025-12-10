@@ -1246,13 +1246,10 @@ async function saveRetireVC(
             active: true,
         });
         if (schema) {
-            schema.creator = owner.creator;
-            schema.owner = owner.owner;
             const item = await publishSystemSchema(
                 schema,
                 owner,
                 messageServer,
-                MessageAction.PublishSystemSchema,
                 NewNotifier.empty()
             );
             await dataBaseServer.save(SchemaCollection, item);

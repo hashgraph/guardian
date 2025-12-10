@@ -23,7 +23,7 @@ export class AnalyticsUserService {
             if (json.type === MessageType.StandardRegistry) {
                 const item = RegistrationMessage.fromMessageObject(json);
                 if (item && item.validate()) {
-                    item.setAccount(message.payer_account_id);
+                    item.setPayer(message.payer_account_id);
                     item.setIndex(message.sequence_number);
                     item.setId(message.id);
                     item.setTopicId(message.topicId);

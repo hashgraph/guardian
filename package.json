@@ -14,7 +14,7 @@
         "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*",
         "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\""
     },
-    "version": "3.3.0",
+    "version": "3.4.0",
     "workspaces": [
         "interfaces",
         "common",

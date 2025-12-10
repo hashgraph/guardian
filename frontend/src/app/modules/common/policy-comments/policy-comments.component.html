@@ -1,0 +1,603 @@
+<div *ngIf="!collapse" class="container" [attr.loading]="loading">
+    <div class="header">
+        <button
+            (click)="onClose()"
+            class="guardian-icon-button big header-collapse">
+            <div class="guardian-button-icon">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/collapse-left-fill.svg"
+                    [svgClass]="'icon-color-primary'">
+                </svg-icon>
+            </div>
+        </button>
+
+        <div *ngIf="currentTab === 'new-discussion'" class="header-container">
+            <div class="component-name">Create New Discussion</div>
+        </div>
+
+        <div *ngIf="currentTab === 'discussions'" class="header-container">
+            <div class="component-name">Comments</div>
+        </div>
+
+        <div *ngIf="currentTab === 'messages'" class="header-container back" (click)="selectDiscussion()">
+            <div 
+                class="component-name"
+                pTooltip="{{currentDiscussion?.name}}"
+                tooltipStyleClass="guardian-tooltip"
+                tooltipPosition="top"
+                [showDelay]="500"
+                [hideDelay]="100"
+            >{{currentDiscussion?.name}}</div>
+        </div>
+
+        <div *ngIf="currentTab === 'discussions'" class="header-toolbar">
+            <button
+                *ngIf="key"
+                class="guardian-icon-button group-btn big"
+                (click)="onKey()">
+                <svg-icon class="icon-btn svg-icon" 
+                    src="/assets/images/icons/key.svg"
+                    svgClass="icon-color-grey-color-3">
+                </svg-icon>
+            </button>
+        </div>
+        <div *ngIf="currentTab === 'messages' && currentDiscussion" class="header-toolbar">
+            <button
+                *ngIf="key"
+                class="guardian-icon-button group-btn big"
+                (click)="onKey(currentDiscussion)">
+                <svg-icon class="icon-btn svg-icon" 
+                    src="/assets/images/icons/key.svg"
+                    svgClass="icon-color-grey-color-3">
+                </svg-icon>
+            </button>
+            <button
+                *ngIf="currentDiscussion._users?.length"
+                class="guardian-icon-button group-btn big"
+                (click)="groupMenu.toggle($event)">
+                <svg-icon class="icon-btn svg-icon" 
+                    src="/assets/images/icons/group.svg"
+                    svgClass="icon-color-grey-color-3">
+                </svg-icon>
+            </button>
+            <button
+                class="guardian-icon-button group-btn big"
+                (click)="selectDiscussion()">
+                <svg-icon class="icon-btn svg-icon" 
+                    src="/assets/images/icons/close.svg"
+                    svgClass="icon-color-close">
+                </svg-icon>
+            </button>
+            <p-overlayPanel #groupMenu styleClass="guardian-popup">
+                <div *ngFor="let item of currentDiscussion._users" class="discussion-user">
+                    <svg-icon
+                        class="icon-btn discussion-user-icon"
+                        src="/assets/images/icons/{{item.icon}}.svg"
+                        [svgClass]="'icon-color-primary'">
+                    </svg-icon>
+                    <div class="discussion-user-name">
+                        {{item.label}}
+                    </div>
+                </div>
+            </p-overlayPanel>
+        </div>
+    </div>
+
+    <ng-container *ngIf="currentTab === 'new-discussion'">
+        <div class="new-discussion">
+            <div class="discussion-form">
+                <form [formGroup]="discussionForm">
+                    <div class="form-title">
+                        General
+                    </div>
+
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Discussion Name</label>
+                        <input formControlName="name" id="name" pInputText type="text" />
+                    </div>
+
+                    <div class="form-title">
+                        Relationships
+                    </div>
+
+                    <div *ngIf="discussionForm.value.field" class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Selected Field</label>
+                        <div  class="form-field">
+                            <div class="form-field-icon">
+                                <svg-icon src="/assets/images/icons/16/hashtag.svg" svgClass="icon-color-font"></svg-icon>
+                            </div>
+                            <div class="form-field-name">{{discussionForm.value.fieldName}}</div>
+                            <div class="form-field-delete" (click)="onDeleteFormField()">
+                                <svg-icon  src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Documents</label>
+                        <p-multiSelect
+                            formControlName="relationships"
+                            [options]="documentsList"
+                            class="guardian-multiselect full-size"
+                            appendTo="body"
+                            placeholder="Not selected"
+                            optionLabel="label" 
+                            optionValue="value"
+                            filterBy="label"
+                            panelStyleClass="guardian-multiselect-panel">
+                        </p-multiSelect>
+                    </div>
+
+                    <div class="form-title">
+                        Privacy Settings
+                    </div>
+
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Type</label>
+                        <p-dropdown 
+                            formControlName="privacy"
+                            [options]="privacyList"
+                            [showClear]="false" 
+                            class="guardian-dropdown" 
+                            appendTo="body"
+                            placeholder="Not selected" 
+                            optionLabel="label" 
+                            optionValue="value"
+                            panelStyleClass="guardian-dropdown-panel">
+                        </p-dropdown>
+                    </div>
+
+                    <div *ngIf="discussionForm.value.privacy==='roles'" class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Roles</label>
+                        <p-multiSelect
+                            formControlName="roles"
+                            [options]="rolesList"
+                            class="guardian-multiselect full-size"
+                            appendTo="body"
+                            placeholder="Not selected"
+                            optionLabel="label" 
+                            optionValue="value"
+                            filterBy="label"
+                            panelStyleClass="guardian-multiselect-panel">
+                        </p-multiSelect>
+                    </div>
+
+                    <div *ngIf="discussionForm.value.privacy==='users'" class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Users</label>
+                        <p-multiSelect
+                            formControlName="users"
+                            [options]="usersList"
+                            class="guardian-multiselect full-size"
+                            appendTo="body"
+                            placeholder="Not selected"
+                            optionLabel="label" 
+                            optionValue="value"
+                            filterBy="label"
+                            panelStyleClass="guardian-multiselect-panel">
+                        </p-multiSelect>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="toolbar">
+            <button
+                (click)="createNewDiscussion()"
+                class="guardian-button guardian-button-primary new-discussion-btn"
+                [disabled]="discussionForm.invalid"
+            >Create</button> 
+            <button
+                (click)="cancelNewDiscussion()"
+                class="guardian-button guardian-button-secondery new-discussion-btn"
+            >Cancel</button>
+        </div>
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="currentTab === 'discussions'">
+        <div class="discussion-filters">
+            <div class="search-filter">
+                <input
+                    [(ngModel)]="searchDiscussion"
+                    class="guardian-input search-policy-input"
+                    pInputText
+                    placeholder="Search by keyword"
+                    type="text" 
+                    (change)="onSetSearch()"/>
+                <i class="search-icon">
+                    <svg-icon 
+                        class="svg-icon-16" 
+                        src="/assets/images/icons/16/search.svg" 
+                        svgClass="icon-color-close">
+                    </svg-icon>
+                </i>
+            </div>
+            <div *ngIf="searchField" class="field-filter">
+                <div class="field-filter-icon">
+                    <svg-icon 
+                        class="svg-icon-16" 
+                        src="/assets/images/icons/16/hashtag.svg" 
+                        svgClass="icon-color-primary"></svg-icon>
+                </div>
+                <div class="field-filter-name">{{searchField.name}}</div>
+                <div class="field-filter-delete" (click)="onDeleteSearch()">
+                    <svg-icon 
+                        class="svg-icon-16" 
+                        src="/assets/images/icons/16/close.svg" 
+                        svgClass="icon-color-close"></svg-icon>
+                </div>
+            </div>
+        </div>
+        <div class="discussions">
+            <div class="full-discussions">
+                <div *ngIf="!discussionGroups.length" class="not-exist">
+                    <div class="not-exist-icon">
+                        <svg-icon
+                            src="/assets/images/icons/chat-1.svg"
+                            svgClass="icon-color-disabled"></svg-icon>
+                    </div>
+                    <div class="not-exist-text">There are no discussions added yet.</div>
+                </div>
+                <div 
+                    *ngFor="let group of discussionGroups" 
+                    class="discussion-group" 
+                    (click)="onOpenGroup(group)"
+                >
+                    <div class="discussion-group-header" [attr.collapsed]="group.collapsed" >
+                        <div class="discussion-group-name">{{group.name}}</div>
+                        <div class="discussion-group-count">({{group.items.length}})</div>
+                        <div class="discussion-group-icon">
+                            <svg-icon 
+                                *ngIf="group.collapsed"
+                                src="/assets/images/icons/collapse-down.svg"
+                                svgClass="icon-color-disabled"></svg-icon>
+                             <svg-icon 
+                                *ngIf="!group.collapsed"
+                                src="/assets/images/icons/collapse-up.svg"
+                                svgClass="icon-color-disabled"></svg-icon>
+                        </div>
+                    </div>
+                    <div 
+                        *ngFor="let discussion of group.items" 
+                        class="full-discussion" 
+                        (click)="onOpen(discussion)"
+                        [attr.hidden]="discussion._hidden"
+                    >
+                        <div class="discussion-privacy">
+                            <div *ngIf="!discussion.privacy"></div>
+                            <div *ngIf="discussion.privacy === 'public'"></div>
+                            <div *ngIf="discussion.privacy === 'roles'"></div>
+                            <div *ngIf="discussion.privacy === 'users'"></div>
+                        </div>
+                        <div class="discussion-icon">
+                            <svg-icon 
+                                *ngIf="discussion._icon"
+                                src="/assets/images/icons/{{discussion._icon}}.svg" 
+                                svgClass="icon-color-primary"></svg-icon>
+                            <div *ngIf="discussion._unread" class="discussion-count">
+                                {{discussion._unread}}
+                            </div>
+                        </div>
+                        <div class="discussion-body">
+                            <div 
+                                class="discussion-name" 
+                                pTooltip="{{discussion.name}}"
+                                tooltipStyleClass="guardian-tooltip"
+                                tooltipPosition="top"
+                                [showDelay]="500"
+                                [hideDelay]="100"
+                            >
+                                {{discussion.name}}
+                            </div>
+                            <div *ngIf="discussion.field" class="discussion-field">
+                                <div class="discussion-field-icon">
+                                    <svg-icon 
+                                        class="svg-icon-16" 
+                                        src="/assets/images/icons/16/hashtag.svg" 
+                                        svgClass="icon-color-primary"></svg-icon>
+                                </div>
+                                <div class="discussion-field-name">{{discussion.fieldName}}</div> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div *ngIf="loading" class="loading-placeholder">
+                <div *ngFor="let i of loadingItems" class="placeholder-item">
+                    <div class="placeholder-item-icon"></div>
+                    <div class="placeholder-item-body">
+                        <div class="placeholder-item-name"></div>
+                        <div class="placeholder-item-description"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="!readonly" class="toolbar">
+            <button
+                (click)="onNewDiscussion()"
+                class="guardian-button guardian-button-primary new-discussion-btn"
+                [disabled]="loading"
+            >
+                <div class="guardian-button-icon">
+                    <svg-icon 
+                        class="icon-btn svg-icon" 
+                        src="/assets/images/icons/new-chat.svg"
+                        [svgClass]="loading ? 'icon-color-disabled' : 'icon-color-secondary'"
+                    ></svg-icon>
+                </div>
+                <div class="guardian-button-label">Create New Discussion</div>
+            </button> 
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="currentTab === 'messages'">
+        <div class="discussion-filters message-filters">
+            <div class="search-filter">
+                <input
+                    [(ngModel)]="searchMessage"
+                    class="guardian-input search-policy-input"
+                    pInputText
+                    placeholder="Search by keyword"
+                    type="text" 
+                    (change)="onSetMessageSearch()"/>
+                <i class="search-icon">
+                    <svg-icon 
+                        class="svg-icon-16" 
+                        src="/assets/images/icons/16/search.svg" 
+                        svgClass="icon-color-close">
+                    </svg-icon>
+                </i>
+            </div>
+            <div *ngIf="currentDiscussion?.field" class="field-filter" (click)="onLinkField(currentDiscussion?.field)">
+                <div class="field-filter-icon">
+                    <svg-icon 
+                        class="svg-icon-16" 
+                        src="/assets/images/icons/16/hashtag.svg" 
+                        svgClass="icon-color-primary"></svg-icon>
+                </div>
+                <div class="field-filter-name">{{currentDiscussion?.fieldName}}</div>
+            </div>
+        </div>
+        <div #messageContainer class="messages-container">
+            <div *ngIf="!comments.data.length" class="messages">
+                <div class="not-exist">
+                    <div class="not-exist-icon">
+                        <svg-icon
+                            src="/assets/images/icons/chat-1.svg"
+                            svgClass="icon-color-disabled"></svg-icon>
+                    </div>
+                    <div class="not-exist-text">There are no comments added yet.</div>
+                </div>
+            </div>
+            <div *ngIf="comments.data.length" class="messages" >
+                <div *ngFor="let item of comments.data" class="message" [attr.owner]="item.isOwner">
+                    <div class="message-time">
+                        {{getDate(item.timestamp)}}
+                    </div>
+                    <div class="message-body">
+                        <div class="message-header">
+                            <div class="message-name">
+                                {{item.senderName}}
+                            </div>
+                            <div *ngIf="item.senderRole" class="message-role">
+                                {{item.senderRole}}
+                            </div>
+                        </div>
+                        <div *ngIf="item.__text" class="message-text">
+                            <ng-container *ngFor="let textItem of item.__text">
+                                <span 
+                                    *ngIf="textItem.type === 'text'" 
+                                    class="text-type-text">{{textItem.label}}</span>
+                                <span 
+                                    *ngIf="textItem.type === 'tag'" 
+                                    class="text-type-tag">{{textItem.label}}</span>
+                                <span 
+                                    *ngIf="textItem.type === 'all'" 
+                                    class="text-type-all">{{textItem.label}}</span>
+                                <span 
+                                    *ngIf="textItem.type === 'role'" 
+                                    class="text-type-role"
+                                    [pTooltip]="tooltipContent"
+                                    [tooltipOptions]="{showDelay: 300}"
+                                    tooltipPosition="top">{{textItem.label}}</span>
+                                <span 
+                                    *ngIf="textItem.type === 'user'" 
+                                    class="text-type-user"
+                                    [pTooltip]="tooltipContent"
+                                    [tooltipOptions]="{showDelay: 300}"
+                                    tooltipPosition="top">{{textItem.label}}</span>
+                                <span 
+                                    *ngIf="textItem.type === 'field'" 
+                                    class="text-type-field" 
+                                    (click)="onLinkText(textItem)"
+                                    [pTooltip]="tooltipContent"
+                                    [tooltipOptions]="{showDelay: 300}"
+                                    tooltipPosition="top">{{textItem.label}}</span>                                      
+                                <ng-template #tooltipContent>
+                                    <div *ngIf="textItem.tooltip" class="link-tooltip">
+                                        <div>{{textItem.tooltip.type}}</div>
+                                        <div>{{textItem.tooltip.name}}</div>
+                                        <div *ngIf="textItem.tooltip.value">{{textItem.tooltip.value}}</div>
+                                    </div>
+                                </ng-template>
+                            </ng-container>
+                        </div>
+                        <div *ngIf="item.__files" class="message-files">
+                            <div *ngFor="let file of item.__files" class="message-file" (click)="onLoadFile(file)">
+                                <div *ngIf="file.loading" class="message-file-loading guardian-loading">
+                                    <div class="guardian-loading-image"></div>
+                                </div>
+                                <div class="file-icon">
+                                    <svg-icon src="/assets/images/icons/file.svg" svgClass="icon-color-close"></svg-icon>
+                                </div>
+                                <div class="file-metadata">
+                                    <div class="file-name">
+                                        <span>{{file.name}}</span>
+                                    </div>
+                                    <div class="file-size">{{getSize(file.size)}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button
+                    *ngIf="!comments.full"
+                    (click)="onMore()"
+                    class="guardian-button guardian-button-secondery"
+                    style="min-height: 30px; margin-bottom: 16px;"
+                >
+                    <div class="guardian-button-label">More</div>
+                </button> 
+            </div>
+        </div>
+        <div *ngIf="!readonly" class="toolbar" (drop)="onDrop($event)">
+            <div class="guardian-textarea-container toolbar-textarea">
+                <mwl-text-input-autocomplete-container>
+                    <textarea
+                        #messageInput
+                        placeholder="Write a message"
+                        rows="3" 
+                        [(ngModel)]="textMessage"
+                        mwlTextInputAutocomplete
+                        [triggerCharacter]="triggerCharacter"
+                        [findChoices]="_findChoices"
+                        [getChoiceLabel]="_getChoiceLabel"
+                        [menuPosition]="'above'"
+                        [menuMaxSize]="200"
+                        (input)="onText($event)"
+                        [maxlength]="600">
+                    </textarea>
+                    <ng-template let-item #itemTemplate>
+                        <div class="autocomplete-item">
+                            <i *ngIf="item.type === 'user'" class="pi pi-user"></i>
+                            <i *ngIf="item.type === 'all'" class="pi pi-users"></i>
+                            <i *ngIf="item.type === 'role'" class="pi pi-users"></i>
+                            <i *ngIf="item.type === 'field'" class="pi pi-hashtag"></i>
+                            <span class="autocomplete-item-name">{{ item.label }}</span>
+                        </div>
+                    </ng-template>
+                </mwl-text-input-autocomplete-container>
+            </div>
+            <div *ngIf="files.length" class="toolbar-files">
+                <div *ngFor="let file of files" class="toolbar-file {{ files.length>6 ? 'more' : ''}}">
+                    <div *ngIf="file.loaded" class="toolbar-file-icon">
+                        <svg-icon 
+                            class="svg-icon-16"
+                            src="/assets/images/icons/16/file.svg" 
+                            svgClass="icon-color-primary"
+                        ></svg-icon>
+                    </div>
+                    <div *ngIf="!file.loaded" class="toolbar-file-loading guardian-loading">
+                        <div class="guardian-loading-image"></div>
+                    </div>
+                    <div class="toolbar-file-metadata">
+                        <div class="file-name">{{file.name}}</div>
+                        <!-- <div>{{file.loaded}}</div> -->
+                    </div>
+                    <div class="toolbar-file-action" (click)="onDeleteFile(file)">
+                        <svg-icon
+                            class="svg-icon-16"
+                            src="/assets/images/icons/16/close.svg" 
+                            svgClass="icon-color-close"></svg-icon>
+                    </div>
+                </div>
+                <div *ngIf="files.length>6" class="toolbar-file-more">
+                    +{{files.length-6}}
+                </div>
+            </div>
+            <div class="toolbar-actions">
+                <div class="text-length">{{textMessage.length}}/600</div>
+                <button
+                    class="guardian-icon-button attach-btn big"
+                    (click)="onAttach($event)">
+                    <svg-icon
+                        class="icon-btn svg-icon"
+                        src="/assets/images/icons/attach.svg"
+                        [svgClass]="'icon-color-primary'">
+                    </svg-icon>
+                </button>
+                <div class="delimiter"></div>
+                <button
+                    class="guardian-icon-button send-btn big"
+                    (click)="createComment()"
+                    [disabled]="sendDisabled">
+                    <svg-icon
+                        class="icon-btn svg-icon"
+                        src="/assets/images/icons/send.svg"
+                        [svgClass]="sendDisabled ? 'icon-color-disabled' : 'icon-color-primary'">
+                    </svg-icon>
+                </button>
+            </div>
+        </div>
+        <div *ngIf="loading" class="guardian-loading message-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+    </ng-container>
+    
+</div>
+
+<div *ngIf="collapse" class="collapse-container" [attr.loading]="loading">
+    <div class="header">
+        <button
+            (click)="onOpen()"
+            class="guardian-icon-button big header-collapse">
+            <div class="guardian-button-icon">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/collapse-right-fill.svg"
+                    [svgClass]="'icon-color-primary'">
+                </svg-icon>
+            </div>
+        </button>
+    </div>
+    <div class="discussion-filters">
+        <button
+            (click)="onOpen()"
+            class="guardian-icon-button big filters-btn">
+            <div class="guardian-button-icon">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/search.svg"
+                    [svgClass]="'icon-color-disabled'">
+                </svg-icon>
+            </div>
+        </button>
+    </div>
+    <div class="discussions">
+        <div class="collapse-discussions">
+            <div *ngFor="let group of discussionGroups" >
+                <div *ngFor="let discussion of group.items" class="collapse-discussion" (click)="onOpen(discussion)">
+                    <svg-icon 
+                        *ngIf="discussion._icon"
+                        src="/assets/images/icons/{{discussion._icon}}.svg" 
+                        svgClass="icon-color-primary"></svg-icon>
+                    <div *ngIf="discussion._unread" class="discussion-count">
+                        {{discussion._unread}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="loading" class="loading-placeholder">
+            <div *ngFor="let i of loadingItems" class="placeholder-item">
+                <div class="placeholder-item-icon"></div>
+            </div>
+        </div>
+    </div>
+    <div class="collapse-toolbar">
+        <button
+            (click)="onNewDiscussion()"
+            class="guardian-button guardian-button-primary open-btn"
+            [disabled]="loading"
+        >
+            <div class="guardian-button-icon">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/new-chat.svg"
+                    [svgClass]="'icon-color-secondary'">
+                </svg-icon>
+            </div>
+        </button>
+    </div>
+</div>

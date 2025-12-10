@@ -34,6 +34,7 @@ import {
     RoleMessage,
     GuardianRoleMessage,
     UserPermissionsMessage, PinoLogger, DatabaseServer,
+    SchemaPackageMessage,
 } from '@guardian/common';
 import {
     DidDocumentStatus,
@@ -132,7 +133,7 @@ export class RestoreDataFromHedera {
         for (const m of messages) {
             try {
                 const r = MessageServer.fromMessage<Message>(m.message, userId);
-                r.setAccount(m.payer_account_id);
+                r.setPayer(m.payer_account_id);
                 r.setTopicId(topicId);
                 r.setId(m.id);
                 result.push(r);
@@ -214,6 +215,48 @@ export class RestoreDataFromHedera {
 
         const result = dataBaseServer.create(SchemaCollection, schemaObj);
         await dataBaseServer.save(SchemaCollection, result);
+    }
+
+    /**
+     * Restore schema
+     * @param s
+     * @private
+     */
+    private async restoreSchemaPackage(s: SchemaPackageMessage): Promise<void> {
+        const [documents, contexts, metadata] = s.documents;
+        const schemas = metadata?.schemas || [];
+
+        const dataBaseServer = new DatabaseServer();
+        for (const schema of schemas) {
+            const document = documents[schema.id];
+            const context = contexts;
+            const schemaObj: Partial<ISchema> = {
+                uuid: schema.uuid,
+                name: schema.name,
+                description: schema.description,
+                entity: schema.entity as any,
+                status: SchemaStatus.PUBLISHED,
+                readonly: false,
+                document,
+                context,
+                version: schema.version,
+                creator: schema.owner,
+                owner: schema.owner,
+                topicId: s.topicId?.toString(),
+                messageId: s.id,
+                documentURL: s.getDocumentUrl(UrlType.url),
+                contextURL: s.getContextUrl(UrlType.url),
+                iri: schema.id, // restore iri
+                isOwner: true,
+                isCreator: true,
+                system: false,
+                active: true,
+                category: SchemaCategory.POLICY,
+                codeVersion: schema.codeVersion
+            };
+            const result = dataBaseServer.create(SchemaCollection, schemaObj);
+            await dataBaseServer.save(SchemaCollection, result);
+        }
     }
 
     /**
@@ -549,11 +592,17 @@ export class RestoreDataFromHedera {
 
             const publishedSchemas = this.findMessagesByType<SchemaMessage>(MessageType.Schema, policyMessages)
                 .filter((m) => m.action === MessageAction.PublishSchema);
+            const publishedSchemaPackages = this.findMessagesByType<SchemaPackageMessage>(MessageType.SchemaPackage, policyMessages)
+                .filter((m) => m.action === MessageAction.PublishSchemas);
 
             // Restore schemas
             for (const s of publishedSchemas) {
                 await this.loadIPFS(s);
                 await this.restoreSchema(s);
+            }
+            for (const p of publishedSchemaPackages) {
+                await this.loadIPFS(p);
+                await this.restoreSchemaPackage(p);
             }
 
             // Restore policy

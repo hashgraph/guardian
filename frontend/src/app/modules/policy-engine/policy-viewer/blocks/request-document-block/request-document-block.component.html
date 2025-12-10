@@ -1,17 +1,15 @@
 <div [hidden]="!isExist" class="content-{{ type }}" [attr.readonly-block]="readonly">
     <ng-container *ngIf="type == 'dialog'">
-        <div class="create-button-container">
-            <p-button (click)="onDialog()" class="btn-block-{{ buttonClass }}">
+        <div *ngIf="isBtnVisible()" class="create-button-container">
+            <p-button (click)="onDialogOpen()" class="btn-block-{{ buttonClass }}">
                 {{ content }}
             </p-button>
         </div>
     </ng-container>
     <ng-container *ngIf="type == 'page'">
-        <form
-            (ngSubmit)="onSubmit()"
+        <div
             *ngIf="schema"
-            [formGroup]="dataForm"
-            class="form-{{ type }}"
+            class="form form-{{ type }}"
         >
             <h1 *ngIf="title" mat-dialog-title>{{ title }}</h1>
 
@@ -35,7 +33,7 @@
                         </div>
                         <div class="guardian-button-label">Restore Values</div>
                     </button>
-                    </div>
+                </div>
 
                 <div *ngIf="dryRun" class="restore-data">
                     <svg-icon class="svg-icon"
@@ -57,27 +55,165 @@
                     </button>
                 </div>
 
-                <app-schema-form-root
-                    [schema]="schema"
-                    [dryRun]="dryRun"
-                    [policyId]="policyId"
-                    [preset]="presetDocument"
-                    [private-fields]="hideFields"
-                    [readonly-fields]="presetReadonlyFields"
-                    submitText="Create"
-                    [rules]="rulesResults"
-                    [paginationHidden]="false"
-                    [saveShown]="true"
-                    [isFormForRequestBlock]="true"
-                    (form)="initForm($event)"
-                    (buttons)="onChangeButtons($event)"
-                    (saveBtnEvent)="handleSaveBtnEvent($event)"
-                    (cancelBtnEvent)="onCancelPage($event)"
-                    (submitBtnEvent)="onSubmit()"
+                <div *ngIf="relayerAccount" class="relayer-account-steps">
+                    <div class="guardian-step-container">
+                        <div class="guardian-stepper horizontal-stepper">
+                            <div class="guardian-step" [attr.action]="isActionStep(0)" [attr.disabled]="isStep(0)" (click)="setStep(0)">
+                                <div class="guardian-step-marker">1</div>
+                                <div class="guardian-step-name">Fill Form</div>
+                            </div>
+                            <div class="guardian-step-separator"></div>
+                            <div class="guardian-step" [attr.action]="isActionStep(1)" [attr.disabled]="!isStep(2)" (click)="setStep(1)">
+                                <div class="guardian-step-marker">2</div>
+                                <div class="guardian-step-name">Configure Relayer Account</div>
+                            </div>
+                            <!-- <div class="guardian-step-separator"></div>
+                            <div class="guardian-step" [attr.action]="isActionStep(2)" [attr.disabled]="true">
+                                <div class="guardian-step-marker">3</div>
+                                <div class="guardian-step-name">Validation Results</div>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+                <form
+                    [attr.visibility]="isStep(0)"
+                    (ngSubmit)="onStep()"
+                    [formGroup]="dataForm"
                 >
-                </app-schema-form-root>
+                    <app-schema-form-root
+                        tabindex="0"
+                        [schema]="schema"
+                        [dryRun]="dryRun"
+                        [policyId]="policyId"
+                        [blockId]="id"
+                        [preset]="presetDocument"
+                        [private-fields]="hideFields"
+                        [readonly-fields]="presetReadonlyFields"
+                        [submitText]="submitText"
+                        [rules]="rulesResults"
+                        [paginationHidden]="false"
+                        [saveShown]="false"
+                        [isFormForRequestBlock]="true"
+                        (form)="initForm($event)"
+                        (buttons)="onChangeButtons($event)"
+                        (saveBtnEvent)="handleSaveBtnEvent($event)"
+                        (cancelBtnEvent)="onCancelPage($event)"
+                        (submitBtnEvent)="onStep()"
+                        style="outline: none !important"
+                    >
+                    </app-schema-form-root>
+                </form>
+                <div class="relayer-account-container" [attr.visibility]="isStep(1)">
+                    <div class="relayer-account-type-values">
+                        <div *ngIf="needRemoteWarning" class="account-warning">
+                            <svg-icon
+                                class="svg-icon"
+                                src="/assets/images/icons/warning.svg"
+                                svgClass="icon-color-warning">
+                            </svg-icon>
+                            <div class="account-warning-text">Relayer Account signing key will now be securely transferred to the primary Guardian policy instance.</div>
+                            <p-checkbox
+                                [(ngModel)]="remoteWarning"
+                                [binary]="true"
+                                inputId="ipfsCheckbox"
+                                class="guardian-checkbox-warning checkbox-24 account-warning-action"
+                                label="Please confirm action.">
+                            </p-checkbox>
+                        </div>
+                        
+                        <div class="relayer-account-type-value">
+                            <div class="relayer-account-type-value-select">
+                                <p-radioButton
+                                    class="guardian-radio-button radio-button-24"
+                                    name="types"
+                                    value="account"
+                                    [(ngModel)]="relayerAccountType"
+                                    inputId="type_1"></p-radioButton>
+                            </div>
+                            <label class="relayer-account-type-value-name" for="type_1">
+                                User Account
+                            </label>
+                        </div>
+                        <div class="relayer-account-type-config" [attr.selected]="relayerAccountType==='account'">
+                            Current Account: {{user.hederaAccountId}}
+                        </div>
+
+                        <div class="relayer-account-type-value">
+                            <div class="relayer-account-type-value-select">
+                                <p-radioButton
+                                    class="guardian-radio-button radio-button-24"
+                                    name="types"
+                                    value="relayerAccount"
+                                    [(ngModel)]="relayerAccountType"
+                                    inputId="type_2"></p-radioButton>
+                            </div>
+                            <label class="relayer-account-type-value-name" for="type_2">
+                                Use existing relayer account
+                            </label>
+                        </div>
+                        <div class="relayer-account-type-config" [attr.selected]="relayerAccountType==='relayerAccount'">
+                            <p-dropdown
+                                [(ngModel)]="currentRelayerAccount"
+                                [options]="relayerAccounts"
+                                [showClear]="false"
+                                class="guardian-dropdown"
+                                optionLabel="name"
+                                optionValue="account"
+                                placeholder="Select Relayer Account"
+                                panelStyleClass="guardian-dropdown-panel">
+                            </p-dropdown>
+                        </div>
+
+                        <div class="relayer-account-type-value">
+                            <div class="relayer-account-type-value-select">
+                                <p-radioButton
+                                    class="guardian-radio-button radio-button-24"
+                                    name="types"
+                                    value="new"
+                                    [(ngModel)]="relayerAccountType"
+                                    inputId="type_3"></p-radioButton>
+                            </div>
+                            <label class="relayer-account-type-value-name" for="type_3">
+                                New relayer account
+                            </label>
+                        </div>
+                        <div class="relayer-account-type-config" [attr.selected]="relayerAccountType==='new'">
+                            <form class="relayer-account-form" [formGroup]="relayerAccountForm" autocomplete="off">
+                                <div class="guardian-input-container" style="grid-column: 1 / 3;">
+                                    <label class="form-label" htmlFor="name">* Relayer Account Name</label>
+                                    <input formControlName="name" id="name" pInputText type="text" [readonly]="relayerAccountType!=='new'" autocomplete="off" />
+                                </div>
+
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="account">* Relayer Account ID</label>
+                                    <input formControlName="account" id="account" pInputText type="text" [readonly]="relayerAccountType!=='new'" autocomplete="off" />
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="key">* Relayer Account Key</label>
+                                    <p-password formControlName="key" id="key" [toggleMask]="true" autocomplete="off" [feedback]="false" />
+                                </div>
+                            </form>
+                            <button 
+                                (click)="onGenerateRelayerAccount()" 
+                                [disabled]="relayerAccountType!=='new'"
+                                class="guardian-button guardian-button-secondary">Generate New Account & Key</button>
+                        </div>
+
+
+                    </div>
+                    <div *ngIf="isStep(1)" class="relayer-account-container-buttons">
+                        <button 
+                            (click)="setStep(0)" 
+                            class="guardian-button guardian-button-secondary">Previous</button>
+                        <button 
+                            (click)="onStep()" 
+                            [disabled]="ifDisabledBtn()"
+                            class="guardian-button guardian-button-primary">Validate & Create</button>
+                    </div>
+                </div>
+                <div class="result-container" [attr.visibility]="isStep(2)"></div>
             </div>
-        </form>
+        </div>
     </ng-container>
 </div>
 

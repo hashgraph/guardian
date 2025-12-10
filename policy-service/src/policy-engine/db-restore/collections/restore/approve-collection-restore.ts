@@ -30,7 +30,7 @@ export class ApproveCollectionRestore extends CollectionRestore<ApprovalDocument
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: ApprovalDocument): ApprovalDocument {
+    protected override createRow(data: ApprovalDocument, id: string): ApprovalDocument {
         delete data.documentFileId;
         if (data.document) {
             const document = Buffer.from((data as any).document, 'base64').toString();
@@ -39,7 +39,7 @@ export class ApproveCollectionRestore extends CollectionRestore<ApprovalDocument
         return data;
     }
 
-    protected override async decryptRow(row: ApprovalDocument): Promise<ApprovalDocument> {
+    protected override async decryptRow(row: ApprovalDocument, id: string): Promise<ApprovalDocument> {
         return row;
     }
 }

@@ -1,0 +1,329 @@
+{
+    "field0": "VCS v4.4",
+    "field1": {
+      "G5": "example",
+      "G6": "example",
+      "G7": "example",
+      "G8": {
+        "G5": "2000-01-01",
+        "G6": "2000-01-01"
+      },
+      "G11": "2000-01-01",
+      "G12": "2000-01-01",
+      "G13": "example",
+      "G14": "example",
+      "G15": "example",
+      "G16": "example",
+      "G17": "example",
+      "G18": "example",
+      "G19": "example",
+      "G21": "example",
+      "G22": "example",
+      "G23": "example",
+      "G24": "example",
+      "G26": "example",
+      "G27": "example",
+      "G28": "example",
+      "G29": "example",
+      "G30": "example",
+      "G31": "example",
+      "G34": "example",
+      "G35": "example",
+      "G36": "example",
+      "G37": "example",
+      "G38": "example",
+      "G39": "example",
+      "G40": "example",
+      "G41": "example",
+      "G42": "example",
+      "G43": "example",
+      "G44": "example",
+      "G45": "example",
+      "G46": "example",
+      "G47": "example",
+      "G48": "example",
+      "G49": "example",
+      "G50": "example",
+      "G51": "example",
+      "G52": "example",
+      "G53": "example",
+      "G54": "example",
+      "G55": "example",
+      "G56": "example",
+      "G57": "example",
+      "G61": "example",
+      "G62": "example",
+      "G63": "example",
+      "G64": "example",
+      "G65": "example",
+      "G66": "example",
+      "G68": "example",
+      "G69": "example",
+      "G70": "example",
+      "G71": "example",
+      "G73": "example",
+      "G74": "example",
+      "G76": "example",
+      "G77": "example",
+      "G79": [
+        {
+          "G5": "example",
+          "G6": "example",
+          "G7": "example"
+        }
+      ],
+      "G84": "example",
+      "G85": {
+        "G6": "example",
+        "G8": "example",
+        "G10": "example",
+        "G12": "example",
+        "G14": "example",
+        "G16": "example",
+        "G17": [
+          {
+            "G5": "example",
+            "G6": "example"
+          }
+        ]
+      },
+      "G103": "example",
+      "G104": "example",
+      "G105": "example",
+      "G106": "example",
+      "G107": "example",
+      "G108": "example",
+      "G109": "example",
+      "G110": [
+        {
+          "G5": "example",
+          "G6": "example"
+        }
+      ],
+      "G113": [
+        {
+          "G5": "example",
+          "G6": "example"
+        }
+      ],
+      "G116": [
+        {
+          "G5": "example",
+          "G6": "example"
+        }
+      ],
+      "G120": "example",
+      "G121": "example",
+      "G122": "example",
+      "G123": {
+        "G144": "example",
+        "G145": "example",
+        "G146": "example",
+        "G147": [
+          {
+            "G5": "example",
+            "G6": "example"
+          }
+        ]
+      },
+      "G130": {
+        "G152": "example",
+        "G153": "example",
+        "G154": [
+          {
+            "G5": "example",
+            "G6": "example"
+          }
+        ]
+      },
+      "G137": [
+        {
+          "G5": "example",
+          "G6": "example"
+        }
+      ],
+      "G140": [
+        {
+          "G5": "example",
+          "G6": "example"
+        }
+      ],
+      "G143": [
+        {
+          "G5": "example",
+          "G6": "example"
+        }
+      ],
+      "G146": [
+        {
+          "G5": "example",
+          "G6": "example"
+        }
+      ],
+      "G150": "example",
+      "G152": [
+        {
+          "G5": "example",
+          "G6": "example",
+          "G7": "example"
+        }
+      ],
+      "G159": "Gas",
+      "G160": true,
+      "G161": "Justification/Explanation",
+      "G163": "Gas",
+      "G164": true,
+      "G165": "Justification/Explanation",
+      "G167": "Gas",
+      "G168": true,
+      "G169": "Justification/Explanation",
+      "G171": "Gas",
+      "G172": true,
+      "G173": "Justification/Explanation",
+      "G175": "Gas",
+      "G176": true,
+      "G177": "Justification/Explanation",
+      "G179": "Gas",
+      "G180": true,
+      "G181": "Justification/Explanation",
+      "G183": "Gas",
+      "G184": true,
+      "G185": "Justification/Explanation",
+      "G187": "Gas",
+      "G188": true,
+      "G189": "Justification/Explanation",
+      "G191": "Gas",
+      "G192": true,
+      "G193": "Justification/Explanation",
+      "G195": "Gas",
+      "G196": true,
+      "G197": "Justification/Explanation",
+      "G199": "Gas",
+      "G200": true,
+      "G201": "Justification/Explanation",
+      "G203": "Gas",
+      "G204": true,
+      "G205": "Justification/Explanation",
+      "G207": "Gas",
+      "G208": true,
+      "G209": "Justification/Explanation",
+      "G211": "Gas",
+      "G212": true,
+      "G213": "Justification/Explanation",
+      "G216": "Gas",
+      "G217": true,
+      "G218": "Justification/Explanation",
+      "G220": "Gas",
+      "G221": true,
+      "G222": "Justification/Explanation",
+      "G224": "Gas",
+      "G225": true,
+      "G226": "Justification/Explanation",
+      "G228": "Gas",
+      "G229": true,
+      "G230": "Justification/Explanation",
+      "G232": "Gas",
+      "G233": true,
+      "G234": "Justification/Explanation",
+      "G236": "Gas",
+      "G237": true,
+      "G238": "Justification/Explanation",
+      "G240": "Gas",
+      "G241": true,
+      "G242": "Justification/Explanation",
+      "G244": "Gas",
+      "G245": true,
+      "G246": "Justification/Explanation",
+      "G248": "Gas",
+      "G249": true,
+      "G250": "Justification/Explanation",
+      "G252": "Gas",
+      "G253": true,
+      "G254": "Justification/Explanation",
+      "G256": "Gas",
+      "G257": true,
+      "G258": "Justification/Explanation",
+      "G260": "Gas",
+      "G261": true,
+      "G262": "Justification/Explanation",
+      "G264": "Gas",
+      "G265": true,
+      "G266": "Justification/Explanation",
+      "G268": "Gas",
+      "G269": true,
+      "G270": "Justification/Explanation",
+      "G271": "example",
+      "G272": "example",
+      "G273": "example",
+      "G274": "example",
+      "G275": "example",
+      "G276": "example",
+      "G277": "example",
+      "G278": "example",
+      "G279": "example",
+      "G280": {
+        "G5": "2000-01-01",
+        "G6": "2000-01-01"
+      },
+      "G285": [
+        {
+          "G5": {
+            "G5": "2000-01-01",
+            "G6": "2000-01-01"
+          },
+          "G6": 1,
+          "G7": 1,
+          "G8": 1,
+          "G9": 1,
+          "G10": 1,
+          "G11": 1
+        }
+      ],
+      "G295": 1,
+      "G296": 1,
+      "G297": 1,
+      "G298": 1,
+      "G299": 1,
+      "G300": 1,
+      "G303": "example",
+      "G304": "example",
+      "G306": [
+        {
+          "G5": {
+            "G5": "2000-01-01",
+            "G6": "2000-01-01"
+          },
+          "G6": 1,
+          "G7": 1,
+          "G8": 1,
+          "G9": 1,
+          "G10": 1,
+          "G11": 1
+        }
+      ],
+      "G316": 1,
+      "G317": 1,
+      "G318": 1,
+      "G319": 1,
+      "G320": 1,
+      "G321": 1,
+      "G322": {
+        "G5": "SECTION",
+        "G6": "INFORMATION",
+        "G7": "JUSTIFICATION",
+        "G8": "ASSESSMENT METHOD AND CONCLUSION"
+      },
+      "G327": {
+        "G5": "example",
+        "G6": "example"
+      },
+      "G331": "2000-01-01",
+      "G332": "2000-01-01",
+      "G333": "2000-01-01",
+      "G334": "2000-01-01",
+      "G335": "Document Issuance Number",
+      "G336": "Document Language",
+      "G337": "Document Project List",
+      "G338": "Validation/Verification Body:"
+    }
+  }

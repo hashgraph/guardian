@@ -35,6 +35,8 @@ export class PolicyTool extends PolicyBlock {
     protected _tokens!: Token[];
     protected _name!: string;
     protected _description!: string;
+    protected _previousVersion!: string;
+    protected _version!: string;
 
     public get innerEvents(): PolicyEvent[] {
         return this._innerEvents;
@@ -76,6 +78,8 @@ export class PolicyTool extends PolicyBlock {
         super.init(config, parent);
         this._name = config.name || '';
         this._description = config.description || '';
+        this._previousVersion = config.previousVersion || '';
+        this._version = config.version || '';
 
         this._inputEvents = [];
         if (config.inputEvents && Array.isArray(config.inputEvents)) {
@@ -217,6 +221,32 @@ export class PolicyTool extends PolicyBlock {
 
     public setDescriptionSilently(value: string) {
         this._description = value;
+    }
+
+    public get previousVersion(): string {
+        return this._previousVersion;
+    }
+
+    public set previousVersion(value: string) {
+        this.setPreviousVersionSilently(value);
+        this._changed = true;
+    }
+
+    public setPreviousVersionSilently(value: string) {
+        this._previousVersion = value;
+    }
+
+    public get version(): string {
+        return this._version;
+    }
+
+    public set version(value: string) {
+        this.setVersionSilently(value);
+        this._changed = true;
+    }
+
+    public setVersionSilently(value: string) {
+        this._version = value;
     }
 
     public get inputEvents(): ModuleEvent[] {
@@ -686,6 +716,8 @@ export class PolicyTool extends PolicyBlock {
         return {
             name: this._name,
             description: this._description,
+            previousVersion: this._previousVersion,
+            version: this._version,
             localTag: this._localTag,
             tag: this._tag,
             lastPrefix: this._lastPrefix,
@@ -700,6 +732,8 @@ export class PolicyTool extends PolicyBlock {
         if (env) {
             this._name = env.name;
             this._description = env.description;
+            this._previousVersion = env.previousVersion;
+            this._version = env.version;
             this._localTag = env.localTag;
             this._tag = env.tag;
             this._lastPrefix = env.lastPrefix;

@@ -19,6 +19,8 @@ export enum KeyEntity {
     DID = 'DID',
     KEY = 'KEY',
     MESSAGE = 'MESSAGE',
+    DISCUSSION = 'DISCUSSION',
+    RELAYER_ACCOUNT = 'RELAYER_ACCOUNT',
 }
 
 /**
@@ -37,7 +39,9 @@ export enum KeyType {
     TOPIC_SUBMIT_KEY = 'TOPIC_SUBMIT_KEY',
     TOPIC_ADMIN_KEY = 'TOPIC_ADMIN_KEY',
     FIREBLOCKS_KEY = 'FIREBLOCKS_KEY',
-    MESSAGE_KEY = 'MESSAGE_KEY'
+    MESSAGE_KEY = 'MESSAGE_KEY',
+    DISCUSSION = 'DISCUSSION',
+    RELAYER_ACCOUNT = 'RELAYER_ACCOUNT'
 }
 
 /**
@@ -54,6 +58,8 @@ export const KEY_TYPE_KEY_ENTITY: Map<KeyType, KeyEntity> = new Map([
     [KeyType.TOPIC_SUBMIT_KEY, KeyEntity.TOPIC],
     [KeyType.DID_KEYS, KeyEntity.DID],
     [KeyType.KEY, KeyEntity.KEY],
+    [KeyType.DISCUSSION, KeyEntity.DISCUSSION],
+    [KeyType.RELAYER_ACCOUNT, KeyEntity.RELAYER_ACCOUNT],
 ]);
 
 /**
@@ -128,10 +134,13 @@ export class Wallet extends NatsService {
         }
 
         const user = new Users();
-        const { walletToken } = await user.getUserById(did, userId);
-        const wallet = new WalletManager();
+        const fullUser = await user.getUserById(did, userId);
+        if (!fullUser) {
+            return null;
+        }
 
-        return await wallet.getKey(walletToken, keyType, entityId)
+        const wallet = new WalletManager();
+        return await wallet.getKey(fullUser.walletToken, keyType, entityId)
     }
 
     /**
@@ -154,6 +163,31 @@ export class Wallet extends NatsService {
 
         const wallet = new WalletManager();
         await wallet.setKey(walletToken, keyType, entityId, keyValue);
+    }
+
+    /**
+     * Set key
+     * @param did
+     * @param keyType
+     * @param entityId
+     * @param keyValue
+     * @param userId
+     */
+    public async updateUserKey(
+        did: string,
+        keyType: KeyType,
+        entityId: string,
+        keyValue: any,
+        userId: string | null
+    ) {
+        const user = new Users();
+        const { walletToken } = await user.getUserById(did, userId);
+
+        const wallet = new WalletManager();
+        const key = await wallet.getKey(walletToken, keyType, entityId);
+        if (key !== keyValue) {
+            await wallet.setKey(walletToken, keyType, entityId, keyValue);
+        }
     }
 
     /**

@@ -112,7 +112,7 @@ We will also see the Registrant creating an account, filling out their Registrat
 
 The first step is that you will need to either login in to your account that you have previously created or create a new account. To create a new account just click **“Create new”** or if you are logging just simply add your details to Log in.
 
-<figure><img src="../../../.gitbook/assets/image (172).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (55) (2).png" alt=""><figcaption></figcaption></figure>
 
 **Note: You can also access the ‘Demo Admin Panel’ where you can just select the ‘Registrant’ for demo purposes.**
 

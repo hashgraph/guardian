@@ -290,4 +290,71 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError(error);
             }
         });
+
+    /**
+     * Download file by id
+     */
+    ApiResponse(MessageAPI.GET_FILE, async (msg: {
+        user: IAuthUser,
+        fileId: string
+    }) => {
+        try {
+            if (!msg?.fileId) {
+                return new MessageError('fileId is required');
+            }
+
+            const { buffer, filename, contentType } = await DatabaseServer.getGridFile(msg.fileId);
+
+            return new MessageResponse({ buffer, filename, contentType });
+        } catch (error) {
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+            return new MessageError(error?.message || 'File save error');
+        }
+    });
+
+    /**
+     * Upload/Replace CSV (upsert)
+     */
+    ApiResponse(MessageAPI.UPSERT_FILE, async (msg: {
+        user: IAuthUser,
+        file: { buffer: Buffer, originalname?: string, mimetype?: string },
+        fileId?: string
+    }) => {
+        try {
+            if (!msg?.file?.buffer) {
+                return new MessageError('No file provided');
+            }
+
+            const { buffer, originalname, mimetype } = msg.file;
+
+            const { fileId, filename, contentType } = await DatabaseServer.upsertGridFile({
+                buffer: Buffer.from(buffer),
+                filename: (originalname || 'file').trim(),
+                contentType: mimetype || 'application/octet-stream',
+                fileId: msg.fileId
+            });
+
+            return new MessageResponse({ fileId, filename, contentType });
+        } catch (error) {
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+            return new MessageError(error?.message || 'File upsert error');
+        }
+    });
+
+    ApiResponse(MessageAPI.DELETE_FILE, async (msg: {
+        user: IAuthUser,
+        fileId: string
+    }) => {
+        try {
+            if (!msg?.fileId) {
+                return new MessageError('fileId is required');
+            }
+
+            await DatabaseServer.deleteGridFile(msg.fileId);
+            return new MessageResponse(true);
+        } catch (e) {
+            await logger.error(e, ['GUARDIAN_SERVICE'], msg?.user?.id);
+            return new MessageError(e?.message || 'File delete error');
+        }
+    });
 }

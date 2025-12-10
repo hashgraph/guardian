@@ -140,11 +140,11 @@ Note: **Please make sure you copy and paste complete keys starting from "-----BE
 {% endhint %}
 
 To start all services, you need to create a 2048-bit RSA key pair for each service. You can generate a key pair in any convenient way—for example, using the online tool at [https://mkjwk.org/](https://mkjwk.org/) with the following settings:\
-&#x20;  \- key size: 2048\
-&#x20;  \- key use: signature\
-&#x20;  \- algorithm: RS256: RSA\
-&#x20;  \- key ID: sha256\
-&#x20;  \- show: yes
+\- key size: 2048\
+\- key use: signature\
+\- algorithm: RS256: RSA\
+\- key ID: sha256\
+\- show: yes
 
 <figure><img src="../../../../../.gitbook/assets/image (842).png" alt=""><figcaption></figcaption></figure>
 
@@ -160,10 +160,16 @@ For each service, you must add its secret key \`SERVICE\_JWT\_SECRET\_KEY\` and 
 \- \`SERVICE\_JWT\_PUBLIC\_KEY\_API\_GATEWAY\_SERVICE\`\
 \- \`SERVICE\_JWT\_PUBLIC\_KEY\_AI\_SERVICE\`
 
-**Note:** Alternatively, you can create a single key pair and, instead of adding the public keys for each individual service, you can add \`SERVICE\_JWT\_SECRET\_KEY\_ALL\` and \`SERVICE\_JWT\_PUBLIC\_KEY\_ALL\` to use the same keys for all services. However, it is recommended to generate a separate key pair for each service
+**Note:** Alternatively, you can create a single key pair and, instead of adding the public keys for each individual service, you can add \`SERVICE\_JWT\_SECRET\_KEY\_ALL\` and \`SERVICE\_JWT\_PUBLIC\_KEY\_ALL\` to use the same keys for all services. However, it is recommended to generate a separate key pair for each service.
+
+<figure><img src="../../../../../.gitbook/assets/image (8) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="warning" %}
 **Note**: It is important to add these keys to the env files, because without them the services will return errors, and communication with a service that does not sign messages for the message queue will not be supported.
+{% endhint %}
+
+{% hint style="info" %}
+Note: Please use the appropriate Private Key and Public Key as shown in the above iimage.
 {% endhint %}
 
 ## 4. Setup IPFS
@@ -242,7 +248,7 @@ For setting up AI and Guided Search, we need to set OPENAI\_API\_KEY variable in
 OPENAI_API_KEY="..."
 ```
 
-## 6. Build and launch with Docker.&#x20;
+## 6. Build and launch with Docker.
 
 Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 

@@ -46,6 +46,10 @@ export interface PolicyOptions {
      */
     synchronizationTopicId: string;
     /**
+     * Comments topic identifier
+     */
+    commentsTopicId: string;
+    /**
      * Discontinued date
      */
     discontinuedDate?: string;
@@ -125,6 +129,10 @@ export interface PolicyActivity {
      * Schemas
      */
     schemas: number;
+    /**
+     * Schemas
+     */
+    schemaPackages: number;
     /**
      * Formulas
      */

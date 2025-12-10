@@ -50,6 +50,8 @@ import { LabelDocumentDetailsComponent } from '@views/details/label-document-det
 import { FormulasComponent } from '@views/collections/formulas/formulas.component';
 import { FormulaDetailsComponent } from '@views/details/formula-details/formula-details.component';
 import { PriorityQueueComponent } from '@views/priority-queue/priority-queue.component';
+import { SchemasPackagesComponent } from '@views/collections/schemas-packages/schemas-packages.component';
+import { SchemasPackageDetailsComponent } from '@views/details/schemas-packages-details/schemas-packages-details.component';
 
 export const routes: Routes = [
     // _DEV
@@ -84,6 +86,7 @@ export const routes: Routes = [
     { path: 'label-documents', component: LabelDocumentsComponent },
     { path: 'statistic-documents', component: StatisticDocumentsComponent },
     { path: 'formulas', component: FormulasComponent },
+    { path: 'schemas-packages', component: SchemasPackagesComponent },
 
     //Details
     { path: 'registries/:id', component: RegistryDetailsComponent },
@@ -105,4 +108,5 @@ export const routes: Routes = [
     { path: 'label-documents/:id', component: LabelDocumentDetailsComponent },
     { path: 'statistic-documents/:id', component: VcDocumentDetailsComponent },
     { path: 'formulas/:id', component: FormulaDetailsComponent },
+    { path: 'schemas-packages/:id', component: SchemasPackageDetailsComponent },
 ];

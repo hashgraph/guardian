@@ -1,8 +1,8 @@
 import { GenerateUUIDv4, IOwner, IRootConfig, ISchema, ModelHelper, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, INotificationStep, MessageAction, MessageServer, MessageType, PinoLogger, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DatabaseServer, INotificationStep, MessageAction, MessageServer, PinoLogger, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { FilterObject } from '@mikro-orm/core';
 import { importTag } from '../tag/tag-import-helper.js';
-import { checkForCircularDependency, loadSchema } from '../common/load-helper.js';
+import { checkForCircularDependency, loadAnotherSchemas, loadSchema } from '../common/load-helper.js';
 
 /**
  * Only unique
@@ -23,6 +23,14 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
         return;
     }
 
+    const filters: any = {
+        defs: oldSchemaId || schemaId
+    };
+    const relatedSchemas = await DatabaseServer.getSchemas(filters);
+    if (!relatedSchemas.length) {
+        return;
+    }
+
     const schema = await DatabaseServer.getSchema({ iri: schemaId });
     if (!schema) {
         throw new Error(`Can not find schema ${schemaId}`);
@@ -33,12 +41,9 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
         return;
     }
 
-    const schemaDefs = schema.document.$defs;
+    const schemaDefs = schemaDocument.$defs;
     delete schemaDocument.$defs;
 
-    const filters: any = {};
-    filters.defs = { $elemMatch: { $eq: oldSchemaId || schemaId } };
-    const relatedSchemas = await DatabaseServer.getSchemas(filters);
     for (const rSchema of relatedSchemas) {
         if (oldSchemaId) {
             let document = JSON.stringify(rSchema.document) as string;
@@ -52,6 +57,7 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
             }
         }
     }
+
     await DatabaseServer.updateSchemas(relatedSchemas);
 }
 
@@ -293,17 +299,10 @@ export async function copySchemaAsync(
 
     copiedSchemas.set(iri, newItem);
 
-    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, user.id);
-
-    if (topic) {
-        await sendSchemaMessage(
-            user,
-            root,
-            topic,
-            MessageAction.CreateSchema,
-            item
-        );
-    }
+    // const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, user.id);
+    // if (topic) {
+    //     await sendSchemaMessage(user, root, topic, MessageAction.CreateSchema, item);
+    // }
     return item;
 }
 
@@ -447,20 +446,13 @@ export async function createSchema(
                 },
             },
         ],
-    } as FilterObject<SchemaCollection>,
-    );
+    } as FilterObject<SchemaCollection>);
     if (errorsCount > 0) {
         throw new Error('Schema identifier already exist');
     }
-    if (topic) {
-        await sendSchemaMessage(
-            user,
-            root,
-            topic,
-            MessageAction.CreateSchema,
-            schemaObject
-        );
-    }
+    // if (topic) {
+    //     await sendSchemaMessage(user, root, topic, MessageAction.CreateSchema, schemaObject);
+    // }
     notifier.completeStep(STEP_SEND);
 
     notifier.startStep(STEP_UPDATE);
@@ -496,20 +488,14 @@ export async function deleteSchema(
         throw new Error('Schema is not in draft status');
     }
 
-    if (item.topicId) {
-        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, owner.id);
-        if (topic) {
-            const users = new Users();
-            const root = await users.getHederaAccount(owner.creator, owner.id);
-            await sendSchemaMessage(
-                owner,
-                root,
-                topic,
-                MessageAction.DeleteSchema,
-                item
-            );
-        }
-    }
+    // if (item.topicId) {
+    //     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, owner.id);
+    //     if (topic) {
+    //         const users = new Users();
+    //         const root = await users.getHederaAccount(owner.creator, owner.id);
+    //         await sendSchemaMessage(owner, root, topic, MessageAction.DeleteSchema, item);
+    //     }
+    // }
     await DatabaseServer.deleteSchemas(item.id);
 
     notifier.complete();
@@ -556,12 +542,12 @@ export async function prepareSchemaPreview(
 ): Promise<any[]> {
     // <-- Steps
     const STEP_LOAD_FILE = 'Load schema file';
-    const STEP_PARSE_FILE = 'Parse schema';
+    const STEP_LOAD_ANOTHER_FILES = 'Load another schemas';
     const STEP_VERIFYING = 'Verifying';
     // Steps -->
 
     notifier.addStep(STEP_LOAD_FILE);
-    notifier.addStep(STEP_PARSE_FILE);
+    notifier.addStep(STEP_LOAD_ANOTHER_FILES);
     notifier.addStep(STEP_VERIFYING);
     notifier.start();
 
@@ -569,45 +555,32 @@ export async function prepareSchemaPreview(
     const schemas = [];
     for (const messageId of messageIds) {
         const schema = await loadSchema(messageId, logger, userId);
-        schemas.push(schema);
+        if (Array.isArray(schema)) {
+            for (const s of schema) {
+                schemas.push(s);
+            }
+        } else if (schema) {
+            schemas.push(schema);
+        }
     }
     notifier.completeStep(STEP_LOAD_FILE);
 
-    notifier.startStep(STEP_PARSE_FILE);
-    const messageServer = new MessageServer(null);
+    notifier.startStep(STEP_LOAD_ANOTHER_FILES);
     const uniqueTopics = schemas.map(res => res.topicId).filter(onlyUnique);
-    const anotherSchemas: SchemaMessage[] = [];
-    for (const topicId of uniqueTopics) {
-        const anotherVersions = await messageServer.getMessages<SchemaMessage>(
-            topicId,
-            userId,
-            MessageType.Schema,
-            MessageAction.PublishSchema
-        );
-        for (const ver of anotherVersions) {
-            anotherSchemas.push(ver);
-        }
-    }
-    notifier.completeStep(STEP_PARSE_FILE);
+    const anotherSchemas = await loadAnotherSchemas(uniqueTopics, logger, userId);
+    notifier.completeStep(STEP_LOAD_ANOTHER_FILES);
 
     notifier.startStep(STEP_VERIFYING);
     for (const schema of schemas) {
         if (!schema.version) {
             continue;
         }
-        const newVersions = [];
-        const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
-        for (const topicMessage of topicMessages) {
-            if (
-                topicMessage.version &&
-                ModelHelper.versionCompare(topicMessage.version, schema.version) === 1
-            ) {
-                newVersions.push({
-                    messageId: topicMessage.getId(),
-                    version: topicMessage.version
-                });
-            }
-        }
+        const newVersions = anotherSchemas
+            .filter((anotherSchema) => anotherSchema.uuid === schema.uuid)
+            .filter((anotherSchema) => (
+                anotherSchema.version &&
+                ModelHelper.versionCompare(anotherSchema.version, schema.version) === 1
+            ));
         if (newVersions && newVersions.length !== 0) {
             schema.newVersions = newVersions.reverse();
         }

@@ -61,6 +61,10 @@ export abstract class Message {
      * Message memo
      */
     public transactionMemo: string;
+    /**
+     * Owner
+     */
+    public account: string;
 
     /**
      * Response type
@@ -128,7 +132,7 @@ export abstract class Message {
     /**
      * To document
      */
-    public abstract toDocuments(key?: string): Promise<ArrayBuffer[]>;
+    public abstract toDocuments(key?: string): Promise<Buffer[]>;
 
     /**
      * Load documents
@@ -173,8 +177,16 @@ export abstract class Message {
      * Set payer
      * @param payer
      */
-    public setAccount(payer: string): void {
+    public setPayer(payer: string): void {
         this.payer = payer;
+    }
+
+    /**
+     * Set account
+     * @param account
+     */
+    public setOwnerAccount(account: string): void {
+        this.account = account;
     }
 
     /**
@@ -298,6 +310,7 @@ export abstract class Message {
                 type: this.type,
                 action: this.action,
                 lang: this.lang,
+                account: this.account,
                 revokeMessage: this._statusMessage,
                 reason: this._statusReason,
                 parentIds: this._parentIds
@@ -310,6 +323,7 @@ export abstract class Message {
                 type: this.type,
                 action: this.action,
                 lang: this.lang,
+                account: this.account,
                 deleteMessage: this._statusMessage,
                 reason: this._statusReason
             }
@@ -326,6 +340,7 @@ export abstract class Message {
                 type: this.type,
                 action: this.action,
                 lang: this.lang,
+                account: this.account,
                 statusMessage: this._statusMessage,
                 reason: this._statusReason
             }
@@ -401,6 +416,7 @@ export abstract class Message {
             messageId: this._id,
             topicId: this.topicId ? this.topicId.toString() : null,
             lang: this.lang,
+            account: this.account,
             type: this.type,
             payer: this.payer,
             index: this.index,
@@ -421,6 +437,7 @@ export abstract class Message {
         message._id = json.messageId;
         message.topicId = json.topicId;
         message.lang = json.lang;
+        message.account = json.account;
         message.type = json.type;
         message.payer = json.payer;
         message.index = json.index;

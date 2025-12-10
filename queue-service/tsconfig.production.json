@@ -13,8 +13,7 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "baseUrl": "./src",
-        "paths": {
-        }
+        "paths": {}
     },
     "include": [
         "src/**/*",

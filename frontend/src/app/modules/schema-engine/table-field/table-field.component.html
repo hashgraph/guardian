@@ -1,0 +1,96 @@
+<div class="table-field">
+    <div class="module-actions-buttons-container table-field__actions">
+        <p-button
+            (click)="openModal()"
+            class="primary-btn"
+            [disabled]="readonly || isImporting || isTooLargeForPreview"
+            [attr.title]="isTooLargeForPreview ? 'File is too large for preview. Use Download CSV instead.' : null">
+            <span>Open Table</span>
+        </p-button>
+
+        <div
+            class="toolbar-btn p-button p-component p-button-outlined table-field__import-btn"
+            [class.p-disabled]="readonly || isImporting">
+            <i class="pi pi-download toolbar-icons"></i>
+            <span>{{ isImporting ? 'Importing…' : 'Import CSV Data' }}</span>
+            <input
+                class="table-field__file-input"
+                type="file"
+                accept=".csv,text/csv"
+                (change)="onFileChange($event)"
+                [disabled]="readonly || isImporting" />
+        </div>
+
+        <p-button
+            *ngIf="hasData"
+            (click)="clearTable()"
+            class="secondary-btn"
+            [outlined]="true"
+            [disabled]="readonly || isImporting">
+            <i class="pi pi-times toolbar-icons"></i>
+            <span>Clear Imported Data</span>
+        </p-button>
+
+        <p-button
+            *ngIf="hasData"
+            (click)="downloadCsv()"
+            class="secondary-btn"
+            [outlined]="true"
+            [disabled]="isImporting">
+            <span>Download CSV</span>
+        </p-button>
+    </div>
+
+    <div class="table-field__errors">
+        <div *ngIf="previewError" class="table-field__error">
+            {{ previewError }}
+            <ng-container *ngIf="hasData">
+                &nbsp;Try <a href="javascript:void(0)" (click)="downloadCsv()">Download CSV</a>.
+            </ng-container>
+        </div>
+        <div *ngIf="importError" class="table-field__error">{{ importError }}</div>
+    </div>
+
+    <div *ngIf="!hasData" class="table-field__placeholder">
+        <div
+            class="table-field__placeholder-box"
+            [class.table-field__invalid]="isInvalidRequired"
+        >
+            <i class="pi pi-table table-field__placeholder-icon"></i>
+            <div class="table-field__placeholder-title">No data provided</div>
+            <input
+                class="table-field__placeholder-input"
+                type="file"
+                accept=".csv,text/csv"
+                (change)="onFileChange($event)"
+                [disabled]="readonly || isImporting" />
+        </div>
+    </div>
+
+    <div *ngIf="hasData" class="table-field__preview">
+        <div class="table-field__preview-title">Preview</div>
+        <div class="table-field__grid" role="table" aria-label="CSV preview 8x4">
+            <div class="table-field__row table-field__row--header" role="row">
+                <div class="table-field__cell table-field__cell--rownum">№</div>
+                <div
+                    class="table-field__cell table-field__cell--head"
+                    *ngFor="let columnKey of previewHeaderKeysLimited; let columnIndex = index"
+                    role="columnheader">
+                    {{ buildColumnHeader(columnIndex) }}
+                </div>
+            </div>
+            <div
+                class="table-field__row"
+                *ngFor="let row of previewRowsLimited; let rowIndex = index"
+                role="row">
+                <div class="table-field__cell table-field__cell--rownum">{{ rowIndex + 1 }}</div>
+                <div
+                    class="table-field__cell table-field__cell--data"
+                    *ngFor="let columnKey of previewHeaderKeysLimited"
+                    [title]="row[columnKey] || ''">
+                    {{ row[columnKey] || '' }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

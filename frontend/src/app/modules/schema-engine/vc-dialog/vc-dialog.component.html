@@ -34,7 +34,7 @@
 
             <div class="option-buttons">
                 <button 
-                    *ngIf="messageId && !dryRun"
+                    *ngIf="messageId && !dryRun && canExport"
                     (click)="onFindInExport()" 
                     class="guardian-button guardian-button-secondary">Export</button>
 
@@ -59,12 +59,18 @@
                     [type]="type"></app-document-view>
             </ng-container>
             <ng-container *ngIf="viewDocument === false">
-                <div *ngIf="type !== 'TEXT'" class="json">
-                    {{ json }}
-                </div>
-                <div *ngIf="type === 'TEXT'" class="text">
-                    {{ text }}
-                </div>
+                <ng-container *ngIf="fileSize <= 1; else fileIsTooBigTemplate">
+                    <div *ngIf="type !== 'TEXT'" class="json">
+                        {{ json }}
+                    </div>
+                    <div *ngIf="type === 'TEXT'" class="text">
+                        {{ text }}
+                    </div>
+                </ng-container>
+                <ng-template #fileIsTooBigTemplate>
+                    <b class="form-label">This file is too large to view. ({{ fileSize }} MB)</b>
+                    <p class="form-label ">File exceeds in-browser preview limits. To view it, please download the file and open it locally.</p>
+                </ng-template>
             </ng-container>
             <ng-container *ngIf="additionalOptionsData">
                 <ng-container *ngFor="let option of additionalOptionsData">
@@ -88,6 +94,11 @@
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onDownloadJsonFile()" 
+                class="guardian-button guardian-button-secondary">Download</button>
+        </div>
         <div class="dialog-button">
             <button 
                 (click)="onClose()" 

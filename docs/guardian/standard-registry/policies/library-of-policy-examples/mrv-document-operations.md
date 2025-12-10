@@ -12,7 +12,7 @@ There are two roles: ‘**User**_**’**_ and _**‘**_**Approver**_**’**_. _U
 
 (See [example 1](creating-and-using-roles.md) for the more detailed description of how to work with roles)
 
-![Creating 2 roles](<../../../../.gitbook/assets/0 (6).png>)
+![Creating 2 roles](<../../../../.gitbook/assets/0 (4) (2).png>)
 
 2. Create all needed document schemas:
 
@@ -24,7 +24,7 @@ There are two roles: ‘**User**_**’**_ and _**‘**_**Approver**_**’**_. _U
 
 In order to mint tokens into another account (not into the account of the minting user) setup the required field
 
-![Setting up new account](<../../../../.gitbook/assets/1 (1) (2) (1).png>)
+![Setting up new account](<../../../../.gitbook/assets/1 (8) (2).png>)
 
 2.4 Schema for ’**Report**’ containing the following fields: **Start Date, End Date, Amount**
 
@@ -34,15 +34,15 @@ In order to mint tokens into another account (not into the account of the mintin
 
 **Note:** it is important that DID of the user is used for ID of the documents as this value will be used further in the document for filtration
 
-![Adding DID as ID Type](<../../../../.gitbook/assets/2 (3) (1) (1).png>)
+![Adding DID as ID Type](<../../../../.gitbook/assets/2 (3) (2) (1).png>)
 
 4. Add simplified grids for displaying Projects, Reports and Tokens
 
-![Adding grids](<../../../../.gitbook/assets/3 (1) (1) (2).png>)
+![Adding grids](<../../../../.gitbook/assets/3 (2) (1) (1).png>)
 
 5. Create the token
 
-![image5.png](<../../../../.gitbook/assets/4 (1) (1) (2) (1) (1) (2).png>)
+![image5.png](<../../../../.gitbook/assets/4 (2) (1).png>)
 
 ## **Document Operations**
 
@@ -50,11 +50,11 @@ In order to mint tokens into another account (not into the account of the mintin
 
 #### 1.1 Create a project
 
-![Creating project](<../../../../.gitbook/assets/5 (3) (1) (1).png>)
+![Creating project](<../../../../.gitbook/assets/5 (1) (2) (1).png>)
 
 ### 1.2 Save the project
 
-![Saving Project](<../../../../.gitbook/assets/6 (2) (1) (1).png>)
+![Saving Project](<../../../../.gitbook/assets/6 (1) (2) (1).png>)
 
 ### 1.3 Link to the token
 
@@ -64,7 +64,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 1.3.2 To configure the target account for mixed tokens select ‘_Custom_’ value for ‘_Type_’ and the filed in the document from which to take the value for the Account ID (this field must have type: ‘**Account**’)
 
-![Selecting Account Type and Id](<../../../../.gitbook/assets/8 (3) (2) (1).png>)
+![Selecting Account Type and Id](<../../../../.gitbook/assets/8 (3) (1).png>)
 
 1.3.3 By default ’**tokenConfirmationBlock**’ does not have a link to the next block, thus it needs to be manually added
 
@@ -74,11 +74,11 @@ In order to mint tokens into another account (not into the account of the mintin
 
 1.4.1 Add ’**interfaceActionBlock**’ wrapped into a container.
 
-![Adding interfaceActionBlock](<../../../../.gitbook/assets/10 (2) (2).png>)
+![Adding interfaceActionBlock](<../../../../.gitbook/assets/10 (2) (1).png>)
 
 1.4.2 Select **Dropdown** _value_ _for_ **Type**
 
-![Selecting Dropdown value](<../../../../.gitbook/assets/11 (4) (1).png>)
+![Selecting Dropdown value](<../../../../.gitbook/assets/11 (3) (1).png>)
 
 1.4.3 Use system field **assignedTo** to filter documents based on users they are assigned to.
 
@@ -88,11 +88,11 @@ Record value from **assignedTo** _into_ **Field** (This field will be changing o
 
 1.4.4 Configure values from which fields from the document would be labels, and which ones would be values
 
-![Configuring labels and values](<../../../../.gitbook/assets/13 (3) (1) (1).png>)
+![Configuring labels and values](<../../../../.gitbook/assets/13 (2) (2).png>)
 
 1.4.5 Use ‘**documentsSourceAddon**’ for data for **Dropdown**_**.**_
 
-![adding documentSourceAddon](<../../../../.gitbook/assets/14 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![adding documentSourceAddon](<../../../../.gitbook/assets/14 (2) (1).png>)
 
 1.4.6 Save the changed document
 
@@ -116,7 +116,7 @@ Record value from **assignedTo** _into_ **Field** (This field will be changing o
 
 _(Please see_ [_example 2_](data-input-via-forms-using-roles-to-partition-user-activities..md) _for the more detailed description of this workflow)_
 
-![Adding document approval block](<../../../../.gitbook/assets/19 (1) (2).png>)
+![Adding document approval block](<../../../../.gitbook/assets/19 (2) (1).png>)
 
 1.5.3 Add Approve button into the grid
 

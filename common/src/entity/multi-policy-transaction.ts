@@ -59,4 +59,10 @@ export class MultiPolicyTransaction extends BaseEntity {
      */
     @Property({ nullable: true })
     user?: string;
+
+    /**
+     * Relayer Account
+     */
+    @Property({ nullable: true })
+    relayerAccount?: string;
 }

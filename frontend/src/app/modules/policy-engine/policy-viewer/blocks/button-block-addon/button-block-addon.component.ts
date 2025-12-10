@@ -4,6 +4,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
+import { PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Component for display block of 'buttonBlockAddon' type.
@@ -17,6 +18,7 @@ export class ButtonBlockAddonComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('policyStatus') policyStatus!: string;
 
     private readonly _commentField: string = 'option.comment';
 
@@ -27,6 +29,7 @@ export class ButtonBlockAddonComponent implements OnInit {
     readonly: boolean = false;
     name!: string;
     uiClass?: string;
+    hideWhenDiscontinued?: boolean;
     dialog!: boolean;
     dialogOptions?: {
         dialogTitle: string;
@@ -100,9 +103,18 @@ export class ButtonBlockAddonComponent implements OnInit {
             this.uiClass = data.uiClass;
             this.dialog = data.dialog;
             this.dialogOptions = data.dialogOptions;
+            this.hideWhenDiscontinued = !!data.hideWhenDiscontinued;
         } else {
             this.data = null;
         }
+    }
+
+    isBtnVisible() {
+        if (this.policyStatus === PolicyStatus.DISCONTINUED && this.hideWhenDiscontinued) {
+            return false;
+        }
+
+        return true;
     }
 
     onSelect(dialogResult?: any) {

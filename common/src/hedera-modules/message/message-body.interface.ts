@@ -28,6 +28,10 @@ export interface MessageBody {
      */
     lang: string;
     /**
+     * Account
+     */
+    account: string;
+    /**
      * Revoke message
      */
     revokeMessage?: string;
@@ -127,6 +131,10 @@ export interface PolicyMessageBody extends MessageBody {
      * actionsTopicId
      */
     actionsTopicId: string;
+    /**
+     * commentsTopicId
+     */
+    commentsTopicId: string;
     /**
      * Effective Date
      */
@@ -273,6 +281,10 @@ export interface VcMessageBody extends MessageBody {
      * Tag
      */
     tag: string;
+    /**
+     * Start Message
+     */
+    startMessage: string;
     /**
      * Entity Type
      */
@@ -574,6 +586,10 @@ export interface ToolMessageBody extends MessageBody {
      * Tags topic ID
      */
     tagsTopicId: string;
+    /**
+     * Version
+     */
+    version: string;
 }
 
 /**
@@ -795,7 +811,7 @@ export interface PolicyDiffMessageBody extends MessageBody {
     /**
      * Diff type
      */
-    diffType: string;
+    diffType: 'backup' | 'diff' | 'keys';
     /**
      * Diff index
      */
@@ -839,6 +855,10 @@ export interface PolicyActionMessageBody extends MessageBody {
      */
     accountId: string;
     /**
+     * User account
+     */
+    relayerAccount: string;
+    /**
      * Block
      */
     blockTag: string;
@@ -854,4 +874,114 @@ export interface PolicyActionMessageBody extends MessageBody {
      * URI
      */
     uri: string;
+}
+
+/**
+ * Schema message body
+ */
+export interface SchemaPackageMessageBody extends MessageBody {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * Version
+     */
+    version: string;
+    /**
+     * Schemas counts
+     */
+    schemas: number;
+    /**
+     * Document CID
+     */
+    document_cid: string;
+    /**
+     * Document URL
+     */
+    document_url?: string;
+    /**
+     * Document URI
+     */
+    document_uri?: string;
+    /**
+     * Context CID
+     */
+    context_cid: string;
+    /**
+     * Context URL
+     */
+    context_url?: string;
+    /**
+     * Context URI
+     */
+    context_uri?: string;
+    /**
+     * Metadata CID
+     */
+    metadata_cid: string;
+    /**
+     * Metadata URL
+     */
+    metadata_url?: string;
+    /**
+     * Metadata URI
+     */
+    metadata_uri?: string;
+}
+
+/**
+ * Discussion message body
+ */
+export interface DiscussionMessageBody extends MessageBody {
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+    /**
+     * Relationships
+     */
+    relationships: string[];
+    /**
+     * Hash
+     */
+    hash: string;
+    /**
+     * Target
+     */
+    target: string;
+}
+
+/**
+ * Comment message body
+ */
+export interface CommentMessageBody extends MessageBody {
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+    /**
+     * Discussion
+     */
+    discussion: string;
+    /**
+     * Hash
+     */
+    hash: string;
+    /**
+     * Target
+     */
+    target: string;
 }

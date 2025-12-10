@@ -3,6 +3,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
+import { PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Component for display block of 'Transformation Button Block' type.
@@ -17,11 +18,13 @@ export class TransformationButtonBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('policyStatus') policyStatus!: string;
 
     loading: boolean = true;
     socket: any;
     data: any;
     buttonName: string;
+    hideWhenDiscontinued?: boolean;
     url: string;
     readonly: boolean = false;
     commonVisible: boolean = false;
@@ -94,10 +97,19 @@ export class TransformationButtonBlockComponent implements OnInit {
             this.readonly = !!data.readonly;
             this.data = data.data;
             this.buttonName = data.buttonName;
+            this.hideWhenDiscontinued = !!data.hideWhenDiscontinued;
             this.url = data.url;
         } else {
             this.data = null;
         }
+    }
+
+    isBtnVisible() {
+        if (this.policyStatus === PolicyStatus.DISCONTINUED && this.hideWhenDiscontinued) {
+            return false;
+        }
+
+        return true;
     }
 
     onClick() {

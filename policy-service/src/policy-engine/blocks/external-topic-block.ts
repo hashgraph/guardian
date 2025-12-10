@@ -626,8 +626,10 @@ export class ExternalTopicBlock {
             return;
         }
 
+        const relayerAccount = await PolicyUtils.getRefRelayerAccount(ref, user.did, null, documentRef, user.userId);
         const result: IPolicyDocument = PolicyUtils.createPolicyDocument(ref, user, document);
         result.schema = ref.options.schema;
+        result.relayerAccount = relayerAccount;
         if (documentRef) {
             PolicyUtils.setDocumentRef(result, documentRef);
         }

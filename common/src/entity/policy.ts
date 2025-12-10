@@ -132,6 +132,12 @@ export class Policy extends BaseEntity {
     synchronizationTopicId?: string;
 
     /**
+     * TopicId
+     */
+    @Property({ nullable: true })
+    commentsTopicId?: string;
+
+    /**
      * Policy tag
      */
     @Property({ nullable: true })

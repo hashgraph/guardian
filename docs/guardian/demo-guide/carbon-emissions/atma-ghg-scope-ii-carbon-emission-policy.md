@@ -31,7 +31,7 @@ Once the Policy is imported, you will need to create another user account to be 
 
 <figure><img src="../../../.gitbook/assets/image (2) (1) (6) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (11) (1) (2) (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (1) (2) (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Next, fill out the Organization data form.
 
@@ -55,7 +55,7 @@ The atma GHG policy issues an NFT token (AtmaProductToken) for every product tha
 
 Once the product has been defined, you'll need to define the life cycle stage. Click on the "life cycle stage" button and fill out the life cycle stage form.
 
-<figure><img src="../../../.gitbook/assets/image (45) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (9) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (1) (10).png" alt=""><figcaption></figcaption></figure>
 

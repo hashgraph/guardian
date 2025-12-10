@@ -259,7 +259,7 @@
 .container {
     display: flex;
     flex-direction: column;
-    margin: var(--container-margin);
+    margin: 42px 48px;
 }
 
 .container>.header {
@@ -363,8 +363,8 @@ button[disabled] {
 }
 
 .primary-color {
-    fill: var(--color-primary, #0681ee);
-    color: var(--color-primary, #0681ee);
+    fill: var(--color-primary, #0031ff);
+    color: var(--color-primary, #0031ff);
 }
 
 :host ::ng-deep .p-dialog {
@@ -576,6 +576,7 @@ mat-radio-button {
 
 .example-full-width textarea {
     width: 100%;
+
     &:focus {
         border: none
     }
@@ -587,4 +588,178 @@ mat-radio-button {
 
 .list-item label {
     padding-left: 8px;
+}
+
+.guardian-button {
+    height: 40px;
+    margin-left: 18px;
+    min-width: 140px;
+}
+
+.guardian-user-page-toolbar {
+    display: flex;
+    height: 40px;
+    justify-content: flex-end;
+    margin: 24px 0px 18px 0px;
+
+    .guardian-user-page-filters {
+        width: 100%;
+
+        .search-filter {
+            max-width: 400px;
+            position: relative;
+
+            .search-icon {
+                position: absolute;
+                right: 12px;
+                top: 12px;
+                pointer-events: none;
+            }
+
+        }
+    }
+}
+
+.guardian-user-not-data {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--color-grey-black-2);
+    font-family: var(--font-family-inter);
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 8px;
+    justify-content: center;
+
+    &__text {
+        color: var(--color-grey-5, #848fa9);
+        text-align: center;
+        font-family: var(--font-family-inter);
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+    }
+
+    &__text-strong {
+        color: var(--color-grey-5, #848fa9);
+        text-align: center;
+        font-family: var(--font-family-inter);
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+    }
+}
+
+.guardian-user-page-grid {
+    min-height: calc(100vh - 500px);
+    width: 100%;
+    position: relative;
+}
+
+.guardian-user-page-buttons {
+    display: flex;
+    flex-direction: row;
+
+    button {
+        padding: 0px 16px;
+    }
+}
+
+.balance-cell {
+    display: flex;
+
+    .balance-container {
+        width: 132px;
+        height: 24px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-right: 8px;
+    }
+
+    .last-update {
+        width: 132px;
+        height: 24px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-left: 8px;
+    }
+}
+
+.balance-header {
+    display: flex;
+    position: relative;
+
+    .balance-container {
+        width: 132px;
+        height: 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-right: 8px;
+    }
+
+    .balance-button {
+        position: absolute;
+        top: -3px;
+        right: 5px;
+    }
+}
+
+.balance-button {
+    width: 20px;
+    height: 20px;
+    margin: 4px;
+    border-radius: 2px;
+}
+
+.balance-loading {
+    --loading-base-color: #EFF3F7;
+    --loading-shine-color: #f4f4f4;
+
+    float: left;
+    width: 125px;
+    height: 18px;
+    margin-top: 3px;
+    border-radius: 7px;
+    background-color: #EFF3F7;
+    background-image: linear-gradient(90deg,
+            #EFF3F7 0px,
+            #fdfdfd 25px,
+            #EFF3F7 50px);
+    background-size: 600px;
+    animation: shine-lines 4s infinite linear;
+}
+
+@keyframes shine-lines {
+    0% {
+        background-position: -100px;
+    }
+
+    25% {
+        background-position: 300px;
+    }
+
+    100% {
+        background-position: 300px;
+    }
+}
+
+.grid-btn {
+    margin: 0px !important;
+    height: 32px !important;
+    min-width: 110px !important;
+}
+
+:host ::ng-deep .p-tabview-nav-link {
+    text-decoration: none !important;
 }

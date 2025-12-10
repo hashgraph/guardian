@@ -13,7 +13,7 @@
             <!-- simple field -->
             <div *ngIf="ifSimpleField(item)" class="form-field">
 
-                <div 
+                <div
                     *ngIf="!isHelpText(item)" class="label-field"
                     [attr.default]="item.default && !item.isPreset && !item.control.dirty"
                     [attr.field-path]="item?.path"
@@ -29,7 +29,7 @@
                 </div>
 
                 <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
-                    <div 
+                    <div
                         *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name">
                         <span class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
                     </div>
@@ -44,6 +44,16 @@
                     [attr.rules-status]="isRulesStatus(item)"
                 >
                     <div *ngIf="isPrefix(item)" class="form-field-prefix">{{ item.unit }}</div>
+
+                    <ng-container *ngIf="item.customType === 'table'">
+                        <table-field  class="table-field-container"
+                                [item]="item"
+                                [required]="item.required"
+                                [readonly]="readonly?.[item.fullPath]"
+                                [policyId]="policyId"
+                                [blockId]="blockId"
+                        ></table-field>
+                    </ng-container>
 
                     <div
                         *ngIf="isInput(item)"
@@ -73,25 +83,25 @@
                     </div>
 
                     <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                        <date-time-control 
-                            [control]="item.control" 
-                            item]="item" 
+                        <date-time-control
+                            [control]="item.control"
+                            [item]="item"
                             [showTime]="true"></date-time-control>
                     </div>
 
                     <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
-                        <date-time-control 
-                            [control]="item.control" 
-                            [item]="item" 
+                        <date-time-control
+                            [control]="item.control"
+                            [item]="item"
                             [showTime]="false"
                             [showSeconds]="false"></date-time-control>
                     </div>
 
                     <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                        <date-time-control 
-                            [control]="item.control" 
-                            [item]="item" 
-                            [showSeconds]="true" 
+                        <date-time-control
+                            [control]="item.control"
+                            [item]="item"
+                            [showSeconds]="true"
                             [showTime]="true"
                             [timeOnly]="true"></date-time-control>
                     </div>
@@ -187,8 +197,8 @@
                 </div>
 
                 <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
-                    <div 
-                        *ngIf="!suggestIsObject(item.suggest)" 
+                    <div
+                        *ngIf="!suggestIsObject(item.suggest)"
                         class="suggestion-name"
                     >
                         <span class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
@@ -198,8 +208,8 @@
                         class="guardian-button guardian-button-secondary">Fill the field with suggestion</button>
                 </div>
 
-                <div 
-                    *ngFor="let listItem of item.list; index as i" 
+                <div
+                    *ngFor="let listItem of item.list; index as i"
                     class="form-field-array-item-container"
                     [attr.required]="item.required"
                     [attr.index]="listItem.index"
@@ -211,13 +221,24 @@
                         >
                             <div *ngIf="isPrefix(item)" class="form-field-prefix">{{ item.unit }}</div>
 
+                            <ng-container *ngIf="item.customType === 'table'" class="table-field-container">
+                                <table-field
+                                    class="table-field-container"
+                                    [item]="$any(listItem)"
+                                    [required]="item.required"
+                                    [readonly]="readonly?.[item.fullPath]"
+                                    [policyId]="policyId"
+                                    [blockId]="blockId"
+                                ></table-field>
+                            </ng-container>
+
                             <div
                                 *ngIf="isInput(item)"
                                 class="form-field-input guardian-input-container"
                                 [ngClass]="{'ipfs-url' : isIPFS(item)}"
                             >
-                                <input 
-                                    pInputText 
+                                <input
+                                    pInputText
                                     [formControl]="listItem.control"
                                     [placeholder]="getPlaceholderByFieldType(item)"
                                     (focus)="onFocusField(item.format, listItem)"
@@ -240,31 +261,31 @@
                             </div>
 
                             <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                                <date-time-control 
-                                    [control]="listItem.control" 
-                                    [index]="i" 
-                                    [isMany]="true"             
-                                    [item]="listItem" 
-                                    [showTime]="true"         
+                                <date-time-control
+                                    [control]="listItem.control"
+                                    [index]="i"
+                                    [isMany]="true"
+                                    [item]="listItem"
+                                    [showTime]="true"
                                     [value]="item.suggest"></date-time-control>
                             </div>
 
                             <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
-                                <date-time-control 
-                                    [control]="listItem.control" 
+                                <date-time-control
+                                    [control]="listItem.control"
                                     [isMany]="true"
                                     [item]="listItem"
-                                    [showSeconds]="false" 
+                                    [showSeconds]="false"
                                     [showTime]="false"></date-time-control>
                             </div>
 
                             <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                                <date-time-control 
-                                    [control]="listItem.control" 
-                                    [index]="i" 
+                                <date-time-control
+                                    [control]="listItem.control"
+                                    [index]="i"
                                     [isMany]="true"
                                     [item]="listItem"
-                                    [showSeconds]="true" 
+                                    [showSeconds]="true"
                                     [showTime]="true"
                                     [timeOnly]="true"></date-time-control>
                             </div>
@@ -333,7 +354,7 @@
                         </div>
                     </div>
                     <div *ngIf="ifInvalidField(listItem)"
-                         class="invalid-field-label">{{ getInvalidMessageByFieldType(item) }}
+                         class="invalid-field-label">{{ getInvalidMessageByFieldType(item, listItem) }}
                     </div>
                 </div>
 
@@ -361,7 +382,7 @@
                                 <div *ngIf="!isChildSchema && formModel.controls" class="page-number">
                                     {{ i + 1 }}/{{ formModel.controls.length }}
                                 </div>
-                                <span 
+                                <span
                                     class="detail-section-title"
                                     [attr.default]="item.default && !item.isPreset && !item.control.dirty"
                                     [attr.field-path]="item?.path"
@@ -409,6 +430,7 @@
                                         <app-geojson-type
                                             *ngSwitchCase="'geo'"
                                             [form-model]="item.model"
+                                            [available-options]="item.availableOptions"
                                             [disabled]="item.control?.disabled">
                                         </app-geojson-type>
                                         <app-sentinel-hub-type
@@ -423,6 +445,7 @@
                                             [rules]="rules"
                                             [dryRun]="dryRun"
                                             [policyId]="policyId"
+                                            [blockId]="blockId"
                                             [delimiter-hide]="true"
                                             [isChildSchema]="true"
                                             [isFormForRequestBlock]="isFormForRequestBlock">
@@ -517,6 +540,7 @@
                                                         <app-geojson-type
                                                             *ngSwitchCase="'geo'"
                                                             [form-model]="listItem.model"
+                                                            [available-options]="item.availableOptions"
                                                             [disabled]="item.control?.disabled">
                                                         </app-geojson-type>
                                                         <app-sentinel-hub-type
@@ -529,6 +553,7 @@
                                                             [form-model]="listItem.model"
                                                             [dryRun]="dryRun"
                                                             [policyId]="policyId"
+                                                            [blockId]="blockId"
                                                             [rules]="rules"
                                                             [private-fields]="hide"
                                                             [delimiter-hide]="true"
@@ -611,5 +636,8 @@
                 {{ config.text }}
             </button>
         </ng-container>
+        <div *ngIf="lastSavedAt" class="last-autosave">
+            {{ minutesAgo$ | async }}
+        </div>
     </div>
 </form>

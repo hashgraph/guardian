@@ -7,6 +7,8 @@ import {
     SchemaAnalytics,
     SchemaDetails,
     SchemaOptions,
+    SchemasPackageActivity,
+    SchemasPackageDetails,
 } from '@indexer/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
@@ -185,4 +187,35 @@ export class SchemaDetailsDTO
         type: SchemaActivityDTO,
     })
     declare activity?: SchemaActivityDTO;
+}
+
+export class SchemasPackageActivityDTO implements SchemasPackageActivity {
+    @ApiProperty({
+        description: 'Schemas',
+        example: 10,
+    })
+    schemas: number;
+}
+
+export class SchemasPackageDetailsDTO
+    extends DetailsActivityDTO<SchemaDetailsItemDTO, SchemasPackageActivity>
+    implements SchemasPackageDetails
+{
+    @ApiProperty({
+        description: 'UUID',
+        example: '93938a10-d032-4a9b-9425-092e58bffbf7',
+    })
+    declare uuid?: string;
+    @ApiProperty({
+        type: SchemaDetailsItemDTO,
+    })
+    declare item?: SchemaDetailsItemDTO;
+    @ApiProperty({
+        type: RawMessageDTO,
+    })
+    declare row?: RawMessageDTO;
+    @ApiProperty({
+        type: SchemasPackageActivityDTO,
+    })
+    declare activity?: SchemasPackageActivityDTO;
 }

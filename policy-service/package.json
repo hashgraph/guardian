@@ -15,8 +15,8 @@
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "^3.3.0",
-        "@guardian/interfaces": "^3.3.0",
+        "@guardian/common": "3.4.0",
+        "@guardian/interfaces": "3.4.0",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
         "@nestjs/common": "^11.0.11",
@@ -41,6 +41,7 @@
         "@types/deep-equal": "^1.0.1",
         "@types/express": "^5.0.1",
         "@types/node": "^22.15.19",
+        "@types/glob": "^8.1.0",
         "chai": "4.3.4",
         "gulp": "^5.0.0",
         "gulp-rename": "^2.0.0",
@@ -66,7 +67,7 @@
     "scripts": {
         "build": "tsc",
         "build:prod": "tsc --project tsconfig.production.json",
-        "debug": "nodemon dist/index.js",
+        "debug": "nodemon dist/index.js --delay 3",
         "dev:docker": "nodemon .",
         "dev": "tsc -w",
         "lint": "tslint --config ../tslint.json --project .",
@@ -76,5 +77,5 @@
         "test:stability": "mocha tests/stability.test.js"
     },
     "type": "module",
-    "version": "3.3.0"
+    "version": "3.4.0"
 }

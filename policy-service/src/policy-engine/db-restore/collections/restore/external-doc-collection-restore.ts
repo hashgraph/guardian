@@ -30,11 +30,11 @@ export class ExternalCollectionRestore extends CollectionRestore<ExternalDocumen
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: ExternalDocument): ExternalDocument {
+    protected override createRow(data: ExternalDocument, id: string): ExternalDocument {
         return data;
     }
 
-    protected override async decryptRow(row: ExternalDocument): Promise<ExternalDocument> {
+    protected override async decryptRow(row: ExternalDocument, id: string): Promise<ExternalDocument> {
         return row;
     }
 }

@@ -594,8 +594,9 @@ export interface IPolicySourceBlock extends IPolicyBlock {
      * @param user
      * @param paginationData
      * @param countResult
+     * @param opts
      */
-    getGlobalSources(user: PolicyUser, paginationData: any, countResult?: boolean): Promise<any[] | number>;
+    getGlobalSources(user: PolicyUser, paginationData: any, countResult?: boolean, opts?: { savepointIds?: string[] }): Promise<any[] | number>;
 
     /**
      * Get common addons
@@ -980,6 +981,36 @@ export interface IPolicyDBDocument<T> {
      * Token identifier
      */
     tokenId?: string;
+
+    /**
+     * Is edited
+     */
+    edited?: boolean;
+
+    /**
+     * Is Draft
+     */
+    draft?: boolean;
+
+    /**
+     * Draft ID
+     */
+    draftId?: string;
+
+    /**
+     * Parent document
+     */
+    draftRef?: string;
+
+    /**
+     * Parent message
+     */
+    startMessageId?: string;
+
+    /**
+     * Relayer Account
+     */
+    relayerAccount?: string;
 }
 
 /**
@@ -1002,8 +1033,6 @@ export interface IPolicyDocument extends IPolicyDBDocument<any> {
      * sourceTag
      */
     __sourceTag__?: string;
-
-    draft?: boolean;
 }
 
 /**
@@ -1014,6 +1043,11 @@ export interface IPolicyEventState {
      * Data
      */
     data: IPolicyDocument | IPolicyDocument[];
+
+    /**
+     * Result
+     */
+    old?: IPolicyDocument | IPolicyDocument[];
 
     /**
      * Result

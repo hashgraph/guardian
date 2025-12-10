@@ -116,7 +116,8 @@
     color: var(--primary-color);
     background: #F9FAFC;
     border: 1px solid #C4D0E1;
-    height: 65px;
+    height: 52px;
+    min-height: 52px;
     border-radius: 8px;
     margin-bottom: 16px;
 
@@ -151,15 +152,16 @@
     &::ng-deep {
         h1 {
             padding: 0 !important;
+            margin: 8px 0px 16px 0px;
         }
 
         .schema-form {
-            max-height: calc(100vh - 360px);
+            max-height: calc(100vh - 380px);
             padding: 20px 20px 0px 0;
             margin-bottom: 0;
 
             &[dryRun="true"] {
-                max-height: calc(100vh - 400px);
+                max-height: calc(100vh - 420px);
             }
         }
 
@@ -190,11 +192,11 @@
             width: 180px;
         }
 
-        .page-btns > :nth-child(2) {
+        .page-btns> :nth-child(2) {
             margin-left: auto;
         }
 
-        .page-btns > :nth-child(3) {
+        .page-btns> :nth-child(3) {
             margin-left: 16px;
         }
 
@@ -457,4 +459,163 @@
 *[readonly-block="true"] {
     pointer-events: none !important;
     filter: grayscale(1);
+}
+
+.relayer-account-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    min-height: 48px;
+    margin-bottom: 16px;
+    margin-right: 0px;
+}
+
+.guardian-step-container {
+    width: 100%;
+
+    .guardian-step {
+        margin: 0 !important;
+    }
+
+    .guardian-step-separator {
+        min-height: 34px !important;
+        width: 100%;
+    }
+
+    .guardian-stepper {
+        .guardian-step:first-child {
+            padding-left: 0px;
+        }
+
+        .guardian-step:last-child {
+            padding-right: 0px;
+        }
+    }
+}
+
+* [visibility="false"] {
+    height: 0px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    overflow: hidden;
+}
+
+
+.relayer-account-container {
+    .relayer-account-type-values {
+        display: flex;
+        flex-direction: column;
+        width: fit-content;
+        width: 100%;
+
+        .relayer-account-type-value {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 40px;
+            align-items: center;
+            cursor: pointer;
+            margin-right: 24px;
+
+            .relayer-account-type-value-select {
+                width: 24px;
+                height: 24px;
+            }
+
+            .relayer-account-type-value-name {
+                padding: 4px 0 4px 8px;
+                height: 24px;
+                text-align: left;
+                color: var(--guardian-font-color, #23252E);
+                cursor: pointer;
+                font-family: Poppins;
+                font-weight: 600;
+                font-size: 16px;
+                line-height: 20px;
+                vertical-align: middle;
+            }
+        }
+    }
+
+    .relayer-account-container-buttons {
+        padding: 12px 48px;
+        display: flex;
+        justify-content: space-between;
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        border-top: 1px solid var(--color-grey-3, #e1e7ef);
+        background: #fff;
+        padding-left: calc(var(--header-width-expand) + 48px);
+        transition: padding-left 0.125s ease-in-out;
+        margin-top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 200;
+
+        button {
+            height: 40px;
+            width: 180px;
+        }
+    }
+}
+
+.relayer-account-type-config {
+    width: 100%;
+    padding: 24px 16px 24px 32px;
+
+    &[selected="false"] {
+        filter: grayscale(1);
+        opacity: 0.7;
+        pointer-events: none;
+    }
+}
+
+.relayer-account-form {
+    margin-bottom: 24px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: calc(50% - 8px) calc(50% - 8px);
+    gap: 16px;
+}
+
+.guardian-button {
+    height: 40px;
+    padding: 1px 16px;
+}
+
+
+
+.account-warning {
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    padding: 12px 16px 12px 54px;
+    margin-right: 2px;
+    border: 1px solid var(--guardian-warning-color, #DA9B22);
+    background: var(--guardian-warning-background, #FFF6E3);
+    position: relative;
+
+    svg-icon {
+        position: absolute;
+        left: 16px;
+        top: 12px;
+
+        svg {
+            fill: var(--guardian-warning-color, #DA9B22);
+            color: var(--guardian-warning-color, #DA9B22);
+        }
+    }
+
+    .account-warning-text {
+        color: var(--guardian-warning-color, #DA9B22);
+        padding-right: 4px;
+    }
+
+    .account-warning-action {
+        margin-top: 8px;
+    }
 }

@@ -37,6 +37,7 @@ export interface IImportEntityArray {
     statistic?: any,
     label?: any,
     formula?: any,
+    schemasCanBeReplaced?: any,
 }
 
 export interface IImportEntityMessage {
@@ -50,6 +51,7 @@ export interface IImportEntityMessage {
     statistic?: any,
     label?: any,
     formula?: any,
+    schemasCanBeReplaced?: any,
 }
 
 export type IImportEntityResult = IImportEntityArray | IImportEntityMessage;

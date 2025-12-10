@@ -22,6 +22,7 @@ export class FieldControl {
     public controlUnit: UntypedFormControl;
     public controlRemoteLink: UntypedFormControl;
     public controlEnum: UntypedFormArray;
+    public controlAvailableOptions: UntypedFormArray;
     public controlColor: UntypedFormControl;
     public controlSize: UntypedFormControl;
     public controlBold: UntypedFormControl;
@@ -65,10 +66,14 @@ export class FieldControl {
             this.controlRemoteLink = new UntypedFormControl(field.remoteLink);
             this.controlPrivate = new UntypedFormControl(field.isPrivate || false);
             this.controlEnum = new UntypedFormArray([]);
+            this.controlAvailableOptions = new UntypedFormArray([]);
             this.hidden = new UntypedFormControl(!!field.hidden);
             this.property = new UntypedFormControl(field.property || '');
             field.enum?.forEach(item => {
                 this.controlEnum.push(new UntypedFormControl(item))
+            });
+            field.availableOptions?.forEach(item => {
+                this.controlAvailableOptions.push(new UntypedFormControl(item))
             });
 
             this.controlColor = new UntypedFormControl(field.textColor || '#000000');
@@ -97,6 +102,7 @@ export class FieldControl {
             this.controlUnit = new UntypedFormControl('');
             this.controlRemoteLink = new UntypedFormControl('');
             this.controlEnum = new UntypedFormArray([]);
+            this.controlAvailableOptions = new UntypedFormArray([]);
             this.controlColor = new UntypedFormControl('#000000');
             this.controlSize = new UntypedFormControl(18);
             this.controlBold = new UntypedFormControl(false);
@@ -164,6 +170,10 @@ export class FieldControl {
         return this.controlEnum.value;
     }
 
+    public get availableOptions(): string[] {
+        return this.controlAvailableOptions.value;
+    }
+
     public get color(): string {
         return this.controlColor.value;
     }
@@ -203,6 +213,7 @@ export class FieldControl {
             fieldUnit: this.controlUnit,
             controlRemoteLink: this.controlRemoteLink,
             controlEnum: this.controlEnum,
+            controlAvailableOptions: this.controlAvailableOptions,
             controlColor: this.controlColor,
             controlSize: this.controlSize,
             controlBold: this.controlBold,
@@ -230,6 +241,7 @@ export class FieldControl {
             const unit = group.fieldUnit;
             const remoteLink = group.controlRemoteLink;
             const enumArray = group.controlEnum;
+            const availableOptionsArray = group.controlAvailableOptions;
             const textColor = group.controlColor;
             const textSize = group.controlSize
                 ? group.controlSize + 'px'
@@ -253,6 +265,7 @@ export class FieldControl {
                 unit,
                 remoteLink,
                 enumArray,
+                availableOptionsArray,
                 textColor,
                 textSize,
                 textBold,

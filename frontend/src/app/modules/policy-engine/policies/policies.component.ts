@@ -19,6 +19,7 @@ import { TokenService } from 'src/app/services/token.service';
 import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
 import { NewPolicyDialog } from '../dialogs/new-policy-dialog/new-policy-dialog.component';
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
+import { ReplaceSchemasDialogComponent } from '../dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { MultiPolicyDialogComponent } from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
@@ -51,6 +52,7 @@ import { OverlayPanel } from 'primeng/overlaypanel';
 import { takeUntil } from 'rxjs/operators';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
+import { ToastrService } from 'ngx-toastr';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -158,6 +160,7 @@ const columns = [{
     }
 }, {
     id: 'instance',
+    size: '150',
     permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
@@ -210,6 +213,7 @@ export class PoliciesComponent implements OnInit {
     public publishMenuSelector: any = null;
     public noFilterResults: boolean = false;
     private columns: string[] = [];
+    private columnSize = new Map<string, string | undefined>();
     private publishMenuOption = [
         {
             id: 'Publish',
@@ -341,6 +345,18 @@ export class PoliciesComponent implements OnInit {
         }
     }
 
+    public showAudit(policy: any) {
+        switch (policy.status) {
+            case PolicyStatus.PUBLISH:
+            case PolicyStatus.DISCONTINUED: {
+                if (this.user.POLICIES_POLICY_AUDIT) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public checkMultiPolicyStatus(status: string): boolean {
         return (
             status === PolicyStatus.PUBLISH ||
@@ -359,6 +375,10 @@ export class PoliciesComponent implements OnInit {
 
     public canDisplayColumn(columnName: string): boolean {
         return !!this.columns.find((column) => column === columnName);
+    }
+
+    public sizeColumn(columnName: string) {
+        return this.columnSize.get(columnName);
     }
 
     public getColor(status: string, expired: boolean = false) {
@@ -554,6 +574,22 @@ export class PoliciesComponent implements OnInit {
                 visible: true,
                 buttons: [
                     new MenuButton({
+                        visible: this.user.SCHEMAS_SCHEMA_DELETE,
+                        disabled: !(
+                            policy.status === PolicyStatus.DRAFT ||
+                            policy.status === PolicyStatus.DEMO
+                        ),
+                        tooltip: 'Delete All Schemas',
+                        icon: 'delete',
+                        click: () => this.deleteAllSchemas(policy)
+                    })
+                ]
+            }, {
+                tooltip: 'Delete',
+                group: false,
+                visible: true,
+                buttons: [
+                    new MenuButton({
                         visible: this.user.POLICIES_POLICY_DELETE,
                         disabled: !(
                             policy.status === PolicyStatus.DRAFT ||
@@ -603,6 +639,7 @@ export class PoliciesComponent implements OnInit {
         private schemaService: SchemaService,
         private wizardService: WizardService,
         private tokenService: TokenService,
+        private toastr: ToastrService,
         private analyticsService: AnalyticsService,
         private contractSerivce: ContractService,
         private wsService: WebSocketService,
@@ -707,18 +744,39 @@ export class PoliciesComponent implements OnInit {
         this.policyEngineService
             .page(this.pageIndex, this.pageSize, this.tab)
             .pipe(takeUntil(this._destroy$)).subscribe((policiesResponse) => {
-                this.columns = columns
-                    .filter((c) => c.permissions(this.user, this.tab))
-                    .map((c) => c.id);
-                this.policies = policiesResponse.body?.map(policy => {
-                    if (policy.discontinuedDate) {
-                        policy.discontinuedDate = new Date(policy.discontinuedDate);
+                let publishedPolicy = false;
+
+                this.policies = [];
+                if (policiesResponse.body) {
+                    for (const policy of policiesResponse.body) {
+                        if (policy.discontinuedDate) {
+                            policy.discontinuedDate = new Date(policy.discontinuedDate);
+                        }
+                        this.policies.push(policy);
+                        publishedPolicy = publishedPolicy || (
+                            policy.status === PolicyStatus.PUBLISH ||
+                            policy.status === PolicyStatus.DISCONTINUED
+                        )
                     }
-                    return policy;
-                }) || [];
+                }
+
                 this.policiesCount =
                     policiesResponse.headers.get('X-Total-Count') ||
                     this.policies.length;
+
+                this.columns = [];
+                this.columnSize.clear();
+                for (const config of columns) {
+                    if (config.permissions(this.user, this.tab)) {
+                        this.columns.push(config.id);
+                        this.columnSize.set(config.id, config?.size);
+                    }
+                }
+                if (publishedPolicy && this.user.POLICIES_POLICY_AUDIT) {
+                    this.columnSize.set('instance', '350')
+                } else {
+                    this.columnSize.set('instance', '150')
+                }
 
                 this.loadPolicyTags(this.policies);
             }, (e) => {
@@ -820,6 +878,19 @@ export class PoliciesComponent implements OnInit {
                 this.loading = false;
             }
         );
+
+        const databaseName = DB_NAME.TABLES;
+        const storeNames = [
+            STORES_NAME.FILES_STORE,
+            STORES_NAME.DRAFT_STORE
+        ];
+        const keyPrefix = `${element.id}__`;
+
+        this.indexedDb.clearByKeyPrefixAcrossStores(
+            databaseName,
+            storeNames,
+            keyPrefix
+        );
     }
 
     private setVersion(element: any) {
@@ -858,6 +929,23 @@ export class PoliciesComponent implements OnInit {
                 this.loading = false;
             }
         );
+
+        const databaseName = DB_NAME.TABLES;
+        const storeNames = [
+            STORES_NAME.FILES_STORE,
+            STORES_NAME.DRAFT_STORE
+        ];
+        const keyPrefix = `${element.id}__`;
+
+        this.indexedDb.clearByKeyPrefixAcrossStores(
+            databaseName,
+            storeNames,
+            keyPrefix
+        );
+
+        this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, element.id).catch(() =>{
+            //
+        })
     }
 
     public deletePolicy(policy?: any) {
@@ -881,11 +969,61 @@ export class PoliciesComponent implements OnInit {
                 async (result) => {
                     await this.indexedDb.delete(DB_NAME.GUARDIAN, STORES_NAME.POLICY_STORAGE, policy?.id);
 
+                    const databaseName = DB_NAME.TABLES;
+                    const storeNames = [
+                        STORES_NAME.FILES_STORE,
+                        STORES_NAME.DRAFT_STORE
+                    ];
+                    const keyPrefix = `${policy?.id}__`;
+
+                    await this.indexedDb.clearByKeyPrefixAcrossStores(
+                        databaseName,
+                        storeNames,
+                        keyPrefix
+                    );
+
+                    this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policy.id).catch(() =>{
+                        //
+                    })
+
                     const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href),
                         },
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
+        });
+    }
+
+    public deleteAllSchemas(policy?: any) {
+        const dialogRef = this.dialogService.open(DeletePolicyDialogComponent, {
+            header: 'Delete Schemas',
+            width: '720px',
+            styleClass: 'custom-dialog',
+            data: {
+                notificationText: 'Are you sure want to delete all schemas for this policy?'
+            },
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
+            if (!result) {
+                return;
+            }
+
+            this.loading = true;
+
+            this.schemaService.deleteSchemasByTopicId(policy?.topicId).pipe(takeUntil(this._destroy$)).subscribe(
+                async (result) => {
+                    this.loading = false;
+                    this.toastr.success(`All schemas of topic ${policy.topicId} was successfully deleted`, '', {
+                        timeOut: 3000,
+                        closeButton: true,
+                        positionClass: 'toast-bottom-right',
+                        enableHtml: true,
                     });
                 },
                 (e) => {
@@ -1049,8 +1187,46 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    private importExcelDetails(result: IImportEntityResult, policyId: string) {
-        const { type, data, xlsx } = result;
+
+    private importExcelReplace(result: IImportEntityResult, policyId: string) {
+        const { data, schemasCanBeReplaced } = result;
+        const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
+            header: 'Schemas for replace',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Schemas for replace',
+                schemasCanBeReplaced,
+            },
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (resultWithSchemasForReplace) => {
+            if (resultWithSchemasForReplace) {
+                this.pushImportByXlsx(data, policyId, resultWithSchemasForReplace.selectedSchemaIds)
+            }
+        });
+    }
+
+    private pushImportByXlsx(data: any, policyId: string, schemasForReplace?: string[]) {
+        this.policyEngineService
+            .pushImportByXlsx(data, policyId, schemasForReplace)
+            .pipe(takeUntil(this._destroy$)).subscribe(
+                (result) => {
+                    const { taskId, expectation } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href),
+                        },
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
+    }
+
+    private importExcelDetails(result: IImportEntityResult, policyId: string, topicId: string) {
+        const { data, xlsx } = result;
         const dialogRef = this.dialogService.open(PreviewPolicyDialog, {
             header: 'Preview',
             width: '800px',
@@ -1061,23 +1237,28 @@ export class PoliciesComponent implements OnInit {
                 xlsx: xlsx,
             },
         });
-        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
-            if (result) {
-                this.policyEngineService
-                    .pushImportByXlsx(data, policyId)
-                    .pipe(takeUntil(this._destroy$)).subscribe(
-                        (result) => {
-                            const { taskId, expectation } = result;
-                            this.router.navigate(['task', taskId], {
-                                queryParams: {
-                                    last: btoa(location.href),
-                                },
-                            });
-                        },
-                        (e) => {
-                            this.loading = false;
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (res) => {
+            if (res) {
+                this.schemaService.checkForDublicates({
+                    policyId: topicId,
+                    schemaNames: xlsx.schemas.map(({ name }: { name: string }) => name)
+                }).subscribe(
+                    (res) => {
+                        this.loading = false;
+                        if (res?.schemasCanBeReplaced?.length) {
+                            this.importExcelReplace({
+                                ...result,
+                                schemasCanBeReplaced: res.schemasCanBeReplaced,
+                            }, policyId);
+                        } else {
+                            this.pushImportByXlsx(data, policyId)
                         }
-                    );
+
+                    },
+                    (e) => {
+                        this.loading = false;
+                    }
+                );
             }
         });
     }
@@ -1119,7 +1300,7 @@ export class PoliciesComponent implements OnInit {
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
-                this.importExcelDetails(result, policy?.id);
+                this.importExcelDetails(result, policy?.id, policy?.topicId);
             }
         });
     }

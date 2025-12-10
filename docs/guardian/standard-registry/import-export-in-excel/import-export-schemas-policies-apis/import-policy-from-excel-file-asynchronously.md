@@ -1,41 +1,48 @@
-# Asynchronously imports schemas in Excel file format into a policy
+# Asynchronously Imports Schemas in Excel file format into a policy
 
-{% swagger method="post" path="" baseUrl="/api/v1/policies/push/import/xlsx?policyId=<policyId>" summary="Asynchronously imports schemas in Excel file format into a policy" %}
-{% swagger-description %}
+## Asynchronously imports schemas in Excel file format into a policy
+
+<mark style="color:green;">`POST`</mark> `/api/v1/policies/push/import/xlsx?policyId=<policyId>`
+
 Asynchronously imports schemas in Excel file format into a policy. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy Identifier
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-parameter in="body" type="String" required="true" %}
-A xlsx file containing policy config.
-{% endswagger-parameter %}
+| Name                                       | Type   | Description       |
+| ------------------------------------------ | ------ | ----------------- |
+| policyId<mark style="color:red;">\*</mark> | String | Policy Identifier |
+| schemas<mark style="color:red;">\*</mark>  | string | Schemas           |
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+#### Request Body
+
+| Name                               | Type   | Description                           |
+| ---------------------------------- | ------ | ------------------------------------- |
+| <mark style="color:red;">\*</mark> | String | A xlsx file containing policy config. |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```
 content:
             application/json:
               schema:
                 type: object
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```
 content:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

@@ -10,9 +10,9 @@ Part I provides the essential foundation for understanding methodology digitizat
 
 ### [Chapter 1: Introduction to Methodology Digitization](chapter-1/)
 
-### [Chapter 2: Understanding VM0033 Methodology](chapter-2/README.md)
-**Reading Time**: ~18 minutes
-**Purpose**: Provide domain knowledge of VM0033 before technical implementation
+### [Chapter 2: Understanding VM0033 Methodology](chapter-2/)
+
+**Reading Time**: \~18 minutes **Purpose**: Provide domain knowledge of VM0033 before technical implementation
 
 ### [Chapter 2: Understanding VM0033 Methodology](chapter-2/)
 
@@ -26,10 +26,10 @@ Part I provides the essential foundation for understanding methodology digitizat
 
 After completing Part I (\~32 minutes total reading time), readers will:
 
-- Understand the methodology digitization process and its benefits
-- Have knowledge of VM0033 structure and requirements
-- Understand Guardian platform architecture and capabilities
-- Be prepared to begin methodology analysis and technical implementation
+* Understand the methodology digitization process and its benefits
+* Have knowledge of VM0033 structure and requirements
+* Understand Guardian platform architecture and capabilities
+* Be prepared to begin methodology analysis and technical implementation
 
 ## Prerequisites
 

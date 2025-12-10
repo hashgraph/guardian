@@ -14,7 +14,7 @@
                     @if (target) {
                     <p-tabPanel [header]="'details.overview' | transloco">
                         <app-overview-form [target]="target" [fields]="overviewFields"></app-overview-form>
-                        
+
                         @if (geoShapes?.length > 0) {
                             <div class="map-project-container">
                                 <app-project-locations [geoShapes]="geoShapes"></app-project-locations>
@@ -55,10 +55,10 @@
                                         <div class="document-view-options-header">
                                             {{ 'details.document' | transloco }}
                                         </div>
-                                        <p-selectButton 
+                                        <p-selectButton
                                             [options]="documentViewOptions"
-                                            [(ngModel)]="documentViewOption" 
-                                            [unselectable]="true" 
+                                            [(ngModel)]="documentViewOption"
+                                            [unselectable]="true"
                                             optionValue="value"
                                             optionLabel="label">
                                         </p-selectButton>
@@ -79,11 +79,13 @@
                                                 @if (schema) {
                                                     <div class="details-document-view-container">
                                                         <div class="details-document__document">
-                                                            <app-schema-form-view 
+                                                            <app-schema-form-view
                                                                 [schema]="schema"
                                                                 [values]="first._ipfs[0].credentialSubject"
                                                                 [private-fields]="privateFields"
-                                                                [formulas]="formulasResults">
+                                                                [formulas]="formulasResults"
+                                                                [analytics]="analytics"
+                                                            >
                                                             </app-schema-form-view>
                                                         </div>
                                                     </div>
@@ -99,9 +101,9 @@
                                                     <div class="document-container-error-message">
                                                         {{ 'details.document_not_loaded_message' | transloco }}
                                                     </div>
-                                                    <p-button 
-                                                        class="document-container-error-btn" 
-                                                        [label]="'details.try_load' | transloco" 
+                                                    <p-button
+                                                        class="document-container-error-btn"
+                                                        [label]="'details.try_load' | transloco"
                                                         (onClick)="onLoadDocument(first)"/>
                                                 </div>
                                             </div>
@@ -124,13 +126,73 @@
                                                         {{ 'details.documents_not_loaded_message' | transloco }}
                                                     </div>
                                                 }
-                                                <p-button 
-                                                    class="document-container-error-btn" 
-                                                    [label]="'details.try_load' | transloco" 
+                                                <p-button
+                                                    class="document-container-error-btn"
+                                                    [label]="'details.try_load' | transloco"
                                                     (onClick)="onLoadDocument(first)"/>
                                             </div>
                                         </div>
                                     }
+                                </div>
+                            </div>
+                        }
+                    </p-tabPanel>
+
+                    <p-tabPanel [header]="'details.comments' | transloco">
+                        <div class="comments-header" >
+                            <div class="comments-header-item">
+                                <div class="comments-header-item-name">{{ 'details.discussions' | transloco }}</div>
+                                <div class="comments-header-item-value">{{discussionsCount}}</div>
+                            </div>
+                            <div class="comments-header-item">
+                                <div class="comments-header-item-name">{{ 'details.comments' | transloco }}</div>
+                                <div class="comments-header-item-value">{{commentsCount}}</div>
+                            </div>
+                        </div>
+                        @if(decryptedDiscussions.length) {
+                            <div class="comments-filters">
+                                <div class="comments-filters-search" >
+                                    <p-iconField>
+                                        <p-inputIcon styleClass="pi pi-search" />
+                                        <input 
+                                            pInputText
+                                            [placeholder]="'header.search_placeholder' | transloco" 
+                                            type="text"
+                                            [(ngModel)]="discussionsSearch" 
+                                            (change)="onDiscussionsSearch()"  />
+                                    </p-iconField>
+                                </div>
+                                <div class="comments-header-action">
+                                    <p-button 
+                                        class="comments-add_key-btn" 
+                                        [label]="'details.add_key' | transloco" 
+                                        (onClick)="onDecryptDiscussion()"/>
+                                </div>
+                            </div>
+                            <app-table 
+                                [columns]="discussionsColumns" 
+                                [data]="decryptedDiscussions" 
+                                [paginator]="false"
+                                [loading]="false"></app-table>
+                        } @else {
+                            <div class="not-exist-comments">
+                                <div class="not-exist-comments-icon">
+                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M25.3333 4C26.8061 4 28 5.19391 28 6.66667V16.207C27.4571 16.0726 26.8892 16 26.3047 16C22.4503 16.0002 19.3681 19.0884 19.2786 22.8503H9.80208L4 28V6.66667C4 5.19391 5.19391 4 6.66667 4H25.3333ZM10.6667 12C9.93029 12 9.33333 12.597 9.33333 13.3333C9.33333 14.0697 9.93029 14.6667 10.6667 14.6667C11.403 14.6667 12 14.0697 12 13.3333C12 12.597 11.403 12 10.6667 12ZM16 12C15.2636 12 14.6667 12.597 14.6667 13.3333C14.6667 14.0697 15.2636 14.6667 16 14.6667C16.7364 14.6667 17.3333 14.0697 17.3333 13.3333C17.3333 12.597 16.7364 12 16 12ZM21.3333 12C20.597 12 20 12.597 20 13.3333C20 14.0697 20.597 14.6667 21.3333 14.6667C22.0697 14.6667 22.6667 14.0697 22.6667 13.3333C22.6667 12.597 22.0697 12 21.3333 12Z" fill="#AAB7C4"/>
+                                        <path d="M27.2 22.303C27.2 21.9816 27.0735 21.6733 26.8484 21.446C26.6515 21.2471 26.3932 21.1243 26.1184 21.0968L26 21.0909C25.6817 21.0909 25.3766 21.2187 25.1516 21.446C24.9265 21.6733 24.8 21.9816 24.8 22.303V23.5152H27.2V22.303ZM29.6 23.5152H29.7207C30.9792 23.5152 32 24.5462 32 25.8175V29.6977C32 30.9689 30.9792 32 29.7207 32H22.2793C21.0208 32 20 30.9689 20 29.6977V25.8175C20 24.5462 21.0208 23.5152 22.2793 23.5152H22.4V22.303C22.4 21.3386 22.7796 20.414 23.4547 19.732C24.1298 19.0501 25.0452 18.6667 26 18.6667L26.3563 18.6844C27.1802 18.7672 27.9547 19.1354 28.5453 19.732C29.2204 20.414 29.6 21.3386 29.6 22.303V23.5152Z" fill="#AAB7C4"/>
+                                    </svg>
+                                </div>
+                                <div class="not-exist-comments-header">
+                                    {{ 'details.not_exist_comments_header' | transloco }}
+                                </div>
+                                <div class="not-exist-comments-text">
+                                    {{ 'details.not_exist_comments_text' | transloco }}
+                                </div>
+                                <div class="not-exist-comments-action">
+                                    <p-button 
+                                        class="comments-add_key-btn" 
+                                        [label]="'details.add_key' | transloco" 
+                                        (onClick)="onDecryptDiscussion()"/>
                                 </div>
                             </div>
                         }

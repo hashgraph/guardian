@@ -45,7 +45,7 @@ import { EChartsOption } from 'echarts';
     ],
 })
 export class PolicyDetailsComponent extends BaseDetailsComponent {
-    
+
     public chartOption: EChartsOption = createChart();
 
     tabs: any[] = ['overview', 'activity', 'relationships', 'raw'];
@@ -167,6 +167,14 @@ export class PolicyDetailsComponent extends BaseDetailsComponent {
 
     public override onOpenSchemas() {
         this.router.navigate(['/schemas'], {
+            queryParams: {
+                topicId: this.row.topicId,
+            },
+        });
+    }
+
+    public override onOpenSchemaPackage() {
+        this.router.navigate(['/schemas-packages'], {
             queryParams: {
                 topicId: this.row.topicId,
             },

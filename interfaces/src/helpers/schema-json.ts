@@ -39,6 +39,7 @@ export interface IFieldJson {
     private?: boolean;
 
     enum?: string[] | string;
+    availableOptions?: string[] | string;
 
     textSize?: string;
     textColor?: string;
@@ -54,10 +55,17 @@ export interface IFieldJson {
     suggest?: any[];
 }
 
+export interface IIfRuleJson {
+    field: string;
+    fieldValue: any;
+}
+
 export interface IConditionJson {
     if: {
-        field: string,
-        value: any
+        field?: string;
+        fieldValue?: any;
+        AND?: IIfRuleJson[];
+        OR?: IIfRuleJson[];
     },
     then: IFieldJson[],
     else: IFieldJson[]
@@ -220,6 +228,13 @@ export class SchemaToJson {
         return null;
     }
 
+    private static getAvailableOptions(field: SchemaField): string | string[] | null {
+        if (field.availableOptions) {
+            return field.availableOptions;
+        }
+        return null;
+    }
+
     private static getFront(field: SchemaField): {
         size: string;
         color: string;
@@ -291,6 +306,11 @@ export class SchemaToJson {
             fieldJson.enum = enumValue;
         }
 
+        const availableOptionsValue = SchemaToJson.getAvailableOptions(field);
+        if (availableOptionsValue) {
+            fieldJson.availableOptions = availableOptionsValue;
+        }
+
         const font = SchemaToJson.getFront(field);
         if (font) {
             fieldJson.textSize = font.size;
@@ -326,13 +346,11 @@ export class SchemaToJson {
 
     public static conditionToJson(condition: SchemaCondition): IConditionJson {
         const json: IConditionJson = {
-            if: {
-                field: condition.ifCondition?.field?.name,
-                value: condition.ifCondition?.fieldValue
-            },
+            if: {} as any,
             then: [],
             else: []
         };
+
         if (condition.thenFields) {
             for (let index = 0; index < condition.thenFields.length; index++) {
                 json.then.push(SchemaToJson.fieldToJson(condition.thenFields[index], index));
@@ -343,6 +361,54 @@ export class SchemaToJson {
                 json.else.push(SchemaToJson.fieldToJson(condition.elseFields[index], index));
             }
         }
+
+        const ic: any = condition.ifCondition;
+
+        if (ic?.AND && Array.isArray(ic.AND)) {
+            if (ic.AND.length === 1) {
+                json.if.field = ic.AND[0]?.field?.name;
+                json.if.fieldValue = ic.AND[0]?.fieldValue;
+                return json;
+            }
+            json.if.AND = ic.AND
+                .filter((p: any) => p?.field?.name !== undefined)
+                .map((p: any) => ({ field: p.field.name, value: p.fieldValue }));
+            return json;
+        }
+
+        if (ic?.OR && Array.isArray(ic.OR)) {
+            if (ic.OR.length === 1) {
+                json.if.field = ic.OR[0]?.field?.name;
+                json.if.fieldValue = ic.OR[0]?.fieldValue;
+                return json;
+            }
+            json.if.OR = ic.OR
+                .filter((p: any) => p?.field?.name !== undefined)
+                .map((p: any) => ({ field: p.field.name, fieldValue: p.fieldValue }));
+            return json;
+        }
+
+        if (ic?.field?.name !== undefined) {
+            json.if.field = ic.field.name;
+            json.if.fieldValue = ic.fieldfieldValue;
+            return json;
+        }
+        if (Array.isArray(ic?.predicates) && ic.predicates.length) {
+            if (ic.predicates.length === 1) {
+                json.if.field = ic.predicates[0].field?.name;
+                json.if.fieldValue = ic.predicates[0].fieldValue;
+            } else if (ic.op === 'ANY_OF') {
+                json.if.OR = ic.predicates
+                    .filter((p: any) => p?.field?.name !== undefined)
+                    .map((p: any) => ({ field: p.field.name, fieldValue: p.fieldValue }));
+            } else {
+                json.if.AND = ic.predicates
+                    .filter((p: any) => p?.field?.name !== undefined)
+                    .map((p: any) => ({ field: p.field.name, fieldValue: p.fieldValue }));
+            }
+            return json;
+        }
+
         return json;
     }
 
@@ -815,6 +881,28 @@ export class JsonToSchema {
         }
     }
 
+    private static fromAvailableOptions(
+        value: IFieldJson,
+        context: ErrorContext
+    ): {
+        availableOptions: string[] | undefined,
+    } {
+        context = context.add('availableOptions');
+
+        if (Array.isArray(value.availableOptions)) {
+            const availableOptionsValue: string[] = [];
+            for (let i = 0; i < value.availableOptions.length; i++) {
+                availableOptionsValue.push(
+                    JsonToSchema.fromRequiredString(value.availableOptions[i], context.add(`[${i}]`))
+                )
+            }
+
+            return {
+                availableOptions: availableOptionsValue,
+            }
+        }
+    }
+
     private static fromExpression(
         value: IFieldJson,
         context: ErrorContext
@@ -963,6 +1051,7 @@ export class JsonToSchema {
             textBold: JsonToSchema.fromFont(value, context).bold,
 
             enum: JsonToSchema.fromEnum(value, context).enum,
+            availableOptions: JsonToSchema.fromAvailableOptions(value, context).availableOptions,
             remoteLink: JsonToSchema.fromEnum(value, context).link,
 
             expression: JsonToSchema.fromExpression(value, context),
@@ -1024,27 +1113,81 @@ export class JsonToSchema {
         return fields;
     }
 
-    private static fromCondTarget(
-        value: IConditionJson,
+    private static resolveFieldByName(
+        name: string | undefined,
         fields: SchemaField[],
         context: ErrorContext
     ): SchemaField {
-        context = context.add('if').add('field');
-        const target = fields.find((f) => f.name === value.if?.field);
+        const target = fields.find((f) => f.name === name);
         if (!target) {
             throw JsonToSchema.createErrorWithValue(
                 context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.REF),
-                value.if?.field
+                name
             );
         }
         return target;
     }
 
-    private static fromCondValue(
+    private static fromCondIf(
         value: IConditionJson,
+        fields: SchemaField[],
         context: ErrorContext
-    ): any {
-        return value?.if?.value;
+    ): SchemaCondition['ifCondition'] {
+        const ifCtx = context.add('if');
+
+        if (Array.isArray(value?.if?.AND)) {
+            const andArr = value.if.AND;
+            if (andArr.length === 0) {
+                throw JsonToSchema.createError(
+                    ifCtx.add('AND').setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                );
+            }
+            if (andArr.length === 1) {
+                const p = andArr[0];
+                const field = JsonToSchema.resolveFieldByName(p?.field, fields, ifCtx.add('AND').add('[0]').add('field'));
+                return {
+                    field,
+                    fieldValue: p.fieldValue
+                } as any;
+            }
+            return {
+                AND: andArr.map((p, idx) => ({
+                    field: JsonToSchema.resolveFieldByName(p?.field, fields, ifCtx.add('AND').add(`[${idx}]`).add('field')),
+                    fieldValue: p?.fieldValue
+                }))
+            } as any;
+        }
+
+        if (Array.isArray(value?.if?.OR)) {
+            const orArr = value.if.OR;
+            if (orArr.length === 0) {
+                throw JsonToSchema.createError(
+                    ifCtx.add('OR').setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                );
+            }
+            if (orArr.length === 1) {
+                const p = orArr[0];
+                const field = JsonToSchema.resolveFieldByName(p?.field, fields, ifCtx.add('OR').add('[0]').add('field'));
+                return {
+                    field,
+                    fieldValue: p.fieldValue
+                } as any;
+            }
+            return {
+                OR: orArr.map((p, idx) => ({
+                    field: JsonToSchema.resolveFieldByName(p?.field, fields, ifCtx.add('OR').add(`[${idx}]`).add('field')),
+                    fieldValue: p?.fieldValue
+                }))
+            } as any;
+        }
+
+        const fieldName = value?.if?.field;
+        const val = value?.if?.fieldValue;
+        const target = JsonToSchema.resolveFieldByName(fieldName, fields, ifCtx.add('field'));
+        return {
+            field: target,
+            fieldValue: val
+        } as any;
     }
 
     private static fromCondFields(
@@ -1107,14 +1250,13 @@ export class JsonToSchema {
         context: ErrorContext
     ): SchemaCondition {
         context = context.add(`[${index}]`);
+        const ifCondition = JsonToSchema.fromCondIf(value, fields, context);
+        const { then, else: _else } = JsonToSchema.fromCondFields(value, all, entity, new Set<string>(), context);
         const condition: SchemaCondition = {
-            ifCondition: {
-                field: JsonToSchema.fromCondTarget(value, fields, context),
-                fieldValue: JsonToSchema.fromCondValue(value, context),
-            },
-            thenFields: JsonToSchema.fromCondFields(value, all, entity, new Set<string>(), context).then,
-            elseFields: JsonToSchema.fromCondFields(value, all, entity, new Set<string>(), context).else,
-        }
+            ifCondition,
+            thenFields: then,
+            elseFields: _else
+        } as any;
         return condition;
     }
 

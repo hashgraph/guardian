@@ -238,21 +238,30 @@ export class SynchronizationService {
                 const notifier = NotificationHelper.init([userAccount?.id, policyOwner?.id]);
                 const token = await DatabaseServer.getToken(transaction.tokenId);
                 const messageIds = await this.completeTransaction(
-                    messageServer, root, token, transaction, policies, vpMap, policyOwnerId, notifier
+                    messageServer,
+                    root,
+                    token,
+                    transaction,
+                    policies,
+                    vpMap,
+                    policyOwnerId,
+                    notifier
                 );
                 if (messageIds) {
                     min -= transaction.amount;
-                    MintService.multiMint(
+                    MintService.multiMint({
                         root,
                         token,
-                        transaction.amount,
-                        transaction.target,
-                        messageIds,
-                        transaction.vpMessageId,
-                        policy.id?.toString(),
-                        policyOwner?.id,
+                        tokenValue: transaction.amount,
+                        targetAccount: transaction.target,
+                        ids: messageIds,
+                        vpMessageId: transaction.vpMessageId,
+                        policyId: policy.id?.toString(),
+                        userId: policyOwner?.id,
+                        owner: transaction.owner,
+                        relayerAccount: transaction.relayerAccount,
                         notifier
-                    ).catch(error => {
+                    }).catch(error => {
                         this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE'], policyOwnerId);
                     });
                 }

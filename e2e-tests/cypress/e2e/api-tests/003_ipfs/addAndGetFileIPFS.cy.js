@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
+import * as Checks from "../../../support/checkingMethods";
 
 context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
 
@@ -72,14 +73,16 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
 
     it("Get file from ipfs", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
+            const waitForFile = {
                 method: METHOD.GET,
                 url: API.ApiServer + API.IPFSFile + cid,
                 headers: {
                     authorization,
                 },
-                timeout: 240000,
-            }).then((response) => {
+                failOnStatusCode: false,
+            }
+            Checks.whileIPFSProcessingFile(waitForFile)
+            cy.request(waitForFile).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 let body = JSON.parse(response.body)
                 expect(body.randTest1).eql(firstRandom);

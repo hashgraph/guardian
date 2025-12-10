@@ -73,7 +73,7 @@ This step allows to set up users which are able to view grids with VPs and the g
 
 #### 4.1. {role} configuration
 
-<figure><img src="../../../../.gitbook/assets/image (11) (1) (2) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (11) (1) (2) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 In this step, Users can choose a minting schema which will be displayed on the trust chain. Additionally, visibility for VPs can be configured to ‘only own ‘ (recommended for the roles other than OWNER) or to ‘all’.
 

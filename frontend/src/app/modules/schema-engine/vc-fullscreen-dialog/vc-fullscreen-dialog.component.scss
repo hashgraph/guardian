@@ -1,0 +1,156 @@
+.vc-fullscreen-dialog {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .vc-fullscreen-dialog-header {
+        width: 100%;
+        height: 129px;
+        min-height: 129px;
+        max-height: 129px;
+        position: relative;
+        padding: 28px 28px 0px 48px;
+        overflow: hidden;
+
+        .back-button {
+            margin-bottom: 12px;
+
+            button {
+                padding-right: 16px;
+                height: 40px;
+            }
+        }
+
+        .header-text {
+            font-family: Poppins;
+            font-weight: 600;
+            font-size: 32px;
+            line-height: 40px;
+            vertical-align: middle;
+            color: #23252E;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+
+        .header-toolbar {
+            position: absolute;
+            top: 28px;
+            right: 20px;
+            display: flex;
+            flex-direction: row;
+
+            .download-btn {
+                width: 90px;
+                height: 40px;
+                margin-right: 8px;
+            }
+
+            .export-btn {
+                width: 68px;
+                height: 40px;
+                margin-right: 8px;
+            }
+
+            .compare-btn {
+                width: 200px;
+                height: 40px;
+            }
+        }
+    }
+
+    .vc-fullscreen-dialog-body {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+
+        .tab-container {
+            padding: 0px 48px 0px 40px;
+            border-bottom: 1px solid #E1E7EF;
+            height: 41px;
+            min-height: 41px;
+            max-height: 41px;
+        }
+
+        .step-body-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+
+            .document-content {
+                background: #F9FAFC;
+                padding: 24px 48px;
+                position: absolute;
+                left: 0px;
+                top: 0px;
+                bottom: 0px;
+                right: 400px;
+                overflow: auto;
+
+                &[comments="false"] {
+                    right: 0px !important;
+                }
+
+                .document-viewer {
+                    &::ng-deep>form {
+                        position: absolute;
+                        left: 0;
+                        right: 0;
+                        top: 0;
+                        bottom: 0;
+
+                        &>.form-body {
+                            padding: 24px 48px;
+                            display: block;
+                            overflow: auto;
+                            width: 100%;
+                            height: 100%;
+                        }
+                    }
+                }
+
+                .json-container {
+                    border: 1px solid #eee;
+                    border-radius: 8px;
+                    height: calc(100vh - 214px);
+                    width: 100%;
+                    overflow: auto;
+                    padding: 24px;
+                    background: #fff;
+
+                    .json {
+                        word-break: keep-all;
+                        white-space: pre;
+                        font-family: monospace;
+                        cursor: text;
+                        width: fit-content;
+                        height: fit-content;
+                        box-sizing: border-box;
+                    }
+                }
+            }
+
+            .comments-content {
+                position: absolute;
+                top: 0px;
+                bottom: 0px;
+                right: 0px;
+                width: 400px;
+                overflow: hidden;
+                border-left: 1px solid #E1E7EF;
+            }
+
+            &[collapse="true"] {
+                .document-content {
+                    right: 76px;
+                }
+
+                .comments-content {
+                    width: 76px;
+                }
+            }
+        }
+    }
+}

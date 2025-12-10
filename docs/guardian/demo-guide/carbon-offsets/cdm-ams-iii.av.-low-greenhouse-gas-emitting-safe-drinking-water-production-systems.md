@@ -22,21 +22,21 @@
 
 [Step by Step](cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems.md#step-by-step)
 
-### Introduction&#x20;
+### Introduction
 
-AMS-III.AV presents an approach aimed at providing safe drinking water by adopting low greenhouse gas (GHG) emitting water purification systems. This methodology stands as a pivotal step towards displacing environmentally detrimental practices, specifically non-renewable biomass, or fossil fuel-based water boiling, with sustainable technologies for water treatment. By addressing the critical need for safe drinking water while concurrently reducing GHG emissions, AMS-III.AV emerges as a catalyst for fostering healthier and more sustainable communities worldwide.&#x20;
+AMS-III.AV presents an approach aimed at providing safe drinking water by adopting low greenhouse gas (GHG) emitting water purification systems. This methodology stands as a pivotal step towards displacing environmentally detrimental practices, specifically non-renewable biomass, or fossil fuel-based water boiling, with sustainable technologies for water treatment. By addressing the critical need for safe drinking water while concurrently reducing GHG emissions, AMS-III.AV emerges as a catalyst for fostering healthier and more sustainable communities worldwide.
 
-### Key Objectives and Scope&#x20;
+### Key Objectives and Scope
 
-The primary objective of AMS-III.AV revolves around mitigating GHG emissions by replacing water boiling practices reliant on non-renewable biomass or fossil fuels with low-emission water purification systems. This methodology encompasses a diverse array of point-of-use (POU) or point-of-entry (POE) water treatment systems tailored for residential or institutional settings. Ranging from membrane filters to solar-powered ultraviolet (UV) disinfection devices and chemical disinfection methods like chlorination, these technologies constitute the core toolkit. Soil filtration schemes, including boreholes and wells with container disinfection, also fall within the scope of this methodology, fostering a comprehensive approach towards sustainable water treatment solutions.&#x20;
+The primary objective of AMS-III.AV revolves around mitigating GHG emissions by replacing water boiling practices reliant on non-renewable biomass or fossil fuels with low-emission water purification systems. This methodology encompasses a diverse array of point-of-use (POU) or point-of-entry (POE) water treatment systems tailored for residential or institutional settings. Ranging from membrane filters to solar-powered ultraviolet (UV) disinfection devices and chemical disinfection methods like chlorination, these technologies constitute the core toolkit. Soil filtration schemes, including boreholes and wells with container disinfection, also fall within the scope of this methodology, fostering a comprehensive approach towards sustainable water treatment solutions.
 
-### Need and Use for the AMS-III.AV Policy &#x20;
+### Need and Use for the AMS-III.AV Policy 
 
-Access to safe drinking water stands as a fundamental human right, yet millions globally face challenges in securing this basic necessity. Unsafe water sources, often contaminated by pathogens, pollutants, and inadequate sanitation, pose severe health risks, leading to waterborne diseases such as cholera, dysentery, and typhoid. The World Health Organization (WHO) estimates that nearly 2 billion people globally consume water from sources contaminated with feces, emphasizing the urgent need for reliable and safe drinking water solutions.&#x20;
+Access to safe drinking water stands as a fundamental human right, yet millions globally face challenges in securing this basic necessity. Unsafe water sources, often contaminated by pathogens, pollutants, and inadequate sanitation, pose severe health risks, leading to waterborne diseases such as cholera, dysentery, and typhoid. The World Health Organization (WHO) estimates that nearly 2 billion people globally consume water from sources contaminated with feces, emphasizing the urgent need for reliable and safe drinking water solutions.
 
-AMS-III.AV plays a role in addressing this global crisis by advocating for the adoption of low greenhouse gas (GHG) emitting water purification systems. Beyond the immediate goal of mitigating GHG emissions, this methodology aims to ensure the availability of safe drinking water, especially in regions lacking access to established public distribution networks. By facilitating the implementation of technologies that treat water at its point of use or entry, AMS-III.AV not only combats environmental challenges but also addresses crucial health concerns associated with contaminated water sources.&#x20;
+AMS-III.AV plays a role in addressing this global crisis by advocating for the adoption of low greenhouse gas (GHG) emitting water purification systems. Beyond the immediate goal of mitigating GHG emissions, this methodology aims to ensure the availability of safe drinking water, especially in regions lacking access to established public distribution networks. By facilitating the implementation of technologies that treat water at its point of use or entry, AMS-III.AV not only combats environmental challenges but also addresses crucial health concerns associated with contaminated water sources.
 
-Safe drinking water is an indispensable component of public health and well-being. The availability of clean and potable water significantly reduces the risk of waterborne diseases and contributes to the overall improvement of health outcomes. However, various regions face substantial hurdles in securing safe water access due to inadequate infrastructure, environmental degradation, and limited resources.&#x20;
+Safe drinking water is an indispensable component of public health and well-being. The availability of clean and potable water significantly reduces the risk of waterborne diseases and contributes to the overall improvement of health outcomes. However, various regions face substantial hurdles in securing safe water access due to inadequate infrastructure, environmental degradation, and limited resources.
 
 ### Policy Workflow 
 
@@ -48,9 +48,9 @@ This policy is published to Hedera network and can either be imported via Github
 
 ### Available Roles 
 
-* Project Participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.  &#x20;
-* Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.  &#x20;
-* Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens. &#x20;
+* Project Participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.  
+* Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.  
+* Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens. 
 
 ### Important Documents & Schemas 
 
@@ -60,14 +60,14 @@ This policy is published to Hedera network and can either be imported via Github
 
 ### Tools Referenced
 
-* Methodological Tool 01- Tool for the demonstration and assessment of additionality&#x20;
+* Methodological Tool 01- Tool for the demonstration and assessment of additionality
 * Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
 * Methodological Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
 * Methodological Tool 19- Demonstration of additionality of microscale project activities
 * Methodological Tool 21- Demonstration of additionality of small-scale project activities
 * Methodological Tool 30- Calculation of the fraction of non-renewable biomass
 
-### Token (Carbon Emission Reduction) &#x20;
+### Token (Carbon Emission Reduction) 
 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
@@ -75,37 +75,37 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right.
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 2. To start using the policy you first have to change the status of the policy from “Draft” to “Dry Run” or “Publish”, then select the “Register” button.
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. Create a new user by clicking the “Create User” button and assign their role as Project Participant.
 
-<figure><img src="../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 4. The Project Participant can now provide their name or the name they would like to see reflect when registering for this project (i.e. their organization’s name).
 
-<figure><img src="../../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 5. Create a new user again and assign their role as VVB.
 
-<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 6. The VVB can now provide their name or the name they would like users to see when reviewing projects (i.e. their organization’s name).
 
-<figure><img src="../../../.gitbook/assets/image (9) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (9) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 7. Log in as the SR and select the “Project Participant” or the “VVB” tab to view the documents submitted by the Project Participant and by the VVB. The SR can approve their requests by clicking on the “Approve" button.
 
-<figure><img src="../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (11) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 

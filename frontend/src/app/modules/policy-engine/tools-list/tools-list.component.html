@@ -9,6 +9,35 @@
 
     <ng-container *ngIf="isConfirmed && tools">
         <div class="actions-container">
+            <div class="tool-filters">
+                <span class="p-input-icon-right">
+                    <input
+                        class="search-policy-input"
+                        [(ngModel)]="textSearch"
+                        pInputText
+                        placeholder="Search by Tool name"
+                        type="text"/>
+                    <i class="pi pi-search search-icon"></i>
+                </span>
+                <p-dropdown
+                    [options]="tagOptions"
+                    appendTo="body"
+                    class="tags-dropdown"
+                    formControlName="tag"
+                    placeholder="Tags"
+                    [appendTo]="'body'"
+                ></p-dropdown>
+                <button (click)="applyFilters()"
+                        class="button ml-8"
+                        label="Apply Filters"
+                        pButton></button>
+                <button (click)="clearFilters()"
+                        [disabled]="!textSearch"
+                        class="button secondary ml-8"
+                        label="Clear filters"
+                        pButton></button>
+            </div>
+
             <div style="margin-left: auto; display: flex; gap: 8px;">
                 <p-button
                     *ngIf="user.TOOLS_TOOL_CREATE"
@@ -137,13 +166,19 @@
                                 class="header-cell-text"
                                 style="min-width: 140px;"
                             >
-                                Status
+                                Hedera Topic Id
                             </th>
                             <th
                                 class="header-cell-text"
                                 style="min-width: 140px;"
                             >
-                                Hedera Topic Id
+                                Version
+                            </th>
+                            <th
+                                class="header-cell-text"
+                                style="min-width: 140px;"
+                            >
+                                Status
                             </th>
                             <th
                                 class="header-cell-text"
@@ -152,17 +187,10 @@
                                 Tags
                             </th>
                             <th
-                                *ngIf="canPublishAnyTool"
                                 class="header-cell-text"
                                 style="min-width: 140px;"
                             >
                                 Operations
-                            </th>
-                            <th
-                                class="header-cell-text"
-                                style="min-width: 140px;"
-                            >
-                                {{ !canPublishAnyTool ? 'Operations' : '' }}
                             </th>
                         </tr>
                     </ng-template>
@@ -199,22 +227,56 @@
                                 }" [routerLink]="['/schemas']">Schemas</a>
                             </td>
                             <td style="min-width: 140px;">
-                                <span [ngSwitch]="tool.status">
-                                    <div *ngSwitchCase="'DRAFT'" class="p-tag p-tag-grey">
-                                        Draft
-                                    </div>
-                                    <div *ngSwitchCase="'PUBLISHED'" class="p-tag p-tag-success">
-                                        Published
-                                    </div>
-                                    <div *ngSwitchDefault class="p-tag p-tag-grey">
-                                        {{ tool.status || '–' }}
-                                    </div>
-                                </span>
-                            </td>
-                            <td style="min-width: 140px;">
                                 <hedera-explorer [params]="tool.topicId" type="topics">
                                     {{ tool.topicId }}
                                 </hedera-explorer>
+                            </td>
+                            <td
+                                class="text-truncate"
+                                pTooltip="{{ tool.version}}"
+                                style="min-width: 140px; max-width: 150px;"
+                                tooltipPosition="top"
+                            >
+                                {{ tool.version || '–' }}
+                            </td>
+                            <td style="min-width: 180px;">
+                                <div *ngIf="!user.TOOLS_TOOL_REVIEW"
+                                        class="chip chip-color-{{getColor(tool.status)}}"
+                                >{{ getLabelStatus(tool.status) }}
+                                </div>
+
+                                <div *ngIf="user.TOOLS_TOOL_REVIEW">
+                                    <ng-container *ngIf="showStatus(tool)">
+                                        <p-dropdown
+                                            class="status-actions-dropdown {{tool.status}}-dropdown"
+                                            appendTo="body"
+                                            tooltipPosition="bottom"
+                                            [attr.published]="tool.status == 'PUBLISH'"
+                                            [(ngModel)]="publishMenuSelector"
+                                            [options]="getStatusOptions(tool)"
+                                            [placeholder]="getStatusName(tool)"
+                                            (onChange)="onChangeStatus($event, tool)">
+                                            <ng-template let-option pTemplate="item">
+                                                <div>
+                                                    <div class="dropdown-item-title"
+                                                            [ngStyle]="{ color: option.color }">
+                                                        {{ option.title }}
+                                                    </div>
+                                                    <span class="dropdown-item-description">
+                                                        {{ option.description }}
+                                                    </span>
+                                                </div>
+                                            </ng-template>
+                                        </p-dropdown>
+                                    </ng-container>
+                                    <ng-container *ngIf="!showStatus(tool)">
+                                        <div
+                                            class="p-tag p-tag-{{getColor(tool.status)}}"
+                                            tooltipPosition="bottom">
+                                            {{ getStatusName(tool) }}
+                                        </div>
+                                    </ng-container>
+                                </div>
                             </td>
                             <td
                                 style="min-width: 165px;"
@@ -228,17 +290,6 @@
                                     [schemas]="tagSchemas"
                                     [service]="tagsService"
                                     [target]="tool.id"></tags-explorer>
-                            </td>
-                            <td *ngIf="canPublishAnyTool" class="last-policy-grid-cell">
-                                <div *ngIf="tool.status === 'DRAFT' && user.TOOLS_TOOL_REVIEW" class="commands-line">
-                                    <button
-                                        (click)="publishTool(tool)"
-                                        class="button height-28"
-                                        pButton
-                                        type="button"
-                                    >Publish
-                                    </button>
-                                </div>
                             </td>
                             <td
                                 class="last-policy-grid-cell"

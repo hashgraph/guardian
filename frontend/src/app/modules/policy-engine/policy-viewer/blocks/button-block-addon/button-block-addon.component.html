@@ -1,4 +1,4 @@
-<div class="content" [style.visibility]="visible ? 'visible' : 'hidden' " [attr.readonly-block]="readonly">
+<div *ngIf="isBtnVisible()" class="content" [style.visibility]="visible ? 'visible' : 'hidden' " [attr.readonly-block]="readonly">
     <div class="btn-option {{uiClass}}" (click)="dialog ? onSelectDialog() : onSelect()">
         {{name}}
     </div>

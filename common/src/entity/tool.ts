@@ -34,6 +34,18 @@ export class PolicyTool extends BaseEntity {
     description?: string;
 
     /**
+     * Tool version
+     */
+    @Property({ nullable: true })
+    version?: string;
+
+    /**
+     * Policy previous version
+     */
+    @Property({ nullable: true })
+    previousVersion?: string;
+
+    /**
      * Tool config
      */
     @Property({ persist: false, type: 'unknown' })

@@ -504,7 +504,9 @@ export const BlockAbout = {
         ],
         'output': [
             'RunEvent',
-            'RefreshEvent'
+            'RefreshEvent',
+            'ReferenceEvent',
+            'DraftEvent'
         ],
         'defaultEvent': true
     },
@@ -688,6 +690,13 @@ export const BlockAbout = {
                 'type': 'Input',
                 'default': ''
             },
+            {
+                'name': 'hideWhenDiscontinued',
+                'label': 'Hide when discontinued',
+                'title': 'Hide when discontinued',
+                'type': 'Checkbox',
+                'default': false
+            },
         ],
     },
     'integrationButtonBlock': generateConfigForIntegrationBlock(),
@@ -721,6 +730,13 @@ export const BlockAbout = {
                 'title': 'Dialog',
                 'type': 'Checkbox',
                 'default': false,
+            },
+            {
+                'name': 'hideWhenDiscontinued',
+                'label': 'Hide when discontinued',
+                'title': 'Hide when discontinued',
+                'type': 'Checkbox',
+                'default': false
             },
             {
                 'name': 'dialogOptions',
@@ -795,8 +811,16 @@ export const BlockAbout = {
         'get': true,
         'children': 'Special',
         'control': 'UI',
-        'input': null,
-        'output': null,
+        'input': [
+            'RunEvent',
+            'RefreshEvent',
+            'RestoreEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent',
+            'DraftEvent'
+        ],
         'defaultEvent': false,
     },
     'tokenActionBlock': {
@@ -1449,6 +1473,14 @@ export const BlockAbout = {
                         'value': 'bearerToken'
                     },
                 ],
+                'default': ''
+            },
+            {
+                'name': 'authenticationURL',
+                'label': 'Authentication Url',
+                'title': 'Authentication Url',
+                'type': 'Input',
+                'visible': 'authentication === "bearerToken"',
                 'default': ''
             },
             {

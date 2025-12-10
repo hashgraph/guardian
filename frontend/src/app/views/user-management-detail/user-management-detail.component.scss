@@ -214,8 +214,8 @@
 
             .permissions {
                 display: flex;
-                width: 700px;
-                min-width: 700px;
+                width: 800px;
+                min-width: 800px;
                 overflow: hidden;
                 justify-content: flex-start;
             }
@@ -256,8 +256,8 @@
 
                 .permissions {
                     display: flex;
-                    width: 700px;
-                    min-width: 700px;
+                    width: 800px;
+                    min-width: 800px;
                     overflow: hidden;
                     justify-content: flex-start;
 
@@ -288,7 +288,7 @@
 
                     .all-permission {
                         height: 64px;
-                        width: 700px;
+                        width: 800px;
                         display: flex;
                         align-items: center;
                         justify-content: center;
@@ -433,7 +433,7 @@
 }
 
 .container::ng-deep .mat-tab-label-active {
-    color: #0681EE !important;
+    color: #0031ff !important;
     opacity: 1 !important;
 }
 
@@ -462,7 +462,7 @@
 }
 
 .chip-color-blue {
-    color: var(--color-primary, #0681ee);
+    color: var(--color-primary, #0031ff);
     background: rgba(6, 129, 238, 0.16);
 }
 

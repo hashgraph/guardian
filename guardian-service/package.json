@@ -16,15 +16,14 @@
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "^3.3.0",
-        "@guardian/interfaces": "^3.3.0",
+        "@formulajs/formulajs": "4.5.1",
+        "@guardian/common": "3.4.0",
+        "@guardian/interfaces": "3.4.0",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
-        "@formulajs/formulajs": "4.5.1",
-        "mathjs": "^14.4.0",
         "bson": "^6.5.0",
         "cron": "^4.3.0",
         "dotenv": "^16.0.0",
@@ -33,6 +32,7 @@
         "fs-extra": "^10.0.0",
         "imurmurhash": "^0.1.4",
         "jszip": "^3.7.1",
+        "mathjs": "^14.4.0",
         "module-alias": "^2.2.2",
         "mongodb": "6.16.0",
         "prom-client": "^14.1.1",
@@ -43,6 +43,7 @@
     "devDependencies": {
         "@types/express": "^5.0.1",
         "@types/fs-extra": "^9.0.12",
+        "@types/glob": "^8.1.0",
         "@types/jszip": "^3.4.1",
         "@types/node": "^22.15.19",
         "chai": "4.3.4",
@@ -77,5 +78,5 @@
         "test:stability": "mocha tests/stability.test.mjs"
     },
     "type": "module",
-    "version": "3.3.0"
+    "version": "3.4.0"
 }

@@ -33,6 +33,10 @@ export class PolicyTreeComponent implements OnInit {
     @Input('module') module!: PolicyFolder;
     @Input('blocks') blocks!: PolicyBlock[];
     @Input('errors') errors!: any;
+
+    @Input('warnings') warnings!: any;
+    @Input('infos') infos!: any;
+
     @Input('readonly') readonly!: boolean;
     @Input('active') active!: string;
     @Input('connector') dropListConnector!: any;
@@ -80,6 +84,10 @@ export class PolicyTreeComponent implements OnInit {
     public data!: FlatBlockNode[];
     public selectedNode?: FlatBlockNode;
     private errorsTree!: any;
+
+    private warningsTree!: any;
+    private infosTree!: any;
+
     private root!: PolicyBlock;
     private collapsedMap: Map<string, boolean> = new Map<string, boolean>();
     private eventsDisabled = false;
@@ -105,6 +113,8 @@ export class PolicyTreeComponent implements OnInit {
         this.actorMap['owner'] = 'Document Owner';
         this.actorMap['issuer'] = 'Document Issuer';
         this.errorsTree = {};
+        this.warningsTree = {};
+        this.infosTree = {};
         try {
             this.collapsedMap.clear();
             this._allCollapse = '2';
@@ -190,12 +200,28 @@ export class PolicyTreeComponent implements OnInit {
             return;
         }
         this.errorsTree = {};
+
+        this.warningsTree = {};
+        this.infosTree = {};
+
         if (changes.errors && this.errors) {
             this.searchErrors(this.blocks);
         }
+
+        if (changes.warnings && this.warnings) {
+            this.searchWarnings(this.blocks);
+        }
+        if (changes.infos && this.infos) {
+            this.searchInfos(this.blocks);
+        }
+
         this.rebuildTree(this.blocks);
         this.scroll();
         this.errorsTree = {};
+
+        this.warningsTree = {};
+        this.infosTree = {};
+
         if (changes.currentBlock) {
             this.selectedNode = this.data.find(
                 (item) => item.node === changes.currentBlock.currentValue
@@ -204,20 +230,26 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     private scroll() {
-        if (this.data) {
-            for (let i = 0; i < this.data.length; i++) {
-                const node = this.data[i];
-                if (node.error) {
-                    const top = 54 * (i - 5);
-                    if (
-                        this.element &&
-                        this.element.nativeElement &&
-                        this.element.nativeElement.parentElement
-                    ) {
-                        this.element.nativeElement.parentElement.scrollTop = top;
-                    }
-                    return;
-                }
+        if (!this.data) {
+          return;
+        }
+
+        let idx = this.data.findIndex(n => this.isError(n));
+
+        if (idx === -1) {
+          idx = this.data.findIndex(n => this.isWarning(n));
+        }
+
+        if (idx === -1) {
+            idx = this.data.findIndex(n => this.isInfo(n));
+        }
+
+        if (idx > -1) {
+            const top = 54 * (idx - 5);
+            const parent = this.element?.nativeElement?.parentElement;
+
+            if (parent) {
+              parent.scrollTop = top;
             }
         }
     }
@@ -264,6 +296,34 @@ export class PolicyTreeComponent implements OnInit {
         return errors;
     }
 
+    private searchWarnings(blocks: PolicyBlock[]): boolean {
+        if (!blocks) return false;
+        let hit = false;
+        for (const block of blocks) {
+            const childHit = this.searchWarnings(block.children);
+            if (childHit) {
+                this.warningsTree[block.id] = true;
+                hit = true;
+            }
+            if (this.warnings && this.warnings[block.id]) hit = true;
+        }
+        return hit;
+    }
+
+    private searchInfos(blocks: PolicyBlock[]): boolean {
+        if (!blocks) return false;
+        let hit = false;
+        for (const block of blocks) {
+            const childHit = this.searchInfos(block.children);
+            if (childHit) {
+                this.infosTree[block.id] = true;
+                hit = true;
+            }
+            if (this.infos && this.infos[block.id]) hit = true;
+        }
+        return hit;
+    }
+
     private convertToArray(
         result: FlatBlockNode[],
         blocks: PolicyBlock[],
@@ -290,6 +350,10 @@ export class PolicyTreeComponent implements OnInit {
             node.type = this.registeredService.getHeader(block.blockType);
             node.collapsed = this.getCollapsed(node);
             node.error = this.isError(node);
+
+            node.warning = this.isWarning(node);
+            node.info = this.isInfo(node);
+
             if (parent) {
                 node.parent = parent.node;
                 node.parentNode = parent;
@@ -326,7 +390,7 @@ export class PolicyTreeComponent implements OnInit {
             result.push(node);
             this.collapsedMap.set(node.id, node.collapsed);
 
-            if (this.errorsTree[block.id]) {
+            if (this.errorsTree[block.id] || this.warningsTree[block.id] || this.infosTree[block.id]) {
                 node.collapsed = false;
                 this.collapsedMap.set(node.id, node.collapsed);
             }
@@ -498,6 +562,29 @@ export class PolicyTreeComponent implements OnInit {
             return true;
         }
         return false;
+    }
+
+    public isWarning(node: FlatBlockNode): boolean {
+        if (this.isError(node)) {
+          return false;
+        }
+
+        const id = node.node.id;
+
+        return !!this.warnings?.[id];
+    }
+
+    public isInfo(node: FlatBlockNode): boolean {
+        if (this.isError(node)) {
+          return false;
+        }
+
+        if (this.isWarning(node)) {
+            return false;
+        }
+        const id = node.node.id;
+
+        return !!this.infos?.[id];
     }
 
     public blockStyle(node: FlatBlockNode): any {

@@ -65,6 +65,11 @@ export class PolicyOptionsDTO implements PolicyOptions {
     })
     synchronizationTopicId: string;
     @ApiProperty({
+        description: 'Comments topic identifier',
+        example: '0.0.4481265',
+    })
+    commentsTopicId: string;
+    @ApiProperty({
         description: 'Discontinued date',
         example: '2024-02-27T16:32:08.513Z',
     })
@@ -136,6 +141,11 @@ export class PolicyActivityDTO implements PolicyActivity {
         example: 10,
     })
     schemas: number;
+    @ApiProperty({
+        description: 'Schemas Packages',
+        example: 10,
+    })
+    schemaPackages: number;
     @ApiProperty({
         description: 'VCs',
         example: 10,

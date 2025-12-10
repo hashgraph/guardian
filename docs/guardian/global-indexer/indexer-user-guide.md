@@ -176,7 +176,7 @@ Synchronization of all entity data starts one time per hour, but it can be chang
 
 For documents (VC, VP, DID, Schema) with local CIDs (i.e. Such documents were uploaded onto local IPFS nodes) Guardian attempts to automatically download the file when user attempts to open in in the Indexer UI. This may not be possible if the local node is ‘closed’ for outside requests. For such cases there is also an option for the user to manually attempt to download from the local IPFS node. This can be retried unlimited number of times, for situations when local node administrators open access to the node\[s] at a later date.
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:** This functionality requires the correct setting for the IPFS\_GATEWAY configuration option in the `indexer-service .env` file:

@@ -17,7 +17,7 @@ This folder contains a sample file that is referenced in the Demo Usage Guide
 
 3\. You'll now be prompted to configure your Verra account. Enter the details and then press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../../../.gitbook/assets/Verra_2.2.png)
+![](<../../../.gitbook/assets/iREC_4.2 (1).png>)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the import button and enter the one of the following Hedera message IDs:
 
@@ -27,7 +27,7 @@ REDD 2.2.2 = 1707207149.487956003
 Verra REDD Policy 3 groups = 1707207286.119377003
 ```
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once Policy is imported successfully, you get two options : Publish and Dry Run mode.
 
@@ -59,7 +59,7 @@ Once, VVB name is submitted, its waiting for the approval.
 
 9\. Now, we logout as VVB and login as Standard Registry and review the document and approve VVB by clicking on Approve button.
 
-<figure><img src="../../../.gitbook/assets/3_9 (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/3_9 (1).png" alt=""><figcaption></figcaption></figure>
 
 10\. Now we login as Project Proponent and repeat same steps as Step 5, Step 6.
 
@@ -67,7 +67,7 @@ Once, VVB name is submitted, its waiting for the approval.
 
 <figure><img src="../../../.gitbook/assets/3_10.png" alt=""><figcaption></figcaption></figure>
 
-After creating the group, we will see the New Project button. When we click on the button, we get a form, where complete project details need to be added. We have uploaded a [Sample test data](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/REDD%20APD%20Schema%20Design%20Template.xlsx) file in our repo.
+After creating the group, we will see the New Project button. When we click on the button, we get a form, where complete project details need to be added. We have uploaded a [Sample test data](../../../../Demo%20Artifacts/REDD%20APD%20Schema%20Design%20Template.xlsx) file in our repo.
 
 ![](../../../.gitbook/assets/verra_new_8.png)
 

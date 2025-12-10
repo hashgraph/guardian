@@ -167,8 +167,8 @@ export enum Permissions {
     POLICIES_POLICY_EXECUTE = 'POLICIES_POLICY_EXECUTE',
     POLICIES_MIGRATION_CREATE = 'POLICIES_MIGRATION_CREATE',
     POLICIES_RECORD_ALL = 'POLICIES_RECORD_ALL',
-    POLICIES_POLICY_AUDIT = 'POLICIES_POLICY_AUDIT', //only UserRole.AUDITOR
-    POLICIES_POLICY_MANAGE = 'POLICIES_POLICY_MANAGE', //Policy Owner
+    POLICIES_POLICY_AUDIT = 'POLICIES_POLICY_AUDIT',
+    POLICIES_POLICY_MANAGE = 'POLICIES_POLICY_MANAGE',
     //POLICY
     POLICIES_EXTERNAL_POLICY_READ = 'POLICIES_EXTERNAL_POLICY_READ',
     POLICIES_EXTERNAL_POLICY_CREATE = 'POLICIES_EXTERNAL_POLICY_CREATE',
@@ -755,7 +755,10 @@ export const PermissionsArray: {
             category: PermissionCategories.POLICIES,
             entity: PermissionEntities.POLICY,
             action: PermissionActions.AUDIT,
-            disabled: true
+            disabled: false,
+            dependOn: [
+                Permissions.POLICIES_POLICY_READ
+            ]
         },
         {
             name: Permissions.POLICIES_MIGRATION_CREATE,

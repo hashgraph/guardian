@@ -1,0 +1,16 @@
+.wipe-memo-prefix {
+    margin-left: 5px;
+    margin-right: 10px;
+}
+
+.wipe-memo-prefix + .wipe-memo-input {
+    width: 191px;
+}
+
+::ng-deep p-dropdown span {
+    height: 34px
+}
+
+::ng-deep p-dropdownitem li {
+    height: 30px;
+}

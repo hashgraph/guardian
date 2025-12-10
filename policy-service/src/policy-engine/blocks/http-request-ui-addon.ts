@@ -70,6 +70,14 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
                 default: ''
             },
             {
+                name: 'authenticationURL',
+                label: 'Authentication Url',
+                title: 'Authentication Url',
+                type: PropertyType.Input,
+                visible: 'authentication === "bearerToken"',
+                default: ''
+            },
+            {
                 name: 'headers',
                 label: 'Headers',
                 title: 'Headers',
@@ -114,6 +122,7 @@ export class HttpRequestUIAddon {
             url: options.url,
             headers: options.headers,
             authentication: options.authentication,
+            authenticationURL: options.authenticationURL,
             readonly: (
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE

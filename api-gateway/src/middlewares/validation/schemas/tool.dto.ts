@@ -1,6 +1,7 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { Examples } from '../examples.js';
 import { BlockDTO, ValidationErrorsDTO } from './blocks.js';
+import { IsString } from 'class-validator';
 
 @ApiExtraModels(BlockDTO)
 export class ToolDTO {
@@ -82,6 +83,12 @@ export class ToolDTO {
         required: true,
     })
     config: BlockDTO;
+
+    @ApiProperty({
+        type: 'string',
+        example: '1.0.0'
+    })
+    version?: string;
 }
 
 @ApiExtraModels(ToolDTO)
@@ -123,4 +130,14 @@ export class ToolValidationDTO {
         type: () => ValidationErrorsDTO
     })
     results: ValidationErrorsDTO;
+}
+
+export class ToolVersionDTO {
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        example: '1.0.0'
+    })
+    @IsString()
+    toolVersion: string;
 }

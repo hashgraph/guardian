@@ -1,0 +1,72 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+
+
+        <div class="dialog-grid-container">
+            <div *ngIf="page.length" class="dialog-grid-header">
+                <div class="col-auto">Policy name</div>
+                <div class="col-auto">Schema</div>
+                <div class="col-150">Actions</div>
+            </div>
+            <div *ngIf="page.length" class="dialog-grid-body vertical-border">
+                <ng-container *ngFor="let item of page" >
+                    <div class="dialog-grid-row row-52">
+                        <div class="col-auto">
+                            {{item.policyName}}
+                        </div>
+                        <div class="col-auto">
+                            {{item.schemaName}}
+                        </div>
+                        <div class="col-150">
+                            <button
+                                (click)="onOpenDocument(item)"
+                                class="guardian-button guardian-button-secondary grid-btn"
+                            >View Document</button>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+            <div *ngIf="!page.length" class="dialog-grid-empty">
+                <div>
+                    <svg-icon
+                        class="icon-btn"
+                        src="/assets/images/icons/list.svg"
+                        svgClass="icon-color-disabled">
+                    </svg-icon>
+                </div>
+                <div>There are no documents</div>
+            </div>
+            <div *ngIf="page.length" class="guardian-grid-paginator">
+                <app-paginator
+                    class="guardian-grid-paginator"
+                    [pageIndex]="pageIndex"
+                    [pageSize]="pageSize"
+                    [length]="count"
+                    (page)="onPage($event)"
+                ></app-paginator>
+            </div>
+        </div>
+
+        
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+    </div>
+</div>

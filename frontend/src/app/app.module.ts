@@ -39,6 +39,7 @@ import { WorkerTasksService } from './services/worker-tasks.service';
 import { SchemaRulesService } from './services/schema-rules.service';
 import { PolicyLabelsService } from './services/policy-labels.service';
 import { FormulasService } from './services/formulas.service';
+import { CommentsService } from './services/comments.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
@@ -67,6 +68,8 @@ import { StandardRegistryCardComponent } from './components/standard-registry-ca
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
 import { NotificationComponent } from './components/notification/notification.component';
 import { TokenDialogComponent } from './components/token-dialog/token-dialog.component';
+import { NewRelayerAccountDialog } from './components/new-relayer-account-dialog/new-relayer-account-dialog.component';
+import { RelayerAccountDetailsDialog } from './components/relayer-account-details-dialog/relayer-account-details-dialog.component';
 //Modules
 import { MaterialModule } from './modules/common/material.module';
 import { PolicyEngineModule } from './modules/policy-engine/policy-engine.module';
@@ -131,6 +134,10 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
 import { ExternalPoliciesService } from './services/external-policy.service';
 import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.component';
+import { GeoJsonService } from './services/geo-json.service';
+import { PolicyRepositoryService } from './services/policy-repository.service';
+import { RelayerAccountsService } from './services/relayer-accounts.service';
+import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
 
 @NgModule({
     declarations: [
@@ -171,9 +178,12 @@ import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.c
         ForgotPasswordDialogComponent,
         OnlyForDemoDirective,
         TokenDialogComponent,
+        NewRelayerAccountDialog,
+        RelayerAccountDetailsDialog,
         UseWithServiceDirective,
         RolesViewComponent,
         UsersManagementComponent,
+        RelayerAccountsComponent,
         UsersManagementDetailComponent,
         WorkerTasksComponent,
         UserKeysDialog
@@ -253,11 +263,15 @@ import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.c
         AISearchService,
         RecordService,
         CompareStorage,
+        GeoJsonService,
         ProjectComparisonService,
         FormulasService,
         ExternalPoliciesService,
         PermissionsService,
         PermissionsGuard,
+        CommentsService,
+        RelayerAccountsService,
+        PolicyRepositoryService,
         {
             provide: GET_SCHEMA_NAME,
             useValue: SchemaHelper.getSchemaName

@@ -526,13 +526,14 @@ export class PermissionsApi {
         @Req() req
     ): Promise<UserDTO> {
         let row: any;
+        const ownerDid = user.parent || user.did;
         const users = new Users();
         try {
             row = await users.getUserPermissions(username, user.id);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
-        if (!row || row.parent !== user.did || row.did === user.did) {
+        if (!row || row.parent !== ownerDid || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
@@ -682,13 +683,14 @@ export class PermissionsApi {
         @Body() body: AssignPolicyDTO
     ): Promise<PolicyDTO> {
         let row: any;
+        const owner = user.parent || user.did;
         const users = new Users();
         try {
             row = await users.getUserPermissions(username, user.id);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
-        if (!row || row.parent !== user.did || row.did === user.did) {
+        if (!row || row.parent !== owner || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {

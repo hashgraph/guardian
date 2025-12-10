@@ -39,8 +39,23 @@ const UserPoliciesPageLocators = {
     approveButton: 'div.btn-approve',
     createReportButton: "button:contains(' Add Report ')",
     monitoringReports: "p:contains('Monitoring reports')",
+    revokeButton: "button-block div:contains(' Revoke ')",
     waitingForValidation: "span[title = 'Waiting for Validation']",
     waitingForVerification: "span[title = 'Waiting for Verification']",
+    IPFSInput: "div.ipfs-url input",
+    IPFSErrorLabel: " Invalid IPFS CID/URL ",
+    addLocButton: "button.add-btn",
+    addGeoButton: "Add Geometry",
+    geoJSONTypeDropdown: "p-dropdown[id='typeDropdown']",
+    geoJSONTypeDropdownList: "p-dropdown[id='typeDropdown'] li",
+    geoJSONErrorLabel: "A GeoJSON object is required",
+    switchButtonGeoJSONInput: "switch-button",
+    includeAllButton: "Include all",
+    clearButton: "Clear",
+    locationPanel: "div.location-control",
+    largeFileLabelHeader: "This file is too large to view.",
+    largeFileLabelHeaderJSON: "File was imported successfully, but it’s too large to view.",
+    largeFileLabel: "largeGeoJSON.kml (32 MB) exceeds in-browser preview limits.",
 
     policiesList: "/api/v1/policies?pageIndex=0&pageSize=10",
     passInput: '[formcontrolname="password"]',
@@ -140,6 +155,50 @@ export class UserPoliciesPage {
             Checks.waitForElement(UserPoliciesPageLocators.signButton);
     }
 
+    registerInPolicySmall() {
+        cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible').click();
+        cy.get(UserPoliciesPageLocators.role("Registrant")).click();
+        cy.get(UserPoliciesPageLocators.nextButton).click();
+        Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
+    }
+
+    typeBadIPFS(IPFS) {
+        cy.get(UserPoliciesPageLocators.IPFSInput).type(IPFS);
+        cy.contains(UserPoliciesPageLocators.IPFSErrorLabel).should('exist');
+    }
+
+    validateListOfGeoJSONTypes() {
+        cy.get(UserPoliciesPageLocators.addLocButton).click();
+        cy.contains(UserPoliciesPageLocators.addGeoButton).click();
+        cy.contains(UserPoliciesPageLocators.geoJSONErrorLabel).should('exist');
+        cy.get(UserPoliciesPageLocators.geoJSONTypeDropdown).click();
+        cy.get(UserPoliciesPageLocators.geoJSONTypeDropdownList).should('have.length', 1);
+        cy.get(UserPoliciesPageLocators.geoJSONTypeDropdownList).first().find('span').should('have.text', "Polygon");
+    }
+
+    validateGeoJSONFileImport(fileName) {
+        cy.get(UserPoliciesPageLocators.addLocButton).click();
+        cy.get(UserPoliciesPageLocators.switchButtonGeoJSONInput).click();
+        cy.wait(1000);
+        cy.get(CommonElements.fileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
+        cy.contains(UserPoliciesPageLocators.includeAllButton).click();
+        cy.get(UserPoliciesPageLocators.locationPanel).should('have.length', 2);
+        cy.contains(UserPoliciesPageLocators.geoJSONErrorLabel).should('not.exist');
+        cy.contains(UserPoliciesPageLocators.clearButton).click();
+    }
+
+    validateGeoJSONLargeFileImport(fileName) {
+        cy.get(UserPoliciesPageLocators.switchButtonGeoJSONInput).click();
+        cy.wait(1000);
+        cy.get(CommonElements.fileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
+        cy.contains(UserPoliciesPageLocators.includeAllButton).click();
+        cy.contains(UserPoliciesPageLocators.largeFileLabelHeader).should('exist');
+        cy.contains(UserPoliciesPageLocators.largeFileLabel).should('exist');
+        cy.get(UserPoliciesPageLocators.switchButtonGeoJSONInput).click();
+        cy.contains(UserPoliciesPageLocators.largeFileLabelHeaderJSON).should('exist');
+        cy.contains(UserPoliciesPageLocators.largeFileLabel).should('exist');
+    }
+
     openPolicy(name) {
         cy.contains("td", name).siblings().eq(0).click();
         Checks.waitForLoading();
@@ -183,6 +242,12 @@ export class UserPoliciesPage {
 
     approveUserInPolicy() {
         this.approve()
+    }
+
+    checkRevokeButtonDisappear() {
+        cy.wait(2000);
+        Checks.waitForLoading();
+        cy.get(UserPoliciesPageLocators.revokeButton).should('not.exist')
     }
 
     approveDeviceInPolicy() {

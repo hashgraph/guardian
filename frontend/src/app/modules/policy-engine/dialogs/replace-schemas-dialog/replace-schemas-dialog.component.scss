@@ -1,0 +1,124 @@
+.dialog-body {
+  max-width: 100vw;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.group-container {
+  margin-bottom: 18px;
+
+  .group-header {
+    font-family: Poppins, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: left;
+    color: #000;
+    margin-bottom: 12px;
+  }
+
+  .field-array {
+    border: 1px solid #e1e7ef;
+    border-radius: 6px;
+    overflow: hidden;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    color: #181818;
+  }
+
+  .field-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e1e7ef;
+
+    .schema-menu-btn i,
+    .schema-menu-btn svg {
+        color: var(--color-primary);
+    }
+
+    .schema-menu-btn {
+        margin-left: auto;
+    }
+
+    .schema-menu-btn button {
+        border: none;
+        overflow: hidden;
+        height: 48px;
+        font-size: 14px;
+        color: var(--color-grey-black-1);
+        width: 100%;
+        display: grid;
+        grid-template-columns: 40px 1fr;
+        padding: 12px;
+        column-gap: 5px;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      gap: 10px;
+    }
+
+    .schema-name {
+      flex: 1;
+      word-break: break-word;
+    }
+
+    ::ng-deep {
+      .p-checkbox {
+        width: 18px;
+        height: 18px;
+      }
+
+      .p-checkbox-box {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .p-checkbox-box.p-highlight {
+        border-color: #4169e2 !important;
+        background: #4169e2 !important;
+      }
+
+      .p-checkbox-icon {
+        color: #fff !important;
+        font-size: 12px;
+      }
+    }
+  }
+
+  .master-select  {
+    flex-direction: row-reverse;
+    padding: 0.25rem;
+    border: 0;
+
+    label {
+      display: flex;
+      flex-direction: row-reverse;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      align-items: center;
+    }
+  }
+}
+
+.dialog-footer {
+  padding-top: 20px;
+
+  .action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+
+    .guardian-button {
+      border-radius: 8px;
+    }
+  }
+}

@@ -147,6 +147,43 @@ export class IpfsClientClass {
         return cid;
     }
 
+    /**
+     * Delete file
+     * @param cid
+     */
+    public async deleteCid(cid: string): Promise<boolean> {
+
+        switch (this.IPFS_PROVIDER) {
+            case IpfsProvider.LOCAL: {
+                await this.client.pin.rm(cid);
+
+                try {
+                    const garbageCollector = this.client.repo.gc();
+                    // tslint:disable-next-line:no-empty
+                    for await (const _ of garbageCollector) { }
+                } catch {
+                    return true;
+                }
+
+                return true;
+            }
+
+            case IpfsProvider.WEB3STORAGE: {
+                await this.client.capability.store.remove(cid);
+                return true;
+            }
+
+            case IpfsProvider.FILEBASE: {
+                await this.client.delete(cid);
+                return true;
+            }
+
+            default: {
+                throw new Error(`${this.IPFS_PROVIDER} provider is unknown`);
+            }
+        }
+    }
+
     private async parseProof(data) {
         const blocks = [];
         const reader = await CarReader.fromBytes(Buffer.from(data, 'base64'));

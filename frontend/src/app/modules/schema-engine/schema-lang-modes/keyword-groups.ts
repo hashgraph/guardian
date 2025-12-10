@@ -16,6 +16,7 @@ export const keyKeywords = [
     'textSize',
     'textColor',
     'textBold',
+    'availableOptions',
     'pattern',
     'expression',
     'unit',

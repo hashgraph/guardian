@@ -34,6 +34,7 @@
         "instances": "Instances",
         "policies": "Policies",
         "documents": "Documents",
+        "comments": "Comments",
         "nfts": "NFTs",
         "vps": "Verifiable Presentation (VPs)",
         "vcs": "Verifiable Credentials (VCs)",
@@ -135,12 +136,17 @@
         "overview": "Overview",
         "documents": "Document",
         "history": "History",
+        "discussions": "Discussions",
+        "comments": "Comments",
         "view": "View",
         "relationships": "Relationships",
         "raw_data": "Raw data",
         "labels": "Labels",
         "formulas": "Formulas",
         "table": "Table",
+        "add_key": "Import Keys",
+        "not_exist_comments_header": "Discussions & comments are encrypted",
+        "not_exist_comments_text": "Please import the keys to decrypt data and access discussions and comments",
         "tabs": {
             "activity": "Activity"
         },
@@ -150,6 +156,7 @@
             "roles": "Roles",
             "dids": "Decentralized Identifiers",
             "schemas": "Schemas",
+            "schemaPackages": "Schema Packages",
             "tokens": "Tokens",
             "contracts": "Contracts",
             "users": "Users",
@@ -158,7 +165,7 @@
             "modules": "Modules",
             "vcs": "Verifiable Credentials",
             "vps": "Verifiable Presentations",
-            "formulas": "Formulas"  
+            "formulas": "Formulas"
         },
         "hedera": {
             "topic_id": "Topic Id",
@@ -175,7 +182,8 @@
             "receiver_account_id": "Receiver",
             "token_id": "Token Id",
             "token_amount": "Token Amount",
-            "target": "Target"
+            "target": "Target",
+            "comments": "Comments"
         },
         "ipfs": "IPFS",
         "header": {
@@ -321,6 +329,7 @@
                 "description": "Description",
                 "owner": "Owner",
                 "version": "Version",
+                "schemas": "Schemas",
                 "policy": "Policy"
             }
         },
@@ -409,6 +418,8 @@
         "document_not_loaded_header": "The document has not loaded yet.",
         "documents_not_loaded_header": "The documents have not loaded yet.",
         "document_not_loaded_message": "The file is stored in the local repository, and if the repository is closed, upload will not be possible.",
-        "documents_not_loaded_message": "The files are stored in the local repository, and if the repository is closed, upload will not be possible."
+        "documents_not_loaded_message": "The files are stored in the local repository, and if the repository is closed, upload will not be possible.",
+        "schemas_not_unpacked": "The schemas has not unpacked yet.",
+        "try_unpacked": "Unpack"
     }
 }

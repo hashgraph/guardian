@@ -4,6 +4,14 @@ screenshots/
 test_results/
 .gitignore
 0_fullflow.cy.js
-fixtures/exportedPolicy.policy
-fixtures/StandardRegistryData.json
-fixtures/testJsonDRCid
+cypress/fixtures/exportedPolicy.policy
+cypress/fixtures/exportedFormula.formula
+cypress/fixtures/StandardRegistryData.json
+cypress/fixtures/exportedLabel.label
+cypress/fixtures/exportedModule.module
+cypress/fixtures/recordedDryRunFlow.record
+cypress/fixtures/StandardRegistryData.json
+cypress/fixtures/StandardRegistryData.json
+cypress/fixtures/StandardRegistryData.json
+cypress/fixtures/testJsonCid
+cypress/fixtures/testJsonDRCid

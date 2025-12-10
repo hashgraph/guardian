@@ -1,0 +1,127 @@
+.policy-name {
+    color: var(--guardian-disabled-color, #848FA9);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+    position: absolute;
+    top: 34px;
+    right: 0;
+
+    .policy-version {
+        padding-left: 16px;
+    }
+}
+
+.guardian-user-page-header {
+    padding: 8px 0px 18px 0px !important;
+}
+
+.guardian-dropdown {
+    &::ng-deep .p-dropdown {
+        width: 250px;
+    }
+}
+
+.balance-cell {
+    display: flex;
+
+    .balance-container {
+        width: 132px;
+        height: 24px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-right: 8px;
+    }
+
+    .last-update {
+        width: 132px;
+        height: 24px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-left: 8px;
+    }
+}
+
+.grid-btn {
+    margin: 0px !important;
+    height: 32px !important;
+    min-width: 110px !important;
+}
+
+.guardian-user-page-filters {
+    width: 100%;
+
+    .search-filter {
+        max-width: 400px;
+        position: relative;
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            pointer-events: none;
+        }
+
+    }
+}
+
+.balance-header {
+    display: flex;
+    position: relative;
+
+    .balance-container {
+        width: 132px;
+        height: 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-right: 8px;
+    }
+
+    .balance-button {
+        position: absolute;
+        top: -3px;
+        right: 5px;
+    }
+}
+
+.balance-button {
+    width: 20px;
+    height: 20px;
+    margin: 4px;
+    border-radius: 2px;
+}
+
+.balance-loading {
+    --loading-base-color: #EFF3F7;
+    --loading-shine-color: #f4f4f4;
+
+    float: left;
+    width: 125px;
+    height: 18px;
+    margin-top: 3px;
+    border-radius: 7px;
+    background-color: #EFF3F7;
+    background-image: linear-gradient(90deg,
+            #EFF3F7 0px,
+            #fdfdfd 25px,
+            #EFF3F7 50px);
+    background-size: 600px;
+    animation: shine-lines 4s infinite linear;
+}
+
+@keyframes shine-lines {
+    0% {
+        background-position: -100px;
+    }
+
+    25% {
+        background-position: 300px;
+    }
+
+    100% {
+        background-position: 300px;
+    }
+}

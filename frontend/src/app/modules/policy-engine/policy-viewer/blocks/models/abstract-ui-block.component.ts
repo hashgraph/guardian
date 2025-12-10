@@ -4,7 +4,9 @@ import { Subscription, Observable, of } from "rxjs";
 import { PolicyEngineService } from "src/app/services/policy-engine.service";
 import { ProfileService } from "src/app/services/profile.service";
 import { WebSocketService } from "src/app/services/web-socket.service";
+import { Directive, Input } from '@angular/core';
 
+@Directive()
 export abstract class AbstractUIBlockComponent<T> {
     public id!: string;
     public policyId!: string;
@@ -12,6 +14,8 @@ export abstract class AbstractUIBlockComponent<T> {
     public user!: IUser;
     public loading: boolean = true;
     public socket: Subscription;
+
+    @Input('savepointIds') savepointIds?: string[] | null = null;
 
     constructor(
         protected policyEngineService: PolicyEngineService,
@@ -53,7 +57,7 @@ export abstract class AbstractUIBlockComponent<T> {
         if (this.static) {
             return of(this.static);
         } else {
-            return this.policyEngineService.getBlockData<T>(this.id, this.policyId);
+            return this.policyEngineService.getBlockData<T>(this.id, this.policyId, this.savepointIds);
         }
     }
 

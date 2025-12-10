@@ -21,22 +21,85 @@
 }
 
 .form-group textarea {
-    min-height: 90px !important;
-    margin-top: 20px;
+    min-height: 96px !important;
     width: 100%;
     resize: vertical;
 }
 
-.form-group label {
-    position: absolute;
-    font-size: 12px;
-    background: var(--color-background);
-    top: 14px;
-    left: 14px;
-}
-
 .coordinates-input {
     z-index: 10;
+}
+
+.map-control-block {
+    display: flex;
+    flex-direction: column;
+    margin-top: 8px;
+    gap: 16px;
+
+    .map-control-buttons {
+        display: flex;
+        gap: 8px;
+    }
+}
+
+.location-control {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border-radius: 8px;
+    border-width: 1px;
+    padding: 16px;
+    border: 1px solid var(--grey-grey-4, #C4D0E1)
+}
+
+.location-name {
+    margin: 0;
+}
+
+.location-coordinates {
+    border-radius: 8px;
+}
+
+.location-form-label {
+    margin: 0 0 6px 0;
+    font-family: Inter;
+    font-weight: 500;
+    font-style: Medium;
+    font-size: 12px;
+    line-height: 14px;
+    letter-spacing: 0%;
+    vertical-align: middle;
+    color: var(--color-grey-black-2, #23252E);
+}
+
+.add-feature-button {
+    width: 146px;
+    height: 28px;
+    border-radius: 6px;
+    opacity: 1;
+    border-width: 1px;
+    padding-top: 6px;
+    padding-right: 16px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+    gap: 8px;
+}
+
+.delete-feature-button {
+    width: 164px;
+    height: 28px;
+    border-radius: 6px;
+    border-width: 1px;
+    padding-top: 6px;
+    padding-right: 16px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+}
+
+:host ::ng-deep .p-dropdown {
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3);
+    background: #FFF;
 }
 
 ::ng-deep p-dropdown {
@@ -44,4 +107,21 @@
     & > div {
         width: 100%;
     }
+}
+
+.invalid-field {
+    border-color: #f44336;
+}
+
+.validation-errors {
+    margin: .25rem 0 0;
+    padding-left: 1rem;
+}
+
+.map-container .download-geo {
+    margin-top: 0.25rem;
+}
+
+.download-geo {
+    width: 180px;
 }

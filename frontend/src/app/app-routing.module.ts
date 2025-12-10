@@ -61,6 +61,8 @@ import { FormulasComponent } from './modules/formulas/formulas/formulas.componen
 import { FormulaConfigurationComponent } from './modules/formulas/formula-configuration/formula-configuration.component';
 import { ExternalPolicyComponent } from './modules/policy-engine/external-policies/external-policies.component';
 import { PolicyRequestsComponent } from './modules/policy-engine/requests/requests.component';
+import { PolicyRepositoryComponent } from './modules/policy-engine/policy-repository/policy-repository.component';
+import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
 
 
 @Injectable({
@@ -343,6 +345,17 @@ const routes: Routes = [
             ],
             permissions: [
                 Permissions.POLICIES_POLICY_UPDATE
+            ]
+        }
+    },
+    {
+        path: 'policy-repository/:id',
+        component: PolicyRepositoryComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.USER],
+            permissions: [
+                Permissions.POLICIES_POLICY_AUDIT
             ]
         }
     },
@@ -712,8 +725,6 @@ const routes: Routes = [
         }
     },
 
-
-
     {
         path: 'external-policies',
         component: ExternalPolicyComponent,
@@ -741,6 +752,16 @@ const routes: Routes = [
                 Permissions.POLICIES_POLICY_READ,
                 Permissions.POLICIES_POLICY_EXECUTE,
                 Permissions.POLICIES_POLICY_MANAGE,
+            ]
+        }
+    },
+    {
+        path: 'relayer-accounts',
+        component: RelayerAccountsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY
             ]
         }
     },

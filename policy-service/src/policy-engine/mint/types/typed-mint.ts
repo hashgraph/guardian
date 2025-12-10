@@ -3,7 +3,7 @@ import { IHederaCredentials } from '../../policy-user.js';
 import { TokenConfig } from '../configs/token-config.js';
 import { MintService } from '../mint-service.js';
 import { PolicyUtils } from '../../helpers/utils.js';
-import { MintTransactionStatus, NotificationAction, TokenType } from '@guardian/interfaces';
+import { LocationType, MintTransactionStatus, NotificationAction, TokenType } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';
 
 /**
@@ -91,6 +91,8 @@ export abstract class TypedMint {
             tokenType: TokenType;
             decimals: number;
             policyId: string;
+            owner: string;
+            relayerAccount: string;
             metadata?: string;
         },
         root: IHederaCredentials,
@@ -236,7 +238,39 @@ export abstract class TypedMint {
         }
         return notification;
     }
-    ь
+
+    protected async getRelayerAccount() {
+        if (this._mintRequest?.relayerAccount) {
+            const userRelayerAccount = await PolicyUtils.loadRelayerAccount(
+                this._mintRequest.owner,
+                this._mintRequest.relayerAccount,
+                this._ref,
+                this.userId
+            );
+            if (userRelayerAccount.hederaAccountKey) {
+                return {
+                    hederaAccountId: userRelayerAccount.hederaAccountId,
+                    hederaAccountKey: userRelayerAccount.hederaAccountKey,
+                }
+            }
+            //TODO
+            if (userRelayerAccount.location === LocationType.REMOTE) {
+                return {
+                    hederaAccountId: this._root.hederaAccountId,
+                    hederaAccountKey: this._root.hederaAccountKey,
+                }
+            }
+            return {
+                hederaAccountId: userRelayerAccount.hederaAccountId,
+                hederaAccountKey: userRelayerAccount.hederaAccountKey,
+            }
+        }
+        return {
+            hederaAccountId: this._root.hederaAccountId,
+            hederaAccountKey: this._root.hederaAccountKey,
+        }
+    }
+
     /**
      * Mint tokens
      * @param isProgressNeeded Is progress needed

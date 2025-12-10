@@ -285,7 +285,8 @@ export class PolicyConverterUtils {
                             filters: [],
                             field: block.field,
                             value: option.value,
-                            uiClass: option.uiClass
+                            uiClass: option.uiClass,
+                            hideWhenDiscontinued: !!option.hideWhenDiscontinued
                         });
                     }
                     delete block.uiMetaData.options;

@@ -14,8 +14,8 @@
     },
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@indexer/interfaces": "^3.3.0",
-        "@indexer/common": "^3.3.0",
+        "@indexer/interfaces": "3.4.0",
+        "@indexer/common": "3.4.0",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
@@ -55,6 +55,7 @@
         "@types/gulp-rename": "^2",
         "@types/jszip": "^3.4.1",
         "@types/node": "^22.15.19",
+        "@types/glob": "^8.1.0",
         "@types/ws": "^8.2.2",
         "chai": "^4.3.4",
         "cross-env": "^7.0.3",
@@ -85,5 +86,5 @@
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
     },
     "type": "module",
-    "version": "3.3.0"
+    "version": "3.4.0"
 }

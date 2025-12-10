@@ -150,22 +150,3 @@ export async function fastLoadFilesBuffer(ids: Set<string>): Promise<Map<string,
     return result;
 }
 
-// export async function loadFiles<T extends string | Buffer>(ids: Set<string>): Promise<Map<string, T>> {
-//     const fileMap = new Map<string, Buffer>();
-//     const files = DataBaseHelper.gridFS.find();
-//     while (await files.hasNext()) {
-//         const file = await files.next();
-//         if (fileIds.has(file.filename) && !fileMap.has(file.filename)) {
-//             await safetyRunning(async () => {
-//                 const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
-//                 const bufferArray = [];
-//                 for await (const data of fileStream) {
-//                     bufferArray.push(data);
-//                 }
-//                 const buffer = Buffer.concat(bufferArray);
-//                 fileMap.set(file.filename, buffer);
-//             });
-//         }
-//     }
-//     return fileMap;
-// }

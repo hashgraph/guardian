@@ -1,0 +1,35 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Publish Tool</div>
+        <div *ngIf="tool" class="header-item">{{tool.name}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+        <div>
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="version">* Version</label>
+                <input [formControl]="versionControl" id="version" pInputText type="text"/>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button cancel-button">
+            <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button publish-button">
+            <button 
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary"
+                [disabled]="isPublishDisabled">Publish</button>
+        </div>
+    </div>
+</div>

@@ -3,6 +3,7 @@ import { safetyRunning } from '../../utils/safety-running.js';
 import { MessageType, MessageAction, IPFS_CID_PATTERN } from '@indexer/interfaces';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';
+import { SchemaFileHelper } from '../../helpers/schema-file-helper.js';
 
 interface ICoord {
     coordinates: string,
@@ -33,6 +34,9 @@ export class SynchronizationProjects extends SynchronizationTask {
             type: MessageType.VC_DOCUMENT,
             action: MessageAction.CreateVC,
             consensusTimestamp: { $nin: projectLocations },
+        }, {
+            sort: { coordUpdate: 1 },
+            limit: 100000
         });
 
         console.log(`Sync projects: load documents`)
@@ -53,8 +57,10 @@ export class SynchronizationProjects extends SynchronizationTask {
         const schemas = collection.find({ type: MessageType.SCHEMA });
         while (await schemas.hasNext()) {
             const schema = await schemas.next();
-            if (schema.files && schema.files[Files.CONTEXT_FILE]) {
-                fileIds.add(schema.files[Files.CONTEXT_FILE]);
+            const contextCID = SchemaFileHelper.getContextFile(schema);
+
+            if (contextCID) {
+                fileIds.add(contextCID);
             }
         }
 
@@ -75,6 +81,15 @@ export class SynchronizationProjects extends SynchronizationTask {
             }
         }
         // await em.flush();
+
+        console.log(`Sync VCs: update data`);
+        for (const document of allDocuments) {
+            const row = em.getReference(Message, document._id);
+            row.coordUpdate = Date.now();
+            em.persist(row);
+        }
+        console.log(`Sync VCs: flush`)
+        await em.flush();
     }
 
     private updateGeoCoordinates(
@@ -89,6 +104,7 @@ export class SynchronizationProjects extends SynchronizationTask {
         if (!subject) {
             return null;
         }
+
         const schemaContexts = this.getContexts(documentFile, fileMap);
         for (const context of schemaContexts) {
             this.checkForGeoJson(

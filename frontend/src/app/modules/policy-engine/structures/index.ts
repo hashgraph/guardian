@@ -14,6 +14,7 @@ export { PolicyNavigationStepModel } from './policy-models/policy/policy-navigat
 export { Options } from './storage/config-options';
 export { Stack } from './storage/storage';
 export { PolicyStorage } from './storage/policy-storage';
+export { DocumentAutosaveStorage } from './storage/document-autosave-storage';
 export { ThemeRule } from './storage/theme-rule';
 export { ThemeSettings } from './storage/theme-settings';
 export { Theme } from './storage/theme';

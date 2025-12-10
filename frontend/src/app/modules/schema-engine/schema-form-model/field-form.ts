@@ -41,9 +41,18 @@ export interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGr
 }
 
 export interface IConditionControl<T extends UntypedFormControl | UntypedFormGroup | UntypedFormArray> extends IFieldControl<T> {
-    conditionFieldName?: string,
-    conditionFieldValue?: any,
-    conditionInvert: boolean
+    conditionExpr: IConditionExpr;
+    conditionInvert: boolean;
+    dependsOn: string[];
+}
+type IfOp = 'SINGLE' | 'AND' | 'OR';
+interface IConditionPair {
+    name: string;
+    value: any;
+}
+interface IConditionExpr {
+    op: IfOp;
+    pairs: IConditionPair[];
 }
 
 export class FieldForm {
@@ -65,9 +74,12 @@ export class FieldForm {
     private readonly conditionFields: Set<string>;
     private readonly destroy$: Subject<boolean>;
 
-    constructor(form: UntypedFormGroup, lvl: number = 0) {
+    private readonly validateLikeDryRun?: boolean;
+
+    constructor(form: UntypedFormGroup, lvl: number = 0, validateLikeDryRun = false) {
         this.form = form;
         this.lvl = lvl;
+        this.validateLikeDryRun = validateLikeDryRun;
         this.privateFields = {};
         this.conditionFields = new Set<string>();
         this.destroy$ = new Subject<boolean>();
@@ -79,6 +91,34 @@ export class FieldForm {
     public destroy() {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
+    }
+
+    private normalizeIfCondition(raw: any): IConditionExpr {
+        if (raw?.OR) {
+            return {
+                op: 'OR',
+                pairs: (raw.OR || []).map((r: any) => ({
+                    name: r?.field?.name || r?.field?.key || r?.field,
+                    value: r?.fieldValue
+                }))
+            };
+        }
+        if (raw?.AND) {
+            return {
+                op: 'AND',
+                pairs: (raw.AND || []).map((r: any) => ({
+                    name: r?.field?.name || r?.field?.key || r?.field,
+                    value: r?.fieldValue
+                }))
+            };
+        }
+        return {
+            op: 'SINGLE',
+            pairs: [{
+                name: raw?.field?.name || raw?.field?.key || raw?.field,
+                value: raw?.fieldValue
+            }]
+        };
     }
 
     public setData(data: {
@@ -138,10 +178,10 @@ export class FieldForm {
         this.conditionFields.clear();
         if (conditions) {
             for (const condition of conditions) {
-                for (const field of condition.thenFields) {
+                for (const field of (condition.thenFields || [])) {
                     this.conditionFields.add(field.name);
                 }
-                for (const field of condition.elseFields) {
+                for (const field of (condition.elseFields || [])) {
                     this.conditionFields.add(field.name);
                 }
             }
@@ -150,6 +190,32 @@ export class FieldForm {
         return { fields, conditions }
     }
 
+    private equalsLoosely(a: any, b: any): boolean {
+        const an = (typeof a === 'number') ? a : (typeof a === 'string' && a.trim() !== '' && !isNaN(+a) ? +a : NaN);
+        const bn = (typeof b === 'number') ? b : (typeof b === 'string' && b.trim() !== '' && !isNaN(+b) ? +b : NaN);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an === bn;
+
+        const ad = moment(a); const bd = moment(b);
+        if (ad.isValid() && bd.isValid()) return ad.toISOString() === bd.toISOString();
+
+        const as = (a ?? '').toString().trim();
+        const bs = (b ?? '').toString().trim();
+        return as === bs;
+    }
+
+    private evaluateIf(expr: IConditionExpr): boolean {
+        if (!expr || !expr.pairs?.length) return false;
+
+        const test = (p: IConditionPair) => {
+            const c = this.form.controls[p.name];
+            if (!c) return false;
+            return this.equalsLoosely(c.value, p.value);
+        };
+
+        if (expr.op === 'SINGLE') return test(expr.pairs[0]);
+        if (expr.op === 'AND') return expr.pairs.every(test);
+        return expr.pairs.some(test);
+    }
 
     private buildFields(fields: SchemaField[] | undefined): IFieldControl<any>[] | null {
         if (!fields) {
@@ -176,36 +242,35 @@ export class FieldForm {
         return controls;
     }
 
-
     private buildConditions(conditions: SchemaCondition[] | undefined): IConditionControl<any>[] | null {
-        if (!conditions) {
-            return null;
-        }
+        if (!conditions) return null;
 
         const controls: IConditionControl<any>[] = [];
+
         for (const condition of conditions) {
-            const name = condition.ifCondition?.field?.name;
-            const value = condition.ifCondition?.fieldValue;
+            const expr = this.normalizeIfCondition((condition as any).ifCondition);
+            const deps = Array.from(new Set(expr.pairs.map(p => p.name).filter(Boolean)));
             for (const thenField of condition.thenFields) {
                 const fieldControl = this.createFieldControl(thenField, this.preset);
                 const item: IConditionControl<any> = {
                     ...fieldControl,
-                    conditionFieldName: name,
-                    conditionFieldValue: value,
+                    conditionExpr: expr,
                     conditionInvert: false,
+                    dependsOn: deps,
                     visibility: false
-                }
+                };
                 controls.push(item);
             }
-            for (const elseField of condition.elseFields) {
+
+            for (const elseField of (condition.elseFields || [])) {
                 const fieldControl = this.createFieldControl(elseField, this.preset);
                 const item: IConditionControl<any> = {
                     ...fieldControl,
-                    conditionFieldName: name,
-                    conditionFieldValue: value,
+                    conditionExpr: expr,
                     conditionInvert: true,
+                    dependsOn: deps,
                     visibility: false
-                }
+                };
                 controls.push(item);
             }
         }
@@ -213,7 +278,6 @@ export class FieldForm {
         for (const item of controls) {
             item.visibility = this.checkConditionValue(item);
             if (item.control && item.visibility) {
-                // this.form.removeControl(item.name);
                 this.form.addControl(item.name, item.control, { emitEvent: false });
             }
         }
@@ -229,42 +293,99 @@ export class FieldForm {
             })
     }
 
-    private rebuildControls(): IFieldControl<any>[] {
-        const controls: IFieldControl<any>[] = [];
-        if (this.fieldControls) {
-            for (const fieldControl of this.fieldControls) {
-                fieldControl.visibility = this.ifFieldVisible(fieldControl);
-                controls.push(fieldControl);
-                if (this.conditionControls) {
-                    for (const conditionControl of this.conditionControls) {
-                        if (conditionControl.conditionFieldName === fieldControl.name) {
-                            conditionControl.visibility = this.checkConditionValue(conditionControl);
-                            controls.push(conditionControl);
-                        }
-                    }
-                }
+    private getLastVisibleIndexByNames(arr: IFieldControl<any>[], names: string[]): number {
+        if (!names?.length) {
+            return -1;
+        }
+        const nameSet = new Set(names);
+        let idx = -1;
+        for (let i = 0; i < arr.length; i++) {
+            const it = arr[i];
+            if (it.visibility && nameSet.has(it.name)) {
+                idx = i;
             }
         }
-        return controls;
+        return idx;
+    }
+
+    private rebuildControls(): IFieldControl<any>[] {
+        const result: IFieldControl<any>[] = [];
+
+        if (this.fieldControls) {
+            for (const base of this.fieldControls) {
+                base.visibility = this.ifFieldVisible(base);
+                result.push(base);
+            }
+        }
+
+        if (this.conditionControls?.length) {
+            for (const cc of this.conditionControls) {
+                cc.visibility = this.checkConditionValue(cc);
+            }
+
+            const unplaced = new Set(this.conditionControls.map(c => c.id));
+            const byId = new Map(this.conditionControls.map(c => [c.id, c]));
+
+            const max = this.conditionControls.length || 1;
+            for (let pass = 0; pass < max && unplaced.size; pass++) {
+                let placedThisPass = 0;
+
+                for (const id of Array.from(unplaced)) {
+                    const cc = byId.get(id)!;
+
+                    const anchorIdx = this.getLastVisibleIndexByNames(result, cc.dependsOn);
+
+                    if (anchorIdx >= 0) {
+                        result.splice(anchorIdx + 1, 0, cc);
+                        unplaced.delete(id);
+                        placedThisPass++;
+                    }
+                }
+
+                if (!placedThisPass) {
+                    break;
+                }
+            }
+
+            for (const id of unplaced) {
+                const cc = byId.get(id)!;
+                result.push(cc);
+            }
+        }
+
+        return result;
     }
 
     private rebuildConditions(force: boolean = true) {
-        let needUpdate = false;
-        if (this.conditionControls) {
+        if (!this.conditionControls) return;
+
+        let anyChanged = false;
+        const MAX = this.conditionControls.length || 1;
+
+        for (let pass = 0; pass < MAX; pass++) {
+            let passChanged = false;
+
             for (const item of this.conditionControls) {
                 const visibility = this.checkConditionValue(item);
-                if (visibility !== item.visibility || force) {
+                const wasVisible = !!item.visibility;
+
+                if (force || visibility !== wasVisible) {
                     item.visibility = visibility;
                     this.form.removeControl(item.name, { emitEvent: false });
                     if (item.control && item.visibility) {
                         this.form.addControl(item.name, item.control, { emitEvent: false });
                     }
-                    needUpdate = true;
+                    passChanged = true;
                 }
             }
+
+            anyChanged = anyChanged || passChanged;
+            if (!passChanged) break;
         }
-        if (needUpdate) {
-            this.form.updateValueAndValidity();
+
+        if (anyChanged) {
+            this.controls = this.rebuildControls();
+            this.form.updateValueAndValidity({ emitEvent: false });
         }
     }
 
@@ -317,7 +438,7 @@ export class FieldForm {
             form.build();
             return form;
         } else {
-            const form = new FieldForm(control, this.lvl + 1);
+            const form = new FieldForm(control, this.lvl + 1, this.validateLikeDryRun);
             form.setData({
                 fields,
                 conditions,
@@ -329,18 +450,9 @@ export class FieldForm {
         }
     }
 
-    private checkConditionValue(conditionControl: IConditionControl<any>): boolean {
-        if (conditionControl.conditionFieldName) {
-            const control = this.form.controls[conditionControl.conditionFieldName];
-            if (control) {
-                if (conditionControl.conditionInvert) {
-                    return control.value !== conditionControl.conditionFieldValue;
-                } else {
-                    return control.value === conditionControl.conditionFieldValue;
-                }
-            }
-        }
-        return false;
+    private checkConditionValue(item: IConditionControl<any>): boolean {
+        const ok = this.evaluateIf(item.conditionExpr);
+        return item.conditionInvert ? !ok : ok;
     }
 
     private ifSubSchema(item: IFieldControl<any>): boolean {
@@ -380,6 +492,19 @@ export class FieldForm {
             validators.push(Validators.required);
         }
 
+        // dryRun
+        validators.push(({ value }: any) => {
+            const errors = this.validateMaybeIpfs(`${value}`, this.isIPFS(item.pattern));
+
+            if (errors) {
+                return {
+                    [item.id]: errors,
+                }
+            }
+
+            return null;
+        })
+
         if (item.pattern) {
             validators.push(Validators.pattern(new RegExp(item.pattern)));
             return validators;
@@ -410,6 +535,80 @@ export class FieldForm {
         }
 
         return validators;
+    }
+
+    private isIPFS(pattern: string): boolean {
+        return pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+'
+            || pattern === '^ipfs:\/\/.+';
+    }
+
+    private validateMaybeIpfs(
+        input: string,
+        forceIpfs: boolean = false
+    ): string | null {
+        const value = (input ?? '').trim();
+        if (!value) {
+            return null;
+        }
+
+        const ipfsLike = forceIpfs || this.looksLikeIpfs(value);
+        if (!ipfsLike) {
+            return null;
+        }
+
+        const cid = this.extractCid(value);
+        if (!cid) {
+            return 'Invalid IPFS link: CID not found';
+        }
+
+        if (!this.validateLikeDryRun && !this.isLikelyCid(cid)) {
+            return 'Invalid IPFS CID/URL';
+        }
+
+        return null;
+    }
+
+    private looksLikeIpfs(s: string): boolean {
+        if (s.startsWith('ipfs://')) return true;
+        if (/\/ipfs\/[^/?#]+/i.test(s)) return true;
+        return this.isLikelyCid(s);
+    }
+
+    private extractCid(s: string): string | null {
+        if (s.startsWith('ipfs://')) {
+            const after = s.slice('ipfs://'.length);
+            const cid = after.split(/[/?#]/, 1)[0];
+            return cid || null;
+        }
+        const m = /\/ipfs\/([^/?#]+)/i.exec(s);
+        if (m?.[1]) return m[1];
+
+        return s;
+    }
+
+    private isLikelyCid(s: string): boolean {
+        return this.isCidV0(s) || this.isCidV1Base32Lower(s) || this.isCidV1Base32Upper(s) || this.isCidV1Base36Lower(s);
+    }
+
+    /** CIDv0 */
+    private isCidV0(s: string): boolean {
+        const base58 = /^[1-9A-HJ-NP-Za-km-z]+$/;
+        return s.length === 46 && s.startsWith('Qm') && base58.test(s);
+    }
+
+    /** CIDv1 (base32 lower) */
+    private isCidV1Base32Lower(s: string): boolean {
+        return /^b[a-z2-7]{30,}$/.test(s);
+    }
+
+    /** CIDv1 (base32 upper) */
+    private isCidV1Base32Upper(s: string): boolean {
+        return /^B[A-Z2-7]{30,}$/.test(s);
+    }
+
+    /** CIDv1 (base36 lower) */
+    private isCidV1Base36Lower(s: string): boolean {
+        return /^k[0-9a-z]{30,}$/.test(s);
     }
 
     private isNumberOrEmptyValidator(): ValidatorFn {
@@ -641,7 +840,6 @@ export class FieldForm {
             });
     }
 
-
     private createArrayControl(): UntypedFormArray {
         return new UntypedFormArray([]);
     }
@@ -693,7 +891,7 @@ export class FieldForm {
 
     public removeItem(item: IFieldControl<any>, listItem: IFieldIndexControl<any>) {
         if (item.list) {
-            listItem.model?.destroy();
+            listItem.model?.destroy?.();
             const index = item.list.indexOf(listItem);
             item.control.removeAt(index);
             item.list.splice(index, 1);
@@ -716,6 +914,10 @@ export class FieldForm {
             if (this.fieldControls) {
                 this.fieldControls = this.fieldControls.map(field => field === item ? newItem : field);
             }
+
+            this.controls = this.rebuildControls();
+            this.form.updateValueAndValidity({ emitEvent: true });
+
             newItem.control?.markAsDirty();
             return;
         }

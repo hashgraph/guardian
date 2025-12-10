@@ -16,8 +16,11 @@ const PoliciesPageLocators = {
     createButton: "Create",
     exportPolicy: "Export policy",
     exportFileButton: " Save to file ",
+    BackToManagePolicies: "Back to Manage Policies",
     exportMessageIdButton: " Copy message identifier ",
     publishPolicyButton: 'Publish',
+    discontinuePolicyButton: ' Discontinue ',
+    discontinuePolicyOkButton: 'button[ng-reflect-label="OK"]',
     versionInput: 'input[id="version"]',
     importButton: 'button:contains("Import")',
     importIPFSOption: " Import from IPFS ",
@@ -131,6 +134,11 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.backButton).click({ force: true });
     }
 
+    backToPoliciesListBtn() {
+        Checks.waitForLoading();
+        cy.contains(PoliciesPageLocators.BackToManagePolicies).click({ force: true });
+    }
+
     checkStatus(name, status) {
         cy.contains("td", name).siblings().contains(status).should("exist");
     }
@@ -193,6 +201,13 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.versionInput).type("0.8.4");
         cy.contains(CommonElements.Button, PoliciesPageLocators.publishPolicyButton).click();
         Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
+    }
+
+    discontinuePolicy(name) {
+        cy.contains("td", name).siblings().eq(3).click();
+        cy.contains("div.dropdown-item-title", PoliciesPageLocators.discontinuePolicyButton).click();
+        cy.contains("span", 'Immediate').click();
+        cy.get(PoliciesPageLocators.discontinuePolicyOkButton).click();
     }
 
     importPolicyFromFile(policyFileName) {

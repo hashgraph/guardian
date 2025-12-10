@@ -58,6 +58,13 @@ export class RegistriesComponent extends BaseGridComponent {
 
     columns: any[] = [
         {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+        {
             type: ColumnType.CHECK_BOX,
             title: 'grid.prioritize',
             checkField: 'options.registrantTopicId',
@@ -73,12 +80,36 @@ export class RegistriesComponent extends BaseGridComponent {
             }
         },
         {
+            type: ColumnType.TEXT,
+            field: 'options.attributes.OrganizationName',
+            title: 'grid.name',
+            width: '400px',
+        },
+        {
             type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
             width: '250px',
             sort: true,
             hederaType: HederaType.TRANSACTION,
+        },
+        {
+            type: ColumnType.HEDERA,
+            field: 'owner',
+            title: 'grid.account_id',
+            width: '150px',
+            hederaType: HederaType.ACCOUNT,
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'options.registrantTopicId',
+            title: 'grid.registrantTopicId',
+            width: '150px',
+            sort: true,
+            link: {
+                field: 'options.registrantTopicId',
+                url: '/topics',
+            },
         },
         {
             type: ColumnType.TEXT,
@@ -93,53 +124,6 @@ export class RegistriesComponent extends BaseGridComponent {
                 return formattedDate;
             }
         },
-        {
-            type: ColumnType.TEXT,
-            field: 'topicId',
-            title: 'grid.init_topic_id',
-            width: '150px',
-            link: {
-                field: 'topicId',
-                url: '/topics',
-            },
-        },
-        {
-            type: ColumnType.HEDERA,
-            field: 'owner',
-            title: 'grid.account_id',
-            width: '150px',
-            hederaType: HederaType.ACCOUNT,
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'options.attributes.OrganizationName',
-            title: 'grid.name',
-            width: '150px',
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'options.did',
-            title: 'grid.did',
-            width: '650px',
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'options.registrantTopicId',
-            title: 'grid.registrantTopicId',
-            width: '150px',
-            sort: true,
-            link: {
-                field: 'options.registrantTopicId',
-                url: '/topics',
-            },
-        },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
-        },
     ];
 
     constructor(
@@ -152,6 +136,10 @@ export class RegistriesComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(
             new Filter({
                 label: 'grid.filter.topic_id',

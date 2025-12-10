@@ -44,6 +44,9 @@ import { PolicyStatisticsApi } from './api/service/policy-statistics.js';
 import { SchemaRulesApi } from './api/service/schema-rules.js';
 import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/index.js';
 import { PolicyLabelsApi } from './api/service/policy-labels.js';
+import { PolicyCommentsApi } from './api/service/policy-comments.js';
+import { PolicyRepositoryApi } from './api/service/policy-repository.js';
+import { RelayerAccountsApi } from './api/service/relayer-accounts.js';
 import { FormulasApi } from './api/service/formulas.js';
 import { ExternalPoliciesApi } from './api/service/external-policy.js';
 
@@ -102,6 +105,9 @@ import { ExternalPoliciesApi } from './api/service/external-policy.js';
         FormulasApi,
         ExternalPoliciesApi,
         PolicyLabelsApi,
+        PolicyCommentsApi,
+        PolicyRepositoryApi,
+        RelayerAccountsApi,
         WorkerTasksController
     ],
     providers: [

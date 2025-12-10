@@ -52,35 +52,35 @@ import { HederaType } from '@components/hedera-explorer/hedera-explorer.componen
 export class LabelDocumentsComponent extends BaseGridComponent {
     columns: any[] = [
         {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'analytics.labelName',
+            title: 'grid.name',
+            width: '500px',
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'options.target',
+            title: 'grid.target',
+            width: '250px',
+            link: {
+                field: 'options.target',
+                url: '/vp-documents',
+            },
+        },
+        {
             type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
             width: '250px',
             sort: true,
             hederaType: HederaType.TRANSACTION,
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'consensusTimestamp',
-            title: 'grid.date',
-            width: '250px',
-            sort: true,
-            formatValue: (value: any) => {
-                const fixedTimestamp = Math.floor(value * 1000);
-                value = new Date(fixedTimestamp);
-                const formattedDate = value.toLocaleString();
-                return formattedDate;
-            }
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'topicId',
-            title: 'grid.topic_id',
-            width: '125px',
-            link: {
-                field: 'topicId',
-                url: '/topics',
-            },
         },
         {
             type: ColumnType.TEXT,
@@ -94,33 +94,13 @@ export class LabelDocumentsComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.TEXT,
-            field: 'options.target',
-            title: 'grid.target',
-            width: '250px',
+            field: 'topicId',
+            title: 'grid.topic_id',
+            width: '125px',
             link: {
-                field: 'options.target',
-                url: '/vp-documents',
+                field: 'topicId',
+                url: '/topics',
             },
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'analytics.labelName',
-            title: 'grid.name',
-            width: '400px',
-        },
-        {
-            type: ColumnType.CHIP,
-            field: 'status',
-            title: 'grid.status',
-            width: '100px',
-            sort: true
-        },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
         },
     ];
 
@@ -131,6 +111,10 @@ export class LabelDocumentsComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(
             new Filter({
                 label: 'grid.filter.topic_id',

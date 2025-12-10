@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MigrationConfig, PolicyAvailability, PolicyToolMetadata } from '@guardian/interfaces';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { headersV2 } from '../constants';
 import { API_BASE_URL } from './api';
 
@@ -113,19 +113,33 @@ export class PolicyEngineService {
         return this.http.post<any>(`${this.url}/validate`, policy);
     }
 
-    public policyBlock(policyId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${policyId}/blocks`);
+    public policyBlock(policyId: string, savepointIds: string[] | null): Observable<any> {
+        let params = new HttpParams();
+
+        if (savepointIds) {
+            params = params.set('savepointIds', JSON.stringify(savepointIds));
+        }
+
+        return this.http.get<any>(`${this.url}/${policyId}/blocks`, { params });
     }
 
-    public getBlockData<T>(blockId: string, policyId: string, filters?: any): Observable<T> {
-        return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}`, {
-            // TODO: Is it used?
-            params: filters
-        });
+    public getBlockData<T>(blockId: string, policyId: string, savepointIds?: string[] | null): Observable<T> {
+        let params = new HttpParams();
+
+        if (savepointIds) {
+            params = params.set('savepointIds', JSON.stringify(savepointIds));
+        }
+
+        return this.http.get<T>(`${this.url}/${policyId}/blocks/${blockId}`, { params });
     }
 
-    public getBlockDataByName(blockName: string, policyId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${policyId}/tag/${blockName}/blocks`);
+    public getBlockDataByName(blockName: string, policyId: string, savepointIds?: string[] | null): Observable<any> {
+        let params = new HttpParams();
+
+        if (savepointIds) {
+            params = params.set('savepointIds', JSON.stringify(savepointIds));
+        }
+        return this.http.get<any>(`${this.url}/${policyId}/tag/${blockName}/blocks`, { params });
     }
 
     public setBlockData(blockId: string, policyId: string, data: any): Observable<any> {
@@ -235,8 +249,15 @@ export class PolicyEngineService {
         });
     }
 
-    public pushImportByXlsx(policyFile: any, policyId: string): Observable<{ taskId: string, expectation: number }> {
+    public pushImportByXlsx(policyFile: any, policyId: string, schemasForReplace?: string[]): Observable<{ taskId: string, expectation: number }> {
         var query = policyId ? `?policyId=${policyId}` : '';
+        if (schemasForReplace?.length) {
+            if (query) {
+                query = `${query}&schemas=${schemasForReplace.join(',')}`
+            } else {
+                query = `?schemas=${schemasForReplace.join(',')}`
+            }
+        }
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/xlsx${query}`, policyFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream'
@@ -248,12 +269,18 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/blocks/about`);
     }
 
-    public getVirtualUsers(policyId: string): Observable<any[]> {
-        return this.http.get<any>(`${this.url}/${policyId}/dry-run/users`);
+    public getVirtualUsers(policyId: string, savepointIds: string[] | null): Observable<any[]> {
+        let params = new HttpParams();
+
+        if (savepointIds?.length) {
+            params = params.set('savepointIds', JSON.stringify(savepointIds));
+        }
+
+        return this.http.get<any[]>(`${this.url}/${policyId}/dry-run/users`, { params });
     }
 
-    public createVirtualUser(policyId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/dry-run/user`, null);
+    public createVirtualUser(policyId: string, savepointIds: string[] | null): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/user`, { savepointIds });
     }
 
     public loginVirtualUser(policyId: string, did: string): Observable<any> {
@@ -272,20 +299,60 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/${policyId}/dry-run/block/${tag}/history`);
     }
 
-    public createSavepoint(policyId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/savepoint/create`, null);
+    public getSavepoints(policyId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/savepoints`);
     }
 
-    public deleteSavepoint(policyId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/savepoint/delete`, null);
+    public getSavepointsCount(
+        policyId: string,
+        includeDeleted = false
+    ): Observable<any> {
+        let params = new HttpParams();
+        if (includeDeleted) {
+            params = params.set('includeDeleted', 'true');
+        }
+        return this.http.get<any>(
+            `${this.url}/${policyId}/savepoints/count`,
+            { params }
+        );
     }
 
-    public restoreSavepoint(policyId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/savepoint/restore`, null);
+    public createSavepoint(
+        policyId: string,
+        body: { name: string; savepointPath: string[] }
+    ): Observable<{ savepoint: any }> {
+        return this.http.post<{ savepoint: any }>(
+            `${this.url}/${policyId}/savepoints`,
+            body
+        );
     }
 
-    public getSavepointState(policyId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${policyId}/savepoint/restore`);
+    public updateSavepoint(policyId: string, savepointId: string, body: { name: string }) {
+        return this.http.patch<void>(
+            `${this.url}/${policyId}/savepoints/${savepointId}`,
+            body
+        );
+    }
+
+    public selectSavepoint(
+        policyId: string,
+        savepointId: string
+    ): Observable<{ savepoint: any }> {
+        return this.http.put<{ savepoint: any }>(
+            `${this.url}/${policyId}/savepoints/${savepointId}`,
+            null
+        );
+    }
+
+    public deleteSavepoints(
+        policyId: string,
+        savepointIds: string[],
+        skipCurrentSavepointGuard = false
+    ): Observable<{ hardDeletedIds: string[] }> {
+        return this.http.post<{ hardDeletedIds: string[] }>(
+            `${this.url}/${policyId}/savepoints/delete`,
+            { savepointIds, skipCurrentSavepointGuard }
+        );
     }
 
     public loadDocuments(
@@ -305,21 +372,17 @@ export class PolicyEngineService {
         includeDocument: boolean = false,
         type: string,
         pageIndex?: number,
-        pageSize?: number
+        pageSize?: number,
+        filters?: any
     ): Observable<HttpResponse<any[]>> {
-        const params: any = {}
+        filters = filters || {};
         if (includeDocument) {
-            params.includeDocument = includeDocument;
+            filters.includeDocument = includeDocument;
         }
         if (type) {
-            params.type = type;
+            filters.type = type;
         }
-        if (Number.isInteger(pageIndex)) {
-            params.pageIndex = pageIndex;
-        }
-        if (Number.isInteger(pageSize)) {
-            params.pageSize = pageSize;
-        }
+        const params = PolicyEngineService.getOptions(filters, pageIndex, pageSize);
         return this.http.get<any>(`${this.url}/${policyId}/documents`, { observe: 'response', params });
     }
 
@@ -361,8 +424,14 @@ export class PolicyEngineService {
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/migrate-data`, migrationConfig);
     }
 
-    public getGroups(policyId: string): Observable<any[]> {
-        return this.http.get<any>(`${this.url}/${policyId}/groups`);
+    public getGroups(policyId: string, savepointIds: string[] | null): Observable<any[]> {
+        let params = new HttpParams();
+
+        if (savepointIds?.length) {
+            params = params.set('savepointIds', JSON.stringify(savepointIds));
+        }
+
+        return this.http.get<any[]>(`${this.url}/${policyId}/groups`, { params });
     }
 
     public setGroup(policyId: string, uuid: string): Observable<any> {
@@ -377,8 +446,14 @@ export class PolicyEngineService {
         return this.http.post<void>(`${this.url}/${policyId}/multiple`, data);
     }
 
-    public getPolicyNavigation(policyId: string): Observable<any> {
-        return this.http.get<void>(`${this.url}/${policyId}/navigation`);
+    public getPolicyNavigation(policyId: string, savepointIds?: string[] | null): Observable<any> {
+        let params = new HttpParams();
+
+        if (savepointIds) {
+            params = params.set('savepointIds', JSON.stringify(savepointIds));
+        }
+
+        return this.http.get<void>(`${this.url}/${policyId}/navigation`, { params });
     }
 
     public getPolicyCategories(): Observable<any[]> {

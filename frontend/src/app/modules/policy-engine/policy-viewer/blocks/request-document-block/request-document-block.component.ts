@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { DocumentGenerator, DocumentValidators, ISchema, Schema } from '@guardian/interfaces';
+import { FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { DocumentGenerator, DocumentValidators, ISchema, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -10,12 +10,17 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { audit, takeUntil } from 'rxjs/operators';
-import { interval, Subject } from 'rxjs';
+import { audit, finalize, takeUntil } from 'rxjs/operators';
+import { interval, Subject, Subscription, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { MergeUtils } from 'src/app/utils';
 import { ToastrService } from 'ngx-toastr';
+import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
+import { DocumentAutosaveStorage } from '../../../structures';
+import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
+import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { PolicyStatus } from '@guardian/interfaces';
+import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -25,7 +30,9 @@ interface IRequestDocumentData {
     presetFields: any[];
     restoreData: any;
     data: any;
-    draftDocument: any;
+    relayerAccount: boolean;
+    draft: boolean;
+    editType: 'new' | 'edit';
     uiMetaData: {
         type: string;
         title: string;
@@ -35,6 +42,7 @@ interface IRequestDocumentData {
         buttonClass: string;
         dialogContent: string;
         dialogClass: string;
+        hideWhenDiscontinued?: boolean;
     }
 }
 
@@ -54,8 +62,10 @@ export class RequestDocumentBlockComponent
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
+    @Input('savepointIds') savepointIds?: string[] | null = null;
+    @Input('policyStatus') policyStatus!: string;
 
-    @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
+    @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
 
     public isExist = false;
     public disabled = false;
@@ -74,6 +84,7 @@ export class RequestDocumentBlockComponent
     public presetReadonlyFields: any;
     public dialogTitle: any;
     public dialogClass: any;
+    public hideWhenDiscontinued: any;
     public dialogRef: any;
     public buttonClass: any;
     public restoreData: any;
@@ -81,8 +92,32 @@ export class RequestDocumentBlockComponent
     public rulesResults: any;
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public readonly: boolean = false;
-    public draftDocument: any;
+    public draft: boolean;
+    public relayerAccount: boolean;
+    public draftId?: string;
     public dialog: RequestDocumentBlockDialog;
+    public edit: boolean;
+    private storage: DocumentAutosaveStorage;
+    private stepper = [true, false, false];
+    public relayerAccountType: string = 'account';
+    public currentRelayerAccount: string;
+    public relayerAccounts: any[] = [];
+    public relayerAccountForm = new FormGroup({
+        name: new FormControl<string>('', Validators.required),
+        account: new FormControl<string>('', Validators.required),
+        key: new FormControl<string>('', Validators.required),
+    });
+    public submitText: string = 'Validate & Create';
+    public isLocalUser: boolean = true;
+    public remoteWarning: boolean = false;
+
+    public get needRemoteWarning () {
+        return !this.isLocalUser && this.relayerAccountType !== 'account';
+    }
+
+    public get isRemoteWarning() {
+        return this.needRemoteWarning && !this.remoteWarning;
+    }
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -90,14 +125,19 @@ export class RequestDocumentBlockComponent
         profile: ProfileService,
         policyHelper: PolicyHelper,
         private schemaRulesService: SchemaRulesService,
+        private relayerAccountsService: RelayerAccountsService,
         private fb: UntypedFormBuilder,
         private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        private savepointFlow: SavepointFlowService,
+        private indexedDb: IndexedDbRegistryService,
+        private tablePersist: TablePersistenceService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
+        this.storage = new DocumentAutosaveStorage(indexedDb);
     }
 
     ngOnInit(): void {
@@ -112,6 +152,25 @@ export class RequestDocumentBlockComponent
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
         this.destroy();
+    }
+
+    public __validate() {
+        const errors: string[] = [];
+        const dataForm = this.dialog?.dataForm || this.dataForm;
+        this.__findError(dataForm, errors, '');
+        console.log(errors);
+    }
+
+    private __findError(form: any, errors: any[], parent: string) {
+        Object.keys(form.controls).forEach(key => {
+            const control = form.get(key);
+            if (control && !control.valid) {
+                errors.push(`${parent}${key}`);
+                if (control.controls) {
+                    this.__findError(control, errors, `${parent}${key}.`);
+                }
+            }
+        });
     }
 
     public initForm($event: any) {
@@ -140,7 +199,6 @@ export class RequestDocumentBlockComponent
             }, 500);
         } else if (this.type === 'page') {
             this.loadRules();
-            this.draftDocument && this.showDraftDialog();
         } else {
             setTimeout(() => {
                 this.loading = false;
@@ -148,8 +206,21 @@ export class RequestDocumentBlockComponent
         }
     }
 
+    async showAutosaveDiag() {
+        const autosaveId = this.getAutosaveId();
+        const autosaveDocument = await this.storage.load(autosaveId);
+
+        if (autosaveDocument) {
+            this.showAutosaveDialog(autosaveDocument);
+        }
+    }
+
     override setData(data: IRequestDocumentData) {
         if (data) {
+            const isDraft = data.data?.draft ?? false;
+
+
+            this.isLocalUser = this.user.location === LocationType.LOCAL;
             this.readonly = !!data.readonly;
             const uiMetaData = data.uiMetaData;
             const row = data.data;
@@ -157,9 +228,12 @@ export class RequestDocumentBlockComponent
             const active = data.active;
             this.ref = row;
             this.type = uiMetaData.type;
+            this.edit = data.editType === 'edit';
             this.schema = new Schema(schema);
             this.hideFields = {};
-            this.draftDocument = data.draftDocument;
+            this.relayerAccount = !!data.relayerAccount && !this.dryRun;
+            this.draft = isDraft;
+            this.draftId = (isDraft && row) ? row.id : null;
             if (uiMetaData.privateFields) {
                 for (
                     let index = 0;
@@ -175,6 +249,7 @@ export class RequestDocumentBlockComponent
                 this.buttonClass = uiMetaData.buttonClass;
                 this.dialogTitle = uiMetaData.dialogContent;
                 this.dialogClass = uiMetaData.dialogClass;
+                this.hideWhenDiscontinued = !!uiMetaData.hideWhenDiscontinued;
                 this.description = uiMetaData.description;
             }
             if (this.type == 'page') {
@@ -200,6 +275,19 @@ export class RequestDocumentBlockComponent
             this.disabled = false;
             this.isExist = false;
         }
+        if (this.relayerAccount) {
+            this.submitText = 'Select Relayer Account';
+        } else {
+            this.submitText = (this.edit && !this.draft) ? 'Validate & Update' : 'Validate & Create';
+        }
+    }
+
+    isBtnVisible() {
+        if (this.policyStatus === PolicyStatus.DISCONTINUED && this.hideWhenDiscontinued) {
+            return false;
+        }
+
+        return true;
     }
 
     private loadRules() {
@@ -211,6 +299,22 @@ export class RequestDocumentBlockComponent
             })
             .subscribe((rules) => {
                 this.rules = new DocumentValidators(rules);
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+
+    private loadRelayerAccounts() {
+        this.loading = true;
+        this.relayerAccountsService
+            .getRelayerAccountsAll()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((relayerAccounts: any[]) => {
+                this.relayerAccounts = relayerAccounts;
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -250,87 +354,126 @@ export class RequestDocumentBlockComponent
         return null;
     }
 
-    public onSubmit(draft?: boolean) {
+    public async onStep(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
         if (this.dataForm.valid || draft) {
-            const data = this.dataForm.getRawValue();
-            this.loading = true;
-            prepareVcData(data);
-            this.policyEngineService
-                .setBlockData(this.id, this.policyId, {
-                    document: data,
-                    ref: this.ref,
-                    draft
-                })
-                .subscribe(() => {
-                    setTimeout(() => {
-                        this.loading = false;
-                        if (draft) {
-                            this.draftDocument = {
-                                policyId: this.policyId,
-                                user: this.user.did,
-                                blockId: this.id,
-                                data
-                            };
-
-                            this.toastr.success('The draft version of the document was saved successfully', '', {
-                                timeOut: 3000,
-                                closeButton: true,
-                                positionClass: 'toast-bottom-right',
-                                enableHtml: true,
-                            });
-                        }
-                    }, 1000);
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                });
+            if (this.relayerAccount) {
+                if (this.isStep(0)) {
+                    this.setStep(1);
+                    this.loadRelayerAccounts();
+                } else {
+                    await this.onSubmit(draft);
+                }
+            } else {
+                await this.onSubmit(draft);
+            }
         }
+    }
+
+    private getRelayerAccount() {
+        if (this.relayerAccount) {
+            if (this.relayerAccountType === 'account') {
+                return null;
+            } else if (this.relayerAccountType === 'relayerAccount') {
+                return this.currentRelayerAccount;
+            } else if (this.relayerAccountType === 'new') {
+                return this.relayerAccountForm.value;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private async onSubmit(draft?: boolean) {
+        const data = this.dataForm.getRawValue();
+        this.loading = true;
+        this.storage.delete(this.getAutosaveId());
+
+        await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+
+        prepareVcData(data);
+
+        let requestSucceeded = false;
+
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                document: data,
+                ref: this.ref,
+                draft,
+                draftId: this.draftId,
+                relayerAccount: this.getRelayerAccount()
+            })
+            .pipe(
+                finalize(async () => {
+                    try {
+                        if (!requestSucceeded) {
+                            await this.tablePersist.rollbackIpfsUploads();
+                        }
+                    } finally {
+                        this.loading = false;
+                    }
+                })
+            )
+            .subscribe(() => {
+                requestSucceeded = true;
+
+                setTimeout(() => {
+                    this.loading = false;
+                    if (!draft && this.dialogRef) {
+                        this.dialogRef.close(null);
+
+                    }
+                }, 1000);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 
     public handleSaveBtnEvent($event: any) {
         if (!this.loading) {
-            if (this.draftDocument) {
-                const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
-                    showHeader: false,
-                    width: '640px',
-                    styleClass: 'guardian-dialog draft-dialog',
-                    data: {
-                        header: 'Overwrite Old Draft',
-                        text: 'You already have a saved draft. Are you sure you want to overwrite it? \n Please note that saving a new draft will permanently delete the previous one.',
-                        buttons: [{
-                            name: 'Cancel',
-                            class: 'secondary'
-                        }, {
-                            name: 'Save Draft',
-                            class: 'primary'
-                        }]
-                    },
-                });
-
-                dialogOptionRef.onClose.subscribe((result: string) => {
-                    if (result == 'Save Draft') {
-                        this.onSubmit(true);
-                    }
-                });
-            } else {
-                this.onSubmit(true);
-            }
+            this.onStep(true);
         }
     }
 
     public preset(document: any) {
         this.presetDocument = document;
         this.changeDetectorRef.detectChanges();
-        if(this.dialog) {
+        if (this.dialog) {
             this.dialog.detectChanges();
         }
     }
 
     public getRef() {
+        if (!this.ref) {
+            return null;
+        }
+
+        if (this.ref.draft) {
+            return this.ref.draftRef;
+        }
+
         return this.ref;
+    }
+
+    public getAutosaveId() {
+        return this.ref?.id ?? `${this.policyId}_${this.id}_${this?.user?.id}`;
+    }
+
+    public async onDialogOpen() {
+        const autosaveId = this.getAutosaveId();
+        const autosaveDocument = await this.storage.load(autosaveId);
+
+        if (autosaveDocument) {
+            this.showAutosaveDialog(autosaveDocument);
+        } else {
+            this.onDialog();
+        }
+
     }
 
     public onDialog() {
@@ -340,64 +483,103 @@ export class RequestDocumentBlockComponent
             this.presetDocument = null;
         }
 
-        if (this.draftDocument) {
-            this.showDraftDialog(this.showDocumentDialog);
-        } else {
-            this.showDocumentDialog();
+        if (this.edit) {
+            if (this.draft) {
+                this.draftRestore();
+            } else {
+                this.updateRestore();
+            }
         }
+
+        this.showDocumentDialog();
     }
 
     private showDocumentDialog() {
-        const dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
+        this.dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
             showHeader: false,
             width: '1000px',
-            styleClass: 'guardian-dialog',
+            styleClass: 'guardian-dialog without-padding',
             data: this
         });
 
-        dialogRef && dialogRef.onClose.subscribe(async (result) => { });
+        this.dialogRef && this.dialogRef.onClose.subscribe(async (result: any) => { });
     }
 
-    private showDraftDialog(callback?: any) {
+    private showAutosaveDialog(autosaveDocument: string, callback?: any) {
+        this.savepointFlow.markBusy();
         const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog draft-dialog',
             data: {
-                header: 'Open Existing Draft',
-                text: 'You have previously saved draft. Do you want to continue with editing it or create completely new one? \n\n Remember that after saving new draft, previous one will be deleted.',
+                header: 'Restore Autosave',
+                text: 'An autosave was found. Do you want to restore it?',
                 buttons: [{
                     name: 'Cancel',
                     class: 'secondary'
-                }, {
-                    name: 'Create New',
-                    class: 'secondary'
-                }, {
-                    name: 'Continue with Draft',
+                },
+                {
+                    name: 'No',
+                    class: 'primary'
+                },
+                {
+                    name: 'Restore',
                     class: 'primary'
                 }]
             },
         });
 
-        dialogOptionRef.onClose.subscribe((result: string) => {
+        dialogOptionRef.onClose.subscribe(async (result: string) => {
             if (result != 'Cancel') {
-                if (result === 'Continue with Draft') {
-                    this.draftRestore();
+
+                if (result === 'Restore') {
+                    this.preset(autosaveDocument);
+
+                    await this.tablePersist.restoreTablesFromDraft(autosaveDocument);
+
+                    this.savepointFlow.setSkipOnce();
+                    if (this.type == 'dialog') {
+                        this.showDocumentDialog();
+                    }
                 }
+                else if (result === 'No' && this.type === 'dialog') {
+                    this.onDialog();
+                }
+
 
                 if (callback) {
                     callback.call(this);
                 }
             }
+
+            this.savepointFlow.markReady();
         });
     }
 
     public draftRestore() {
-        if (this.draftDocument) {
-            if (this.needPreset && this.rowDocument) {
-                this.preset(MergeUtils.deepMerge(this.draftDocument.data, this.presetDocument))
-            } else {
-                this.preset(this.draftDocument.data);
+        if (this.draft) {
+            const draftDocument = Array.isArray(
+                this.ref.document?.credentialSubject
+            )
+                ? this.ref.document.credentialSubject[0]
+                : this.ref.document?.credentialSubject;
+
+            if (draftDocument) {
+                this.preset(draftDocument);
+            }
+        }
+    }
+
+    public updateRestore() {
+        if (this.ref) {
+            const document = Array.isArray(
+                this.ref.document?.credentialSubject
+            )
+                ? this.ref.document.credentialSubject[0]
+                : this.ref.document?.credentialSubject;
+
+            if (document) {
+                this.preset(document);
             }
         }
     }
@@ -435,5 +617,61 @@ export class RequestDocumentBlockComponent
                 }
             }
         }
+    }
+
+    public isStep(index: number) {
+        return this.stepper[index];
+    }
+
+    public setStep(index: number) {
+        for (let i = 0; i < this.stepper.length; i++) {
+            this.stepper[i] = false;
+        }
+        this.stepper[index] = true;
+    }
+
+    public isActionStep(index: number): boolean {
+        return this.stepper[index];
+    }
+
+    public onGenerateRelayerAccount() {
+        this.loading = true;
+        this.relayerAccountsService
+            .generateRelayerAccount()
+            .subscribe((account) => {
+                const data = this.relayerAccountForm.value;
+                this.relayerAccountForm.setValue({
+                    name: data.name || '',
+                    account: account.id || '',
+                    key: account.key || ''
+                })
+                this.loading = false;
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public ifRelayerAccountDisabled() {
+        if (this.relayerAccount) {
+            if (this.isStep(1)) {
+                if (this.relayerAccountType === 'account') {
+                    return false;
+                } else if (this.relayerAccountType === 'relayerAccount') {
+                    return !this.currentRelayerAccount;
+                } else if (this.relayerAccountType === 'new') {
+                    return this.relayerAccountForm.invalid;
+                } else {
+                    return null;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    public ifDisabledBtn() {
+        return !this.dataForm.valid || this.loading || this.ifRelayerAccountDisabled() || this.isRemoteWarning;
     }
 }

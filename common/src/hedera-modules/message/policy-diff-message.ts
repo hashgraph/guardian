@@ -3,7 +3,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { PolicyDiffMessageBody } from './message-body.interface.js';
-import { IPFS } from '../../helpers/index.js';
+import { IPFS, toBuffer } from '../../helpers/index.js';
 
 /**
  * Policy diff message
@@ -12,7 +12,7 @@ export class PolicyDiffMessage extends Message {
     /**
      * Document
      */
-    public document: ArrayBuffer;
+    public document: Buffer;
     /**
      * UUID
      */
@@ -24,7 +24,7 @@ export class PolicyDiffMessage extends Message {
     /**
      * Diff type
      */
-    public diffType: string;
+    public diffType: 'backup' | 'diff' | 'keys';
     /**
      * Diff index
      */
@@ -53,20 +53,20 @@ export class PolicyDiffMessage extends Message {
      * @param model
      * @param zip
      */
-    public setDocument(diff: any, zip?: ArrayBuffer): void {
+    public setDocument(diff: any, zip?: ArrayBuffer | Buffer): void {
         this.uuid = diff.uuid;
         this.owner = diff.owner;
         this.diffType = diff.diffType;
         this.diffIndex = diff.diffIndex;
         this.policyTopicId = diff.policyTopicId;
         this.instanceTopicId = diff.instanceTopicId;
-        this.document = zip;
+        this.document = toBuffer(zip);
     }
 
     /**
      * Get document
      */
-    public getDocument(): ArrayBuffer {
+    public getDocument(): Buffer {
         return this.document;
     }
 
@@ -80,6 +80,7 @@ export class PolicyDiffMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             uuid: this.uuid,
             owner: this.owner,
             diffType: this.diffType,
@@ -95,7 +96,7 @@ export class PolicyDiffMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (this.document) {
             return [this.document];
         }

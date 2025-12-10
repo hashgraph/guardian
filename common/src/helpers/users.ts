@@ -282,16 +282,86 @@ export class Users extends NatsService {
         }
         const userID = userFull.hederaAccountId;
         const userDID = userFull.did;
+        const id = userFull.id;
         if (!userDID || !userID) {
             throw new Error('Hedera Account not found');
         }
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
         const signOptions = await this.wallet.getUserSignOptions(userFull);
         return {
+            id,
             did: userDID,
             hederaAccountId: userID,
             hederaAccountKey: userKey,
             signOptions
         }
+    }
+
+    /**
+     * Return user relayerAccount
+     * @param did
+     * @param relayerAccount
+     * @param userId
+     */
+    public async getUserRelayerAccount(
+        did: string,
+        relayerAccount: string,
+        userId: string | null
+    ): Promise<{ account: string, name: string, default: boolean }> {
+        return await this.sendMessage(AuthEvents.GET_USER_RELAYER_ACCOUNT, { did, relayerAccount, userId });
+    }
+
+    /**
+     * Return user relayer account
+     * @param relayerAccount
+     * @param userId
+     */
+    public async getRelayerAccount(
+        relayerAccount: string,
+        userId: string | null
+    ): Promise<{ account: string, name: string, owner: string, default: boolean }> {
+        return await this.sendMessage(AuthEvents.GET_RELAYER_ACCOUNT, { relayerAccount, userId });
+    }
+
+    /**
+     * Create relayer account
+     * @param relayerAccount
+     * @param userId
+     */
+    public async createRelayerAccount(
+        user: {
+            did: string,
+            id: string
+        },
+        config: {
+            name?: string,
+            account?: string,
+            key?: string
+        },
+        userId: string | null
+    ): Promise<{ account: string, name: string, owner: string, default: boolean }> {
+        return await this.sendMessage(AuthEvents.CREATE_RELAYER_ACCOUNT, { user, config, userId });
+    }
+
+    /**
+     * If relayer account exist
+     * @param relayerAccount
+     * @param userId
+     */
+    public async relayerAccountExist(
+        did: string,
+        relayerAccount: string,
+        userId: string | null
+    ): Promise<boolean> {
+        return await this.sendMessage(AuthEvents.RELAYER_ACCOUNT_EXIST, { did, relayerAccount, userId });
+    }
+
+    /**
+     * Return remote users
+     * @param did
+     * @param userId
+     */
+    public async getRemoteUsers(did: string, userId: string | null): Promise<IAuthUser[]> {
+        return await this.sendMessage(AuthEvents.GET_REMOTE_USERS, { did, userId });
     }
 }

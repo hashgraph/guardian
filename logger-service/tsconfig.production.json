@@ -14,9 +14,15 @@
         "skipLibCheck": true,
         "baseUrl": "./src",
         "paths": {
-            "@entity/*": ["entity/*"],
-            "@api/*": ["api/*"],
-            "#constants": ["constants/index.js"]
+            "@entity/*": [
+                "entity/*"
+            ],
+            "@api/*": [
+                "api/*"
+            ],
+            "#constants": [
+                "constants/index.js"
+            ]
         }
     },
     "include": [

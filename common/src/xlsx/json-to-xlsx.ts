@@ -343,13 +343,17 @@ export class JsonToXlsx {
         condition: SchemaCondition,
         fieldCache: Map<string, IRowField>,
     ) {
-        const ifField = fieldCache.get(condition.ifCondition.field.name);
-        const ifValue = valueToFormula(condition.ifCondition.fieldValue);
-        const thenFormula = `EXACT(${ifField.name},${ifValue})`;
-        const elseFormula = `NOT(EXACT(${ifField.name},${ifValue}))`;
+        const baseFormula = JsonToXlsx.buildIfFormula(condition.ifCondition, fieldCache);
+
+        const thenFormula = baseFormula;
+        const elseFormula = `NOT(${baseFormula})`;
+
         if (Array.isArray(condition.thenFields)) {
             for (const field of condition.thenFields) {
                 const thenField = fieldCache.get(field.name);
+                if (!thenField) {
+                    continue;
+                }
                 worksheet
                     .getCell(table.getCol(Dictionary.VISIBILITY), thenField.row)
                     .setFormulae(thenFormula);
@@ -358,6 +362,9 @@ export class JsonToXlsx {
         if (Array.isArray(condition.elseFields)) {
             for (const field of condition.elseFields) {
                 const elseField = fieldCache.get(field.name);
+                if (!elseField) {
+                    continue;
+                }
                 worksheet
                     .getCell(table.getCol(Dictionary.VISIBILITY), elseField.row)
                     .setFormulae(elseFormula);
@@ -490,4 +497,35 @@ export class JsonToXlsx {
             return [];
         }
     }
+
+    private static buildIfFormula(
+        condition: SchemaCondition['ifCondition'],
+        fieldCache: Map<string, IRowField>
+    ): string {
+        const toExact = (sub: any): string => {
+            const f = fieldCache.get(sub.field.name);
+            if (!f) {
+                throw new Error(`Condition refers to unknown field "${sub.field?.name}".`);
+            }
+            const v = valueToFormula(sub.fieldValue);
+            return `EXACT(${f.name},${v})`;
+        };
+
+        if ((condition as any).field && (condition as any).fieldValue !== undefined) {
+            return toExact(condition as any);
+        }
+
+        if ((condition as any).OR) {
+            const parts = (condition as any).OR.map((x: any) => toExact(x));
+            return `OR(${parts.join(',')})`;
+        }
+
+        if ((condition as any).AND) {
+            const parts = (condition as any).AND.map((x: any) => toExact(x));
+            return `AND(${parts.join(',')})`;
+        }
+
+        throw new Error('Unsupported condition format in ifCondition');
+    }
+
 }

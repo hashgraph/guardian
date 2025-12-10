@@ -38,7 +38,7 @@ The first step towards compliance was building a system to support manual attest
 
 For AgreCalc we see below form:
 
-<figure><img src="../../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 for Cool Farm, we see below form:
 
@@ -48,11 +48,11 @@ for Cool Farm, we see below form:
 6. Now we log out and login as Standard Registry, once viewing the registrant documents, we approve the application by clicking on Approve button.
 7. Once approved, we again login back as Registrant and submit Farm Registrant form by clicking on Create Farm button:
 
-<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 8. Once filled and clicked on OK, Registrant waits for approval from Standard Registry:
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 9. Now we login as Standard Registry and click on Farm Projects tab, we can see the Request being submitted by Registrant for Approve/Reject
 
@@ -66,12 +66,12 @@ For testing purpose, we will approve the farm project.
 
 For Cool Farm Tool methodology, you will see the below request form:
 
-<figure><img src="../../../.gitbook/assets/image (9) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (9) (1) (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 11. Once the Request is submitted, Registrant is waiting for it to be approved by Verifier.
 12. Now we logout and login as Verifier, we verify the documents by clicking on approve.
 
-<figure><img src="../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (6) (1) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 13. Once approved, we login as SR and check the Token History by clicking on Token History Tab:
 
@@ -79,4 +79,4 @@ For Cool Farm Tool methodology, you will see the below request form:
 
 14. We can also check the TrustChain by clicking on View TrustChain button:
 
-<figure><img src="../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>

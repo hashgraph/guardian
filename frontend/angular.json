@@ -19,12 +19,12 @@
                         "production": {
                             "budgets": [
                                 {
-                                    "maximumError": "30mb",
+                                    "maximumError": "60mb",
                                     "maximumWarning": "15mb",
                                     "type": "initial"
                                 },
                                 {
-                                    "maximumError": "60kb",
+                                    "maximumError": "120kb",
                                     "maximumWarning": "30kb",
                                     "type": "anyComponentStyle"
                                 }
@@ -40,12 +40,12 @@
                         "demo": {
                             "budgets": [
                                 {
-                                    "maximumError": "30mb",
+                                    "maximumError": "60mb",
                                     "maximumWarning": "15mb",
                                     "type": "initial"
                                 },
                                 {
-                                    "maximumError": "60kb",
+                                    "maximumError": "120kb",
                                     "maximumWarning": "30kb",
                                     "type": "anyComponentStyle"
                                 }

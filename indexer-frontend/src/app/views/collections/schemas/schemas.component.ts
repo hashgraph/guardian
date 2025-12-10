@@ -54,24 +54,30 @@ import { HederaType } from '@components/hedera-explorer/hedera-explorer.componen
 export class SchemasComponent extends BaseGridComponent {
     columns: any[] = [
         {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'options.name',
+            title: 'grid.name',
+            width: '650px',
+        },
+        {
             type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
             width: '250px',
             sort: true,
             hederaType: HederaType.TRANSACTION,
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'consensusTimestamp',
-            title: 'grid.date',
-            width: '250px',
-            sort: true,
             formatValue: (value: any) => {
-                const fixedTimestamp = Math.floor(value * 1000);
-                value = new Date(fixedTimestamp);
-                const formattedDate = value.toLocaleString();
-                return formattedDate;
+                if (value && value.length > 20) {
+                    value = value.substr(0, 20);
+                }
+                return value;
             }
         },
         {
@@ -86,23 +92,20 @@ export class SchemasComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.TEXT,
-            field: 'options.owner',
-            title: 'grid.owner',
-            width: '650px',
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'options.name',
-            title: 'grid.name',
-            width: '200px',
-        },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
-        },
+            field: 'consensusTimestamp',
+            title: 'grid.date',
+            width: '250px',
+            sort: true,
+            formatValue: (value: any) => {
+                if (value && value.length > 20) {
+                    value = value.substr(0, 20);
+                }
+                const fixedTimestamp = Math.floor(value * 1000);
+                value = new Date(fixedTimestamp);
+                const formattedDate = value.toLocaleString();
+                return formattedDate;
+            }
+        }
     ];
 
     constructor(
@@ -112,6 +115,10 @@ export class SchemasComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(
             new Filter({
                 type: 'input',
@@ -146,17 +153,6 @@ export class SchemasComponent extends BaseGridComponent {
     }
 
     protected loadFilters(): void {
-        this.loadingFilters = true;
-        this.filtersService.getVcFilters().subscribe({
-            next: (result) => {
-                setTimeout(() => {
-                    this.loadingFilters = false;
-                }, 500);
-            },
-            error: ({ message }) => {
-                this.loadingFilters = false;
-                console.error(message);
-            },
-        });
+        this.loadingFilters = false;
     }
 }

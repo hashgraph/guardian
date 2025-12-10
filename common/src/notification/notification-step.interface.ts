@@ -7,7 +7,7 @@ export interface INotificationStep {
     skip(): INotificationStep;
     setEstimate(estimate: number): INotificationStep;
     addEstimate(estimate: number): INotificationStep;
-    addStep(name: string, size?: number): INotificationStep;
+    addStep(name: string, size?: number, minimized?: boolean): INotificationStep;
     getStep(name: string): INotificationStep;
     startStep(name: string): INotificationStep;
     completeStep(name: string): INotificationStep;

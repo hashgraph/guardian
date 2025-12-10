@@ -1,5 +1,5 @@
 import { GenerateUUIDv4, ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
-import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, Enum, OnLoad, Property } from '@mikro-orm/core';
+import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, Enum, Index, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper, SchemaConverterUtils } from '../helpers/index.js';
 import { BaseEntity } from '../models/index.js';
@@ -8,6 +8,22 @@ import { BaseEntity } from '../models/index.js';
  * Schema collection
  */
 @Entity()
+@Index({
+    properties: ['iri'],
+    name: 'iri_index',
+})
+@Index({
+    properties: ['topicId'],
+    name: 'topicId_index',
+})
+@Index({
+    properties: ['iri', 'topicId'],
+    name: 'topicId_iri_index',
+})
+@Index({
+    properties: ['defs'],
+    name: 'defs_index',
+})
 export class Schema extends BaseEntity implements ISchema {
     /**
      * Schema uuid

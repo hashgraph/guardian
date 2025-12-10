@@ -47,8 +47,9 @@ import { ImportTokenMap, ImportTokenResult } from '../token/token-import.interfa
 import { ImportArtifactResult } from '../artifact/artifact-import.interface.js';
 import { importTokensByFiles } from '../token/token-import-helper.js';
 import { importArtifactsByFiles } from '../artifact/artifact-import-helper.js';
-import { publishSystemSchemas } from '../schema/schema-publish-helper.js';
+// import { publishSystemSchemas } from '../schema/schema-publish-helper.js';
 import { ObjectId } from '@mikro-orm/mongodb';
+import { publishSystemSchemasPackage } from '../schema/schema-publish-helper.js';
 
 export class PolicyImport {
     private readonly mode: ImportMode;
@@ -281,6 +282,7 @@ export class PolicyImport {
     }
 
     private async publishSystemSchemas(
+        policy: Policy,
         systemSchemas: Schema[],
         user: IOwner,
         versionOfTopicId: string,
@@ -324,9 +326,17 @@ export class PolicyImport {
             } else {
                 step.start();
                 systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-                step.setEstimate(systemSchemas.length);
+                // step.setEstimate(systemSchemas.length);
                 this.messageServer.setTopicObject(this.topicRow);
-                await publishSystemSchemas(systemSchemas, this.messageServer, user, step);
+                // await publishSystemSchemas(systemSchemas, this.messageServer, user, step);
+                await publishSystemSchemasPackage({
+                    name: policy.name,
+                    version: policy.version,
+                    schemas: systemSchemas,
+                    owner: user,
+                    server: this.messageServer,
+                    notifier: step
+                })
                 step.complete();
             }
         }
@@ -706,10 +716,10 @@ export class PolicyImport {
 
         this.notifier.addStep(STEP_RESOLVE_ACCOUNT, 1);
         this.notifier.addStep(STEP_RESOLVE_TOPIC, 1);
-        this.notifier.addStep(STEP_PUBLISH_SYSTEM_SCHEMAS, 40);
+        this.notifier.addStep(STEP_PUBLISH_SYSTEM_SCHEMAS, 30, true);
         this.notifier.addStep(STEP_IMPORT_TOOLS, 10);
         this.notifier.addStep(STEP_IMPORT_TOKENS, 2);
-        this.notifier.addStep(STEP_IMPORT_SCHEMAS, 70);
+        this.notifier.addStep(STEP_IMPORT_SCHEMAS, 50);
         this.notifier.addStep(STEP_IMPORT_ARTIFACTS, 5);
         this.notifier.addStep(STEP_IMPORT_TESTS, 2);
         this.notifier.addStep(STEP_IMPORT_FORMULAS, 2);
@@ -731,6 +741,7 @@ export class PolicyImport {
             userId
         );
         await this.publishSystemSchemas(
+            policy,
             systemSchemas,
             user,
             versionOfTopicId,
@@ -792,6 +803,7 @@ export class PolicyImport {
         step.addStep(STEP_SAVE_FORMULAS);
         step.addStep(STEP_SAVE_HASH);
         step.addStep(STEP_SAVE_SUGGEST);
+        step.start();
 
         await this.updateUUIDs(policy);
 
@@ -802,6 +814,7 @@ export class PolicyImport {
         await this.saveFormulas(row, step.getStep(STEP_SAVE_FORMULAS));
         await this.saveHash(row, logger, step.getStep(STEP_SAVE_HASH), userId);
         await this.setSuggestionsConfig(row, user, step.getStep(STEP_SAVE_SUGGEST));
+        step.complete();
 
         await this.importTags(row, tags, this.notifier.getStep(STEP_IMPORT_TAGS));
 

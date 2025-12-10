@@ -9,6 +9,7 @@ export enum MessageType {
     Policy = 'Policy',
     InstancePolicy = 'Instance-Policy',
     Schema = 'Schema',
+    SchemaPackage = 'Schema-Package',
     Topic = 'Topic',
     StandardRegistry = 'Standard Registry',
     Token = 'Token',
@@ -24,5 +25,7 @@ export enum MessageType {
     PolicyLabel = 'Policy-Label',
     Formula = 'Formula',
     PolicyDiff = 'Policy-Diff',
-    PolicyAction = 'Policy-Action'
+    PolicyAction = 'Policy-Action',
+    PolicyDiscussion = 'Policy-Discussion',
+    PolicyComment = 'Policy-Comment'
 }

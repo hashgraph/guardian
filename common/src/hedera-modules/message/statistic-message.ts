@@ -5,6 +5,7 @@ import { MessageType } from './message-type.js';
 import { StatisticMessageBody } from './message-body.interface.js';
 import { PolicyStatistic } from '../../entity/index.js';
 import { IPFS } from '../../helpers/index.js';
+import { IStatisticConfig } from '@guardian/interfaces';
 
 /**
  * Schema message
@@ -38,7 +39,7 @@ export class StatisticMessage extends Message {
     /**
      * Document
      */
-    public config: any;
+    public config: IStatisticConfig;
 
     constructor(action: MessageAction) {
         super(action, MessageType.PolicyStatistic);
@@ -61,7 +62,7 @@ export class StatisticMessage extends Message {
     /**
      * Get document
      */
-    public getDocument(): ArrayBuffer {
+    public getDocument(): IStatisticConfig {
         return this.config;
     }
 
@@ -75,6 +76,7 @@ export class StatisticMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             name: this.name,
             description: this.description,
             owner: this.owner,
@@ -89,7 +91,7 @@ export class StatisticMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         const document = JSON.stringify(this.config);
         const buffer = Buffer.from(document);
         return [buffer];

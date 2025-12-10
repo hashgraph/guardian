@@ -42,6 +42,12 @@ import { MathLiveComponent } from './mathlive/mathlive.component';
 import { MenuButton } from './menu-button/menu-button.component';
 import { CheckboxButton } from './checkbox-button/checkbox-button.component';
 import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
+import {TableDialogComponent} from './table-dialog/table-dialog.component';
+import {AgGridModule} from 'ag-grid-angular';
+import { PolicyComments } from './policy-comments/policy-comments.component';
+import { TextInputAutocompleteDirective } from './angular-text-input-autocomplete/text-input-autocomplete.directive';
+import { TextInputAutocompleteContainerComponent } from './angular-text-input-autocomplete/text-input-autocomplete-container.component';
+import { TextInputAutocompleteMenuComponent } from './angular-text-input-autocomplete/text-input-autocomplete-menu.component';
 
 @NgModule({
     declarations: [
@@ -72,7 +78,12 @@ import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
         MathLiveComponent,
         MenuButton,
         CheckboxButton,
-        IPFSLinkComponent
+        IPFSLinkComponent,
+	TableDialogComponent,
+        PolicyComments,
+        TextInputAutocompleteDirective,
+        TextInputAutocompleteContainerComponent,
+        TextInputAutocompleteMenuComponent
     ],
     imports: [
         CommonModule,
@@ -90,6 +101,8 @@ import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
         DynamicDialogModule,
         AngularSvgIconModule.forRoot(),
         TooltipModule,
+        DynamicDialogModule,
+        AgGridModule,
     ],
     providers: [
         provideNgxMask(),
@@ -123,7 +136,12 @@ import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
         MathLiveComponent,
         MenuButton,
         CheckboxButton,
-        IPFSLinkComponent
+        IPFSLinkComponent,
+	TableDialogComponent,
+        PolicyComments,
+        TextInputAutocompleteDirective,
+        TextInputAutocompleteContainerComponent,
+        TextInputAutocompleteMenuComponent
     ]
 })
 export class CommonComponentsModule {

@@ -30,11 +30,11 @@ export class DidCollectionRestore extends CollectionRestore<DidDocument> {
         await collection.delete({ _restoreId: { $in: ids } });
     }
 
-    protected override createRow(data: DidDocument): DidDocument {
+    protected override createRow(data: DidDocument, id: string): DidDocument {
         return data;
     }
 
-    protected override async decryptRow(row: DidDocument): Promise<DidDocument> {
+    protected override async decryptRow(row: DidDocument, id: string): Promise<DidDocument> {
         return row;
     }
 }

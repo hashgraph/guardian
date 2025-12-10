@@ -133,7 +133,15 @@ export class FieldTypesDictionary {
             pattern: undefined,
             isRef: true,
             customType: 'sentinel'
-        }
+        },
+        {
+            name: 'Table',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            customType: 'table'
+        },
     ];
 
     public static readonly CustomFieldTypes = [

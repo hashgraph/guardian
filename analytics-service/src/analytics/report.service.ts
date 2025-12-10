@@ -13,6 +13,7 @@ import { AnalyticsToken as Token } from '../entity/analytics-token.js';
 import { AnalyticsTokenCache as TokenCache } from '../entity/analytics-token-cache.js';
 import { AnalyticsTopic as Topic } from '../entity/analytics-topic.js';
 import { AnalyticsSchema as Schema } from '../entity/analytics-schema.js';
+import { AnalyticsSchemaPackage as SchemaPackage } from '../entity/analytics-schema-package.js';
 import { AnalyticsTag as Tag } from '../entity/analytics-tag.js';
 import { AnalyticsDashboard as Dashboard } from '../entity/analytics-dashboard.js';
 import { ReportSteep } from '../interfaces/report-steep.type.js';
@@ -215,17 +216,35 @@ export class ReportService {
         const users = await databaseServer.find(User, { uuid });
         const tags = await databaseServer.find(Tag, { uuid, action: MessageAction.PublishTag });
         const userTopicCount = await databaseServer.count(Topic, { uuid });
-        const schemaCount = await databaseServer.count(Schema, { uuid, action: MessageAction.PublishSchema });
-        const systemSchemaCount = await databaseServer.count(Schema, { uuid, action: MessageAction.PublishSystemSchema });
+
+        let schemaCount = await databaseServer.count(Schema, { uuid, action: MessageAction.PublishSchema });
+        let systemSchemaCount = await databaseServer.count(Schema, { uuid, action: MessageAction.PublishSystemSchema });
+
+        const schemaPackages = await databaseServer.find(SchemaPackage, { uuid, action: MessageAction.PublishSchemas });
+        const systemSchemaPackages = await databaseServer.find(SchemaPackage, { uuid, action: MessageAction.PublishSystemSchemas });
+        let schemaPackageCount = 0;
+        let systemSchemaPackageCount = 0;
+        for (const schemaPackage of schemaPackages) {
+            schemaPackageCount += (schemaPackage.schemas || 0);
+        }
+        for (const systemSchemaPackage of systemSchemaPackages) {
+            systemSchemaPackageCount += (systemSchemaPackage.schemas || 0);
+        }
+
+        schemaCount = schemaCount + schemaPackageCount;
+        systemSchemaCount = systemSchemaCount + systemSchemaPackageCount;
 
         const docByPolicy =
-            await databaseServer.aggregate(Document, databaseServer.getAnalyticsDocAggregationFilters(MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOC_BY_POLICY, uuid) as FilterObject<any>[])
+            await databaseServer
+                .aggregate(Document, databaseServer.getAnalyticsDocAggregationFilters(MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOC_BY_POLICY, uuid) as FilterObject<any>[])
 
         const docByInstance =
-            await databaseServer.aggregate(Document, databaseServer.getAnalyticsDocAggregationFilters(MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOC_BY_INSTANCE, uuid) as FilterObject<any>[])
+            await databaseServer
+                .aggregate(Document, databaseServer.getAnalyticsDocAggregationFilters(MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOC_BY_INSTANCE, uuid) as FilterObject<any>[])
 
         const docsGroups =
-            await databaseServer.aggregate(Document, databaseServer.getAnalyticsDocAggregationFilters(MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOCS_GROUPS, uuid) as FilterObject<any>[])
+            await databaseServer
+                .aggregate(Document, databaseServer.getAnalyticsDocAggregationFilters(MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOCS_GROUPS, uuid) as FilterObject<any>[])
 
         const didCount = docsGroups
             .filter(g => g._id.type === DocumentType.DID && g._id.action !== MessageAction.RevokeDocument)

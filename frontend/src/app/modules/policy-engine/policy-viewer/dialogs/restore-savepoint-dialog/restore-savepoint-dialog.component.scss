@@ -1,0 +1,201 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+:host ::ng-deep .restore-savepoint-dialog .p-dialog {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(0,0,0,.12);
+}
+:host ::ng-deep .restore-savepoint-dialog .p-dialog-header {
+    display: none;
+}
+:host ::ng-deep .restore-savepoint-dialog .p-dialog-content {
+    padding: 20px 24px 24px;
+    overflow: visible;
+}
+
+.dlg {
+    --dlg-pad-x: 24px;
+
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    row-gap: 16px;
+    box-sizing: border-box;
+}
+
+.dlg__header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    margin-top: 30px;
+
+    .icon-btn {
+        color: var(--color-grey-5, #848FA9);
+    }
+}
+.dlg__title {
+    font-family: Poppins, sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-grey-black-1, #181818);
+}
+.icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: #fff;
+    color: var(--color-primary, #0031ff);
+    cursor: pointer;
+
+    &:disabled { opacity: .6; cursor: default; }
+    &:focus, &:focus-visible { outline: none; box-shadow: none; }
+    &:active { transform: translateY(1px); }
+
+    &.danger {
+        color: #E11D48;
+        border-color: #fff;
+        background: #fff;
+    }
+}
+
+.list-header,
+.row {
+    display: grid;
+    grid-template-columns: 1fr 180px 140px;
+    align-items: center;
+    column-gap: 12px;
+}
+
+.list-header {
+    font-size: 10px;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-top: 36px;
+
+    .col.name {
+        padding-left: 20px;
+    }
+}
+
+.list {
+    background: #fff;
+    border: 1px solid var(--color-grey-3, #E1E7EF);
+    border-radius: 12px;
+    overflow: hidden;
+
+    .row {
+        display: grid;
+        grid-template-columns: 1fr 180px 140px;
+        align-items: center;
+
+        padding: 12px 16px;
+        border-top: 1px solid var(--color-grey-3, #E1E7EF);
+        border-left: 1px solid var(--color-grey-3, #E1E7EF);
+        border-right: 1px solid var(--color-grey-3, #E1E7EF);
+
+        color: var(--color-grey-6, #495057);
+        font-size: 14px;
+
+        &[active] {
+            background: #F5F8FF;
+        }
+
+        input {
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .col.name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .col.date {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .col.actions {
+            display: grid;
+            grid-auto-flow: column;
+            justify-content: end;
+            gap: 8px;
+        }
+
+        &:first-child {
+            border-radius: 12px 12px 0 0;
+        }
+
+        &:last-child {
+            border-bottom: 1px solid var(--color-grey-3, #E1E7EF);
+            border-radius: 0 0 12px 12px;
+        }
+    }
+}
+
+.empty {
+    padding: 24px;
+    color: #6B7280;
+}
+
+.dlg__footer {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding-top: 60px;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 30px;
+        left: calc(-1 * var(--dlg-pad-x));
+        right: calc(-1 * var(--dlg-pad-x));
+        height: 1px;
+        background: #E1E7EF;
+    }
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 568px;
+    padding-top: 60px;
+
+    .cancel-button {
+        margin-left: auto;
+    }
+
+    .guardian-button {
+        border-radius: 8px;
+        min-width: 120px;
+        height: 40px;
+    }
+
+    .guardian-button.danger {
+        color: #ef4444;
+        border: 1px solid #ef4444;
+        background: transparent;
+
+        &:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+    }
+
+    .guardian-button.primary {
+        background: #2563eb;
+        color: #fff;
+        border: none;
+
+        &:hover {
+            background: #1d4ed8;
+        }
+    }
+}

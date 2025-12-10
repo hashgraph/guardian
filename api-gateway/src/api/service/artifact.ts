@@ -1,11 +1,27 @@
 import { Permissions } from '@guardian/interfaces';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UseInterceptors, Version, Req } from '@nestjs/common';
+import {
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Post,
+    Query,
+    Param,
+    Response,
+    UseInterceptors,
+    Version,
+    Req,
+    Res
+} from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey } from '#helpers';
 import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
 import { ARTIFACT_REQUIRED_PROPS, PREFIXES } from '#constants'
+import { FastifyReply } from 'fastify';
 
 @Controller('artifacts')
 @ApiTags('artifacts')
@@ -350,6 +366,121 @@ export class ArtifactApi {
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return await guardian.deleteArtifact(artifactId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    @Get('/files/:fileId')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({ summary: 'Download file by id', description: 'Returns file from GridFS' })
+    @ApiParam({ name: 'fileId', type: String, required: true, description: 'File _id' })
+    @HttpCode(HttpStatus.OK)
+    async downloadFile(
+        @AuthUser() user: IAuthUser,
+        @Param('fileId') fileId: string,
+        @Res({ passthrough: true }) res: FastifyReply
+    ) {
+        try {
+            if (!fileId) {
+                res.code(HttpStatus.BAD_REQUEST);
+                return { message: 'fileId is required' };
+            }
+
+            const guardian = new Guardians();
+            const { buffer, filename, contentType } = await guardian.csvGetFile(fileId, user);
+
+            res.header('Content-Type', contentType || 'text/csv; charset=utf-8');
+            res.header('X-Content-Type-Options', 'nosniff');
+            res.header(
+                'Content-Disposition',
+                `attachment; filename="${(filename || fileId).replace(/"/g, '')}"`
+            );
+
+            return res.send(Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    @Post('/files')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({ summary: 'Uploads/overwrites file', description: 'Uploads/overwrites file in GridFS' })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                file: { type: 'string', format: 'binary' },
+                fileId: { type: 'string', description: 'Existing file _id to overwrite (optional)' }
+            }
+        }
+    })
+    @UseInterceptors(AnyFilesInterceptor({
+        allowedFields: ['file', 'fileId'],
+        requiredFields: ['file']
+    }))
+    @HttpCode(HttpStatus.CREATED)
+    async upsertFile(
+        @AuthUser() user: IAuthUser,
+        @UploadedFiles() files: any,
+        @Req() req,
+    ) {
+        try {
+            const guardian = new Guardians();
+
+            const file = (files || []).find((f: any) => f.fieldname === 'file');
+            if (!file?.buffer) {
+                throw new HttpException('File is required', HttpStatus.BAD_REQUEST);
+            }
+
+            return  await guardian.upsertFile({
+                file: {
+                    buffer: file.buffer,
+                    originalname: file.originalname,
+                    mimetype: file.mimetype
+                },
+                fileId: req.body?.fileId || undefined
+            }, user);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    @Delete('/files/:fileId')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Delete file by id',
+        description: 'Deletes file from GridFS by _id'
+    })
+    @ApiParam({
+        name: 'fileId',
+        type: String, required: true,
+        description: 'File _id'
+    })
+    @HttpCode(HttpStatus.OK)
+    async deleteFile(
+        @AuthUser() user: IAuthUser,
+        @Param('fileId') fileId: string,
+        @Res({ passthrough: true }) res: FastifyReply
+    ) {
+        try {
+            if (!fileId?.trim()) {
+                res.code(HttpStatus.BAD_REQUEST);
+                return { message: 'fileId is required' };
+            }
+            const guardians = new Guardians();
+            return await guardians.deleteGridFile(user, fileId);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

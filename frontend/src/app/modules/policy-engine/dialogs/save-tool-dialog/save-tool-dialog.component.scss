@@ -1,0 +1,52 @@
+.context {
+    position: relative;
+    overflow-y: auto;
+    padding: 14px 0 20px 0;
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    font-family: Inter, serif;
+    font-style: normal;
+}
+
+form {
+    width: 100%;
+
+    .guardian-input-container {
+        margin-bottom: 24px;
+    }
+
+    .guardian-textarea-container {
+        margin-bottom: 24px;
+    }
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    user-select: none;
+
+    &>div {
+        margin-left: 15px;
+        margin-right: 0px;
+    }
+}
+
+.close-icon-color {
+    fill: #848FA9;
+    color: #848FA9;
+}
+
+.action-select-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    button {
+        height: 106px;
+        width: 90%;
+        border-radius: 53px;
+        margin: 12px 0;
+        font-size: 20px;
+    }
+}

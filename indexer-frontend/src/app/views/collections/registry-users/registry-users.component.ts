@@ -54,10 +54,17 @@ import { HederaType } from '@components/hedera-explorer/hedera-explorer.componen
 export class RegistryUsersComponent extends BaseGridComponent {
     columns: any[] = [
         {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+        {
             type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
-            width: '250px',
+            width: '400px',
             sort: true,
             hederaType: HederaType.TRANSACTION,
         },
@@ -65,7 +72,7 @@ export class RegistryUsersComponent extends BaseGridComponent {
             type: ColumnType.TEXT,
             field: 'consensusTimestamp',
             title: 'grid.date',
-            width: '250px',
+            width: '400px',
             sort: true,
             formatValue: (value: any) => {
                 const fixedTimestamp = Math.floor(value * 1000);
@@ -78,7 +85,7 @@ export class RegistryUsersComponent extends BaseGridComponent {
             type: ColumnType.TEXT,
             field: 'topicId',
             title: 'grid.topic_id',
-            width: '150px',
+            width: '250px',
             link: {
                 field: 'topicId',
                 url: '/topics',
@@ -88,21 +95,8 @@ export class RegistryUsersComponent extends BaseGridComponent {
             type: ColumnType.HEDERA,
             field: 'owner',
             title: 'grid.account_id',
-            width: '150px',
+            width: '250px',
             hederaType: HederaType.ACCOUNT,
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'options.did',
-            title: 'grid.did',
-            width: '650px',
-        },
-        {
-            type: ColumnType.BUTTON,
-            title: 'grid.open',
-            btn_label: 'grid.open',
-            width: '100px',
-            callback: this.onOpen.bind(this),
         },
     ];
 
@@ -113,6 +107,10 @@ export class RegistryUsersComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
+
+        this.orderField = 'consensusTimestamp';
+        this.orderDir = 'desc';
+
         this.filters.push(
             new Filter({
                 label: 'grid.topic_id',

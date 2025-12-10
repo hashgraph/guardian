@@ -4,110 +4,177 @@
     </div>
     <div class="table__head table-head">
         @for (column of columns; track $index) {
-        @switch (column.type) {
-        @case ('text') {
-        @if (column.sort) {
-        <div class="table-head__cell table-cell" [attr.sorting]="column.field === sortColumn"
-            (click)="onSort(column.field)" [style.width]="column.width">
-            {{column.title | transloco}}
-            @if (column.field === sortColumn) {
-            @switch (sortDirection) {
-            @case ('asc') { <span class="pi pi-sort-up-fill"></span> }
-            @case ('desc') { <span class="pi pi-sort-down-fill"></span> } } } @else {
-            <span class="pi pi-sort"></span>
+            @switch (column.type) {
+                @case ('text') {
+                    @if (column.sort) {
+                        <div 
+                            class="table-head__cell table-cell" 
+                            [attr.sorting]="column.field === sortColumn"
+                            (click)="onSort(column.field)" 
+                            [style.width]="column.width"
+                            [style.min-width]="column.minWidth"
+                            [style.max-width]="column.maxWidth"
+                        >
+                            {{column.title | transloco}}
+                            @if (column.field === sortColumn) {
+                            @switch (sortDirection) {
+                            @case ('asc') { <span class="pi pi-sort-up-fill"></span> }
+                            @case ('desc') { <span class="pi pi-sort-down-fill"></span> } } } @else {
+                            <span class="pi pi-sort"></span>
+                            }
+                        </div>
+                    }
+                    @else {
+                        <div 
+                            class="table-head__cell table-cell" 
+                            [style.width]="column.width"
+                            [style.min-width]="column.minWidth"
+                            [style.max-width]="column.maxWidth"
+                        >{{column.title | transloco}}</div>
+                    }
+                }
+                @case ('chip') {
+                    @if (column.sort) {
+                        <div 
+                            class="table-head__cell table-cell" 
+                            [attr.sorting]="column.field === sortColumn"
+                            (click)="onSort(column.field)" 
+                            [style.width]="column.width"
+                            [style.min-width]="column.minWidth"
+                            [style.max-width]="column.maxWidth"
+                        >
+                            {{column.title | transloco}}
+                            @if (column.field === sortColumn) {
+                                @switch (sortDirection) {
+                                    @case ('asc') { <span class="pi pi-sort-up-fill"></span> }
+                                    @case ('desc') { <span class="pi pi-sort-down-fill"></span> } 
+                                } 
+                            }
+                            @else {
+                                <span class="pi pi-sort"></span>
+                            }
+                        </div>
+                    }
+                    @else {
+                        <div 
+                            class="table-head__cell table-cell" 
+                            [style.width]="column.width"
+                            [style.min-width]="column.minWidth"
+                            [style.max-width]="column.maxWidth"
+                        >
+                            {{column.title | transloco}} 
+                        </div>
+                    }
+                }
+                @case ('button') {
+                    <div 
+                        class="table-head__cell table-cell" 
+                        [style.width]="column.width"
+                        [style.min-width]="column.minWidth"
+                        [style.max-width]="column.maxWidth"
+                    >
+                        {{column.title | transloco}} </div>
+                }
+                @case ('hedera') {
+                    <div 
+                        class="table-head__cell table-cell" 
+                        [style.width]="column.width"
+                        [style.min-width]="column.minWidth"
+                        [style.max-width]="column.maxWidth"
+                    >
+                        {{column.title | transloco}} 
+                    </div>
+                }
+                @case ('check_box') {
+                    <div 
+                        class="table-head__cell table-cell" 
+                        [style.width]="column.width"
+                        [style.min-width]="column.minWidth"
+                        [style.max-width]="column.maxWidth"
+                    >
+                        {{column.title | transloco}} 
+                    </div>
+                }
             }
-        </div>
-        }
-        @else {
-        <div class="table-head__cell table-cell" [style.width]="column.width">
-            {{column.title | transloco}} </div>
-        }
-        }
-        @case ('chip') {
-        @if (column.sort) {
-        <div class="table-head__cell table-cell" [attr.sorting]="column.field === sortColumn"
-            (click)="onSort(column.field)" [style.width]="column.width">
-            {{column.title | transloco}}
-            @if (column.field === sortColumn) {
-            @switch (sortDirection) {
-            @case ('asc') { <span class="pi pi-sort-up-fill"></span> }
-            @case ('desc') { <span class="pi pi-sort-down-fill"></span> } } } @else {
-            <span class="pi pi-sort"></span>
-            }
-        </div>
-        }
-        @else {
-        <div class="table-head__cell table-cell" [style.width]="column.width">
-            {{column.title | transloco}} </div>
-        }
-        }
-        @case ('button') {
-        <div class="table-head__cell table-cell" [style.width]="column.width">
-            {{column.title | transloco}} </div>
-        }
-        @case ('hedera') {
-        <div class="table-head__cell table-cell" [style.width]="column.width">
-            {{column.title | transloco}} </div>
-        }
-        @case ('check_box') {
-        <div class="table-head__cell table-cell" [style.width]="column.width">
-            {{column.title | transloco}} </div>
-        }
-        }
         }
     </div>
     <div class="table-body-container">
         <div class="table__body">
             @if (loading) {
-            <div class="loading">
-                <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
-            </div>
-            } @else () {
-            @for (item of data; track $index) {
-            <div class="table-row">
-                @for (column of columns; track $index) {
-                <div [style.width]="column.width" class="table-cell">
-                    @switch (column.type) {
-                    @case ('text') {
-                    @if (column.link) {
-                    <a [routerLink]="getLink(column, item)" [queryParams]="getFilterParams(column, item)">{{getFieldValue(column.field,
-                        item)}}</a>
-                    } @else if (!!column.formatValue) {
-                    <span [title]="column.formatValue(getFieldValue(column.field, item))">{{column.formatValue(getFieldValue(column.field,
-                        item))}}</span>
-                    }@else {
-                    <span [title]="getFieldValue(column.field, item)">{{getFieldValue(column.field,
-                        item)}}</span>
-                    }
-                    }
-                    @case ('chip') {
-                    <p-tag [value]="getFieldValue(column.field, item)" [severity]="column?.severity?.(item) || 'secondary'" />
-                    }
-                    @case ('button') {
-                    <p-button [label]="column.btn_label | transloco" [icon]="column.icon" (onClick)="column.callback(item)" />
-                    }
-                    @case ('hedera') {
-                    <hedera-explorer [params]="getFieldValue(column.field, item)" [type]="column.hederaType">
-                        {{ getFieldValue(column.field, item) }}
-                    </hedera-explorer>
-                    }
-                    @case ('check_box') {
-                        <p-checkbox
-                            [name]="getFieldValue(column.checkField, item)"
-                            [value]="getFieldValue(column.checkField, item)"
-                            [disabled]="column.disabled(item)"
-                            [(ngModel)]="column.checkGroup"
-                            (onChange)="column.callback(column.checkField, $event.checked)"
-                            [pTooltip]="column?.getTooltip?.(item) || ''" 
-                        />
-                    }
-                    }
+                <div class="loading">
+                    <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
                 </div>
+            } @else () {
+                @for (item of data; track $index) {
+                    <div class="table-row">
+                        @for (column of columns; track $index) {
+                            <div 
+                                [style.width]="column.width"
+                                [style.min-width]="column.minWidth"
+                                [style.max-width]="column.maxWidth"
+                                class="table-cell"
+                            >
+                                @if (!column.visibility || column.visibility(item)) {
+                                    @switch (column.type) {
+                                        @case ('text') {
+                                            @if (column.link) {
+                                                <a 
+                                                    [routerLink]="getLink(column, item)" 
+                                                    [queryParams]="getFilterParams(column, item)"
+                                                >
+                                                    {{getFieldValue(column.field,item)}}
+                                                </a>
+                                            } @else if (!!column.formatValue) {
+                                                <span 
+                                                    [title]="column.formatValue(getFieldValue(column.field, item))"
+                                                >
+                                                    {{column.formatValue(getFieldValue(column.field,item))}}
+                                                </span>
+                                            }@else {
+                                                <span [title]="getFieldValue(column.field, item)">
+                                                    {{getFieldValue(column.field,item)}}
+                                                </span>
+                                            }
+                                        }
+                                        @case ('chip') {
+                                            <p-tag [value]="getFieldValue(column.field, item)" [severity]="column?.severity?.(item) || 'secondary'" />
+                                        }
+                                        @case ('button') {
+                                            <p-button 
+                                                [label]="column.btn_label | transloco" 
+                                                [icon]="column.icon" 
+                                                (onClick)="column.callback(item)" 
+                                                [disabled]="column.disabled && column.disabled(item)"/>
+                                        }
+                                        @case ('hedera') {
+                                            @if (!!column.formatValue) {
+                                                <hedera-explorer [params]="column.formatValue(getFieldValue(column.field, item))" [type]="column.hederaType">
+                                                    {{ column.formatValue(getFieldValue(column.field, item)) }}
+                                                </hedera-explorer>
+                                            } @else {
+                                                <hedera-explorer [params]="getFieldValue(column.field, item)" [type]="column.hederaType">
+                                                    {{ getFieldValue(column.field, item) }}
+                                                </hedera-explorer>
+                                            }
+                                        }
+                                        @case ('check_box') {
+                                            <p-checkbox
+                                                [name]="getFieldValue(column.checkField, item)"
+                                                [value]="getFieldValue(column.checkField, item)"
+                                                [disabled]="column.disabled(item)"
+                                                [(ngModel)]="column.checkGroup"
+                                                (onChange)="column.callback(column.checkField, $event.checked)"
+                                                [pTooltip]="column?.getTooltip?.(item) || ''" 
+                                            />
+                                        }
+                                    }
+                                }
+                            </div>
+                        }
+                    </div>
+                } @empty {
+                    <ng-container [ngTemplateOutlet]="empty"></ng-container>
                 }
-            </div>
-            } @empty {
-            <ng-container [ngTemplateOutlet]="empty"></ng-container>
-            }
             }
         </div>
         @if (paginator) {

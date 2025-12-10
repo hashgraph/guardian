@@ -3,7 +3,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { ToolMessageBody } from './message-body.interface.js';
-import { IPFS } from '../../helpers/index.js';
+import { IPFS, toBuffer } from '../../helpers/index.js';
 import { PolicyTool } from '../../entity/tool.js';
 
 /**
@@ -13,7 +13,7 @@ export class ToolMessage extends Message {
     /**
      * Document
      */
-    public document: ArrayBuffer;
+    public document: Buffer;
     /**
      * UUID
      */
@@ -43,6 +43,10 @@ export class ToolMessage extends Message {
      * Tags topic ID
      */
     public tagsTopicId: string;
+    /**
+     * Version
+     */
+    public version: string;
 
     constructor(type: MessageType.Tool, action: MessageAction) {
         super(action, type);
@@ -55,21 +59,22 @@ export class ToolMessage extends Message {
      * @param model
      * @param zip
      */
-    public setDocument(model: PolicyTool, zip?: ArrayBuffer): void {
+    public setDocument(model: PolicyTool, zip?: ArrayBuffer | Buffer): void {
         this.uuid = model.uuid;
         this.name = model.name;
         this.description = model.description;
         this.owner = model.owner;
         this.hash = model.hash;
-        this.document = zip;
+        this.document = toBuffer(zip);
         this.toolTopicId = model.topicId;
         this.tagsTopicId = model.tagsTopicId;
+        this.version = model.version;
     }
 
     /**
      * Get document
      */
-    public getDocument(): ArrayBuffer {
+    public getDocument(): Buffer {
         return this.document;
     }
 
@@ -83,6 +88,7 @@ export class ToolMessage extends Message {
             type: this.type,
             action: this.action,
             lang: this.lang,
+            account: this.account,
             uuid: this.uuid,
             name: this.name,
             description: this.description,
@@ -90,6 +96,7 @@ export class ToolMessage extends Message {
             hash: this.hash,
             topicId: this.toolTopicId?.toString(),
             tagsTopicId: this.tagsTopicId,
+            version: this.version,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url)
         }
@@ -98,7 +105,7 @@ export class ToolMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(): Promise<Buffer[]> {
         if (this.document) {
             return [this.document];
         }
@@ -111,7 +118,7 @@ export class ToolMessage extends Message {
      */
     public loadDocuments(documents: any[]): ToolMessage {
         if (documents && documents.length === 1) {
-            this.document = Buffer.from(documents[0]);
+            this.document = Buffer.from(documents[0]) as any;
         }
         return this;
     }
@@ -153,6 +160,7 @@ export class ToolMessage extends Message {
         message.hash = json.hash;
         message.toolTopicId = json.topicId;
         message.tagsTopicId = json.tagsTopicId;
+        message.version = json.version;
 
         if (json.cid) {
             const urls = [{
@@ -202,6 +210,7 @@ export class ToolMessage extends Message {
         result.document = this.document;
         result.toolTopicId = this.toolTopicId;
         result.tagsTopicId = this.tagsTopicId;
+        result.version = this.version;
         return result;
     }
 
@@ -219,6 +228,7 @@ export class ToolMessage extends Message {
         result.document = json.document;
         result.toolTopicId = json.toolTopicId;
         result.tagsTopicId = json.tagsTopicId;
+        result.version = json.version;
         return result;
     }
 

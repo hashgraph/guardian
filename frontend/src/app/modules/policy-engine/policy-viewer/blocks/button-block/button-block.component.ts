@@ -1,10 +1,11 @@
-import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
+import { PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Component for display block of 'Buttons' type.
@@ -15,9 +16,10 @@ import { HttpErrorResponse } from '@angular/common/http';
     styleUrls: ['./button-block.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ButtonBlockComponent implements OnInit, AfterContentChecked {
+export class ButtonBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
+    @Input('policyStatus') policyStatus!: string;
     @Input('static') static!: any;
 
     loading: boolean = true;
@@ -37,27 +39,6 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         private dialogService: DialogService,
         private cdref: ChangeDetectorRef
     ) {
-    }
-
-    ngAfterContentChecked(): void {
-        if (!this.buttons) {
-            return;
-        }
-
-        if (!this.enableIndividualFilters) {
-            let visible = true;
-            for (const button of this.buttons) {
-                visible = visible && this.checkVisible(button);
-            }
-            for (const button of this.buttons) {
-                button.visible = visible;
-            }
-        } else {
-            for (const button of this.buttons) {
-                button.visible = this.checkVisible(button);
-            }
-        }
-        this.cdref.detectChanges();
     }
 
     ngOnInit(): void {
@@ -101,6 +82,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         this.setData(data);
         setTimeout(() => {
             this.loading = false;
+            this.cdref.detectChanges();
         }, 500);
     }
 
@@ -110,6 +92,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             this._onSuccess(null);
         } else {
             this.loading = false;
+            this.cdref.detectChanges();
         }
     }
 
@@ -123,6 +106,33 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         } else {
             this.data = null;
         }
+
+        if (!this.buttons) {
+            return;
+        }
+
+        if (!this.enableIndividualFilters) {
+            let visible = true;
+            for (const button of this.buttons) {
+                visible = visible && this.checkVisible(button);
+            }
+            for (const button of this.buttons) {
+                button.visible = visible;
+            }
+        } else {
+            for (const button of this.buttons) {
+                button.visible = this.checkVisible(button);
+            }
+        }
+        this.cdref.detectChanges();
+    }
+
+    isBtnVisible(button: any) {
+        if (this.policyStatus === PolicyStatus.DISCONTINUED && button.hideWhenDiscontinued) {
+            return false;
+        }
+
+        return true;
     }
 
     checkVisible(button: any) {
@@ -207,6 +217,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
                 (e) => {
                     console.error(e.error);
                     this.loading = false;
+                    this.cdref.detectChanges();
                 }
             );
     }

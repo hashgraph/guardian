@@ -361,6 +361,92 @@ export class Users extends NatsService {
     public async refreshUserPermissions(id: string, owner: string, userId: string | null): Promise<any[]> {
         return await this.sendMessage(AuthEvents.REFRESH_USER_PERMISSIONS, { id, owner, userId });
     }
+
+    /**
+     * Get relayer account balance
+     * @param user
+     */
+    public async getRelayerAccountBalance(
+        user: IAuthUser,
+        account: string
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.GET_RELAYER_ACCOUNT_BALANCE, { user, account });
+    }
+
+    /**
+     * Get current relayer account
+     * @param user
+     */
+    public async getCurrentRelayerAccount(
+        user: IAuthUser
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.GET_CURRENT_RELAYER_ACCOUNT, { user });
+    }
+
+    /**
+     * Get relayer accounts
+     * @param user
+     */
+    public async getRelayerAccounts(
+        user: IAuthUser,
+        filters: {
+            search?: string,
+            pageIndex?: number | string,
+            pageSize?: number | string
+        }
+    ): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(AuthEvents.GET_RELAYER_ACCOUNTS, { user, filters });
+    }
+
+    /**
+     * Get relayer accounts
+     * @param user
+     */
+    public async getUserRelayerAccounts(
+        user: IAuthUser,
+        filters: {
+            search?: string,
+            pageIndex?: number | string,
+            pageSize?: number | string
+        }
+    ): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(AuthEvents.GET_USER_RELAYER_ACCOUNTS, { user, filters });
+    }
+
+    /**
+     * Get relayer accounts
+     * @param user
+     */
+    public async getRelayerAccountsAll(
+        user: IAuthUser
+    ): Promise<any[]> {
+        return await this.sendMessage(AuthEvents.GET_RELAYER_ACCOUNTS_ALL, { user });
+    }
+
+    /**
+     * Create relayer account
+     * @param user
+     */
+    public async createRelayerAccount(
+        user: IAuthUser,
+        config: {
+            name?: string
+            account?: string,
+            key?: string,
+        }
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.CREATE_RELAYER_ACCOUNT, { user, config });
+    }
+
+    /**
+     * Generate relayer account
+     * @param user
+     */
+    public async generateRelayerAccount(
+        user: IAuthUser
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.GENERATE_RELAYER_ACCOUNT, { user });
+    }
 }
 
 @Injectable()
