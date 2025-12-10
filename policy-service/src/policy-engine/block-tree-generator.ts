@@ -1,5 +1,5 @@
-import { DataBaseHelper, JwtServicesValidator, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
-import { GenerateUUIDv4, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
+import { DataBaseHelper, DatabaseServer, JwtServicesValidator, MessageAction, MessageError, MessageResponse, MessageServer, NatsService, PinoLogger, Policy, PolicyRecordMessage, RecordImportExport, Singleton, TopicConfig, Users } from '@guardian/common';
+import { GenerateUUIDv4, ISignOptions, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
 import { headers } from 'nats';
 import { Inject } from '../helpers/decorators/inject.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
@@ -10,6 +10,8 @@ import { PolicyUser } from './policy-user.js';
 import { RecordUtils } from './record-utils.js';
 import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
 import { PolicyActionsService } from './actions-service.js';
+import { FilterObject } from '@mikro-orm/core';
+// import { RecordPersistService } from './helpers/record-persist.service.js';
 
 /**
  * Block tree generator
@@ -430,6 +432,37 @@ export class BlockTreeGenerator extends NatsService {
             const result = await RecordUtils.SkipStep(policyId, options);
             return new MessageResponse(result);
         });
+
+        // this.getPolicyMessages(PolicyEvents.RECORD_PERSIST_STEP, policyId, async (msg: any) => {
+        //     const {
+        //         policyId: msgPolicyId,
+        //         policyMessageId,
+        //         recordingUuid,
+        //         recordId,
+        //         payload,
+        //         documentSnapshot,
+        //         hedera,
+        //         uploadToIpfs
+        //     } = msg;
+        //     console.log(123321);
+        //     try {
+        //         await RecordPersistService.persistStep({
+        //             policyId: msgPolicyId ?? policyId,
+        //             policyMessageId,
+        //             recordingUuid,
+        //             recordId,
+        //             payload,
+        //             documentSnapshot,
+        //             hedera,
+        //             uploadToIpfs
+        //         });
+
+        //         return new MessageResponse({ ok: true });
+        //     } catch (error: any) {
+        //         console.error(`Error persisting record step for policy ${policyId}`, error);
+        //         return new MessageError(error?.message || String(error), 500);
+        //     }
+        // });
     }
 
     /**

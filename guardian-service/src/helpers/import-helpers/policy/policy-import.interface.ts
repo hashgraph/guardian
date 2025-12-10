@@ -69,6 +69,7 @@ export class ImportPolicyOptions {
     public metadata: PolicyToolMetadata | null;
     public logger: PinoLogger;
     public importRecords: boolean;
+    public fromMessageId: string;
 
     constructor(logger: PinoLogger) {
         this.logger = logger;
@@ -101,6 +102,11 @@ export class ImportPolicyOptions {
 
     public setImportRecords(importRecords?: boolean): ImportPolicyOptions {
         this.importRecords = !!importRecords;
+        return this;
+    }
+
+    public setFromMessageId(fromMessageId = ''): ImportPolicyOptions {
+        this.fromMessageId = fromMessageId;
         return this;
     }
 

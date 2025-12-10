@@ -72,6 +72,7 @@ import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
 import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
 import { PolicyCommentsUtils } from './policy-comments-utils.js';
+import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
 
 /**
  * PolicyEngineChannel
@@ -227,6 +228,7 @@ export class PolicyEngineService {
         userId: string | null
     ): Promise<boolean> {
         try {
+            console.log(policyPreview, 'policyPreview');
             const policyId = this.extractPolicyIdFromPreview(policyPreview);
             if (!policyId) {
                 return false;
@@ -320,6 +322,35 @@ export class PolicyEngineService {
                     }
                     default:
                         throw new Error('Unknown type');
+                }
+            })
+
+        this.channel.getMessages(PolicyEvents.RECORD_PERSIST_STEP,
+            async (msg: PersistStepPayload) => {
+            const {
+                policyId: msgPolicyId,
+                policyMessageId,
+                recordingUuid,
+                recordId,
+                payload,
+                documentSnapshot,
+                hedera,
+                uploadToIpfs
+            } = msg;
+            console.log(123321);
+                try {
+                    await RecordPersistService.persistStep({
+                        policyId: msgPolicyId,
+                        policyMessageId,
+                        recordingUuid,
+                        recordId,
+                        payload,
+                        documentSnapshot,
+                        hedera,
+                        uploadToIpfs
+                    });
+                } catch (error: any) {
+                    console.error(`Error persisting record step for policy ${msgPolicyId}`, error);
                 }
             })
 
@@ -794,12 +825,13 @@ export class PolicyEngineService {
                 }
 
                 if (policy.status !== PolicyStatus.PUBLISH && policy.status !== PolicyStatus.DISCONTINUED) {
-                    const records = await DatabaseServer.getRecord({
-                        policyId: policy.id,
-                        copiedRecordId: { $exists: true, $ne: null }
-                    }, { limit: 1, fields: ['_id', 'uuid'] } as any);
+                    // const records = await DatabaseServer.getRecord({
+                    //     policyId: policy.id,
+                    //     copiedRecordId: { $exists: true, $ne: null }
+                    // }, { limit: 1, fields: ['_id', 'uuid'] } as any);
 
-                    result.withRecords = Array.isArray(records) && !!records.length;
+                    // result.withRecords = Array.isArray(records) && !!records.length;
+                    result.withRecords = !!policy.autoRecordSteps;
                 }
 
                 return new MessageResponse(result);
@@ -1183,7 +1215,8 @@ export class PolicyEngineService {
                 policyId: string,
                 options: {
                     policyVersion: string,
-                    policyAvailability?: PolicyAvailability
+                    policyAvailability?: PolicyAvailability,
+                    recordingEnabled?: boolean,
                 },
                 owner: IOwner
             }): Promise<IMessageResponse<any>> => {
@@ -1215,7 +1248,8 @@ export class PolicyEngineService {
                 policyId: string,
                 options: {
                     policyVersion: string,
-                    policyAvailability?: PolicyAvailability
+                    policyAvailability?: PolicyAvailability,
+                    recordingEnabled?: boolean,
                 },
                 owner: IOwner,
                 task: any
@@ -1613,7 +1647,9 @@ export class PolicyEngineService {
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
                     policyToImport.similar = similarPolicies;
-                    policyToImport.withRecords = await this.hasIpfsRecordsForPreview(policyToImport, logger, owner?.id);
+                    // policyToImport.withRecords = await this.hasIpfsRecordsForPreview(policyToImport, logger, owner?.id);
+                    console.log(policyToImport, 'policyToImport');
+                    policyToImport.withRecords = !!policyToImport.policy.autoRecordSteps;
                     return new MessageResponse(policyToImport);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1637,7 +1673,9 @@ export class PolicyEngineService {
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
                     policyToImport.similar = similarPolicies;
-                    policyToImport.withRecords = await this.hasIpfsRecordsForPreview(policyToImport, logger, owner?.id);
+                    // policyToImport.withRecords = await this.hasIpfsRecordsForPreview(policyToImport, logger, owner?.id);
+                    console.log(policyToImport, 'policyToImport');
+                    policyToImport.withRecords = !!policyToImport.policy.autoRecordSteps;
                     notifier.result(policyToImport);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1678,6 +1716,7 @@ export class PolicyEngineService {
                             .setUser(owner)
                             .setParentPolicyTopic(versionOfTopicId)
                             .setImportRecords(metadata?.importRecords)
+                            .setFromMessageId(messageId)
                             .setMetadata(metadata),
                         notifier.getStep(STEP_IMPORT_POLICY),
                         owner.id
@@ -1743,6 +1782,7 @@ export class PolicyEngineService {
                                 .setUser(owner)
                                 .setParentPolicyTopic(versionOfTopicId)
                                 .setImportRecords(metadata?.importRecords)
+                                .setFromMessageId(messageId)
                                 .setMetadata(metadata),
                             notifier.getStep(STEP_IMPORT_POLICY),
                             owner.id
