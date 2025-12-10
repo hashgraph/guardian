@@ -1,8 +1,8 @@
-# **Digital Receipt Policy V 1.0**
+# **Verified Farmer Payments Policy V 1.0**
 
 ## **Introduction**
 
-The **Digital Receipt Policy** transforms each farm-gate transaction into a tamper-evident digital receipt that both farmers and cooperatives can showcase. A collector submits the payment record—amount, currency, reference, and payout date—and chooses one of two validation routes:
+The **Verified Farmer Payments Policy** transforms each farm-gate transaction into a tamper-evident Verified Farmer Payments that both farmers and cooperatives can showcase. A collector submits the payment record—amount, currency, reference, and payout date—and chooses one of two validation routes:
 
 * **Farmer NFC Card:** The farmer taps their NFC card in the Trace app; the card’s private key signs the transaction, providing an indisputable farmer-side signature.  
 * **Receipt Evidence:** the collector uploads a photo (cash slip, mobile-money screenshot, signed voucher). Guardian stores only the SHA-256 hash of the image, proving the evidence exists without revealing its contents.
@@ -16,7 +16,7 @@ Either way, the DRT anchors the transaction hash, verification method, dual appr
 
 ## **Policy Description**
 
-The Digital Receipt Policy digitises farm-gate transactions so cooperatives can prove—instantly and immutably—that farmers received full and timely payment.
+The Verified Farmer Payments Policy digitises farm-gate transactions so cooperatives can prove—instantly and immutably—that farmers received full and timely payment.
 
 * **Goal** – replace paper receipts and ad-hoc spreadsheets with a tamper-evident record of each payment, consumable by brands, lenders, and auditors.  
 * **Verification modes** –  
@@ -48,7 +48,7 @@ Two roles participate:
 
 ### **1 . Payment Submission (Collector / Cooperative)**
 
-* Opens the *Digital Receipt* form and enters: amount, currency, transaction reference, payment date, farmer ID.  
+* Opens the *Verified Farmer Payments* form and enters: amount, currency, transaction reference, payment date, farmer ID.  
 * Chooses a verification route:  
   1. **NFC signature** – will hand device to the farmer.  
   2. **Receipt evidence** – uploads a photo/PDF of the cash slip, mobile-money screenshot, or signed voucher.  
@@ -138,7 +138,7 @@ Mints a **Premium Paid Token (PPT)** (HIP-412 NFT).
 
 Login using credentials and from the policy tab we can see all policies from the list of policies tab.![][image1]
 
-Then select the policy digital receipt and choose the role
+Then select the policy Verified Farmer Payments and choose the role
 
 #### This claim has two roles:
 
@@ -191,13 +191,13 @@ Evidence Type Choices:
 * Card  
 * No evidence
 
-The submitted data can be seen in the digital receipt tab.  
+The submitted data can be seen in the Verified Farmer Payments tab.  
 ![][image7]
 
-After that the user with role ‘Farmer’ should login and he can see all the transactions submitted by the Co-Operative on the digital receipt tab. After that the transaction can be verified or rejected. We can filter the data using the transaction ID. For rejecting the transaction he can also submit the reason for rejection.  
+After that the user with role ‘Farmer’ should login and he can see all the transactions submitted by the Co-Operative on the Verified Farmer Payments tab. After that the transaction can be verified or rejected. We can filter the data using the transaction ID. For rejecting the transaction he can also submit the reason for rejection.  
 ![][image8]
 
-The Co-Operative can see the status of the transaction from the digital receipt tab and if approved can see the token details from the token history tab. We can see the details and the complete flow in the token history and trust chain. The token details are filtered by the document ID.
+The Co-Operative can see the status of the transaction from the Verified Farmer Payments tab and if approved can see the token details from the token history tab. We can see the details and the complete flow in the token history and trust chain. The token details are filtered by the document ID.
 
 ![][image9]
 
