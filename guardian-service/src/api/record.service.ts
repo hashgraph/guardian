@@ -17,7 +17,7 @@ import {
 import { IOwner, MessageAPI, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
 import { GuardiansService } from '../helpers/guardians.js';
 
-const MIN_SPACING_MS = 1000;
+const MIN_SPACING_MS = 3000;
 const RESULTS_WINDOW_PADDING_MS = 1000;
 
 /**
@@ -130,7 +130,6 @@ export async function syncPolicyCopiedRecords(
             type: MessageType.PolicyRecordStep,
             action: MessageAction.PolicyRecordStep
         });
-        console.log(messages, 'messages');
 
         if (!messages || !messages.length) {
             return;
@@ -177,43 +176,51 @@ export async function syncPolicyCopiedRecords(
                 continue;
             }
 
-            const recordFromZip: any = parsed?.record || parsed;
-            const copiedRecordId = recordFromZip.id?.toString?.() || msg.recordId;
+            const parsedRecords: any[] = Array.isArray(parsed?.records)
+                ? parsed.records
+                : parsed?.record
+                    ? [parsed.record]
+                    : [];
 
-            if (!copiedRecordId || existingIds.has(copiedRecordId)) {
-                continue;
-            }
+            for (const recordFromZip of parsedRecords) {
+                console.log(recordFromZip, 'recordFromZip');
+                const copiedRecordId = recordFromZip.id?.toString?.() || msg.recordId?.toString?.();
 
-            const clone: any = {
-                uuid: recordFromZip.uuid || msg.recordingUuid,
-                policyId: targetPolicyId,
-                method: recordFromZip.method || msg.method,
-                action: recordFromZip.action || msg.actionName,
-                time: recordFromZip.time || msg.time,
-                user: recordFromZip.user || msg.user,
-                target: recordFromZip.target || msg.target,
-                document: recordFromZip.document ?? null,
-                ipfsCid: recordFromZip.ipfsCid ?? null,
-                ipfsUrl: recordFromZip.ipfsUrl ?? null,
-                ipfsTimestamp: recordFromZip.ipfsTimestamp ?? new Date(),
-                fromPolicyId: sourcePolicyId,
-                copiedRecordId
-            };
+                if (!copiedRecordId || existingIds.has(copiedRecordId)) {
+                    continue;
+                }
 
-            const duplicate = await DatabaseServer.getRecord(
-                {
+                const clone: any = {
+                    uuid: recordFromZip.uuid || msg.recordingUuid,
                     policyId: targetPolicyId,
+                    method: recordFromZip.method || msg.method,
+                    action: recordFromZip.action || msg.actionName,
+                    time: recordFromZip.time || recordFromZip.createDate || msg.time,
+                    user: recordFromZip.user || msg.user,
+                    target: recordFromZip.target || msg.target,
+                    document: recordFromZip.document ?? null,
+                    ipfsCid: recordFromZip.ipfsCid ?? null,
+                    ipfsUrl: recordFromZip.ipfsUrl ?? null,
+                    ipfsTimestamp: recordFromZip.ipfsTimestamp ?? new Date(),
+                    fromPolicyId: sourcePolicyId,
                     copiedRecordId
-                } as any,
-                { limit: 1 } as any
-            );
-            if (Array.isArray(duplicate) && duplicate.length) {
-                existingIds.add(copiedRecordId);
-                continue;
-            }
+                };
 
-            await DatabaseServer.createRecord(clone);
-            existingIds.add(copiedRecordId);
+                const duplicate = await DatabaseServer.getRecord(
+                    {
+                        policyId: targetPolicyId,
+                        copiedRecordId
+                    } as any,
+                    { limit: 1 } as any
+                );
+                if (Array.isArray(duplicate) && duplicate.length) {
+                    existingIds.add(copiedRecordId);
+                    continue;
+                }
+
+                await DatabaseServer.createRecord(clone);
+                existingIds.add(copiedRecordId);
+            }
         }
     } catch (error) {
         await logger.error(
@@ -248,22 +255,63 @@ export async function checkPolicy(
 }
 
 async function loadImportedRecordsFromDb(
-    policyId: string
+    policyId: string,
+    policyOwner: string
 ): Promise<{ records: RunRecordAction[], results: IRecordResult[] }> {
-    const importedRecords = await DatabaseServer.getRecord(
+    const sortOptions = { orderBy: { time: 'ASC', createDate: 'ASC' } } as any;
+
+    let importedRecords = await DatabaseServer.getRecord(
         {
             policyId,
-            copiedRecordId: { $ne: null }
+            fromPolicyId: { $ne: null }
         } as any,
-        { orderBy: { time: 'ASC' } }
+        sortOptions
     );
-    console.log(importedRecords, 'importedRecords');
+
+    if (!importedRecords.length) {
+        importedRecords = await DatabaseServer.getRecord(
+            {
+                policyId,
+                ipfsCid: { $ne: null }
+            } as any,
+            sortOptions
+        );
+    }
     if (!importedRecords.length) {
         throw new Error('Imported records not found');
     }
 
+    importedRecords = importedRecords.filter(Boolean);
+    console.log(importedRecords, 'importedRecords');
+
+    const toTimestamp = (value: any): number | null => {
+        if (!value) {
+            return null;
+        }
+        const timestamp = new Date(value).getTime();
+        return Number.isNaN(timestamp) ? null : timestamp;
+    };
+
     const firstRecord: any = importedRecords[0];
-    if (!firstRecord || firstRecord.method !== 'START') {
+    const hasStart = importedRecords.some(
+        (r: any) => (r.method || '').toUpperCase() === 'START'
+    );
+    console.log(hasStart, 'hasStarthasStarthasStart 123');
+
+    if (hasStart) {
+        const startRecord: any = importedRecords.find(
+            (r: any) => (r.method || '').toUpperCase() === 'START'
+        );
+        const startUser: string | null = startRecord?.user || null;
+
+        if (startUser && policyOwner && startUser !== policyOwner) {
+            for (const rec of importedRecords) {
+                if (rec.user === startUser) {
+                    (rec as any).user = policyOwner;
+                }
+            }
+        }
+    } else if (firstRecord) {
         const firstTimeRaw =
             firstRecord.time ||
             firstRecord.createDate ||
@@ -278,28 +326,19 @@ async function loadImportedRecordsFromDb(
             ...firstRecord,
             method: 'START',
             action: null,
-            user: null,
+            user: policyOwner || firstRecord.user || null,
             target: null,
-            time: firstTime
+            time: new Date(firstTime.getTime() - MIN_SPACING_MS)
         };
 
         importedRecords.unshift(startRecord);
     }
 
-    const toTimestamp = (value: any): number | null => {
-        if (!value) {
-            return null;
-        }
-        const timestamp = new Date(value).getTime();
-        return Number.isNaN(timestamp) ? null : timestamp;
-    };
-
-    let startTime = toTimestamp(importedRecords[1]?.time);
-    if (startTime !== null) {
-        startTime -= 10000;
-    }
-
-    const endTimeCandidate = toTimestamp(importedRecords[importedRecords.length - 1]?.time);
+    const firstTs = toTimestamp(importedRecords[0]?.time) ?? toTimestamp(importedRecords[0]?.createDate);
+    const secondTs = toTimestamp(importedRecords[1]?.time) ?? toTimestamp(importedRecords[1]?.createDate);
+    const startTime = ((secondTs ?? firstTs ?? Date.now()) - 10000);
+    const endTimeCandidate = toTimestamp(importedRecords[importedRecords.length - 1]?.time) ??
+        toTimestamp(importedRecords[importedRecords.length - 1]?.createDate);
     const initialEndTime = endTimeCandidate ?? startTime;
     const endTime = (initialEndTime !== null && startTime !== null && initialEndTime <= startTime)
         ? startTime + 1
@@ -321,6 +360,8 @@ async function loadImportedRecordsFromDb(
         safeStartTime,
         paddedEndTime
     );
+
+    console.log(records, 'records');
 
     return {
         records,
@@ -352,19 +393,28 @@ function buildRunActionsFromImportedRecords(
         return [];
     }
 
+    const hasStart = baseActions.some((a) => (a.method || '').toUpperCase() === 'START');
+    if (!hasStart) {
+        const firstTime = baseActions[0]?.time ?? fallbackTime;
+        baseActions.unshift({
+            method: 'START',
+            action: null,
+            user: baseActions[0]?.user ?? null,
+            target: null,
+            time: firstTime - MIN_SPACING_MS,
+            document: null,
+            uuid: baseActions[0]?.uuid,
+            origin: 'synthetic',
+            __order: --orderCounter
+        });
+    }
+
     baseActions.sort((a, b) => {
         if (a.time === b.time) {
             return a.__order - b.__order;
         }
         return a.time - b.time;
     });
-
-    if (baseActions.length > 1) {
-        const secondTime = baseActions[1].time;
-        if (Number.isFinite(secondTime)) {
-            baseActions[0].time = secondTime - 10000;
-        }
-    }
 
     const firstActionTime = baseActions[0]?.time ?? fallbackTime;
     const startTime = Number.isFinite(startTimeMs) ? startTimeMs : firstActionTime;
@@ -424,7 +474,10 @@ function buildRunActionsFromImportedRecords(
         if (action.method === 'START' || action.method === 'STOP') {
             pushAction({ ...action });
             if (action.method === 'START') {
-                currentUser = action.user || null;
+                currentUser = normalizedUser;
+                if (normalizedUser) {
+                    createdUsers.add(normalizedUser);
+                }
             } else if (action.method === 'STOP') {
                 currentUser = null;
             }
@@ -492,6 +545,8 @@ function buildRunActionsFromImportedRecords(
         return a.time - b.time;
     });
 
+    enforceMinSpacing(enriched, MIN_SPACING_MS);
+
     return enriched.map(({ __order, origin, ...rest }) => rest);
 }
 
@@ -525,53 +580,91 @@ function normalizeTimestamp(value: any, fallback: number): number {
     return fallback;
 }
 
+function enforceMinSpacing(
+    actions: InternalRunRecordAction[],
+    minSpacingMs: number
+): void {
+    if (!actions.length) {
+        return;
+    }
+
+    let lastTime = actions[0].time;
+
+    if (!Number.isFinite(lastTime)) {
+        lastTime = Date.now();
+        actions[0].time = lastTime;
+    }
+
+    for (let i = 1; i < actions.length; i++) {
+        const action = actions[i];
+        let t = action.time;
+
+        if (!Number.isFinite(t)) {
+            t = lastTime + minSpacingMs;
+        }
+
+        const minAllowed = lastTime + minSpacingMs;
+        if (t < minAllowed) {
+            t = minAllowed;
+        }
+
+        action.time = t;
+        lastTime = t;
+    }
+}
+
 function allocatePreActionTimes(leftBound: number, baseTime: number): { createTime: number; setTime: number } {
-    const available = baseTime - leftBound;
-    let createTime = baseTime - MIN_SPACING_MS * 2;
-    let setTime = baseTime - MIN_SPACING_MS;
+    // const available = baseTime - leftBound;
+    // let createTime = baseTime - MIN_SPACING_MS * 2;
+    // let setTime = baseTime - MIN_SPACING_MS;
 
-    if (available <= MIN_SPACING_MS * 2) {
-        const step = Math.max(Math.floor(available / 3), 1);
-        createTime = leftBound + step;
-        setTime = Math.min(baseTime - 1, createTime + step);
-        if (setTime <= createTime) {
-            createTime = Math.max(leftBound + 1, baseTime - 3);
-            setTime = Math.max(createTime + 1, baseTime - 2);
-        }
-        return { createTime, setTime };
-    }
+    // if (available <= MIN_SPACING_MS * 2) {
+    //     const step = Math.max(Math.floor(available / 3), 1);
+    //     createTime = leftBound + step;
+    //     setTime = Math.min(baseTime - 1, createTime + step);
+    //     if (setTime <= createTime) {
+    //         createTime = Math.max(leftBound + 1, baseTime - 3);
+    //         setTime = Math.max(createTime + 1, baseTime - 2);
+    //     }
+    //     return { createTime, setTime };
+    // }
 
-    createTime = baseTime - MIN_SPACING_MS * 2;
+    // createTime = baseTime - MIN_SPACING_MS * 2;
 
-    if (createTime <= leftBound + MIN_SPACING_MS) {
-        createTime = leftBound + MIN_SPACING_MS;
-    }
+    // if (createTime <= leftBound + MIN_SPACING_MS) {
+    //     createTime = leftBound + MIN_SPACING_MS;
+    // }
 
-    setTime = baseTime - MIN_SPACING_MS;
+    // setTime = baseTime - MIN_SPACING_MS;
 
-    if (setTime <= createTime) {
-        setTime = createTime + MIN_SPACING_MS;
-        if (setTime >= baseTime) {
-            setTime = baseTime - 1;
-        }
-    }
+    // if (setTime <= createTime) {
+    //     setTime = createTime + MIN_SPACING_MS;
+    //     if (setTime >= baseTime) {
+    //         setTime = baseTime - 1;
+    //     }
+    // }
+
+    // return { createTime, setTime };
+    const setTime = baseTime - 1;
+    const createTime = baseTime - 2;
 
     return { createTime, setTime };
 }
 
 function allocateSwitchTime(leftBound: number, baseTime: number): number {
-    const available = baseTime - leftBound;
-    if (available <= MIN_SPACING_MS) {
-        return Math.max(leftBound + 1, baseTime - 1);
-    }
-    let candidate = baseTime - MIN_SPACING_MS;
-    if (candidate <= leftBound + MIN_SPACING_MS) {
-        candidate = leftBound + MIN_SPACING_MS;
-    }
-    if (candidate >= baseTime) {
-        candidate = baseTime - 1;
-    }
-    return candidate;
+    // const available = baseTime - leftBound;
+    // if (available <= MIN_SPACING_MS) {
+    //     return Math.max(leftBound + 1, baseTime - 1);
+    // }
+    // let candidate = baseTime - MIN_SPACING_MS;
+    // if (candidate <= leftBound + MIN_SPACING_MS) {
+    //     candidate = leftBound + MIN_SPACING_MS;
+    // }
+    // if (candidate >= baseTime) {
+    //     candidate = baseTime - 1;
+    // }
+    // return candidate;
+    return baseTime - 1;
 }
 
 // function buildRunActionsFromImportedRecords(
@@ -894,7 +987,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                 const { policyId, owner } = msg;
                 const options = msg.options || {};
                 const syncNewRecords = !!options.syncNewRecords
-                await checkPolicy(policyId, owner);
+                const policy = await checkPolicy(policyId, owner);
 
                 let records: RecordEntity[] | any[] = [];
                 let results: IRecordResult[] = [];
@@ -905,6 +998,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip.data));
                     records = recordToImport.records;
                     results = recordToImport.results;
+                    console.log(records, 'records from file');
+                    console.log(results, 'results from file');
                 } else {
                     delete options.importRecords;
                     delete options.syncNewRecords;
@@ -913,9 +1008,12 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                         await syncPolicyCopiedRecords(policyId, logger);
                     }
 
-                    const dbData = await loadImportedRecordsFromDb(policyId);
+                    const dbData = await loadImportedRecordsFromDb(policyId, policy.owner);
                     records = dbData.records;
                     results = dbData.results;
+
+                    console.log(records, 'records from ipfs');
+                    console.log(results, 'results from ipfs');
                 }
 
                 const guardiansService = new GuardiansService();
