@@ -1,7 +1,7 @@
-# **Premium Paid Policy V1.0**
+# **Verified Premium Payments Policy V1.0**
 
 
-The **Premium Paid Policy** captures and certifies the extra value a cooperative or buyer transfers to farmers beyond the standard crop price—whether that premium is an annual cash bonus, a quality-linked top-up, or a pooled community-investment fund (e.g., school roofs, water pumps). Using the same lightweight workflow as the core payment policy, the collector records the premium details (type, value, purpose, payout schedule) and chooses a verification route:
+The **Verified Premium Payments Policy** captures and certifies the extra value a cooperative or buyer transfers to farmers beyond the standard crop price—whether that premium is an annual cash bonus, a quality-linked top-up, or a pooled community-investment fund (e.g., school roofs, water pumps). Using the same lightweight workflow as the core payment policy, the collector records the premium details (type, value, purpose, payout schedule) and chooses a verification route:
 
 * **Farmer NFC Card** – the farmer’s card signs the premium record, proving direct acknowledgement of receipt.  
 * **Premium Evidence Upload** – the collector hashes supporting proof (signed acknowledgement form, project invoice, or photo of the completed community asset) and stores only the hash on-chain.
@@ -12,11 +12,11 @@ With a PPT in hand, cooperatives can show brands and impact investors that promi
 
  
 
-**Premium Paid Policy – Description**
+**Verified Premium Payments Policy – Description**
 
  
 
-The Premium Paid Policy certifies that any *additional value*—beyond the base crop price—has reached farmers exactly as promised, whether it is:
+The Verified Premium Payments Policy certifies that any *additional value*—beyond the base crop price—has reached farmers exactly as promised, whether it is:
 
 * **Direct cash** (e.g., an annual living-income bonus)  
 * **Quality or data incentives** (top-ups tied to grade or traceability)  
@@ -55,7 +55,7 @@ The Premium Paid Policy certifies that any *additional value*—beyond the base 
 
 Login using credentials and from the policy tab we can see all policies from the list of policies tab.![][image1]
 
-Then select the policy premium paid and choose the role
+Then select the policy Verified Premium Payments and choose the role
 
 #### This claim has two roles:
 
@@ -106,15 +106,15 @@ Evidence Type Choices:
 * Card  
 * No evidence
 
-The submitted data can be seen in the premium paid tab.
+The submitted data can be seen in the Verified Premium Payments tab.
 
 ![][image7]
 
-After that the user with role ‘Farmer’ should login and he can see all the transactions submitted by the Co-Operative on the premium paid tab. After that the transaction can be verified or rejected. We can filter the data using the transaction ID. For rejecting the transaction he can also submit the reason for rejection.
+After that the user with role ‘Farmer’ should login and he can see all the transactions submitted by the Co-Operative on the Verified Premium Payments tab. After that the transaction can be verified or rejected. We can filter the data using the transaction ID. For rejecting the transaction he can also submit the reason for rejection.
 
 ![][image8]
 
-The Co-Operative can see the status of the transaction from the premium paid tab and if approved can see the token details from the token history tab. We can see the details and the complete flow in the token history and trust chain. The token details are filtered by the document ID.
+The Co-Operative can see the status of the transaction from the Verified Premium Payments tab and if approved can see the token details from the token history tab. We can see the details and the complete flow in the token history and trust chain. The token details are filtered by the document ID.
 
 ![][image9]
 

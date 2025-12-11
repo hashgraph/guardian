@@ -1,4 +1,4 @@
-# ACE Policy & Guardian Workflow
+# African Clean Energy(ACE) Policy & Guardian Workflow
 
 The workflow focuses on the introduction and use of improved cookstoves that replace traditional, inefficient stoves. By monitoring stove use and fuel consumption, projects can demonstrate measurable reductions in greenhouse gas (GHG) emissions while also delivering social and health benefits.
 
@@ -71,9 +71,9 @@ The system ensures transparent, verifiable, and certifiable carbon credit genera
 
 ---
 
-## ACE Policy Scope
+## African Clean Energy(ACE) Policy Scope
 
-The ACE policy outlines:
+The African Clean Energy(ACE) policy outlines:
 
 - Stove usage data collection and syncing
 - Data processing using BigQuery and Salesforce

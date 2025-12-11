@@ -1,4 +1,4 @@
-# ACE Policy
+# African Clean Energy(ACE) Policy
 
 This policy sets out the standard procedure for collecting stove usage data, transforming it into measurable carbon offsets, and managing CO₂ tokens through Salesforce and Google Cloud systems. It ensures transparent, verifiable, and certifiable carbon credit generation aligned with Gold Standard or equivalent certification.
 
@@ -22,7 +22,7 @@ This workflow governs how customer, device, and stove data are logged, validated
 
 Login using credentials and from the policy tab we can see all policies from the list of policies tab.![][image1]
 
-Then select the policy ACE and choose the role
+Then select the policy African Clean Energy(ACE) and choose the role
 
 #### This claim has three roles:
 

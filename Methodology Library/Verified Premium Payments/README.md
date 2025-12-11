@@ -1,4 +1,4 @@
-# **Premium Paid Policy V1.0**
+# **Verified Premium Payments Policy V1.0**
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 ![Status](https://img.shields.io/badge/status-active-brightgreen)
@@ -7,7 +7,7 @@
 
 ## 🔍 Overview
 
-The **Premium Paid Policy** captures and certifies the extra value a cooperative or buyer transfers to farmers beyond the standard crop price—whether that premium is an annual cash bonus, a quality-linked top-up, or a pooled community-investment fund (e.g., school roofs, water pumps). Using the same lightweight workflow as the core payment policy, the collector records the premium details (type, value, purpose, payout schedule) and chooses a verification route:
+The **Verified Premium Payments Policy** captures and certifies the extra value a cooperative or buyer transfers to farmers beyond the standard crop price—whether that premium is an annual cash bonus, a quality-linked top-up, or a pooled community-investment fund (e.g., school roofs, water pumps). Using the same lightweight workflow as the core payment policy, the collector records the premium details (type, value, purpose, payout schedule) and chooses a verification route:
 
 * **Farmer NFC Card** – the farmer’s card signs the premium record, proving direct acknowledgement of receipt.  
 * **Premium Evidence Upload** – the collector hashes supporting proof (signed acknowledgement form, project invoice, or photo of the completed community asset) and stores only the hash on-chain.
@@ -18,11 +18,11 @@ With a PPT in hand, cooperatives can show brands and impact investors that promi
 
  
 
-**Premium Paid Policy – Description**
+**Verified Premium Payments Policy – Description**
 
  
 
-The Premium Paid Policy certifies that any *additional value*—beyond the base crop price—has reached farmers exactly as promised, whether it is:
+The Verified Premium Payments Policy certifies that any *additional value*—beyond the base crop price—has reached farmers exactly as promised, whether it is:
 
 * **Direct cash** (e.g., an annual living-income bonus)  
 * **Quality or data incentives** (top-ups tied to grade or traceability)  
