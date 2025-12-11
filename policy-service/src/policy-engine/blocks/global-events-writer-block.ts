@@ -20,13 +20,21 @@ import { LocationType } from '@guardian/interfaces';
 import { MessageServer, TopicConfig } from '@guardian/common';
 import { TopicId } from '@hashgraph/sdk';
 
+type GlobalDocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
+
+/**
+ * Notification sent to global topics.
+ *
+ * schemaContextIri: base context IRI (schema "package" / base context)
+ * schemaIri: full schema IRI (context#type)
+ */
 interface GlobalEvent {
-    documentTopicId: string;        // Hedera topic where the VC is stored (e.g. alias "Project")
+    documentType: GlobalDocumentType;
+    documentTopicId: string;        // Hedera topic where the VC is stored
     documentMessageId: string;      // Specific VC message in this topic
-    schemaIri?: string;             // VC schema IRI (for filtering/routing)
-    policyInstanceTopicId?: string; // Policy instance topic, if available
-    sourceBlockTag: string;         // Tag of the policy block that sent the event
-    timestamp: string;              // When the event was written to the global topic (ISO)
+    schemaContextIri: string;       // Base context IRI (package/base context)
+    schemaIri: string;              // Full schema IRI (context#type)
+    timestamp: string;              // ISO timestamp of publish moment
 }
 
 @EventBlock({
@@ -52,6 +60,20 @@ interface GlobalEvent {
         defaultEvent: true,
         properties: [
             {
+                name: 'documentType',
+                label: 'Document type',
+                title: 'Type written to the global topic for reader-side filtering',
+                type: PropertyType.Select,
+                items: [
+                    { label: 'VC', value: 'vc' },
+                    { label: 'JSON', value: 'json' },
+                    { label: 'CSV', value: 'csv' },
+                    { label: 'Text', value: 'text' },
+                    { label: 'Any', value: 'any' },
+                ],
+                default: 'any',
+            },
+            {
                 name: 'topicIds',
                 label: 'Global topic ids',
                 title: 'One or more Hedera topics where notifications are published',
@@ -69,43 +91,10 @@ interface GlobalEvent {
                     ],
                 },
             },
-            {
-                name: 'senderTag',
-                label: 'Sender tag',
-                title: 'Optional tag to include as sourceBlockTag in notifications',
-                type: PropertyType.Input,
-            },
-            {
-                name: 'customFields',
-                label: 'Custom fields',
-                title: 'Additional key/value pairs',
-                type: PropertyType.Array,
-                items: {
-                    label: 'Field',
-                    value: 'key',
-                    properties: [
-                        {
-                            name: 'key',
-                            label: 'Key',
-                            title: 'Field name',
-                            type: PropertyType.Input,
-                        },
-                        {
-                            name: 'value',
-                            label: 'Value',
-                            title: 'Field value',
-                            type: PropertyType.Input,
-                        },
-                    ],
-                },
-            }
         ],
     },
 })
 export class GlobalEventsWriterBlock {
-    /**
-     * Handle RunEvent: validate input, build payload, publish to topic, and pass through events.
-     */
     @ActionCallback({
         type: PolicyInputEventType.RunEvent,
         output: [
@@ -114,8 +103,6 @@ export class GlobalEventsWriterBlock {
         ],
     })
     public async runAction(event: IPolicyEventState): Promise<void> {
-        console.log('GlobalEventsWriterBlock: runAction');
-
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const user: PolicyUser = (event as any)?.user;
 
@@ -123,8 +110,7 @@ export class GlobalEventsWriterBlock {
             throw new BlockActionError('User is required', ref.blockType, ref.uuid);
         }
 
-        const state: IPolicyEventState =
-            (event as any)?.data || (event as any);
+        const state: IPolicyEventState = (event as any)?.data || (event as any);
         const doc: IPolicyDocument = state?.data as IPolicyDocument;
 
         if (!doc) {
@@ -132,11 +118,7 @@ export class GlobalEventsWriterBlock {
         }
 
         if (!doc.topicId) {
-            throw new BlockActionError(
-                'Document topicId is missing',
-                ref.blockType,
-                ref.uuid
-            );
+            throw new BlockActionError('Document topicId is missing', ref.blockType, ref.uuid);
         }
 
         const documentMessageId: string = this.extractCanonicalAddress(doc);
@@ -160,63 +142,28 @@ export class GlobalEventsWriterBlock {
             );
         }
 
-        const schemaIri: string | undefined = doc.schema;
+        const { schemaContextIri, schemaIri } = this.extractSchemaIris(ref, doc);
 
-        const policyInstanceTopicId: string | undefined =
-            ref.policyInstance?.instanceTopicId;
-
-        const customFieldsArray: { key: string; value: string }[] =
-            Array.isArray(ref.options?.customFields)
-                ? ref.options.customFields
-                : [];
-
-        const customFields: Record<string, string> = {};
-        for (const field of customFieldsArray) {
-            if (!field || !field.key) {
-                continue;
-            }
-            customFields[field.key] = field.value;
-        }
-
-        const basePayload: GlobalEvent = {
+        const payload: GlobalEvent = {
+            documentType: ref.options?.documentType,
             documentTopicId: doc.topicId,
             documentMessageId,
-            sourceBlockTag: ref.options?.senderTag || ref.tag,
+            schemaContextIri,
+            schemaIri,
             timestamp: new Date().toISOString(),
-        };
-
-        if (schemaIri) {
-            basePayload.schemaIri = schemaIri;
-        }
-
-        if (policyInstanceTopicId) {
-            basePayload.policyInstanceTopicId = policyInstanceTopicId;
-        }
-
-        const payload: GlobalEvent & Record<string, string> = {
-            ...basePayload,
-            ...customFields,
         };
 
         for (const cfg of topicConfigs) {
             const globalTopicId: string | undefined = cfg?.topicId;
 
             if (!globalTopicId) {
-                throw new BlockActionError(
-                    'Global topic id is not configured',
-                    ref.blockType,
-                    ref.uuid
-                );
+                throw new BlockActionError('Global topic id is not configured', ref.blockType, ref.uuid);
             }
 
             try {
                 TopicId.fromString(globalTopicId);
             } catch (err) {
-                throw new BlockActionError(
-                    'Invalid topic id format',
-                    ref.blockType,
-                    ref.uuid
-                );
+                throw new BlockActionError('Invalid topic id format', ref.blockType, ref.uuid);
             }
 
             await this.publish(ref, user, globalTopicId, payload);
@@ -228,31 +175,111 @@ export class GlobalEventsWriterBlock {
     }
 
     /**
-     * Extract canonical address for the document (prefers Hedera messageId).
+     * Prefer Hedera messageId as canonical address.
      */
     private extractCanonicalAddress(doc: IPolicyDocument): string {
         if (doc.messageId) {
             return doc.messageId;
         }
-
         return '';
     }
 
     /**
+     * Extract (schemaContextIri, schemaIri) primarily from the VC itself.
+     *
+     * Why: doc.schema in DB is often an internal schema ID (#uuid&version), not an IRI.
+     * VC @context may already contain context#type or at least the base context.
+     */
+    private extractSchemaIris(ref: AnyBlockType, doc: IPolicyDocument): { schemaContextIri: string; schemaIri: string } {
+        try {
+            let vc: any = (doc as any).document;
+
+            if (typeof vc === 'string') {
+                vc = JSON.parse(vc);
+            }
+
+            const ctxRaw = vc?.['@context'];
+            const ctxList: string[] = Array.isArray(ctxRaw)
+                ? ctxRaw.filter((v: any) => typeof v === 'string')
+                : [];
+
+            // 1) If full schema IRI already exists in @context (contains '#'), use it.
+            let fullIri: string | undefined;
+            for (const c of ctxList) {
+                if (typeof c === 'string' && c.includes('#')) {
+                    fullIri = c;
+                }
+            }
+            if (fullIri) {
+                const base = fullIri.split('#')[0] || '';
+                return {
+                    schemaContextIri: base,
+                    schemaIri: fullIri,
+                };
+            }
+
+            // 2) Otherwise, find a likely base schema context (not W3C core contexts).
+            const baseContext = ctxList.find((c) => {
+                if (!c.startsWith('http') && !c.startsWith('ipfs://')) {
+                    return false;
+                }
+                if (c.includes('www.w3.org/2018/credentials')) {
+                    return false;
+                }
+                if (c.includes('w3id.org/security')) {
+                    return false;
+                }
+                return true;
+            });
+
+            // 3) Determine schema "type" (credentialSubject.type is the best source).
+            const cs = PolicyUtils.getCredentialSubjectByDocument?.(vc);
+            const csType =
+                (cs && (cs.type || cs['@type'])) ||
+                (Array.isArray(cs?.type) ? cs.type[0] : undefined) ||
+                (doc as any).type;
+
+            if (baseContext && csType) {
+                return {
+                    schemaContextIri: baseContext,
+                    schemaIri: `${baseContext}#${csType}`,
+                };
+            }
+
+            if (baseContext) {
+                return {
+                    schemaContextIri: baseContext,
+                    schemaIri: '',
+                };
+            }
+
+            // 4) Final fallback: if doc.schema looks like a real IRI, use it.
+            if (typeof doc.schema === 'string' && (doc.schema.startsWith('http') || doc.schema.startsWith('ipfs://'))) {
+                if (doc.schema.includes('#')) {
+                    return {
+                        schemaContextIri: doc.schema.split('#')[0] || '',
+                        schemaIri: doc.schema,
+                    };
+                }
+            }
+
+            return { schemaContextIri: '', schemaIri: '' };
+        } catch (err) {
+            ref.warn?.(`Unable to extract schema IRIs: ${PolicyUtils.getErrorMessage(err)}`);
+            return { schemaContextIri: '', schemaIri: '' };
+        }
+    }
+
+    /**
      * Publish JSON payload to the configured global topic using user credentials.
-     * This uses MessageServer under the hood, but sends a raw JSON string instead
-     * of a typed Guardian Message instance.
      */
     private async publish(
         ref: AnyBlockType,
         user: PolicyUser,
         globalTopicId: string,
-        payload: GlobalEvent & Record<string, string>
+        payload: GlobalEvent
     ): Promise<void> {
         try {
-            /**
-             * Resolve user credentials (respecting dry-run and relayer accounts).
-             */
             const userCredentials = await PolicyUtils.getUserCredentials(
                 ref,
                 user.did,
@@ -265,36 +292,16 @@ export class GlobalEventsWriterBlock {
                 user.userId
             );
 
-            /**
-             * Configure topic metadata.
-             * TopicConfig will resolve submitKey (if any) from stored config.
-             */
             const topic = new TopicConfig({ topicId: globalTopicId }, null, null);
 
-            console.log('GlobalTopicWriter hederaAccount', {
-                hederaAccountId: hederaAccount.hederaAccountId,
-                signOptions: hederaAccount.signOptions,
-                dryRun: ref.dryRun
-            });
-
-            /**
-             * Create a MessageServer instance bound to the target topic.
-             * We pass relayer/operator credentials and sign options.
-             */
             const messageServer = new MessageServer({
-                operatorId: hederaAccount.hederaAccountId, //process.env.HEDERA_OPERATOR_ID! ??
-                operatorKey: hederaAccount.hederaAccountKey, //process.env.HEDERA_OPERATOR_KEY! ??
+                operatorId: hederaAccount.hederaAccountId,
+                operatorKey: hederaAccount.hederaAccountKey,
                 encryptKey: hederaAccount.hederaAccountKey,
                 signOptions: hederaAccount.signOptions,
                 dryRun: ref.dryRun
             }).setTopicObject(topic);
 
-            /**
-             * Lightweight "message-like" object that matches the minimal
-             * interface used by MessageServer.sendMessage / sendHedera.
-             * We are not using IPFS, so only toMessage/memo-related methods
-             * and setters for id/topicId are required.
-             */
             const rawMessage = (() => {
                 let currentMemo: string | null = null;
                 let currentId: string | null = null;
@@ -326,9 +333,9 @@ export class GlobalEventsWriterBlock {
                         return currentId;
                     },
 
-                    setTopicId(topic: string | TopicId): void {
-                        if (topic) {
-                            currentTopicId = topic.toString();
+                    setTopicId(topicValue: string | TopicId): void {
+                        if (topicValue) {
+                            currentTopicId = topicValue.toString();
                         } else {
                             currentTopicId = null;
                         }
@@ -340,12 +347,6 @@ export class GlobalEventsWriterBlock {
                 };
             })();
 
-            /**
-             * Use MessageServer.sendMessage, but:
-             * - bypass IPFS (sendToIPFS: false),
-             * - provide explicit memo to avoid MessageMemo.getMessageMemo(),
-             * - call through `any` to avoid strict typing on Message<T>.
-             */
             await (messageServer as any).sendMessage(rawMessage, {
                 sendToIPFS: false,
                 memo: 'GlobalEvent',
@@ -353,15 +354,8 @@ export class GlobalEventsWriterBlock {
                 interception: null
             });
         } catch (err) {
-            ref.error(
-                `Publish to global topic failed: ${PolicyUtils.getErrorMessage(err)}`
-            );
-            throw new BlockActionError(
-                'Publish to global topic failed',
-                ref.blockType,
-                ref.uuid
-            );
+            ref.error(`Publish to global topic failed: ${PolicyUtils.getErrorMessage(err)}`);
+            throw new BlockActionError('Publish to global topic failed', ref.blockType, ref.uuid);
         }
     }
 }
-

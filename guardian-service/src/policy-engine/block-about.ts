@@ -1529,9 +1529,9 @@ export const BlockAbout = {
             }
         ]
     },
-    'globalTopicWriterBlock': {
-        'label': 'Global Topic Writer',
-        'title': 'Add \'Global Topic Writer\' Block',
+    'globalEventsWriterBlock': {
+        'label': 'Global Events Writer',
+        'title': 'Add \'Global Events Writer\' Block',
         'post': false,
         'get': false,
         'children': 'None',
@@ -1543,28 +1543,42 @@ export const BlockAbout = {
             'RunEvent',
             'RefreshEvent',
             'ErrorEvent',
-            'ReleaseEvent',
+            'ReleaseEvent'
         ],
         'defaultEvent': true,
         'properties': [
             {
-                'name': 'topicId',
-                'label': 'Global topic id',
-                'title': 'Hedera topic where notifications are published',
-                'type': 'Input'
+                'name': 'documentType',
+                'label': 'Document type',
+                'title': 'Type written to the global topic for reader-side filtering',
+                'type': 'Select',
+                'items': [
+                    { 'label': 'VC',   'value': 'vc' },
+                    { 'label': 'JSON', 'value': 'json' },
+                    { 'label': 'CSV',  'value': 'csv' },
+                    { 'label': 'Text', 'value': 'text' },
+                    { 'label': 'Any',  'value': 'any' }
+                ],
+                'default': 'any'
             },
             {
-                'name': 'senderTag',
-                'label': 'Sender tag',
-                'title': 'Optional tag to include in notification',
-                'type': 'Input'
+                'name': 'topicIds',
+                'label': 'Global topic ids',
+                'title': 'One or more Hedera topics where notifications are published',
+                'type': 'Array',
+                'items': {
+                    'label': 'Topic',
+                    'value': '@topicId',
+                    'properties': [
+                        {
+                            'name': 'topicId',
+                            'label': 'Topic id',
+                            'title': 'Hedera topic id',
+                            'type': 'Input'
+                        },
+                    ]
+                }
             },
-            {
-                'name': 'routingHint',
-                'label': 'Routing hint',
-                'title': 'Optional routing hint for downstream consumers',
-                'type': 'Input'
-            }
         ]
     },
     'globalTopicReaderBlock': {

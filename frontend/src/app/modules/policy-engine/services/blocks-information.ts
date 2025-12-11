@@ -107,6 +107,7 @@ const Container: IBlockSetting = {
         { type: BlockType.NotificationBlock },
         { type: BlockType.ExtractDataBlock },
         { type: BlockType.GlobalTopicReaderBlock },
+        { type: BlockType.GlobalEventsWriterBlock }
     ]
 }
 
@@ -157,6 +158,7 @@ const Step: IBlockSetting = {
         { type: BlockType.NotificationBlock },
         { type: BlockType.ExtractDataBlock },
         { type: BlockType.GlobalTopicReaderBlock },
+        { type: BlockType.GlobalEventsWriterBlock }
     ]
 }
 
@@ -502,6 +504,17 @@ const GlobalTopicReaderBlock: IBlockSetting = {
         }
     }
 }
+
+const GlobalEventsWriterBlock: IBlockSetting = {
+    type: BlockType.GlobalEventsWriterBlock,
+    icon: BlockIcons[BlockType.GlobalEventsWriterBlock],
+    group: BlockGroup.Documents,
+    header: BlockHeaders.ServerBlocks,
+    factory: null,
+    property: null,
+    code: null,
+    allowedChildren: []
+};
 
 const AggregateDocument: IBlockSetting = {
     type: BlockType.AggregateDocument,
@@ -897,6 +910,7 @@ export default [
     TagManager,
     ExternalTopic,
     GlobalTopicReaderBlock,
+    GlobalEventsWriterBlock,
     AutoReport,
     NotificationBlock,
     ExtractData,
