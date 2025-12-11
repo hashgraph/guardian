@@ -1,5 +1,5 @@
 /**
- * GlobalTopicWriterBlock
+ * GlobalEventsWriterBlock
  *
  * Server-side policy block that forwards a reference to an already anchored VC/VP/VS
  * into one or more global Hedera topics. It does not create or modify documents
@@ -20,29 +20,22 @@ import { LocationType } from '@guardian/interfaces';
 import { MessageServer, TopicConfig } from '@guardian/common';
 import { TopicId } from '@hashgraph/sdk';
 
-interface GlobalVsNotification {
-    documentMessageId: string;
-    documentTopicId: string;
-    policyId: string;
-    sourceBlockTag: string;
-    documentSourceTag?: string;
-    routingHint?: string;
-    vcId?: string;
-    hash?: string;
-    // topicId?: string;
-    relationships?: string[];
-    owner?: string;
-    timestamp: string;
+interface GlobalEvent {
+    documentTopicId: string;        // Hedera topic where the VC is stored (e.g. alias "Project")
+    documentMessageId: string;      // Specific VC message in this topic
+    schemaIri?: string;             // VC schema IRI (for filtering/routing)
+    policyInstanceTopicId?: string; // Policy instance topic, if available
+    sourceBlockTag: string;         // Tag of the policy block that sent the event
+    timestamp: string;              // When the event was written to the global topic (ISO)
 }
 
 @EventBlock({
-    blockType: 'globalTopicWriterBlock',
+    blockType: 'globalEventsWriterBlock',
     commonBlock: false,
-    // actionType: LocationType.LOCAL,
     actionType: LocationType.REMOTE,
     about: {
-        label: 'Global Topic Writer',
-        title: 'Publish document address to a global Hedera topic',
+        label: 'Global Events Writer',
+        title: 'Publish VC reference to a global Hedera topics',
         post: false,
         get: false,
         children: ChildrenType.None,
@@ -59,27 +52,57 @@ interface GlobalVsNotification {
         defaultEvent: true,
         properties: [
             {
-                name: 'topicId',
-                label: 'Global topic id',
-                title: 'Hedera topic where notifications are published',
-                type: PropertyType.Input,
+                name: 'topicIds',
+                label: 'Global topic ids',
+                title: 'One or more Hedera topics where notifications are published',
+                type: PropertyType.Array,
+                items: {
+                    label: 'Topic',
+                    value: 'topicId',
+                    properties: [
+                        {
+                            name: 'topicId',
+                            label: 'Topic id',
+                            title: 'Hedera topic id',
+                            type: PropertyType.Input,
+                        },
+                    ],
+                },
             },
             {
                 name: 'senderTag',
                 label: 'Sender tag',
-                title: 'Optional tag to include in notification',
+                title: 'Optional tag to include as sourceBlockTag in notifications',
                 type: PropertyType.Input,
             },
             {
-                name: 'routingHint',
-                label: 'Routing hint',
-                title: 'Optional routing hint for downstream consumers',
-                type: PropertyType.Input,
-            },
+                name: 'customFields',
+                label: 'Custom fields',
+                title: 'Additional key/value pairs',
+                type: PropertyType.Array,
+                items: {
+                    label: 'Field',
+                    value: 'key',
+                    properties: [
+                        {
+                            name: 'key',
+                            label: 'Key',
+                            title: 'Field name',
+                            type: PropertyType.Input,
+                        },
+                        {
+                            name: 'value',
+                            label: 'Value',
+                            title: 'Field value',
+                            type: PropertyType.Input,
+                        },
+                    ],
+                },
+            }
         ],
     },
 })
-export class GlobalTopicWriterBlock {
+export class GlobalEventsWriterBlock {
     /**
      * Handle RunEvent: validate input, build payload, publish to topic, and pass through events.
      */
@@ -91,7 +114,8 @@ export class GlobalTopicWriterBlock {
         ],
     })
     public async runAction(event: IPolicyEventState): Promise<void> {
-        console.log('Global Topic Writer Block');
+        console.log('GlobalEventsWriterBlock: runAction');
+
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const user: PolicyUser = (event as any)?.user;
 
@@ -103,27 +127,8 @@ export class GlobalTopicWriterBlock {
             (event as any)?.data || (event as any);
         const doc: IPolicyDocument = state?.data as IPolicyDocument;
 
-        console.log('GlobalTopicWriter doc.topicId', doc.topicId);
-        console.log('GlobalTopicWriter doc.messageId', doc.messageId);
-
         if (!doc) {
             throw new BlockActionError('Document is required', ref.blockType, ref.uuid);
-        }
-
-        const globalTopicId: string | undefined = ref.options?.topicId;
-        if (!globalTopicId) {
-            throw new BlockActionError('Global topic id is not configured', ref.blockType, ref.uuid);
-        }
-
-        try {
-            TopicId.fromString(globalTopicId);
-        } catch (err) {
-            throw new BlockActionError('Invalid topic id format', ref.blockType, ref.uuid);
-        }
-
-        const documentMessageId: string = this.extractCanonicalAddress(doc);
-        if (!documentMessageId) {
-            throw new BlockActionError('Canonical document address (messageId) is missing', ref.blockType, ref.uuid);
         }
 
         if (!doc.topicId) {
@@ -134,24 +139,88 @@ export class GlobalTopicWriterBlock {
             );
         }
 
-        const documentSourceTag: string | undefined = (doc as any).__sourceTag__ || (doc as any).tag;
+        const documentMessageId: string = this.extractCanonicalAddress(doc);
+        if (!documentMessageId) {
+            throw new BlockActionError(
+                'Canonical document address (messageId) is missing',
+                ref.blockType,
+                ref.uuid
+            );
+        }
 
-        const payload: GlobalVsNotification = {
-            documentMessageId,
+        const topicConfigs = Array.isArray(ref.options?.topicIds)
+            ? ref.options.topicIds
+            : [];
+
+        if (!topicConfigs.length) {
+            throw new BlockActionError(
+                'At least one global topic id is required',
+                ref.blockType,
+                ref.uuid
+            );
+        }
+
+        const schemaIri: string | undefined = doc.schema;
+
+        const policyInstanceTopicId: string | undefined =
+            ref.policyInstance?.instanceTopicId;
+
+        const customFieldsArray: { key: string; value: string }[] =
+            Array.isArray(ref.options?.customFields)
+                ? ref.options.customFields
+                : [];
+
+        const customFields: Record<string, string> = {};
+        for (const field of customFieldsArray) {
+            if (!field || !field.key) {
+                continue;
+            }
+            customFields[field.key] = field.value;
+        }
+
+        const basePayload: GlobalEvent = {
             documentTopicId: doc.topicId,
-            policyId: ref.policyId,
+            documentMessageId,
             sourceBlockTag: ref.options?.senderTag || ref.tag,
-            documentSourceTag,
-            routingHint: ref.options?.routingHint || ref.options?.senderTag,
-            vcId: doc.document?.id,
-            hash: doc.hash,
-            // topicId: doc.topicId,
-            relationships: doc.relationships,
-            owner: doc.owner,
             timestamp: new Date().toISOString(),
         };
 
-        await this.publish(ref, user, globalTopicId, payload);
+        if (schemaIri) {
+            basePayload.schemaIri = schemaIri;
+        }
+
+        if (policyInstanceTopicId) {
+            basePayload.policyInstanceTopicId = policyInstanceTopicId;
+        }
+
+        const payload: GlobalEvent & Record<string, string> = {
+            ...basePayload,
+            ...customFields,
+        };
+
+        for (const cfg of topicConfigs) {
+            const globalTopicId: string | undefined = cfg?.topicId;
+
+            if (!globalTopicId) {
+                throw new BlockActionError(
+                    'Global topic id is not configured',
+                    ref.blockType,
+                    ref.uuid
+                );
+            }
+
+            try {
+                TopicId.fromString(globalTopicId);
+            } catch (err) {
+                throw new BlockActionError(
+                    'Invalid topic id format',
+                    ref.blockType,
+                    ref.uuid
+                );
+            }
+
+            await this.publish(ref, user, globalTopicId, payload);
+        }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
@@ -171,9 +240,6 @@ export class GlobalTopicWriterBlock {
 
     /**
      * Publish JSON payload to the configured global topic using user credentials.
-     */
-    /**
-     * Publish JSON payload to the configured global topic using user credentials.
      * This uses MessageServer under the hood, but sends a raw JSON string instead
      * of a typed Guardian Message instance.
      */
@@ -181,7 +247,7 @@ export class GlobalTopicWriterBlock {
         ref: AnyBlockType,
         user: PolicyUser,
         globalTopicId: string,
-        payload: GlobalVsNotification
+        payload: GlobalEvent & Record<string, string>
     ): Promise<void> {
         try {
             /**
@@ -216,11 +282,11 @@ export class GlobalTopicWriterBlock {
              * We pass relayer/operator credentials and sign options.
              */
             const messageServer = new MessageServer({
-                operatorId: process.env.HEDERA_OPERATOR_ID! ?? hederaAccount.hederaAccountId,
-                operatorKey: process.env.HEDERA_OPERATOR_KEY! ?? hederaAccount.hederaAccountKey,
+                operatorId: hederaAccount.hederaAccountId, //process.env.HEDERA_OPERATOR_ID! ??
+                operatorKey: hederaAccount.hederaAccountKey, //process.env.HEDERA_OPERATOR_KEY! ??
                 encryptKey: hederaAccount.hederaAccountKey,
                 signOptions: hederaAccount.signOptions,
-                dryRun: "" // ref.dryRun
+                dryRun: ref.dryRun
             }).setTopicObject(topic);
 
             /**
@@ -282,7 +348,7 @@ export class GlobalTopicWriterBlock {
              */
             await (messageServer as any).sendMessage(rawMessage, {
                 sendToIPFS: false,
-                memo: 'GlobalTopicNotification',
+                memo: 'GlobalEvent',
                 userId: user.userId,
                 interception: null
             });
