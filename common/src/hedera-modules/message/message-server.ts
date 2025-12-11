@@ -192,7 +192,7 @@ export class MessageServer {
         if (this.dryRun) {
             await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
         }
-        console.log(message, 'message message 222');
+        console.log(message.getUrls(), 'message message 222');
 
         notifier.complete();
         return message;

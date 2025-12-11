@@ -56,6 +56,22 @@ export async function compareResults(details: any): Promise<any> {
  * @param owner
  */
 export async function getDetails(details: any): Promise<any> {
+    // const normalize = (items: IRecordResult[] | undefined | null): IRecordResult[] => {
+    //     if (!Array.isArray(items)) {
+    //         return [];
+    //     }
+    //     // Keep only generated documents, ignore schemas/undefined to avoid skewing comparison
+    //     return items.filter((item) => item && (item.type === 'vc' || item.type === 'vp'));
+    // };
+
+    // const report = await compareResults({
+    //     ...details,
+    //     recorded: normalize(details?.recorded),
+    //     documents: normalize(details?.documents)
+    // });
+    // console.log(details, 'details');
+    // details.documents.forEach((i) => console.log(i.document, 'documents'))
+    // details.recorded.forEach((i) => console.log(i.document, 'recorded'))
     const report = await compareResults(details);
     const total = report?.total;
     const info = report?.right;
@@ -181,7 +197,8 @@ export async function syncPolicyCopiedRecords(
                 : parsed?.record
                     ? [parsed.record]
                     : [];
-
+            const parsedResults: any[] = Array.isArray(parsed?.results) ? parsed.results : [];
+            // parsedResults.forEach((res) => console.log(res, 'resresresresres'))
             for (const recordFromZip of parsedRecords) {
                 console.log(recordFromZip, 'recordFromZip');
                 const copiedRecordId = recordFromZip.id?.toString?.() || msg.recordId?.toString?.();
@@ -199,6 +216,7 @@ export async function syncPolicyCopiedRecords(
                     user: recordFromZip.user || msg.user,
                     target: recordFromZip.target || msg.target,
                     document: recordFromZip.document ?? null,
+                    results: parsedResults.length ? parsedResults : null,
                     ipfsCid: recordFromZip.ipfsCid ?? null,
                     ipfsUrl: recordFromZip.ipfsUrl ?? null,
                     ipfsTimestamp: recordFromZip.ipfsTimestamp ?? new Date(),
@@ -284,6 +302,36 @@ async function loadImportedRecordsFromDb(
     importedRecords = importedRecords.filter(Boolean);
     console.log(importedRecords, 'importedRecords');
 
+    let total = 0;
+    const resultsMap = new Map<string, IRecordResult>();
+    for (const r of importedRecords) {
+        const items: any[] = Array.isArray((r as any).results) ? (r as any).results : [];
+        console.log(items.length, 'items.lengthitems.length');
+        for (const res of items) {
+            total += 1;
+            console.log(res, 'resresres');
+            console.log(res.document, 'res.documentres.document');
+            const id = res.id || res.target || (r as any).copiedRecordId || `${Math.random()}` || '';
+            if (!id) {
+                continue;
+            }
+            const type = (res.type || '').toString().toLowerCase() as 'vc' | 'vp' | 'schema';
+            const key = `${type}:${id}`;
+            if (resultsMap.has(key)) {
+                continue;
+            }
+            resultsMap.set(key, {
+                id,
+                type,
+                document: res.document ?? res
+            });
+        }
+    }
+
+    console.log(total, 'totaltotaltotal');
+    const resultsFromDb: IRecordResult[] = Array.from(resultsMap.values());
+    console.log(resultsFromDb.length, 'resultsFromDbresultsFromDb');
+
     const toTimestamp = (value: any): number | null => {
         if (!value) {
             return null;
@@ -355,11 +403,13 @@ async function loadImportedRecordsFromDb(
     const sourcePolicyId = firstSourceRecord?.fromPolicyId || policyId;
 
     const records = buildRunActionsFromImportedRecords(policyId, importedRecords, safeStartTime);
-    const results = await RecordImportExport.loadRecordResults(
-        sourcePolicyId,
-        safeStartTime,
-        paddedEndTime
-    );
+    const results = resultsFromDb.length
+        ? resultsFromDb
+        : await RecordImportExport.loadRecordResults(
+            sourcePolicyId,
+            safeStartTime,
+            paddedEndTime
+        );
 
     console.log(records, 'records');
 
@@ -1013,7 +1063,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     results = dbData.results;
 
                     console.log(records, 'records from ipfs');
-                    console.log(results, 'results from ipfs');
+                    // console.log(results, 'results from ipfs');
+                    results.forEach((r) => console.log(r.document, 'rrrrrrrrrrrr'));
                 }
 
                 const guardiansService = new GuardiansService();

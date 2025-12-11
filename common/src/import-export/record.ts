@@ -128,7 +128,7 @@ export class RecordImportExport {
     results?: IRecordResult[]): Promise<JSZip> {
         const baseTime = record.time ? Number(record.time) : Date.now();
 
-        await DatabaseServer.createRecord
+
         const components: IRecordComponents = {
             records: [record],
             results: results || [],
@@ -233,6 +233,117 @@ export class RecordImportExport {
                 });
             }
         }
+        return results;
+    }
+
+
+    /**
+     * Load record results
+     * @param uuid record
+     *
+     * @returns results
+     * @public
+     * @static
+     */
+    public static async loadRecordResultsForPublished(
+        policyId: string,
+        startTime: any,
+        endTime: any,
+        documentId: any
+    ): Promise<IRecordResult[]> {
+        const results: IRecordResult[] = [];
+        const db = new DatabaseServer();
+        const vcs = await db.getVcDocuments<VcDocumentCollection>({
+            policyId,
+            updateDate: {
+                $gte: new Date(startTime),
+                $lt: new Date(endTime)
+            }
+        }) as VcDocumentCollection[];
+
+        const vcs2 = await db.getVcDocuments<VcDocumentCollection>({
+            policyId,
+            id: documentId,
+        }) as VcDocumentCollection[];
+
+        const vcs3 = await db.getVcDocuments<VcDocumentCollection>({
+            policyId,
+        }) as VcDocumentCollection[];
+
+        console.log(vcs, 'vcsvcsvcs');
+        console.log(vcs2, 'vcs2vcs2vcs2');
+        console.log(vcs3, 'vcs3vcs3vcs3');
+        for (const vc of vcs3) {
+            results.push({
+                id: vc.document.id,
+                type: 'vc',
+                document: vc.document
+            });
+        }
+
+        for (const vc of vcs) {
+            results.push({
+                id: vc.document.id,
+                type: 'vc',
+                document: vc.document
+            });
+        }
+
+        for (const vc of vcs2) {
+            results.push({
+                id: vc.document.id,
+                type: 'vc',
+                document: vc.document
+            });
+        }
+
+        const vps = await db.getVpDocuments<VpDocumentCollection>({
+            policyId,
+            updateDate: {
+                $gte: new Date(startTime),
+                $lt: new Date(endTime)
+            }
+        }) as VpDocumentCollection[];
+
+        const vps2 = await db.getVpDocuments<VpDocumentCollection>({
+            policyId,
+            id: documentId,
+        }) as VpDocumentCollection[];
+        console.log(vps, 'vpsvpsvps');
+        for (const vp of vps) {
+            results.push({
+                id: vp.document.id,
+                type: 'vp',
+                document: vp.document
+            });
+        }
+
+        for (const vp of vps2) {
+            results.push({
+                id: vp.document.id,
+                type: 'vp',
+                document: vp.document
+            });
+        }
+        // const policy = await DatabaseServer.getPolicyById(policyId);
+        // if (policy) {
+        //     const schemas = await DatabaseServer.getSchemas({ topicId: policy.topicId });
+        //     for (const schema of schemas) {
+        //         let id: string;
+        //         if (schema.contextURL) {
+        //             id = schema.contextURL + schema.iri;
+        //         } else if (schema.iri) {
+        //             id = schema.iri;
+        //         } else {
+        //             id = '';
+        //         }
+        //         results.push({
+        //             id,
+        //             type: 'schema',
+        //             document: schema.document
+        //         });
+        //     }
+        // }
         return results;
     }
 
