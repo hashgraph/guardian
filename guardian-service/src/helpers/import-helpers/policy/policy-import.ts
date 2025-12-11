@@ -52,6 +52,13 @@ import { importArtifactsByFiles } from '../artifact/artifact-import-helper.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { publishSystemSchemasPackage } from '../schema/schema-publish-helper.js';
 
+export enum RecordMethod {
+    Start = 'START',
+    Stop = 'STOP',
+    Action = 'ACTION',
+    Generate = 'GENERATE'
+}
+
 export class PolicyImport {
     private readonly mode: ImportMode;
     private readonly notifier: INotificationStep;
@@ -889,6 +896,8 @@ export class PolicyImport {
                 return;
             }
 
+            let startRecotdTime = 0;
+
             for (const msg of messages) {
                 if (msg.policyMessageId !== this.fromMessageId) {
                     continue;
@@ -929,29 +938,66 @@ export class PolicyImport {
                 }
                 console.log(parsed, 'parsed');
 
-                const recordFromZip: any = parsed?.record || parsed;
+                const parsedRecords: any[] = Array.isArray(parsed?.records)
+                    ? parsed.records
+                    : parsed?.record
+                        ? [parsed.record]
+                        : [];
 
-                console.log(recordFromZip, 'recordFromZip');
-                const clone: any = {
-                    uuid: recordFromZip.uuid || msg.recordingUuid,
+                if (!parsedRecords.length) {
+                    await logger.warn(
+                        `copyPolicyRecords: no records found inside zip for recordId=${msg.recordId}`,
+                        ['POLICY_IMPORT'],
+                        null
+                    );
+                    continue;
+                }
+
+                for (const recordFromZip of parsedRecords) {
+                    console.log(recordFromZip, 'recordFromZip');
+                    if (!startRecotdTime) {
+                        startRecotdTime = (recordFromZip.time || recordFromZip.createDate || msg.time || new Date()) - 3000;
+                    }
+                    const clonedRecord: any = {
+                        uuid: recordFromZip.uuid || msg.recordingUuid,
+                        policyId: targetPolicyId,
+                        method: recordFromZip.method || msg.method,
+                        action: recordFromZip.action || msg.actionName,
+                        time: recordFromZip.time || recordFromZip.createDate || msg.time,
+                        user: recordFromZip.user || msg.user,
+                        target: recordFromZip.target || msg.target,
+                        document: recordFromZip.document ?? null,
+
+                        ipfsCid: recordFromZip.ipfsCid ?? null,
+                        ipfsUrl: recordFromZip.ipfsUrl ?? null,
+                        ipfsTimestamp: recordFromZip.ipfsTimestamp ?? new Date(),
+
+                        fromPolicyId: this.sourcePolicyId,
+                        copiedRecordId: recordFromZip.id?.toString?.() || msg.recordId?.toString?.() || null
+                    };
+
+                    await DatabaseServer.createRecord(clonedRecord);
+                }
+            }
+
+                const startRecord: any = {
+                    uuid: GenerateUUIDv4(),
                     policyId: targetPolicyId,
-                    method: recordFromZip.method || msg.method,
-                    action: recordFromZip.action || msg.actionName,
-                    time: recordFromZip.time || msg.time,
-                    user: recordFromZip.user || msg.user,
-                    target: recordFromZip.target || msg.target,
-                    document: recordFromZip.document ?? null,
+                    method: RecordMethod.Start,
+                    action: null,
+                    time: startRecotdTime || Date.now(),
+                    user: policy.owner,
+                    target: null,
+                    document: null,
 
-                    ipfsCid: recordFromZip.ipfsCid ?? null,
-                    ipfsUrl: recordFromZip.ipfsUrl ?? null,
-                    ipfsTimestamp: recordFromZip.ipfsTimestamp ?? new Date(),
+                    ipfsCid: null,
+                    ipfsUrl: null,
+                    ipfsTimestamp: new Date(),
 
                     fromPolicyId: this.sourcePolicyId,
-                    copiedRecordId: recordFromZip.id?.toString?.() || null
+                    copiedRecordId: null,
                 };
-
-                await DatabaseServer.createRecord(clone);
-            }
+                await DatabaseServer.createRecord(startRecord);
         } catch (error: any) {
             await logger.error(
                 `Failed to copy policy records from Hedera/IPFS: ${error?.message || error}`,
