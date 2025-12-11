@@ -65,7 +65,7 @@ export class TagsExplorerDialog {
         if (!this.select) {
             this.select = this.history.getHistory();
         }
-        if (!this.selectedTags || this.selectedTags.length === 0) {
+        if ((this.history.history && this.history.history.length > 0) && (!this.selectedTags || this.selectedTags.length === 0)) {
             this.selectedTags = this.history.history;
             this.tab = 2;
         }
@@ -121,6 +121,7 @@ export class TagsExplorerDialog {
             setTimeout(() => {
                 this.loading = false;
                 this.hasChanges = true;
+                this.tagsService.tagsUpdated$.next();
                 this.openTab(this.tab);
             }, 500);
         }, (e) => {
@@ -142,6 +143,7 @@ export class TagsExplorerDialog {
             setTimeout(() => {
                 this.loading = false;
                 this.hasChanges = true;
+                this.tagsService.tagsUpdated$.next();
                 this.openTab(this.tab);
             }, 500);
         }, (e) => {

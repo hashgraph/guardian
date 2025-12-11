@@ -6,7 +6,9 @@
         <ng-container *ngIf="history?.items?.length || history?.history?.length else emptyContainer">
 
             <div class="tabs">
-                <div class="tab-item" (click)="openTab(1)" [attr.selected]="tab===1">Current Tags</div>
+                <div class="tab-item" (click)="openTab(1)" [attr.selected]="tab===1">
+                    Current Tags
+                </div>
                 <div (click)="openTab(2)" *ngIf="history.history?.length" [attr.selected]="tab===2" class="tab-item">
                     Imported Tags
                 </div>
