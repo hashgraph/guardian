@@ -20390,6 +20390,7 @@ components:
             - Module
             - Contract
             - PolicyDocument
+            - PolicyBlock
           example: PolicyDocument
         target:
           type: string
