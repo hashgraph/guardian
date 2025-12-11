@@ -943,6 +943,7 @@ export class PolicyImport {
                     : parsed?.record
                         ? [parsed.record]
                         : [];
+                const parsedResults: any[] = Array.isArray(parsed?.results) ? parsed.results : [];
 
                 if (!parsedRecords.length) {
                     await logger.warn(
@@ -967,6 +968,7 @@ export class PolicyImport {
                         user: recordFromZip.user || msg.user,
                         target: recordFromZip.target || msg.target,
                         document: recordFromZip.document ?? null,
+                        results: parsedResults.length ? parsedResults : null,
 
                         ipfsCid: recordFromZip.ipfsCid ?? null,
                         ipfsUrl: recordFromZip.ipfsUrl ?? null,

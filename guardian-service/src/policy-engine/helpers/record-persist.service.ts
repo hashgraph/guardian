@@ -43,8 +43,6 @@ export class RecordPersistService {
             uploadToIpfs
         } = data;
 
-        console.log(uploadToIpfs, 'uploadToIpfs uploadToIpfsuploadToIpfs 2222');
-
         if (!uploadToIpfs) {
             return;
         }
@@ -58,7 +56,6 @@ export class RecordPersistService {
             const savedRecord: Record | null =
                 Array.isArray(records) ? (records[0] as Record) : (records as Record | null);
 
-                console.log(savedRecord, 'savedRecord');
             if (!savedRecord) {
                 console.error(`RecordPersistService: record not found for id ${recordId}`);
                 return;
@@ -104,7 +101,13 @@ export class RecordPersistService {
                 signOptions = root.signOptions;
             }
 
-            const resultDocuments = RecordPersistService.buildStepResults(documentSnapshot, payload, recordId);
+            const resultDocuments = await RecordPersistService.buildStepResults(
+                policyId,
+                savedRecord,
+                documentSnapshot,
+                payload,
+                recordId
+            );
             const zip = await RecordImportExport.generateSingleRecordZip({
                 ...savedRecord,
                 document: documentSnapshot ?? null
@@ -132,14 +135,6 @@ export class RecordPersistService {
                 buffer
             );
 
-            console.log(operatorId, 'operatorId');
-            console.log(operatorKey, 'operatorKey');
-            console.log(signOptions, 'signOptions');
-            console.log(topicConfig, 'topicConfig');
-            console.log(dryRun, 'dryRun');
-            console.log(dryRun, 'dryRun');
-            console.log(message, 'zxcxzcxzcxzc');
-            
             const messageServer = new MessageServer({
                 operatorId,
                 operatorKey,
@@ -161,19 +156,83 @@ export class RecordPersistService {
         }
     }
 
-    private static buildStepResults(
+    private static async buildStepResults(
+        policyId: string,
+        savedRecord: Record,
         documentSnapshot: any,
         payload: FilterObject<Record>,
-        recordId: any
-    ): { id: string, type: 'vc' | 'vp' | 'schema', document: any }[] {
-        if (!documentSnapshot) {
+        recordId: any,
+    ): Promise<{ id: string, type: 'vc' | 'vp' | 'schema', document: any }[]> {
+        if (Array.isArray((savedRecord as any).results) && (savedRecord as any).results.length) {
+            return (savedRecord as any).results.map((res: any) => ({
+                id: res.id,
+                type: res.type,
+                document: res.document ?? res
+            }));
+        }
+
+        const id = RecordPersistService.extractResultId(documentSnapshot, payload, recordId);
+        const type = RecordPersistService.detectResultType(documentSnapshot);
+
+        console.log(id, 'id');
+        console.log(documentSnapshot, 'documentSnapshot');
+        console.log(payload, 'payload');
+        const timeForWindow = (() => {
+            const t = (payload as any)?.time;
+            if (t instanceof Date) {
+                return t.getTime();
+            }
+            const num = Number(t);
+            return Number.isFinite(num) ? num : Date.now();
+        })();
+
+        const fromDb = await RecordPersistService.loadResultsAroundStep(
+            policyId,
+            timeForWindow,
+            id,
+            type
+        );
+        if (fromDb.length) {
+            console.log(fromDb, 'fromDb');
+            return fromDb;
+        }
+
+        if (!id) {
             return [];
         }
+
+        console.log([{
+            id,
+            type,
+            document: documentSnapshot?.ref ?? documentSnapshot?.document ?? documentSnapshot ?? null
+        }], 'bbbbbbbbbbbbbb');
         return [{
-            id: RecordPersistService.extractResultId(documentSnapshot, payload, recordId),
-            type: RecordPersistService.detectResultType(documentSnapshot),
-            document: documentSnapshot
+            id,
+            type,
+            document: documentSnapshot?.ref ?? documentSnapshot?.document ?? documentSnapshot ?? null
         }];
+    }
+
+    private static async loadResultsAroundStep(
+        policyId: string,
+        baseTime: number,
+        documentId?: string,
+        _type?: 'vc' | 'vp' | 'schema'
+    ): Promise<{ id: string, type: 'vc' | 'vp' | 'schema', document: any }[]> {
+        const windowBeforeMs = 5000;
+        const windowAfterMs = 2000;
+        const start = baseTime - windowBeforeMs;
+        const end = baseTime + windowAfterMs;
+        try {
+            return await RecordImportExport.loadRecordResultsForPublished(
+                policyId,
+                start,
+                end,
+                documentId
+            );
+        } catch {
+            return [];
+        }
     }
 
     private static extractResultId(
@@ -187,6 +246,12 @@ export class RecordPersistService {
         if (typeof documentSnapshot?.document?.id === 'string') {
             return documentSnapshot.document.id;
         }
+        if (typeof documentSnapshot?.ref?.id === 'string') {
+            return documentSnapshot.ref.id;
+        }
+        if (typeof documentSnapshot?.ref?.document?.id === 'string') {
+            return documentSnapshot.ref.document.id;
+        }
         if (typeof payload.target === 'string' && payload.target) {
             return payload.target;
         }
@@ -197,7 +262,9 @@ export class RecordPersistService {
     }
 
     private static detectResultType(documentSnapshot: any): 'vc' | 'vp' | 'schema' {
-        const rawTypes = documentSnapshot?.type;
+        const rawTypes = documentSnapshot?.type
+            || documentSnapshot?.document?.type
+            || documentSnapshot?.ref?.document?.type;
         const types = Array.isArray(rawTypes)
             ? rawTypes
             : rawTypes
