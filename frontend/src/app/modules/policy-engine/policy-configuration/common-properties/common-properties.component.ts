@@ -7,7 +7,8 @@ import {
     IModuleVariables,
     RoleVariables,
     PolicyFolder,
-    PolicyItem
+    PolicyItem,
+    PolicyTemplate
 } from '../../structures';
 
 /**
@@ -27,6 +28,7 @@ export class CommonPropertiesComponent implements OnInit {
     @Input('type') type!: string;
 
     @Output() onInit = new EventEmitter();
+    @Output('onEditTags') onEditTags = new EventEmitter();
 
     loading: boolean = true;
     propHidden: any = {
@@ -256,6 +258,22 @@ export class CommonPropertiesComponent implements OnInit {
         const inputEvents = this.getInputEvents(item);
 
         return [{ label: 'None', value: '' }, ...inputEvents.map(event => ({ label: event, value: event }))];
+    }
+
+    public getTagsAmount(): number {
+        return (this.block as any)?._tags?.tags?.length || 0;
+    }
+
+    public editTags() {
+        this.onEditTags.emit();
+    }
+
+    public canEditTags(): boolean {
+        if (this.module instanceof PolicyTemplate) {
+            return this.module.isPublished;
+        }
+
+        return false;
     }
 }
 
