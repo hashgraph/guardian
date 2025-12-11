@@ -44,6 +44,7 @@ export class PolicyTreeComponent implements OnInit {
     @Input('nextBlock') nextBlock?: any;
     @Input('nestedBlock') nestedBlock?: any;
     @Input('currentBlock') currentBlock?: any;
+    @Input('selectedBlocks') selectedBlocks: Map<string, any>;
 
     @Output('delete') delete = new EventEmitter();
     @Output('select') select = new EventEmitter<{ block: any, isMultiSelect: boolean }>();
@@ -1009,6 +1010,10 @@ export class PolicyTreeComponent implements OnInit {
 
     public getNestedOffset(nodeLevel: number) {
         return `${this.paddingLeft * nodeLevel}px`;
+    }
+
+    public isBlockSelected(node: any): boolean {
+        return this.selectedBlocks.has(node.id);
     }
 
     public hasTags(node: any): boolean {

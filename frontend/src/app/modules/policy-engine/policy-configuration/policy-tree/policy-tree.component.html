@@ -90,6 +90,13 @@
                             <div class="block-item-name" theme-text>
                                 {{ item.node.localTag }}
                             </div>
+                            <div *ngIf="isBlockSelected(item)" class="block-selected-mark">
+                                <svg-icon 
+                                    class="icon-btn"
+                                    src="/assets/images/icons/check-fill.svg"
+                                    svgClass="icon-color-primary">
+                                </svg-icon>
+                            </div>
                         </div>
                         <div class="block-menu">
                             <div class="move-actions-container"

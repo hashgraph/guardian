@@ -656,7 +656,9 @@
     position: absolute;
     right: 10px;
     top: 0;
-    padding: 0 8px;
+    padding: 0 6px;
+    text-align: center;
+    min-width: 20px;
     border-radius: 16px;
     background-color: var(--color-primary, #4169E2);
     z-index: 10;
@@ -664,6 +666,22 @@
     &[selected="true"] {
         right: 0;
     }
+
+    span {
+        font-family: Inter, sans-serif;
+        font-weight: 500;
+        font-style: Medium;
+        font-size: 12px;
+        line-height: 20px;
+        letter-spacing: 0%;
+        color: var(--color-grey-white, #FFFFFF);
+    }
+}
+
+.block-body
+.block-selected-mark {
+    margin-top: 4px;
+    margin-left: auto;
 
     span {
         font-family: Inter, sans-serif;
