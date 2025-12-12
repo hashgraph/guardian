@@ -1011,6 +1011,15 @@ export interface IPolicyDBDocument<T> {
      * Relayer Account
      */
     relayerAccount?: string;
+
+    /**
+     * Last VC Version
+     */
+    oldVersion?: boolean;
+    /**
+     * Parent message
+     */
+    initId?: string;
 }
 
 /**

@@ -4386,4 +4386,113 @@ export class PolicyApi {
     }
 
     //#endregion
+
+    //#region VC Docs
+
+    /**
+    * Create new version VC document
+    */
+    @Post('/:policyId/create-new-version-vc-document')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    // @ApiOperation({
+    //     summary: 'Sends data to the specified block.',
+    //     description: 'Sends data to the specified block.',
+    // })
+    // @ApiParam({
+    //     name: 'policyId',
+    //     type: String,
+    //     description: 'Policy Id',
+    //     required: true,
+    //     example: Examples.DB_ID
+    // })
+    // @ApiBody({
+    //     description: 'Data',
+    //     type: Object
+    // })
+    // @ApiOkResponse({
+    //     description: 'Successful operation.',
+    //     type: BlockDTO
+    // })
+    // @ApiServiceUnavailableResponse({
+    //     description: 'Block Unavailable.',
+    //     type: ServiceUnavailableErrorDTO,
+    // })
+    // @ApiInternalServerErrorResponse({
+    //     description: 'Internal server error.',
+    //     type: InternalServerErrorDTO,
+    // })
+    //@ApiExtraModels(BlockDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async createNewVersionVcDocument(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.createNewVersionVcDocument(user, policyId, body);
+        } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+    * Create new version VC document
+    */
+    @Get('/:policyId/get-all-version-vc-documents/:documentId')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    // @ApiOperation({
+    //     summary: 'Sends data to the specified block.',
+    //     description: 'Sends data to the specified block.',
+    // })
+    // @ApiParam({
+    //     name: 'policyId',
+    //     type: String,
+    //     description: 'Policy Id',
+    //     required: true,
+    //     example: Examples.DB_ID
+    // })
+    // @ApiBody({
+    //     description: 'Data',
+    //     type: Object
+    // })
+    // @ApiOkResponse({
+    //     description: 'Successful operation.',
+    //     type: BlockDTO
+    // })
+    // @ApiServiceUnavailableResponse({
+    //     description: 'Block Unavailable.',
+    //     type: ServiceUnavailableErrorDTO,
+    // })
+    // @ApiInternalServerErrorResponse({
+    //     description: 'Internal server error.',
+    //     type: InternalServerErrorDTO,
+    // })
+    //@ApiExtraModels(BlockDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getAllVersionVcDocuments(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('documentId') documentId: string
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getAllVersionVcDocuments(user, policyId, documentId);
+        } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+    //#endregion
 }

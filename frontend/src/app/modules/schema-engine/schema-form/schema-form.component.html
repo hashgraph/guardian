@@ -92,9 +92,7 @@
                             [policyId]="policyId"
                             [blockId]="blockId"
                             [attr.readonly-field]="
-                                isEditMode &&
-                                !!!item.isUpdatable &&
-                                !item.isUpdatable
+                                isEditMode && !item.isUpdatable
                             "
                         ></table-field>
                     </ng-container>
@@ -103,11 +101,7 @@
                         *ngIf="isInput(item)"
                         class="form-field-input guardian-input-container"
                         [ngClass]="{ 'ipfs-url': isIPFS(item) }"
-                        [attr.readonly-field]="
-                            isEditMode &&
-                            !!!item.isUpdatable &&
-                            !item.isUpdatable
-                        "
+                        [attr.readonly-field]="isEditMode && !item.isUpdatable"
                     >
                         <input
                             pInputText
@@ -147,11 +141,7 @@
                     <div
                         *ngIf="isDateTime(item)"
                         class="form-field-input guardian-input-container"
-                        [attr.readonly-field]="
-                            isEditMode &&
-                            !!!item.isUpdatable &&
-                            !item.isUpdatable
-                        "
+                        [attr.readonly-field]="isEditMode && !item.isUpdatable"
                     >
                         <date-time-control
                             [control]="item.control"
@@ -163,11 +153,7 @@
                     <div
                         *ngIf="isDate(item)"
                         class="form-field-input guardian-input-container"
-                        [attr.readonly-field]="
-                            isEditMode &&
-                            !!!item.isUpdatable &&
-                            !item.isUpdatable
-                        "
+                        [attr.readonly-field]="isEditMode && !item.isUpdatable"
                     >
                         <date-time-control
                             [control]="item.control"
@@ -180,11 +166,7 @@
                     <div
                         *ngIf="isTime(item)"
                         class="form-field-input guardian-input-container"
-                        [attr.readonly-field]="
-                            isEditMode &&
-                            !!!item.isUpdatable &&
-                            !item.isUpdatable
-                        "
+                        [attr.readonly-field]="isEditMode && !item.isUpdatable"
                     >
                         <date-time-control
                             [control]="item.control"
@@ -198,11 +180,7 @@
                     <div
                         *ngIf="isBoolean(item)"
                         class="form-field-boolean guardian-input-container"
-                        [attr.readonly-field]="
-                            isEditMode &&
-                            !!!item.isUpdatable &&
-                            !item.isUpdatable
-                        "
+                        [attr.readonly-field]="isEditMode && !item.isUpdatable"
                     >
                         <div class="boolean-field">
                             <p-radioButton
@@ -241,11 +219,7 @@
                     <div
                         *ngIf="isEnum(item)"
                         class="form-field-input guardian-input-container"
-                        [attr.readonly-field]="
-                            isEditMode &&
-                            !!!item.isUpdatable &&
-                            !item.isUpdatable
-                        "
+                        [attr.readonly-field]="isEditMode && !item.isUpdatable"
                     >
                         <p-dropdown
                             class="guardian-dropdown"
@@ -400,8 +374,7 @@
                                     [policyId]="policyId"
                                     [blockId]="blockId"
                                     [attr.readonly-field]="
-                                        isEditMode &&
-                                        item?.isUpdatable === false
+                                        isEditMode && !item.isUpdatable
                                     "
                                 ></table-field>
                             </ng-container>
@@ -411,9 +384,7 @@
                                 class="form-field-input guardian-input-container"
                                 [ngClass]="{ 'ipfs-url': isIPFS(item) }"
                                 [attr.readonly-field]="
-                                    isEditMode &&
-                                    !!!item.isUpdatable &&
-                                    !item.isUpdatable
+                                    isEditMode && !item.isUpdatable
                                 "
                             >
                                 <input
@@ -433,9 +404,7 @@
                                 <div
                                     *ngIf="isIPFS(item)"
                                     [attr.readonly-field]="
-                                        isEditMode &&
-                                        !!!item.isUpdatable &&
-                                        !item.isUpdatable
+                                        isEditMode && !item.isUpdatable
                                     "
                                 >
                                     <div class="file-upload">
@@ -472,9 +441,7 @@
                                 *ngIf="isDateTime(item)"
                                 class="form-field-input guardian-input-container"
                                 [attr.readonly-field]="
-                                    isEditMode &&
-                                    !!!item.isUpdatable &&
-                                    !item.isUpdatable
+                                    isEditMode && !item.isUpdatable
                                 "
                             >
                                 <date-time-control
@@ -491,9 +458,7 @@
                                 *ngIf="isDate(item)"
                                 class="form-field-input guardian-input-container"
                                 [attr.readonly-field]="
-                                    isEditMode &&
-                                    !!!item.isUpdatable &&
-                                    !item.isUpdatable
+                                    isEditMode && !item.isUpdatable
                                 "
                             >
                                 <date-time-control
@@ -509,9 +474,7 @@
                                 *ngIf="isTime(item)"
                                 class="form-field-input guardian-input-container"
                                 [attr.readonly-field]="
-                                    isEditMode &&
-                                    !!!item.isUpdatable &&
-                                    !item.isUpdatable
+                                    isEditMode && !item.isUpdatable
                                 "
                             >
                                 <date-time-control
@@ -529,9 +492,7 @@
                                 *ngIf="isBoolean(item)"
                                 class="form-field-boolean guardian-input-container"
                                 [attr.readonly-field]="
-                                    isEditMode &&
-                                    !!!item.isUpdatable &&
-                                    !item.isUpdatable
+                                    isEditMode && !item.isUpdatable
                                 "
                             >
                                 <div class="boolean-field">
@@ -549,9 +510,7 @@
                                 <div
                                     class="boolean-field"
                                     [attr.readonly-field]="
-                                        isEditMode &&
-                                        !!!item.isUpdatable &&
-                                        !item.isUpdatable
+                                        isEditMode && !item.isUpdatable
                                     "
                                 >
                                     <p-radioButton
@@ -569,9 +528,7 @@
                                     *ngIf="!item.required"
                                     class="boolean-field"
                                     [attr.readonly-field]="
-                                        isEditMode &&
-                                        !!!item.isUpdatable &&
-                                        !item.isUpdatable
+                                        isEditMode && !item.isUpdatable
                                     "
                                 >
                                     <p-radioButton
@@ -591,9 +548,7 @@
                                 *ngIf="isEnum(item)"
                                 class="form-field-input guardian-input-container"
                                 [attr.readonly-field]="
-                                    isEditMode &&
-                                    !!!item.isUpdatable &&
-                                    !item.isUpdatable
+                                    isEditMode && !item.isUpdatable
                                 "
                             >
                                 <p-dropdown
@@ -801,9 +756,7 @@
                                             "
                                             [disabled]="item.control?.disabled"
                                             [attr.readonly-field]="
-                                                isEditMode &&
-                                                !!!item.isUpdatable &&
-                                                !item.isUpdatable
+                                                isEditMode && !item.isUpdatable
                                             "
                                         >
                                         </app-geojson-type>
@@ -812,9 +765,7 @@
                                             [form-model]="item.model"
                                             [disabled]="item.control?.disabled"
                                             [attr.readonly-field]="
-                                                isEditMode &&
-                                                !!!item.isUpdatable &&
-                                                !item.isUpdatable
+                                                isEditMode && !item.isUpdatable
                                             "
                                         >
                                         </app-sentinel-hub-type>
@@ -1012,8 +963,10 @@
                                                     class="form-field-group"
                                                     [attr.readonly-field]="
                                                         isEditMode &&
-                                                        !!!item.isUpdatable &&
-                                                        !item.isUpdatable
+                                                        !(
+                                                            item.isUpdatable ??
+                                                            true
+                                                        )
                                                     "
                                                 >
                                                     <ng-container
@@ -1076,7 +1029,9 @@
                                                             [paginationHidden]="
                                                                 paginationHidden
                                                             "
-                                                            [isEditMode]="isEditMode"
+                                                            [isEditMode]="
+                                                                isEditMode
+                                                            "
                                                         >
                                                         </app-schema-form>
                                                     </ng-container>
@@ -1174,7 +1129,19 @@
             </ng-container>
         </ng-container>
         <ng-container *ngIf="isEditMode">
-            <button pButton type="button" class="button">Save Changes</button>
+            <div class="progress-footer-btn-container">
+                <button
+                    pButton
+                    type="button"
+                    class="guardian-button guardian-button-{{
+                        editButtonConfig.type
+                    }}"
+                    (click)="editButtonConfig.fn()"
+                    [disabled]="editButtonConfig.disabled()"
+                >
+                    {{ editButtonConfig.text }}
+                </button>
+            </div>
         </ng-container>
         <div *ngIf="lastSavedAt && !isEditMode" class="last-autosave">
             {{ minutesAgo$ | async }}

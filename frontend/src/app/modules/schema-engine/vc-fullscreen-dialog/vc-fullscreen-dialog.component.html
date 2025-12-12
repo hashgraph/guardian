@@ -46,8 +46,20 @@
                 buttonStyle="guardian"
             ></app-compare-btn>
 
+            <p-dropdown
+                *ngIf="allVcDocs.length > 1 && !isEditMode"
+                [options]="versionOptions"
+                [(ngModel)]="selectedVersionIndex"
+                (onChange)="onVersionChange($event)"
+                placeholder="Select Revision"
+                class="version-dropdown"
+                [appendTo]="'body'"
+                styleClass="guardian-dropdown"
+            ></p-dropdown>
             <button
-                *ngIf="isCurrentUserIssuer"
+                *ngIf="isCurrentUserOwner"
+                pButton
+                [disabled]="!isCurrentSelectedVersion"
                 (click)="onEditMode()"
                 class="guardian-button guardian-button-secondary mode-btn"
             >
@@ -59,11 +71,10 @@
             <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
         </div> -->
     </div>
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
     <div *ngIf="!isEditMode" class="vc-fullscreen-dialog-body">
-        <div *ngIf="loading" class="guardian-loading">
-            <div class="guardian-loading-image"></div>
-        </div>
-
         <div *ngIf="toggle" class="tab-container">
             <div class="guardian-step-container">
                 <div class="guardian-stepper horizontal-stepper">
@@ -97,94 +108,99 @@
             </div>
         </div>
 
-        <div class="step-body-container" [attr.collapse]="collapse">
-            <div class="document-content" [attr.comments]="comments">
-                <div *ngIf="currentTab === 0" class="document-view">
-                    <app-document-view
-                        *ngIf="type === 'VP' || type === 'VC'"
-                        #documentViewComponent
-                        class="document-viewer"
-                        [dryRun]="dryRun"
-                        [policyId]="policyId"
-                        [documentId]="documentId"
-                        [schemaId]="schemaId"
-                        [schema]="schema"
-                        [document]="document"
-                        [relayer-account]="relayerAccount"
-                        [getByUser]="getByUser"
-                        [type]="type"
-                        [discussion]="discussionData"
-                        [discussion-view]="true"
-                        [discussion-action]="discussionAction"
-                        (discussion-action)="onDiscussionAction($event)"
-                    ></app-document-view>
-                </div>
-                <div *ngIf="currentTab === 1" class="json-container">
-                    <ng-container
-                        *ngIf="fileSize <= 1; else fileIsTooBigTemplate"
-                    >
-                        <div class="json">
-                            {{ json }}
-                        </div>
-                    </ng-container>
-                    <ng-template #fileIsTooBigTemplate>
-                        <b class="form-label"
-                            >This file is too large to view. ({{
-                                fileSize
-                            }}
-                            MB)</b
+        <ng-container *ngIf="!loading">
+            <div class="step-body-container" [attr.collapse]="collapse">
+                <div class="document-content" [attr.comments]="comments">
+                    <div *ngIf="currentTab === 0" class="document-view">
+                        <app-document-view
+                            *ngIf="type === 'VP' || type === 'VC'"
+                            #documentViewComponent
+                            class="document-viewer"
+                            [dryRun]="dryRun"
+                            [policyId]="policyId"
+                            [documentId]="documentId"
+                            [schemaId]="schemaId"
+                            [schema]="schema"
+                            [document]="document"
+                            [relayer-account]="relayerAccount"
+                            [getByUser]="getByUser"
+                            [type]="type"
+                            [discussion]="discussionData"
+                            [discussion-view]="true"
+                            [discussion-action]="discussionAction"
+                            (discussion-action)="onDiscussionAction($event)"
+                        ></app-document-view>
+                    </div>
+                    <div *ngIf="currentTab === 1" class="json-container">
+                        <ng-container
+                            *ngIf="fileSize <= 1; else fileIsTooBigTemplate"
                         >
-                        <p class="form-label">
-                            File exceeds in-browser preview limits. To view it,
-                            please download the file and open it locally.
-                        </p>
-                    </ng-template>
+                            <div class="json">
+                                {{ json }}
+                            </div>
+                        </ng-container>
+                        <ng-template #fileIsTooBigTemplate>
+                            <b class="form-label"
+                                >This file is too large to view. ({{
+                                    fileSize
+                                }}
+                                MB)</b
+                            >
+                            <p class="form-label">
+                                File exceeds in-browser preview limits. To view
+                                it, please download the file and open it
+                                locally.
+                            </p>
+                        </ng-template>
+                    </div>
+                </div>
+                <div *ngIf="comments" class="comments-content">
+                    <policy-comments
+                        #discussionComponent
+                        [document-id]="id"
+                        [policy-id]="policyId"
+                        [dry-run]="dryRun"
+                        [collapse]="collapse"
+                        [readonly]="commentsReadonly"
+                        [key]="key"
+                        (link)="onLinkField($event)"
+                        (collapse)="onCollapse($event)"
+                        (view)="onDiscussionView($event)"
+                    ></policy-comments>
                 </div>
             </div>
-            <div *ngIf="comments" class="comments-content">
-                <policy-comments
-                    #discussionComponent
-                    [document-id]="id"
-                    [policy-id]="policyId"
-                    [dry-run]="dryRun"
-                    [collapse]="collapse"
-                    [readonly]="commentsReadonly"
-                    [key]="key"
-                    (link)="onLinkField($event)"
-                    (collapse)="onCollapse($event)"
-                    (view)="onDiscussionView($event)"
-                ></policy-comments>
-            </div>
-        </div>
+        </ng-container>
     </div>
 
     <div *ngIf="isEditMode" class="vc-fullscreen-dialog-body">
-        <div
-            *ngFor="let item of subjects"
-            class="guardian-accordion-container"
-        >
+        <div *ngFor="let item of subjects" class="guardian-accordion-container">
             <p-accordion
                 [multiple]="true"
                 [activeIndex]="[0]"
                 class="guardian-accordion"
             >
                 <p-accordionTab header="{{ getCredentialSubject(item) }}">
-                    <app-schema-form-root
-                        tabindex="0"
-                        [schema]="schemaMap[item.type]!"
-                        [dryRun]="dryRun"
-                        [policyId]="policyId || ''"
-                        [blockId]="id"
-                        [preset]="item"
-                        [submitText]="'save'"
-                        [rules]="rulesResults"
-                        [paginationHidden]="false"
-                        [saveShown]="false"
-                        [isFormForRequestBlock]="true"
-                        [isEditMode]="true"
-                        style="outline: none !important"
-                    >
-                    </app-schema-form-root>
+                    <form [formGroup]="dataForm">
+                        <app-schema-form-root
+                            tabindex="0"
+                            [schema]="schemaMap[item.type]!"
+                            [dryRun]="dryRun"
+                            [policyId]="policyId || ''"
+                            [blockId]="id"
+                            [preset]="item"
+                            [submitText]="'save'"
+                            [rules]="rulesResults"
+                            [paginationHidden]="false"
+                            [saveShown]="false"
+                            [isFormForRequestBlock]="true"
+                            [isEditMode]="true"
+                            style="outline: none !important"
+                            (form)="initForm($event)"
+                            (buttons)="onChangeButtons($event)"
+                            (updatableBtnEvent)="onUpdatableBtnEvent()"
+                        >
+                        </app-schema-form-root>
+                    </form>
                 </p-accordionTab>
             </p-accordion>
         </div>

@@ -248,7 +248,9 @@
                         class="guardian-checkbox-secondary checkbox-24"
                         [formControl]="field.isUpdatable" 
                         [binary]="true"
-                        label="Updatable Field"></p-checkbox>
+                        [disabled]="isUpdatableDisabled"
+                        label="Updatable Field">
+                    </p-checkbox>
                 </div>
 
                 <div *ngIf="field.autocalculated.value" class="checkbox-field-container auto-calculate">

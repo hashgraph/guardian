@@ -10,6 +10,7 @@ import { PolicyUser } from './policy-user.js';
 import { RecordUtils } from './record-utils.js';
 import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
 import { PolicyActionsService } from './actions-service.js';
+import { PolicyVcDocumentsUtils } from './policy-vc-documents-utils.js';
 
 /**
  * Block tree generator
@@ -371,6 +372,28 @@ export class BlockTreeGenerator extends NatsService {
                 return new MessageError(error, 500);
             }
         });
+
+        this.getPolicyMessages(
+            PolicyEvents.CREATE_NEW_VERSION_VC_DOCUMENT,
+            policyId,
+            async (msg: any) => {
+                const { user, data } = msg;
+                const userFull = await this.getUser(policyInstance, user);
+                await PolicyVcDocumentsUtils.createNewVersionVcDocuments(userFull, policyId, data);
+                return new MessageResponse({ ok: true });
+            }
+        );
+
+        this.getPolicyMessages(
+            PolicyEvents.GET_ALL_NEW_VERSION_VC_DOCUMENTS,
+            policyId,
+            async (msg: any) => {
+                const { user, documentId } = msg;
+                const userFull = await this.getUser(policyInstance, user);
+                const docs = await PolicyVcDocumentsUtils.getAllVersionVcDocuments(documentId);
+                return new MessageResponse(docs);
+            }
+        );
     }
 
     /**

@@ -59,6 +59,11 @@
                 margin-right: 8px;
             }
 
+            .version-dropdown {
+                height: 40px;
+                margin-right: 8px;
+            }
+
             .mode-btn {
                 height: 40px;
             }
@@ -163,6 +168,28 @@
             overflow: auto;
             width: 100%;
             height: calc(100% - 129px);
+        }
+    }
+}
+
+:host ::ng-deep {
+    .version-dropdown {
+        .p-dropdown {
+            border: 1px solid var(--guardian-primary-color);
+            border-radius: 6px;
+            color: var(--guardian-primary-color);
+        }
+
+        .p-dropdown-label {
+            color: var(--guardian-primary-color);
+        }
+
+        .p-dropdown-trigger {
+            color: var(--guardian-primary-color);
+        }
+
+        .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+            color: var(--guardian-primary-color);
         }
     }
 }

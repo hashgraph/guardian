@@ -79,6 +79,8 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public defaultValuesSubscription?: Subscription;
     public presetValues: any;
     public isShowMore = false;
+    public isUpdatableDisabled: boolean = false;
+
     private fieldTypeSub: Subscription;
     private fieldPropertySub: Subscription;
     private _sd?: any;
@@ -389,6 +391,12 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         this.helpText = (item && item.name === 'Help Text') || false;
         this.enum = ((item && item.name) || typeName) === 'Enum';
         this.geoJson = ((item && item.name) || typeName) === 'GeoJSON';
+        if (!item) {
+            this.field.isUpdatable.setValue(false);
+            this.isUpdatableDisabled = true;
+        } else {
+            this.isUpdatableDisabled = false;
+        }
     }
 
     onEditEnum() {

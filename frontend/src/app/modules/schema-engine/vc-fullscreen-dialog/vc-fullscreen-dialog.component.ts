@@ -14,12 +14,22 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from 'src/app/services/profile.service';
 import { PolicyComments } from '../../common/policy-comments/policy-comments.component';
-import { forkJoin, Subject, Subscription, takeUntil } from 'rxjs';
+import {
+    audit,
+    forkJoin,
+    interval,
+    Subject,
+    Subscription,
+    takeUntil,
+} from 'rxjs';
 import { DocumentViewComponent } from '../document-view/document-view.component';
 import { CommentsService } from 'src/app/services/comments.service';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ToastrService } from 'ngx-toastr';
 
 /**
  * Dialog for display json
@@ -66,7 +76,7 @@ export class VCFullscreenDialog {
     public comments: boolean;
     public commentsReadonly: boolean;
 
-    public isCurrentUserIssuer: boolean = false;
+    public isCurrentUserOwner: boolean = false;
     public isEditMode: boolean = false;
     public subjects: any[] = [];
     public schemaMap: { [x: string]: Schema | null } = {};
@@ -75,6 +85,11 @@ export class VCFullscreenDialog {
     public formulasResults: any | null;
     public pageIndex: number = 0;
     public pageSize: number = 5;
+
+    public dataForm: UntypedFormGroup;
+    public allVcDocs: any[] = [];
+    public versionOptions: { label: string; value: number }[] = [];
+    public selectedVersionIndex: number = 0;
 
     private _destroy$ = new Subject<void>();
     private _subscription?: Subscription | null;
@@ -90,8 +105,25 @@ export class VCFullscreenDialog {
         private schemaService: SchemaService,
         private schemaRulesService: SchemaRulesService,
         private formulasService: FormulasService,
-        private ref: ChangeDetectorRef
-    ) {}
+        private ref: ChangeDetectorRef,
+        private fb: UntypedFormBuilder,
+        private policyEngineService: PolicyEngineService,
+        private toastr: ToastrService
+    ) {
+        this.dataForm = this.fb.group({});
+    }
+
+    get selectedVcDoc(): any {
+        return this.allVcDocs?.[this.selectedVersionIndex];
+    }
+
+    get currentVcDoc(): any {
+        return this.allVcDocs?.find((doc) => !doc.oldVersion) || null;
+    }
+
+    get isCurrentSelectedVersion(): boolean {
+        return !!this.selectedVcDoc && !this.selectedVcDoc.oldVersion;
+    }
 
     ngOnInit() {
         const {
@@ -152,18 +184,7 @@ export class VCFullscreenDialog {
         this.collapse = openComments !== true;
 
         this.document = document;
-        if (document) {
-            if (typeof document === 'string') {
-                this.json = document;
-            } else {
-                this.json = JSON.stringify(document, null, 4);
-            }
-        } else {
-            this.type = 'JSON';
-            this.toggle = false;
-            this.json = '';
-            this.currentTab = 1;
-        }
+        this.setJson();
 
         const fileSizeBytes = new Blob([this.json]).size;
         this.fileSize = Math.round(fileSizeBytes / (1024 * 1024));
@@ -178,6 +199,8 @@ export class VCFullscreenDialog {
         this._subscription = this._destroy$.subscribe(() => {
             this.onClose();
         });
+
+        this.initForm(this.dataForm);
     }
 
     private loadProfile() {
@@ -189,14 +212,21 @@ export class VCFullscreenDialog {
                     this.policyId,
                     this.documentId
                 ),
+                this.policyEngineService.getAllVersionVcDocuments(
+                    this.policyId,
+                    this.documentId
+                ),
             ])
                 .pipe(takeUntil(this._destroy$))
                 .subscribe(
-                    ([profile, count]) => {
+                    ([profile, count, allVcDocs]) => {
                         this.user = new UserPermissions(profile);
                         this.discussionData = count?.fields || {};
-                        this.isCurrentUserIssuer =
-                            this.user?.did === this.document?.issuer;
+
+                        if (allVcDocs) {
+                            this.allVcDocs = allVcDocs;
+                            this.initVersionSelector();
+                        }
 
                         setTimeout(() => {
                             this.loading = false;
@@ -207,14 +237,23 @@ export class VCFullscreenDialog {
                     }
                 );
         } else {
-            this.profileService
-                .getProfile()
+            forkJoin([
+                this.profileService.getProfile(),
+                this.policyEngineService.getAllVersionVcDocuments(
+                    this.policyId,
+                    this.documentId
+                ),
+            ])
                 .pipe(takeUntil(this._destroy$))
                 .subscribe(
-                    (profile) => {
+                    ([profile, vcDocs]) => {
                         this.user = new UserPermissions(profile);
-                        this.isCurrentUserIssuer =
-                            this.user?.did === this.document?.issuer;
+
+                        if (vcDocs) {
+                            this.allVcDocs = vcDocs;
+                            this.initVersionSelector();
+                        }
+
                         setTimeout(() => {
                             this.loading = false;
                         }, 500);
@@ -329,6 +368,7 @@ export class VCFullscreenDialog {
     }
 
     setSubjects() {
+        this.subjects = [];
         if (Array.isArray(this.document.credentialSubject)) {
             for (const s of this.document.credentialSubject) {
                 this.subjects.push(s);
@@ -442,6 +482,115 @@ export class VCFullscreenDialog {
             return `Credential Subject #${this.subjects.indexOf(item) + 1}`;
         } else {
             return 'Credential Subject';
+        }
+    }
+
+    public initForm($event: any) {
+        this.dataForm = $event;
+        this.dataForm.valueChanges
+            .pipe(takeUntil(this._destroy$))
+            .pipe(audit((ev) => interval(1000)))
+            .subscribe((val) => {
+                // this.validate();
+            });
+    }
+
+    public onUpdatableBtnEvent() {
+        this.loading = true;
+        const data = this.dataForm.getRawValue();
+        this.policyEngineService
+            .createNewVersionVcDocument(this.policyId!, {
+                documentId: this.currentVcDoc.id ?? this.documentId,
+                document: data,
+            })
+            .subscribe((status) => {
+                if (status.ok) {
+                    this.toastr.success(
+                        `The document has been updated successfully.`,
+                        'Success',
+                        {
+                            timeOut: 3000,
+                            closeButton: true,
+                            positionClass: 'toast-bottom-right',
+                            enableHtml: true,
+                        }
+                    );
+                }
+                this.loading = false;
+            });
+    }
+
+    public onChangeButtons($event: any) {
+        if (!Array.isArray($event)) {
+            if ($event.id === 'submit') {
+                $event.disabled = () => {
+                    return !this.dataForm.valid || this.loading;
+                };
+            }
+        }
+    }
+
+    private initVersionSelector() {
+        if (this.allVcDocs.length > 1) {
+            const currentIndex = this.allVcDocs.findIndex(
+                (doc) => !doc.oldVersion
+            );
+
+            this.selectedVersionIndex = currentIndex !== -1 ? currentIndex : 0;
+
+            this.versionOptions = this.allVcDocs.map((doc, index) => {
+                if (!doc.oldVersion) {
+                    return { label: 'Current Revision', value: index };
+                }
+                const date = new Date(doc.createDate).toLocaleString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                });
+
+                return { label: date, value: index };
+            });
+        }
+
+        this.selectVcDocument(
+            this.allVcDocs[this.selectedVersionIndex]?.document
+        );
+    }
+
+    public onVersionChange(event: any) {
+        this.selectedVersionIndex = event.value;
+        this.selectVcDocument(
+            this.allVcDocs[this.selectedVersionIndex].document
+        );
+    }
+
+    private selectVcDocument(document: any) {
+        this.loading = true;
+        this.document = document;
+        this.setJson();
+        this.setSubjects();
+        this.isCurrentUserOwner = this.selectedVcDoc?.owner === this.user?.did;
+        setTimeout(() => {
+            this.loading = false;
+            this.ref.detectChanges();
+        }, 500);
+    }
+
+    private setJson() {
+        if (this.document) {
+            if (typeof document === 'string') {
+                this.json = this.document;
+            } else {
+                this.json = JSON.stringify(this.document, null, 4);
+            }
+        } else {
+            this.type = 'JSON';
+            this.toggle = false;
+            this.json = '';
+            this.currentTab = 1;
         }
     }
 }

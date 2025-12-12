@@ -447,3 +447,12 @@ form::ng-deep {
 .table-field-container {
     width: 100%;
 }
+
+.progress-footer {
+    .progress-footer-btn-container {
+        display: flex;
+        button {
+            margin-left: auto;
+        }
+    }
+}

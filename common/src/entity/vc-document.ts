@@ -262,6 +262,18 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     _oldTableFileIds?: ObjectId[];
 
     /**
+     * Last VC Version
+     */
+    @Property({ nullable: true })
+    oldVersion?: boolean;
+
+    /**
+     * Parent message
+     */
+    @Property({ nullable: true })
+    initId?: string;
+
+    /**
      * Document defaults
      */
     @BeforeCreate()
@@ -317,6 +329,8 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         prop.relayerAccount = this.relayerAccount;
         prop.processingStatus = this.processingStatus;
         prop.policyId = this.policyId;
+        prop.oldVersion = this.oldVersion;
+        prop.initId = this.initId;
         return prop;
     }
 
