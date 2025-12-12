@@ -11,6 +11,7 @@ import deepEqual from 'deep-equal';
 import { PolicyUser } from '../../policy-user.js';
 import { ComponentsService } from '../components-service.js';
 import { IDebugContext } from '../../block-engine/block-result.js';
+import { RecordActionStep } from '../../record-action-step.js';
 
 /**
  * Basic block decorator
@@ -153,6 +154,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block about
              */
             public readonly actionType: LocationType;
+            // /**
+            //  * Current action status
+            //  */
+            // public actionStatus?: RecordActionStep;
 
             constructor(
                 _uuid: string,
@@ -353,11 +358,23 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public triggerEvents<U>(
                 output: PolicyOutputEventType,
                 user: PolicyUser,
-                data: U
+                data: U,
+                actionStatus: any
             ): void {
+                // const status = actionStatus ?? this.actionStatus;
+                const status = actionStatus;
+                console.log(actionStatus, 'actionStatus 111');
+                console.log(data, 'data 111');
+                console.log(this.sourceLinks, 'this.sourceLinks 111');
+                if (!this.sourceLinks.length) {
+                    actionStatus?.dec();
+                }
+
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
-                        link.run(user, data);
+                        link.run(user, data, status);
+                    } else {
+                        actionStatus?.dec();
                     }
                 }
             }
@@ -371,11 +388,23 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public async triggerEventSync<U>(
                 output: PolicyOutputEventType,
                 user: PolicyUser,
-                data: U
+                data: U,
+                actionStatus: any
             ): Promise<any> {
+                // const status = actionStatus ?? this.actionStatus;
+                const status = actionStatus;
+                console.log(actionStatus, 'actionStatus 111');
+                console.log(data, 'data 111');
+                console.log(this.sourceLinks, 'this.sourceLinks 111');
+                if (!this.sourceLinks.length) {
+                    actionStatus?.dec();
+                }
+
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
-                        return await link.runSync(user, data);
+                        return await link.runSync(user, data, status);
+                    } else {
+                        actionStatus?.dec();
                     }
                 }
 
@@ -391,7 +420,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public triggerEvent<U>(
                 event: IPolicyEvent<U>,
                 user: PolicyUser,
-                data: U
+                data: U,
+                actionStatus: any
             ): void {
                 console.error('triggerEvent');
             }

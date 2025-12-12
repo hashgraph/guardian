@@ -63,6 +63,12 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     policyId?: string;
 
     /**
+     * Record action id
+     */
+    @Property({ nullable: true })
+    recordActionId?: string;
+
+    /**
      * Tag
      */
     @Property({ nullable: true })

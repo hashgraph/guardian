@@ -202,7 +202,7 @@ export class ExtractDataBlock {
             }
         }
         const state = { data: sources };
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
     }
 
     /**
@@ -228,13 +228,13 @@ export class ExtractDataBlock {
         const result: IPolicyDocument[] = [];
         for (const json of subDocs) {
             const vc = PolicyUtils.createVcFromSubject(json);
-            result.push(PolicyUtils.createUnsignedVC(ref, vc));
+            result.push(PolicyUtils.createUnsignedVC(ref, vc, event.actionStatus?.id));
         }
         const state: IPolicyEventState = {
             source: docs,
             data: result
         };
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
     }
 
     /**

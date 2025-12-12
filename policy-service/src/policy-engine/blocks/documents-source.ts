@@ -62,7 +62,7 @@ export class InterfaceDocumentsSource {
         }
     }
 
-    async onAddonEvent(user: PolicyUser, tag: string, documentId: string, handler: (document: any) => Promise<IPolicyEventState>) {
+    async onAddonEvent(user: PolicyUser, tag: string, documentId: string, handler: (document: any) => Promise<IPolicyEventState>, actionStatus) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
         const fields = ref.options?.uiMetaData?.fields?.filter((field) =>
             field?.bindBlocks?.includes(tag)
@@ -93,7 +93,7 @@ export class InterfaceDocumentsSource {
             );
         }
         const state = await handler(document);
-        ref.triggerEvents(tag, user, state);
+        ref.triggerEvents(tag, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Set, ref, user, {
                 button: ref.tag,

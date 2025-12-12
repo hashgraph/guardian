@@ -312,7 +312,7 @@ export class PolicyRolesBlock {
      * @param group
      * @private
      */
-    private async createVC(ref: AnyBlockType, user: PolicyUser, group: IUserGroup): Promise<string> {
+    private async createVC(ref: AnyBlockType, user: PolicyUser, group: IUserGroup, actionStatusId: any): Promise<string> {
         const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.USER_ROLE);
         if (!policySchema) {
             return null;
@@ -349,7 +349,7 @@ export class PolicyRolesBlock {
             userId: user.userId
         });
 
-        const vcDocument = PolicyUtils.createVC(ref, user, vc);
+        const vcDocument = PolicyUtils.createVC(ref, user, vc, actionStatusId);
         vcDocument.type = DocumentCategoryType.USER_ROLE;
         vcDocument.schema = `#${vc.getSubjectType()}`;
         vcDocument.messageId = message.getId();
@@ -402,7 +402,9 @@ export class PolicyRolesBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.JoinGroup, PolicyOutputEventType.CreateGroup]
     })
-    async setData(user: PolicyUser, data: any): Promise<any> {
+    async setData(user: PolicyUser, data: any, _, actionStatus): Promise<any> {
+                console.log(actionStatus, 'actionStatus')
+        console.log(data, 'data 656565')
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const did = user?.did;
         const curUser = await PolicyUtils.getUser(ref, did, user.userId);
@@ -429,14 +431,16 @@ export class PolicyRolesBlock {
             throw new BlockActionError('You are already a member of the group', ref.blockType, ref.uuid);
         }
 
-        group.messageId = await this.createVC(ref, user, group);
+        group.messageId = await this.createVC(ref, user, group, actionStatus?.id);
 
         const userGroup = await ref.databaseServer.setUserInGroup(group);
         const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref, user.userId);
+        console.log(actionStatus, 'actionStatus')
+        console.log(data, 'data 656565')
         if (data.invitation) {
-            ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null);
+            ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null, actionStatus);
         } else {
-            ref.triggerEvents(PolicyOutputEventType.CreateGroup, newUser, null);
+            ref.triggerEvents(PolicyOutputEventType.CreateGroup, newUser, null, actionStatus);
         }
 
         await PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance);

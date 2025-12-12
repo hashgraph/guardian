@@ -65,11 +65,11 @@ export class ButtonBlock {
          * Tag
          */
         tag: any
-    }): Promise<any> {
+    }, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const data: IPolicyDocument = blockData.document;
         const state: IPolicyEventState = { data };
-        ref.triggerEvents(blockData.tag, user, state);
+        ref.triggerEvents(blockData.tag, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             button: blockData.tag,
             documents: ExternalDocuments(blockData.document)

@@ -151,7 +151,8 @@ export class Recording {
         action: RecordAction | null,
         user: string,
         target: string,
-        document: any
+        document: any,
+        recordActionId?: any
     }): Promise<void> {
         if (!this.isActive()) {
             return;
@@ -172,6 +173,7 @@ export class Recording {
         // }
         // await this.persistStepWithMessageServer(savedRecord, payload, documentSnapshot);
         if (this.uploadToIpfs) {
+            console.log(entry.recordActionId, 'entry.recordActionIdentry.recordActionId');
             const recordId: any = (savedRecord as any)?.id || (savedRecord as any)?._id;
             this.tree.sendMessage(PolicyEvents.RECORD_PERSIST_STEP, {
                 // policyId: this.policyId,
@@ -187,7 +189,8 @@ export class Recording {
                 payload,
                 documentSnapshot,
                 hedera: this.hedera ?? null,
-                uploadToIpfs: this.uploadToIpfs
+                uploadToIpfs: this.uploadToIpfs,
+                recordActionId: entry.recordActionId
             });
         }
 
@@ -376,7 +379,7 @@ export class Recording {
      * @param data
      * @public
      */
-    public async setBlockData(user: PolicyUser, block: AnyBlockType, data: any): Promise<void> {
+    public async setBlockData(user: PolicyUser, block: AnyBlockType, data: any, recordActionId: any): Promise<void> {
         if (!this.isActive()) {
             return;
         }
@@ -386,7 +389,8 @@ export class Recording {
             action: RecordAction.SetBlockData,
             user: user?.did,
             target: block?.tag,
-            document: data
+            document: data,
+            recordActionId,
         });
     }
 
@@ -600,14 +604,14 @@ private async persistStepWithMessageServer(
             }
         } else {
             const policy = await DatabaseServer.getPolicyById(this.policyId) as Policy;
-            if (!policy || !policy.actionsTopicId || !policy.owner) {
-                console.error(`Recording: unable to resolve policy/actions topic for policy ${this.policyId}`);
+            if (!policy || !policy.recordsTopicId || !policy.owner) {
+                console.error(`Recording: unable to resolve policy/recordsTopicId topic for policy ${this.policyId}`);
                 return;
             }
 
             policyMessageId = policy.messageId || null;
 
-            const topicRow = await DatabaseServer.getTopicById(policy.actionsTopicId);
+            const topicRow = await DatabaseServer.getTopicById(policy.recordsTopicId);
             topicConfig = await TopicConfig.fromObject(topicRow, false, null);
 
             const users = new Users();

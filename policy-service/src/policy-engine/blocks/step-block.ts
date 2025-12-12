@@ -113,7 +113,7 @@ export class InterfaceStepBlock {
         }
         ref.log(`changeStep: ${blockState?.index}, ${user?.id}`);
         ref.updateBlock(blockState, user, ref.tag, user.userId);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null, null);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Step, ref, user, {
             index: blockState?.index
@@ -145,7 +145,7 @@ export class InterfaceStepBlock {
                 }
                 blockState.index = 0;
                 ref.updateBlock(blockState, user, ref.tag, user.userId);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null, null);
             }
         }
 

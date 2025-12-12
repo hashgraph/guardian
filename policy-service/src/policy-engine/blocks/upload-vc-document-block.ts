@@ -159,7 +159,7 @@ export class UploadVcDocumentBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async setData(user: PolicyUser, data: any): Promise<any> {
+    async setData(user: PolicyUser, data: any, _, actionStatus: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         if (!user.did) {
@@ -188,7 +188,7 @@ export class UploadVcDocumentBlock {
                     ;
                     const vc = VcDocument.fromJsonTree(document);
 
-                    const doc = PolicyUtils.createVC(ref, user, vc);
+                    const doc = PolicyUtils.createVC(ref, user, vc, actionStatus?.id);
                     doc.type = ref.options.entityType;
                     doc.schema = ref.options.schema;
                     doc.signature = DocumentSignature.VERIFIED;
@@ -201,9 +201,9 @@ export class UploadVcDocumentBlock {
             }
 
             const state: IPolicyEventState = { data: retArray };
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
                 documents: ExternalDocuments(retArray)
             }));

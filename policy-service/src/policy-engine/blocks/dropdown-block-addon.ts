@@ -99,7 +99,9 @@ export class DropdownBlockAddon {
         blockData: {
             documentId: string;
             dropdownDocumentId: string;
-        }
+        },
+        _,
+        actionStatus
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const documents: any[] = await ref.getSources(user, null);
@@ -130,7 +132,8 @@ export class DropdownBlockAddon {
                 return {
                     data: document,
                 };
-            }
+            },
+            actionStatus
         );
         ref.backup();
     }

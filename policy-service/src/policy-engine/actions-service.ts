@@ -653,7 +653,8 @@ export class PolicyActionsService {
             throw error;
         }
 
-        const result = await block.setData(policyUser, row.document, ActionType.REMOTE);
+        // TODO: do we need to record actions from remote policy ?
+        const result = await block.setData(policyUser, row.document, ActionType.REMOTE, null);
         await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
     }
 

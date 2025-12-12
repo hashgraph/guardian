@@ -1241,6 +1241,36 @@ export class PolicyEngine extends NatsService {
                 notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
             }
 
+
+            const createRecordsTopic = async () => {
+                notifier.startStep(STEP_CREATE_ACTION_TOPIC);
+                const recordsTopic = await topicHelper.create({
+                    type: TopicType.RecordsTopic,
+                    name: TopicType.RecordsTopic,
+                    description: TopicType.RecordsTopic,
+                    owner: user.owner,
+                    policyId: model.id.toString(),
+                    policyUUID: model.uuid
+                }, user.id, { admin: true, submit: false });
+                await recordsTopic.saveKeys(user.id);
+                await DatabaseServer.saveTopic(recordsTopic.toObject());
+                model.recordsTopicId = recordsTopic.topicId;
+                notifier.completeStep(STEP_CREATE_ACTION_TOPIC);
+            }
+            // if (model.availability === PolicyAvailability.PUBLIC) {
+                if (model.status === PolicyStatus.PUBLISH_ERROR) {
+                    if (!!model.recordsTopicId) {
+                        await createRecordsTopic();
+                    } else {
+                        notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
+                    }
+                } else {
+                    await createRecordsTopic();
+                }
+            // } else {
+            //     notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
+            // }
+
             const createCommentsTopic = async () => {
                 notifier.startStep(STEP_CREATE_COMMENTS_TOPIC);
                 const commentsTopic = await topicHelper.create({

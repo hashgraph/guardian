@@ -323,9 +323,10 @@ export class NotificationBlock {
         ref.triggerEvents(
             PolicyOutputEventType.RunEvent,
             event.user,
-            event.data
+            event.data,
+            event.actionStatus
         );
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
                 documents: ExternalDocuments(event.data?.data),

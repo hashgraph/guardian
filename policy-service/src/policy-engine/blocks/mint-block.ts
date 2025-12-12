@@ -282,6 +282,7 @@ export class MintBlock {
         messages: string[],
         additionalMessages: string[],
         userId: string | null,
+        actionStatus: any
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
@@ -320,7 +321,7 @@ export class MintBlock {
 
         // #region Save Mint VC
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId, userId);
-        const vcMessage = new VCMessage(MessageAction.CreateVC);
+        const vcMessage = new VCMessage(MessageAction.CreateVC, actionStatus?.id);
         vcMessage.setDocument(mintVC);
         vcMessage.setRelationships(messages);
         vcMessage.setTag(mintVC);
@@ -335,7 +336,7 @@ export class MintBlock {
                 userId,
                 interception: null
             });
-        const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC);
+        const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC, actionStatus?.id);
         mintVcDocument.type = DocumentCategoryType.MINT;
         mintVcDocument.schema = `#${mintVC.getSubjectType()}`;
         mintVcDocument.messageId = vcMessageResult.getId();
@@ -368,7 +369,7 @@ export class MintBlock {
                 interception: null
             });
         const vpMessageId = vpMessageResult.getId();
-        const vpDocument = PolicyUtils.createVP(ref, user, vp);
+        const vpDocument = PolicyUtils.createVP(ref, user, vp, actionStatus?.id);
         vpDocument.type = DocumentCategoryType.MINT;
         vpDocument.messageId = vpMessageId;
         vpDocument.topicId = vpMessageResult.getTopicId();
@@ -446,7 +447,7 @@ export class MintBlock {
             await MintService.retry(event.data.data.messageId, event.user.did, ref.policyOwner, ref, event?.user?.userId);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
     }
 
     /**
@@ -510,14 +511,15 @@ export class MintBlock {
             vcs,
             messages,
             additionalMessages,
-            userId
+            userId,
+            event.actionStatus
         );
 
         const state: IPolicyEventState = event.data;
         state.result = vp;
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, event.actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, event.actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, event.actionStatus);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             tokenId: token.tokenId,

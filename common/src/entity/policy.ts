@@ -261,11 +261,12 @@ export class Policy extends BaseEntity {
     @Property({ nullable: true })
     actionsTopicId?: string;
 
-    // /**
-    //  * Source actions topic id
-    //  */
-    // @Property({ nullable: true })
-    // fromActionsTopicId?: string;
+
+    /**
+     * RecordsTopicId
+     */
+    @Property({ nullable: true })
+    recordsTopicId?: string;
 
     /**
      * Source message id

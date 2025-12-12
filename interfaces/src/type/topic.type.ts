@@ -18,5 +18,6 @@ export enum TopicType {
     LabelTopic = 'LABEL_TOPIC',
     RestoreTopic = 'RESTORE_TOPIC',
     ActionsTopic = 'ACTIONS_TOPIC',
+    RecordsTopic = 'RECORDS_TOPIC',
     CommentsTopic = 'COMMENTS_TOPIC'
 }

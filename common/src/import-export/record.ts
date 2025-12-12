@@ -237,7 +237,7 @@ export class RecordImportExport {
         return results;
     }
 
-    
+
     /**
      * Load record results
      * @param uuid record
@@ -248,7 +248,8 @@ export class RecordImportExport {
      */
     public static async loadRecordResultsForPublished(
         policyId: string,
-        documentId?: string
+        documentId?: string,
+        recordActionId?: any
     ): Promise<IRecordResult[]> {
         const result: IRecordResult[] = [];
         const db = new DatabaseServer();
@@ -317,6 +318,34 @@ export class RecordImportExport {
         }
 
         for (const vp of vpdocuments) {
+            result.push({
+                id: vp.document.id,
+                type: 'vp',
+                document: vp.document
+            });
+        }
+
+        const vcdocuments2 = await db.getVcDocuments<VcDocumentCollection>(
+            {
+                recordActionId
+            } as FilterObject<VcDocument>,
+            ) as VcDocumentCollection[];
+
+                    const vpdocuments2 = await db.getVpDocuments<VpDocumentCollection>(
+            {
+                recordActionId
+            } as FilterObject<VpDocument>,
+            ) as VpDocumentCollection[];
+
+                for (const vc of vcdocuments2) {
+            result.push({
+                id: vc.document.id,
+                type: 'vc',
+                document: vc.document
+            });
+        }
+
+        for (const vp of vpdocuments2) {
             result.push({
                 id: vp.document.id,
                 type: 'vp',

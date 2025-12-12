@@ -132,6 +132,10 @@ export interface PolicyMessageBody extends MessageBody {
      */
     actionsTopicId: string;
     /**
+     * recordsTopicId
+     */
+    recordsTopicId: string;
+    /**
      * commentsTopicId
      */
     commentsTopicId: string;

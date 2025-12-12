@@ -458,7 +458,7 @@ export class Running {
                     const block = PolicyComponentsUtils.GetBlockByTag<any>(this.policyId, action.target);
                     if (await this.isAvailable(block, userFull)) {
                         const doc = await this.getActionDocument(action, block);
-                        await block.setData(userFull, doc);
+                        await block.setData(userFull, doc, null, null);
                         return null;
                     } else {
                         return `Block (${action.target}) not available.`;

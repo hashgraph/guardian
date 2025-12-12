@@ -86,14 +86,14 @@
 //                 }
 //             } else {
 //                 const policy = await DatabaseServer.getPolicyById(policyId) as Policy;
-//                 if (!policy || !policy.actionsTopicId || !policy.owner) {
+//                 if (!policy || !policy.recordsTopicId || !policy.owner) {
 //                     console.error(`RecordPersistService: unable to resolve policy/actions topic for policy ${policyId}`);
 //                     return;
 //                 }
 
 //                 policyMessageId = policy.messageId || null;
 
-//                 const topicRow = await DatabaseServer.getTopicById(policy.actionsTopicId);
+//                 const topicRow = await DatabaseServer.getTopicById(policy.recordsTopicId);
 //                 topicConfig = await TopicConfig.fromObject(topicRow, false, null);
 
 //                 const users = new Users();
