@@ -168,6 +168,7 @@ import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.comp
 import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
 import { MathConfigComponent } from './policy-configuration/blocks/calculate/math-config/math-config.component';
 import { MathEditorDialogComponent } from './dialogs/math-editor-dialog/math-editor-dialog.component';
+import { FieldLinkDialog } from './dialogs/field-link-dialog/field-link-dialog.component';
 
 @NgModule({
     declarations: [
@@ -293,7 +294,8 @@ import { MathEditorDialogComponent } from './dialogs/math-editor-dialog/math-edi
         OnLoadSavepointDialog,
         PolicyRepositoryComponent,
         UserPolicyDialog,
-        MathEditorDialogComponent
+        MathEditorDialogComponent,
+        FieldLinkDialog
     ],
     imports: [
         CommonModule,

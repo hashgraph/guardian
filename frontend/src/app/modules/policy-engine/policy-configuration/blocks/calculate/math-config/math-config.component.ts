@@ -98,6 +98,7 @@ export class MathConfigComponent implements OnInit {
             data: {
                 test: true,
                 block: this.currentBlock,
+                schemas: this.schemas,
                 expression: this.properties.expression,
                 readonly: this.readonly
             }

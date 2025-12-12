@@ -178,4 +178,14 @@ export interface SchemaField {
      * Suggest value
      */
     suggest?: any;
+
+    /**
+     * Full type
+     */
+    fullType?: string;
+
+    /**
+     * Array level
+     */
+    arrayLvl?: number;
 }

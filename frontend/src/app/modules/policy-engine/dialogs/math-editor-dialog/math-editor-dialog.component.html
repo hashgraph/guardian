@@ -14,64 +14,264 @@
     <div class="context">
         <div class="left-context">
 
-        </div>
-        <div #contextBody class="right-context dialog-keyboard">
-
-            <div *ngIf="scope">
-
-
-                <div class="formulas-container">
-                    <div *ngFor="let formula of scope.formulas" class="formula-container">
-                        <div class="formula-name">
-                            <div class="guardian-input-container">
-                                <input 
-                                    [(ngModel)]="formula.functionNameText" 
-                                    pInputText 
-                                    type="text"
-                                    placeholder="Name"
-                                    (change)="formula.updateName()"/>
-                            </div>
-                        </div>
-                        <div class="formula-eq">=</div>
-                        <div class="formula-body">
-                            <math-live 
-                                [(value)]="formula.functionBodyText" 
-                                [readonly]="false"
-                                [keyboardContainer]="contextBodyRef"
-                                (keyboard)="onKeyboard($event)"
-                                (focus)="onKeyboardFocus($event)"
-                                (change)="formula.update()"
-                            ></math-live>
-                        </div>
-                        <div class="formula-del">
-                            <button 
-                                class="guardian-icon-button big" 
-                                (click)="deleteFormula(formula)">
-                                <svg-icon
-                                    class="icon-btn svg-icon"
-                                    src="/assets/images/icons/delete.svg"
-                                    svgClass="icon-color-delete">
-                                </svg-icon>
-                            </button>
-                        </div>
-                    </div>
-
-                    <button (click)="addFormula()" class="guardian-button guardian-button-secondary add-formula-btn">
-                        <div class="guardian-button-icon">
-                            <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/add.svg"
-                                svgClass="icon-color-primary">
+            <div class="guardian-step-container">
+                <div class="guardian-stepper vertical-stepper">
+                    <div class="guardian-step-header">Settings</div>
+                    <div class="guardian-step" [attr.action]="step === 'formulas'" [attr.highlighted]="step === 'formulas'" (click)="onStep('formulas')">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
                             </svg-icon>
                         </div>
-                        <div class="guardian-button-label">Add Formula</div>
-                    </button>
+                        <div class="guardian-step-name">{{getHeader('formulas')}}</div>
+                    </div>
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="step === 'code'" [attr.highlighted]="step === 'code'" (click)="onStep('code')">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">{{getHeader('code')}}</div>
+                    </div>
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="step === 'set'" [attr.highlighted]="step === 'set'" (click)="onStep('set')">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">{{getHeader('set')}}</div>
+                    </div>
+
+                    <div class="guardian-step-header">Testing</div>
+                    <div class="guardian-step" [attr.action]="step === 'data'" [attr.highlighted]="step === 'data'" (click)="onStep('data')">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">{{getHeader('data')}}</div>
+                    </div>
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="step === 'formulas_results'" [attr.highlighted]="step === 'formulas_results'" (click)="onStep('formulas_results')">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">{{getHeader('formulas_results')}}</div>
+                    </div>
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="step === 'code_results'" [attr.highlighted]="step === 'code_results'" (click)="onStep('code_results')">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">{{getHeader('code_results')}}</div>
+                    </div>
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="step === 'set_results'" [attr.highlighted]="step === 'set_results'" (click)="onStep('set_results')">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">{{getHeader('set_results')}}</div>
+                    </div>
+
                 </div>
-
-
             </div>
 
+        </div>
+        <div #contextBody class="right-context dialog-keyboard">
+            <div class="step-header">
+                {{getHeader(step)}}
+            </div>
 
-
-
+            <div *ngIf="step === 'formulas'" class="step-container">
+                <div class="formulas-container">
+                    <ng-container *ngFor="let item of scope.items">
+                        <div *ngIf="item.type !== 'link'" class="rows-container" [attr.error]="!item.valid && item.validated">
+                            <div class="formula-reorder">
+                                <svg-icon
+                                    class="icon-btn svg-icon"
+                                    src="/assets/images/icons/equal.svg"
+                                    svgClass="icon-color-disabled">
+                                </svg-icon>
+                            </div>
+                            <div class="row-container">
+                                <div class="formula-name" [attr.error]="!item.validName">
+                                    <div class="guardian-input-container">
+                                        <label class="form-label">Formula</label>
+                                        <input 
+                                            [(ngModel)]="item.functionNameText" 
+                                            pInputText 
+                                            type="text"
+                                            placeholder="Name"
+                                            (change)="item.updateName()"/>
+                                    </div>
+                                </div>
+                                <div class="formula-eq">=</div>
+                                <div class="formula-body" [attr.error]="!item.validBody">
+                                    <div class="guardian-input-container">
+                                        <label class="form-label"></label>
+                                        <math-live 
+                                            [(value)]="item.functionBodyText" 
+                                            [readonly]="false"
+                                            [keyboardContainer]="contextBodyRef"
+                                            (keyboard)="onKeyboard($event)"
+                                            (focus)="onKeyboardFocus($event)"
+                                            (change)="item.updateBody()"
+                                        ></math-live>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="formula-del">
+                                <button 
+                                    class="guardian-icon-button big" 
+                                    (click)="deleteFormula(item)">
+                                    <svg-icon
+                                        class="icon-btn svg-icon"
+                                        src="/assets/images/icons/delete.svg"
+                                        svgClass="icon-color-delete">
+                                    </svg-icon>
+                                </button>
+                            </div>
+                            <div *ngIf="!item.valid && item.error" class="formula-error">
+                                {{item.error}}
+                            </div>
+                        </div>
+                        <div *ngIf="item.type === 'link'" class="rows-container" [attr.error]="!item.valid && item.validated">
+                            <div class="formula-reorder">
+                                <svg-icon
+                                    class="icon-btn svg-icon"
+                                    src="/assets/images/icons/equal.svg"
+                                    svgClass="icon-color-disabled">
+                                </svg-icon>
+                            </div>
+                            <div class="row-container">
+                                <div class="formula-name" [attr.error]="!item.validName">
+                                    <div class="guardian-input-container">
+                                        <label class="form-label">Variable</label>
+                                        <input 
+                                            [(ngModel)]="item.variableNameText" 
+                                            pInputText 
+                                            type="text"
+                                            placeholder="Name"
+                                            (change)="item.update()"/>
+                                    </div>
+                                </div>
+                                <div class="formula-eq">=</div>
+                                <div class="formula-body">
+                                    <div class="guardian-input-container">
+                                        <label class="form-label"></label>
+                                        <div class="formula-link" (click)="onLink(item)">
+                                            <div *ngIf="item.field" class="formula-link-value">
+                                                <div class="formula-link-value__entity">{{getEntityName(item.field)}}:</div>
+                                                <div class="formula-link-value__item">{{getFieldName(item.field)}}</div>
+                                            </div>
+                                            <div *ngIf="item.field" class="formula-link-remove">
+                                                <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
+                                                    <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row-container" style="gap: 16px">
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Type</label>
+                                    <div class="readonly-input">
+                                        <div *ngIf="item.field" class="formula-link-value">
+                                            <div class="formula-link-value__item">{{getFieldType(item.field)}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Path</label>
+                                    <div class="readonly-input">
+                                        <div *ngIf="item.field" class="formula-link-value">
+                                            <div class="formula-link-value__item">{{getFieldPath(item.field)}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="formula-del">
+                                <button 
+                                    class="guardian-icon-button big" 
+                                    (click)="deleteVariable(item)">
+                                    <svg-icon
+                                        class="icon-btn svg-icon"
+                                        src="/assets/images/icons/delete.svg"
+                                        svgClass="icon-color-delete">
+                                    </svg-icon>
+                                </button>
+                            </div>
+                            <div *ngIf="!item.valid  && item.validated && item.error" class="formula-error">
+                                {{item.error}}
+                            </div>
+                        </div>
+                    </ng-container>
+                    <div class="formula-toolbar">
+                        <button (click)="addFormula()" class="guardian-button guardian-button-secondary add-formula-btn">
+                            <div class="guardian-button-icon">
+                                <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/function.svg"
+                                    svgClass="icon-color-primary">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-button-label">Add Formula</div>
+                        </button>
+                        <button (click)="addVariable()" class="guardian-button guardian-button-secondary add-formula-btn">
+                            <div class="guardian-button-icon">
+                                <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/variable.svg"
+                                    svgClass="icon-color-primary">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-button-label">Add Variable</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="step === 'code'" class="step-container">
+                <div class="code-help">
+                    <div class="code-help-header">
+                        <svg-icon
+                            class="svg-icon-16 icon-btn"
+                            src="/assets/images/icons/16/info.svg">
+                        </svg-icon>
+                        Imports
+                    </div>
+                    <div class="code-variable">
+                        <span class="code-variable-type">PolicyUser</span>
+                        <span class="code-variable-name">user</span>
+                        <span class="code-variable-description">- Active user object, determines code execution context.</span>
+                    </div>
+                    <div class="code-variable">
+                        <span class="code-variable-type">PolicyDocument</span>
+                        <span class="code-variable-name">document</span>
+                        <span class="code-variable-description">- Ingress VC document.</span>
+                    </div>
+                </div>
+                <div class="code-body">
+                    <ngx-codemirror 
+                        *ngIf="initDialog" 
+                        [(ngModel)]="code" 
+                        [options]="codeMirrorOptions"
+                        (ngModelChange)="onChangeCode()"></ngx-codemirror>
+                </div>
+            </div>
+            <div *ngIf="step === 'data'" class="step-container"></div>
+            <div *ngIf="step === 'results'" class="step-container"></div>
 
         </div>
 
@@ -79,15 +279,15 @@
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
+        <div *ngIf="step === 'formulas'" class="dialog-button">
+            <button
+                (click)="onValidate()"
+                class="guardian-button guardian-button-secondary left-btn">Validate</button>
+        </div>
         <div class="dialog-button">
             <button
                 (click)="onClose()"
                 class="guardian-button guardian-button-secondary">Close</button>
-        </div>
-        <div *ngIf="test" class="dialog-button">
-            <button
-                (click)="onTest()"
-                class="guardian-button guardian-button-primary">Test</button>
         </div>
         <div class="dialog-button">
             <button

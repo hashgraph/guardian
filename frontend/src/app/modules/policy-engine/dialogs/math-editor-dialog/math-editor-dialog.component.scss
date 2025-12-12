@@ -13,10 +13,17 @@
     display: flex;
     justify-content: flex-end;
     user-select: none;
+    position: relative;
 
     &>div {
         margin-left: 15px;
         margin-right: 0px;
+    }
+
+    .left-btn {
+        position: absolute;
+        left: 0px;
+        top: 0px;
     }
 }
 
@@ -48,35 +55,113 @@
     bottom: 0px;
     right: 0px;
     overflow: auto;
+
+    .step-header {
+        font-family: Poppins;
+        font-weight: 600;
+        font-size: 24px;
+        line-height: 32px;
+        vertical-align: middle;
+        color: #181818;
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        height: 32px;
+    }
+
+    .step-container {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 56px;
+        bottom: 24px;
+        overflow: auto;
+        padding: 0px;
+    }
 }
 
-.formula-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+.rows-container {
+    border: 1px solid #E1E7EF;
+    background: #F9FAFC;
+    padding: 16px;
+    padding-left: 48px;
+    padding-right: 54px;
+    border-radius: 8px;
     margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
 
-    .formula-name {
-        height: 44px;
-        width: 175px;
+    &[error="true"] {
+        border: 1px solid var(--guardian-failure-color);
 
-        input {
-            height: 44px !important;
+        .formula-name[error="true"] {
+            input {
+                border: 1px solid var(--guardian-failure-color);
+            }
+        }
+
+        .formula-body[error="true"] {
+            math-live::ng-deep math-field {
+                border: 1px solid var(--guardian-failure-color);
+            }
         }
     }
 
-    .formula-eq {
-        min-width: 40px;
-        padding: 0px 14px;
+    .formula-reorder {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        background: #EFF3F7;
+        width: 32px;
+        pointer-events: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
-    .formula-body {
-        width: 100%;
+    .row-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 16px;
+
+        .guardian-input-container {
+            height: auto;
+        }
+
+        .formula-name {
+            height: 64px;
+            width: 175px;
+
+            input {
+                height: 44px !important;
+            }
+        }
+
+        .formula-eq {
+            min-width: 40px;
+            padding: 0px 14px;
+            height: 64px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 16px;
+        }
+
+        .formula-body {
+            width: 100%;
+        }
     }
 
     .formula-del {
         height: 44px;
         width: 52px;
+        position: absolute;
+        right: 6px;
+        top: 36px;
+        bottom: 0;
 
         .guardian-icon-button {
             width: 32px;
@@ -94,4 +179,202 @@
     height: 28px;
     width: 100%;
     // margin-top: 16px;
+}
+
+.formula-link {
+    height: 44px;
+    background: #fff;
+    border-radius: 8px;
+    outline: none;
+    border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+    font-family: Inter;
+    font-size: 14px;
+    font-weight: 400;
+    color: #000;
+    padding: 10px 16px;
+    position: relative;
+    cursor: pointer;
+
+    &:hover {
+        border: 1px solid var(--guardian-primary-color, #4169E2);
+    }
+
+    .formula-link-remove {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        height: 30px;
+        width: 30px;
+
+        button {
+            height: 30px;
+            width: 30px;
+        }
+    }
+
+    .formula-link-value {
+        display: flex;
+        flex-direction: row;
+
+        &__entity {
+            font-family: Inter;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 16px;
+            color: var(--guardian-entity-color, #DA9B22);
+            margin-right: 8px;
+        }
+
+        &__item {
+            font-family: Inter;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 16px;
+        }
+    }
+}
+
+.form-label {
+    height: 14px;
+    color: #181818;
+
+}
+
+.readonly-input {
+    height: 44px;
+    border-radius: 8px;
+    outline: none;
+    border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+    font-family: Inter;
+    font-size: 14px;
+    font-weight: 400;
+    color: #000;
+    padding: 12px 16px;
+    position: relative;
+    background: #F9FAFC;
+    font-family: Inter;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16px;
+}
+
+.formula-toolbar {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    max-width: 300px;
+}
+
+.guardian-step-container {
+    width: 256px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 8px;
+    height: fit-content;
+    padding: 8px 0px;
+
+    .guardian-step {
+        padding-left: 16px;
+    }
+
+    .guardian-step-separator {
+        margin-left: 8px;
+    }
+
+    svg-icon svg {
+        fill: var(--guardian-secondary-color) !important;
+        color: var(--guardian-secondary-color) !important;
+    }
+}
+
+.guardian-step-header {
+    font-family: Inter;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 14px;
+    vertical-align: middle;
+    color: #848FA9;
+    padding: 8px 16px;
+}
+
+math-live {
+    cursor: text;
+}
+
+.code-help {
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    margin-right: 2px;
+    border: 1px solid var(--guardian-disabled-icon, #C4D0E1);
+    background: var(--guardian-grey-background, #F9FAFC);
+
+    .code-help-header {
+        margin-bottom: 4px;
+        color: var(--guardian-grey-color-4, #6C7791);
+        font-family: Inter;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 18px;
+        position: relative;
+        padding-left: 24px;
+
+        svg-icon {
+            position: absolute;
+            left: 0px;
+            top: 1px;
+
+            svg {
+                fill: var(--guardian-grey-color-4, #6C7791);
+                color: var(--guardian-grey-color-4, #6C7791);
+            }
+        }
+    }
+
+    .code-variable {
+        .code-variable-type {
+            padding-right: 8px;
+            color: var(--formula-function-color, #E50299);
+            font-family: Inter;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 18px;
+        }
+
+        .code-variable-name {
+            padding-right: 8px;
+            font-family: Inter;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 18px;
+            color: var(--primary-primary, #4169E2);
+        }
+
+        .code-variable-description {
+            color: var(--guardian-grey-color-4, #6C7791);
+            font-family: Inter;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 18px;
+        }
+    }
+}
+
+.code-body {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 8px;
+    margin-right: 2px;
+}
+
+.formula-error {
+    color: var(--guardian-failure-color);
+    font-family: Inter;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 14px;
+    text-align: left;
+    margin-bottom: 6px;
 }

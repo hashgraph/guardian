@@ -1,0 +1,52 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Set Link</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="items" class="field-tree">
+            <div *ngFor="let item of items.data.items" class="field-item">
+                <div class="field-offset"
+                    [style.width.px]="24*item.lvl"
+                    [style.min-width.px]="24*item.lvl"></div>
+                <div class="field-collapse">
+                    <div
+                        *ngIf="item.expandable"
+                        class="guardian-collapse collapse-24"
+                        [attr.collapsed]="item.collapsed"
+                        (click)="onCollapseField(item)"
+                    >
+                    </div>
+                </div>
+                <div *ngIf="!item.expandable" class="field-select" (click)="onSelectField(item)">
+                    <p-radioButton 
+                        class="guardian-radio-button radio-button-24"
+                        [value]="item.data.path" 
+                        [ngModel]="itemId"></p-radioButton>
+                </div>
+                <div class="field-name" (click)="onSelectField(item)">
+                    {{item.data.description}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button close-btn">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button">
+            <button 
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary"
+                [disabled]="!itemId">Confirm</button>
+        </div>
+    </div>
+</div>
