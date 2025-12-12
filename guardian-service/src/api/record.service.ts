@@ -126,14 +126,17 @@ export async function syncPolicyCopiedRecords(
         // }
 
         const sourcePolicy = await DatabaseServer.getPolicyById(targetPolicyId);
-        const sourceActionsTopicId = sourcePolicy?.actionsTopicId;
+        const sourceRecordsTopicId = sourcePolicy?.recordsTopicId;
+        // const sourceRecordsTopicId = sourcePolicy?.actionsTopicId;
+
+        // TODOTODOTODO delete actionsTopicId
         const sourcePolicyMessageId = sourcePolicy?.fromMessageId?.toString?.()?.trim?.() || null;
         console.log(sourcePolicy, 'sourcePolicy');
-        console.log(sourceActionsTopicId, 'sourceActionsTopicId');
+        console.log(sourceRecordsTopicId, 'sourceRecordsTopicId');
         console.log(sourcePolicyMessageId, 'sourcePolicyMessageId');
-        if (!sourceActionsTopicId) {
+        if (!sourceRecordsTopicId) {
             await logger.error(
-                `Failed to sync copied policy records: actionsTopicId is missing for policy ${targetPolicyId}`,
+                `Failed to sync copied policy records: recordsTopicId is missing for policy ${targetPolicyId}`,
                 ['POLICY_RUN_RECORD'],
                 null
             );
@@ -141,7 +144,7 @@ export async function syncPolicyCopiedRecords(
         }
 
         const messages = await MessageServer.getMessages<PolicyRecordMessage>({
-            topicId: sourceActionsTopicId,
+            topicId: sourceRecordsTopicId,
             userId: null,
             type: MessageType.PolicyRecordStep,
             action: MessageAction.PolicyRecordStep
@@ -417,8 +420,24 @@ async function loadImportedRecordsFromDb(
 
     console.log(records, 'records');
 
+    const seen = new Set<string>();
+    const unique: RunRecordAction[] = [];
+
+    for (const rec of records) {
+        // const key = recordUniqKey(rec);
+        if (rec.action !== 'CREATE_USER' && rec.action !== 'SET_USER' && rec.action !== 'GENERATE_UUID' && rec.action !== 'GENERATE_DID') {
+            const { time, ...other } = rec;
+            const str = JSON.stringify(other);
+            if (seen.has(str)) {
+                continue;
+            }
+            seen.add(str);
+        }
+        unique.push(rec);
+    }
+
     return {
-        records,
+        records: unique,
         results
     };
 }
@@ -1065,6 +1084,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     const dbData = await loadImportedRecordsFromDb(policyId, policy.owner);
                     records = dbData.records;
                     results = dbData.results;
+
+                    console.log(dbData.records, 'dbData.records');
                 }
                 const guardiansService = new GuardiansService();
 

@@ -169,7 +169,7 @@ export class ExternalDataBlock {
 
         const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, schema);
 
-        let doc = PolicyUtils.createVC(ref, user, vc);
+        let doc = PolicyUtils.createVC(ref, user, vc, null);
         doc.type = ref.options.entityType;
         doc.schema = ref.options.schema;
         doc.accounts = accounts;
@@ -186,9 +186,9 @@ export class ExternalDataBlock {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, null);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, null);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, null);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(doc)
         }));

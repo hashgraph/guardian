@@ -234,6 +234,17 @@ export class PolicyImport {
                 topicId: policy.actionsTopicId
             }, null, null);
             await DatabaseServer.saveTopic(actionsTopic.toObject());
+
+            const recordsTopic = new TopicConfig({
+                type: TopicType.RecordsTopic,
+                name: TopicType.RecordsTopic,
+                description: TopicType.RecordsTopic,
+                owner: user.owner,
+                policyId: policy.id,
+                policyUUID: policy.uuid,
+                topicId: policy.recordsTopicId
+            }, null, null);
+            await DatabaseServer.saveTopic(recordsTopic.toObject());
         } else {
             if (versionOfTopicId) {
                 this.topicRow = await TopicConfig.fromObject(
@@ -868,11 +879,11 @@ export class PolicyImport {
                 return;
             }
 
-            const sourceActionsTopicId = policy.actionsTopicId;
-            console.log(sourceActionsTopicId, 'sourceActionsTopicId');
-            if (!sourceActionsTopicId) {
+            const sourceRecordsTopicId = policy.recordsTopicId;
+            console.log(sourceRecordsTopicId, 'sourceRecordsTopicId');
+            if (!sourceRecordsTopicId) {
                 await logger.warn(
-                    `copyPolicyRecords: actionsTopicId is not set for policy ${targetPolicyId}`,
+                    `copyPolicyRecords: recordsTopicId is not set for policy ${targetPolicyId}`,
                     ['POLICY_IMPORT'],
                     null
                 );
@@ -880,7 +891,7 @@ export class PolicyImport {
             }
 
             const messages = await MessageServer.getMessages<PolicyRecordMessage>({
-                topicId: sourceActionsTopicId,
+                topicId: sourceRecordsTopicId,
                 userId: null,
                 type: MessageType.PolicyRecordStep,
                 action: MessageAction.PolicyRecordStep
@@ -889,7 +900,7 @@ export class PolicyImport {
 
             if (!messages || !messages.length) {
                 await logger.info(
-                    `copyPolicyRecords: no PolicyRecordStep messages found in topic ${sourceActionsTopicId}`,
+                    `copyPolicyRecords: no PolicyRecordStep messages found in topic ${sourceRecordsTopicId}`,
                     ['POLICY_IMPORT'],
                     null
                 );

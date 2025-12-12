@@ -118,14 +118,14 @@ export class CustomLogicBlock {
                     return;
                 }
                 event.data.data = documents;
-                ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
-                ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+                ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
+                ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
                 PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
                     documents: ExternalDocuments(event?.data?.data)
                 }));
             }
-            await this.execute(event.data, event.user, triggerEvents, event?.user?.userId);
+            await this.execute(event.data, event.user, triggerEvents, event?.user?.userId, event.actionStatus);
             ref.backup();
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
@@ -163,7 +163,8 @@ export class CustomLogicBlock {
         state: IPolicyEventState,
         user: PolicyUser,
         triggerEvents: (documents: IPolicyDocument | IPolicyDocument[]) => void,
-        userId: string | null
+        userId: string | null,
+        actionStatus: any
     ): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             try {
@@ -203,9 +204,9 @@ export class CustomLogicBlock {
                             return json;
                         }
                         if (ref.options.unsigned) {
-                            return await this.createUnsignedDocument(json, ref);
+                            return await this.createUnsignedDocument(json, ref, actionStatus?.id);
                         } else {
-                            return await this.createDocument(json, metadata, ref, userId);
+                            return await this.createDocument(json, metadata, ref, userId, actionStatus?.id);
                         }
                     }
                     if (Array.isArray(result)) {
@@ -415,7 +416,8 @@ export class CustomLogicBlock {
         json: any,
         metadata: IMetadata,
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        actionStatusId: any
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -474,7 +476,7 @@ export class CustomLogicBlock {
             userId
         });
 
-        const item = PolicyUtils.createVC(ref, owner, newVC);
+        const item = PolicyUtils.createVC(ref, owner, newVC, actionStatusId);
         item.type = outputSchema.iri;
         item.schema = outputSchema.iri;
         item.relationships = relationships.length ? relationships : null;
@@ -493,9 +495,10 @@ export class CustomLogicBlock {
      */
     private async createUnsignedDocument(
         json: any,
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        recordActionId: any
     ): Promise<IPolicyDocument> {
         const vc = PolicyUtils.createVcFromSubject(json);
-        return PolicyUtils.createUnsignedVC(ref, vc);
+        return PolicyUtils.createUnsignedVC(ref, vc, recordActionId);
     }
 }

@@ -127,7 +127,7 @@ export class MultiSignBlock {
      * @param user
      * @param blockData
      */
-    async setData(user: PolicyUser, blockData: any): Promise<any> {
+    async setData(user: PolicyUser, blockData: any, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const { status, document } = blockData;
         const documentId = document.id;
@@ -182,9 +182,9 @@ export class MultiSignBlock {
         );
 
         const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
-        await this.updateThreshold(users, sourceDoc, documentId, user, user.userId);
+        await this.updateThreshold(users, sourceDoc, documentId, user, user.userId, actionStatus);
 
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null, actionStatus);
 
         PolicyComponentsUtils.BlockUpdateFn(ref.parent, user);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
@@ -205,7 +205,8 @@ export class MultiSignBlock {
         sourceDoc: VcDocumentCollection,
         documentId: string,
         currentUser: PolicyUser,
-        userId: string | null
+        userId: string | null,
+        actionStatus: any
     ) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const data = await ref.databaseServer.getMultiSignDocuments(ref.uuid, documentId, currentUser.group);
@@ -258,7 +259,7 @@ export class MultiSignBlock {
                 });
 
             const vpMessageId = vpMessageResult.getId();
-            const vpDocument = PolicyUtils.createVP(ref, docOwner, vp);
+            const vpDocument = PolicyUtils.createVP(ref, docOwner, vp, actionStatus?.id);
             vpDocument.type = DocumentCategoryType.MULTI_SIGN;
             vpDocument.messageId = vpMessageId;
             vpDocument.topicId = vpMessageResult.getTopicId();
@@ -275,7 +276,7 @@ export class MultiSignBlock {
             );
 
             const state: IPolicyEventState = { data: sourceDoc };
-            ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, state);
+            ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(
                 new ExternalEvent(ExternalEventType.SignatureQuorumReachedEvent, ref, null, {
                     documents: ExternalDocuments(data),
@@ -292,7 +293,7 @@ export class MultiSignBlock {
             );
 
             const state: IPolicyEventState = { data: sourceDoc };
-            ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, state);
+            ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(
                 new ExternalEvent(ExternalEventType.SignatureSetInsufficientEvent, ref, null, {
                     documents: ExternalDocuments(data)
@@ -357,7 +358,7 @@ export class MultiSignBlock {
      * Remove User Event
      * @param {PolicyUser} user
      */
-    private async onRemoveUser(event: { target: PolicyUser, user: PolicyUser }) {
+    private async onRemoveUser(event: { target: PolicyUser, user: PolicyUser, actionStatus: any }) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (event && event.target) {
             const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, event.target.group, event.target.role);
@@ -365,9 +366,9 @@ export class MultiSignBlock {
             for (const document of documents) {
                 const documentId = document.documentId;
                 const vc = await ref.databaseServer.getVcDocument(documentId);
-                await this.updateThreshold(users, vc, documentId, event.target, event?.user?.userId);
+                await this.updateThreshold(users, vc, documentId, event.target, event?.user?.userId, event.actionStatus);
             }
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, null);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, null, event.actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, event.target, null));
         }
         ref.backup();

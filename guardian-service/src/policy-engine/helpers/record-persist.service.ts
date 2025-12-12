@@ -34,6 +34,7 @@ export interface PersistStepPayload {
         dryRun?: string | null;
     } | null;
     uploadToIpfs: boolean;
+    recordActionId?: any;
 }
 
 export class RecordPersistService {
@@ -46,9 +47,10 @@ export class RecordPersistService {
             payload,
             documentSnapshot,
             hedera,
-            uploadToIpfs
+            uploadToIpfs,
+            recordActionId
         } = data;
-
+        console.log(uploadToIpfs, 'uploadToIpfs');
         if (!uploadToIpfs) {
             return;
         }
@@ -89,14 +91,14 @@ export class RecordPersistService {
                 }
             } else {
                 const policy = await DatabaseServer.getPolicyById(policyId) as Policy;
-                if (!policy || !policy.actionsTopicId || !policy.owner) {
-                    console.error(`RecordPersistService: unable to resolve policy/actions topic for policy ${policyId}`);
+                if (!policy || !policy.recordsTopicId || !policy.owner) {
+                    console.error(`RecordPersistService: unable to resolve policy/records topic for policy ${policyId}`);
                     return;
                 }
 
                 policyMessageId = policy.messageId || null;
 
-                const topicRow = await DatabaseServer.getTopicById(policy.actionsTopicId);
+                const topicRow = await DatabaseServer.getTopicById(policy.recordsTopicId);
                 topicConfig = await TopicConfig.fromObject(topicRow, false, null);
 
                 const users = new Users();
@@ -112,7 +114,8 @@ export class RecordPersistService {
                 savedRecord,
                 documentSnapshot,
                 payload,
-                recordId
+                recordId,
+                recordActionId
             );
             const zip = await RecordImportExport.generateSingleRecordZip({
                 ...savedRecord,
@@ -168,6 +171,7 @@ export class RecordPersistService {
         documentSnapshot: any,
         payload: FilterObject<Record>,
         recordId: any,
+        recordActionId: any,
     ): Promise<{ id: string, type: 'vc' | 'vp' | 'schema', document: any }[]> {
         if (Array.isArray((savedRecord as any).results) && (savedRecord as any).results.length) {
             return (savedRecord as any).results.map((res: any) => ({
@@ -196,7 +200,8 @@ export class RecordPersistService {
             policyId,
             timeForWindow,
             id,
-            type
+            type,
+            recordActionId,
         );
         if (fromDb.length) {
             console.log(fromDb, 'fromDb');
@@ -227,7 +232,8 @@ export class RecordPersistService {
         policyId: string,
         baseTime: number,
         documentId?: string,
-        _type?: 'vc' | 'vp' | 'schema'
+        _type?: 'vc' | 'vp' | 'schema',
+        recordActionId?: any,
     ): Promise<{ id: string, type: 'vc' | 'vp' | 'schema', document: any }[]> {
         const windowBeforeMs = 5000;
         const windowAfterMs = 2000;
@@ -236,7 +242,8 @@ export class RecordPersistService {
         try {
             return await RecordImportExport.loadRecordResultsForPublished(
                 policyId,
-                documentId
+                documentId,
+                recordActionId
             );
         } catch {
             return [];

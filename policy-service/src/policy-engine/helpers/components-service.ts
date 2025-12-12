@@ -38,6 +38,12 @@ export class ComponentsService {
      * Policy actions topic
      */
     public readonly actionsTopicId: string | null;
+
+    /**
+     * Policy records topic
+     */
+    public readonly recordsTopicId: string | null;
+
     /**
      * Policy message id
      */
@@ -91,6 +97,7 @@ export class ComponentsService {
         this.policyId = policyId;
         this.topicId = policy.topicId;
         this.actionsTopicId = policy.actionsTopicId || null;
+        this.recordsTopicId = policy.recordsTopicId || null;
         this.policyMessageId = policy.messageId || null;
         this._autoRecordingEnabled = policy.status === PolicyStatus.PUBLISH && !!policy.autoRecordSteps;
         if (PolicyHelper.isDryRunMode(policy)) {
@@ -127,19 +134,19 @@ export class ComponentsService {
         if (!this._recordingController) {
             return;
         }
-        if (!this.actionsTopicId) {
+        if (!this.recordsTopicId) {
             return;
         }
         try {
             const users = new Users();
             const ownerAccount = await users.getHederaAccount(this.owner, this.ownerId);
-            const topicRow = await DatabaseServer.getTopicById(this.actionsTopicId);
+            const topicRow = await DatabaseServer.getTopicById(this.recordsTopicId);
             const topicConfig = topicRow
                 ? await TopicConfig.fromObject(topicRow, false, this.ownerId)
                 : null;
 
             this._recordingController.setHederaOptions({
-                topicId: this.actionsTopicId,
+                topicId: this.recordsTopicId,
                 submitKey: topicConfig?.submitKey?.toString?.() ?? null,
                 operatorId: ownerAccount.hederaAccountId,
                 operatorKey: ownerAccount.hederaAccountKey,

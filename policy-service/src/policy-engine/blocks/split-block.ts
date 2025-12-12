@@ -253,7 +253,7 @@ export class SplitBlock {
      * @param documents
      * @param userId
      */
-    private async addDocs(ref: IPolicyBlock, user: PolicyUser, documents: IPolicyDocument[], userId: string | null) {
+    private async addDocs(ref: IPolicyBlock, user: PolicyUser, documents: IPolicyDocument[], userId: string | null, actionStatus: any) {
         const residue = await ref.databaseServer.getResidue(ref.policyId, ref.uuid, user.id);
         const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
 
@@ -275,12 +275,12 @@ export class SplitBlock {
                     return c.document;
                 })
             };
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Chunk, ref, user, {
                 documents: ExternalDocuments(state.data)
             }));
         }
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, { data: documents });
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, { data: documents }, actionStatus);
     }
 
     /**
@@ -304,9 +304,9 @@ export class SplitBlock {
             documents: ExternalDocuments(docs)
         }));
         if (Array.isArray(docs)) {
-            await this.addDocs(ref, event.user, docs, event?.user?.userId);
+            await this.addDocs(ref, event.user, docs, event?.user?.userId, event.actionStatus);
         } else {
-            await this.addDocs(ref, event.user, [docs], event?.user?.userId);
+            await this.addDocs(ref, event.user, [docs], event?.user?.userId, event.actionStatus);
         }
 
         ref.backup();
