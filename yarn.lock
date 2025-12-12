@@ -712,20 +712,7 @@
   dependencies:
     tslib "^2.6.2"
 
-"@azure/core-rest-pipeline@^1.17.0", "@azure/core-rest-pipeline@^1.19.0", "@azure/core-rest-pipeline@^1.22.0":
-  version "1.22.2"
-  resolved "https://registry.yarnpkg.com/@azure/core-rest-pipeline/-/core-rest-pipeline-1.22.2.tgz#7e14f21d25ab627cd07676adb5d9aacd8e2e95cc"
-  integrity sha512-MzHym+wOi8CLUlKCQu12de0nwcq9k9Kuv43j4Wa++CsCpJwps2eeBQwD2Bu8snkxTtDKDx4GwjuR9E8yC8LNrg==
-  dependencies:
-    "@azure/abort-controller" "^2.1.2"
-    "@azure/core-auth" "^1.10.0"
-    "@azure/core-tracing" "^1.3.0"
-    "@azure/core-util" "^1.13.0"
-    "@azure/logger" "^1.3.0"
-    "@typespec/ts-http-runtime" "^0.3.0"
-    tslib "^2.6.2"
-
-"@azure/core-rest-pipeline@^1.8.0":
+"@azure/core-rest-pipeline@1.12.1", "@azure/core-rest-pipeline@^1.17.0", "@azure/core-rest-pipeline@^1.19.0", "@azure/core-rest-pipeline@^1.22.0", "@azure/core-rest-pipeline@^1.8.0":
   version "1.12.1"
   resolved "https://registry.yarnpkg.com/@azure/core-rest-pipeline/-/core-rest-pipeline-1.12.1.tgz#d49f3daa8d282347dda6395f489af0050087901f"
   integrity sha512-SsyWQ+T5MFQRX+M8H/66AlaI6HyCbQStGfFngx2fuiW+vKI2DkhtOvbYodPyf9fOe/ARLWWc3ohX54lQ5Kmaog==
@@ -820,22 +807,22 @@
   dependencies:
     "@azure/msal-common" "15.13.1"
 
+"@azure/msal-common@14.10.0":
+  version "14.10.0"
+  resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-14.10.0.tgz#215449726717b53d549953db77562cad6cb8421c"
+  integrity sha512-Zk6DPDz7e1wPgLoLgAp0349Yay9RvcjPM5We/ehuenDNsz/t9QEFI7tRoHpp/e47I4p20XE3FiDlhKwAo3utDA==
+
 "@azure/msal-common@15.13.1":
   version "15.13.1"
   resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-15.13.1.tgz#3ff635e38f24b656539228c14b095d9e36a1e524"
   integrity sha512-vQYQcG4J43UWgo1lj7LcmdsGUKWYo28RfEvDQAEMmQIMjSFufvb+pS0FJ3KXmrPmnWlt1vHDl3oip6mIDUQ4uA==
 
-"@azure/msal-common@15.13.3":
-  version "15.13.3"
-  resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-15.13.3.tgz#e1329a721f473f1ca5466fd0d6756e4c2ac68f52"
-  integrity sha512-shSDU7Ioecya+Aob5xliW9IGq1Ui8y4EVSdWGyI1Gbm4Vg61WpP95LuzcY214/wEjSn6w4PZYD4/iVldErHayQ==
-
-"@azure/msal-node@^3.5.0":
-  version "3.8.4"
-  resolved "https://registry.yarnpkg.com/@azure/msal-node/-/msal-node-3.8.4.tgz#f7c082b2e2122148cc3624fae583f2643b81788e"
-  integrity sha512-lvuAwsDpPDE/jSuVQOBMpLbXuVuLsPNRwWCyK3/6bPlBk0fGWegqoZ0qjZclMWyQ2JNvIY3vHY7hoFmFmFQcOw==
+"@azure/msal-node@2.9.0", "@azure/msal-node@^3.5.0":
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/@azure/msal-node/-/msal-node-2.9.0.tgz#e06d45ceb80b8f689d7007c5300b01fd2966d695"
+  integrity sha512-QHAvP6wduXzNKdmZviT1dXKUR3w/FTqgkhg7UrZndHwdihRZzxVR7KxlUw/Eq+vIeLSh1n0vxiULnaEqrLnJ6w==
   dependencies:
-    "@azure/msal-common" "15.13.3"
+    "@azure/msal-common" "14.10.0"
     jsonwebtoken "^9.0.0"
     uuid "^8.3.0"
 
@@ -1617,16 +1604,34 @@
   optionalDependencies:
     langsmith "^0.3.64"
 
-"@langchain/community@1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@langchain/community/-/community-1.0.2.tgz#45195977d6de4d23a1294a6742bab650e8480287"
-  integrity sha512-SylMcKUk+Jc3DGKI3s8f4qtdqCv+mYBSdcRcuhLcT4EDx/oJUm9H9mMWQEnssRR/mbC5oQn3QJvJ8l/VbUbZmg==
+"@langchain/classic@1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@langchain/classic/-/classic-1.0.5.tgz#27d6e7c164852217717ad0e816397b5296f89e6d"
+  integrity sha512-yMlcuQ80iG0SAEzgym95oLS+bJZJlmsFrMb+qkwg5mzHfL9DzAIFyvaMPiDnwKM0iv52u7iwD/aucLljZul9mQ==
   dependencies:
-    "@langchain/classic" "1.0.2"
-    "@langchain/openai" "1.1.0"
+    "@langchain/openai" "1.1.3"
+    "@langchain/textsplitters" "1.0.1"
+    handlebars "^4.7.8"
+    js-yaml "^4.1.1"
+    jsonpointer "^5.0.1"
+    openapi-types "^12.1.3"
+    p-retry "^7.0.0"
+    uuid "^10.0.0"
+    yaml "^2.2.1"
+    zod "^3.25.76 || ^4"
+  optionalDependencies:
+    langsmith "^0.3.64"
+
+"@langchain/community@1.0.7":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@langchain/community/-/community-1.0.7.tgz#f8629659fbb400dc6147ff105963c070f9ccec9e"
+  integrity sha512-7buBpVfDWUmnJ5ZO2QY2u7NcRPUWA+il/SN06WtAuGpgtIEUAOi87jTGeMZoqVMUoks0i0fifFHefAQ3nYF7BQ==
+  dependencies:
+    "@langchain/classic" "1.0.5"
+    "@langchain/openai" "1.1.3"
     binary-extensions "^2.2.0"
     flat "^5.0.2"
-    js-yaml "^4.1.0"
+    js-yaml "^4.1.1"
     math-expression-evaluator "^2.0.0"
     uuid "^10.0.0"
     zod "^3.25.76 || ^4"
@@ -1682,10 +1687,26 @@
     openai "^6.3.0"
     zod "^3.25.76 || ^4"
 
+"@langchain/openai@1.1.3":
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@langchain/openai/-/openai-1.1.3.tgz#e003f9858eb724370e254d52db5dd9a5c1b6d964"
+  integrity sha512-p+xR+4HRms5Ozjf5miC6U2AYRyNVSTdO7AMBkMYs1Tp6DWHBd+mQ72H8Ogd2dKrPuS5UDJ5dbpI1fS+OrTbgQQ==
+  dependencies:
+    js-tiktoken "^1.0.12"
+    openai "^6.9.0"
+    zod "^3.25.76 || ^4"
+
 "@langchain/textsplitters@1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@langchain/textsplitters/-/textsplitters-1.0.0.tgz#1fe78562b9bf74b0a88f13d443cb3c79f4d28331"
   integrity sha512-L1gOwOJXeM+6MKzrj9shSsDyH32j898jgqvVArOjdge2zLyY+Mv4aOuyAAxbPyaFdQXlxKfa9xjqIUyv8TzrqA==
+  dependencies:
+    js-tiktoken "^1.0.12"
+
+"@langchain/textsplitters@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@langchain/textsplitters/-/textsplitters-1.0.1.tgz#292f9c93239178c248b3338acf7b68aa47aa9830"
+  integrity sha512-rheJlB01iVtrOUzttscutRgLybPH9qR79EyzBEbf1u97ljWyuxQfCwIWK+SjoQTM9O8M7GGLLRBSYE26Jmcoww==
   dependencies:
     js-tiktoken "^1.0.12"
 
@@ -8482,7 +8503,7 @@ ignore@^5.2.0:
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.3.2.tgz#3cd40e729f3643fd87cb04e50bf0eb722bc596f5"
   integrity sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==
 
-image-size@^1.0.2:
+image-size@1.0.2, image-size@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/image-size/-/image-size-1.0.2.tgz#d778b6d0ab75b2737c1556dd631652eb963bc486"
   integrity sha512-xfOoWjceHntRb3qFCrh5ZFORYH8XCdYpASltMhZ/Q0KZiOwjdE/Yl2QCiWdwD+lygV5bMCvauzgu5PxBX/Yerg==
@@ -9028,6 +9049,11 @@ is-negative-zero@^2.0.3:
   resolved "https://registry.yarnpkg.com/is-negative-zero/-/is-negative-zero-2.0.3.tgz#ced903a027aca6381b777a5743069d7376a49747"
   integrity sha512-5KoIu2Ngpyek75jXodFvnafB6DJgr3u8uuK0LEZJjrU19DrMD3EVERaR8sjz8CCGgpZvxPl9SuE1GMVPFHx1mw==
 
+is-network-error@^1.1.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/is-network-error/-/is-network-error-1.3.0.tgz#2ce62cbca444abd506f8a900f39d20b898d37512"
+  integrity sha512-6oIwpsgRfnDiyEDLMay/GqCl3HoAtH5+RUKW29gYkL0QA+ipzpDLA16yQs7/RHCSu+BwgbJaOUqa4A99qNVQVw==
+
 is-number-object@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/is-number-object/-/is-number-object-1.1.1.tgz#144b21e95a1bc148205dcc2814a9134ec41b2541"
@@ -9445,7 +9471,7 @@ js-tokens@^4.0.0:
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
   integrity sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==
 
-js-yaml@4.1.0, js-yaml@^4.1.0:
+js-yaml@4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-4.1.0.tgz#c1fb65f8f5017901cdd2c951864ba18458a10602"
   integrity sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==
@@ -9459,6 +9485,13 @@ js-yaml@^3.13.1:
   dependencies:
     argparse "^1.0.7"
     esprima "^4.0.0"
+
+js-yaml@^4.1.0, js-yaml@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-4.1.1.tgz#854c292467705b699476e1a2decc0c8a3458806b"
+  integrity sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==
+  dependencies:
+    argparse "^2.0.1"
 
 js2xmlparser@^4.0.2:
   version "4.0.2"
@@ -11486,6 +11519,11 @@ openai@^6.3.0:
   resolved "https://registry.yarnpkg.com/openai/-/openai-6.8.1.tgz#72610890aa6f67b3473c7be2e2d6ff25ebb9846a"
   integrity sha512-ACifslrVgf+maMz9vqwMP4+v9qvx5Yzssydizks8n+YUJ6YwUoxj51sKRQ8HYMfR6wgKLSIlaI108ZwCk+8yig==
 
+openai@^6.9.0:
+  version "6.10.0"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-6.10.0.tgz#3f52d2ad7b6b2288124d064b0eb737c914d1f3ea"
+  integrity sha512-ITxOGo7rO3XRMiKA5l7tQ43iNNu+iXGFAcf2t+aWVzzqRaS0i7m1K2BhxNdaveB+5eENhO0VY1FkiZzhBk4v3A==
+
 openapi-types@^12.1.3:
   version "12.1.3"
   resolved "https://registry.yarnpkg.com/openapi-types/-/openapi-types-12.1.3.tgz#471995eb26c4b97b7bd356aacf7b91b73e777dd3"
@@ -11645,6 +11683,13 @@ p-retry@^5.1.2:
   dependencies:
     "@types/retry" "0.12.1"
     retry "^0.13.1"
+
+p-retry@^7.0.0:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/p-retry/-/p-retry-7.1.1.tgz#7470fdecb1152ba50f1334e48378c9e401330e24"
+  integrity sha512-J5ApzjyRkkf601HpEeykoiCvzHQjWxPAHhyjFcEUP2SWq0+35NKh8TLhpLw+Dkq5TZBFvUM6UigdE9hIVYTl5w==
+  dependencies:
+    is-network-error "^1.1.0"
 
 p-timeout@^3.2.0:
   version "3.2.0"

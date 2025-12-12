@@ -7,7 +7,7 @@
         "@guardian/common": "3.4.0",
         "@guardian/interfaces": "3.4.0",
         "@langchain/classic": "1.0.2",
-        "@langchain/community": "1.0.2",
+        "@langchain/community": "1.0.7",
         "@langchain/core": "1.0.4",
         "@langchain/openai": "1.1.0",
         "@langchain/textsplitters": "1.0.0",
