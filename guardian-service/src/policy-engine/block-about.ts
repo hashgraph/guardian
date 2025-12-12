@@ -1532,10 +1532,10 @@ export const BlockAbout = {
     'globalEventsWriterBlock': {
         'label': 'Global Events Writer',
         'title': 'Add \'Global Events Writer\' Block',
-        'post': false,
-        'get': false,
+        'post': true,
+        'get': true,
         'children': 'None',
-        'control': 'Server',
+        'control': 'UI',
         'input': [
             'RunEvent'
         ],
