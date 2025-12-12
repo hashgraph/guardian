@@ -2442,7 +2442,6 @@ export class PolicyConfigurationComponent implements OnInit {
         if (tagsHistory.length > 0) {
             const dialogRef = this.dialog.open(MultipleTagsExplorerDialog, {
                 width: '750px',
-                height: '600px',
                 closable: false,
                 header: 'Tags',
                 data: {

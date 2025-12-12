@@ -1,4 +1,14 @@
 <div>
+    <div *ngIf="entities && entities.length > 0" class="form-input-container">
+        <label class="p-field-label">Selected Block</label>
+        <div class="entity-tag-blocks-container">
+            <div *ngFor="let entity of entities" class="entity-tag-block">
+                <p class="entity-tag-name">
+                    {{ entity.tag }}
+                </p>
+            </div>
+        </div>
+    </div>
     <form [formGroup]="dataForm">
         <div class="form-input-container">
             <label class="p-field-label">* Name</label>

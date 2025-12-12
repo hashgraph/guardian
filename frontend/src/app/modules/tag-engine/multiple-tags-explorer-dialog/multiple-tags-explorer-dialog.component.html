@@ -1,0 +1,57 @@
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="loading">
+            <div class="preloader preloader-image-l-size"></div>
+        </div>
+        <ng-container *ngIf="!loading">
+            <ng-container *ngIf="items && items.length">
+                <div class="content">
+                    <div *ngFor="let item of items" class="tag-item-block">
+                        <p class="tag-item-title">
+                            {{ item.tag }}
+                        </p>
+
+                        <div *ngIf="hasHistoryItems(item)" class="tags-container">
+                            <div class="item" *ngFor="let historyItem of getHistoryItems(item)">
+                                <div class="name">
+                                    {{ historyItem.name }}
+                                </div>
+                                <svg-icon
+                                    (click)="onTagDelete(item)"
+                                    class="svg-icon-16"
+                                    src="/assets/images/icons/16/circle-close.svg"
+                                    [svgClass]="'primary-color'"></svg-icon>
+                            </div>
+                        </div>
+
+                        <button (click)="onAdd(item)"
+                                *ngIf="canCreate"
+                                [label]="'Create Tag'"
+                                class="button secondary"
+                                icon="pi pi-plus"
+                                style="margin-top: 16px; margin-bottom: 24px;"
+                                pButton>
+                        </button>
+                    </div>
+                </div>
+            </ng-container>
+        </ng-container>
+    </div>
+</div>
+
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div>
+            <button (click)="onAddForAllSelected()"
+                    *ngIf="canCreate"
+                    [label]="'Create Tag for All Selected'"
+                    class="button secondary"
+                    icon="pi pi-plus"
+                    pButton>
+            </button>
+        </div>
+        <div class="cancel-button">
+            <button (click)="dialogRef.close()" [disabled]="loading" class="button secondary" label="Close" pButton></button>
+        </div>
+    </div>
+</div>

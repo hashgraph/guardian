@@ -18,6 +18,27 @@
     min-width: 210px !important;
 }
 
+.entity-tag-blocks-container {
+    display: flex;
+    gap: 8px;
+}
+
+.entity-tag-block {
+    height: 28px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--color-primary, #4169E2)
+}
+
+.entity-tag-name {
+    margin: 0;
+    font-family: Inter, sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 16px;
+    color: var(--color-primary, #4169E2);
+}
+
 form {
     display: flex;
     flex-direction: column;

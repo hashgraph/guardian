@@ -21,6 +21,7 @@ export class TagCreateDialog {
     schema: any;
     schemaForm: UntypedFormGroup;
     canAddDocument = false;
+    entities: any[] = [];
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -28,6 +29,7 @@ export class TagCreateDialog {
         private fb: UntypedFormBuilder,
         public data: DynamicDialogConfig) {
         this.schemas = data.data?.schemas;
+        this.entities = data.data?.entities;
         this.schemaForm = fb.group({});
     }
 
