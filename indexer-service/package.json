@@ -15,7 +15,7 @@
         "axios-retry": "^3.2.4",
         "cron": "^4.3.0",
         "cross-blob": "^2.0.1",
-        "dotenv": "^16.0.0",
+        "dotenv": "^17.2.3",
         "escape-string-regexp": "^5.0.0",
         "jszip": "^3.10.1",
         "module-alias": "^2.2.2",

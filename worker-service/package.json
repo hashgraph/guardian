@@ -11,7 +11,7 @@
         "@storacha/client": "1.8.21",
         "axios": "^1.8.3",
         "cids": "^1.1.9",
-        "dotenv": "^16.0.0",
+        "dotenv": "^17.2.3",
         "fireblocks-sdk": "^5.33.0",
         "kubo-rpc-client": "^5.1.0",
         "reflect-metadata": "^0.1.13",
