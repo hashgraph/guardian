@@ -1,0 +1,38 @@
+.global-events-writer-block {
+    .header,
+    .doc-type {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .header {
+        h4 {
+            margin: 0;
+            margin-right: auto;
+            font-size: 14px;
+            font-weight: 600;
+        }
+    }
+
+    .doc-type {
+        label {
+            margin: 0;
+            width: 120px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    }
+
+    table {
+        width: 100%;
+        font-size: 12px;
+
+        th,
+        td {
+            padding: 4px 6px;
+            vertical-align: middle;
+        }
+    }
+}

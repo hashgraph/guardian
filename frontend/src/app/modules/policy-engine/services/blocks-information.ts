@@ -58,6 +58,9 @@ import { HttpRequestUIAddonCode } from '../policy-viewer/code/http-request-ui-ad
 import { TransformationUIAddonCode } from '../policy-viewer/code/transformation-ui-addon';
 import { WipeConfigComponent } from '../policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
 import { GlobalTopicReaderBlockComponent } from '../policy-viewer/blocks/global-topic-reader-block/global-topic-reader-block.component';
+import {
+    GlobalEventsWriterBlockComponent
+} from "../policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
 
 
 const Container: IBlockSetting = {
@@ -509,11 +512,16 @@ const GlobalEventsWriterBlock: IBlockSetting = {
     type: BlockType.GlobalEventsWriterBlock,
     icon: BlockIcons[BlockType.GlobalEventsWriterBlock],
     group: BlockGroup.Documents,
-    header: BlockHeaders.ServerBlocks,
-    factory: null,
+    header: BlockHeaders.UIComponents,
+    factory: GlobalEventsWriterBlockComponent,
     property: null,
     code: null,
-    allowedChildren: []
+    allowedChildren: [
+        {
+            type: BlockType.DocumentValidatorBlock,
+            group: BlockGroup.UnGrouped
+        }
+    ],
 };
 
 const AggregateDocument: IBlockSetting = {
