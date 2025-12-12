@@ -8391,6 +8391,47 @@ paths:
       summary: Get filtered policies
       tags:
         - policies
+  /policies/{policyId}/create-new-version-vc-document:
+    post:
+      operationId: PolicyApi_createNewVersionVcDocument
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      tags:
+        - policies
+  /policies/{policyId}/get-all-version-vc-documents/{documentId}:
+    get:
+      operationId: PolicyApi_getAllVersionVcDocuments
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      tags:
+        - policies
   /schema/{schemaId}:
     get:
       description: >-
