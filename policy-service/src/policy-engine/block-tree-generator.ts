@@ -193,18 +193,23 @@ export class BlockTreeGenerator extends NatsService {
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
-            // <-- Record
-            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
-            // Record -->
+
 
             // <-- Available
             const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
             if (error) {
+                            // <-- Record
+            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
+            // Record -->
                 return error;
             }
             // Available -->
 
-            return await PolicyComponentsUtils.blockSetData(block, userFull, data);
+            const res =  await PolicyComponentsUtils.blockSetData(block, userFull, data);
+            // <-- Record
+            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
+            // Record -->
+            return res;
         });
 
         this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, async (msg: any) => {
@@ -212,59 +217,73 @@ export class BlockTreeGenerator extends NatsService {
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
 
-            // <-- Record
-            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
-            // Record -->
+
 
             // <-- Available
             const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
             if (error) {
+                            // <-- Record
+            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
+            // Record -->
                 return error;
             }
             // Available -->
 
-            return await PolicyComponentsUtils.blockSetData(block, userFull, data);
+            const res = await PolicyComponentsUtils.blockSetData(block, userFull, data);
+
+                        // <-- Record
+            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
+            // Record -->
+
+            return res
         });
 
         this.getPolicyMessages(PolicyEvents.SELECT_POLICY_GROUP, policyId, async (msg: any) => {
             const { user, uuid } = msg;
             const userFull = await this.getUser(policyInstance, user);
 
+
+
+            const res = await PolicyComponentsUtils.selectGroup(policyInstance, userFull, uuid);
+
             // <-- Record
             await RecordUtils.RecordSelectGroup(policyId, userFull, uuid);
             // Record -->
 
-            return await PolicyComponentsUtils.selectGroup(policyInstance, userFull, uuid);
+            return res;
+
         });
 
         this.getPolicyMessages(PolicyEvents.MRV_DATA, policyId, async (msg: any) => {
             const { data } = msg;
 
-            // <-- Record
-            await RecordUtils.RecordExternalData(policyId, data);
-            // Record -->
+
 
             for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
                 if (PolicyComponentsUtils.isAvailableReceiveData(block, policyId)) {
                     await PolicyComponentsUtils.blockReceiveData(block, data);
                 }
             }
+
+                        // <-- Record
+            await RecordUtils.RecordExternalData(policyId, data);
+            // Record -->
             return new MessageResponse({});
         });
 
         this.getPolicyMessages(PolicyEvents.MRV_DATA_CUSTOM, policyId, async (msg: any) => {
             const { data } = msg;
 
-            // <-- Record
-            await RecordUtils.RecordExternalData(policyId, data.data);
-            // Record -->
+
 
             const block = PolicyComponentsUtils.GetBlockByTag(policyId, data.blockTag);
 
             if (PolicyComponentsUtils.isAvailableReceiveData(block, policyId)) {
                 await PolicyComponentsUtils.blockReceiveData(block, data.data);
             }
-
+            // <-- Record
+            await RecordUtils.RecordExternalData(policyId, data.data);
+            // Record -->
             return new MessageResponse({});
         });
 

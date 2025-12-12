@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
-import { Record, VpDocument as VpDocumentCollection, VcDocument as VcDocumentCollection } from '../entity/index.js';
+import { Record, VpDocument as VpDocumentCollection, VcDocument as VcDocumentCollection, VcDocument, VpDocument } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Record result
@@ -236,7 +237,7 @@ export class RecordImportExport {
         return results;
     }
 
-
+    
     /**
      * Load record results
      * @param uuid record
@@ -247,105 +248,84 @@ export class RecordImportExport {
      */
     public static async loadRecordResultsForPublished(
         policyId: string,
-        startTime: any,
-        endTime: any,
-        documentId: any
+        documentId?: string
     ): Promise<IRecordResult[]> {
-        const results: IRecordResult[] = [];
+        const result: IRecordResult[] = [];
         const db = new DatabaseServer();
-        const vcs = await db.getVcDocuments<VcDocumentCollection>({
-            policyId,
-            updateDate: {
-                $gte: new Date(startTime),
-                $lt: new Date(endTime)
-            }
-        }) as VcDocumentCollection[];
 
-        const vcs2 = await db.getVcDocuments<VcDocumentCollection>({
-            policyId,
-            id: documentId,
-        }) as VcDocumentCollection[];
+        let vcdocuments: VcDocumentCollection[] = [];
+        let vpdocuments: VpDocumentCollection[] = [];
 
-        const vcs3 = await db.getVcDocuments<VcDocumentCollection>({
+        if (documentId) {
+            vcdocuments = await db.getVcDocuments<VcDocumentCollection>({
             policyId,
-        }) as VcDocumentCollection[];
+            $or: [
+                { 'document.id': documentId },
+                { 'document.ref.id': documentId },
+                { id: documentId },
+                { _id: documentId },
+            ]
+            } as FilterObject<VcDocument>) as VcDocumentCollection[];
+        }
 
-        console.log(vcs, 'vcsvcsvcs');
-        console.log(vcs2, 'vcs2vcs2vcs2');
-        console.log(vcs3, 'vcs3vcs3vcs3');
-        for (const vc of vcs3) {
-            results.push({
+        if (!documentId || !vcdocuments.length) {
+            vcdocuments = await db.getVcDocuments<VcDocumentCollection>(
+            {
+                policyId
+            } as FilterObject<VcDocument>,
+            {
+                limit: 3,
+                orderBy: {
+                    updateDate: 'DESC'
+                } as any
+            } as any
+            ) as VcDocumentCollection[];
+        }
+
+        if (documentId) {
+            vpdocuments = await db.getVpDocuments<VpDocumentCollection>({
+            policyId,
+            $or: [
+                { 'document.id': documentId },
+                { 'document.ref.id': documentId },
+                { id: documentId },
+                { _id: documentId },
+            ]
+            } as FilterObject<VpDocument>) as VpDocumentCollection[];
+        }
+
+        if (!documentId || !vpdocuments.length) {
+            vpdocuments = await db.getVpDocuments<VpDocumentCollection>(
+            {
+                policyId
+            } as FilterObject<VpDocument>,
+            {
+                limit: 3,
+                orderBy: {
+                    updateDate: 'DESC'
+                } as any
+            } as any
+            ) as VpDocumentCollection[];
+        }
+
+        for (const vc of vcdocuments) {
+            result.push({
                 id: vc.document.id,
                 type: 'vc',
                 document: vc.document
             });
         }
 
-        for (const vc of vcs) {
-            results.push({
-                id: vc.document.id,
-                type: 'vc',
-                document: vc.document
-            });
-        }
-
-        for (const vc of vcs2) {
-            results.push({
-                id: vc.document.id,
-                type: 'vc',
-                document: vc.document
-            });
-        }
-
-        const vps = await db.getVpDocuments<VpDocumentCollection>({
-            policyId,
-            updateDate: {
-                $gte: new Date(startTime),
-                $lt: new Date(endTime)
-            }
-        }) as VpDocumentCollection[];
-
-        const vps2 = await db.getVpDocuments<VpDocumentCollection>({
-            policyId,
-            id: documentId,
-        }) as VpDocumentCollection[];
-        console.log(vps, 'vpsvpsvps');
-        for (const vp of vps) {
-            results.push({
+        for (const vp of vpdocuments) {
+            result.push({
                 id: vp.document.id,
                 type: 'vp',
                 document: vp.document
             });
         }
 
-        for (const vp of vps2) {
-            results.push({
-                id: vp.document.id,
-                type: 'vp',
-                document: vp.document
-            });
+        return result;
         }
-        // const policy = await DatabaseServer.getPolicyById(policyId);
-        // if (policy) {
-        //     const schemas = await DatabaseServer.getSchemas({ topicId: policy.topicId });
-        //     for (const schema of schemas) {
-        //         let id: string;
-        //         if (schema.contextURL) {
-        //             id = schema.contextURL + schema.iri;
-        //         } else if (schema.iri) {
-        //             id = schema.iri;
-        //         } else {
-        //             id = '';
-        //         }
-        //         results.push({
-        //             id,
-        //             type: 'schema',
-        //             document: schema.document
-        //         });
-        //     }
-        // }
-        return results;
-    }
 
     /**
      * Load record components
