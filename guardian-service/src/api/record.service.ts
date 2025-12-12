@@ -300,26 +300,29 @@ async function loadImportedRecordsFromDb(
     }
 
     importedRecords = importedRecords.filter(Boolean);
-    console.log(importedRecords, 'importedRecords');
+    console.log(JSON.stringify(importedRecords), 'stringifyimportedRecords');
 
     let total = 0;
     const resultsMap = new Map<string, IRecordResult>();
     for (const r of importedRecords) {
         const items: any[] = Array.isArray((r as any).results) ? (r as any).results : [];
-        console.log(items.length, 'items.lengthitems.length');
+        // console.log(items.length, 'items.lengthitems.length');
         for (const res of items) {
             total += 1;
-            console.log(res, 'resresres');
-            console.log(res.document, 'res.documentres.document');
+            // console.log(res, 'resresres');
+            // console.log(res.document, 'res.documentres.document');
             const id = res.id || res.target || (r as any).copiedRecordId || `${Math.random()}` || '';
             if (!id) {
                 continue;
             }
             const type = (res.type || '').toString().toLowerCase() as 'vc' | 'vp' | 'schema';
-            const key = `${type}:${id}`;
-            if (resultsMap.has(key)) {
+            const key = `${type}:${id}}`;
+            // console.log(key, 'keykeykey');
+            // console.log(res.document?.credentialSubject?.find?.(({ operation }) => operation === 'PUBLISH'), "res.document?.credentialSubject?.find?.(({ operation }) => operation === 'PUBLISH')");
+            if (resultsMap.has(key) || res.document?.credentialSubject?.find?.(({ operation }) => operation === 'PUBLISH')) {
                 continue;
             }
+            // console.log(res.document, 'resresresresresres keykeykey')
             resultsMap.set(key, {
                 id,
                 type,
@@ -330,7 +333,8 @@ async function loadImportedRecordsFromDb(
 
     console.log(total, 'totaltotaltotal');
     const resultsFromDb: IRecordResult[] = Array.from(resultsMap.values());
-    console.log(resultsFromDb.length, 'resultsFromDbresultsFromDb');
+    // resultsFromDb.shift();
+    // console.log(resultsFromDb.length, 'resultsFromDbresultsFromDb');
 
     const toTimestamp = (value: any): number | null => {
         if (!value) {
@@ -1061,12 +1065,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     const dbData = await loadImportedRecordsFromDb(policyId, policy.owner);
                     records = dbData.records;
                     results = dbData.results;
-
-                    console.log(records, 'records from ipfs');
-                    // console.log(results, 'results from ipfs');
-                    results.forEach((r) => console.log(r.document, 'rrrrrrrrrrrr'));
                 }
-
                 const guardiansService = new GuardiansService();
 
                 const result = await guardiansService

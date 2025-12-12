@@ -11,6 +11,12 @@ import {
 } from '@guardian/common';
 import { FilterObject } from '@mikro-orm/core';
 import { ISignOptions } from '@guardian/interfaces';
+export enum RecordMethod {
+    Start = 'START',
+    Stop = 'STOP',
+    Action = 'ACTION',
+    Generate = 'GENERATE'
+}
 
 export interface PersistStepPayload {
     policyId: string;
@@ -186,7 +192,7 @@ export class RecordPersistService {
             return Number.isFinite(num) ? num : Date.now();
         })();
 
-        const fromDb = await RecordPersistService.loadResultsAroundStep(
+        const fromDb = payload.method === RecordMethod.Generate ? [] : await RecordPersistService.loadResultsAroundStep(
             policyId,
             timeForWindow,
             id,
@@ -194,7 +200,11 @@ export class RecordPersistService {
         );
         if (fromDb.length) {
             console.log(fromDb, 'fromDb');
-            return fromDb;
+            return [{
+            id,
+            type,
+            document: documentSnapshot?.ref ?? documentSnapshot?.document ?? documentSnapshot ?? null
+        },...fromDb];
         }
 
         if (!id) {
@@ -226,8 +236,6 @@ export class RecordPersistService {
         try {
             return await RecordImportExport.loadRecordResultsForPublished(
                 policyId,
-                start,
-                end,
                 documentId
             );
         } catch {
@@ -243,14 +251,14 @@ export class RecordPersistService {
         if (typeof documentSnapshot?.id === 'string') {
             return documentSnapshot.id;
         }
-        if (typeof documentSnapshot?.document?.id === 'string') {
-            return documentSnapshot.document.id;
-        }
         if (typeof documentSnapshot?.ref?.id === 'string') {
             return documentSnapshot.ref.id;
         }
         if (typeof documentSnapshot?.ref?.document?.id === 'string') {
             return documentSnapshot.ref.document.id;
+        }
+        if (typeof documentSnapshot?.document?.id === 'string') {
+            return documentSnapshot.document.id;
         }
         if (typeof payload.target === 'string' && payload.target) {
             return payload.target;
