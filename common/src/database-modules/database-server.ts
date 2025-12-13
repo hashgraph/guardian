@@ -55,7 +55,7 @@ import {
     PolicyAction,
     PolicyKey,
     PolicyComment,
-    PolicyDiscussion
+    PolicyDiscussion, GlobalEventsStream
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -5333,5 +5333,42 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getPolicyGroups(filters: any, options?: unknown): Promise<PolicyRolesCollection[]> {
         return await new DataBaseHelper(PolicyRolesCollection).find(filters, options);
+    }
+
+    public async getGlobalEventsStreams(
+        policyId: string,
+        blockId: string
+    ): Promise<GlobalEventsStream[]> {
+        const helper = new DataBaseHelper<GlobalEventsStream>(GlobalEventsStream);
+        return await helper.find({
+            policyId,
+            blockId
+        });
+    }
+
+    public async getActiveGlobalEventsStreams(
+        policyId: string,
+        blockId: string
+    ): Promise<GlobalEventsStream[]> {
+        const helper = new DataBaseHelper<GlobalEventsStream>(GlobalEventsStream);
+        return await helper.find({
+            policyId,
+            blockId,
+            active: true
+        });
+    }
+
+    public async createGlobalEventsStream(
+        data: Partial<GlobalEventsStream>
+    ): Promise<GlobalEventsStream> {
+        const helper = new DataBaseHelper<GlobalEventsStream>(GlobalEventsStream);
+        return await helper.save(data as any) as GlobalEventsStream;
+    }
+
+    public async updateGlobalEventsStream(
+        stream: GlobalEventsStream
+    ): Promise<GlobalEventsStream> {
+        const helper = new DataBaseHelper<GlobalEventsStream>(GlobalEventsStream);
+        return await helper.save(stream);
     }
 }

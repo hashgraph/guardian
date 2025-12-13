@@ -57,6 +57,11 @@ import { IntegrationButtonBlockComponent } from '../policy-viewer/blocks/integra
 import { HttpRequestUIAddonCode } from '../policy-viewer/code/http-request-ui-addon';
 import { TransformationUIAddonCode } from '../policy-viewer/code/transformation-ui-addon';
 import { WipeConfigComponent } from '../policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
+import { GlobalTopicReaderBlockComponent } from '../policy-viewer/blocks/global-topic-reader-block/global-topic-reader-block.component';
+import {
+    GlobalEventsWriterBlockComponent
+} from "../policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
+
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -104,6 +109,8 @@ const Container: IBlockSetting = {
         { type: BlockType.MessagesReportBlock },
         { type: BlockType.NotificationBlock },
         { type: BlockType.ExtractDataBlock },
+        { type: BlockType.GlobalTopicReaderBlock },
+        { type: BlockType.GlobalEventsWriterBlock }
     ]
 }
 
@@ -153,6 +160,8 @@ const Step: IBlockSetting = {
         { type: BlockType.MessagesReportBlock },
         { type: BlockType.NotificationBlock },
         { type: BlockType.ExtractDataBlock },
+        { type: BlockType.GlobalTopicReaderBlock },
+        { type: BlockType.GlobalEventsWriterBlock }
     ]
 }
 
@@ -468,6 +477,52 @@ const ExternalTopic: IBlockSetting = {
         group: BlockGroup.UnGrouped
     }]
 }
+
+const GlobalTopicReaderBlock: IBlockSetting = {
+    type: BlockType.GlobalTopicReaderBlock,
+    icon: BlockIcons[BlockType.GlobalTopicReaderBlock],
+    group: BlockGroup.Documents,
+    header: BlockHeaders.UIComponents,
+    factory: GlobalTopicReaderBlockComponent,
+    property: null,
+    code: null,
+    allowedChildren: [{
+        type: BlockType.DocumentValidatorBlock,
+        group: BlockGroup.UnGrouped
+    }],
+    about: {
+        output: (value: any, block: PolicyBlock) => {
+            const result = value ? value.slice() : [];
+
+            const messageTypes = (block as any).properties?.messageTypes;
+            if (Array.isArray(messageTypes)) {
+                for (const mt of messageTypes) {
+                    if (mt && typeof mt.messageType === 'string' && mt.messageType.trim()) {
+                        result.push(mt.messageType.trim());
+                    }
+                }
+            }
+
+            return result;
+        }
+    }
+}
+
+const GlobalEventsWriterBlock: IBlockSetting = {
+    type: BlockType.GlobalEventsWriterBlock,
+    icon: BlockIcons[BlockType.GlobalEventsWriterBlock],
+    group: BlockGroup.Documents,
+    header: BlockHeaders.UIComponents,
+    factory: GlobalEventsWriterBlockComponent,
+    property: null,
+    code: null,
+    allowedChildren: [
+        {
+            type: BlockType.DocumentValidatorBlock,
+            group: BlockGroup.UnGrouped
+        }
+    ],
+};
 
 const AggregateDocument: IBlockSetting = {
     type: BlockType.AggregateDocument,
@@ -862,6 +917,8 @@ export default [
     SelectiveAttributes,
     TagManager,
     ExternalTopic,
+    GlobalTopicReaderBlock,
+    GlobalEventsWriterBlock,
     AutoReport,
     NotificationBlock,
     ExtractData,

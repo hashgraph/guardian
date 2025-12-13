@@ -9,6 +9,7 @@ import {
   Network,
 } from './helpers/contract-publisher.helper.js';
 
+import { TopicHelper } from './helpers/topic.helper.js';
 
 const GUARDIAN_REPOSITORY = 'https://github.com/hashgraph/guardian';
 
@@ -815,6 +816,159 @@ function main() {
                 process.exit(1);
             }
         });
+
+    // -------------------- TOPIC COMMANDS --------------------
+
+    program
+        .command('create-topic')
+        .description('Create new Hedera topic')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-m --memo <memo>', 'Topic memo')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (account, key, options) => {
+            try {
+                const topicId = await TopicHelper.createTopic(
+                    account,
+                    key,
+                    options.memo,
+                    options.network
+                );
+
+                console.log(`Topic created: ${topicId}`);
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('topic-info')
+        .description('Get Hedera topic info')
+        .argument('<topic-id>', 'Topic identifier')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (topicId, account, key, options) => {
+            try {
+                const info = await TopicHelper.getTopicInfo(
+                    account,
+                    key,
+                    topicId,
+                    options.network
+                );
+
+                console.log(JSON.stringify(info, null, 2));
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('topic-messages')
+        .description('Read messages from Hedera topic')
+        .argument('<topic-id>', 'Topic identifier')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .option('--start-time <iso>', 'Start time (ISO, default: from epoch)')
+        .option('--limit <number>', 'Max messages to fetch (default: 50)', '50')
+        .action(async (topicId, account, key, options) => {
+            try {
+                const limit = options.limit
+                    ? parseInt(options.limit, 10)
+                    : 50;
+
+                const messages = await TopicHelper.getMessages(
+                    account,
+                    key,
+                    topicId,
+                    {
+                        startTime: options.startTime,
+                        limit,
+                    },
+                    options.network
+                );
+
+                console.log(JSON.stringify(messages, null, 2));
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('topic-last-message')
+        .description('Read last message from Hedera topic (naive, via full scan)')
+        .argument('<topic-id>', 'Topic identifier')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (topicId, account, key, options) => {
+            try {
+                const messages = await TopicHelper.getMessages(
+                    account,
+                    key,
+                    topicId,
+                    {
+                        limit: 50,
+                    },
+                    options.network
+                );
+
+                if (!messages.length) {
+                    console.log('No messages in topic');
+                    return;
+                }
+
+                const last = messages[messages.length - 1];
+
+                console.log(JSON.stringify(last, null, 2));
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('publish-topic-message')
+        .description('Publish message to Hedera topic')
+        .argument('<topic-id>', 'Topic identifier')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .argument('<message>', 'Message to publish (string or JSON)')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .option('-j --json', 'Treat <message> as JSON and stringify it')
+        .action(async (topicId, account, key, message, options) => {
+            try {
+                let payload = message;
+
+                if (options.json) {
+                    try {
+                        const parsed = JSON.parse(message);
+                        payload = JSON.stringify(parsed);
+                    } catch (e) {
+                        console.error('Invalid JSON in <message> argument');
+                        process.exit(1);
+                    }
+                }
+
+                const result = await TopicHelper.publishMessage(
+                    account,
+                    key,
+                    topicId,
+                    payload,
+                    options.network
+                );
+
+                console.log(JSON.stringify(result, null, 2));
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
     program.parse();
 }
 

@@ -1269,7 +1269,8 @@ export const BlockAbout = {
         'children': 'None',
         'control': 'Server',
         'input': [
-            'RunEvent'
+            'RunEvent',
+            'TimerEvent'
         ],
         'output': [
             'RunEvent'
@@ -1525,6 +1526,116 @@ export const BlockAbout = {
                 'label': 'Expression',
                 'title': 'Expression',
                 'type': 'Code'
+            }
+        ]
+    },
+    'globalEventsWriterBlock': {
+        'label': 'Global Events Writer',
+        'title': 'Add \'Global Events Writer\' Block',
+        'post': true,
+        'get': true,
+        'children': 'None',
+        'control': 'UI',
+        'input': [
+            'RunEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent',
+            'ErrorEvent',
+            'ReleaseEvent'
+        ],
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'documentType',
+                'label': 'Document type',
+                'title': 'Type written to the global topic for reader-side filtering',
+                'type': 'Select',
+                'items': [
+                    { 'label': 'VC',   'value': 'vc' },
+                    { 'label': 'JSON', 'value': 'json' },
+                    { 'label': 'CSV',  'value': 'csv' },
+                    { 'label': 'Text', 'value': 'text' },
+                    { 'label': 'Any',  'value': 'any' }
+                ],
+                'default': 'any'
+            },
+            {
+                'name': 'topicIds',
+                'label': 'Global topic ids',
+                'title': 'One or more Hedera topics where notifications are published',
+                'type': 'Array',
+                'items': {
+                    'label': 'Topic',
+                    'value': '@topicId',
+                    'properties': [
+                        {
+                            'name': 'topicId',
+                            'label': 'Topic id',
+                            'title': 'Hedera topic id',
+                            'type': 'Input'
+                        },
+                    ]
+                }
+            },
+        ]
+    },
+    'globalTopicReaderBlock': {
+        'label': 'Global Topic Reader',
+        'title': `Add 'Global Topic Reader' Block`,
+        'post': true,
+        'get': true,
+        'children': 'Special',
+        'control': 'UI',
+        'input': [
+            'RunEvent',
+            'TimerEvent'
+        ],
+        'output': null,
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'topics',
+                'label': 'Global topics',
+                'title': 'Global topics (list or JSON array)',
+                'type': 'Input'
+            },
+            {
+                'name': 'schema',
+                'label': 'Schema',
+                'title': 'Expected schema',
+                'type': 'Schemas'
+            },
+            {
+                'name': 'messageTypes',
+                'label': 'Message types',
+                'title': 'Message type mappings',
+                'type': 'Array',
+                'items': {
+                    'label': 'Message type',
+                    'value': '@filterField @filterValue @messageType',
+                    'properties': [
+                        {
+                            'name': 'filterField',
+                            'label': 'Filter field',
+                            'title': 'Filter field (VC path or @message.<field>)',
+                            'type': 'Input'
+                        },
+                        {
+                            'name': 'filterValue',
+                            'label': 'Filter value',
+                            'title': 'Filter value',
+                            'type': 'Input'
+                        },
+                        {
+                            'name': 'messageType',
+                            'label': 'Message type',
+                            'title': 'Message type name used in Events tab',
+                            'type': 'Input'
+                        }
+                    ]
+                }
             }
         ]
     },

@@ -111,6 +111,7 @@ export class CustomLogicBlock {
     })
     @CatchErrors()
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
+        console.log('customLogicBlock runAction, data =', event.data?.data);
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         try {
             const triggerEvents = (documents: IPolicyDocument | IPolicyDocument[]) => {
