@@ -1,6 +1,8 @@
-import {CronJob} from 'cron';
-import {EventBlock} from '../helpers/decorators/index.js';
-import {PolicyInputEventType, PolicyOutputEventType} from '../interfaces/index.js';
+import { CronJob } from 'cron';
+
+import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
+import { BlockActionError } from '../errors/index.js';
+import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import {
     AnyBlockType,
     IPolicyDocument,
@@ -8,132 +10,169 @@ import {
     IPolicyGetData,
     IPolicyValidatorBlock
 } from '../policy-engine.interface.js';
-import {BlockActionError} from '../errors/index.js';
-import {PolicyComponentsUtils} from '../policy-components-utils.js';
-import {PolicyUser} from '../policy-user.js';
-import {PolicyUtils} from '../helpers/utils.js';
-import {ChildrenType, ControlType, PropertyType} from '../interfaces/block-about.js';
-import {LocationType, Schema} from '@guardian/interfaces';
-import {ExternalDocuments, ExternalEvent, ExternalEventType} from '../interfaces/external-event.js';
-import {GlobalEventsStream, MessageServer, MessageType, VcHelper, VCMessage} from '@guardian/common';
-import {AccountId, Client, PrivateKey, Timestamp, TopicId, TopicMessageQuery} from '@hashgraph/sdk';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { PolicyUser } from '../policy-user.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 
-enum GlobalNotificationStatus {
-    Free = 'FREE',
-    Processing = 'PROCESSING',
-    Error = 'ERROR'
-}
+import {LocationType, Schema, SchemaField, SchemaHelper} from '@guardian/interfaces';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import {
+    GlobalEventsStream,
+    GlobalEventsStreamStatus, IPFS,
+    Workers
+} from '@guardian/common';
+import { WorkerTaskType } from '@guardian/interfaces';
 
-interface GlobalTopicMessage {
-    id: string;
+/**
+ * Message fetched from Hedera topic via worker-service.
+ */
+export interface GlobalTopicMessage {
     sequenceNumber: number;
     consensusTimestamp: string;
     message: string;
+    runningHash?: string;
 }
 
-interface GlobalVsNotification {
-    documentMessageId: string;
+type GlobalDocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
+
+/**
+ * GlobalEvent payload stored in a global events topic.
+ */
+interface GlobalEvent {
+    documentType?: GlobalDocumentType;
     documentTopicId: string;
-    policyId: string;
-    sourceBlockTag: string;
-    documentSourceTag?: string;
-    routingHint?: string;
-    vcId?: string;
-    hash?: string;
-    // topicId?: string;
-    relationships?: string[];
-    owner?: string;
+    documentMessageId: string;
+    schemaIri?: string;
+    schemaContextIri?: string;
     timestamp: string;
 }
 
+interface GlobalEventReaderBranchConfig {
+    branchEvent: string;
+    schema?: string; // local policy schema id (from DB)
+}
+
+interface GlobalEventReaderConfig {
+    eventTopics?: Array<{ topicId: string }>;
+    documentType?: GlobalDocumentType;
+    branches?: GlobalEventReaderBranchConfig[];
+}
+
+type FilterFieldsByBranch = Record<string, Record<string, string>>;
+
+interface UiStreamRow {
+    globalTopicId: string;
+    active: boolean;
+    status: GlobalEventsStreamStatus;
+    filterFieldsByBranch: FilterFieldsByBranch;
+    lastMessageCursor: string;
+
+    /**
+     * true -> this row comes from config defaults, not from DB
+     */
+    isDefault?: boolean;
+}
+
+interface SetDataPayload {
+    streams: Array<{
+        globalTopicId: string;
+        active?: boolean;
+        filterFieldsByBranch: FilterFieldsByBranch;
+    }>;
+}
+
+type GlobalReaderEventState = IPolicyEventState & {
+    user: PolicyUser;
+    event: GlobalEvent;
+};
+
 @EventBlock({
-    blockType: 'globalTopicReaderBlock',
+    blockType: 'globalEventsReaderBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
     about: {
-        label: 'Global Topic Reader',
-        title: `Add 'Global Topic Reader' Block`,
+        label: 'Global Events Reader',
+        title: `Add 'Global Events Reader' Block`,
         post: true,
         get: true,
         children: ChildrenType.Special,
         control: ControlType.UI,
         input: [
-            PolicyInputEventType.RunEvent,
             PolicyInputEventType.TimerEvent
         ],
-        output: null,
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ReleaseEvent,
+            PolicyOutputEventType.ErrorEvent
+        ],
         defaultEvent: true,
         properties: [
             {
-                name: 'topics',
-                label: 'Global topics',
-                title: 'Global topics (list or JSON array)',
+                name: 'eventTopics',
+                label: 'Event topics',
+                title: 'Hedera topic ids to listen (defaults shown to every user as inactive until user changes)',
+                type: PropertyType.Array,
+                items: {
+                    label: 'Event topic',
+                    value: '@topicId',
+                    properties: [
+                        {
+                            name: 'topicId',
+                            label: 'Topic ID',
+                            title: 'Hedera topic id (0.0.x)',
+                            type: PropertyType.Input
+                        }
+                    ]
+                }
+            },
+            {
+                name: 'documentType',
+                label: 'Document type',
+                title: 'Expected document type from global event payload (vc | json | csv | text | any)',
                 type: PropertyType.Input
             },
             {
-                name: 'schema',
-                label: 'Schema',
-                title: 'Expected schema',
-                type: PropertyType.Schemas
-            },
-            {
-                name: 'messageTypes',
-                label: 'Message types',
-                title: 'Message type mappings',
+                name: 'branches',
+                label: 'Branches',
+                title: 'Branch outputs (+ optional VC schema validation per branch)',
                 type: PropertyType.Array,
                 items: {
-                    label: 'Message type',
-                    value: '@filterField @filterValue @messageType',
+                    label: 'Branch',
+                    value: '@branchEvent',
                     properties: [
                         {
-                            name: 'filterField',
-                            label: 'Filter field',
-                            title: 'Filter field (VC path or @message.<field>)',
+                            name: 'branchEvent',
+                            label: 'Branch event',
+                            title: 'Output event name (connect in Events tab)',
                             type: PropertyType.Input
                         },
                         {
-                            name: 'filterValue',
-                            label: 'Filter value',
-                            title: 'Filter value',
-                            type: PropertyType.Input
-                        },
-                        {
-                            name: 'messageType',
-                            label: 'Message type',
-                            title: 'Message type name used in Events tab',
-                            type: PropertyType.Input
+                            name: 'schema',
+                            label: 'Schema',
+                            title: 'Local policy schema (validate VC before routing)',
+                            type: PropertyType.Schemas
                         }
                     ]
                 }
             }
         ]
-    },
-    variables: [
-        { path: 'options.schema', alias: 'schema', type: 'Schema' }
-    ]
+    }
 })
 export class GlobalEventsReaderBlock {
-    private schema: Schema | null;
-    private job: CronJob;
+    private readonly schemasCache: Map<string, Schema | null> = new Map();
+    private job: CronJob | null = null;
 
+    /**
+     * Same pattern as ExternalTopicBlock:
+     * cron tick calls run(null) and processes DB-bound active streams.
+     */
     protected async afterInit(): Promise<void> {
         const cronMask = process.env.GLOBAL_NOTIFICATIONS_SCHEDULER || '0 */5 * * * *';
-        console.log('afterInit-reader')
-        setTimeout(() => {
-            this.run(null).catch((error) => {
-                try {
-                    const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-                    ref.error(
-                        `globalTopicReader: initial run failed: ${PolicyUtils.getErrorMessage(error)}`
-                    );
-                } catch (e) {
-                    console.error('globalTopicReader: initial run failed', error);
-                }
-            });
-        }, 30_000);
 
         this.job = new CronJob(cronMask, () => {
-            this.run(null).then();
+            this.run().then();
         }, null, false, 'UTC');
         this.job.start();
     }
@@ -141,22 +180,383 @@ export class GlobalEventsReaderBlock {
     protected destroy(): void {
         if (this.job) {
             this.job.stop();
+            this.job = null;
         }
     }
+
+    private async fetchEvents(topicId: string, fromCursor: string, userId: string): Promise<GlobalTopicMessage[]> {
+        const workers = new Workers();
+
+        const result = await workers.addRetryableTask(
+            {
+                type: WorkerTaskType.GET_TOPIC_MESSAGES,
+                data: {
+                    topic: topicId,
+                    timeStamp: fromCursor || undefined,
+                    payload: {
+                        userId
+                    }
+                }
+            },
+            {
+                priority: 10
+            }
+        );
+
+        if (!Array.isArray(result)) {
+            return [];
+        }
+
+        const messages: GlobalTopicMessage[] = [];
+
+        for (const raw of result) {
+            const consensusTimestamp = String(
+                raw?.consensusTimestamp || raw?.timeStamp || raw?.timestamp || ''
+            );
+
+            if (!consensusTimestamp) {
+                continue;
+            }
+
+            const messageText = typeof raw?.message === 'string'
+                ? raw.message
+                : JSON.stringify(raw?.message ?? '');
+
+            if (!messageText) {
+                continue;
+            }
+
+            messages.push({
+                sequenceNumber: Number(raw?.sequenceNumber || 0),
+                consensusTimestamp,
+                message: messageText,
+                runningHash: raw?.runningHash
+            });
+        }
+
+        return messages;
+    }
+
+    private parseEvent(raw: string): GlobalEvent | null {
+        try {
+            const parsed = JSON.parse(raw);
+
+            if (!parsed || typeof parsed !== 'object') {
+                return null;
+            }
+
+            if (!parsed.documentTopicId || !parsed.documentMessageId) {
+                return null;
+            }
+
+            return parsed as GlobalEvent;
+        } catch (_e) {
+            return null;
+        }
+    }
+
+    private getSchemaFields(document: any): SchemaField[] | null {
+        try {
+            if (typeof document === 'string') {
+                document = JSON.parse(document);
+            }
+
+            const schemaCache = new Map<string, any>();
+            return SchemaHelper.parseFields(document, null, schemaCache, null, false);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    private compareFields(f1: SchemaField, f2: SchemaField): boolean {
+        if (
+            f1.name !== f2.name ||
+            f1.title !== f2.title ||
+            f1.description !== f2.description ||
+            f1.required !== f2.required ||
+            f1.isArray !== f2.isArray ||
+            f1.isRef !== f2.isRef
+        ) {
+            return false;
+        }
+
+        if (f1.isRef) {
+            return true;
+        }
+
+        return (
+            f1.type === f2.type &&
+            f1.format === f2.format &&
+            f1.pattern === f2.pattern &&
+            f1.unit === f2.unit &&
+            f1.unitSystem === f2.unitSystem &&
+            f1.customType === f2.customType
+        );
+    }
+
+    private ifExtendFields(extension: SchemaField[] | null, base: SchemaField[] | null): boolean {
+        try {
+            if (!extension || !base) {
+                return false;
+            }
+
+            const map = new Map<string, SchemaField>();
+            for (const f of extension) {
+                map.set(f.name, f);
+            }
+
+            for (const baseField of base) {
+                const extensionField = map.get(baseField.name);
+                if (!extensionField) {
+                    return false;
+                }
+                if (!this.compareFields(baseField, extensionField)) {
+                    return false;
+                }
+                if (baseField.isRef) {
+                    if (!this.ifExtendFields(extensionField.fields, baseField.fields)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    private isSchemaCompatible(currentSchemaDoc: any, localSchemaDoc: any): boolean {
+        const base = this.getSchemaFields(localSchemaDoc);
+        const extension = this.getSchemaFields(currentSchemaDoc);
+        return this.ifExtendFields(extension, base);
+    }
+
+    private async routeEvent(
+        ref: AnyBlockType,
+        user: PolicyUser,
+        event: GlobalEvent,
+        branches: GlobalEventReaderBranchConfig[],
+        filterFieldsByBranch: FilterFieldsByBranch
+    ): Promise<void> {
+        const payload = await this.loadPayload(ref, event, user.userId);
+
+        const document: IPolicyDocument = {
+            document: payload
+        } as any;
+
+        const baseState: GlobalReaderEventState = {
+            data: document,
+            user,
+            event
+        };
+
+        const isVcDocument = (event.documentType || '').toLowerCase() === 'vc';
+
+        let currentSchema: any | null = null;
+
+        if (isVcDocument) {
+            const validationError = await this.validateDocuments(user, baseState);
+            if (validationError) {
+                throw new BlockActionError(validationError, ref.blockType, ref.uuid);
+            }
+
+            const schemaBatch = await this.loadSchemaBatch(ref, event.schemaContextIri, user.userId);
+
+            currentSchema =
+                schemaBatch.find((s) => String(s?.id || s?.iri).trim() === String(event.schemaIri).trim())
+                || null;
+        }
+
+        for (const branch of branches) {
+            const branchEvent = (branch?.branchEvent || '').trim();
+            if (!branchEvent) {
+                continue;
+            }
+
+            if (isVcDocument && branch.schema) {
+                const localSchema = await this.getSchemaById(branch.schema);
+                const ok = this.isSchemaCompatible(currentSchema, localSchema.document);
+                if (!ok) {
+                    continue;
+                }
+            }
+
+            // filters validation per branch (as you asked)
+            if (isVcDocument) {
+                const branchFilters = filterFieldsByBranch[branchEvent] ?? {};
+
+                const filtersError = await this.validateStreamFilters(
+                    payload,
+                    branchFilters,
+                    currentSchema,
+                    branch
+                );
+
+                if (filtersError) {
+                    throw new BlockActionError(filtersError, ref.blockType, ref.uuid);
+                }
+            }
+
+            const stateForBranch: IPolicyEventState = {
+                ...baseState,
+                type: branchEvent
+            } as any;
+
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, stateForBranch);
+
+            PolicyComponentsUtils.ExternalEventFn(
+                new ExternalEvent(ExternalEventType.Run, ref, user, {
+                    eventName: branchEvent,
+                    event
+                })
+            );
+        }
+
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, baseState);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
+    }
+
+    private async loadPayload(
+        ref: AnyBlockType,
+        event: GlobalEvent,
+        userId: string
+    ): Promise<string> {
+        try {
+            const workers = new Workers();
+
+            const msg = await workers.addRetryableTask(
+                {
+                    type: WorkerTaskType.GET_TOPIC_MESSAGE,
+                    data: {
+                        timeStamp: event.documentMessageId,
+                        payload: { userId }
+                    }
+                },
+                { userId }
+            );
+
+            return msg.message;
+        } catch (error) {
+            throw new BlockActionError(
+                `globalEventsReader: failed to load payload: ${(error as Error).message}`,
+                ref.blockType,
+                ref.uuid
+            );
+        }
+    }
+
+    private extractIpfsCid(iri: string): string {
+        let value = String(iri || '').trim();
+
+        if (!value) {
+            return '';
+        }
+
+        if (value.startsWith('ipfs://')) {
+            value = value.slice('ipfs://'.length);
+        }
+
+        const hashIndex = value.indexOf('#');
+        if (hashIndex !== -1) {
+            value = value.slice(0, hashIndex);
+        }
+
+        return value.trim();
+    }
+
+    private async loadSchemaBatch(
+        ref: AnyBlockType,
+        schemaContextIri: string,
+        userId: string
+    ): Promise<any[]> {
+        const cid = this.extractIpfsCid(schemaContextIri);
+        if (!cid) {
+            return [];
+        }
+
+        try {
+            // Try via workers first (if your WorkerTaskType has an IPFS/file task).
+            const workers = new Workers();
+
+            const taskType =
+                (WorkerTaskType as any).GET_IPFS_FILE ||
+                (WorkerTaskType as any).GET_FILE;
+
+            if (taskType) {
+                const result = await workers.addRetryableTask(
+                    {
+                        type: taskType,
+                        data: {
+                            cid,
+                            responseType: 'str'
+                        }
+                    } as any,
+                    { userId }
+                );
+
+                const raw = (result && (result.data || result)) as any;
+                const text = typeof raw === 'string' ? raw : raw?.content;
+
+                if (typeof text === 'string' && text.length) {
+                    const parsed = JSON.parse(text);
+
+                    if (Array.isArray(parsed)) {
+                        return parsed;
+                    }
+                    if (Array.isArray(parsed.schemas)) {
+                        return parsed.schemas;
+                    }
+
+                    // If schema batch is a single object – still return as array.
+                    return [parsed];
+                }
+            }
+
+            // Fallback: direct IPFS call
+            const row = await IPFS.getFile(cid, 'str');
+            const text = typeof row === 'string' ? row : JSON.stringify(row);
+            const parsed = JSON.parse(text);
+
+            if (Array.isArray(parsed)) {
+                return parsed;
+            }
+            if (Array.isArray(parsed.schemas)) {
+                return parsed.schemas;
+            }
+
+            return [parsed];
+        } catch (error) {
+            throw new BlockActionError(
+                `globalEventsReader: failed to load schema batch by schemaContextIri: ${(error as Error).message}`,
+                ref.blockType,
+                ref.uuid
+            );
+        }
+    }
+
+    /**
+     * =========================
+     * Validators & schemas
+     * =========================
+     */
 
     protected getValidators(): IPolicyValidatorBlock[] {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const validators: IPolicyValidatorBlock[] = [];
+
         for (const child of ref.children) {
             if (child.blockClassName === 'ValidatorBlock') {
                 validators.push(child as IPolicyValidatorBlock);
             }
         }
+
         return validators;
     }
 
-    protected async validateDocuments(user: PolicyUser, state: any): Promise<string> {
+    protected async validateDocuments(user: PolicyUser, state: any): Promise<string | null> {
         const validators = this.getValidators();
+
         for (const validator of validators) {
             const error = await validator.run({
                 type: null,
@@ -170,825 +570,205 @@ export class GlobalEventsReaderBlock {
                 user,
                 data: state
             });
+
             if (error) {
                 return error;
             }
         }
+
         return null;
     }
 
-    private updateStatus(ref: AnyBlockType, stream: GlobalEventsStream, user: PolicyUser): void {
-        ref.updateBlock({ status: stream.status }, user, ref.tag, user.userId);
-    }
-
-    private async getSchema(): Promise<Schema> {
+    private async getSchemaById(schemaId: string | null | undefined): Promise<Schema | null> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        if (!ref.options.schema) {
+
+        if (!schemaId) {
             return null;
         }
-        if (!this.schema) {
-            const schema = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
-            this.schema = schema ? new Schema(schema) : null;
-            if (!this.schema) {
-                throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
-            }
+
+        if (this.schemasCache.has(schemaId)) {
+            return this.schemasCache.get(schemaId) || null;
         }
-        return this.schema;
+
+        const rawSchema = await PolicyUtils.loadSchemaByID(ref, schemaId);
+        const schema = rawSchema ? new Schema(rawSchema) : null;
+
+        this.schemasCache.set(schemaId, schema);
+
+        return schema;
     }
 
-    public async run(userId: string | null): Promise<void> {
-        console.log('run-reader')
-        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+    private async updateCursor(ref: AnyBlockType, stream: GlobalEventsStream, cursor: string): Promise<void> {
+        stream.lastMessageCursor = cursor;
+        await ref.databaseServer.updateGlobalEventsStream(stream);
+    }
 
-        const options: any = ref.options || {};
+    private extractConfiguredTopicIds(config: GlobalEventReaderConfig): string[] {
+        const result: string[] = [];
 
-        const topicIds: string[] = Array.isArray(options.topicIds)
-            ? options.topicIds
-            : [];
-
-        console.log('topicIds', topicIds)
-
-        const streams = await ref.databaseServer.getGlobalEventsStreams(ref.policyId, ref.uuid);
-        console.log('streams', streams)
-
-        const existingTopicIds = new Set<string>();
-
-        for (const stream of streams) {
-            if (stream.globalTopicId) {
-                existingTopicIds.add(stream.globalTopicId);
-            }
-        }
-
-        for (const rawTopicId of topicIds) {
-            const topicId = (rawTopicId || '').trim();
+        for (const item of config.eventTopics || []) {
+            const topicId = (item?.topicId || '').trim();
 
             if (!topicId) {
                 continue;
             }
 
-            if (existingTopicIds.has(topicId)) {
-                continue;
-            }
-
-            console.log('ref.policyOwner', ref.policyOwner)
-
-            const newStream = await ref.databaseServer.createGlobalEventsStream({
-                policyId: ref.policyId,
-                blockId: ref.uuid,
-                globalTopicId: topicId,
-                ownerDid: ref.policyOwner,
-                routingHint: null,
-                lastMessage: '',
-                lastUpdate: '',
-                active: true,
-                status: GlobalNotificationStatus.Free
-            });
-
-            streams.push(newStream);
-            existingTopicIds.add(topicId);
+            result.push(topicId);
         }
 
-        const activeStreams = streams.filter((s) => s.active);
+        return result;
+    }
 
-        console.log('activeStreams', activeStreams);
+    /**
+     * =========================
+     * Polling / routing logic
+     * =========================
+     */
 
-        if (!activeStreams.length) {
+    private async pollStream(ref: AnyBlockType, user: PolicyUser, stream: GlobalEventsStream): Promise<void> {
+        const config = (ref.options || {}) as GlobalEventReaderConfig;
+        const branches = Array.isArray(config.branches) ? config.branches : [];
+
+        if (!stream.globalTopicId) {
             return;
         }
 
-        for (const stream of activeStreams) {
-            if (stream.status === GlobalNotificationStatus.Free) {
-                await this.runByStream(stream, userId);
+        if (!branches.length) {
+            return;
+        }
+
+        const messages = await this.fetchEvents(stream.globalTopicId, stream.lastMessageCursor, user.userId);
+
+        for (const message of messages) {
+            const cursor = (message.consensusTimestamp || '').trim();
+            if (!cursor) {
+                continue;
             }
+
+            if (stream.lastMessageCursor && stream.lastMessageCursor === cursor) {
+                continue;
+            }
+
+            const event = this.parseEvent(message.message);
+            if (event) {
+                await this.routeEvent(ref, user, event, branches, stream.filterFieldsByBranch);
+            }
+
+            await this.updateCursor(ref, stream, cursor);
         }
     }
 
-    private async runByStream(stream: GlobalEventsStream, userId: string | null): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        stream.status = GlobalNotificationStatus.Processing;
+    private async runByStream(
+        ref: AnyBlockType,
+        stream: GlobalEventsStream,
+    ): Promise<void> {
+
+        stream.status = GlobalEventsStreamStatus.Processing;
         await ref.databaseServer.updateGlobalEventsStream(stream);
 
-        const policyUser = await PolicyComponentsUtils.GetPolicyUserByDID(stream.ownerDid || null, null, ref, userId);
-        this.updateStatus(ref, stream, policyUser);
         try {
-            await this.receiveNotificationsForStream(stream, policyUser, userId);
-            stream.status = GlobalNotificationStatus.Free;
-            stream.lastUpdate = new Date().toISOString();
+            const user = await PolicyComponentsUtils.GetPolicyUserByDID(stream.userDid, null, ref, stream.userId);
+
+            await this.pollStream(ref, user, stream);
+
+            stream.status = GlobalEventsStreamStatus.Free;
             await ref.databaseServer.updateGlobalEventsStream(stream);
         } catch (error) {
-            stream.status = GlobalNotificationStatus.Error;
+            stream.status = GlobalEventsStreamStatus.Error;
             await ref.databaseServer.updateGlobalEventsStream(stream);
-            ref.error(`globalNotificationsBlock: ${PolicyUtils.getErrorMessage(error)}`);
+
+            ref.error(`GlobalEventsReader: runByStream failed: ${PolicyUtils.getErrorMessage(error)}`);
         }
-        this.updateStatus(ref, stream, policyUser);
     }
 
-    private async tryLoadHederaCredentials(
-        ref: AnyBlockType,
-        stream: GlobalEventsStream,
-        policyUser: PolicyUser,
-        userId: string | null
-    ): Promise<any | null> {
-        try {
-            const userCred = await PolicyUtils.getUserCredentials(
-                ref,
-                stream.ownerDid || policyUser.did,
-                userId
-            );
+    /**
+     * Cron entry point: poll all active DB streams for this block.
+     * userId is optional: kept for symmetry with ExternalTopicBlock.
+     */
+    public async run(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
-            const hederaCred = await userCred.loadHederaCredentials(ref, userId);
+        const streams = await ref.databaseServer.getActiveGlobalEventsStreams(ref.policyId, ref.uuid);
 
-            return hederaCred;
-        } catch (error) {
-            const message = PolicyUtils.getErrorMessage(error);
+        for (const stream of streams || []) {
+            if (stream.status !== GlobalEventsStreamStatus.Free) {
+                continue;
+            }
 
-            console.error('globalTopicReader: credentials error', {
-                error,
-                message,
-                ownerDid: stream.ownerDid,
-                policyId: ref.policyId
-            });
+            await this.runByStream(ref, stream);
+        }
+    }
 
-            if (message === 'Initialization') {
-                console.warn('globalTopicReader: skip stream processing due to Initialization error', {
-                    policyId: ref.policyId,
-                    blockId: ref.uuid
+    /**
+     * =========================
+     * UI: getData / setData
+     * =========================
+     */
+
+    public async getData(user: PolicyUser): Promise<IPolicyGetData> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const config = (ref.options || {}) as GlobalEventReaderConfig;
+
+        const configuredTopicIds = this.extractConfiguredTopicIds(config);
+
+        const dbStreams = await ref.databaseServer.getGlobalEventsStreamsByUser(ref.policyId, ref.uuid, user.userId);
+
+        const byTopicId = new Map<string, GlobalEventsStream>();
+        for (const stream of dbStreams || []) {
+            const topicId = (stream.globalTopicId || '').trim();
+            if (topicId) {
+                byTopicId.set(topicId, stream);
+            }
+        }
+
+        const rows: UiStreamRow[] = [];
+
+
+        // 1) defaults from config -> virtual inactive rows unless user has DB override
+        for (const topicId of configuredTopicIds) {
+            const dbRow = byTopicId.get(topicId);
+
+            if (dbRow) {
+                rows.push({
+                    globalTopicId: topicId,
+                    active: Boolean(dbRow.active),
+                    status: dbRow.status || GlobalEventsStreamStatus.Free,
+                    lastMessageCursor: dbRow.lastMessageCursor || '',
+                    isDefault: true,
+                    filterFieldsByBranch: dbRow.filterFieldsByBranch || {}
                 });
-
-                return null;
-            }
-
-            throw error;
-        }
-    }
-
-    private async receiveNotificationsForStream(
-        stream: GlobalEventsStream,
-        policyUser: PolicyUser,
-        userId: string | null
-    ): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-
-        let hederaCred: any;
-        try {
-            hederaCred = await this.tryLoadHederaCredentials(
-                ref,
-                stream,
-                policyUser,
-                userId
-            );
-
-            if (!hederaCred) {
-                return;
-            }
-        } catch (error) {
-            console.error('globalTopicReader: credentials error', error);
-            throw error;
-        }
-
-        let messages: GlobalTopicMessage[];
-        try {
-            messages = await this.getGlobalTopicMessages(
-                stream.globalTopicId,
-                stream.lastMessage,
-                hederaCred.hederaAccountId,
-                hederaCred.hederaAccountKey
-            );
-            console.log('globalTopicReader: messages from topic', messages);
-        } catch (error) {
-            console.error('globalTopicReader: getGlobalTopicMessages error', error);
-            throw error;
-        }
-
-        for (const msg of messages) {
-            if (stream.lastMessage && stream.lastMessage === msg.id) {
-                continue;
-            }
-
-            const payload = this.parseNotification(msg.message);
-            if (!payload || !payload.documentTopicId || !payload.documentMessageId) {
-                continue;
-            }
-
-            try {
-                await this.processNotification(ref, policyUser, payload, hederaCred);
-                stream.lastMessage = msg.id;
-                await ref.databaseServer.updateGlobalEventsStream(stream);
-            } catch (error) {
-                ref.error(`globalNotificationsBlock.process: ${PolicyUtils.getErrorMessage(error)}`);
-            }
-        }
-    }
-
-    private parseNotification(message: string): GlobalVsNotification | null {
-        try {
-            const payload = JSON.parse(message) as GlobalVsNotification;
-            return payload;
-        } catch (error) {
-            return null;
-        }
-    }
-
-    private resolveValidAnchorFromPayload(
-        payload: GlobalVsNotification
-    ): { topicId: string; messageId: string; queryStartTime: string | undefined } | null {
-        const topicId: string = payload.documentTopicId as string;
-        const timeStamp: string = payload.documentMessageId as string;
-
-        if (!topicId || !timeStamp) {
-            console.warn('globalTopicReader: missing topicId or timeStamp in payload', {
-                payload,
-                topicId,
-                timeStamp
-            });
-            return null;
-        }
-
-        // Validate topicId format via SDK
-        try {
-            TopicId.fromString(topicId);
-        } catch (error) {
-            console.error('globalTopicReader: invalid topicId format', {
-                payload,
-                topicId,
-                errorMessage: PolicyUtils.getErrorMessage(error)
-            });
-            return null;
-        }
-
-        const topicParts = topicId.split('.');
-        const topicNumStr = topicParts[2] || '';
-        const topicNum = Number(topicNumStr);
-
-        if (!Number.isFinite(topicNum) || topicNum <= 0 || topicNum > 1_000_000_000_000) {
-            console.warn('globalTopicReader: topicId looks like corrupted timestamp-derived value', {
-                payload,
-                topicId,
-                topicNum
-            });
-            return null;
-        }
-
-        if (typeof timeStamp !== 'string' || !timeStamp.includes('.')) {
-            console.error('globalTopicReader: invalid timeStamp format (no dot)', {
-                payload,
-                timeStamp
-            });
-            return null;
-        }
-
-        const [secondsStr, nanosStr] = timeStamp.split('.');
-
-        if (
-            !secondsStr ||
-            !nanosStr ||
-            !/^\d+$/.test(secondsStr) ||
-            !/^\d+$/.test(nanosStr)
-        ) {
-            console.error('globalTopicReader: invalid timeStamp parts (non-digit)', {
-                payload,
-                timeStamp
-            });
-            return null;
-        }
-
-        if (nanosStr.length !== 9) {
-            console.warn('globalTopicReader: unexpected nanos length in timeStamp', {
-                payload,
-                timeStamp,
-                nanosLength: nanosStr.length
-            });
-            return null;
-        }
-
-        const seconds = Number(secondsStr);
-
-        if (!Number.isFinite(seconds) || seconds < 1_600_000_000) {
-            console.warn('globalTopicReader: timeStamp seconds look too small (probably corrupted)', {
-                payload,
-                timeStamp,
-                seconds
-            });
-            return null;
-        }
-
-        const queryStartSeconds = seconds > 0 ? seconds - 1 : 0;
-        const queryStartTime = `${queryStartSeconds}.000000000`;
-
-        return {
-            topicId,
-            messageId: timeStamp,
-            queryStartTime
-        };
-    }
-
-    private getFieldValue(source: any, path: string): any {
-        if (!source || typeof source !== 'object') {
-            return undefined;
-        }
-
-        if (!path || typeof path !== 'string') {
-            return undefined;
-        }
-
-        const segments = path.split('.');
-
-        let current: any = source;
-
-        for (const segment of segments) {
-            if (current == null) {
-                return undefined;
-            }
-
-            current = current[segment];
-        }
-
-        return current;
-    }
-
-    private async processNotification(
-        ref: AnyBlockType,
-        user: PolicyUser,
-        payload: GlobalVsNotification,
-        hederaCred: any
-    ): Promise<void> {
-        console.log('globalTopicReader.processNotification: payload', payload);
-
-        const anchor = this.resolveValidAnchorFromPayload(payload);
-        if (!anchor) {
-            // Already logged inside resolveValidAnchorFromPayload
-            return;
-        }
-
-        let vcMessages: VCMessage[];
-        try {
-            vcMessages = await MessageServer.getTopicMessages({
-                topicId: anchor.topicId,
-                userId: payload.owner,
-                timeStamp: anchor.queryStartTime
-            });
-        } catch (error) {
-            console.error('globalTopicReader: getTopicMessages failed', {
-                payload,
-                topicId: anchor.topicId,
-                timeStamp: anchor.queryStartTime,
-                errorMessage: PolicyUtils.getErrorMessage(error),
-                status: (error as any)?.response?.status,
-                data: (error as any)?.response?.data,
-                url: (error as any)?.config?.url
-            });
-            return;
-        }
-
-        if (!vcMessages || !vcMessages.length) {
-            console.warn('globalTopicReader: no VC messages for payload', {
-                payload,
-                topicId: anchor.topicId,
-                timeStamp: anchor.queryStartTime
-            });
-            return;
-        }
-
-        const vcMessage = vcMessages.find((item) => {
-            const anyItem: any = item;
-
-            if (typeof anyItem.hash === 'string' && typeof payload.hash === 'string') {
-                if (anyItem.hash === payload.hash) {
-                    return true;
-                }
-            }
-
-            if (typeof anyItem.getId === 'function') {
-                const id = anyItem.getId();
-                if (typeof id === 'string' && id === payload.documentMessageId) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
-
-        if (!vcMessage) {
-            console.warn('globalTopicReader: VC message not found by hash or id for payload', {
-                payload,
-                available: vcMessages.map((item: any) => ({
-                    id: typeof item.getId === 'function' ? item.getId() : item.id,
-                    hash: item.hash
-                }))
-            });
-            return;
-        }
-
-        const message = vcMessage;
-
-        try {
-            await MessageServer.loadDocument(message, hederaCred.hederaAccountKey);
-        } catch (error) {
-            console.error('globalTopicReader: loadDocument failed', {
-                payload,
-                messageId: message.getId?.(),
-                errorMessage: PolicyUtils.getErrorMessage(error),
-                status: (error as any)?.response?.status,
-                data: (error as any)?.response?.data,
-                url: (error as any)?.config?.url
-            });
-            return;
-        }
-
-        if (message.type !== MessageType.VCDocument) {
-            console.warn('globalTopicReader: message is not VCDocument', {
-                payload,
-                type: message.type
-            });
-            return;
-        }
-
-        const document = message.getDocument();
-        if (!document) {
-            console.warn('globalTopicReader: empty document', {
-                payload,
-                messageId: message.getId?.()
-            });
-            return;
-        }
-
-        const schema = await this.getSchema();
-        if (schema && !this.verifyContext(document, schema)) {
-            console.warn('globalTopicReader: context mismatch', {
-                payload,
-                schemaIri: schema.iri
-            });
-            return;
-        }
-
-        const vcHelper = new VcHelper();
-
-        let verifySchema;
-        try {
-            verifySchema = await vcHelper.verifySchema(document);
-        } catch (error) {
-            console.error('globalTopicReader: verifySchema failed', {
-                payload,
-                errorMessage: PolicyUtils.getErrorMessage(error),
-                status: (error as any)?.response?.status,
-                data: (error as any)?.response?.data,
-                url: (error as any)?.config?.url
-            });
-            return;
-        }
-
-        if (!verifySchema.ok) {
-            console.warn('globalTopicReader: verifySchema not ok', {
-                payload,
-                details: verifySchema
-            });
-            return;
-        }
-
-        let verify;
-        try {
-            verify = await vcHelper.verifyVC(document);
-        } catch (error) {
-            console.error('globalTopicReader: verifyVC failed', {
-                payload,
-                errorMessage: PolicyUtils.getErrorMessage(error),
-                status: (error as any)?.response?.status,
-                data: (error as any)?.response?.data,
-                url: (error as any)?.config?.url
-            });
-            return;
-        }
-
-        if (!verify) {
-            console.warn('globalTopicReader: verifyVC returned false', { payload });
-            return;
-        }
-
-        let relationships;
-        try {
-            relationships = await this.getRelationships(ref, user);
-        } catch (error) {
-            console.error('globalTopicReader: getRelationships failed', {
-                payload,
-                errorMessage: PolicyUtils.getErrorMessage(error)
-            });
-            return;
-        }
-
-        let relayerAccount;
-        try {
-            relayerAccount = await PolicyUtils.getRefRelayerAccount(
-                ref,
-                user.did,
-                null,
-                relationships,
-                user.userId
-            );
-        } catch (error) {
-            console.error('globalTopicReader: getRefRelayerAccount failed', {
-                payload,
-                errorMessage: PolicyUtils.getErrorMessage(error),
-                status: (error as any)?.response?.status,
-                data: (error as any)?.response?.data,
-                url: (error as any)?.config?.url
-            });
-            return;
-        }
-
-        const policyDocument: IPolicyDocument = PolicyUtils.createPolicyDocument(ref, user, document);
-        policyDocument.schema = ref.options.schema;
-        policyDocument.relayerAccount = relayerAccount;
-
-        console.log(
-            'GlobalEventsReaderBlock.processNotification policyDocument',
-            {
-                payload,
-                policyId: policyDocument.policyId,
-                schema: policyDocument.schema,
-                topicId: policyDocument.topicId,
-                messageId: policyDocument.messageId,
-                hash: policyDocument.hash,
-                owner: policyDocument.owner,
-            }
-        );
-
-        if (relationships) {
-            PolicyUtils.setDocumentRef(policyDocument, relationships);
-        }
-        if (policyDocument.relationships) {
-            policyDocument.relationships.push(message.getId());
-        } else {
-            policyDocument.relationships = [message.getId()];
-        }
-
-        const state: IPolicyEventState = { data: policyDocument };
-        const error = await this.validateDocuments(user, state);
-        if (error) {
-            throw new BlockActionError(error, ref.blockType, ref.uuid);
-        }
-
-        const options: any = ref.options || {};
-        const messageTypesConfig: any[] = Array.isArray(options.messageTypes)
-            ? options.messageTypes
-            : [];
-
-        let matchedMessageType: boolean = false;
-
-        for (const configItem of messageTypesConfig) {
-            if (!configItem) {
-                continue;
-            }
-
-            const filterField: string | undefined = configItem.filterField;
-            const filterValue: string | undefined = configItem.filterValue;
-            const messageType: string | undefined = configItem.messageType;
-
-            if (!messageType) {
-                continue;
-            }
-
-            let actualValue: any = undefined;
-
-            if (filterField && typeof filterField === 'string') {
-                if (filterField.startsWith('@message.')) {
-                    const messagePath: string = filterField.slice('@message.'.length);
-                    actualValue = this.getFieldValue(payload as any, messagePath);
-                } else {
-                    actualValue = this.getFieldValue(document, filterField);
-                }
-            }
-
-            const isMatch: boolean = !filterField || actualValue === filterValue;
-
-            if (isMatch) {
-                ref.triggerEvents(messageType, user, state);
-                matchedMessageType = true;
+            } else {
+                rows.push({
+                    globalTopicId: topicId,
+                    active: false,
+                    status: GlobalEventsStreamStatus.Free,
+                    lastMessageCursor: '',
+                    isDefault: true,
+                    filterFieldsByBranch: {}
+                });
             }
         }
 
-        if (!matchedMessageType) {
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-        }
-
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
-
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
-            documents: ExternalDocuments(policyDocument)
-        }));
-        ref.backup();
-    }
-
-    private verifyContext(document: any, schema: Schema): boolean {
-        try {
-            const context = document['@context'];
-            if (!Array.isArray(context)) {
-                return false;
-            }
-            return context.indexOf(schema.iri) !== -1;
-        } catch (error) {
-            return false;
-        }
-    }
-
-    private async getRelationships(ref: AnyBlockType, user: PolicyUser): Promise<any> {
-        try {
-            for (const child of ref.children) {
-                if (child.blockClassName === 'SourceAddon') {
-                    const childData = await (child as any).getFromSource(user, null);
-                    if (childData && childData.length) {
-                        return childData[0];
-                    }
-                }
-            }
-            return null;
-        } catch (error) {
-            ref.error(PolicyUtils.getErrorMessage(error));
-            return null;
-        }
-    }
-
-    private async getGlobalTopicMessages(
-        topicId: string,
-        startFrom: string | null,
-        hederaAccountId: string,
-        hederaPrivateKey: string
-    ): Promise<GlobalTopicMessage[]> {
-        if (!topicId) {
-            return [];
-        }
-
-        /**
-         * Validate topic id format early to fail-fast on invalid values.
-         */
-        TopicId.fromString(topicId);
-
-        /**
-         * Choose Hedera network.
-         * If there is an explicit environment variable for the network, use it.
-         * Otherwise, fall back to testnet by default.
-         */
-        const networkEnv = process.env.HEDERA_NETWORK || process.env.HEDERA_NET || 'testnet';
-
-        let client: Client;
-
-        if (networkEnv.toLowerCase() === 'mainnet') {
-            client = Client.forMainnet();
-        } else if (networkEnv.toLowerCase() === 'previewnet') {
-            client = Client.forPreviewnet();
-        } else {
-            client = Client.forTestnet();
-        }
-
-        client.setOperator(
-            AccountId.fromString(hederaAccountId),
-            PrivateKey.fromString(hederaPrivateKey)
-        );
-
-        /**
-         * We store lastMessage as "milliseconds since epoch" in a string.
-         * For the initial read, start from 0 (epoch start).
-         */
-        const startDate = startFrom
-            ? new Date(Number(startFrom))
-            : new Date(0);
-
-        const startTimestamp = Timestamp.fromDate(startDate);
-        const topic = TopicId.fromString(topicId);
-
-        const query = new TopicMessageQuery()
-            .setTopicId(topic)
-            .setStartTime(startTimestamp);
-
-        const result: GlobalTopicMessage[] = [];
-
-        return new Promise<GlobalTopicMessage[]>((resolve) => {
-            const subscription = query.subscribe(
-                client,
-                (error) => {
-                    console.error('globalTopicReader: subscribe error', error);
-                    subscription.unsubscribe();
-                    client.close();
-                    resolve(result);
-                },
-                (message) => {
-                    try {
-                        const text = Buffer
-                            .from(message.contents)
-                            .toString('utf8');
-
-                        const consensusDate = message.consensusTimestamp.toDate();
-                        const ms = consensusDate.getTime();
-
-                        result.push({
-                            id: ms.toString(),
-                            sequenceNumber: Number(message.sequenceNumber.toString()),
-                            consensusTimestamp: consensusDate.toISOString(),
-                            message: text
-                        });
-                    } catch (error) {
-                        console.error('globalTopicReader: message handler error', error);
-                    }
-                }
-            );
-
-            setTimeout(() => {
-                subscription.unsubscribe();
-                client.close();
-                resolve(result);
-            }, 3000);
-        });
-    }
-
-    public async setData(user: PolicyUser, payload: any): Promise<any> {
-        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-
-        if (!payload || !Array.isArray(payload.streams)) {
-            throw new BlockActionError('Invalid payload', ref.blockType, ref.uuid);
-        }
-
-        const streamsPayload: {
-            globalTopicId: string;
-            routingHint?: string;
-            active?: boolean;
-        }[] = payload.streams;
-
-        const existing = await ref.databaseServer.getGlobalEventsStreams(
-            ref.policyId,
-            ref.uuid
-        );
-
-        const byTopic = new Map<string, GlobalEventsStream>();
-        for (const s of existing) {
-            if (s.globalTopicId) {
-                byTopic.set(s.globalTopicId, s);
-            }
-        }
-
-        const seen = new Set<string>();
-
-        for (const item of streamsPayload) {
-            const topicId = (item.globalTopicId || '').trim();
+        // 2) user-added topics (not present in defaults)
+        for (const stream of dbStreams || []) {
+            const topicId = (stream.globalTopicId || '').trim();
             if (!topicId) {
                 continue;
             }
 
-            seen.add(topicId);
-
-            let stream = byTopic.get(topicId);
-            if (!stream) {
-                stream = await ref.databaseServer.createGlobalEventsStream({
-                    policyId: ref.policyId,
-                    blockId: ref.uuid,
-                    globalTopicId: topicId,
-                    ownerDid: user.did,
-                    routingHint: item.routingHint || null,
-                    lastMessage: '',
-                    lastUpdate: '',
-                    active: typeof item.active === 'boolean' ? item.active : true,
-                    status: GlobalNotificationStatus.Free
-                });
-            } else {
-                stream.routingHint = item.routingHint || stream.routingHint || null;
-
-                if (typeof item.active === 'boolean') {
-                    stream.active = item.active;
-                }
-
-                await ref.databaseServer.updateGlobalEventsStream(stream);
-            }
-        }
-
-        for (const stream of existing) {
-            if (!stream.globalTopicId) {
+            if (configuredTopicIds.includes(topicId)) {
                 continue;
             }
-            if (!seen.has(stream.globalTopicId) && stream.active) {
-                stream.active = false;
-                await ref.databaseServer.updateGlobalEventsStream(stream);
-            }
+
+            rows.push({
+                globalTopicId: topicId,
+                active: Boolean(stream.active),
+                status: stream.status || GlobalEventsStreamStatus.Free,
+                lastMessageCursor: stream.lastMessageCursor || '',
+                isDefault: false,
+                filterFieldsByBranch: stream.filterFieldsByBranch || {}
+            });
         }
-
-        return await this.getData(user);
-    }
-
-    public async getData(user: PolicyUser): Promise<IPolicyGetData> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const streams = await ref.databaseServer.getGlobalEventsStreams(
-            ref.policyId,
-            ref.uuid
-        );
-
-        const list = (streams || []).map((s: GlobalEventsStream) => {
-            return {
-                globalTopicId: s.globalTopicId,
-                routingHint: s.routingHint,
-                lastMessage: s.lastMessage,
-                lastUpdate: s.lastUpdate,
-                status: s.status,
-                active: s.active
-            };
-        });
 
         return {
             id: ref.uuid,
@@ -998,7 +778,269 @@ export class GlobalEventsReaderBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            streams: list
-        } as any;
+            config: {
+                eventTopics: config.eventTopics || [],
+                documentType: config.documentType || 'any',
+                branches: config.branches || []
+            },
+            streams: rows
+        };
+    }
+
+    private dropStreamFromRef(ref: AnyBlockType, _userId: string, topicId: string): void {
+        const options: any = ref.options;
+
+        if (!options || !Array.isArray(options.eventTopics)) {
+            return;
+        }
+
+        const normalizedTopicId = String(topicId || '').trim();
+        if (!normalizedTopicId) {
+            return;
+        }
+
+        options.eventTopics = options.eventTopics.filter((t: any) => {
+            const id = String(t?.topicId || '').trim();
+
+            if (!id) {
+                return false;
+            }
+
+            return id !== normalizedTopicId;
+        });
+
+        if (options.eventTopics.length === 0) {
+            delete options.eventTopics;
+        }
+    }
+
+    public async setData(
+        user: PolicyUser,
+        data: { value: SetDataPayload; operation: SetDataOperation }
+    ): Promise<any> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+
+        if (!data || !['Create', 'Update', 'Delete'].includes(data.operation)) {
+            throw new BlockActionError('Invalid operation', ref.blockType, ref.uuid);
+        }
+
+        const value: SetDataPayload = data.value ?? { streams: [] };
+        const streams = Array.isArray(value.streams) ? value.streams : [];
+
+        for (const item of streams) {
+            const topicId = (item?.globalTopicId || '').trim();
+            if (!topicId) {
+                continue;
+            }
+
+            const existing = await ref.databaseServer.getGlobalEventsStreamByUserTopic(
+                ref.policyId,
+                ref.uuid,
+                user.userId,
+                topicId
+            );
+
+            if (data.operation === 'Delete') {
+                if (!existing) {
+                    continue;
+                }
+
+                await ref.databaseServer.deleteGlobalEventsStream(existing);
+
+                this.dropStreamFromRef(ref, user.userId, topicId);
+                continue;
+            }
+
+            const filterFieldsByBranch = item?.filterFieldsByBranch ?? {};
+
+            if (typeof item.active !== 'boolean') {
+                continue;
+            }
+
+            if (data.operation === 'Create') {
+                if (existing) {
+                    continue;
+                }
+
+                await ref.databaseServer.createGlobalEventsStream({
+                    policyId: ref.policyId,
+                    blockId: ref.uuid,
+                    userId: user.userId,
+                    userDid: user.id,
+                    globalTopicId: topicId,
+                    active: item.active,
+                    lastMessageCursor: '',
+                    status: GlobalEventsStreamStatus.Free,
+                    filterFieldsByBranch
+                });
+
+                this.dropStreamFromRef(ref, user.userId, topicId);
+                continue;
+            }
+
+            if (!existing) {
+                continue;
+            }
+
+            existing.active = item.active;
+            existing.userDid = user.id;
+            existing.filterFieldsByBranch = filterFieldsByBranch;
+
+            await ref.databaseServer.updateGlobalEventsStream(existing);
+
+            this.dropStreamFromRef(ref, user.userId, topicId);
+        }
+
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {} as any);
+        ref.backup();
+
+        return {};
+    }
+
+    ////
+
+    private async validateStreamFilters(
+        payload: string,
+        branchFilters: Record<string, string>,
+        currentSchemaDoc: any,
+        branch: GlobalEventReaderBranchConfig
+    ): Promise<string | null> {
+        const filterKeys = branchFilters ? Object.keys(branchFilters) : [];
+        if (filterKeys.length === 0) {
+            return null;
+        }
+
+        let vcDocument: any;
+        try {
+            vcDocument = typeof payload === 'string' ? JSON.parse(payload) : payload;
+        } catch (error) {
+            return `Invalid VC payload JSON for filters (branch: ${branch?.branchEvent || 'unknown'})`;
+        }
+
+        const schemaFieldsTree = this.getSchemaFields(currentSchemaDoc);
+        if (!schemaFieldsTree || schemaFieldsTree.length === 0) {
+            return `Cannot parse schema fields for filters (branch: ${branch?.branchEvent || 'unknown'})`;
+        }
+
+        const flatSchemaFields = this.flattenSchemaFields(schemaFieldsTree);
+
+        for (const filterKey of filterKeys) {
+            const expectedValueRaw = branchFilters[filterKey];
+            const expectedValue = String(expectedValueRaw ?? '').trim();
+
+            const matchedSchemaField = this.findSchemaFieldByLabel(flatSchemaFields, filterKey);
+            if (!matchedSchemaField) {
+                return `Filter field "${filterKey}" is not found in schema (branch: ${branch?.branchEvent || 'unknown'})`;
+            }
+
+            const actualValue = this.findValueByKey(vcDocument, matchedSchemaField.name);
+            if (typeof actualValue === 'undefined') {
+                return `VC does not contain field "${matchedSchemaField.name}" for filter "${filterKey}" (branch: ${branch?.branchEvent || 'unknown'})`;
+            }
+
+            const actualValueText = String(actualValue ?? '').trim();
+            if (actualValueText !== expectedValue) {
+                return `Filter mismatch for "${filterKey}": expected "${expectedValue}", got "${actualValueText}" (branch: ${branch?.branchEvent || 'unknown'})`;
+            }
+        }
+
+        return null;
+    }
+
+    private flattenSchemaFields(fields: SchemaField[]): SchemaField[] {
+        const result: SchemaField[] = [];
+        const stack: SchemaField[] = Array.isArray(fields) ? [...fields] : [];
+
+        while (stack.length > 0) {
+            const current = stack.pop();
+            if (!current) {
+                continue;
+            }
+
+            result.push(current);
+
+            if (Array.isArray(current.fields) && current.fields.length > 0) {
+                for (const child of current.fields) {
+                    stack.push(child);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private findSchemaFieldByLabel(fields: SchemaField[], label: string): SchemaField | null {
+        const normalizedLabel = this.normalizeText(label);
+        if (!normalizedLabel) {
+            return null;
+        }
+
+        for (const field of fields) {
+            const candidates = [
+                field?.title,
+                field?.description,
+                field?.name
+            ];
+
+            for (const candidate of candidates) {
+                if (this.normalizeText(candidate) === normalizedLabel) {
+                    return field;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private normalizeText(value: unknown): string {
+        return String(value ?? '')
+            .trim()
+            .toLowerCase();
+    }
+
+    private findValueByKey(document: any, key: string): any {
+        const targetKey = String(key ?? '').trim();
+        if (!targetKey) {
+            return undefined;
+        }
+
+        if (!document || typeof document !== 'object') {
+            return undefined;
+        }
+
+        // Direct hit
+        if (Object.prototype.hasOwnProperty.call(document, targetKey)) {
+            return document[targetKey];
+        }
+
+        // Deep scan (simple DFS)
+        const stack: any[] = [document];
+
+        while (stack.length > 0) {
+            const current = stack.pop();
+
+            if (!current || typeof current !== 'object') {
+                continue;
+            }
+
+            if (Object.prototype.hasOwnProperty.call(current, targetKey)) {
+                return current[targetKey];
+            }
+
+            if (Array.isArray(current)) {
+                for (const item of current) {
+                    stack.push(item);
+                }
+                continue;
+            }
+
+            for (const value of Object.values(current)) {
+                if (value && typeof value === 'object') {
+                    stack.push(value);
+                }
+            }
+        }
+
+        return undefined;
     }
 }

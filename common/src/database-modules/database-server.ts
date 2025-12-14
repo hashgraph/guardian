@@ -5335,26 +5335,30 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return await new DataBaseHelper(PolicyRolesCollection).find(filters, options);
     }
 
-    public async getGlobalEventsStreams(
+    public async getGlobalEventsStreamsByUser(
         policyId: string,
-        blockId: string
-    ): Promise<GlobalEventsStream[]> {
-        const helper = new DataBaseHelper<GlobalEventsStream>(GlobalEventsStream);
-        return await helper.find({
-            policyId,
-            blockId
-        });
-    }
-
-    public async getActiveGlobalEventsStreams(
-        policyId: string,
-        blockId: string
+        blockId: string,
+        userId: string
     ): Promise<GlobalEventsStream[]> {
         const helper = new DataBaseHelper<GlobalEventsStream>(GlobalEventsStream);
         return await helper.find({
             policyId,
             blockId,
-            active: true
+            userId,
+        });
+    }
+
+    public async getActiveGlobalEventsStreamsByUser(
+        policyId: string,
+        blockId: string,
+        userId: string
+    ): Promise<GlobalEventsStream[]> {
+        const helper = new DataBaseHelper<GlobalEventsStream>(GlobalEventsStream);
+        return await helper.find({
+            policyId,
+            blockId,
+            userId,
+            active: true,
         });
     }
 

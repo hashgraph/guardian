@@ -26,6 +26,9 @@ export class GlobalEventsStream extends RestoreEntity {
     @Property({ nullable: false, index: true })
     userId!: string;
 
+    @Property({ nullable: true, index: true })
+    userDid?: string;
+
     @Property({ nullable: false, index: true })
     globalTopicId!: string;
 
@@ -38,21 +41,27 @@ export class GlobalEventsStream extends RestoreEntity {
     @Property({ nullable: false })
     active: boolean = false;
 
+    @Property({ nullable: false, type: 'json' })
+    filterFieldsByBranch: Record<string, Record<string, string>> = {};
+
     @BeforeCreate()
     @BeforeUpdate()
     public prepareEntity(): void {
         this.lastMessageCursor = this.lastMessageCursor ?? '';
         this.status = this.status ?? GlobalEventsStreamStatus.Free;
         this.active = this.active ?? false;
+        this.filterFieldsByBranch = this.filterFieldsByBranch ?? {};
 
         this._updatePropHash({
             policyId: this.policyId,
             blockId: this.blockId,
             userId: this.userId,
+            userDid: this.userDid,
             globalTopicId: this.globalTopicId,
             lastMessageCursor: this.lastMessageCursor,
             status: this.status,
-            active: this.active
+            active: this.active,
+            filterFieldsByBranch: this.filterFieldsByBranch
         });
 
         this._updateDocHash('');

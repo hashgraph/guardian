@@ -1581,9 +1581,9 @@ export const BlockAbout = {
             },
         ]
     },
-    'globalTopicReaderBlock': {
-        'label': 'Global Topic Reader',
-        'title': `Add 'Global Topic Reader' Block`,
+    'globalEventsReaderBlock': {
+        'label': 'Global Events Reader',
+        'title': `Add 'Global Events Reader' Block`,
         'post': true,
         'get': true,
         'children': 'Special',
@@ -1596,43 +1596,49 @@ export const BlockAbout = {
         'defaultEvent': true,
         'properties': [
             {
-                'name': 'topics',
-                'label': 'Global topics',
-                'title': 'Global topics (list or JSON array)',
+                'name': 'eventTopics',
+                'label': 'Event topics',
+                'title': 'Hedera topic ids to listen (add/remove items)',
+                'type': 'Array',
+                'items': {
+                    'label': 'Event topic',
+                    'value': '@topicId',
+                    'properties': [
+                        {
+                            'name': 'topicId',
+                            'label': 'Topic ID',
+                            'title': 'Hedera topic id (0.0.x)',
+                            'type': 'Input'
+                        }
+                    ]
+                }
+            },
+            {
+                'name': 'documentType',
+                'label': 'Document type',
+                'title': 'Expected document type from global event payload (vc | json | csv | text | any)',
                 'type': 'Input'
             },
             {
-                'name': 'schema',
-                'label': 'Schema',
-                'title': 'Expected schema',
-                'type': 'Schemas'
-            },
-            {
-                'name': 'messageTypes',
-                'label': 'Message types',
-                'title': 'Message type mappings',
+                'name': 'branches',
+                'label': 'Branches',
+                'title': 'Branch outputs (+ optional VC schema for future workflow validation)',
                 'type': 'Array',
                 'items': {
-                    'label': 'Message type',
-                    'value': '@filterField @filterValue @messageType',
+                    'label': 'Branch',
+                    'value': '@branchEvent',
                     'properties': [
                         {
-                            'name': 'filterField',
-                            'label': 'Filter field',
-                            'title': 'Filter field (VC path or @message.<field>)',
+                            'name': 'branchEvent',
+                            'label': 'Branch event',
+                            'title': 'Output event name (connect in Events tab)',
                             'type': 'Input'
                         },
                         {
-                            'name': 'filterValue',
-                            'label': 'Filter value',
-                            'title': 'Filter value',
-                            'type': 'Input'
-                        },
-                        {
-                            'name': 'messageType',
-                            'label': 'Message type',
-                            'title': 'Message type name used in Events tab',
-                            'type': 'Input'
+                            'name': 'schema',
+                            'label': 'Schema',
+                            'title': 'VC schema (kept always for now)',
+                            'type': 'Schemas'
                         }
                     ]
                 }
