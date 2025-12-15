@@ -524,7 +524,7 @@ export class VCFullscreenDialog {
         if (!Array.isArray($event)) {
             if ($event.id === 'submit') {
                 $event.disabled = () => {
-                    return  this.loading;
+                    return !this.dataForm.valid || this.loading;
                 };
             }
         }
