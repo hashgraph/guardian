@@ -139,8 +139,8 @@ export class PolicyLink<T> {
             // if (targetRef) {
                 // targetRef.actionStatus = actionStatus;
             // }
-        console.log(event, 'event sync')
-        console.log(actionStatus, 'actionStatus')
+        // console.log(event, 'event sync')
+        // console.log(actionStatus, 'actionStatus')
 
             if (actionStatus) {
                 // actionStatus.step += 1;
@@ -190,8 +190,8 @@ export class PolicyLink<T> {
             actionStatus,
             data
         };
-        console.log(event, 'event async')
-        console.log(actionStatus, 'actionStatus')
+        // console.log(event, 'event async')
+        // console.log(actionStatus, 'actionStatus')
 
         // const targetRef: any = this.target as any;
         // const prevStatus = targetRef?.actionStatus;

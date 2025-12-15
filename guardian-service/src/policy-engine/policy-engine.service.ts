@@ -337,6 +337,7 @@ export class PolicyEngineService {
                 hedera,
                 uploadToIpfs,
                 recordActionId,
+                actionTimestemp,
                 userFull
             } = msg;
             console.log(123321);
@@ -351,6 +352,7 @@ export class PolicyEngineService {
                         hedera,
                         uploadToIpfs,
                         recordActionId,
+                        actionTimestemp,
                         userFull
                     });
                 } catch (error: any) {

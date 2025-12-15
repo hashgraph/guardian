@@ -1678,7 +1678,7 @@ export class PolicyComponentsUtils {
         data: any,
         actionStatus?: RecordActionStep
     ): Promise<MessageResponse<any> | MessageError<any>> {
-        console.log(actionStatus, 'actionStatus');
+        // console.log(actionStatus, 'actionStatus');
         const error = await PolicyComponentsUtils._checkRelayerAccount(block, user, data);
         if (error) {
             return new MessageError(error, 500);

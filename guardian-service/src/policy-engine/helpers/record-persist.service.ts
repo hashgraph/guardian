@@ -36,6 +36,7 @@ export interface PersistStepPayload {
     uploadToIpfs: boolean;
     recordActionId?: any;
     userFull?: any;
+    actionTimestemp: number;
 }
 
 export class RecordPersistService {
@@ -50,9 +51,10 @@ export class RecordPersistService {
             hedera,
             uploadToIpfs,
             recordActionId,
+            actionTimestemp,
             userFull,
         } = data;
-        console.log(uploadToIpfs, 'uploadToIpfs');
+        // console.log(uploadToIpfs, 'uploadToIpfs');
         if (!uploadToIpfs) {
             return;
         }
@@ -126,8 +128,10 @@ export class RecordPersistService {
                 userRole = 'Administrator';
             }
 
+            console.log(savedRecord, 'savedRecord');
             const zip = await RecordImportExport.generateSingleRecordZip({
                 ...savedRecord,
+                // time: actionTimestemp,
                 userRole,
                 document: documentSnapshot ?? null
             } as Record, resultDocuments);
@@ -194,9 +198,9 @@ export class RecordPersistService {
         const id = RecordPersistService.extractResultId(documentSnapshot, payload, recordId);
         const type = RecordPersistService.detectResultType(documentSnapshot);
 
-        console.log(id, 'id');
-        console.log(documentSnapshot, 'documentSnapshot');
-        console.log(payload, 'payload');
+        // console.log(id, 'id');
+        // console.log(documentSnapshot, 'documentSnapshot');
+        // console.log(payload, 'payload');
         const timeForWindow = (() => {
             const t = (payload as any)?.time;
             if (t instanceof Date) {
@@ -214,7 +218,7 @@ export class RecordPersistService {
             recordActionId,
         );
         if (fromDb.length) {
-            console.log(fromDb, 'fromDb');
+            // console.log(fromDb, 'fromDb');
             return [{
             id,
             type,
@@ -226,11 +230,11 @@ export class RecordPersistService {
             return [];
         }
 
-        console.log([{
-            id,
-            type,
-            document: documentSnapshot?.ref ?? documentSnapshot?.document ?? documentSnapshot ?? null
-        }], 'bbbbbbbbbbbbbb');
+        // console.log([{
+        //     id,
+        //     type,
+        //     document: documentSnapshot?.ref ?? documentSnapshot?.document ?? documentSnapshot ?? null
+        // }], 'bbbbbbbbbbbbbb');
         return [{
             id,
             type,

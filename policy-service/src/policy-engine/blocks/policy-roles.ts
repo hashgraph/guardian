@@ -403,8 +403,8 @@ export class PolicyRolesBlock {
         output: [PolicyOutputEventType.JoinGroup, PolicyOutputEventType.CreateGroup]
     })
     async setData(user: PolicyUser, data: any, _, actionStatus): Promise<any> {
-                console.log(actionStatus, 'actionStatus')
-        console.log(data, 'data 656565')
+                // console.log(actionStatus, 'actionStatus')
+        // console.log(data, 'data 656565')
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const did = user?.did;
         const curUser = await PolicyUtils.getUser(ref, did, user.userId);
@@ -435,8 +435,8 @@ export class PolicyRolesBlock {
 
         const userGroup = await ref.databaseServer.setUserInGroup(group);
         const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref, user.userId);
-        console.log(actionStatus, 'actionStatus')
-        console.log(data, 'data 656565')
+        // console.log(actionStatus, 'actionStatus')
+        // console.log(data, 'data 656565')
         if (data.invitation) {
             ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null, actionStatus);
         } else {

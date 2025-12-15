@@ -153,6 +153,7 @@ export class Recording {
         target: string,
         document: any,
         recordActionId?: any,
+        actionTimestemp?: number,
         userFull?: PolicyUser
     }): Promise<void> {
         if (!this.isActive()) {
@@ -163,7 +164,7 @@ export class Recording {
             policyId: this.policyId,
             method: entry.method,
             action: entry.action,
-            time: Date.now(),
+            time: entry?.actionTimestemp || Date.now(),
             user: entry.user ?? null,
             target: entry.target ?? null,
             document: entry.document ?? null,
@@ -189,6 +190,7 @@ export class Recording {
                 recordId,
                 payload,
                 documentSnapshot,
+                actionTimestemp: entry.actionTimestemp,
                 hedera: this.hedera ?? null,
                 uploadToIpfs: this.uploadToIpfs,
                 recordActionId: entry.recordActionId,
@@ -382,7 +384,7 @@ export class Recording {
      * @param data
      * @public
      */
-    public async setBlockData(user: PolicyUser, block: AnyBlockType, data: any, recordActionId: any): Promise<void> {
+    public async setBlockData(user: PolicyUser, block: AnyBlockType, data: any, recordActionId: any, actionTimestemp: any): Promise<void> {
         if (!this.isActive()) {
             return;
         }
@@ -394,6 +396,7 @@ export class Recording {
             userFull: user,
             target: block?.tag,
             document: data,
+            actionTimestemp,
             recordActionId,
         });
     }

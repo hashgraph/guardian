@@ -131,9 +131,9 @@ export async function syncPolicyCopiedRecords(
 
         // TODOTODOTODO delete actionsTopicId
         const sourcePolicyMessageId = sourcePolicy?.fromMessageId?.toString?.()?.trim?.() || null;
-        console.log(sourcePolicy, 'sourcePolicy');
-        console.log(sourceRecordsTopicId, 'sourceRecordsTopicId');
-        console.log(sourcePolicyMessageId, 'sourcePolicyMessageId');
+        // console.log(sourcePolicy, 'sourcePolicy');
+        // console.log(sourceRecordsTopicId, 'sourceRecordsTopicId');
+        // console.log(sourcePolicyMessageId, 'sourcePolicyMessageId');
         if (!sourceRecordsTopicId) {
             await logger.error(
                 `Failed to sync copied policy records: recordsTopicId is missing for policy ${targetPolicyId}`,
@@ -299,6 +299,12 @@ async function loadImportedRecordsFromDb(
             sortOptions
         );
     }
+
+
+
+    importedRecords = importedRecords.sort((a, b) => Number(a.time) - Number(b.time));
+
+
     if (!importedRecords.length) {
         throw new Error('Imported records not found');
     }
@@ -427,7 +433,7 @@ async function loadImportedRecordsFromDb(
             paddedEndTime
         );
 
-    console.log(records, 'records');
+    // console.log(records, 'records');
 
     const seen = new Set<string>();
     const unique: RunRecordAction[] = [];
@@ -1080,21 +1086,22 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip.data));
                     records = recordToImport.records;
                     results = recordToImport.results;
-                    console.log(records, 'records from file');
-                    console.log(results, 'results from file');
+                    // console.log(records, 'records from file');
+                    // console.log(results, 'results from file');
                 } else {
                     delete options.importRecords;
                     delete options.syncNewRecords;
                     if (syncNewRecords) {
-                        console.log(syncNewRecords, 'syncNewRecords');
+                        // console.log(syncNewRecords, 'syncNewRecords');
                         await syncPolicyCopiedRecords(policyId, logger);
                     }
 
                     const dbData = await loadImportedRecordsFromDb(policyId, policy.owner);
                     records = dbData.records;
                     results = dbData.results;
+                    // console.log(dbData.records, 'dbData.records');
 
-                    console.log(dbData.records, 'dbData.records');
+                    // console.log(JSON.stringify(dbData.records), 'dbData.records');
                 }
                 const guardiansService = new GuardiansService();
 

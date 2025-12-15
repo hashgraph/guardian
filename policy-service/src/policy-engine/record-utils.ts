@@ -253,10 +253,11 @@ export class RecordUtils {
         block: AnyBlockType,
         data: any,
         recordActionId?: any,
+        actionTimestemp?: number
     ): Promise<void> {
         const record = RecordUtils.GetRecordingController(policyId);
         if (record) {
-            await record.setBlockData(user, block, data, recordActionId);
+            await record.setBlockData(user, block, data, recordActionId, actionTimestemp);
         }
     }
 

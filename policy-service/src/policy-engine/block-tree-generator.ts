@@ -205,9 +205,11 @@ export class BlockTreeGenerator extends NatsService {
             // Record -->
                 return error;
             }
+            // await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
+
             // Available -->
             // const actionstep = new RecordActionStep((recordActionId) => console.log(recordActionId, 'recordActionIdrecordActionIdrecordActionId'));
-            const actionstep = new RecordActionStep((recordActionId) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId));
+            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp));
             // const actionstep = null;
             const res =  await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
             // <-- Record
@@ -231,10 +233,12 @@ export class BlockTreeGenerator extends NatsService {
             // Record -->
                 return error;
             }
+
             // Available -->
-            const actionstep = new RecordActionStep((recordActionId) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId));
+            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp));
             // const actionstep = null;
 
+            // await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
 
             const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
 
