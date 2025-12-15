@@ -196,7 +196,7 @@
                     <tr class="guardian-grid-row" [attr.schema-status]="schema.status">
 
                         <ng-container *ngIf="type === 'policy'">
-                            <td *ngIf="canDisplayColumn('select')" class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
+                            <td *ngIf="canDisplayColumn('select')" class="first-schema-grid-cell" style="min-width: 140px; max-width: 150px;">
                                 <p-checkbox
                                     (onChange)="onSelectItem(schema)"
                                     [disabled]="isDeleteDisabled(schema)"
