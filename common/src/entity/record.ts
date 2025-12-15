@@ -51,6 +51,12 @@ export class Record extends BaseEntity {
     user?: string;
 
     /**
+     * User
+     */
+    @Property({ nullable: true })
+    userRole?: string;
+
+    /**
      * Target
      */
     @Property({ nullable: true })

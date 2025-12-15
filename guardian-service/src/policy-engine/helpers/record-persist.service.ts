@@ -10,7 +10,7 @@ import {
     Users
 } from '@guardian/common';
 import { FilterObject } from '@mikro-orm/core';
-import { ISignOptions } from '@guardian/interfaces';
+import { ISignOptions, Permissions } from '@guardian/interfaces';
 export enum RecordMethod {
     Start = 'START',
     Stop = 'STOP',
@@ -35,6 +35,7 @@ export interface PersistStepPayload {
     } | null;
     uploadToIpfs: boolean;
     recordActionId?: any;
+    userFull?: any;
 }
 
 export class RecordPersistService {
@@ -48,7 +49,8 @@ export class RecordPersistService {
             documentSnapshot,
             hedera,
             uploadToIpfs,
-            recordActionId
+            recordActionId,
+            userFull,
         } = data;
         console.log(uploadToIpfs, 'uploadToIpfs');
         if (!uploadToIpfs) {
@@ -75,6 +77,7 @@ export class RecordPersistService {
             let signOptions: ISignOptions | undefined;
             let dryRun: string | null = null;
             let policyMessageId: string | null = policyMessageIdFromRecording ?? null;
+            const policy = await DatabaseServer.getPolicyById(policyId) as Policy;
 
             if (hedera?.topicId && hedera.operatorId && hedera.operatorKey) {
                 const topicRow = await DatabaseServer.getTopicById(hedera.topicId);
@@ -90,7 +93,6 @@ export class RecordPersistService {
                     policyMessageId = policy?.messageId || null;
                 }
             } else {
-                const policy = await DatabaseServer.getPolicyById(policyId) as Policy;
                 if (!policy || !policy.recordsTopicId || !policy.owner) {
                     console.error(`RecordPersistService: unable to resolve policy/records topic for policy ${policyId}`);
                     return;
@@ -117,8 +119,16 @@ export class RecordPersistService {
                 recordId,
                 recordActionId
             );
+
+            let userRole = null;
+
+            if (policy.owner === userFull?.did || userFull?.permissions?.includes(Permissions.POLICIES_POLICY_MANAGE)) {
+                userRole = 'Administrator';
+            }
+
             const zip = await RecordImportExport.generateSingleRecordZip({
                 ...savedRecord,
+                userRole,
                 document: documentSnapshot ?? null
             } as Record, resultDocuments);
 
@@ -139,7 +149,7 @@ export class RecordPersistService {
                     action: payload.action ? String(payload.action) : null,
                     time: payload.time as number,
                     user: (payload.user as string) ?? null,
-                    target: (payload.target as string) ?? null
+                    target: (payload.target as string) ?? null,
                 },
                 buffer
             );

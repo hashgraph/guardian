@@ -984,6 +984,7 @@ export class PolicyImport {
                         ipfsCid: recordFromZip.ipfsCid ?? null,
                         ipfsUrl: recordFromZip.ipfsUrl ?? null,
                         ipfsTimestamp: recordFromZip.ipfsTimestamp ?? new Date(),
+                        userRole: recordFromZip.userRole || null,
 
                         fromPolicyId: this.sourcePolicyId,
                         copiedRecordId: recordFromZip.id?.toString?.() || msg.recordId?.toString?.() || null

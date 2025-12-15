@@ -336,7 +336,8 @@ export class PolicyEngineService {
                 documentSnapshot,
                 hedera,
                 uploadToIpfs,
-                recordActionId
+                recordActionId,
+                userFull
             } = msg;
             console.log(123321);
                 try {
@@ -349,7 +350,8 @@ export class PolicyEngineService {
                         documentSnapshot,
                         hedera,
                         uploadToIpfs,
-                        recordActionId
+                        recordActionId,
+                        userFull
                     });
                 } catch (error: any) {
                     console.error(`Error persisting record step for policy ${msgPolicyId}`, error);

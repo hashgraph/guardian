@@ -223,6 +223,7 @@ export async function syncPolicyCopiedRecords(
                     ipfsCid: recordFromZip.ipfsCid ?? null,
                     ipfsUrl: recordFromZip.ipfsUrl ?? null,
                     ipfsTimestamp: recordFromZip.ipfsTimestamp ?? new Date(),
+                    userRole: recordFromZip.userRole || null,
                     fromPolicyId: sourcePolicyId,
                     copiedRecordId
                 };
@@ -303,8 +304,17 @@ async function loadImportedRecordsFromDb(
     }
 
     importedRecords = importedRecords.filter(Boolean);
-    console.log(JSON.stringify(importedRecords), 'stringifyimportedRecords');
+    // console.log(JSON.stringify(importedRecords), 'stringifyimportedRecords');
+    const adminRecord: any = importedRecords.find((r: any) => r?.userRole === 'Administrator');
+    const adminUser: string | null = adminRecord?.user || null;
 
+    if (adminUser && policyOwner && adminUser !== policyOwner) {
+        for (const rec of importedRecords as any[]) {
+            if (rec?.user === adminUser) {
+                rec.user = policyOwner;
+            }
+        }
+    }
     let total = 0;
     const resultsMap = new Map<string, IRecordResult>();
     for (const r of importedRecords) {
@@ -338,7 +348,6 @@ async function loadImportedRecordsFromDb(
     const resultsFromDb: IRecordResult[] = Array.from(resultsMap.values());
     // resultsFromDb.shift();
     // console.log(resultsFromDb.length, 'resultsFromDbresultsFromDb');
-
     const toTimestamp = (value: any): number | null => {
         if (!value) {
             return null;

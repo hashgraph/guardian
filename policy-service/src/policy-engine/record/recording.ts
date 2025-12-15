@@ -152,7 +152,8 @@ export class Recording {
         user: string,
         target: string,
         document: any,
-        recordActionId?: any
+        recordActionId?: any,
+        userFull?: PolicyUser
     }): Promise<void> {
         if (!this.isActive()) {
             return;
@@ -165,7 +166,7 @@ export class Recording {
             time: Date.now(),
             user: entry.user ?? null,
             target: entry.target ?? null,
-            document: entry.document ?? null
+            document: entry.document ?? null,
         } as FilterObject<Record>;
         const documentSnapshot = this.cloneDocument(entry.document);
         // if (this.storeInDb) {
@@ -190,7 +191,8 @@ export class Recording {
                 documentSnapshot,
                 hedera: this.hedera ?? null,
                 uploadToIpfs: this.uploadToIpfs,
-                recordActionId: entry.recordActionId
+                recordActionId: entry.recordActionId,
+                userFull: entry.userFull,
             });
         }
 
@@ -367,6 +369,7 @@ export class Recording {
             method: RecordMethod.Action,
             action: RecordAction.SelectGroup,
             user: user?.did,
+            userFull: user,
             target: null,
             document: { uuid }
         });
@@ -388,6 +391,7 @@ export class Recording {
             method: RecordMethod.Action,
             action: RecordAction.SetBlockData,
             user: user?.did,
+            userFull: user,
             target: block?.tag,
             document: data,
             recordActionId,

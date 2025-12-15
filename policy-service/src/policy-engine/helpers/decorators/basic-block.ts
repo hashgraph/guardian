@@ -363,9 +363,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             ): void {
                 // const status = actionStatus ?? this.actionStatus;
                 const status = actionStatus;
-                console.log(actionStatus, 'actionStatus 111');
-                console.log(data, 'data 111');
-                console.log(this.sourceLinks, 'this.sourceLinks 111');
                 if (!this.sourceLinks.length) {
                     actionStatus?.dec();
                 }
@@ -393,9 +390,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             ): Promise<any> {
                 // const status = actionStatus ?? this.actionStatus;
                 const status = actionStatus;
-                console.log(actionStatus, 'actionStatus 111');
-                console.log(data, 'data 111');
-                console.log(this.sourceLinks, 'this.sourceLinks 111');
                 if (!this.sourceLinks.length) {
                     actionStatus?.dec();
                 }

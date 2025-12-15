@@ -427,6 +427,9 @@ export class RecordImportExport {
                 } else {
                     row.push('');
                 }
+                if ((item as any).userRole) {
+                    row.push(item.userRole);
+                }
             }
             json += row.join(',') + '\r\n';
         }
@@ -480,7 +483,7 @@ export class RecordImportExport {
         const lines = recordString.split('\r\n');
         for (const line of lines) {
             if (line && !line.startsWith('--')) {
-                const [method, time, action, user, target, documentId] = line.split(',');
+                const [method, time, action, user, target, documentId, userRole = ''] = line.split(',');
                 if (method) {
                     records.push({
                         method,
@@ -488,7 +491,8 @@ export class RecordImportExport {
                         user,
                         target,
                         time: RecordImportExport.addTime(now, time),
-                        document: documents.get(documentId)
+                        document: documents.get(documentId),
+                        userRole,
                     });
                 }
             }
