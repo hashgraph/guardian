@@ -79,7 +79,6 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public defaultValuesSubscription?: Subscription;
     public presetValues: any;
     public isShowMore = false;
-    public isUpdatableDisabled: boolean = false;
 
     private fieldTypeSub: Subscription;
     private fieldPropertySub: Subscription;
@@ -393,9 +392,9 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         this.geoJson = ((item && item.name) || typeName) === 'GeoJSON';
         if (!item) {
             this.field.isUpdatable.setValue(false);
-            this.isUpdatableDisabled = true;
+            this.field.isUpdatable.disable()
         } else {
-            this.isUpdatableDisabled = false;
+            this.field.isUpdatable.enable()
         }
     }
 

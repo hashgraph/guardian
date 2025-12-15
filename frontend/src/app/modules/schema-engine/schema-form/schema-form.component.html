@@ -585,8 +585,7 @@
                         <div
                             class="fields-remove"
                             *ngIf="
-                                !item.control.disabled ||
-                                (isEditMode && item.isUpdatable)
+                                !item.control.disabled && (!isEditMode || item?.isUpdatable)
                             "
                         >
                             <div
@@ -612,8 +611,7 @@
 
                 <button
                     *ngIf="
-                        !item.control.disabled ||
-                        (isEditMode && item.isUpdatable)
+                        !item.control.disabled && (!isEditMode || item?.isUpdatable)
                     "
                     (click)="addItem(item)"
                     class="guardian-button guardian-button-secondary add-btn"
@@ -693,7 +691,7 @@
                                     *ngIf="
                                         item.control &&
                                         !item.required &&
-                                        !item.control.disabled
+                                        !item.control.disabled && (!isEditMode || item?.isUpdatable)
                                     "
                                     class="guardian-icon-button big"
                                     (click)="removeGroup(item, $event)"
@@ -790,7 +788,7 @@
                             </div>
 
                             <button
-                                *ngIf="!item.control && !item.readonly"
+                                *ngIf="!item.control && !item.readonly && (!isEditMode || item?.isUpdatable)"
                                 (click)="addGroup(item)"
                                 class="guardian-button guardian-button-secondary add-btn"
                             >
@@ -937,7 +935,7 @@
 
                                                 <div
                                                     *ngIf="
-                                                        !item.control.disabled
+                                                        !item.control.disabled && (!isEditMode || item?.isUpdatable)
                                                     "
                                                     class="guardian-icon-button big"
                                                     (click)="
@@ -1043,7 +1041,7 @@
                             </div>
 
                             <button
-                                *ngIf="!item.control.disabled"
+                                *ngIf="!item.control.disabled && (!isEditMode || item?.isUpdatable)"
                                 (click)="addItem(item)"
                                 class="guardian-button guardian-button-secondary add-btn"
                             >

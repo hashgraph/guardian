@@ -1583,7 +1583,7 @@ export class PolicyEngine extends NatsService {
      * Get all new version policy documents
      * @param user
      * @param policyId
-     * @param data
+     * @param documentId
      */
     public async getAllVersionVcDocuments(
         user: IAuthUser,

@@ -30,6 +30,11 @@ export class PolicyVcDocumentsUtils {
         const firstVCDocument = await db.getVcDocument({
             id: documentId,
         });
+
+        if (!firstVCDocument) {
+            return docs;
+        }
+
         docs.push(firstVCDocument);
 
         if (firstVCDocument?.oldVersion) {

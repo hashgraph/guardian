@@ -219,12 +219,12 @@ export class VCFullscreenDialog {
             ])
                 .pipe(takeUntil(this._destroy$))
                 .subscribe(
-                    ([profile, count, allVcDocs]) => {
+                    ([profile, count, vcDocs]) => {
                         this.user = new UserPermissions(profile);
                         this.discussionData = count?.fields || {};
 
-                        if (allVcDocs) {
-                            this.allVcDocs = allVcDocs;
+                        if (!!vcDocs && vcDocs.length > 0) {
+                            this.allVcDocs = vcDocs;
                             this.initVersionSelector();
                         }
 
@@ -249,7 +249,7 @@ export class VCFullscreenDialog {
                     ([profile, vcDocs]) => {
                         this.user = new UserPermissions(profile);
 
-                        if (vcDocs) {
+                        if (!!vcDocs && vcDocs.length > 0) {
                             this.allVcDocs = vcDocs;
                             this.initVersionSelector();
                         }
@@ -524,7 +524,7 @@ export class VCFullscreenDialog {
         if (!Array.isArray($event)) {
             if ($event.id === 'submit') {
                 $event.disabled = () => {
-                    return !this.dataForm.valid || this.loading;
+                    return  this.loading;
                 };
             }
         }
