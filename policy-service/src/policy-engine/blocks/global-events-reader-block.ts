@@ -19,7 +19,7 @@ import {LocationType, Schema, SchemaField, SchemaHelper} from '@guardian/interfa
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import {
     GlobalEventsStream,
-    GlobalEventsStreamStatus, IPFS,
+    IPFS,
     Workers
 } from '@guardian/common';
 import { WorkerTaskType } from '@guardian/interfaces';
@@ -87,6 +87,12 @@ type GlobalReaderEventState = IPolicyEventState & {
     event: GlobalEvent;
 };
 
+export enum GlobalEventsStreamStatus {
+    Free = 'FREE',
+    Processing = 'PROCESSING',
+    Error = 'ERROR'
+}
+
 @EventBlock({
     blockType: 'globalEventsReaderBlock',
     commonBlock: false,
@@ -110,6 +116,20 @@ type GlobalReaderEventState = IPolicyEventState & {
         defaultEvent: true,
         properties: [
             {
+                name: 'documentType',
+                label: 'Document type',
+                title: 'Type written to the global topic for reader-side filtering',
+                type: PropertyType.Select,
+                items: [
+                    { label: 'VC', value: 'vc' },
+                    { label: 'JSON', value: 'json' },
+                    { label: 'CSV', value: 'csv' },
+                    { label: 'Text', value: 'text' },
+                    { label: 'Any', value: 'any' },
+                ],
+                default: 'any',
+            },
+            {
                 name: 'eventTopics',
                 label: 'Event topics',
                 title: 'Hedera topic ids to listen (defaults shown to every user as inactive until user changes)',
@@ -126,12 +146,6 @@ type GlobalReaderEventState = IPolicyEventState & {
                         }
                     ]
                 }
-            },
-            {
-                name: 'documentType',
-                label: 'Document type',
-                title: 'Expected document type from global event payload (vc | json | csv | text | any)',
-                type: PropertyType.Input
             },
             {
                 name: 'branches',
@@ -160,7 +174,7 @@ type GlobalReaderEventState = IPolicyEventState & {
         ]
     }
 })
-export class GlobalEventsReaderBlock {
+class GlobalEventsReaderBlock {
     private readonly schemasCache: Map<string, Schema | null> = new Map();
     private job: CronJob | null = null;
 
@@ -816,7 +830,7 @@ export class GlobalEventsReaderBlock {
 
     public async setData(
         user: PolicyUser,
-        data: { value: SetDataPayload; operation: SetDataOperation }
+        data: { value: SetDataPayload; operation: string }
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
@@ -1044,3 +1058,5 @@ export class GlobalEventsReaderBlock {
         return undefined;
     }
 }
+
+export default GlobalEventsReaderBlock

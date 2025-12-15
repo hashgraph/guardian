@@ -61,4 +61,4 @@ export * from './policy-keys.js';
 export * from './document-draft.js';
 export * from './policy-comment.js';
 export * from './policy-discussion.js';
-export * from './global-events-stream.js';
+export { GlobalEventsStream } from './global-events-stream.js';

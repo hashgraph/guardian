@@ -490,13 +490,17 @@ const GlobalEventsReaderBlock: IBlockSetting = {
     }],
     about: {
         output: (value: any, block: PolicyBlock) => {
-            const result = value ? value.slice() : [];
+            const result: string[] = Array.isArray(value) ? value.slice() : [];
 
-            const messageTypes = (block as any).properties?.messageTypes;
-            if (Array.isArray(messageTypes)) {
-                for (const mt of messageTypes) {
-                    if (mt && typeof mt.messageType === 'string' && mt.messageType.trim()) {
-                        result.push(mt.messageType.trim());
+            const branches = (block as any).properties?.branches;
+            if (Array.isArray(branches)) {
+                for (const b of branches) {
+                    const ev = String(b?.branchEvent || '').trim();
+                    if (!ev) {
+                        continue;
+                    }
+                    if (!result.includes(ev)) {
+                        result.push(ev);
                     }
                 }
             }

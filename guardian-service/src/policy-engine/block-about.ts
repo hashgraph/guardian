@@ -1592,9 +1592,28 @@ export const BlockAbout = {
             'RunEvent',
             'TimerEvent'
         ],
-        'output': null,
+        'output': [
+            'RunEvent',
+            'RefreshEvent',
+            'ReleaseEvent',
+            'ErrorEvent',
+        ],
         'defaultEvent': true,
         'properties': [
+            {
+                'name': 'documentType',
+                'label': 'Document type',
+                'title': 'Type written to the global topic for reader-side filtering',
+                'type': 'Select',
+                'items': [
+                    { 'label': 'VC',   'value': 'vc' },
+                    { 'label': 'JSON', 'value': 'json' },
+                    { 'label': 'CSV',  'value': 'csv' },
+                    { 'label': 'Text', 'value': 'text' },
+                    { 'label': 'Any',  'value': 'any' }
+                ],
+                'default': 'any'
+            },
             {
                 'name': 'eventTopics',
                 'label': 'Event topics',
@@ -1612,12 +1631,6 @@ export const BlockAbout = {
                         }
                     ]
                 }
-            },
-            {
-                'name': 'documentType',
-                'label': 'Document type',
-                'title': 'Expected document type from global event payload (vc | json | csv | text | any)',
-                'type': 'Input'
             },
             {
                 'name': 'branches',

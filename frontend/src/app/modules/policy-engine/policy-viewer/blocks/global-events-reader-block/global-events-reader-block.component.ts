@@ -6,7 +6,7 @@ import {
     OnInit,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { catchError, finalize, switchMap } from 'rxjs/operators';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -117,8 +117,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.policyEngineService
-            .getBlockData(this.id, this.policyId)
+        (this.policyEngineService.getBlockData(this.id, this.policyId) as Observable<GlobalEventsReaderGetDataResponse | null>)
             .pipe(
                 catchError((e: HttpErrorResponse) => {
                     if (e.status === 503) {

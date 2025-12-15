@@ -55,7 +55,8 @@ import {
     PolicyAction,
     PolicyKey,
     PolicyComment,
-    PolicyDiscussion, GlobalEventsStream
+    PolicyDiscussion,
+    GlobalEventsStream
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -5362,6 +5363,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
         });
     }
 
+    public async getActiveGlobalEventsStreams(
+        policyId: string,
+        blockId: string
+    ): Promise<GlobalEventsStream[]> {
+        const helper = new DataBaseHelper<GlobalEventsStream>(GlobalEventsStream);
+        return await helper.find({
+            policyId,
+            blockId,
+            active: true,
+        });
+    }
+
     public async createGlobalEventsStream(
         data: Partial<GlobalEventsStream>
     ): Promise<GlobalEventsStream> {
@@ -5374,5 +5387,29 @@ export class DatabaseServer extends AbstractDatabaseServer {
     ): Promise<GlobalEventsStream> {
         const helper = new DataBaseHelper<GlobalEventsStream>(GlobalEventsStream);
         return await helper.save(stream);
+    }
+
+    public async deleteGlobalEventsStream(
+        stream: GlobalEventsStream
+    ): Promise<void> {
+        const helper = new DataBaseHelper<GlobalEventsStream>(GlobalEventsStream);
+
+        await helper.delete(stream);
+    }
+
+    public async getGlobalEventsStreamByUserTopic(
+        policyId: string,
+        blockId: string,
+        userId: string,
+        globalTopicId: string
+    ): Promise<GlobalEventsStream | null> {
+        const helper = new DataBaseHelper<GlobalEventsStream>(GlobalEventsStream);
+
+        return await helper.findOne({
+            policyId,
+            blockId,
+            userId,
+            globalTopicId,
+        });
     }
 }
