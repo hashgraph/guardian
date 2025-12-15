@@ -391,8 +391,15 @@
 
 <div *ngIf="isAnyItemSelected()" class="options-footer-container">
     <div class="options-footer">
-        <div>
-            <p class="selected-info">{{ selectedItems.length | pluralize: 'token' : 'tokens'}} selected</p>
+        <div class="selected-info-block">
+            <span class="selected-info">{{ selectedItems.length | pluralize: 'token' : 'tokens'}} selected</span>
+            <p-button
+                (click)="onClearSelection()"
+                class="secondary-btn"
+                [outlined]="true"
+            >
+                Clear selection
+            </p-button>
         </div>
         <div>
             <p-button

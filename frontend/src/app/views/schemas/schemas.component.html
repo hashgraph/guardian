@@ -629,7 +629,13 @@
     <div class="options-footer">
         <div class="selected-info-block">
             <span class="selected-info">{{ selectedItems.length | pluralize: 'schema' : 'schemas'}} selected</span>
-            <a (click)="onClearSelection()">Clear selection</a>
+            <p-button
+                (click)="onClearSelection()"
+                class="secondary-btn"
+                [outlined]="true"
+            >
+                Clear selection
+            </p-button>
         </div>
         <div>
             <p-button

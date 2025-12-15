@@ -684,18 +684,13 @@ a {
     background: #FFF;
 
     .selected-info-block {
+        display: flex;
+        gap: 16px;
         align-content: center;
+        align-items: center;
 
-        a {
-            margin-left: 8px;
-            font-family: Inter, sans-serif;
-            font-weight: 400;
-            font-style: Regular;
-            font-size: 14px;
-            line-height: 100%;
-            letter-spacing: 0%;
-            vertical-align: middle;
-            color: var(--color-grey-5, #848FA9);
+        ::ng-deep .p-button {
+            padding: 8px 16px;
         }
     }
 
@@ -758,7 +753,6 @@ a {
         }
     }
 }
-
 
 .guardian-grid-container {
     ::ng-deep .guardian-grid-table {

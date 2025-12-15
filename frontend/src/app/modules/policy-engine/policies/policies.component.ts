@@ -1918,4 +1918,10 @@ export class PoliciesComponent implements OnInit {
             });
         }
     }
+
+    public onClearSelection() {
+        this.selectedItems = [];
+        this.selectedItemIds = [];
+        this.isAllSelected = false;
+    }
 }
