@@ -369,6 +369,8 @@
         * [Fast Forward](guardian/standard-registry/policies/record-replay/record-replay-apis/fast-forward.md)
         * [Retry Step](guardian/standard-registry/policies/record-replay/record-replay-apis/retry-step.md)
         * [Skip Step](guardian/standard-registry/policies/record-replay/record-replay-apis/skip-step.md)
+    * [Capture, Replay, and Compare Data for Published Policies](guardian/standard-registry/policies/capture-replay-and-compare-data-for-published-policies/README.md)
+      * [UI Demo using CDM II.J Policy](guardian/standard-registry/policies/capture-replay-and-compare-data-for-published-policies/ui-demo-using-cdm-ii.j-policy.md)
     * [Global Policy Search & Compare](guardian/standard-registry/policies/policy-differentiation/README.md)
       * [Global search and comparison UI](guardian/standard-registry/policies/policy-differentiation/global-search-and-comparison-ui.md)
       * [Policy Differentiation using UI](guardian/standard-registry/policies/policy-differentiation/policy-differentiation-using-ui.md)
