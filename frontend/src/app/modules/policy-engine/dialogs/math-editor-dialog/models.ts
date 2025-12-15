@@ -26,6 +26,24 @@ export function convertValue(value: any): any {
     return null;
 }
 
+export function getValueByPath(value: any, keys: string[], index: number): any {
+    if (index < keys.length) {
+        const key = keys[index];
+        const result = value[key];
+        if (Array.isArray(result)) {
+            const results: any[] = new Array(result.length);
+            for (let j = 0; j < result.length; j++) {
+                results[j] = getValueByPath(result[j], keys, index + 1);
+            }
+            return results;
+        } else {
+            return getValueByPath(result, keys, index + 1);
+        }
+    } else {
+        return value;
+    }
+}
+
 export class Formula {
     public type: 'function' | 'variable' = 'variable';
 
@@ -109,7 +127,6 @@ export class Formula {
 
             const latex = text.replace(/(\b\w+\b)/g, '\\operatorname{$1}') + ' := 0';
             const ce = new ComputeEngine();
-            debugger;
             const f = ce.parse(latex);
             if (!f.isValid) {
                 this._setErrorName();
@@ -533,32 +550,46 @@ export class Context {
     public variables: any = {};
     public formulas: any = {};
     public valid: boolean = false;
+    public getField: (path: string) => any;
+    public components: any[] = [];
+
+    private ce: ComputeEngine;
 
     constructor(list: (Formula | Link)[]) {
         this.list = list;
     }
 
-    public setDocument(document: any): void {
+    public setDocument(doc: any): void {
         this.valid = true;
         try {
             for (const item of this.list) {
                 if (item.type === 'link') {
-                    item.value = this.getValueByPath(document, item.path);
+                    item.value = this.getValueByPath(doc, item.path);
                 }
             }
         } catch (error) {
             this.valid = false;
         }
-        this.update();
+        this.update(doc);
     }
 
-    private getValueByPath(document: any, path: string): any {
-
+    private getValueByPath(doc: any, path: string): any {
+        try {
+            if (!doc || !path) {
+                return null;
+            }
+            const keys = path.split('.');
+            return getValueByPath(doc, keys, 0);
+        } catch (error) {
+            return null;
+        }
     }
 
-    private update() {
+    private update(doc: any) {
         this.variables = {};
         this.formulas = {};
+        this.getField = this.__get.bind(doc);
+        this.components = [];
         try {
             const ce = new ComputeEngine();
             for (const item of this.list) {
@@ -568,6 +599,11 @@ export class Context {
                         ce.assign(item.name, latex);
                     }
                     this.variables[item.name] = item.value;
+                    this.components.push({
+                        type: 'link',
+                        name: item.name,
+                        value: `variables[${item.name}]`
+                    })
                 }
                 if (item.type === 'variable') {
                     const latex = item.getLatex();
@@ -579,17 +615,66 @@ export class Context {
                             ce.assign(item.functionName, convertValue(item.value));
                         }
                     }
+                    this.components.push({
+                        type: 'variable',
+                        name: item.functionName,
+                        value: `variables['${item.functionName}']`
+                    })
                 }
                 if (item.type === 'function') {
-                    const latex = item.getLatex();
+                    const latex /**/ = item.getLatex();
                     if (latex) {
                         ce.assign(item.functionName, ce.parse(latex));
+                        this.formulas[item.functionName] = this.__evaluate.bind({
+                            ce,
+                            name: item.functionName,
+                            params: item.functionParams
+                        })
                     }
+                    const paramsNames = item.functionParams.map((name) => `_ /*${name}*/`).join(',');
+                    this.components.push({
+                        type: 'function',
+                        name: item.functionName,
+                        value: `formulas['${item.functionName}'](${paramsNames})`
+                    })
                 }
             }
-            debugger;
+            this.ce = ce;
         } catch (error) {
             this.valid = false;
+        }
+    }
+
+    private __get(path: string): any {
+        try {
+            const doc: any = this;
+            if (!doc || !path) {
+                return null;
+            }
+            const keys = path.split('.');
+            return getValueByPath(doc, keys, 0);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    private __evaluate(...arg: any[]): any {
+        try {
+            const context: any = this;
+            if (context.params.length !== arg.length) {
+                return NaN;
+            }
+            const list = new Array(arg.length);
+            for (let i = 0; i < arg.length; i++) {
+                const pName = `evaluateFunctionParameter${i}`;
+                context.ce.assign(pName, arg[i]);
+                list[i] = `\\operatorname{${pName}}`;
+            }
+            const latex = `\\operatorname{${context.name}}(${list.join(',')})`;
+            const result = context.ce.parse(latex).evaluate();
+            return result?.value;
+        } catch (error) {
+            return NaN;
         }
     }
 }

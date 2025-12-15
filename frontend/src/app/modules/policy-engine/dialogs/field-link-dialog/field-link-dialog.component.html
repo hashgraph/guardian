@@ -26,7 +26,7 @@
                     <p-radioButton 
                         class="guardian-radio-button radio-button-24"
                         [value]="item.data.path" 
-                        [ngModel]="itemId"></p-radioButton>
+                        [ngModel]="path"></p-radioButton>
                 </div>
                 <div class="field-name" (click)="onSelectField(item)">
                     {{item.data.description}}
@@ -46,7 +46,7 @@
             <button 
                 (click)="onSubmit()" 
                 class="guardian-button guardian-button-primary"
-                [disabled]="!itemId">Confirm</button>
+                [disabled]="!path">Confirm</button>
         </div>
     </div>
 </div>

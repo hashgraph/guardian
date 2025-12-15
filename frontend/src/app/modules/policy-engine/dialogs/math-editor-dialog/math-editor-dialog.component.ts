@@ -3,7 +3,7 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
 import { Schema, SchemaField } from '@guardian/interfaces';
 import { MathLiveComponent } from 'src/app/modules/common/mathlive/mathlive.component';
 import { FieldLinkDialog } from '../field-link-dialog/field-link-dialog.component';
-import { Formula, Group, Link } from './models';
+import { Context, Formula, getValueByPath, Group, Link } from './models';
 import { SchemaVariables } from '../../structures';
 
 /**
@@ -54,6 +54,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         readonly: false,
         autoFocus: true
     };
+    context: Context | null;
 
     constructor(
         private dialogRef: DynamicDialogRef,
@@ -66,6 +67,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         // this.scope.addVariable();
         this.scope.addFormula('x', '1');
         this.scope.addFormula('y', 'x + 10');
+        this.scope.addFormula('z(a, b)', 'a + b');
     }
 
     ngOnInit() {
@@ -172,9 +174,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 schema: this.schema,
             },
         });
-        dialogRef.onClose.subscribe((result: string | null) => {
+        dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
-                item.field = result;
+                item.field = result.value;
             }
         });
     }
@@ -231,16 +233,61 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public onValidate() {
         if (this.scope) {
-            debugger
-
             this.scope.validate();
 
-            debugger
+            this.context = this.scope.createContext();
+            if (!this.context) {
+                return;
+            }
 
-            const context = this.scope.createContext();
-            context?.setDocument({});
+            const doc = {
+                f1: [
+                    {
+                        f2: [1]
+                    },
+                    {
+                        f2: [3]
+                    }
+                ]
+            };
+
+            this.context.setDocument(doc);
+            const formulas = this.context.formulas;
+            const variables = this.context.variables;
+            const getField = this.context.getField;
+
+            formulas['z'](1, 2);
+            const t = getField('f1.f2');
 
             debugger;
+        }
+    }
+
+    public addVariableLink() {
+        if (!this.schema) {
+            return;
+        }
+        const dialogRef = this.dialogService.open(FieldLinkDialog, {
+            showHeader: false,
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            data: {
+                schema: this.schema,
+            },
+        });
+        dialogRef.onClose.subscribe((result: any | null) => {
+            if (result) {
+                this.code = this.code + '\r\n';
+                this.code = this.code + `//${result.fullName}` + '\r\n';
+                this.code = this.code + `const _ = get('${result.value}');` + '\r\n';
+            }
+        });
+    }
+
+    public addComponent() {
+        const result = this.context?.components[2];
+        if (result) {
+            this.code = this.code + `${result.value}`;
         }
     }
 }

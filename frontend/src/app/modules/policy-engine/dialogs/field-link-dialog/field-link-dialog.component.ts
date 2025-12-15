@@ -11,8 +11,9 @@ import { FieldData } from 'src/app/modules/common/models/schema-node';
 export class FieldLinkDialog {
     public loading = true;
     public schema: any;
-    public itemId: string | null;
+    public path: string | null;
     public items: TreeListView<any> | null;
+    public item: TreeListItem<any> | null;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -20,7 +21,7 @@ export class FieldLinkDialog {
         private dialogService: DialogService,
     ) {
         this.schema = this.config.data?.schema;
-        this.itemId = this.config.data?.link;
+        this.path = this.config.data?.link;
         const fields = TreeListData.fromObject<FieldData>(this.schema, 'fields');
         this.items = TreeListView.createView(fields, (s) => { return !s.parent });
     }
@@ -48,7 +49,8 @@ export class FieldLinkDialog {
             this.onCollapseField(item);
             return;
         }
-        this.itemId = item.data.path;
+        this.path = item.data.path;
+        this.item = item;
     }
 
     public onSelectVariable(item: TreeListItem<any>) {
@@ -56,12 +58,29 @@ export class FieldLinkDialog {
             this.onCollapseField(item);
             return;
         }
-        this.itemId = item.data.uuid;
+        this.path = item.data.uuid;
+        this.item = item;
     }
 
     public onSubmit(): void {
-        if (this.itemId) {
-            this.ref.close(this.itemId);
+        if (this.path) {
+            const parents = this.getParents(this.item);
+            const fullName = parents.map(e => e?.data?.description).join('|');
+            this.ref.close({
+                name: this.item?.data?.description,
+                fullName: fullName,
+                value: this.path
+            });
+        }
+    }
+
+    private getParents(item: TreeListItem<any> | null): TreeListItem<any>[] {
+        if (item) {
+            const parents = this.getParents(item.parent);
+            parents.push(item);
+            return parents;
+        } else {
+            return [];
         }
     }
 }

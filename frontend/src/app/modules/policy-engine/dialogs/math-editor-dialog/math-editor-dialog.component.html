@@ -262,6 +262,22 @@
                         <span class="code-variable-description">- Ingress VC document.</span>
                     </div>
                 </div>
+                <button (click)="addVariableLink()" class="guardian-button guardian-button-secondary">
+                    <div class="guardian-button-icon">
+                        <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/variable.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Add Variable</div>
+                </button>
+                <button (click)="addComponent()" class="guardian-button guardian-button-secondary">
+                    <div class="guardian-button-icon">
+                        <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/variable.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Add component</div>
+                </button>
                 <div class="code-body">
                     <ngx-codemirror 
                         *ngIf="initDialog" 
