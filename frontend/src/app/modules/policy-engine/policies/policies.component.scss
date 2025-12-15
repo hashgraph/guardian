@@ -1088,6 +1088,17 @@
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
     background: #FFF;
 
+    .selected-info-block {
+        display: flex;
+        gap: 16px;
+        align-content: center;
+        align-items: center;
+
+        ::ng-deep .p-button {
+            padding: 8px 16px;
+        }
+    }
+
     .selected-info {
         font-family: Inter, sans-serif;
         font-weight: 400;
