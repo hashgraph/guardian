@@ -1,4 +1,4 @@
-.global-topic-reader-block {
+.global-events-reader-block {
     .header {
         display: flex;
         align-items: center;
@@ -27,6 +27,30 @@
             display: inline-block;
             padding: 2px 6px;
             font-size: 11px;
+        }
+    }
+
+    .filters {
+        .branch {
+            padding: 8px 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+
+            &:first-child {
+                border-top: none;
+                padding-top: 0;
+            }
+        }
+
+        .branch-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .branch-title {
+            margin-right: auto;
+            font-size: 12px;
         }
     }
 }

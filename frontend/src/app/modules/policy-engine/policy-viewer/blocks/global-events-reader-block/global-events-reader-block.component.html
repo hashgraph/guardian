@@ -1,0 +1,169 @@
+<div class="global-events-reader-block">
+    <div class="header">
+        <h4>Global events</h4>
+
+        <button
+            type="button"
+            class="btn btn-sm btn-primary"
+            (click)="addRow()"
+            [disabled]="readonly || loading">
+            + Add event topic
+        </button>
+
+        <button
+            type="button"
+            class="btn btn-sm btn-success"
+            (click)="save()"
+            [disabled]="readonly || loading">
+            Save
+        </button>
+    </div>
+
+    <table class="table table-sm table-striped table-bordered">
+        <thead>
+        <tr>
+            <th style="width: 320px;">Event topic ID</th>
+            <th style="width: 120px;">Status</th>
+            <th style="width: 260px;">Last cursor</th>
+            <th style="width: 80px;">Active</th>
+            <th style="width: 90px;"></th>
+            <th style="width: 60px;"></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <ng-container *ngFor="let row of rows; let i = index">
+            <tr>
+                <td>
+                    <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        [(ngModel)]="row.globalTopicId"
+                        [readonly]="readonly">
+                </td>
+
+                <td>
+                    <span
+                        class="badge"
+                        [ngClass]="{
+                            'badge-success': row.status === 'FREE',
+                            'badge-danger': row.status === 'ERROR',
+                            'badge-warning': row.status === 'PROCESSING'
+                        }">
+                        {{ row.status || '-' }}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="text-muted">{{ row.lastMessageCursor || '-' }}</span>
+                </td>
+
+                <td class="text-center">
+                    <input
+                        type="checkbox"
+                        [(ngModel)]="row.active"
+                        [disabled]="readonly">
+                </td>
+
+                <td class="text-center">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        (click)="toggleRow(row)"
+                        [disabled]="readonly">
+                        Filters
+                    </button>
+                </td>
+
+                <td class="text-center">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="removeRow(i)"
+                        [disabled]="readonly || loading">
+                        ✕
+                    </button>
+                </td>
+            </tr>
+
+            <tr *ngIf="row.expanded">
+                <td colspan="6">
+                    <div class="filters">
+                        <div
+                            class="branch"
+                            *ngFor="let b of row.branchFilters || []">
+                            <div class="branch-header">
+                                <div class="branch-title">
+                                    Branch event: <b>{{ b.branchEvent }}</b>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-primary"
+                                    (click)="addFilter(row, b.branchEvent)"
+                                    [disabled]="readonly">
+                                    + Add filter
+                                </button>
+                            </div>
+
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Field label (title/description/name)</th>
+                                    <th>Expected value</th>
+                                    <th style="width: 60px;"></th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <tr *ngFor="let f of b.items; let fi = index">
+                                    <td>
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-sm"
+                                            [(ngModel)]="f.key"
+                                            [readonly]="readonly">
+                                    </td>
+                                    <td>
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-sm"
+                                            [(ngModel)]="f.value"
+                                            [readonly]="readonly">
+                                    </td>
+                                    <td class="text-center">
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            (click)="removeFilter(row, b.branchEvent, fi)"
+                                            [disabled]="readonly">
+                                            ✕
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr *ngIf="(b.items || []).length === 0">
+                                    <td colspan="3" class="text-center text-muted">
+                                        No filters for this branch.
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div *ngIf="(row.branchFilters || []).length === 0" class="text-muted">
+                            No branches configured in block settings.
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </ng-container>
+
+        <tr *ngIf="rows.length === 0">
+            <td colspan="6" class="text-center text-muted">
+                No streams configured yet.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

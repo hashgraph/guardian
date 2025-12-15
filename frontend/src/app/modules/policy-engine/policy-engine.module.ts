@@ -168,7 +168,7 @@ import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-di
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
 import { GlobalEventsWriterBlockComponent} from "./policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
-import { GlobalTopicReaderBlockComponent } from "./policy-viewer/blocks/global-topic-reader-block/global-topic-reader-block.component";
+import { GlobalEventsReaderBlockComponent } from "./policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component";
 
 @NgModule({
     declarations: [
@@ -293,7 +293,7 @@ import { GlobalTopicReaderBlockComponent } from "./policy-viewer/blocks/global-t
         OnLoadSavepointDialog,
         PolicyRepositoryComponent,
         UserPolicyDialog,
-        GlobalTopicReaderBlockComponent,
+        GlobalEventsReaderBlockComponent,
         GlobalEventsWriterBlockComponent
     ],
     imports: [

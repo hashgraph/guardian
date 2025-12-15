@@ -57,10 +57,8 @@ import { IntegrationButtonBlockComponent } from '../policy-viewer/blocks/integra
 import { HttpRequestUIAddonCode } from '../policy-viewer/code/http-request-ui-addon';
 import { TransformationUIAddonCode } from '../policy-viewer/code/transformation-ui-addon';
 import { WipeConfigComponent } from '../policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
-import { GlobalTopicReaderBlockComponent } from '../policy-viewer/blocks/global-topic-reader-block/global-topic-reader-block.component';
-import {
-    GlobalEventsWriterBlockComponent
-} from "../policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
+import { GlobalEventsReaderBlockComponent } from '../policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component';
+import { GlobalEventsWriterBlockComponent } from "../policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
 
 
 const Container: IBlockSetting = {
@@ -109,7 +107,7 @@ const Container: IBlockSetting = {
         { type: BlockType.MessagesReportBlock },
         { type: BlockType.NotificationBlock },
         { type: BlockType.ExtractDataBlock },
-        { type: BlockType.GlobalTopicReaderBlock },
+        { type: BlockType.GlobalEventsReaderBlock },
         { type: BlockType.GlobalEventsWriterBlock }
     ]
 }
@@ -160,7 +158,7 @@ const Step: IBlockSetting = {
         { type: BlockType.MessagesReportBlock },
         { type: BlockType.NotificationBlock },
         { type: BlockType.ExtractDataBlock },
-        { type: BlockType.GlobalTopicReaderBlock },
+        { type: BlockType.GlobalEventsReaderBlock },
         { type: BlockType.GlobalEventsWriterBlock }
     ]
 }
@@ -478,12 +476,12 @@ const ExternalTopic: IBlockSetting = {
     }]
 }
 
-const GlobalTopicReaderBlock: IBlockSetting = {
-    type: BlockType.GlobalTopicReaderBlock,
-    icon: BlockIcons[BlockType.GlobalTopicReaderBlock],
+const GlobalEventsReaderBlock: IBlockSetting = {
+    type: BlockType.GlobalEventsReaderBlock,
+    icon: BlockIcons[BlockType.GlobalEventsReaderBlock],
     group: BlockGroup.Documents,
     header: BlockHeaders.UIComponents,
-    factory: GlobalTopicReaderBlockComponent,
+    factory: GlobalEventsReaderBlockComponent,
     property: null,
     code: null,
     allowedChildren: [{
@@ -917,7 +915,7 @@ export default [
     SelectiveAttributes,
     TagManager,
     ExternalTopic,
-    GlobalTopicReaderBlock,
+    GlobalEventsReaderBlock,
     GlobalEventsWriterBlock,
     AutoReport,
     NotificationBlock,
