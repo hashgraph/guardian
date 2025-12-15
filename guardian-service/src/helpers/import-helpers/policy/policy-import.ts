@@ -968,14 +968,14 @@ export class PolicyImport {
                 for (const recordFromZip of parsedRecords) {
                     console.log(recordFromZip, 'recordFromZip');
                     if (!startRecotdTime) {
-                        startRecotdTime = (recordFromZip.time || recordFromZip.createDate || msg.time || new Date()) - 3000;
+                        startRecotdTime = (Number(msg.time) || Date.now()) - 3000;
                     }
                     const clonedRecord: any = {
                         uuid: recordFromZip.uuid || msg.recordingUuid,
                         policyId: targetPolicyId,
                         method: recordFromZip.method || msg.method,
                         action: recordFromZip.action || msg.actionName,
-                        time: recordFromZip.time || recordFromZip.createDate || msg.time,
+                        time: msg.time,
                         user: recordFromZip.user || msg.user,
                         target: recordFromZip.target || msg.target,
                         document: recordFromZip.document ?? null,

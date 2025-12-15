@@ -162,6 +162,7 @@ export async function syncPolicyCopiedRecords(
             }
         }
 
+        // console.log(messages.length, 'messages.length');
         for (const msg of messages) {
             if (sourcePolicyMessageId && msg.policyMessageId !== sourcePolicyMessageId) {
                 continue;
@@ -201,9 +202,12 @@ export async function syncPolicyCopiedRecords(
                     ? [parsed.record]
                     : [];
             const parsedResults: any[] = Array.isArray(parsed?.results) ? parsed.results : [];
+
+            parsed?.results.forEach((r) => console.log(r, 'rrr 90909009'));
             // parsedResults.forEach((res) => console.log(res, 'resresresresres'))
             for (const recordFromZip of parsedRecords) {
-                console.log(recordFromZip, 'recordFromZip');
+                // console.log(recordFromZip, 'recordFromZip');
+                // console.log(recordFromZip.time, 'recordFromZip.time');
                 const copiedRecordId = recordFromZip.id?.toString?.() || msg.recordId?.toString?.();
 
                 if (!copiedRecordId || existingIds.has(copiedRecordId)) {
@@ -215,7 +219,7 @@ export async function syncPolicyCopiedRecords(
                     policyId: targetPolicyId,
                     method: recordFromZip.method || msg.method,
                     action: recordFromZip.action || msg.actionName,
-                    time: recordFromZip.time || recordFromZip.createDate || msg.time,
+                    time: msg.time,
                     user: recordFromZip.user || msg.user,
                     target: recordFromZip.target || msg.target,
                     document: recordFromZip.document ?? null,
@@ -324,9 +328,12 @@ async function loadImportedRecordsFromDb(
     let total = 0;
     const resultsMap = new Map<string, IRecordResult>();
     for (const r of importedRecords) {
+        // console.log(r, 'rrrrrrrr');
+
         const items: any[] = Array.isArray((r as any).results) ? (r as any).results : [];
         // console.log(items.length, 'items.lengthitems.length');
         for (const res of items) {
+            console.log(res, 'res');
             total += 1;
             // console.log(res, 'resresres');
             // console.log(res.document, 'res.documentres.document');
@@ -348,10 +355,18 @@ async function loadImportedRecordsFromDb(
                 document: res.document ?? res
             });
         }
+
     }
 
-    console.log(total, 'totaltotaltotal');
-    const resultsFromDb: IRecordResult[] = Array.from(resultsMap.values());
+    // console.log(total, 'totaltotaltotal');
+    const resultsFromDb: IRecordResult[] = Array.from(resultsMap.values()).sort((a, b) => {
+        if (!a.document?.proof?.created || !b.document?.proof?.created) {
+            return 0;
+        }
+
+        return a.document?.proof?.created > b.document?.proof?.created ? 1 : -1;
+    });
+    console.log(resultsFromDb, 'resultsFromDb');
     // resultsFromDb.shift();
     // console.log(resultsFromDb.length, 'resultsFromDbresultsFromDb');
     const toTimestamp = (value: any): number | null => {
@@ -366,7 +381,7 @@ async function loadImportedRecordsFromDb(
     const hasStart = importedRecords.some(
         (r: any) => (r.method || '').toUpperCase() === 'START'
     );
-    console.log(hasStart, 'hasStarthasStarthasStart 123');
+    // console.log(hasStart, 'hasStarthasStarthasStart 123');
 
     if (hasStart) {
         const startRecord: any = importedRecords.find(
@@ -1100,6 +1115,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     records = dbData.records;
                     results = dbData.results;
                     // console.log(dbData.records, 'dbData.records');
+                    // console.log(dbData.results, 'dbData.results');
 
                     // console.log(JSON.stringify(dbData.records), 'dbData.records');
                 }

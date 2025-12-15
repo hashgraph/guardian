@@ -183,7 +183,6 @@ export class MessageServer {
             notifier.completeStep(STEP_SEND_FILES);
         }
 
-        console.log(this.dryRun, 'this.dryRun this.dryRun');
         // console.log(message, 'message message');
         notifier.startStep(STEP_SEND_MESSAGES);
         message = await this.sendHedera(message, options);
@@ -192,7 +191,6 @@ export class MessageServer {
         if (this.dryRun) {
             await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
         }
-        console.log(message.getUrls(), 'message message 222');
 
         notifier.complete();
         return message;
