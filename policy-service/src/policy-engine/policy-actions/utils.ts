@@ -150,7 +150,7 @@ export class PolicyActionsUtils {
         message: RoleMessage
     }> {
         const { ref, group, userId } = options;
-        const did = group.owner;
+        const did = group.did;
         const userCred = await PolicyUtils.getUserCredentials(ref, did, userId);
 
         if (userCred.location === LocationType.LOCAL) {
