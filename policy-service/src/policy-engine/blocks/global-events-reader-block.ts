@@ -116,20 +116,6 @@ export enum GlobalEventsStreamStatus {
         defaultEvent: true,
         properties: [
             {
-                name: 'documentType',
-                label: 'Document type',
-                title: 'Type written to the global topic for reader-side filtering',
-                type: PropertyType.Select,
-                items: [
-                    { label: 'VC', value: 'vc' },
-                    { label: 'JSON', value: 'json' },
-                    { label: 'CSV', value: 'csv' },
-                    { label: 'Text', value: 'text' },
-                    { label: 'Any', value: 'any' },
-                ],
-                default: 'any',
-            },
-            {
                 name: 'eventTopics',
                 label: 'Event topics',
                 title: 'Hedera topic ids to listen (defaults shown to every user as inactive until user changes)',
@@ -161,6 +147,20 @@ export enum GlobalEventsStreamStatus {
                             label: 'Branch event',
                             title: 'Output event name (connect in Events tab)',
                             type: PropertyType.Input
+                        },
+                        {
+                            name: 'documentType',
+                            label: 'Document type',
+                            title: 'Expected message type for this branch (reader-side filtering)',
+                            type: PropertyType.Select,
+                            items: [
+                                { label: 'VC', value: 'vc' },
+                                { label: 'JSON', value: 'json' },
+                                { label: 'CSV', value: 'csv' },
+                                { label: 'Text', value: 'text' },
+                                { label: 'Any', value: 'any' },
+                            ],
+                            default: 'any',
                         },
                         {
                             name: 'schema',

@@ -11,27 +11,24 @@ import { catchError, finalize, switchMap } from 'rxjs/operators';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { GlobalEventsReaderFiltersDialogComponent } from '../../dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component'
+
 type StreamStatus = 'FREE' | 'PROCESSING' | 'ERROR' | string;
+
+export type DocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
 
 export interface BranchConfig {
     branchEvent: string;
+    documentType?: DocumentType | string | null;
     schema?: string | null;
+    schemaName?: string | null;
 }
 
 export interface ReaderConfig {
     eventTopics: Array<{ topicId: string }>;
-    documentType: string;
+    documentType: DocumentType | string;
     branches: BranchConfig[];
-}
-
-export interface UiFilterItem {
-    key: string;
-    value: string;
-}
-
-export interface UiBranchFilters {
-    branchEvent: string;
-    items: UiFilterItem[];
 }
 
 export interface GlobalEventsStreamRow {
@@ -40,10 +37,18 @@ export interface GlobalEventsStreamRow {
     status: StreamStatus;
     lastMessageCursor: string;
     isDefault?: boolean;
+
+    /**
+     * Persisted filters:
+     * branchEvent -> (fieldLabel -> expectedValue)
+     */
     filterFieldsByBranch?: Record<string, Record<string, string>>;
 
-    expanded?: boolean;
-    branchFilters?: UiBranchFilters[];
+    /**
+     * Front-only (until backend stores it):
+     * branchEvent -> documentType
+     */
+    branchDocumentTypeByBranch?: Record<string, DocumentType>;
 }
 
 export interface GlobalEventsReaderGetDataResponse {
@@ -52,10 +57,16 @@ export interface GlobalEventsReaderGetDataResponse {
     streams: GlobalEventsStreamRow[];
 }
 
+export interface FiltersDialogResult {
+    filterFieldsByBranch: Record<string, Record<string, string>>;
+    branchDocumentTypeByBranch: Record<string, DocumentType>;
+}
+
 @Component({
     selector: 'global-events-reader-block',
     templateUrl: './global-events-reader-block.component.html',
     styleUrls: ['./global-events-reader-block.component.scss'],
+    providers: [DialogService],
 })
 export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
     @Input('id')
@@ -79,11 +90,21 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
 
     private socket: any;
     private initialTopicIds: string[] = [];
+    private filtersDialogRef: DynamicDialogRef | null = null;
+
+    public readonly documentTypes: Array<{ label: string; value: DocumentType }> = [
+        { label: 'VC', value: 'vc' },
+        { label: 'JSON', value: 'json' },
+        { label: 'CSV', value: 'csv' },
+        { label: 'Text', value: 'text' },
+        { label: 'Any', value: 'any' },
+    ];
 
     constructor(
         private readonly policyEngineService: PolicyEngineService,
         private readonly wsService: WebSocketService,
         private readonly changeDetector: ChangeDetectorRef,
+        private readonly dialogService: DialogService,
     ) {
     }
 
@@ -91,13 +112,17 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         if (!this.static) {
             this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
-
         this.loadData();
     }
 
     public ngOnDestroy(): void {
         if (this.socket) {
             this.socket.unsubscribe();
+        }
+
+        if (this.filtersDialogRef) {
+            this.filtersDialogRef.close();
+            this.filtersDialogRef = null;
         }
     }
 
@@ -124,6 +149,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                         return of(null);
                     }
 
+                    // eslint-disable-next-line no-console
                     console.error(e.error);
                     return of(null);
                 }),
@@ -165,10 +191,9 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                 lastMessageCursor: s.lastMessageCursor || '',
                 isDefault: !!s.isDefault,
                 filterFieldsByBranch: s.filterFieldsByBranch || {},
-                expanded: false,
+                branchDocumentTypeByBranch: this.buildDefaultBranchTypesMap(),
             };
 
-            row.branchFilters = this.buildBranchFilters(row.filterFieldsByBranch || {});
             return row;
         });
 
@@ -177,34 +202,43 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             .filter((v) => v.length > 0);
     }
 
-    private buildBranchFilters(filterFieldsByBranch: Record<string, Record<string, string>>): UiBranchFilters[] {
-        const branches = Array.isArray(this.config?.branches) ? this.config.branches : [];
-
-        return branches
-            .map((b) => {
-                const branchEvent = (b?.branchEvent || '').trim();
-                if (!branchEvent) {
-                    return null;
-                }
-
-                const obj = filterFieldsByBranch[branchEvent] || {};
-                const items: UiFilterItem[] = Object.keys(obj).map((k) => {
-                    return {
-                        key: String(k || ''),
-                        value: String(obj[k] ?? ''),
-                    };
-                });
-
-                return {
-                    branchEvent,
-                    items,
-                } as UiBranchFilters;
-            })
-            .filter((x) => !!x) as UiBranchFilters[];
-    }
-
     private normalizeTopicId(value: unknown): string {
         return String(value ?? '').trim();
+    }
+
+    private buildDefaultBranchTypesMap(): Record<string, DocumentType> {
+        const result: Record<string, DocumentType> = {};
+        const branches = Array.isArray(this.config?.branches) ? this.config.branches : [];
+
+        for (const branch of branches) {
+            const branchEvent = String(branch?.branchEvent ?? '').trim();
+            if (!branchEvent) {
+                continue;
+            }
+
+            const cfgType = String(branch?.documentType ?? '').toLowerCase().trim();
+            const normalized = this.normalizeDocumentType(cfgType);
+
+            result[branchEvent] = normalized;
+        }
+
+        return result;
+    }
+
+    private normalizeDocumentType(value: string): DocumentType {
+        if (value === 'vc') {
+            return 'vc';
+        }
+        if (value === 'json') {
+            return 'json';
+        }
+        if (value === 'csv') {
+            return 'csv';
+        }
+        if (value === 'text') {
+            return 'text';
+        }
+        return 'any';
     }
 
     public addRow(): void {
@@ -221,8 +255,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                 lastMessageCursor: '',
                 isDefault: false,
                 filterFieldsByBranch: {},
-                expanded: true,
-                branchFilters: this.buildBranchFilters({}),
+                branchDocumentTypeByBranch: this.buildDefaultBranchTypesMap(),
             },
         ];
     }
@@ -241,74 +274,67 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         this.rows = copy;
     }
 
-    public toggleRow(row: GlobalEventsStreamRow): void {
-        row.expanded = !row.expanded;
+    public openFilters(row: GlobalEventsStreamRow): void {
+        if (!row) {
+            return;
+        }
+
+        const branches = Array.isArray(this.config?.branches) ? this.config.branches : [];
+        const branchDocumentTypeByBranch = row.branchDocumentTypeByBranch
+            ? { ...row.branchDocumentTypeByBranch }
+            : this.buildDefaultBranchTypesMap();
+
+        this.filtersDialogRef = this.dialogService.open(GlobalEventsReaderFiltersDialogComponent, {
+            header: `Edit filters for topic ${this.normalizeTopicId(row.globalTopicId) || '-'}`,
+            width: '720px',
+            styleClass: 'global-events-reader-filters-dialog',
+            data: {
+                readonly: this.readonly,
+                branches,
+                documentTypes: this.documentTypes,
+                filterFieldsByBranch: row.filterFieldsByBranch || {},
+                branchDocumentTypeByBranch,
+            },
+        });
+
+        this.filtersDialogRef.onClose.subscribe((result: FiltersDialogResult | null) => {
+            if (!result) {
+                return;
+            }
+
+            row.filterFieldsByBranch = result.filterFieldsByBranch || {};
+            row.branchDocumentTypeByBranch = result.branchDocumentTypeByBranch || {};
+
+            this.changeDetector.detectChanges();
+        });
     }
 
-    public addFilter(row: GlobalEventsStreamRow, branchEvent: string): void {
+    public createTopic(): void {
         if (this.readonly) {
             return;
         }
-
-        const target = (row.branchFilters || []).find((b) => b.branchEvent === branchEvent);
-        if (!target) {
+        if (!this.policyId || !this.id) {
             return;
         }
 
-        target.items = [
-            ...target.items,
-            { key: '', value: '' },
-        ];
-    }
+        this.loading = true;
 
-    public removeFilter(row: GlobalEventsStreamRow, branchEvent: string, index: number): void {
-        if (this.readonly) {
-            return;
-        }
-
-        const target = (row.branchFilters || []).find((b) => b.branchEvent === branchEvent);
-        if (!target) {
-            return;
-        }
-
-        if (index < 0 || index >= target.items.length) {
-            return;
-        }
-
-        const copy = [...target.items];
-        copy.splice(index, 1);
-        target.items = copy;
-    }
-
-    private buildFilterFieldsByBranch(row: GlobalEventsStreamRow): Record<string, Record<string, string>> {
-        const result: Record<string, Record<string, string>> = {};
-        const branches = Array.isArray(row.branchFilters) ? row.branchFilters : [];
-
-        for (const b of branches) {
-            const branchEvent = (b?.branchEvent || '').trim();
-            if (!branchEvent) {
-                continue;
-            }
-
-            const obj: Record<string, string> = {};
-
-            for (const item of b.items || []) {
-                const key = String(item?.key ?? '').trim();
-                const value = String(item?.value ?? '').trim();
-
-                if (!key) {
-                    continue;
-                }
-
-                obj[key] = value;
-            }
-
-            if (Object.keys(obj).length > 0) {
-                result[branchEvent] = obj;
-            }
-        }
-
-        return result;
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                operation: 'CreateTopic',
+                value: {},
+            })
+            .subscribe(
+                () => {
+                    this.loadData();
+                },
+                (e) => {
+                    // eslint-disable-next-line no-console
+                    console.error(e.error);
+                    this.loading = false;
+                    this.changeDetector.detectChanges();
+                },
+            );
     }
 
     private hasAnyFilters(filterFieldsByBranch: Record<string, Record<string, string>>): boolean {
@@ -338,7 +364,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                 continue;
             }
 
-            const filterFieldsByBranch = this.buildFilterFieldsByBranch(row);
+            const filterFieldsByBranch = row.filterFieldsByBranch || {};
 
             result.push({
                 globalTopicId: topicId,
@@ -385,7 +411,6 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             if (s.active) {
                 return true;
             }
-
             return this.hasAnyFilters(s.filterFieldsByBranch);
         });
 
@@ -421,6 +446,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                     return update$;
                 }),
                 catchError((e: any) => {
+                    // eslint-disable-next-line no-console
                     console.error(e?.error || e);
                     return of(null);
                 }),

@@ -1,0 +1,102 @@
+<div class="filters-dialog">
+    <div *ngFor="let branch of branches" class="branch">
+        <div class="branch-header">
+            <div class="branch-title">
+                Branch event: <b>{{ branch.branchEvent }}</b>
+            </div>
+
+            <div class="branch-type">
+                <label>Type</label>
+                <select
+                    class="form-control form-control-sm"
+                    [(ngModel)]="branch.documentType"
+                    [disabled]="readonly">
+                    <option *ngFor="let t of documentTypes" [ngValue]="t.value">
+                        {{ t.label }}
+                    </option>
+                </select>
+            </div>
+
+            <button
+                *ngIf="branch.documentType === 'vc'"
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                (click)="addFilterItem(branch)"
+                [disabled]="readonly">
+                + Add filter
+            </button>
+        </div>
+
+        <div *ngIf="branch.documentType === 'vc' && branch.schemaId" class="schema-row">
+            <div class="schema-label">Schema</div>
+            <div class="schema-value">
+                <span class="schema-id">{{ branch.schemaId }}</span>
+                <span class="schema-name" *ngIf="branch.schemaName">({{ branch.schemaName }})</span>
+            </div>
+        </div>
+
+        <ng-container *ngIf="branch.documentType === 'vc'; else noValidation">
+            <table class="table table-sm table-bordered">
+                <thead>
+                <tr>
+                    <th>Field label (title/description/name)</th>
+                    <th>Expected value</th>
+                    <th style="width: 60px;"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let item of branch.items; let fi = index">
+                    <td>
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            [(ngModel)]="item.key"
+                            [readonly]="readonly">
+                    </td>
+                    <td>
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            [(ngModel)]="item.value"
+                            [readonly]="readonly">
+                    </td>
+                    <td class="text-center">
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            (click)="removeFilterItem(branch, fi)"
+                            [disabled]="readonly">
+                            ✕
+                        </button>
+                    </td>
+                </tr>
+
+                <tr *ngIf="(branch.items || []).length === 0">
+                    <td colspan="3" class="text-center text-muted">
+                        No filters for this branch.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </ng-container>
+
+        <ng-template #noValidation>
+            <div class="no-validation">
+                This document type does not support any validation/filters in this UI.
+            </div>
+        </ng-template>
+    </div>
+
+    <div *ngIf="(branches || []).length === 0" class="text-muted">
+        No branches configured in block settings.
+    </div>
+
+    <div class="footer">
+        <button type="button" class="btn btn-sm btn-secondary" (click)="onCancel()">
+            Cancel
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" (click)="onApply()">
+            Apply
+        </button>
+    </div>
+</div>

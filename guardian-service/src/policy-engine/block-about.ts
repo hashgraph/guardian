@@ -1592,28 +1592,9 @@ export const BlockAbout = {
             'RunEvent',
             'TimerEvent'
         ],
-        'output': [
-            'RunEvent',
-            'RefreshEvent',
-            'ReleaseEvent',
-            'ErrorEvent',
-        ],
+        'output': null,
         'defaultEvent': true,
         'properties': [
-            {
-                'name': 'documentType',
-                'label': 'Document type',
-                'title': 'Type written to the global topic for reader-side filtering',
-                'type': 'Select',
-                'items': [
-                    { 'label': 'VC',   'value': 'vc' },
-                    { 'label': 'JSON', 'value': 'json' },
-                    { 'label': 'CSV',  'value': 'csv' },
-                    { 'label': 'Text', 'value': 'text' },
-                    { 'label': 'Any',  'value': 'any' }
-                ],
-                'default': 'any'
-            },
             {
                 'name': 'eventTopics',
                 'label': 'Event topics',
@@ -1635,7 +1616,7 @@ export const BlockAbout = {
             {
                 'name': 'branches',
                 'label': 'Branches',
-                'title': 'Branch outputs (+ optional VC schema for future workflow validation)',
+                'title': 'Branch outputs',
                 'type': 'Array',
                 'items': {
                     'label': 'Branch',
@@ -1646,6 +1627,20 @@ export const BlockAbout = {
                             'label': 'Branch event',
                             'title': 'Output event name (connect in Events tab)',
                             'type': 'Input'
+                        },
+                        {
+                            'name': 'documentType',
+                            'label': 'Document type',
+                            'title': 'Expected message type for this branch (reader-side filtering)',
+                            'type': 'Select',
+                            'items': [
+                                { 'label': 'VC',   'value': 'vc' },
+                                { 'label': 'JSON', 'value': 'json' },
+                                { 'label': 'CSV',  'value': 'csv' },
+                                { 'label': 'Text', 'value': 'text' },
+                                { 'label': 'Any',  'value': 'any' }
+                            ],
+                            'default': 'any'
                         },
                         {
                             'name': 'schema',
