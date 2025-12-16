@@ -634,9 +634,21 @@ export class Running {
      */
     private async replaceRow(obj: any): Promise<any> {
         const result = Utils.findAllDocuments(obj);
+        const assignedToGroup = obj.assignedToGroup;
+        const assignedTo = obj.assignedTo;
+        const option = obj.option;
         for (const row of result) {
             const item = await this.findRowDocument(row);
             obj = row.replace(obj, item);
+        }
+        if (assignedToGroup) {
+            obj.assignedToGroup = assignedToGroup;
+        }
+        if (assignedTo) {
+            obj.assignedTo = assignedTo;
+        }
+        if (option) {
+            obj.option = option;
         }
         return obj;
     }
@@ -801,7 +813,7 @@ export class Running {
     public async getResults(policyId?: string): Promise<any> {
         if (this._id) {
             const results = await RecordImportExport
-            .loadRecordResults(policyId || this.policyId, this._startTime, this._endTime);
+                .loadRecordResults(policyId || this.policyId, this._startTime, this._endTime);
             return {
                 documents: results,
                 recorded: this._results
