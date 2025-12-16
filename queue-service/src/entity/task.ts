@@ -3,11 +3,15 @@ import { ITask, WorkerTaskType } from '@guardian/interfaces';
 import { BaseEntity } from '@guardian/common';
 
 @Entity()
-@Index({ name: 'task_entity_idx', properties: ['sent', 'done', 'processedTime', 'createDate'] })
+@Index({ name: 'idx_status_createDate', properties: ['done', 'sent', 'createDate'], options: { createDate: -1 } })
+@Index({ name: 'idx_status_processedTime', properties: ['done', 'sent', 'processedTime'], options: { processedTime: -1 } })
+@Index({ name: 'idx_processedTime_priority', properties: ['processedTime', 'priority'] })
 export class TaskEntity extends BaseEntity implements ITask{
+    @Index({ name: 'userId' })
     @Property({nullable: true})
     userId: string | null;
 
+    @Index({ name: 'taskId' })
     @Property({nullable: true})
     taskId: string;
 
