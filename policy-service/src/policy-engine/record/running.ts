@@ -634,21 +634,9 @@ export class Running {
      */
     private async replaceRow(obj: any): Promise<any> {
         const result = Utils.findAllDocuments(obj);
-        const assignedToGroup = obj.assignedToGroup;
-        const assignedTo = obj.assignedTo;
-        const option = obj.option;
         for (const row of result) {
             const item = await this.findRowDocument(row);
             obj = row.replace(obj, item);
-        }
-        if (assignedToGroup) {
-            obj.assignedToGroup = assignedToGroup;
-        }
-        if (assignedTo) {
-            obj.assignedTo = assignedTo;
-        }
-        if (option) {
-            obj.option = option;
         }
         return obj;
     }
