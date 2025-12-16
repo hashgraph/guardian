@@ -363,6 +363,8 @@ export class VCFullscreenDialog {
     public onEditMode() {
         if (!this.isEditMode) {
             this.loadData();
+        } else {
+            this.loadProfile();
         }
         this.isEditMode = !this.isEditMode;
     }
@@ -505,6 +507,7 @@ export class VCFullscreenDialog {
             })
             .subscribe((status) => {
                 if (status.ok) {
+                    this.onEditMode();
                     this.toastr.success(
                         `The document has been updated successfully.`,
                         'Success',
@@ -539,9 +542,6 @@ export class VCFullscreenDialog {
             this.selectedVersionIndex = currentIndex !== -1 ? currentIndex : 0;
 
             this.versionOptions = this.allVcDocs.map((doc, index) => {
-                if (!doc.oldVersion) {
-                    return { label: 'Current Revision', value: index };
-                }
                 const date = new Date(doc.createDate).toLocaleString('en-GB', {
                     day: '2-digit',
                     month: '2-digit',
@@ -550,7 +550,10 @@ export class VCFullscreenDialog {
                     minute: '2-digit',
                     hour12: true,
                 });
-
+                
+                if (!doc.oldVersion) {
+                    return { label: date + ' (Latest)', value: index };
+                }
                 return { label: date, value: index };
             });
         }
