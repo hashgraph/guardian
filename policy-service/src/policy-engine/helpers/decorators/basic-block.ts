@@ -364,14 +364,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 // const status = actionStatus ?? this.actionStatus;
                 const status = actionStatus;
                 if (!this.sourceLinks.length) {
-                    actionStatus?.dec();
+                    // actionStatus?.dec();
                 }
 
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
                         link.run(user, data, status);
                     } else {
-                        actionStatus?.dec();
+                        // actionStatus?.dec();
                     }
                 }
             }
@@ -391,14 +391,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 // const status = actionStatus ?? this.actionStatus;
                 const status = actionStatus;
                 if (!this.sourceLinks.length) {
-                    actionStatus?.dec();
+                    // actionStatus?.dec();
                 }
 
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
                         return await link.runSync(user, data, status);
                     } else {
-                        actionStatus?.dec();
+                        // actionStatus?.dec();
                     }
                 }
 

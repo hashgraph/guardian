@@ -200,9 +200,9 @@ export class BlockTreeGenerator extends NatsService {
             // <-- Available
             const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
             if (error) {
-                            // <-- Record
-            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
-            // Record -->
+                // <-- Record
+                await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
+                // Record -->
                 return error;
             }
             // await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
@@ -211,7 +211,8 @@ export class BlockTreeGenerator extends NatsService {
             // const actionstep = new RecordActionStep((recordActionId) => console.log(recordActionId, 'recordActionIdrecordActionIdrecordActionId'));
             const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp));
             // const actionstep = null;
-            const res =  await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
+            const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
+            actionstep.finish();
             // <-- Record
             // await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
             // Record -->
@@ -228,9 +229,9 @@ export class BlockTreeGenerator extends NatsService {
             // <-- Available
             const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
             if (error) {
-                            // <-- Record
-            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
-            // Record -->
+                // <-- Record
+                await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
+                // Record -->
                 return error;
             }
 
@@ -241,8 +242,8 @@ export class BlockTreeGenerator extends NatsService {
             // await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
 
             const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
-
-                        // <-- Record
+            actionstep.finish();
+            // <-- Record
             // await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
             // Record -->
 
@@ -276,7 +277,7 @@ export class BlockTreeGenerator extends NatsService {
                 }
             }
 
-                        // <-- Record
+            // <-- Record
             await RecordUtils.RecordExternalData(policyId, data);
             // Record -->
             return new MessageResponse({});
