@@ -79,10 +79,8 @@ export class PolicyImport {
     private topicId: string;
     private formulasResult: ImportFormulaResult;
     private formulasMapping: Map<string, string>;
-    // private sourcePolicyId: string | null = null;
     private importRecords = false;
     private fromMessageId: string | null = null;
-    // private sourcePolicyMessageId: string | null = null;
 
     constructor(mode: ImportMode, notifier: INotificationStep) {
         this.mode = mode;
@@ -720,18 +718,6 @@ export class PolicyImport {
 
         this.importRecords = !!options.importRecords;
         this.fromMessageId = options.fromMessageId;
-        // this.sourcePolicyId = policy?.id
-        //     ? policy.id.toString()
-        //     : (policy as any)?._id
-        //         ? (policy as any)._id.toString()
-        //         : (policy as any)?.policyId
-        //             ? String((policy as any).policyId)
-        //             : null;
-        // this.sourcePolicyMessageId = (
-        //     (options.additionalPolicyConfig?.messageId as string | undefined)
-        //     || (policy as any)?.messageId
-        //     || ''
-        // ).toString().trim() || null;
 
         // <-- Steps
         const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
