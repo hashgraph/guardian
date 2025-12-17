@@ -154,10 +154,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block about
              */
             public readonly actionType: LocationType;
-            // /**
-            //  * Current action status
-            //  */
-            // public actionStatus?: RecordActionStep;
 
             constructor(
                 _uuid: string,
@@ -359,19 +355,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 output: PolicyOutputEventType,
                 user: PolicyUser,
                 data: U,
-                actionStatus: any
+                actionStatus: RecordActionStep
             ): void {
-                // const status = actionStatus ?? this.actionStatus;
                 const status = actionStatus;
-                if (!this.sourceLinks.length) {
-                    // actionStatus?.dec();
-                }
 
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
                         link.run(user, data, status);
-                    } else {
-                        // actionStatus?.dec();
                     }
                 }
             }
@@ -386,19 +376,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 output: PolicyOutputEventType,
                 user: PolicyUser,
                 data: U,
-                actionStatus: any
+                actionStatus: RecordActionStep
             ): Promise<any> {
-                // const status = actionStatus ?? this.actionStatus;
                 const status = actionStatus;
-                if (!this.sourceLinks.length) {
-                    // actionStatus?.dec();
-                }
 
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
                         return await link.runSync(user, data, status);
-                    } else {
-                        // actionStatus?.dec();
                     }
                 }
 
@@ -415,7 +399,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 event: IPolicyEvent<U>,
                 user: PolicyUser,
                 data: U,
-                actionStatus: any
+                actionStatus: RecordActionStep
             ): void {
                 console.error('triggerEvent');
             }

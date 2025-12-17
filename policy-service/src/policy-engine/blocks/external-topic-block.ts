@@ -28,6 +28,7 @@ import {
     ExternalEventType
 } from '../interfaces/external-event.js';
 import { TopicId } from '@hashgraph/sdk';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Search Topic Result
@@ -607,7 +608,7 @@ export class ExternalTopicBlock {
         hederaAccount: IHederaCredentials,
         user: PolicyUser,
         message: VCMessage,
-        actionStatus: any
+        actionStatus: RecordActionStep
     ): Promise<void> {
         const documentRef = await this.getRelationships(ref, user);
 
@@ -661,7 +662,7 @@ export class ExternalTopicBlock {
         item: ExternalDocument,
         user: PolicyUser,
         userId: string | null,
-        actionStatus: any,
+        actionStatus: RecordActionStep,
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, item.owner, userId);
@@ -683,7 +684,7 @@ export class ExternalTopicBlock {
      * @param item
      * @private
      */
-    private async runByUser(item: ExternalDocument, userId: string | null, actionStatus: any): Promise<void> {
+    private async runByUser(item: ExternalDocument, userId: string | null, actionStatus: RecordActionStep): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
         item.status = TaskStatus.Processing;

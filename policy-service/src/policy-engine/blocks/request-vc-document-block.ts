@@ -13,6 +13,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import deepEqual from 'deep-equal';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Request VC document block
@@ -190,7 +191,7 @@ export class RequestVcDocumentBlock {
         return await this.setBlockData(user, data, actionStatus);
     }
 
-    private async setBlockData(user: PolicyUser, data: IPolicyDocument, actionStatus: any) {
+    private async setBlockData(user: PolicyUser, data: IPolicyDocument, actionStatus: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         try {
             //Prepare data

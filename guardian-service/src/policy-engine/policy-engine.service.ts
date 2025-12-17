@@ -207,47 +207,6 @@ export class PolicyEngineService {
         }
     }
 
-    private extractPolicyIdFromPreview(policyPreview: any): string | null {
-        const policy = policyPreview?.policy;
-        const idCandidate = policy?.id || policy?._id || policyPreview?.policyId;
-        if (!idCandidate) {
-            return null;
-        }
-        if (typeof idCandidate === 'string') {
-            return idCandidate;
-        }
-        if (idCandidate?.toString) {
-            return idCandidate.toString();
-        }
-        return null;
-    }
-
-    private async hasIpfsRecordsForPreview(
-        policyPreview: any,
-        logger: PinoLogger,
-        userId: string | null
-    ): Promise<boolean> {
-        try {
-            console.log(policyPreview, 'policyPreview');
-            const policyId = this.extractPolicyIdFromPreview(policyPreview);
-            if (!policyId) {
-                return false;
-            }
-            const records = await DatabaseServer.getRecord({
-                policyId,
-                ipfsCid: { $exists: true, $ne: null }
-            }, { limit: 1, fields: ['_id', 'uuid'] } as any);
-            return Array.isArray(records) && records.length > 0;
-        } catch (error) {
-            await logger.warn(
-                typeof error?.message === 'string' ? error.message : 'Failed to determine policy records',
-                ['GUARDIAN_SERVICE'],
-                userId
-            );
-            return false;
-        }
-    }
-
     private async getBlockRoot(id: string) {
         const policy = await DatabaseServer.getPolicyById(id);
         if (policy) {
@@ -333,14 +292,13 @@ export class PolicyEngineService {
                 recordingUuid,
                 recordId,
                 payload,
-                documentSnapshot,
-                hedera,
+                // documentSnapshot,
+                hederaOptions,
                 uploadToIpfs,
-                recordActionId,
+                // recordActionId,
                 actionTimestemp,
                 userFull
             } = msg;
-            console.log(123321);
                 try {
                     await RecordPersistService.persistStep({
                         policyId: msgPolicyId,
@@ -348,10 +306,10 @@ export class PolicyEngineService {
                         recordingUuid,
                         recordId,
                         payload,
-                        documentSnapshot,
-                        hedera,
+                        // documentSnapshot,
+                        hederaOptions,
                         uploadToIpfs,
-                        recordActionId,
+                        // recordActionId,
                         actionTimestemp,
                         userFull
                     });
@@ -831,12 +789,6 @@ export class PolicyEngineService {
                 }
 
                 if (policy.status !== PolicyStatus.PUBLISH && policy.status !== PolicyStatus.DISCONTINUED) {
-                    // const records = await DatabaseServer.getRecord({
-                    //     policyId: policy.id,
-                    //     copiedRecordId: { $exists: true, $ne: null }
-                    // }, { limit: 1, fields: ['_id', 'uuid'] } as any);
-
-                    // result.withRecords = Array.isArray(records) && !!records.length;
                     result.withRecords = !!policy.autoRecordSteps;
                 }
 
@@ -1477,7 +1429,6 @@ export class PolicyEngineService {
                             level: 3,
                         },
                     });
-                    console.log('File size: ' + file.byteLength);
                     return new BinaryMessageResponse(file);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1653,8 +1604,6 @@ export class PolicyEngineService {
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
                     policyToImport.similar = similarPolicies;
-                    // policyToImport.withRecords = await this.hasIpfsRecordsForPreview(policyToImport, logger, owner?.id);
-                    console.log(policyToImport, 'policyToImport');
                     policyToImport.withRecords = !!policyToImport.policy.autoRecordSteps;
                     return new MessageResponse(policyToImport);
                 } catch (error) {
@@ -1679,8 +1628,6 @@ export class PolicyEngineService {
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
                     policyToImport.similar = similarPolicies;
-                    // policyToImport.withRecords = await this.hasIpfsRecordsForPreview(policyToImport, logger, owner?.id);
-                    console.log(policyToImport, 'policyToImport');
                     policyToImport.withRecords = !!policyToImport.policy.autoRecordSteps;
                     notifier.result(policyToImport);
                 }, async (error) => {

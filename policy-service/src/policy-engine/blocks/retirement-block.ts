@@ -11,6 +11,7 @@ import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Retirement block
@@ -116,7 +117,7 @@ export class RetirementBlock {
         targetAccount: string,
         relayerAccount: string,
         userId: string | null,
-        actionStatus: any
+        actionStatus: RecordActionStep
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
@@ -206,7 +207,7 @@ export class RetirementBlock {
         });
         ref.log(`Topic Id: ${topicId}`);
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId, userId);
-        const vcMessage = new VCMessage(MessageAction.CreateVC, actionStatus?.id);
+        const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(wipeVC);
         vcMessage.setRelationships(relationships);
         vcMessage.setTag(ref);

@@ -1257,19 +1257,15 @@ export class PolicyEngine extends NatsService {
                 model.recordsTopicId = recordsTopic.topicId;
                 notifier.completeStep(STEP_CREATE_ACTION_TOPIC);
             }
-            // if (model.availability === PolicyAvailability.PUBLIC) {
-                if (model.status === PolicyStatus.PUBLISH_ERROR) {
-                    if (!!model.recordsTopicId) {
-                        await createRecordsTopic();
-                    } else {
-                        notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
-                    }
-                } else {
+            if (model.status === PolicyStatus.PUBLISH_ERROR) {
+                if (!!model.recordsTopicId) {
                     await createRecordsTopic();
+                } else {
+                    notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
                 }
-            // } else {
-            //     notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
-            // }
+            } else {
+                await createRecordsTopic();
+            }
 
             const createCommentsTopic = async () => {
                 notifier.startStep(STEP_CREATE_COMMENTS_TOPIC);
@@ -1300,7 +1296,6 @@ export class PolicyEngine extends NatsService {
             this.cleanHeadersRecursive(configToPublish, ['httpRequestBlock']);
             model.autoRecordSteps = !!recordingEnabled;
             model.fromMessageId = '';
-            console.log(model, 'model');
             const modelToPublish = Object.assign(Object.create(Object.getPrototypeOf(model)), model);
             modelToPublish.config = configToPublish;
 

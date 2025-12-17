@@ -20,15 +20,11 @@ export class RecordActionStep {
 
     public inc(): void {
         this.counter += 1;
-        // console.log(this.counter, 'counter 123123')
-        // // console.log(this.callbackFired, 'this.callbackFired 123123')
-        // this.callbackFired = false;
         this.clearTimer();
     }
 
     public dec(): void {
         this.counter = Math.max(0, this.counter - 1);
-        // console.log(this.counter, 'counter 123123')
 
         this.finish();
     }

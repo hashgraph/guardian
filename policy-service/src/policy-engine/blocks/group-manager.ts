@@ -9,6 +9,7 @@ import { MessageServer, MessageStatus, PolicyRoles } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Document action clock with UI
@@ -86,7 +87,7 @@ export class GroupManagerBlock {
         did: string,
         text: string,
         userId: string | null,
-        actionStatus: any,
+        actionStatus: RecordActionStep,
     ): Promise<void> {
         if (user.did === did) {
             throw new Error(`Permission denied`);

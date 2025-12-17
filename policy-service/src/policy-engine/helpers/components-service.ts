@@ -34,10 +34,6 @@ export class ComponentsService {
      * Policy Owner Id
      */
     public readonly ownerId: string | null;
-    /**
-     * Policy actions topic
-     */
-    public readonly actionsTopicId: string | null;
 
     /**
      * Policy records topic
@@ -96,7 +92,6 @@ export class ComponentsService {
         this.ownerId = policy.ownerId || null;
         this.policyId = policyId;
         this.topicId = policy.topicId;
-        this.actionsTopicId = policy.actionsTopicId || null;
         this.recordsTopicId = policy.recordsTopicId || null;
         this.policyMessageId = policy.messageId || null;
         this._autoRecordingEnabled = policy.status === PolicyStatus.PUBLISH && !!policy.autoRecordSteps;
@@ -114,9 +109,7 @@ export class ComponentsService {
         if (this._autoRecordingEnabled) {
             this._recordingController = new Recording(this.policyId, this.owner, {
                 mode: 'auto',
-                enabled: true,
                 uploadToIpfs: true,
-                storeInDb: false,
                 policyMessageId: this.policyMessageId
             });
         } else {
@@ -130,7 +123,6 @@ export class ComponentsService {
     }
 
     private async prepareRecordingTransport(): Promise<void> {
-        // if (!this._recordingController || this.recordingTransportReady) {
         if (!this._recordingController) {
             return;
         }
@@ -153,7 +145,6 @@ export class ComponentsService {
                 signOptions: ownerAccount.signOptions,
                 dryRun: this.dryRunId
             }, this.policyMessageId);
-            // this.recordingTransportReady = true;
         } catch (error: any) {
             this.logger.error(
                 `prepareRecordingTransport failed: ${error?.message || error}`,
@@ -166,7 +157,6 @@ export class ComponentsService {
     public async ensureAutoStartRecord(): Promise<void> {
         if (this._autoRecordingEnabled && this._recordingController) {
             await this.prepareRecordingTransport();
-            // await this._recordingController.ensureStartRecordForPublishedPolicy();
         }
     }
 
@@ -330,10 +320,6 @@ export class ComponentsService {
      * Recording Controller
      */
     private _recordingController: Recording;
-    // /**
-    //  * Hedera options configured flag
-    //  */
-    // private recordingTransportReady = false;
 
     /**
      * Running Controller
@@ -361,13 +347,7 @@ export class ComponentsService {
         }
         if (!this._recordingController) {
             this._recordingController = new Recording(this.policyId, this.owner);
-            // this._recordingController = new Recording(this.policyId, this.owner, {
-            //     policyMessageId: this.policyMessageId
-            // });
-            // this.recordingTransportReady = false;
-            // await this.prepareRecordingTransport();
         }
-        // await this.prepareRecordingTransport();
         return await this._recordingController.start();
     }
 
@@ -378,7 +358,6 @@ export class ComponentsService {
         if (this._recordingController) {
             const old = this._recordingController;
             this._recordingController = null;
-            // this.recordingTransportReady = false;
             return await old.stop();
         }
         if (this._runningController) {
@@ -396,7 +375,6 @@ export class ComponentsService {
         if (this._recordingController) {
             const old = this._recordingController;
             this._recordingController = null;
-            // this.recordingTransportReady = false;
             return await old.stop();
         }
         if (this._runningController) {
@@ -414,7 +392,6 @@ export class ComponentsService {
         if (this._recordingController) {
             const old = this._recordingController;
             this._recordingController = null;
-            // this.recordingTransportReady = false;
             return await old.destroy();
         }
         if (this._runningController) {
@@ -432,7 +409,6 @@ export class ComponentsService {
         if (this._recordingController) {
             const old = this._recordingController;
             this._recordingController = null;
-            // this.recordingTransportReady = false;
             return await old.destroy();
         }
         if (this._runningController) {

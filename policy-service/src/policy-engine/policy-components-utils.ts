@@ -1569,14 +1569,8 @@ export class PolicyComponentsUtils {
         data: any,
         actionStatus?: RecordActionStep
     ): Promise<MessageResponse<any> | MessageError<any>> {
-        // const prevStatus: any = (block as any).actionStatus;
-        // (block as any).actionStatus = actionStatus;
-        try {
-            const result = await block.setData(user, data, ActionType.COMMON, actionStatus);
-            return new MessageResponse(result);
-        } finally {
-            // (block as any).actionStatus = prevStatus;
-        }
+        const result = await block.setData(user, data, ActionType.COMMON, actionStatus);
+        return new MessageResponse(result);
     }
 
     private static async _blockSetDataRemote(
@@ -1599,14 +1593,8 @@ export class PolicyComponentsUtils {
         data: any,
         actionStatus?: RecordActionStep
     ): Promise<MessageResponse<any> | MessageError<any>> {
-        // const prevStatus: any = (block as any).actionStatus;
-        // (block as any).actionStatus = actionStatus;
-        let _data: any;
-        try {
-            _data = await block.setData(user, data, ActionType.LOCAL, actionStatus);
-        } finally {
-            // (block as any).actionStatus = prevStatus;
-        }
+        const _data = await block.setData(user, data, ActionType.LOCAL, actionStatus);
+
         const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
         if (controller) {
             const result = await controller.sendAction(block, user, _data);
@@ -1678,13 +1666,10 @@ export class PolicyComponentsUtils {
         data: any,
         actionStatus?: RecordActionStep
     ): Promise<MessageResponse<any> | MessageError<any>> {
-        // console.log(actionStatus, 'actionStatus');
         const error = await PolicyComponentsUtils._checkRelayerAccount(block, user, data);
         if (error) {
             return new MessageError(error, 500);
         }
-
-        console.log(data, 'data');
 
         if (block.actionType === LocationType.LOCAL) {
             //Action - local, policy - local|remote, user - local|remote

@@ -11,6 +11,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { Inject } from '../../helpers/decorators/inject.js';
 import { LocationType } from '@guardian/interfaces';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Reassigning block
@@ -52,7 +53,7 @@ export class ReassigningBlock {
      * @param user
      * @param userId
      */
-    async documentReassigning(document: IPolicyDocument, user: PolicyUser, userId: string | null, actionStatus: any): Promise<{
+    async documentReassigning(document: IPolicyDocument, user: PolicyUser, userId: string | null, actionStatus: RecordActionStep): Promise<{
         /**
          * New Document
          */

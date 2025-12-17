@@ -1272,9 +1272,8 @@ export class PolicyUtils {
         ref: AnyBlockType,
         owner: PolicyUser,
         document: VpDocument,
-        recordActionId: any = null
+        recordActionId: string | null = null
     ): IPolicyDocument {
-        // const recordActionId = (ref as any)?.actionStatus?.id || null;
         return {
             policyId: ref.policyId,
             tag: ref.tag,
@@ -1285,7 +1284,6 @@ export class PolicyUtils {
             status: DocumentStatus.NEW,
             signature: DocumentSignature.NEW,
             recordActionId
-            // ...(recordActionId ? { recordActionId } : {})
         };
     }
 
@@ -1297,16 +1295,14 @@ export class PolicyUtils {
      */
     public static createUnsignedVC(
         ref: AnyBlockType, document: VcDocument,
-        recordActionId: any = null
+        recordActionId: string | null = null
 
     ): IPolicyDocument {
-        // const recordActionId = (ref as any)?.actionStatus?.id || null;
         return {
             policyId: ref.policyId,
             tag: ref.tag,
             document: document.toJsonTree(),
             recordActionId
-            // ...(recordActionId ? { recordActionId } : {})
         };
     }
 
@@ -1320,9 +1316,8 @@ export class PolicyUtils {
         ref: AnyBlockType,
         owner: PolicyUser,
         document: VcDocument,
-        recordActionId: any = null
+        recordActionId: string | null = null
     ): IPolicyDocument {
-        // const recordActionId = (ref as any)?.actionStatus?.id || null;
         return {
             policyId: ref.policyId,
             tag: ref.tag,
@@ -1333,7 +1328,6 @@ export class PolicyUtils {
             hederaStatus: DocumentStatus.NEW,
             signature: DocumentSignature.NEW,
             recordActionId
-            // ...(recordActionId ? { recordActionId } : {})
         };
     }
 

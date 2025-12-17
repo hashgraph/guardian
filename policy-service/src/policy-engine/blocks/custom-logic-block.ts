@@ -15,6 +15,7 @@ import { fileURLToPath } from 'url';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { BlockActionError } from '../errors/index.js';
 import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -164,7 +165,7 @@ export class CustomLogicBlock {
         user: PolicyUser,
         triggerEvents: (documents: IPolicyDocument | IPolicyDocument[]) => void,
         userId: string | null,
-        actionStatus: any
+        actionStatus: RecordActionStep
     ): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             try {
@@ -496,7 +497,7 @@ export class CustomLogicBlock {
     private async createUnsignedDocument(
         json: any,
         ref: IPolicyCalculateBlock,
-        recordActionId: any
+        recordActionId: string
     ): Promise<IPolicyDocument> {
         const vc = PolicyUtils.createVcFromSubject(json);
         return PolicyUtils.createUnsignedVC(ref, vc, recordActionId);

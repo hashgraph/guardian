@@ -1,5 +1,5 @@
-import { DataBaseHelper, DatabaseServer, JwtServicesValidator, MessageAction, MessageError, MessageResponse, MessageServer, NatsService, PinoLogger, Policy, PolicyRecordMessage, RecordImportExport, Singleton, TopicConfig, Users } from '@guardian/common';
-import { GenerateUUIDv4, ISignOptions, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
+import { DataBaseHelper, JwtServicesValidator, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
+import { GenerateUUIDv4, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
 import { headers } from 'nats';
 import { Inject } from '../helpers/decorators/inject.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
@@ -10,9 +10,7 @@ import { PolicyUser } from './policy-user.js';
 import { RecordUtils } from './record-utils.js';
 import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
 import { PolicyActionsService } from './actions-service.js';
-import { FilterObject } from '@mikro-orm/core';
 import { RecordActionStep } from './record-action-step.js';
-// import { RecordPersistService } from './helpers/record-persist.service.js';
 
 /**
  * Block tree generator
@@ -194,28 +192,19 @@ export class BlockTreeGenerator extends NatsService {
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
-
-            console.log(msg, 'msg 222');
-
             // <-- Available
             const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
             if (error) {
-                // <-- Record
-                await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
-                // Record -->
                 return error;
             }
-            // await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
-
             // Available -->
-            // const actionstep = new RecordActionStep((recordActionId) => console.log(recordActionId, 'recordActionIdrecordActionIdrecordActionId'));
+
             const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp));
-            // const actionstep = null;
+
             const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
+
             actionstep.finish();
-            // <-- Record
-            // await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
-            // Record -->
+
             return res;
         });
 
@@ -224,28 +213,18 @@ export class BlockTreeGenerator extends NatsService {
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
 
-
-            console.log(msg, 'msg 111');
             // <-- Available
             const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
             if (error) {
-                // <-- Record
-                await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
-                // Record -->
                 return error;
             }
-
             // Available -->
-            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp));
-            // const actionstep = null;
 
-            // await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
+            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp));
 
             const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
+
             actionstep.finish();
-            // <-- Record
-            // await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
-            // Record -->
 
             return res
         });
@@ -254,22 +233,19 @@ export class BlockTreeGenerator extends NatsService {
             const { user, uuid } = msg;
             const userFull = await this.getUser(policyInstance, user);
 
-
-
-            const res = await PolicyComponentsUtils.selectGroup(policyInstance, userFull, uuid);
-
             // <-- Record
             await RecordUtils.RecordSelectGroup(policyId, userFull, uuid);
             // Record -->
 
-            return res;
-
+            return await PolicyComponentsUtils.selectGroup(policyInstance, userFull, uuid);
         });
 
         this.getPolicyMessages(PolicyEvents.MRV_DATA, policyId, async (msg: any) => {
             const { data } = msg;
-
-
+            
+            // <-- Record
+            await RecordUtils.RecordExternalData(policyId, data);
+            // Record -->
 
             for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
                 if (PolicyComponentsUtils.isAvailableReceiveData(block, policyId)) {
@@ -277,25 +253,22 @@ export class BlockTreeGenerator extends NatsService {
                 }
             }
 
-            // <-- Record
-            await RecordUtils.RecordExternalData(policyId, data);
-            // Record -->
             return new MessageResponse({});
         });
 
         this.getPolicyMessages(PolicyEvents.MRV_DATA_CUSTOM, policyId, async (msg: any) => {
             const { data } = msg;
 
-
+            // <-- Record
+            await RecordUtils.RecordExternalData(policyId, data.data);
+            // Record -->
 
             const block = PolicyComponentsUtils.GetBlockByTag(policyId, data.blockTag);
 
             if (PolicyComponentsUtils.isAvailableReceiveData(block, policyId)) {
                 await PolicyComponentsUtils.blockReceiveData(block, data.data);
             }
-            // <-- Record
-            await RecordUtils.RecordExternalData(policyId, data.data);
-            // Record -->
+
             return new MessageResponse({});
         });
 
@@ -463,37 +436,6 @@ export class BlockTreeGenerator extends NatsService {
             const result = await RecordUtils.SkipStep(policyId, options);
             return new MessageResponse(result);
         });
-
-        // this.getPolicyMessages(PolicyEvents.RECORD_PERSIST_STEP, policyId, async (msg: any) => {
-        //     const {
-        //         policyId: msgPolicyId,
-        //         policyMessageId,
-        //         recordingUuid,
-        //         recordId,
-        //         payload,
-        //         documentSnapshot,
-        //         hedera,
-        //         uploadToIpfs
-        //     } = msg;
-        //     console.log(123321);
-        //     try {
-        //         await RecordPersistService.persistStep({
-        //             policyId: msgPolicyId ?? policyId,
-        //             policyMessageId,
-        //             recordingUuid,
-        //             recordId,
-        //             payload,
-        //             documentSnapshot,
-        //             hedera,
-        //             uploadToIpfs
-        //         });
-
-        //         return new MessageResponse({ ok: true });
-        //     } catch (error: any) {
-        //         console.error(`Error persisting record step for policy ${policyId}`, error);
-        //         return new MessageError(error?.message || String(error), 500);
-        //     }
-        // });
     }
 
     /**

@@ -12,6 +12,7 @@ export class PolicyRecordMessage extends Message {
     public policyMessageId: string | null;
     public recordingUuid: string;
     public recordId: string;
+    public recordActionId: string;
     public method: string;
     public actionName: string | null;
     public time: number;
@@ -35,6 +36,7 @@ export class PolicyRecordMessage extends Message {
         policyMessageId?: string | null,
         recordingUuid: string,
         recordId: string,
+        recordActionId: string,
         method: string,
         action?: string | null,
         time: number,
@@ -45,6 +47,7 @@ export class PolicyRecordMessage extends Message {
         this.policyMessageId = model.policyMessageId ?? null;
         this.recordingUuid = model.recordingUuid;
         this.recordId = model.recordId;
+        this.recordActionId = model.recordActionId;
         this.method = model.method;
         this.actionName = model.action ?? null;
         this.time = model.time;
@@ -75,6 +78,7 @@ export class PolicyRecordMessage extends Message {
             policyMessageId: this.policyMessageId,
             recordingUuid: this.recordingUuid,
             recordId: this.recordId,
+            recordActionId: this.recordActionId,
             method: this.method,
             actionName: this.actionName,
             time: this.time,
@@ -139,6 +143,7 @@ export class PolicyRecordMessage extends Message {
         message.policyMessageId = json.policyMessageId ?? null;
         message.recordingUuid = json.recordingUuid;
         message.recordId = json.recordId;
+        message.recordActionId = json.recordActionId;
         message.method = json.method;
         message.actionName = json.actionName ?? null;
         message.time = json.time;
@@ -169,7 +174,7 @@ export class PolicyRecordMessage extends Message {
      * Validation
      */
     public override validate(): boolean {
-        return !!(this.policyId && this.recordingUuid && this.recordId);
+        return !!(this.policyId && this.recordingUuid && this.recordId && this.recordActionId);
     }
 
     /**
@@ -189,6 +194,7 @@ export class PolicyRecordMessage extends Message {
         result.policyMessageId = this.policyMessageId;
         result.recordingUuid = this.recordingUuid;
         result.recordId = this.recordId;
+        result.recordActionId = this.recordActionId;
         result.method = this.method;
         result.actionName = this.actionName;
         result.time = this.time;
@@ -208,6 +214,7 @@ export class PolicyRecordMessage extends Message {
         result.policyMessageId = json.policyMessageId ?? null;
         result.recordingUuid = json.recordingUuid;
         result.recordId = json.recordId;
+        result.recordActionId = json.recordActionId;
         result.method = json.method;
         result.actionName = json.actionName ?? null;
         result.time = json.time;

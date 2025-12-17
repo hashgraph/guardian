@@ -183,7 +183,6 @@ export class MessageServer {
             notifier.completeStep(STEP_SEND_FILES);
         }
 
-        // console.log(message, 'message message');
         notifier.startStep(STEP_SEND_MESSAGES);
         message = await this.sendHedera(message, options);
         notifier.completeStep(STEP_SEND_MESSAGES);

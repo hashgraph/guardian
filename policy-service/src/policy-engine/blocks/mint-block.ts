@@ -12,6 +12,7 @@ import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Mint block
@@ -282,7 +283,7 @@ export class MintBlock {
         messages: string[],
         additionalMessages: string[],
         userId: string | null,
-        actionStatus: any
+        actionStatus: RecordActionStep
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
@@ -321,7 +322,7 @@ export class MintBlock {
 
         // #region Save Mint VC
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId, userId);
-        const vcMessage = new VCMessage(MessageAction.CreateVC, actionStatus?.id);
+        const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
         vcMessage.setRelationships(messages);
         vcMessage.setTag(mintVC);

@@ -16,6 +16,7 @@ import { LocationType, SchemaEntity } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Split block
@@ -253,7 +254,7 @@ export class SplitBlock {
      * @param documents
      * @param userId
      */
-    private async addDocs(ref: IPolicyBlock, user: PolicyUser, documents: IPolicyDocument[], userId: string | null, actionStatus: any) {
+    private async addDocs(ref: IPolicyBlock, user: PolicyUser, documents: IPolicyDocument[], userId: string | null, actionStatus: RecordActionStep) {
         const residue = await ref.databaseServer.getResidue(ref.policyId, ref.uuid, user.id);
         const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
 

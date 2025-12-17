@@ -54,6 +54,9 @@ export interface IPolicyEvent<T> {
      * Data
      */
     data?: T;
+    /**
+     * Action status
+     */
     actionStatus?: RecordActionStep;
 }
 
@@ -134,29 +137,15 @@ export class PolicyLink<T> {
                 actionStatus,
                 data
             };
-            // const targetRef: any = this.target as any;
-            // const prevStatus = targetRef?.actionStatus;
-            // if (targetRef) {
-                // targetRef.actionStatus = actionStatus;
-            // }
-        // console.log(event, 'event sync')
-        // console.log(actionStatus, 'actionStatus')
 
             if (actionStatus) {
-                // actionStatus.step += 1;
                 actionStatus.inc();
 
                 const res = this.callback.call(this.target, event);
 
                 if (typeof res?.then === 'function') {
                     res.then(() => {
-                        // actionStatus.step -= 1
                         actionStatus.dec();
-
-
-                        // if (!actionStatus.step) {
-                        //     actionStatus.callback()
-                        // }
                     })
                 } else {
                     actionStatus.dec();
@@ -164,9 +153,6 @@ export class PolicyLink<T> {
             } else{
                 this.callback.call(this.target, event);
             }
-            // if (targetRef) {
-            //     targetRef.actionStatus = prevStatus;
-            // }
         });
     }
 
@@ -190,31 +176,17 @@ export class PolicyLink<T> {
             actionStatus,
             data
         };
-        // console.log(event, 'event async')
-        // console.log(actionStatus, 'actionStatus')
 
-        // const targetRef: any = this.target as any;
-        // const prevStatus = targetRef?.actionStatus;
-        // if (targetRef) {
-        //     targetRef.actionStatus = actionStatus;
-        // }
+        if (actionStatus) {
+            actionStatus.inc()
 
-        try {
-            if (actionStatus) {
-                actionStatus.inc()
+            const res = await this.callback.bind(this.target)(event);
 
-                const res = await this.callback.bind(this.target)(event);
+            actionStatus.dec()
 
-                actionStatus.dec()
-
-                return res;
-            } else {
-                return await this.callback.bind(this.target)(event);
-            }
-        } finally {
-            // if (targetRef) {
-            //     targetRef.actionStatus = prevStatus;
-            // }
+            return res;
+        } else {
+            return await this.callback.bind(this.target)(event);
         }
     }
     /**

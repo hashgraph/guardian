@@ -9,23 +9,18 @@ import {
     TopicConfig,
     Users
 } from '@guardian/common';
-import { FilterObject } from '@mikro-orm/core';
-import { ISignOptions, Permissions } from '@guardian/interfaces';
-export enum RecordMethod {
-    Start = 'START',
-    Stop = 'STOP',
-    Action = 'ACTION',
-    Generate = 'GENERATE'
-}
+// import { FilterObject } from '@mikro-orm/core';
+import { ISignOptions, Permissions, RecordMethod } from '@guardian/interfaces';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 export interface PersistStepPayload {
     policyId: string;
     policyMessageId: string | null;
     recordingUuid: string;
     recordId: any;
-    payload: FilterObject<Record>;
-    documentSnapshot: any;
-    hedera?: {
+    payload: Record;
+    // documentSnapshot: any;
+    hederaOptions?: {
         topicId: string;
         submitKey?: string | null;
         operatorId: string;
@@ -34,7 +29,7 @@ export interface PersistStepPayload {
         dryRun?: string | null;
     } | null;
     uploadToIpfs: boolean;
-    recordActionId?: any;
+    // recordActionId?: string;
     userFull?: any;
     actionTimestemp: number;
 }
@@ -42,36 +37,29 @@ export interface PersistStepPayload {
 export class RecordPersistService {
     public static async persistStep(data: PersistStepPayload): Promise<void> {
         const {
-            policyId,
+            // policyId,
             policyMessageId: policyMessageIdFromRecording,
-            recordingUuid,
-            recordId,
+            // recordingUuid,
+            // recordId,
             payload,
-            documentSnapshot,
-            hedera,
-            uploadToIpfs,
-            recordActionId,
-            actionTimestemp,
+            // documentSnapshot,
+            hederaOptions,
+            // uploadToIpfs,
+            // recordActionId,
             userFull,
         } = data;
-        // console.log(uploadToIpfs, 'uploadToIpfs');
-        if (!uploadToIpfs) {
-            return;
-        }
+        
+        // if (!uploadToIpfs) {
+        //     return;
+        // }
 
         try {
-            const records = await DatabaseServer.getRecord(
-                { _id: recordId } as any,
-                { limit: 1 } as any
-            ) as any;
+            // const records = await DatabaseServer.getRecord(
+            //     { _id: recordId },
+            //     { limit: 1 }
+            // );
 
-            const savedRecord: Record | null =
-                Array.isArray(records) ? (records[0] as Record) : (records as Record | null);
-
-            if (!savedRecord) {
-                console.error(`RecordPersistService: record not found for id ${recordId}`);
-                return;
-            }
+            // const savedRecord = records[0];
 
             let topicConfig: TopicConfig;
             let operatorId: string;
@@ -79,24 +67,24 @@ export class RecordPersistService {
             let signOptions: ISignOptions | undefined;
             let dryRun: string | null = null;
             let policyMessageId: string | null = policyMessageIdFromRecording ?? null;
-            const policy = await DatabaseServer.getPolicyById(policyId) as Policy;
+            const policy = await DatabaseServer.getPolicyById(payload.policyId) as Policy;
 
-            if (hedera?.topicId && hedera.operatorId && hedera.operatorKey) {
-                const topicRow = await DatabaseServer.getTopicById(hedera.topicId);
+            if (hederaOptions?.topicId && hederaOptions.operatorId && hederaOptions.operatorKey) {
+                const topicRow = await DatabaseServer.getTopicById(hederaOptions.topicId);
                 topicConfig = await TopicConfig.fromObject(topicRow, false, null);
 
-                operatorId = hedera.operatorId;
-                operatorKey = hedera.operatorKey;
-                signOptions = hedera.signOptions;
-                dryRun = hedera.dryRun ?? null;
+                operatorId = hederaOptions.operatorId;
+                operatorKey = hederaOptions.operatorKey;
+                signOptions = hederaOptions.signOptions;
+                dryRun = hederaOptions.dryRun ?? null;
 
                 if (!policyMessageId) {
-                    const policy = await DatabaseServer.getPolicyById(policyId) as Policy;
+                    const policy = await DatabaseServer.getPolicyById(payload.policyId) as Policy;
                     policyMessageId = policy?.messageId || null;
                 }
             } else {
                 if (!policy || !policy.recordsTopicId || !policy.owner) {
-                    console.error(`RecordPersistService: unable to resolve policy/records topic for policy ${policyId}`);
+                    console.error(`RecordPersistService: unable to resolve policy/records topic for policy ${payload.policyId}`);
                     return;
                 }
 
@@ -114,12 +102,12 @@ export class RecordPersistService {
             }
 
             const resultDocuments = await RecordPersistService.buildStepResults(
-                policyId,
-                savedRecord,
-                documentSnapshot,
+                // policyId,
+                // savedRecord,
+                // documentSnapshot,
                 payload,
-                recordId,
-                recordActionId
+                // recordId,
+                // recordActionId
             );
 
             let userRole = null;
@@ -128,12 +116,10 @@ export class RecordPersistService {
                 userRole = 'Administrator';
             }
 
-            console.log(savedRecord, 'savedRecord');
             const zip = await RecordImportExport.generateSingleRecordZip({
-                ...savedRecord,
-                // time: actionTimestemp,
+                ...payload,
                 userRole,
-                document: documentSnapshot ?? null
+                // document: documentSnapshot ?? null
             } as Record, resultDocuments);
 
             const buffer = await zip.generateAsync({
@@ -145,13 +131,14 @@ export class RecordPersistService {
             const message = new PolicyRecordMessage(MessageAction.PolicyRecordStep);
             message.setDocument(
                 {
-                    policyId,
+                    policyId: payload.policyId,
                     policyMessageId,
-                    recordingUuid,
-                    recordId,
+                    recordingUuid: payload.uuid,
+                    recordId: payload.id || new ObjectId().toString(),
                     method: String(payload.method),
                     action: payload.action ? String(payload.action) : null,
-                    time: payload.time as number,
+                    time: Number(payload.time),
+                    recordActionId: payload.recordActionId,
                     user: (payload.user as string) ?? null,
                     target: (payload.target as string) ?? null,
                 },
@@ -170,93 +157,70 @@ export class RecordPersistService {
                 .setTopicObject(topicConfig)
                 .sendMessage(message, {
                     sendToIPFS: true,
-                    memo: `RECORD:${policyId}`,
+                    memo: `RECORD:${payload.policyId}`,
                     userId: null,
                     interception: null
                 });
         } catch (error) {
-            console.error(`RecordPersistService: unable to persist step for policy ${policyId}`, error);
+            console.error(`RecordPersistService: unable to persist step for policy ${payload.policyId}`, error);
         }
     }
 
     private static async buildStepResults(
-        policyId: string,
-        savedRecord: Record,
-        documentSnapshot: any,
-        payload: FilterObject<Record>,
-        recordId: any,
-        recordActionId: any,
+        // policyId: string,
+        // savedRecord: Record,
+        // documentSnapshot: any,
+        payload: Record,
+        // recordId: any,
+        // recordActionId: string,
     ): Promise<{ id: string, type: 'vc' | 'vp' | 'schema', document: any }[]> {
-        if (Array.isArray((savedRecord as any).results) && (savedRecord as any).results.length) {
-            return (savedRecord as any).results.map((res: any) => ({
-                id: res.id,
-                type: res.type,
-                document: res.document ?? res
-            }));
-        }
+        // const id = RecordPersistService.extractResultId(documentSnapshot, payload);
+        // const type = RecordPersistService.detectResultType(documentSnapshot);
+        const id = RecordPersistService.extractResultId(payload);
+        const type = RecordPersistService.detectResultType(payload.document);
 
-        const id = RecordPersistService.extractResultId(documentSnapshot, payload, recordId);
-        const type = RecordPersistService.detectResultType(documentSnapshot);
-
-        // console.log(id, 'id');
-        // console.log(documentSnapshot, 'documentSnapshot');
-        // console.log(payload, 'payload');
-        const timeForWindow = (() => {
-            const t = (payload as any)?.time;
-            if (t instanceof Date) {
-                return t.getTime();
-            }
-            const num = Number(t);
-            return Number.isFinite(num) ? num : Date.now();
-        })();
+        // const timeForWindow = (() => {
+        //     const t = (payload as any)?.time;
+        //     if (t instanceof Date) {
+        //         return t.getTime();
+        //     }
+        //     const num = Number(t);
+        //     return Number.isFinite(num) ? num : Date.now();
+        // })();
 
         const fromDb = payload.method === RecordMethod.Generate ? [] : await RecordPersistService.loadResultsAroundStep(
-            policyId,
-            timeForWindow,
-            id,
-            type,
-            recordActionId,
+            // policyId,
+            // timeForWindow,
+            // id,
+            // type,
+            payload.recordActionId,
         );
         if (fromDb.length) {
-            // console.log(fromDb, 'fromDb');
-            return [{
-            id,
-            type,
-            document: documentSnapshot?.ref ?? documentSnapshot?.document ?? documentSnapshot ?? null
-        },...fromDb];
+            return fromDb;
         }
 
-        if (!id) {
-            return [];
-        }
-
-        // console.log([{
-        //     id,
-        //     type,
-        //     document: documentSnapshot?.ref ?? documentSnapshot?.document ?? documentSnapshot ?? null
-        // }], 'bbbbbbbbbbbbbb');
         return [{
             id,
             type,
-            document: documentSnapshot?.ref ?? documentSnapshot?.document ?? documentSnapshot ?? null
+            document: payload.document?.ref ?? payload.document?.document ?? payload.document ?? null
         }];
     }
 
     private static async loadResultsAroundStep(
-        policyId: string,
-        baseTime: number,
-        documentId?: string,
-        _type?: 'vc' | 'vp' | 'schema',
-        recordActionId?: any,
+        // policyId: string,
+        // baseTime: number,
+        // documentId?: string,
+        // _type?: 'vc' | 'vp' | 'schema',
+        recordActionId?: string,
     ): Promise<{ id: string, type: 'vc' | 'vp' | 'schema', document: any }[]> {
-        const windowBeforeMs = 5000;
-        const windowAfterMs = 2000;
-        const start = baseTime - windowBeforeMs;
-        const end = baseTime + windowAfterMs;
+        // const windowBeforeMs = 5000;
+        // const windowAfterMs = 2000;
+        // const start = baseTime - windowBeforeMs;
+        // const end = baseTime + windowAfterMs;
         try {
-            return await RecordImportExport.loadRecordResultsForPublished(
-                policyId,
-                documentId,
+            return await RecordImportExport.loadRecordResultsByActionId(
+                // policyId,
+                // documentId,
                 recordActionId
             );
         } catch {
@@ -265,29 +229,26 @@ export class RecordPersistService {
     }
 
     private static extractResultId(
-        documentSnapshot: any,
-        payload: FilterObject<Record>,
-        recordId: any
+        // documentSnapshot: any,
+        payload: Record,
     ): string {
-        if (typeof documentSnapshot?.id === 'string') {
-            return documentSnapshot.id;
+        if (typeof payload.document?.id === 'string') {
+            return payload.document.id;
         }
-        if (typeof documentSnapshot?.ref?.id === 'string') {
-            return documentSnapshot.ref.id;
+        if (typeof payload.document?.ref?.id === 'string') {
+            return payload.document.ref.id;
         }
-        if (typeof documentSnapshot?.ref?.document?.id === 'string') {
-            return documentSnapshot.ref.document.id;
+        if (typeof payload.document?.ref?.document?.id === 'string') {
+            return payload.document.ref.document.id;
         }
-        if (typeof documentSnapshot?.document?.id === 'string') {
-            return documentSnapshot.document.id;
+        if (typeof payload.document?.document?.id === 'string') {
+            return payload.document.document.id;
         }
         if (typeof payload.target === 'string' && payload.target) {
             return payload.target;
         }
-        if (typeof payload.action === 'string' && payload.action) {
-            return `${payload.action}-${recordId?.toString?.()}`;
-        }
-        return recordId?.toString?.();
+
+        return payload.uuid;
     }
 
     private static detectResultType(documentSnapshot: any): 'vc' | 'vp' | 'schema' {

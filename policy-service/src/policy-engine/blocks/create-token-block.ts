@@ -28,6 +28,7 @@ import {
     ExternalEventType,
 } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Create Token block
@@ -150,7 +151,7 @@ export class CreateTokenBlock {
         template: any,
         docs: IPolicyDocument | IPolicyDocument[],
         userId: string | null,
-        actionStatus: any,
+        actionStatus: RecordActionStep,
     ) {
         if (!template) {
             throw new BlockActionError(
@@ -250,7 +251,7 @@ export class CreateTokenBlock {
             PolicyOutputEventType.RefreshEvent,
         ],
     })
-    async setData(user: PolicyUser, template: any, _, actionStatus: any): Promise<any> {
+    async setData(user: PolicyUser, template: any, _, actionStatus: RecordActionStep): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         ref.log(`setData`);
 

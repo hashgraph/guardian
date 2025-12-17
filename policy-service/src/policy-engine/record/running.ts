@@ -1,8 +1,7 @@
-import { GenerateUUIDv4, PolicyEvents, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyEvents, TopicType, RecordMethod } from '@guardian/interfaces';
 import { RunningStatus } from './status.type.js';
 import { BlockTreeGenerator } from '../block-tree-generator.js';
 import { RecordAction } from './action.type.js';
-import { RecordMethod } from './method.type.js';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -798,10 +797,10 @@ export class Running {
      * Get current and recorded results
      * @public
      */
-    public async getResults(policyId?: string): Promise<any> {
+    public async getResults(): Promise<any> {
         if (this._id) {
             const results = await RecordImportExport
-                .loadRecordResults(policyId || this.policyId, this._startTime, this._endTime);
+                .loadRecordResults(this.policyId, this._startTime, this._endTime);
             return {
                 documents: results,
                 recorded: this._results

@@ -11,6 +11,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { Inject } from '../../helpers/decorators/inject.js';
 import { DocumentCategoryType, LocationType } from '@guardian/interfaces';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Sign Status
@@ -206,7 +207,7 @@ export class MultiSignBlock {
         documentId: string,
         currentUser: PolicyUser,
         userId: string | null,
-        actionStatus: any
+        actionStatus: RecordActionStep
     ) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const data = await ref.databaseServer.getMultiSignDocuments(ref.uuid, documentId, currentUser.group);
@@ -358,7 +359,7 @@ export class MultiSignBlock {
      * Remove User Event
      * @param {PolicyUser} user
      */
-    private async onRemoveUser(event: { target: PolicyUser, user: PolicyUser, actionStatus: any }) {
+    private async onRemoveUser(event: { target: PolicyUser, user: PolicyUser, actionStatus: RecordActionStep }) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (event && event.target) {
             const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, event.target.group, event.target.role);

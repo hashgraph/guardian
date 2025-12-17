@@ -9,6 +9,7 @@ import ObjGet from 'lodash.get';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Aggregate block
@@ -176,7 +177,7 @@ export class AggregateBlock {
      * @param userId User Id
      * @param documents Documents
      */
-    private async sendCronDocuments(ref: AnyBlockType, userId: string, documents: AggregateVC[], actionStatus: any) {
+    private async sendCronDocuments(ref: AnyBlockType, userId: string, documents: AggregateVC[], actionStatus: RecordActionStep) {
         documents = await this.removeDocuments(ref, documents);
         if (documents.length || ref.options.emptyData) {
             const state: IPolicyEventState = { data: documents };
@@ -246,7 +247,7 @@ export class AggregateBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    private async tickAggregate(ref: AnyBlockType, document: any, userId: string | null, actionStatus: any) {
+    private async tickAggregate(ref: AnyBlockType, document: any, userId: string | null, actionStatus: RecordActionStep) {
         const { expressions, condition, disableUserGrouping, groupByFields } = ref.options;
         const groupByUser = !disableUserGrouping;
 

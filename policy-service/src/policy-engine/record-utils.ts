@@ -252,7 +252,7 @@ export class RecordUtils {
         user: PolicyUser,
         block: AnyBlockType,
         data: any,
-        recordActionId?: any,
+        recordActionId?: string,
         actionTimestemp?: number
     ): Promise<void> {
         const record = RecordUtils.GetRecordingController(policyId);

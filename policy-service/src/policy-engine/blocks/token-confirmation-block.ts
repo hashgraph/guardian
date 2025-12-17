@@ -10,7 +10,7 @@ import { BlockActionError } from '../errors/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
-
+import { RecordActionStep } from '../record-action-step.js';
 /**
  * Information block
  */
@@ -143,7 +143,7 @@ export class TokenConfirmationBlock {
 
     async remoteSetData(user: PolicyUser, data: {
         action: 'confirm' | 'skip'
-    }, actionStatus: any) {
+    }, actionStatus: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`setData`);
 
@@ -176,7 +176,7 @@ export class TokenConfirmationBlock {
             hederaAccountKey: string
         },
         type?: ActionType,
-        actionStatus?: any
+        actionStatus?: RecordActionStep
     ) {
         if (type === ActionType.REMOTE) {
             await this.remoteSetData(user, data, actionStatus);

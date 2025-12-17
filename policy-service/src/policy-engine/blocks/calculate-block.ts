@@ -12,6 +12,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 interface IMetadata {
     owner: PolicyUser;
@@ -121,7 +122,7 @@ export class CalculateContainerBlock {
         documents: IPolicyDocument | IPolicyDocument[],
         ref: IPolicyCalculateBlock,
         userId: string | null,
-        actionStatus: any
+        actionStatus: RecordActionStep
     ): Promise<IPolicyDocument> {
         const context = await ref.debugContext({ documents });
         const contextDocuments = context.documents as IPolicyDocument | IPolicyDocument[];
@@ -285,7 +286,7 @@ export class CalculateContainerBlock {
     private async createUnsignedDocument(
         json: any,
         ref: IPolicyCalculateBlock,
-        recordActionId: any
+        recordActionId: string
     ): Promise<IPolicyDocument> {
         const vc = PolicyUtils.createVcFromSubject(json);
         return PolicyUtils.createUnsignedVC(ref, vc, recordActionId);

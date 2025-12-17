@@ -39,6 +39,12 @@ export class Record extends BaseEntity {
     action?: string;
 
     /**
+     * Record action id
+     */
+    @Property({ nullable: true })
+    recordActionId?: string;
+
+    /**
      * Time
      */
     @Property({ nullable: true, type: 'unknown' })
@@ -51,7 +57,7 @@ export class Record extends BaseEntity {
     user?: string;
 
     /**
-     * User
+     * User role
      */
     @Property({ nullable: true })
     userRole?: string;
@@ -85,29 +91,12 @@ export class Record extends BaseEntity {
      */
     @Property({ nullable: true })
     resultsFileId?: ObjectId;
-    /**
-     * IPFS CID
-     */
-    @Property({ nullable: true })
-    ipfsCid?: string;
 
     /**
-     * IPFS URL
+     * Imported from
      */
     @Property({ nullable: true })
-    ipfsUrl?: string;
-
-    /**
-     * IPFS timestamp
-     */
-    @Property({ nullable: true, type: 'unknown' })
-    ipfsTimestamp?: Date;
-
-    /**
-     * Source policy for copied record
-     */
-    @Property({ nullable: true })
-    fromPolicyId?: string;
+    importedFrom?: string;
 
     /**
      * Original record id when copied
