@@ -19,7 +19,6 @@ import { GuardiansService } from '../helpers/guardians.js';
 import { FilterObject } from '@mikro-orm/core';
 
 const MIN_SPACING_MS = 3000;
-const RESULTS_WINDOW_PADDING_MS = 1000;
 
 /**
  * Compare results
@@ -345,7 +344,7 @@ async function loadImportedRecordsFromDb(
                 continue;
             }
             const type = (res.type || '').toString().toLowerCase() as 'vc' | 'vp' | 'schema';
-            const key = `${type}:${id}}`;
+            const key = `${type}:${id}`;
             if (resultsMap.has(key) || res.document?.credentialSubject?.find?.(({ operation }) => operation === 'PUBLISH')) {
                 continue;
             }

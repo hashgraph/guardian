@@ -710,6 +710,9 @@ export class PolicyImport {
             tests,
             formulas,
         } = options.policyComponents;
+
+        const copySchemas = schemas.map((schema) => structuredClone(schema));
+
         const user = options.user;
         const versionOfTopicId = options.versionOfTopicId;
         const additionalPolicyConfig = options.additionalPolicyConfig;
@@ -839,7 +842,7 @@ export class PolicyImport {
         step.complete();
 
         await this.importTags(row, tags, this.notifier.getStep(STEP_IMPORT_TAGS));
-        await this.copyPolicyRecords(row, logger, schemas);
+        await this.copyPolicyRecords(row, logger, copySchemas);
 
         this.notifier.complete();
 
@@ -847,7 +850,7 @@ export class PolicyImport {
         return { policy: row, errors };
     }
 
-    private async copyPolicyRecords(policy: Policy, logger: PinoLogger, schemas: Schema[]): Promise<void> {
+    private async copyPolicyRecords(policy: Policy, logger: PinoLogger, copySchemas: Schema[]): Promise<void> {
         if (!this.importRecords || !this.fromMessageId) {
             return;
         }
@@ -974,7 +977,23 @@ export class PolicyImport {
                 target: null,
                 document: null,
                 importedFrom: 'ipfs',
-                results: schemas,
+                results: copySchemas.map((schema) => {
+                    let id: string;
+
+                    if (schema.contextURL) {
+                        id = schema.contextURL + schema.iri;
+                    } else if (schema.iri) {
+                        id = schema.iri;
+                    } else {
+                        id = schema.uuid;
+                    }
+
+                    return {
+                        id,
+                        type: 'schema',
+                        document: schema.document
+                    }
+                }),
             } as FilterObject<Record>;
             await DatabaseServer.createRecord(startRecord);
         } catch (error: any) {
