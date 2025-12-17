@@ -247,83 +247,10 @@ export class RecordImportExport {
      * @static
      */
     public static async loadRecordResultsByActionId(
-        // policyId: string,
-        // documentId?: string,
         recordActionId?: string
     ): Promise<IRecordResult[]> {
         const result: IRecordResult[] = [];
         const db = new DatabaseServer();
-
-        // let vcdocuments: VcDocumentCollection[] = [];
-        // let vpdocuments: VpDocumentCollection[] = [];
-
-        // if (documentId) {
-        //     vcdocuments = await db.getVcDocuments<VcDocumentCollection>({
-        //     policyId,
-        //     $or: [
-        //         { 'document.id': documentId },
-        //         { 'document.ref.id': documentId },
-        //         { id: documentId },
-        //         { _id: documentId },
-        //     ]
-        //     } as FilterObject<VcDocument>) as VcDocumentCollection[];
-        // }
-
-        // if (!documentId || !vcdocuments.length) {
-        //     vcdocuments = await db.getVcDocuments<VcDocumentCollection>(
-        //     {
-        //         policyId
-        //     } as FilterObject<VcDocument>,
-        //     {
-        //         limit: 3,
-        //         orderBy: {
-        //             updateDate: 'DESC'
-        //         } as any
-        //     } as any
-        //     ) as VcDocumentCollection[];
-        // }
-
-        // if (documentId) {
-        //     vpdocuments = await db.getVpDocuments<VpDocumentCollection>({
-        //     policyId,
-        //     $or: [
-        //         { 'document.id': documentId },
-        //         { 'document.ref.id': documentId },
-        //         { id: documentId },
-        //         { _id: documentId },
-        //     ]
-        //     } as FilterObject<VpDocument>) as VpDocumentCollection[];
-        // }
-
-        // if (!documentId || !vpdocuments.length) {
-        //     vpdocuments = await db.getVpDocuments<VpDocumentCollection>(
-        //     {
-        //         policyId
-        //     } as FilterObject<VpDocument>,
-        //     {
-        //         limit: 3,
-        //         orderBy: {
-        //             updateDate: 'DESC'
-        //         } as any
-        //     } as any
-        //     ) as VpDocumentCollection[];
-        // }
-
-        // for (const vc of vcdocuments) {
-        //     result.push({
-        //         id: vc.document.id,
-        //         type: 'vc',
-        //         document: vc.document
-        //     });
-        // }
-
-        // for (const vp of vpdocuments) {
-        //     result.push({
-        //         id: vp.document.id,
-        //         type: 'vp',
-        //         document: vp.document
-        //     });
-        // }
 
         const vcdocuments = await db.getVcDocuments<VcDocumentCollection>(
             {

@@ -287,34 +287,20 @@ export class PolicyEngineService {
         this.channel.getMessages(PolicyEvents.RECORD_PERSIST_STEP,
             async (msg: PersistStepPayload) => {
             const {
-                policyId: msgPolicyId,
                 policyMessageId,
-                recordingUuid,
-                recordId,
                 payload,
-                // documentSnapshot,
                 hederaOptions,
-                uploadToIpfs,
-                // recordActionId,
-                actionTimestemp,
                 userFull
             } = msg;
                 try {
                     await RecordPersistService.persistStep({
-                        policyId: msgPolicyId,
                         policyMessageId,
-                        recordingUuid,
-                        recordId,
                         payload,
-                        // documentSnapshot,
                         hederaOptions,
-                        uploadToIpfs,
-                        // recordActionId,
-                        actionTimestemp,
                         userFull
                     });
                 } catch (error: any) {
-                    console.error(`Error persisting record step for policy ${msgPolicyId}`, error);
+                    console.error(`Error persisting record step for policy ${payload.policyId}`, error);
                 }
             })
 

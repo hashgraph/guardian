@@ -1,14 +1,7 @@
 import {
     DatabaseServer,
     HederaDidDocument,
-    MessageAction,
-    MessageServer,
-    Policy,
-    PolicyRecordMessage,
     Record,
-    RecordImportExport,
-    TopicConfig,
-    Users
 } from '@guardian/common';
 import { GenerateUUIDv4, ISignOptions, PolicyEvents, RecordMethod } from '@guardian/interfaces';
 import { BlockTreeGenerator } from '../block-tree-generator.js';
@@ -145,45 +138,24 @@ export class Recording {
             document: entry.document ?? null,
             recordActionId: entry.recordActionId ?? null,
         } as FilterObject<Record>;
-        // const documentSnapshot = this.cloneDocument(entry.document);
         if (!this.uploadToIpfs) {
             await DatabaseServer.createRecord(payload);
         }
         if (this.uploadToIpfs) {
-            // const recordId: any = (savedRecord as any)?.id || (savedRecord as any)?._id;
             this.tree.sendMessage(PolicyEvents.RECORD_PERSIST_STEP, {
                 policyId: this.policyId,
                 policyMessageId: this.policyMessageId ?? null,
                 recordingUuid: this.uuid,
-                // recordId,
                 payload,
-                // documentSnapshot,
                 actionTimestemp: entry.actionTimestemp,
                 hederaOptions: this.hederaOptions ?? null,
                 uploadToIpfs: this.uploadToIpfs,
-                // recordActionId: entry.recordActionId,
                 userFull: entry.userFull,
             });
         }
 
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
     }
-
-    /**
-     * Clone document
-     * @param document
-     * @private
-     */
-    // private cloneDocument<T>(document: T): T {
-    //     if (document === undefined || document === null) {
-    //         return document;
-    //     }
-    //     try {
-    //         return JSON.parse(JSON.stringify(document));
-    //     } catch (error) {
-    //         return document;
-    //     }
-    // }
 
     /**
      * Start recording
