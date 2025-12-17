@@ -4,7 +4,11 @@ import {
     ElementRef,
     ViewChild,
 } from '@angular/core';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import {
+    DialogService,
+    DynamicDialogConfig,
+    DynamicDialogRef,
+} from 'primeng/dynamicdialog';
 import {
     DocumentValidators,
     Schema,
@@ -30,6 +34,7 @@ import { SchemaService } from 'src/app/services/schema.service';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ToastrService } from 'ngx-toastr';
+import { ApproveUpdateVcDocumentDialogComponent } from '../../policy-engine/dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component';
 
 /**
  * Dialog for display json
@@ -108,21 +113,24 @@ export class VCFullscreenDialog {
         private ref: ChangeDetectorRef,
         private fb: UntypedFormBuilder,
         private policyEngineService: PolicyEngineService,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        private dialog: DialogService
     ) {
         this.dataForm = this.fb.group({});
     }
 
-    get selectedVcDoc(): any {
+    get currentSelectedVcDoc(): any {
         return this.allVcDocs?.[this.selectedVersionIndex];
     }
 
-    get currentVcDoc(): any {
+    get lastVersionVcDoc(): any {
         return this.allVcDocs?.find((doc) => !doc.oldVersion) || null;
     }
 
     get isCurrentSelectedVersion(): boolean {
-        return !!this.selectedVcDoc && !this.selectedVcDoc.oldVersion;
+        return (
+            !!this.currentSelectedVcDoc && !this.currentSelectedVcDoc.oldVersion
+        );
     }
 
     ngOnInit() {
@@ -287,6 +295,14 @@ export class VCFullscreenDialog {
         );
     }
 
+    // delete???
+    public get isDocApproved(): boolean {
+        return (
+            this.row?.option?.status === 'Approved' ||
+            this.currentSelectedVcDoc?.option?.status === 'Approved'
+        );
+    }
+
     public onClose(): void {
         try {
             this._subscription?.unsubscribe();
@@ -360,13 +376,18 @@ export class VCFullscreenDialog {
         }
     }
 
-    public onEditMode() {
+    public onEditMode(isRefreshProfile?: boolean) {
         if (!this.isEditMode) {
             this.loadData();
+            this.isEditMode = !this.isEditMode;
         } else {
-            this.loadProfile();
+            if (!isRefreshProfile && this.dataForm.dirty) {
+                this.onUpdatableBtnEvent(true);
+            } else {
+                this.loadProfile();
+                this.isEditMode = !this.isEditMode;
+            }
         }
-        this.isEditMode = !this.isEditMode;
     }
 
     setSubjects() {
@@ -492,35 +513,58 @@ export class VCFullscreenDialog {
         this.dataForm.valueChanges
             .pipe(takeUntil(this._destroy$))
             .pipe(audit((ev) => interval(1000)))
-            .subscribe((val) => {
-                // this.validate();
-            });
+            .subscribe();
     }
 
-    public onUpdatableBtnEvent() {
-        this.loading = true;
-        const data = this.dataForm.getRawValue();
-        this.policyEngineService
-            .createNewVersionVcDocument(this.policyId!, {
-                documentId: this.currentVcDoc.id ?? this.documentId,
-                document: data,
-            })
-            .subscribe((status) => {
-                if (status.ok) {
-                    this.onEditMode();
-                    this.toastr.success(
-                        `The document has been updated successfully.`,
-                        'Success',
-                        {
-                            timeOut: 3000,
-                            closeButton: true,
-                            positionClass: 'toast-bottom-right',
-                            enableHtml: true,
-                        }
-                    );
+    public onUpdatableBtnEvent(isSwitchMode?: boolean) {
+        const dialogRef = this.dialog.open(
+            ApproveUpdateVcDocumentDialogComponent,
+            {
+                data: {
+                    text: 'You have unsaved changes. Do you want to save them?',
+                    okBtnName: 'Save',
+                    closeBtnName: 'Close',
+                },
+                header: 'Save Changes',
+                height: '200px',
+                width: '500px',
+                modal: true,
+                closable: true,
+            }
+        );
+
+        dialogRef.onClose.subscribe((result) => {
+            if (!result) {
+                if (isSwitchMode) {
+                    this.isEditMode = !this.isEditMode;
                 }
-                this.loading = false;
-            });
+                return;
+            }
+
+            this.loading = true;
+            const data = this.dataForm.getRawValue();
+            this.policyEngineService
+                .createNewVersionVcDocument(this.policyId!, {
+                    documentId: this.lastVersionVcDoc.id ?? this.documentId,
+                    document: data,
+                })
+                .subscribe((status) => {
+                    if (status.ok) {
+                        this.onEditMode(true);
+                        this.toastr.success(
+                            `The document has been updated successfully.`,
+                            'Success',
+                            {
+                                timeOut: 3000,
+                                closeButton: true,
+                                positionClass: 'toast-bottom-right',
+                                enableHtml: true,
+                            }
+                        );
+                    }
+                    this.loading = false;
+                });
+        });
     }
 
     public onChangeButtons($event: any) {
@@ -550,7 +594,7 @@ export class VCFullscreenDialog {
                     minute: '2-digit',
                     hour12: true,
                 });
-                
+
                 if (!doc.oldVersion) {
                     return { label: date + ' (Latest)', value: index };
                 }
@@ -575,7 +619,8 @@ export class VCFullscreenDialog {
         this.document = document;
         this.setJson();
         this.setSubjects();
-        this.isCurrentUserOwner = this.selectedVcDoc?.owner === this.user?.did;
+        this.isCurrentUserOwner =
+            this.currentSelectedVcDoc?.owner === this.user?.did;
         setTimeout(() => {
             this.loading = false;
             this.ref.detectChanges();

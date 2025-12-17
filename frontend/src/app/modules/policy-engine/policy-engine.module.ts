@@ -166,6 +166,7 @@ import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-c
 import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
+import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
 
 @NgModule({
     declarations: [
@@ -289,7 +290,8 @@ import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialo
         IgnoreRulesDialog,
         OnLoadSavepointDialog,
         PolicyRepositoryComponent,
-        UserPolicyDialog
+        UserPolicyDialog,
+        ApproveUpdateVcDocumentDialogComponent
     ],
     imports: [
         CommonModule,
