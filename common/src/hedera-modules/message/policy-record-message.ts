@@ -174,7 +174,7 @@ export class PolicyRecordMessage extends Message {
      * Validation
      */
     public override validate(): boolean {
-        return !!(this.policyId && this.recordingUuid && this.recordId && this.recordActionId);
+        return !!(this.policyId && this.recordingUuid && this.recordId);
     }
 
     /**

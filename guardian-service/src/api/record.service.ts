@@ -865,6 +865,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     records = dbData.records;
                     results = dbData.results;
                 }
+                console.log(results, 'results');
+                console.log(records, 'records');
                 const guardiansService = new GuardiansService();
 
                 const result = await guardiansService
