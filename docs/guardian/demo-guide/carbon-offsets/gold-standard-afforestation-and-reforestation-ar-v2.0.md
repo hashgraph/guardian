@@ -94,7 +94,7 @@ Upon selecting "Add Report", a file will open containing the project details and
 
 Once you have completed the monitoring report, please access the VVB profile and go to the monitoring reports tab. Here, you will find a "Verify" button - select that to proceed.
 
-<figure><img src="../../../.gitbook/assets/image (25) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (25) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 Return to the Standard Registry profile and go to the monitoring reports tab. Here, select "Approve" to proceed.
 
