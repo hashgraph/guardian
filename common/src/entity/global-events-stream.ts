@@ -44,6 +44,9 @@ export class GlobalEventsStream extends RestoreEntity {
     @Property({ nullable: false, type: 'json' })
     filterFieldsByBranch: Record<string, Record<string, string>> = {};
 
+    @Property({ nullable: false, type: 'json' })
+    branchDocumentTypeByBranch: Record<string, string> = {};
+
     @BeforeCreate()
     @BeforeUpdate()
     public prepareEntity(): void {
@@ -51,6 +54,7 @@ export class GlobalEventsStream extends RestoreEntity {
         this.status = this.status ?? GlobalEventsStreamStatus.Free;
         this.active = this.active ?? false;
         this.filterFieldsByBranch = this.filterFieldsByBranch ?? {};
+        this.branchDocumentTypeByBranch = this.branchDocumentTypeByBranch ?? {};
 
         this._updatePropHash({
             policyId: this.policyId,
@@ -61,7 +65,8 @@ export class GlobalEventsStream extends RestoreEntity {
             lastMessageCursor: this.lastMessageCursor,
             status: this.status,
             active: this.active,
-            filterFieldsByBranch: this.filterFieldsByBranch
+            filterFieldsByBranch: this.filterFieldsByBranch,
+            branchDocumentTypeByBranch: this.branchDocumentTypeByBranch,
         });
 
         this._updateDocHash('');
