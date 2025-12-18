@@ -426,7 +426,7 @@ export class Recording {
         //multi-sign-block
         if (block.blockType === 'multiSignBlock') {
             if (data?.document?.id && !data?.document?.uuid) {
-                const doc = await (new DatabaseServer(this.policyId)).getVcDocument(data.document.id);
+                const doc = await (new DatabaseServer(this.uploadToIpfs ? null : this.policyId)).getVcDocument(data.document.id);
                 if (doc) {
                     data.document.uuid = doc.document?.id;
                 }
@@ -434,9 +434,8 @@ export class Recording {
         }
         //button-block-addon
         if (block.blockType === 'buttonBlockAddon') {
-            console.debug('r', data)
             if (data.documentId) {
-                const doc = await (new DatabaseServer(this.policyId)).getVcDocument(data.documentId);
+                const doc = await (new DatabaseServer(this.uploadToIpfs ? null : this.policyId)).getVcDocument(data.documentId);
                 if (doc) {
                     data.uuid = doc.document?.id;
                 }
