@@ -84,11 +84,8 @@ export class ImportEntityDialog implements OnInit {
     public policiesWithImportedRecords: { id?: string; name?: string }[] = [];
     public policiesLoading = false;
     public canUseImportedRecords = false;
-    public recordSourceOptions = [
-        { label: 'Import from file', value: 'file' },
-        { label: 'Use records imported with this policy', value: 'imported' },
-        { label: 'Use records from another policy', value: 'otherPolicy' },
-    ];
+    public currentPolicyHasImportedRecords = false;
+    public recordSourceOptions: { label: string; value: 'file' | 'imported' | 'otherPolicy' }[] = [];
     public syncNewRecords: boolean = false;
 
     public dataForm = this.fb.group({
@@ -127,7 +124,7 @@ export class ImportEntityDialog implements OnInit {
         private formulasService: FormulasService,
     ) {
         const _config = this.config.data || {};
-        this.canUseImportedRecords = !!_config.withRecords;
+        this.currentPolicyHasImportedRecords = !!_config.withRecords;
         switch (_config.type) {
             case 'policy':
                 this.type = ImportEntityType.Policy;
@@ -168,7 +165,6 @@ export class ImportEntityDialog implements OnInit {
                 this.title = 'Open Record';
                 this.fileExtension = 'record';
                 this.placeholder = 'Import Record .record file';
-                this.canUseImportedRecords = this.canUseImportedRecords;
                 this.recordSource = 'file';
                 break;
             case 'schema-rule':
@@ -234,11 +230,36 @@ export class ImportEntityDialog implements OnInit {
                 this.importFromMessage();
             }
         }
+
+        if (this.type === ImportEntityType.Record) {
+            this.updateRecordSourceOptions();
+        }
     }
 
     ngOnInit(): void {
         if (this.type === ImportEntityType.Record) {
             this.loadPoliciesWithImportedRecords();
+        }
+    }
+
+    private updateRecordSourceOptions(): void {
+        if (this.type !== ImportEntityType.Record) {
+            return;
+        }
+        const options: { label: string; value: 'file' | 'imported' | 'otherPolicy' }[] = [
+            { label: 'Import from file', value: 'file' },
+        ];
+        if (this.currentPolicyHasImportedRecords) {
+            options.push({ label: 'Use records imported with this policy', value: 'imported' });
+        }
+        if (this.policiesWithImportedRecords.length) {
+            options.push({ label: 'Use records from another policy', value: 'otherPolicy' });
+        }
+        this.recordSourceOptions = options;
+        this.canUseImportedRecords = options.length > 1;
+        if (!options.find((option) => option.value === this.recordSource)) {
+            this.recordSource = 'file';
+            this.selectedPolicy = null;
         }
     }
 
@@ -408,9 +429,7 @@ export class ImportEntityDialog implements OnInit {
         this.policyEngineService.allWithImportedRecords(policyId).subscribe(
             (policies) => {
                 this.policiesWithImportedRecords = policies || [];
-                if (this.policiesWithImportedRecords.length) {
-                    this.canUseImportedRecords = true;
-                }
+                this.updateRecordSourceOptions();
                 this.policiesLoading = false;
             },
             () => {
