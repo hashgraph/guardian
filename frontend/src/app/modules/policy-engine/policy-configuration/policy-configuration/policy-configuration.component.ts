@@ -514,7 +514,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private loadTagsData() {
         if (this.user.TAGS_TAG_READ) {
-            const ids = this.allBlocks?.map(e => this.policy.id + '#' + e.id) || [];
+            const ids = this.allBlocks?.map(block => this.policy.id + '#' + block.id) || [];
 
             this.tagsService.search(TagType.PolicyBlock, ids).subscribe((data) => {
                 if (this.allBlocks) {

@@ -145,21 +145,18 @@ export async function getTarget(entity: TagType, id: string): Promise<{
             }
         }
         case TagType.PolicyBlock: {
-            const policyId = id.split('#')[0];
-            const targetId = id.split('#')[1];
-            console.log(id);
-            console.log(policyId);
-            
-            const item = await DatabaseServer.getPolicyById(policyId);
-            if (item) {
-                return {
-                    id,
-                    target: targetId,
-                    topicId: item.topicId
-                };
-            } else {
-                return null;
-            }
+            const [policyId, blockId] = id.split('#');
+
+            if (!policyId || !blockId) return null;
+
+            const policy = await DatabaseServer.getPolicyById(policyId);
+            if (!policy) return null;
+
+            return {
+                id,
+                target: id,
+                topicId: policy.topicId
+            };
         }
         default:
             return null;
@@ -194,6 +191,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 tag.date = (new Date()).toISOString();
 
                 const target = await getTarget(tag.entity, tag.localTarget || tag.target);
+
                 if (target) {
                     const users = new Users();
                     const root = await users.getHederaAccount(owner.creator, owner?.id);

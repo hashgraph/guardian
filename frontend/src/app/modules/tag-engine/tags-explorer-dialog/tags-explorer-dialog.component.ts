@@ -110,14 +110,18 @@ export class TagsExplorerDialog {
     private create(tag: any) {
         tag = this.history.create(tag);
         this.loading = true;
+
         this.tagsService.create(tag).subscribe((data) => {
             this.history.add(data);
+
             if (this.tab === 1) {
                 this.select = this.history.getItem(this.select);
             } else {
                 this.select = this.history.getHistory(this.select);
             }
+
             this.history.updateItems();
+
             setTimeout(() => {
                 this.loading = false;
                 this.hasChanges = true;
