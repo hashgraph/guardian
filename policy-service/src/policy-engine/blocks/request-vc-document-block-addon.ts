@@ -219,7 +219,7 @@ export class RequestVcDocumentBlockAddon {
                     user,
                     relayerAccount,
                     userId: user.userId
-                });
+                }, actionStatus?.id);
                 if (newId) {
                     credentialSubject.id = newId;
                 }
@@ -246,7 +246,7 @@ export class RequestVcDocumentBlockAddon {
                 }
 
                 const groupContext = await PolicyUtils.getGroupContext(ref, user);
-                const uuid = await ref.components.generateUUID();
+                const uuid = await ref.components.generateUUID(actionStatus?.id);
 
                 const vc = await PolicyActionsUtils.signVC({
                     ref,

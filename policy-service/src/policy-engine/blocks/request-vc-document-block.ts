@@ -206,7 +206,7 @@ export class RequestVcDocumentBlock {
             const relayerAccount = await PolicyUtils.getRelayerAccount(ref, user.did, data.relayerAccount, documentRef, user.userId);
 
             //Prepare Credential Subject
-            const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document);
+            const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document, actionStatus?.id);
 
             //Get relationships
             if (documentRef) {
@@ -390,7 +390,8 @@ export class RequestVcDocumentBlock {
     private async createCredentialSubject(
         user: PolicyUser,
         relayerAccount: string,
-        document: any
+        document: any,
+        actionStatusId: string,
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
@@ -410,7 +411,7 @@ export class RequestVcDocumentBlock {
             user,
             relayerAccount,
             userId: user.userId
-        });
+        }, actionStatusId);
         if (newId) {
             credentialSubject.id = newId;
         }
@@ -426,12 +427,12 @@ export class RequestVcDocumentBlock {
         user: PolicyUser,
         relayerAccount: string,
         credentialSubject: any,
-        actionStatusId: any
+        actionStatusId: string
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         const groupContext = await PolicyUtils.getGroupContext(ref, user);
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatusId);
 
         const vc = await PolicyActionsUtils.signVC({
             ref,

@@ -418,7 +418,7 @@ export class CustomLogicBlock {
         metadata: IMetadata,
         ref: IPolicyCalculateBlock,
         userId: string | null,
-        actionStatusId: any
+        actionStatusId: string,
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -455,7 +455,7 @@ export class CustomLogicBlock {
             throw new Error(JSON.stringify(res.error));
         }
 
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatusId);
 
         const newId = await PolicyActionsUtils.generateId({
             ref,
@@ -463,7 +463,7 @@ export class CustomLogicBlock {
             user: owner,
             relayerAccount,
             userId
-        });
+        }, actionStatusId);
         if (newId) {
             vcSubject.id = newId;
         }

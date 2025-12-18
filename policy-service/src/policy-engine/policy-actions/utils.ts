@@ -204,11 +204,11 @@ export class PolicyActionsUtils {
         user: PolicyUser,
         relayerAccount: string,
         userId: string | null
-    }): Promise<string> {
+    }, actionStatusId?: string): Promise<string> {
         const { ref, type, user, userId } = options;
         try {
             if (type === 'UUID') {
-                return await ref.components.generateUUID();
+                return await ref.components.generateUUID(actionStatusId);
             }
             if (type === 'OWNER') {
                 return user.did;
@@ -219,7 +219,7 @@ export class PolicyActionsUtils {
             if (type === 'DID') {
                 const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
                 if (userCred.location === LocationType.LOCAL) {
-                    return await GenerateDID.local(options);
+                    return await GenerateDID.local(options, actionStatusId);
                 } else {
                     const data = await GenerateDID.request(options);
                     return new Promise((resolve, reject) => {

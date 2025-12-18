@@ -288,13 +288,13 @@ export class ComponentsService {
     /**
      * Generate new UUID
      */
-    public async generateUUID(): Promise<string> {
+    public async generateUUID(actionStatusId?: string): Promise<string> {
         if (this._runningController) {
             return await this._runningController.nextUUID();
         }
         const uuid = GenerateUUIDv4();
         if (this._recordingController) {
-            await this._recordingController.generateUUID(uuid);
+            await this._recordingController.generateUUID(uuid, actionStatusId);
         }
         return uuid;
     }
@@ -302,7 +302,7 @@ export class ComponentsService {
     /**
      * Generate new DID
      */
-    public async generateDID(topicId: string): Promise<HederaDidDocument> {
+    public async generateDID(topicId: string, actionStatusId?: string): Promise<HederaDidDocument> {
         if (this._runningController) {
             return await this._runningController.nextDID(topicId);
         } else {
@@ -310,7 +310,7 @@ export class ComponentsService {
             const vcHelper = new VcHelper();
             const didDocument = await vcHelper.generateNewDid(topicId, privateKey);
             if (this._recordingController) {
-                await this._recordingController.generateDidDocument(didDocument);
+                await this._recordingController.generateDidDocument(didDocument, actionStatusId);
             }
             return didDocument;
         }

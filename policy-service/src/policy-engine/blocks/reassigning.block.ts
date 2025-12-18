@@ -92,7 +92,7 @@ export class ReassigningBlock {
             actor = user;
         }
 
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatus?.id);
         const credentialSubject = document.document.credentialSubject[0];
         const vc = await PolicyActionsUtils.signVC({
             ref,

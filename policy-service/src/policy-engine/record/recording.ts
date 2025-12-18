@@ -311,7 +311,7 @@ export class Recording {
      * @param uuid
      * @public
      */
-    public async generateUUID(uuid: string): Promise<void> {
+    public async generateUUID(uuid: string, recordActionId?: string): Promise<void> {
         if (!this.isActive()) {
             return;
         }
@@ -320,7 +320,8 @@ export class Recording {
             action: RecordAction.GenerateUUID,
             user: null,
             target: null,
-            document: { uuid }
+            document: { uuid },
+            recordActionId,
         });
     }
 
@@ -329,7 +330,7 @@ export class Recording {
      * @param didDocument
      * @public
      */
-    public async generateDidDocument(didDocument: HederaDidDocument): Promise<void> {
+    public async generateDidDocument(didDocument: HederaDidDocument, recordActionId?: string): Promise<void> {
         if (!this.isActive()) {
             return;
         }
@@ -339,7 +340,8 @@ export class Recording {
             action: RecordAction.GenerateDID,
             user: null,
             target: null,
-            document: { did }
+            document: { did },
+            recordActionId,
         });
     }
 

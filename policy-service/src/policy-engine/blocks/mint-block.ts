@@ -164,7 +164,8 @@ export class MintBlock {
         didDocument: HederaDidDocument,
         token: any,
         data: string,
-        ref: AnyBlockType
+        ref: AnyBlockType,
+        actionStatusId: string
     ): Promise<VcDocument> {
         const vcHelper = new VcHelper();
         const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.MINT_TOKEN);
@@ -175,7 +176,7 @@ export class MintBlock {
             tokenId: token.tokenId,
             amount: amount.toString()
         }
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatusId);
         const mintVC = await vcHelper.createVerifiableCredential(
             vcSubject,
             didDocument,
@@ -203,7 +204,8 @@ export class MintBlock {
         documents: VcDocument[],
         messages: string[],
         additionalMessages: string[],
-        userId: string | null
+        userId: string | null,
+        actionStatusId: string
     ): Promise<VcDocument[]> {
         const addons = ref.getAddons();
         const result: VcDocument[] = [];
@@ -221,7 +223,7 @@ export class MintBlock {
             if (additionalMessages) {
                 vcSubject.relationships = additionalMessages.slice();
             }
-            const uuid = await ref.components.generateUUID();
+            const uuid = await ref.components.generateUUID(actionStatusId);
             const vc = await vcHelper.createVerifiableCredential(
                 vcSubject,
                 policyOwnerDid,
@@ -287,7 +289,7 @@ export class MintBlock {
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
-        const uuid: string = await ref.components.generateUUID();
+        const uuid: string = await ref.components.generateUUID(actionStatus?.id);
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
         if (Number.isNaN(amount) || !Number.isFinite(amount) || amount < 0) {
             throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);
@@ -297,8 +299,8 @@ export class MintBlock {
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref, userId);
 
-        const mintVC = await this.createMintVC(policyOwnerDid, token, tokenAmount, ref);
-        const reportVC = await this.createReportVC(ref, policyOwnerCred, user, documents, messages, additionalMessages, userId);
+        const mintVC = await this.createMintVC(policyOwnerDid, token, tokenAmount, ref, actionStatus?.id);
+        const reportVC = await this.createReportVC(ref, policyOwnerCred, user, documents, messages, additionalMessages, userId, actionStatus?.id);
         let vp: any;
         if (reportVC && reportVC.length) {
             const vcs = [...reportVC, mintVC];

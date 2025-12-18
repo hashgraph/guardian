@@ -58,7 +58,8 @@ export class RetirementBlock {
         token: any,
         data: any,
         ref: AnyBlockType,
-        serialNumbers?: number[]
+        serialNumbers?: number[],
+        actionStatusId?: string,
     ): Promise<VcDocument> {
         const vcHelper = new VcHelper();
         const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.WIPE_TOKEN);
@@ -70,7 +71,7 @@ export class RetirementBlock {
             amount: amount.toString(),
             ...(serialNumbers && { serialNumbers: serialNumbers.join(',') })
         }
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatusId);
         const wipeVC = await vcHelper.createVerifiableCredential(
             vcSubject,
             didDocument,
@@ -125,7 +126,7 @@ export class RetirementBlock {
         const policyOwnerHederaCred = await policyOwner.loadHederaCredentials(ref, userId);
         const policyOwnerSignOptions = await policyOwner.loadSignOptions(ref, userId);
 
-        const uuid: string = await ref.components.generateUUID();
+        const uuid: string = await ref.components.generateUUID(actionStatus?.id);
 
         let serialNumbers: number[] = []
         let tokenValue: number = 0;
@@ -194,7 +195,7 @@ export class RetirementBlock {
             [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         }
 
-        const wipeVC = await this.createWipeVC(policyOwnerDidDocument, token, tokenAmount, ref, serialNumbers);
+        const wipeVC = await this.createWipeVC(policyOwnerDidDocument, token, tokenAmount, ref, serialNumbers, actionStatus?.id);
         const vcs = [].concat(documents, wipeVC);
         const vp = await this.createVP(policyOwnerDidDocument, uuid, vcs);
 

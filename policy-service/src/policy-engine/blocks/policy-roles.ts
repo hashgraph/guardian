@@ -193,9 +193,10 @@ export class PolicyRolesBlock {
     private async getGroupByConfig(
         ref: AnyBlockType,
         user: IAuthUser,
-        groupConfig: IGroupConfig
+        groupConfig: IGroupConfig,
+        actionStatusId: string,
     ): Promise<IUserGroup> {
-        const uuid: string = await ref.components.generateUUID();
+        const uuid: string = await ref.components.generateUUID(actionStatusId);
         if (groupConfig.groupRelationshipType === GroupRelationshipType.Multiple) {
             if (groupConfig.groupAccessType === GroupAccessType.Global) {
                 const result = await ref.databaseServer.getGlobalGroup(ref.policyId, groupConfig.name);
@@ -312,13 +313,13 @@ export class PolicyRolesBlock {
      * @param group
      * @private
      */
-    private async createVC(ref: AnyBlockType, user: PolicyUser, group: IUserGroup, actionStatusId: any): Promise<string> {
+    private async createVC(ref: AnyBlockType, user: PolicyUser, group: IUserGroup, actionStatusId: string): Promise<string> {
         const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.USER_ROLE);
         if (!policySchema) {
             return null;
         }
 
-        const uuid: string = await ref.components.generateUUID();
+        const uuid: string = await ref.components.generateUUID(actionStatusId);
         const vcSubject: any = {
             ...SchemaHelper.getContext(policySchema),
             id: uuid,
@@ -403,8 +404,6 @@ export class PolicyRolesBlock {
         output: [PolicyOutputEventType.JoinGroup, PolicyOutputEventType.CreateGroup]
     })
     async setData(user: PolicyUser, data: any, _, actionStatus): Promise<any> {
-                // console.log(actionStatus, 'actionStatus')
-        // console.log(data, 'data 656565')
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const did = user?.did;
         const curUser = await PolicyUtils.getUser(ref, did, user.userId);
@@ -419,10 +418,10 @@ export class PolicyRolesBlock {
             group = await this.getGroupByToken(ref, curUser, uuid, role);
         } else if (data.group) {
             const groupConfig = this.getGroupConfig(ref, data.group, data.label);
-            group = await this.getGroupByConfig(ref, curUser, groupConfig);
+            group = await this.getGroupByConfig(ref, curUser, groupConfig, actionStatus?.id);
         } else if (data.role) {
             const groupConfig = this.getGroupConfig(ref, data.role, null);
-            group = await this.getGroupByConfig(ref, curUser, groupConfig);
+            group = await this.getGroupByConfig(ref, curUser, groupConfig, actionStatus?.id);
         } else {
             throw new BlockActionError('Invalid role', ref.blockType, ref.uuid);
         }
@@ -435,8 +434,6 @@ export class PolicyRolesBlock {
 
         const userGroup = await ref.databaseServer.setUserInGroup(group);
         const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref, user.userId);
-        // console.log(actionStatus, 'actionStatus')
-        // console.log(data, 'data 656565')
         if (data.invitation) {
             ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null, actionStatus);
         } else {

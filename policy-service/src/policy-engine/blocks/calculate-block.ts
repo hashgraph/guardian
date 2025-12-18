@@ -225,7 +225,7 @@ export class CalculateContainerBlock {
         metadata: IMetadata,
         ref: IPolicyCalculateBlock,
         userId: string | null,
-        actionStatusId: any
+        actionStatusId: string,
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -256,7 +256,7 @@ export class CalculateContainerBlock {
             VCHelper.addDryRunContext(vcSubject);
         }
 
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatusId);
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const didDocument = await policyOwnerCred.loadDidDocument(ref, userId);
         const newVC = await VCHelper.createVerifiableCredential(

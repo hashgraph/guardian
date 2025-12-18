@@ -160,7 +160,7 @@ export class MultiSignBlock {
         const groupContext = await PolicyUtils.getGroupContext(ref, user);
         const vcDocument = sourceDoc.document;
         const credentialSubject = vcDocument.credentialSubject[0];
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatus?.id);
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, sourceDoc, user.userId);
 
         const newVC = await PolicyActionsUtils
@@ -232,7 +232,7 @@ export class MultiSignBlock {
             const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, sourceDoc, userId);
 
             const vcs = data.map(e => VcDocument.fromJsonTree(e.document));
-            const uuid: string = await ref.components.generateUUID();
+            const uuid: string = await ref.components.generateUUID(actionStatus?.id);
             const vp = await this.vcHelper.createVerifiablePresentation(
                 vcs,
                 policyOwnerDocument,
