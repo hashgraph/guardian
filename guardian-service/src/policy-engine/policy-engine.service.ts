@@ -869,6 +869,36 @@ export class PolicyEngineService {
                 }
             });
 
+        /**
+         * Get policies with imported records
+         */
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICIES_WITH_IMPORTED_RECORDS,
+            async (msg: { currentPolicyId: string }) => {
+                try {
+                    const policies = await DatabaseServer.getPolicies({
+                        id: { $ne: msg.currentPolicyId },
+                        status: {
+                            $in: [
+                                PolicyStatus.DRY_RUN,
+                                PolicyStatus.DRAFT,
+                                PolicyStatus.DEMO,
+                                PolicyStatus.VIEW,
+                            ]
+                        },
+                        recordsTopicId: {
+                            $ne: null,
+                        },
+                        autoRecordSteps: true,
+                    }, {
+                        fields: ['id', 'name', 'messageId']
+                    });
+
+                    return new MessageResponse(policies);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_PUBLISH_POLICIES,
             async (): Promise<IMessageResponse<Policy[]>> => {
                 try {

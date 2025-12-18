@@ -106,6 +106,24 @@ export class PolicyTestDTO {
     result?: any;
 }
 
+export class BasePolicyDTO {
+    @ApiProperty({
+        type: 'string',
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    id?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: 'Policy name'
+    })
+    @IsOptional()
+    @IsString()
+    name?: string;
+}
+
 @ApiExtraModels(PolicyTestDTO)
 export class PolicyDTO {
     @ApiProperty({

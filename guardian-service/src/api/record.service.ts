@@ -840,22 +840,22 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Invalid parameters');
                 }
                 const { policyId, owner } = msg;
-                const options = msg.options || {};
-                const syncNewRecords = !!options.syncNewRecords
+                const { file, fromPolicyId, importRecords, syncNewRecords, ...options } = msg.options || {};
                 const policy = await checkPolicy(policyId, owner);
 
                 let records: RecordEntity[] | any[] = [];
                 let results: IRecordResult[] = [];
 
-                if (options.file?.data?.length) {
-                    const zip = options.file;
-                    delete options.file;
+                if (file?.data?.length) {
+                    const zip = file;
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip.data));
                     records = recordToImport.records;
                     results = recordToImport.results;
+                } else if (fromPolicyId) {
+                    const dbData = await loadImportedRecordsFromDb(fromPolicyId, policy.owner);
+                    records = dbData.records;
+                    results = dbData.results;
                 } else {
-                    delete options.importRecords;
-                    delete options.syncNewRecords;
                     if (syncNewRecords) {
                         await syncPolicyCopiedRecords(policyId, logger);
                     }

@@ -21,6 +21,7 @@ import {
     PoliciesValidationDTO,
     PolicyCategoryDTO,
     PolicyDTO,
+    BasePolicyDTO,
     PolicyPreviewDTO,
     PolicyTestDTO,
     PolicyValidationDTO,
@@ -202,6 +203,60 @@ export class PolicyApi {
             const owner = new EntityOwner(user);
             const { policies, count } = await engineService.getPoliciesV2(options, owner);
             return res.header('X-Total-Count', count).send(policies);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+
+    /**
+     * Return a list of all policies with imported records
+     */
+    @Get('/with-imported-records/:policyId')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+        Permissions.POLICIES_POLICY_AUDIT,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all policies with imported records.',
+        description: 'Returns all policies with imported records.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: BasePolicyDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(BasePolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPoliciesWithImportedRecords(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('policyId') policyId: string,
+    ): Promise<any> {
+        if (!user.did && user.role !== UserRole.AUDITOR) {
+            return res.header('X-Total-Count', 0).send([]);
+        }
+        try {
+            const engineService = new PolicyEngine();
+            const policies = await engineService.getPoliciesWithImportedRecords(policyId);
+            return res.header('X-Total-Count', policies.length).send(policies);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
