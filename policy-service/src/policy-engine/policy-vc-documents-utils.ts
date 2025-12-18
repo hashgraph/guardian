@@ -149,7 +149,8 @@ export class PolicyVcDocumentsUtils {
                 newDoc,
                 vcMessage,
                 ref,
-                user.userId
+                user.userId,
+                documentRef.topicId
             );
         }
 
@@ -300,7 +301,8 @@ export class PolicyVcDocumentsUtils {
         document: IPolicyDocument,
         message: Message,
         ref: AnyBlockType,
-        userId: string | null
+        userId: string | null,
+        topicId: string | null
     ): Promise<IPolicyDocument> {
         try {
             const memo = MessageMemo.parseMemo(
@@ -309,23 +311,12 @@ export class PolicyVcDocumentsUtils {
                 document
             );
             message.setMemo(memo);
-
-            const topicOwner = this.getTopicOwner(
-                ref,
-                document,
-                null //ref.options.topicOwner
-            );
-            const relayerAccount =
-                document.owner === topicOwner ? document.relayerAccount : null;
             const topic = await this.getTopic({
-                //PolicyActionsUtils.getOrCreateTopic
                 ref,
-                name: null, //ref.options.topic,
-                owner: topicOwner,
-                relayerAccount,
-                memoObj: document,
                 userId,
+                topicId,
             });
+
             const vcMessageResult = await PolicyActionsUtils.sendMessage({
                 ref,
                 topic,
@@ -348,57 +339,25 @@ export class PolicyVcDocumentsUtils {
         }
     }
 
-    private static getTopicOwner(
-        ref: AnyBlockType,
-        document: IPolicyDocument,
-        type: string
-    ): string {
-        let topicOwner: string = document.owner;
-        if (type === "issuer") {
-            topicOwner = PolicyUtils.getDocumentIssuer(document.document);
-        } else if (type === "user") {
-            topicOwner = document.owner;
-        } else if (type === "root") {
-            topicOwner = ref.policyOwner;
-        }
-        if (!topicOwner) {
-            throw new Error(`Topic owner not found`);
-        }
-        return topicOwner;
-    }
-
     public static async getTopic(options: {
         ref: AnyBlockType;
-        name: string;
-        owner: string;
-        relayerAccount: string;
-        memoObj: any;
         userId: string | null;
+        topicId: string | null;
     }): Promise<TopicConfig> {
-        // full PolicyActionsUtils.getOrCreateTopic
-        const { ref, name, userId } = options;
-        if (!name || name === "root") {
-            return await this.getRootTopic(ref, userId);
-        }
-    }
-
-    private static async getRootTopic(
-        ref: AnyBlockType,
-        userId: string | null
-    ): Promise<TopicConfig> {
+        const { ref, topicId, userId } = options;
         const needKey = PolicyActionsUtils.needKey(
             ref.policyStatus,
             ref.policyAvailability
         );
-        const rootTopic = await TopicConfig.fromObject(
+        const topic = await TopicConfig.fromObject(
             await ref.components.databaseServer.getTopic({
                 policyId: ref.policyId,
-                type: TopicType.InstancePolicyTopic,
+                topicId: topicId,
             }),
             needKey,
             userId
         );
-        return rootTopic;
+        return topic;
     }
 
     private static async saveVC(
