@@ -1685,7 +1685,6 @@ export class PolicyEngineService {
                             .setUser(owner)
                             .setParentPolicyTopic(versionOfTopicId)
                             .setImportRecords(metadata?.importRecords)
-                            .setFromMessageId(messageId)
                             .setMetadata(metadata),
                         notifier.getStep(STEP_IMPORT_POLICY),
                         owner.id
@@ -1751,7 +1750,6 @@ export class PolicyEngineService {
                                 .setUser(owner)
                                 .setParentPolicyTopic(versionOfTopicId)
                                 .setImportRecords(metadata?.importRecords)
-                                .setFromMessageId(messageId)
                                 .setMetadata(metadata),
                             notifier.getStep(STEP_IMPORT_POLICY),
                             owner.id

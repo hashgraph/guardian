@@ -1088,8 +1088,6 @@ export class PolicyEngine extends NatsService {
         }
         notifier.completeStep(STEP_PUBLISH_FORMULAS);
 
-        const fromMessageId = model.fromMessageId || '';
-
         try {
             this.regenerateIds(model.config);
 
@@ -1295,7 +1293,6 @@ export class PolicyEngine extends NatsService {
             const configToPublish = structuredClone(model.config);
             this.cleanHeadersRecursive(configToPublish, ['httpRequestBlock']);
             model.autoRecordSteps = !!recordingEnabled;
-            model.fromMessageId = '';
             const modelToPublish = Object.assign(Object.create(Object.getPrototypeOf(model)), model);
             modelToPublish.config = configToPublish;
 
@@ -1363,7 +1360,6 @@ export class PolicyEngine extends NatsService {
             model.version = '';
             model.hash = '';
             model.autoRecordSteps = false;
-            model.fromMessageId = fromMessageId;
             model = await DatabaseServer.updatePolicy(model);
             throw error
         }

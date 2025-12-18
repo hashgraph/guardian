@@ -80,7 +80,6 @@ export class PolicyImport {
     private formulasResult: ImportFormulaResult;
     private formulasMapping: Map<string, string>;
     private importRecords = false;
-    private fromMessageId: string | null = null;
 
     constructor(mode: ImportMode, notifier: INotificationStep) {
         this.mode = mode;
@@ -720,7 +719,6 @@ export class PolicyImport {
         const logger = options.logger;
 
         this.importRecords = !!options.importRecords;
-        this.fromMessageId = options.fromMessageId;
 
         // <-- Steps
         const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
@@ -830,7 +828,6 @@ export class PolicyImport {
         await this.updateUUIDs(policy);
 
         policy.autoRecordSteps = this.importRecords;
-        policy.fromMessageId = this.fromMessageId;
 
         const row = await this.savePolicy(policy, step.getStep(STEP_SAVE_POLICY));
         await this.saveTopic(row, step.getStep(STEP_SAVE_TOPIC));
@@ -851,7 +848,7 @@ export class PolicyImport {
     }
 
     private async copyPolicyRecords(policy: Policy, logger: PinoLogger, copySchemas: Schema[]): Promise<void> {
-        if (!this.importRecords || !this.fromMessageId) {
+        if (!this.importRecords) {
             return;
         }
 
@@ -890,10 +887,6 @@ export class PolicyImport {
             let startRecotdTime = 0;
 
             for (const msg of messages) {
-                if (msg.policyMessageId !== this.fromMessageId) {
-                    continue;
-                }
-
                 try {
                     await MessageServer.loadDocument(msg);
                 } catch (e: any) {

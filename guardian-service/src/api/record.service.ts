@@ -94,7 +94,6 @@ export async function syncPolicyCopiedRecords(
         const sourcePolicy = await DatabaseServer.getPolicyById(targetPolicyId);
         const sourceRecordsTopicId = sourcePolicy?.recordsTopicId;
 
-        const sourcePolicyMessageId = sourcePolicy?.fromMessageId?.toString?.()?.trim?.() || null;
         if (!sourceRecordsTopicId) {
             await logger.error(
                 `Failed to sync copied policy records: recordsTopicId is missing for policy ${targetPolicyId}`,
@@ -121,10 +120,6 @@ export async function syncPolicyCopiedRecords(
         }
 
         for (const msg of messages) {
-            if (sourcePolicyMessageId && msg.policyMessageId !== sourcePolicyMessageId) {
-                continue;
-            }
-
             try {
                 await MessageServer.loadDocument(msg);
             } catch (e: any) {

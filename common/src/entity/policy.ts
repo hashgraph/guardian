@@ -269,12 +269,6 @@ export class Policy extends BaseEntity {
     recordsTopicId?: string;
 
     /**
-     * Source message id
-     */
-    @Property({ nullable: true })
-    fromMessageId?: string;
-
-    /**
      * Automatically record policy steps
      */
     @Property({ nullable: true })
