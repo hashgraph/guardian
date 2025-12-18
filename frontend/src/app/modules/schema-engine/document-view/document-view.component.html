@@ -107,6 +107,26 @@
             </p-accordion>
         </div>
 
+        <div class="guardian-accordion-container" *ngIf="tags && tags.length > 0">
+            <p-accordion class="guardian-accordion">
+                <p-accordionTab header="Tags">
+                    <p-accordion *ngFor="let tag of tags" class="guardian-accordion">
+                        <p-accordionTab [header]="tag.name">
+                            <div class="form-field-value">
+                                <div class="form-field-textarea guardian-textarea-container">
+                                    <textarea 
+                                        [readOnly]="true" 
+                                        [rows]="5" [value]="getTagJson(tag)" 
+                                        pInputTextarea
+                                        type="text"></textarea>
+                                </div>
+                            </div>
+                        </p-accordionTab>
+                    </p-accordion>
+                </p-accordionTab>
+            </p-accordion>
+        </div>
+
         <div class="group-container" *ngIf="type === 'VC' && subjects.length > 0">
             <div *ngIf="subjects.length > 1" class="group-multiple-header">Credential Subjects</div>
             <div *ngFor="let item of getItemsPage(subjects)" class="guardian-accordion-container">

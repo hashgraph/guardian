@@ -50,6 +50,7 @@ export class VCFullscreenDialog {
     public key: boolean;
     public comments: boolean;
     public commentsReadonly: boolean;
+    public tags: any[] = [];
 
     private _destroy$ = new Subject<void>();
     private _subscription?: Subscription | null;
@@ -129,6 +130,8 @@ export class VCFullscreenDialog {
             } else {
                 this.json = JSON.stringify((document), null, 4);
             }
+
+            this.tags = document.tags;
         } else {
             this.type = 'JSON';
             this.toggle = false;

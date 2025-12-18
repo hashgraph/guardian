@@ -26,6 +26,7 @@ export class DocumentViewComponent implements OnInit {
     @Input('discussion') discussionData!: any;
     @Input('discussion-action') discussionAction: boolean = false;
     @Input('discussion-view') discussionView: boolean = false;
+    @Input('tags') tags: any[] = [];
 
     @Input() dryRun?: boolean = false;
     @Input() policyId?: string;
@@ -249,5 +250,9 @@ export class DocumentViewComponent implements OnInit {
         const path = id?.split('/');
         this.link = path && path.length > 1 ? path[path.length - 1] : undefined;
         this.ref.detectChanges();
+    }
+
+    public getTagJson(tag: any): string {
+        return tag ? JSON.stringify(tag, null, 4) : '';
     }
 }
