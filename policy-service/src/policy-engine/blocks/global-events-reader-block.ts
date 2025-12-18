@@ -18,7 +18,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import {LocationType, Schema, SchemaField, SchemaHelper, TopicType} from '@guardian/interfaces';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import {
-    GlobalEventsStream,
+    GlobalEventsReaderStream,
     IPFS, TopicHelper,
     Workers
 } from '@guardian/common';
@@ -676,7 +676,7 @@ class GlobalEventsReaderBlock {
         return schema;
     }
 
-    private async updateCursor(ref: AnyBlockType, stream: GlobalEventsStream, cursor: string): Promise<void> {
+    private async updateCursor(ref: AnyBlockType, stream: GlobalEventsReaderStream, cursor: string): Promise<void> {
         stream.lastMessageCursor = cursor;
         await ref.databaseServer.updateGlobalEventsStream(stream);
     }
@@ -703,7 +703,7 @@ class GlobalEventsReaderBlock {
      * =========================
      */
 
-    private async pollStream(ref: AnyBlockType, user: PolicyUser, stream: GlobalEventsStream): Promise<void> {
+    private async pollStream(ref: AnyBlockType, user: PolicyUser, stream: GlobalEventsReaderStream): Promise<void> {
         const config = (ref.options || {}) as GlobalEventReaderConfig;
         const branches = Array.isArray(config.branches) ? config.branches : [];
 
@@ -738,7 +738,7 @@ class GlobalEventsReaderBlock {
 
     private async runByStream(
         ref: AnyBlockType,
-        stream: GlobalEventsStream,
+        stream: GlobalEventsReaderStream,
     ): Promise<void> {
 
         stream.status = GlobalEventsStreamStatus.Processing;
@@ -796,7 +796,7 @@ class GlobalEventsReaderBlock {
             user.userId
         );
 
-        const byTopicId = new Map<string, GlobalEventsStream>();
+        const byTopicId = new Map<string, GlobalEventsReaderStream>();
         for (const stream of dbStreams || []) {
             const topicId = (stream.globalTopicId || '').trim();
             if (!topicId) {
@@ -943,7 +943,7 @@ class GlobalEventsReaderBlock {
             throw new BlockActionError('Invalid operation', ref.blockType, ref.uuid);
         }
 
-        const config = (ref.options || {}) as GlobalEventReaderConfig;
+        const config = ref.options || {};
         const configuredTopicIdSet = new Set<string>(this.extractConfiguredTopicIds(config));
 
         const value: SetDataPayload = data?.value ?? { streams: [] };
@@ -968,7 +968,7 @@ class GlobalEventsReaderBlock {
                 branchDocumentTypeByBranch: {},
             });
 
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {} as any);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
             ref.backup();
 
             return { topicId };

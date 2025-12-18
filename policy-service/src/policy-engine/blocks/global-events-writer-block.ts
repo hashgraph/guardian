@@ -2,44 +2,65 @@
  * GlobalEventsWriterBlock
  *
  * Server-side policy block that forwards a reference to an already anchored VC/VP/VS
- * into one or more global Hedera topics. It does not create or modify documents
- * and does not persist anything; it simply extracts the canonical address
- * (messageId) from the incoming IPolicyDocument and publishes a compact JSON
- * notification.
+ * into one or more global Hedera topics. It does not create or modify documents.
+ * Instead, it stores per-user stream configurations in the database (like the
+ * GlobalEventsReader block) and publishes references to VC documents when the
+ * block is active or hidden. The last document processed is cached per-user so
+ * that newly activated streams immediately receive the most recent message.
  */
 
 import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import {IPolicyEvent, PolicyInputEventType, PolicyOutputEventType} from '../interfaces/index.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+
 import { LocationType, TopicType } from '@guardian/interfaces';
-import { MessageServer, TopicConfig, TopicHelper } from '@guardian/common';
+import {GlobalEventsWriterStream, Message, MessageServer, TopicConfig, TopicHelper} from '@guardian/common';
 import { TopicId } from '@hashgraph/sdk';
 
-type GlobalDocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
+// Supported document types for filtering/publish metadata
+export type GlobalDocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
 
 /**
- * Notification sent to global topics.
- *
- * schemaContextIri: base context IRI (schema "package" / base context)
- * schemaIri: full schema IRI (context#type)
+ * Payload sent to global topics. Consumers can use documentType,
+ * schemaContextIri and schemaIri for filtering/routing.
  */
 interface GlobalEvent {
     documentType: GlobalDocumentType;
-    documentTopicId: string;        // Hedera topic where the VC is stored
-    documentMessageId: string;      // Specific VC message in this topic
-    schemaContextIri: string;       // Base context IRI (package/base context)
-    schemaIri: string;              // Full schema IRI (context#type)
-    timestamp: string;              // ISO timestamp of publish moment
+    documentTopicId: string;
+    documentMessageId: string;
+    schemaContextIri: string;
+    schemaIri: string;
+    timestamp: string;
 }
 
-interface SubmitValue {
-    topicIds?: Array<{ topicId?: string }>;
+/**
+ * Streams in structure used when calling setData via UI.
+ */
+type SetDataStreamPayload = {
+    topicId?: string;
     documentType?: GlobalDocumentType;
+    active?: boolean
+};
+
+/**
+ * Structure used when calling setData via UI.
+ */
+interface SetDataPayload {
+    streams: Array<SetDataStreamPayload>;
+    operation: string;
+}
+
+/**
+ * Cached state per-user. Keeps last processed document and the last published messageId
+ */
+interface WriterCacheState {
+    doc?: IPolicyDocument;
+    lastPublishedMessageId?: string;
 }
 
 @EventBlock({
@@ -53,9 +74,7 @@ interface SubmitValue {
         get: true,
         children: ChildrenType.None,
         control: ControlType.UI,
-        input: [
-            PolicyInputEventType.RunEvent,
-        ],
+        input: [PolicyInputEventType.RunEvent],
         output: [
             PolicyOutputEventType.RunEvent,
             PolicyOutputEventType.RefreshEvent,
@@ -100,154 +119,155 @@ interface SubmitValue {
     },
 })
 export class GlobalEventsWriterBlock {
-    @ActionCallback({
-        type: PolicyInputEventType.RunEvent,
-        output: [
-            PolicyOutputEventType.RefreshEvent,
-            PolicyOutputEventType.ReleaseEvent,
-            PolicyOutputEventType.ErrorEvent,
-        ],
-    })
-    public async runAction(event: IPolicyEventState): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const user: PolicyUser = (event as any)?.user;
-
-        if (!user) {
-            throw new BlockActionError('User is required', ref.blockType, ref.uuid);
-        }
-
-        const state: IPolicyEventState = (event)?.data || (event as any);
-        const doc: IPolicyDocument = state?.data as IPolicyDocument;
-
-        if (!doc) {
-            throw new BlockActionError('Document is required', ref.blockType, ref.uuid);
-        }
-
-        if (!doc.topicId) {
-            throw new BlockActionError('Document topicId is missing', ref.blockType, ref.uuid);
-        }
-
-        const documentMessageId: string = this.extractCanonicalAddress(doc);
-        if (!documentMessageId) {
-            throw new BlockActionError(
-                'Canonical document address (messageId) is missing',
-                ref.blockType,
-                ref.uuid
-            );
-        }
-
-        const stateKey = this.getStateKey(ref, user);
-
-        let cacheState: any = {};
-
-        try {
-            const cached = await ref.getCache<any>(stateKey, user);
-
-            if (cached && typeof cached === 'object') {
-                cacheState = cached;
-            }
-        } catch (err) {
-            // no state
-        }
-
-        cacheState.doc = doc;
-
-        await ref.setShortCache(stateKey, cacheState, user);
-
-        const outState: IPolicyEventState = { data: doc } as any;
-
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState);
-        ref.backup();
-    }
-
     /**
-     * Prefer Hedera messageId as canonical address.
+     * Extract the canonical address (messageId) from the VC/VP/VS document.
      */
     private extractCanonicalAddress(doc: IPolicyDocument): string {
         if (doc.messageId) {
-            return doc.messageId;
+            return String(doc.messageId);
         }
         return '';
     }
 
     /**
-     * Extract (schemaContextIri, schemaIri) primarily from the VC itself.
-     *
-     * Why: doc.schema in DB is often an internal schema ID (#uuid&version), not an IRI.
-     * VC @context may already contain context#type or at least the base context.
+     * Creates default stream rows in the DB for this user if none exist.
+     * New rows inherit the defaultActive and documentType from the block options.
+     */
+    private async ensureDefaultStreams(ref: AnyBlockType, user: PolicyUser): Promise<void> {
+        const existing = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(
+            ref.policyId,
+            ref.uuid,
+            user.userId,
+        );
+
+        const existingTopicIds = new Set<string>();
+        for (const stream of existing) {
+            if (stream?.globalTopicId) {
+                existingTopicIds.add(String(stream.globalTopicId).trim());
+            }
+        }
+
+        const optionTopicIds = Array.isArray(ref.options?.topicIds) ? ref.options.topicIds : [];
+        const documentType: GlobalDocumentType = ref.options?.documentType;
+
+        for (const item of optionTopicIds) {
+            const topicId = item.topicId?.trim();
+            if (!topicId) {
+                continue;
+            }
+
+            try {
+                this.validateTopicId(topicId, ref);
+            } catch (_e) {
+                continue;
+            }
+
+            if (existingTopicIds.has(topicId)) {
+                continue;
+            }
+
+            await ref.databaseServer.createGlobalEventsWriterStream({
+                policyId: ref.policyId,
+                blockId: ref.uuid,
+                userId: user.userId,
+                userDid: user.did,
+                globalTopicId: topicId,
+                active: false,
+                documentType,
+            });
+        }
+    }
+
+    /**
+     * Throws if the topicId is not a valid Hedera topic format.
+     * Accepts strings like '0.0.123'.
+     */
+    private validateTopicId(topicId: string, ref: AnyBlockType): void {
+        try {
+            TopicId.fromString(topicId);
+        } catch (_e) {
+            throw new BlockActionError('Invalid topic id format', ref.blockType, ref.uuid);
+        }
+    }
+
+    /**
+     * Builds a unique cache key for storing the last document per-user.
+     */
+    private getCacheKey(ref: AnyBlockType, user: PolicyUser): string {
+        return `globalEventsWriterBlock:last:${ref.policyId}:${ref.uuid}:${user.userId}`;
+    }
+
+    /**
+     * Retrieves the cached state for the given user.
+     */
+    private async getCacheState(ref: AnyBlockType, user: PolicyUser, cacheKey: string): Promise<WriterCacheState> {
+        let cacheState: WriterCacheState = {};
+        try {
+            const cached = await ref.getCache<WriterCacheState>(cacheKey, user);
+            if (cached && typeof cached === 'object') {
+                cacheState = cached;
+            }
+        } catch (_e) {
+            //
+        }
+        return cacheState;
+    }
+
+    /**
+     * Extracts schema IRIs from the VC document for metadata.
      */
     private extractSchemaIris(
         ref: AnyBlockType,
         doc: IPolicyDocument
     ): { schemaContextIri: string; schemaIri: string } {
         try {
-            let vc: any = (doc as any).document;
-
+            let vc = doc.document;
             if (typeof vc === 'string') {
                 vc = JSON.parse(vc);
             }
 
-            const ctx = vc?.['@context'];
-            const ctxList: string[] = Array.isArray(ctx)
-                ? ctx.filter((v: any) => typeof v === 'string')
-                : [];
-
+            const ctxList: string[] = vc?.['@context'] ?? [];
             const fullIri = ctxList.find((c) => c.includes('#'));
             if (fullIri) {
                 return {
-                    schemaContextIri: fullIri.split('#')[0] || '',
+                    schemaContextIri: fullIri.split('#')[0],
                     schemaIri: fullIri,
                 };
             }
-
             const baseContext = ctxList.find((c) => {
                 if (!c.startsWith('http') && !c.startsWith('ipfs://')) {
                     return false;
                 }
-
                 if (c.includes('www.w3.org/2018/credentials')) {
                     return false;
                 }
-
                 if (c.includes('w3id.org/security')) {
                     return false;
                 }
-
                 return true;
-            }) || '';
-
+            });
             const cs = PolicyUtils.getCredentialSubjectByDocument?.(vc);
-
-            const csTypeRaw =
-                (Array.isArray(cs?.type) ? cs.type[0] : cs?.type) ||
-                cs?.['@type'] ||
-                (doc as any).type;
-
+            const csTypeRaw = (Array.isArray(cs?.type) ? cs.type[0] : cs?.type) || cs?.['@type'] || doc.type;
             const csType = csTypeRaw ? String(csTypeRaw) : '';
-
             if (baseContext && csType) {
                 return {
                     schemaContextIri: baseContext,
                     schemaIri: `${baseContext}#${csType}`,
                 };
             }
-
             if (baseContext) {
                 return {
                     schemaContextIri: baseContext,
                     schemaIri: '',
                 };
             }
-
-            const schema = typeof doc.schema === 'string' ? doc.schema : '';
+            const schema = doc.schema;
             if ((schema.startsWith('http') || schema.startsWith('ipfs://')) && schema.includes('#')) {
                 return {
-                    schemaContextIri: schema.split('#')[0] || '',
+                    schemaContextIri: schema.split('#')[0],
                     schemaIri: schema,
                 };
             }
-
             return { schemaContextIri: '', schemaIri: '' };
         } catch (err) {
             ref.warn?.(`Unable to extract schema IRIs: ${PolicyUtils.getErrorMessage(err)}`);
@@ -256,7 +276,7 @@ export class GlobalEventsWriterBlock {
     }
 
     /**
-     * Publish JSON payload to the configured global topic using user credentials.
+     * Publishes a JSON payload to a global topic using the user's relayer credentials.
      */
     private async publish(
         ref: AnyBlockType,
@@ -265,59 +285,40 @@ export class GlobalEventsWriterBlock {
         payload: GlobalEvent
     ): Promise<void> {
         try {
-            const userCredentials = await PolicyUtils.getUserCredentials(
-                ref,
-                user.did,
-                user.userId
-            );
-
-            const hederaAccount = await userCredentials.loadRelayerAccount(
-                ref,
-                user.hederaAccountId,
-                user.userId
-            );
-
+            const userCredentials = await PolicyUtils.getUserCredentials(ref, user.did, user.userId);
+            const hederaAccount = await userCredentials.loadRelayerAccount(ref, user.hederaAccountId, user.userId);
             const topic = new TopicConfig({ topicId: globalTopicId }, null, null);
-
             const messageServer = new MessageServer({
-                operatorId: hederaAccount.hederaAccountId, // process.env.HEDERA_OPERATOR_ID
-                operatorKey: hederaAccount.hederaAccountKey, // process.env.HEDERA_OPERATOR_KEY
+                operatorId: hederaAccount.hederaAccountId,
+                operatorKey: hederaAccount.hederaAccountKey,
                 encryptKey: hederaAccount.hederaAccountKey,
                 signOptions: hederaAccount.signOptions,
-                dryRun: ref.dryRun
+                dryRun: ref.dryRun,
             }).setTopicObject(topic);
-
             const rawMessage = (() => {
                 let currentMemo: string | null = null;
                 let currentId: string | null = null;
                 let currentTopicId: string | null = null;
                 let currentLang: string | null = null;
-
                 return {
                     toMessage(): string {
                         return JSON.stringify(payload);
                     },
-
                     setLang(lang: string): void {
                         currentLang = lang;
                     },
-
                     setMemo(memo: string): void {
                         currentMemo = memo;
                     },
-
                     getMemo(): string | null {
                         return currentMemo;
                     },
-
                     setId(id: string): void {
                         currentId = id;
                     },
-
                     getId(): string | null {
                         return currentId;
                     },
-
                     setTopicId(topicValue: string | TopicId): void {
                         if (topicValue) {
                             currentTopicId = topicValue.toString();
@@ -325,19 +326,19 @@ export class GlobalEventsWriterBlock {
                             currentTopicId = null;
                         }
                     },
-
                     getTopicId(): string | null {
                         return currentTopicId;
-                    }
+                    },
                 };
             })();
-
-            await (messageServer as any).sendMessage(rawMessage, {
+            console.log('sendMessage1')
+            await messageServer.sendMessage(rawMessage as Message, {
                 sendToIPFS: false,
                 memo: 'GlobalEvent',
                 userId: user.userId,
-                interception: null
+                interception: null,
             });
+            console.log('sendMessage2')
         } catch (err) {
             ref.error(`Publish to global topic failed: ${PolicyUtils.getErrorMessage(err)}`);
             throw new BlockActionError('Publish to global topic failed', ref.blockType, ref.uuid);
@@ -345,32 +346,45 @@ export class GlobalEventsWriterBlock {
     }
 
     /**
-     * Create a new dynamic global topic using user's relayer credentials.
-     * Returns created topicId.
+     * Publishes all active streams.
+     */
+    private async publishActiveStreams(
+        ref: AnyBlockType,
+        user: PolicyUser,
+        streams: GlobalEventsWriterStream[],
+        doc: IPolicyDocument,
+        messageId: string,
+    ): Promise<void> {
+        const activeStreams = streams.filter((s) => s.active)
+        if (activeStreams.length === 0) {
+            return;
+        }
+
+        const { schemaContextIri, schemaIri } = this.extractSchemaIris(ref, doc);
+
+        for (const topic of activeStreams) {
+            const payload: GlobalEvent = {
+                documentType: topic.documentType,
+                documentTopicId: doc.topicId,
+                documentMessageId: messageId,
+                schemaContextIri,
+                schemaIri,
+                timestamp: new Date().toISOString(),
+            };
+
+            await this.publish(ref, user, topic.globalTopicId, payload);
+        }
+    }
+
+    /**
+     * Creates a new Hedera topic and returns its topicId.
      */
     private async createTopic(ref: AnyBlockType, user: PolicyUser): Promise<string> {
         try {
-            const userCredentials = await PolicyUtils.getUserCredentials(
-                ref,
-                user.did,
-                user.userId
-            );
-
-            const relayer = await userCredentials.loadRelayerAccount(
-                ref,
-                user.hederaAccountId,
-                user.userId
-            );
-
-            const topicHelper = new TopicHelper(
-                relayer.hederaAccountId,
-                relayer.hederaAccountKey,
-                relayer.signOptions,
-                ref.dryRun
-            );
-
+            const userCredentials = await PolicyUtils.getUserCredentials(ref, user.did, user.userId);
+            const relayer = await userCredentials.loadRelayerAccount(ref, user.hederaAccountId, user.userId);
+            const topicHelper = new TopicHelper(relayer.hederaAccountId, relayer.hederaAccountKey, relayer.signOptions, ref.dryRun);
             const memo = `global-events:${ref.policyId}:${ref.uuid}`;
-
             const created = await topicHelper.create(
                 {
                     type: TopicType.DynamicTopic,
@@ -391,163 +405,320 @@ export class GlobalEventsWriterBlock {
                     submit: true,
                 }
             );
-
             if (!created?.topicId) {
                 throw new Error('TopicHelper.create returned empty topicId');
             }
-
             return created.topicId;
         } catch (err) {
-            ref.error(`Create topic failed: ${PolicyUtils.getErrorMessage(err)}`);
+            ref.error(`Create topic failed: ${(PolicyUtils as any).getErrorMessage(err)}`);
             throw new BlockActionError('Create topic failed', ref.blockType, ref.uuid);
         }
     }
 
-    public async setData(user: PolicyUser, data: { value: SubmitValue, operation: string }): Promise<any> {
+    @ActionCallback({
+        type: PolicyInputEventType.RunEvent,
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ReleaseEvent,
+            PolicyOutputEventType.ErrorEvent,
+        ],
+    })
+    public async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const user: PolicyUser = event?.user;
 
-        if (!data || !['Submit', 'Update', 'CreateTopic'].includes(data.operation)) {
-            throw new BlockActionError('Invalid operation', ref.blockType, ref.uuid);
+        if (!user) {
+            throw new BlockActionError('User is required', ref.blockType, ref.uuid);
         }
 
-        const value: SubmitValue = data.value ?? {};
+        const state: IPolicyEventState = (event)?.data || (event as any);
+        const doc: IPolicyDocument = state?.data as IPolicyDocument;
 
-        // Save form state on every change (for refresh) - now in ONE state object
-        const stateKey = this.getStateKey(ref, user);
+        if (!doc || !doc.topicId) {
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, null);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
+            ref.backup();
 
-        let cacheState: any = {};
+            return;
+        }
 
-        try {
-            const cached = await ref.getCache<any>(stateKey, user);
+        const documentMessageId: string = this.extractCanonicalAddress(doc);
+        if (!documentMessageId) {
+            throw new BlockActionError(
+                'Canonical document address (messageId) is missing',
+                ref.blockType,
+                ref.uuid
+            );
+        }
 
-            if (cached && typeof cached === 'object') {
-                cacheState = cached;
+        // Ensure default streams exist. This creates DB rows
+        // from the block configuration if none exist for this user.
+        await this.ensureDefaultStreams(ref, user);
+
+        // Fetch streams to determine if we need to publish
+        const streams = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(ref.policyId, ref.uuid, user.userId);
+        const hidden = ref.options.hidden;
+
+        // Cache the last document for this user
+        const cacheKey = this.getCacheKey(ref, user);
+        const cacheState = await this.getCacheState(ref, user, cacheKey);
+
+        cacheState.doc = doc;
+        cacheState.lastPublishedMessageId = documentMessageId;
+        await ref.setShortCache(cacheKey, cacheState, user);
+
+        if (hidden) {
+            if (streams.length > 0) {
+                const {schemaContextIri, schemaIri} = this.extractSchemaIris(ref, doc);
+
+                for (const stream of streams) {
+                    const payload: GlobalEvent = {
+                        documentType: stream.documentType,
+                        documentTopicId: doc.topicId,
+                        documentMessageId: documentMessageId,
+                        schemaContextIri,
+                        schemaIri,
+                        timestamp: new Date().toISOString(),
+                    };
+
+                    await this.publish(ref, user, stream.globalTopicId, payload);
+                }
             }
-        } catch (err) {
-            // no state
+            const outState: IPolicyEventState = { data: doc } as any;
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState);
+            ref.backup();
+            return;
+        } else {
+            await this.publishActiveStreams(ref, user, streams, doc, documentMessageId)
+        }
+    }
+
+    /**
+     * Returns the UI configuration for this block.
+     */
+    public async getData(user: PolicyUser): Promise<any> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const config = ref.options || {}
+        if (!user) {
+            throw new BlockActionError('User is required', ref.blockType, ref.uuid);
         }
 
-        cacheState.value = value;
+        // Ensure default streams exist. This creates DB rows
+        // from the block configuration if none exist for this user.
+        await this.ensureDefaultStreams(ref, user);
 
-        await ref.setShortCache(stateKey, cacheState, user);
+        const streams = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(ref.policyId, ref.uuid, user.userId);
+        const defaultTopicIds: string[] = [];
+        const optionTopicIds = ref.options.topicIds ?? [];
 
-        if (data.operation === 'CreateTopic') {
+        for (const item of optionTopicIds) {
+            defaultTopicIds.push(item.topicId);
+        }
+
+        return {
+            id: ref.uuid,
+            blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
+            config: {
+                eventTopics: config.eventTopics || [],
+                documentType: config.documentType
+            },
+            streams,
+            defaultTopicIds
+        };
+    }
+
+    /**
+     * Handle UI operations from the configurator.
+     */
+    public async setData(user: PolicyUser, data: SetDataPayload): Promise<any> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const operation = data?.operation;
+        const streams = data?.streams ?? [];
+
+        if (!user) {
+            throw new BlockActionError('User is required', ref.blockType, ref.uuid);
+        }
+        if (!operation) {
+            throw new BlockActionError('Operation is required', ref.blockType, ref.uuid);
+        }
+
+        const topics = streams.filter(stream => stream.topicId);
+
+        // Ensure default streams exist. This creates DB rows
+        // from the block configuration if none exist for this user.
+        await this.ensureDefaultStreams(ref, user);
+
+        // Create a new topic and DB row
+        if (operation === 'CreateTopic') {
             const createdTopicId = await this.createTopic(ref, user);
+            const documentType = ref.options.documentType;
 
-            const currentValue: SubmitValue = (cacheState.value && typeof cacheState.value === 'object')
-                ? cacheState.value
-                : {};
+            await ref.databaseServer.createGlobalEventsWriterStream({
+                policyId: ref.policyId,
+                blockId: ref.uuid,
+                userId: user.userId,
+                userDid: user.did,
+                globalTopicId: createdTopicId,
+                active: false,
+                documentType,
+            });
 
-            const currentTopicIds = Array.isArray(currentValue.topicIds)
-                ? currentValue.topicIds
-                : [];
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
+            ref.backup();
 
-            currentValue.topicIds = [
-                ...currentTopicIds,
-                { topicId: createdTopicId },
-            ];
+            return {}
+        }
 
-            cacheState.value = currentValue;
+        // Add existing topics as new DB rows
+        if (operation === 'AddTopic') {
+            const documentType = ref.options.documentType;
 
-            await ref.setShortCache(stateKey, cacheState, user);
+            for (const topic of topics) {
+                try {
+                    this.validateTopicId(topic.topicId, ref);
+                } catch (_e) {
+                    continue;
+                }
+
+                const existing = await ref.databaseServer.getGlobalEventsWriterStreamByUserTopic(
+                    ref.policyId,
+                    ref.uuid,
+                    user.userId,
+                    topic.topicId
+                );
+
+                if (existing) {
+                    continue;
+                }
+
+                await ref.databaseServer.createGlobalEventsWriterStream({
+                    policyId: ref.policyId,
+                    blockId: ref.uuid,
+                    userId: user.userId,
+                    userDid: user.did,
+                    globalTopicId: topic.topicId,
+                    active: false,
+                    documentType,
+                });
+            }
+
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
+            ref.backup();
+
+            return {}
+        }
+
+        // Delete topics from DB rows
+        if (operation === 'Delete') {
+            const optionTopicIds = ref.options.topicIds ?? [];
+            const defaultTopicIds = new Set<string>();
+
+            for (const item of optionTopicIds) {
+                defaultTopicIds.add(item.topicId);
+            }
+
+
+            for (const topic of topics) {
+                if (defaultTopicIds.has(topic.topicId)) {
+                    continue;
+                }
+
+                const existing = await ref.databaseServer.getGlobalEventsWriterStreamByUserTopic(
+                    ref.policyId,
+                    ref.uuid,
+                    user.userId,
+                    topic.topicId
+                );
+
+                if (existing) {
+                    await ref.databaseServer.deleteGlobalEventsWriterStream(existing);
+                }
+            }
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
+            ref.backup();
+
+            return {}
+        }
+
+        // Update active flags and document type
+        if (operation === 'Update') {
+;
+            const setStreamsDbMap = new Map<string, GlobalEventsWriterStream>();
+
+            for (const stream of streams) {
+                this.validateTopicId(stream.topicId, ref);
+            }
+
+            const streamsDb = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(ref.policyId, ref.uuid, user.userId);
+
+            for (const streamDb of streamsDb) {
+                setStreamsDbMap.set(streamDb.globalTopicId, streamDb);
+            }
+
+            // Cache the last document for this user
+            const cacheKey = this.getCacheKey(ref, user);
+            const cacheState = await this.getCacheState(ref, user, cacheKey);
+
+            const lastPublishedMessageId = cacheState.lastPublishedMessageId;
+            const doc = cacheState.doc
+
+            const documentMessageId: string = this.extractCanonicalAddress(doc);
+            const { schemaContextIri, schemaIri } = this.extractSchemaIris(ref, doc);
+
+            console.log('streams', streams)
+
+            // Update existing streams
+            for (const streamSetData of streams) {
+                const topicId = streamSetData.topicId;
+
+                if (setStreamsDbMap.has(topicId)) {
+                    const streamDb = setStreamsDbMap.get(topicId)!;
+                    const active = streamSetData.active
+                    const documentType = streamSetData.documentType
+
+                    if(typeof active === 'boolean' && active) {
+                        streamDb.active = active
+                        console.log('streamDb.lastPublishMessageId', streamDb.lastPublishMessageId)
+                        if(!streamDb.lastPublishMessageId) {
+                            console.log('publish')
+                            const payload: GlobalEvent = {
+                                documentType: streamSetData.documentType,
+                                documentTopicId: doc.topicId,
+                                documentMessageId,
+                                schemaContextIri,
+                                schemaIri,
+                                timestamp: new Date().toISOString(),
+                            };
+
+                            await this.publish(ref, user, streamDb.globalTopicId, payload);
+                        }
+                    }
+
+                    if(documentType) {
+                        streamDb.documentType = documentType
+                    }
+
+                    streamDb.lastPublishMessageId = lastPublishedMessageId;
+
+                    await ref.databaseServer.updateGlobalEventsWriterStream(streamDb);
+                }
+            }
 
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {} as any);
             ref.backup();
 
-            return {
-                topicId: createdTopicId,
-            };
+            return {}
         }
 
-
-        if (data.operation === 'Update') {
-            ref.backup();
-            return {};
-        }
-
-        const doc: IPolicyDocument | undefined = cacheState.doc;
-
-        if (!doc) {
-            throw new BlockActionError('No pending document to publish', ref.blockType, ref.uuid);
-        }
-
-        const rawTopicIds = Array.isArray(value.topicIds) ? value.topicIds : [];
-        const topicIds = rawTopicIds
-            .map((t) => (t?.topicId || '').trim())
-            .filter((t) => t.length > 0);
-
-        if (topicIds.length === 0) {
-            throw new BlockActionError('At least one topic is required', ref.blockType, ref.uuid);
-        }
-
-        const documentType: GlobalDocumentType = value.documentType || 'any';
-
-        const documentMessageId: string = this.extractCanonicalAddress(doc);
-        const { schemaContextIri, schemaIri } = this.extractSchemaIris(ref, doc);
-
-        const payload: GlobalEvent = {
-            documentType,
-            documentTopicId: doc.topicId,
-            documentMessageId,
-            schemaContextIri,
-            schemaIri,
-            timestamp: new Date().toISOString(),
-        };
-
-        for (const topicId of topicIds) {
-            try {
-                TopicId.fromString(topicId);
-            } catch (err) {
-                throw new BlockActionError('Invalid topic id format', ref.blockType, ref.uuid);
-            }
-
-            await this.publish(ref, user, topicId, payload);
-        }
-
-        // Clear saved state after successful publish (doc + value)
-        await ref.setShortCache(stateKey, null as any, user);
-
-        const outState: IPolicyEventState = { data: doc } as any;
-
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
-        ref.backup();
-
-        return {};
-    }
-
-    public async getData(user: PolicyUser): Promise<any> {
-        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-
-        const topicIds = Array.isArray(ref.options?.topicIds)
-            ? ref.options.topicIds
-            : [];
-
-        const defaultTopics = topicIds.map((t: any) => {
-            return { topicId: t?.topicId || '' };
-        });
-
-        const stateKey = this.getStateKey(ref, user);
-
-        let value: SubmitValue | null = null;
-
-        try {
-            const cached = await ref.getCache<any>(stateKey, user);
-
-            if (cached && typeof cached === 'object' && cached.value && typeof cached.value === 'object') {
-                value = cached.value as SubmitValue;
-            }
-        } catch (err) {
-            // no state
-        }
-
-        return {
-            topicIds: value?.topicIds ?? defaultTopics,
-            documentType: value?.documentType ?? (ref.options?.documentType ?? 'any')
-        };
-    }
-
-    private getStateKey(ref: AnyBlockType, user: PolicyUser): string {
-        return `globalEventsWriterBlock:state:${ref.policyId}:${ref.uuid}:${user.userId}`;
+        throw new BlockActionError('Invalid operation', ref.blockType, ref.uuid);
     }
 }
