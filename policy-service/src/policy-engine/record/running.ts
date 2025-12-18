@@ -611,6 +611,17 @@ export class Running {
                 }
             }
         }
+        //button-block-addon
+        if (block.blockType === 'buttonBlockAddon') {
+            if (obj?.uuid) {
+                const doc = await this.policyInstance
+                    .databaseServer
+                    .getVcDocument({ 'document.id': obj.uuid } as any);
+                if (doc) {
+                    obj.documentId = doc.id.toString();
+                }
+            }
+        }
         return obj;
     }
 

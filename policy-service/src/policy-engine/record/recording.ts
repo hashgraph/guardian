@@ -168,7 +168,7 @@ export class Recording {
         if (this._status === RecordingStatus.Recording) {
             return true;
         }
-            await DatabaseServer.createRecord({
+        await DatabaseServer.createRecord({
             uuid: this.uuid,
             policyId: this.policyId,
             method: RecordMethod.Start,
@@ -427,6 +427,16 @@ export class Recording {
                 const doc = await (new DatabaseServer(this.policyId)).getVcDocument(data.document.id);
                 if (doc) {
                     data.document.uuid = doc.document?.id;
+                }
+            }
+        }
+        //button-block-addon
+        if (block.blockType === 'buttonBlockAddon') {
+            console.debug('r', data)
+            if (data.documentId) {
+                const doc = await (new DatabaseServer(this.policyId)).getVcDocument(data.documentId);
+                if (doc) {
+                    data.uuid = doc.document?.id;
                 }
             }
         }
