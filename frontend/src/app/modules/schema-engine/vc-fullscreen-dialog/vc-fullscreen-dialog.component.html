@@ -57,7 +57,7 @@
                 styleClass="guardian-dropdown"
             ></p-dropdown>
             <button
-                *ngIf="isCurrentUserOwner && isDocApproved"
+                *ngIf="isCurrentUserOwner"
                 pButton
                 [disabled]="!isCurrentSelectedVersion"
                 (click)="onEditMode()"

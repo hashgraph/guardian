@@ -295,14 +295,6 @@ export class VCFullscreenDialog {
         );
     }
 
-    // delete???
-    public get isDocApproved(): boolean {
-        return (
-            this.row?.option?.status === 'Approved' ||
-            this.currentSelectedVcDoc?.option?.status === 'Approved'
-        );
-    }
-
     public onClose(): void {
         try {
             this._subscription?.unsubscribe();
