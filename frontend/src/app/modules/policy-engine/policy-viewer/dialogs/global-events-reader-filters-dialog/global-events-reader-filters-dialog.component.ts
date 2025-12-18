@@ -44,7 +44,6 @@ export interface FiltersDialogResult {
 export class GlobalEventsReaderFiltersDialogComponent {
     public readonly: boolean = false;
     public documentTypes: Array<{ label: string; value: DocumentType }> = [];
-
     public branches: UiBranchState[] = [];
 
     constructor(
@@ -53,7 +52,7 @@ export class GlobalEventsReaderFiltersDialogComponent {
     ) {
         const data = (this.dialogConfig?.data || {}) as FiltersDialogData;
 
-        this.readonly = data.readonly;
+        this.readonly = !!data.readonly;
         this.documentTypes = Array.isArray(data.documentTypes) ? data.documentTypes : [];
 
         const inputBranches = Array.isArray(data.branches) ? data.branches : [];
@@ -92,6 +91,7 @@ export class GlobalEventsReaderFiltersDialogComponent {
 
     private normalizeDocumentType(value: string): DocumentType {
         const v = String(value ?? '').toLowerCase().trim();
+
         if (v === 'vc') {
             return 'vc';
         }

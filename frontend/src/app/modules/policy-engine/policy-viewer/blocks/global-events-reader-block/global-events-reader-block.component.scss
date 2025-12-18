@@ -2,35 +2,33 @@
     .header {
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-bottom: 8px;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
 
         h4 {
             margin: 0;
-            margin-right: auto;
-            font-size: 14px;
-            font-weight: 600;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+    }
+
+    .row-saving {
+        opacity: 0.65;
+
+        input,
+        button {
+            pointer-events: none;
         }
     }
 
     table {
-        width: 100%;
-        font-size: 12px;
-
+        td,
         th {
-            text-align: left;
-        }
-
-        th,
-        td {
-            padding: 4px 6px;
             vertical-align: middle;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 2px 6px;
-            font-size: 11px;
         }
     }
 }

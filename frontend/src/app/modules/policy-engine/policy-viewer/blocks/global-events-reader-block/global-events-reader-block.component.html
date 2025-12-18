@@ -2,29 +2,23 @@
     <div class="header">
         <h4>Global events</h4>
 
-        <button
-            type="button"
-            class="btn btn-sm btn-primary"
-            (click)="addRow()"
-            [disabled]="readonly || loading">
-            + Add event topic
-        </button>
+        <div class="actions">
+            <button
+                type="button"
+                class="btn btn-sm btn-primary"
+                (click)="addRow()"
+                [disabled]="readonly || loading">
+                + Add event topic
+            </button>
 
-        <button
-            type="button"
-            class="btn btn-sm btn-outline-primary"
-            (click)="createTopic()"
-            [disabled]="readonly || loading">
-            + Create topic
-        </button>
-
-<!--        <button-->
-<!--            type="button"-->
-<!--            class="btn btn-sm btn-success"-->
-<!--            (click)="save()"-->
-<!--            [disabled]="readonly || loading">-->
-<!--            Save-->
-<!--        </button>-->
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                (click)="createTopic()"
+                [disabled]="readonly || loading">
+                + Create topic
+            </button>
+        </div>
     </div>
 
     <table class="table table-sm table-striped table-bordered">
@@ -34,20 +28,22 @@
             <th style="width: 120px;">Status</th>
             <th style="width: 260px;">Last cursor</th>
             <th style="width: 80px;">Active</th>
-            <th style="width: 90px;"></th>
+            <th style="width: 90px;">Filters</th>
+            <th style="width: 90px;">Save</th>
             <th style="width: 60px;"></th>
         </tr>
         </thead>
 
         <tbody>
         <ng-container *ngFor="let row of rows; let i = index">
-            <tr>
+            <tr [class.row-saving]="row.saving">
                 <td>
                     <input
                         type="text"
                         class="form-control form-control-sm"
                         [(ngModel)]="row.globalTopicId"
-                        [readonly]="readonly">
+                        [readonly]="readonly || !row.isNew"
+                        [disabled]="loading || row.saving">
                 </td>
 
                 <td>
@@ -69,8 +65,9 @@
                 <td class="text-center">
                     <input
                         type="checkbox"
-                        [(ngModel)]="row.active"
-                        [disabled]="readonly">
+                        [ngModel]="row.active"
+                        (ngModelChange)="onActiveChanged(row, $event)"
+                        [disabled]="readonly || loading || row.isNew || row.saving">
                 </td>
 
                 <td class="text-center">
@@ -78,9 +75,21 @@
                         type="button"
                         class="btn btn-sm btn-outline-primary"
                         (click)="openFilters(row)"
-                        [disabled]="readonly">
+                        [disabled]="readonly || loading || row.isNew || row.saving">
                         Filters
                     </button>
+                </td>
+
+                <td class="text-center">
+                    <button
+                        *ngIf="row.isNew"
+                        type="button"
+                        class="btn btn-sm btn-success"
+                        (click)="saveRow(row)"
+                        [disabled]="readonly || loading || row.saving || !(row.globalTopicId || '').trim()">
+                        Save
+                    </button>
+                    <span *ngIf="!row.isNew" class="text-muted">—</span>
                 </td>
 
                 <td class="text-center">
@@ -88,7 +97,7 @@
                         type="button"
                         class="btn btn-sm btn-outline-danger"
                         (click)="removeRow(i)"
-                        [disabled]="readonly || loading">
+                        [disabled]="readonly || loading || row.saving">
                         ✕
                     </button>
                 </td>
@@ -96,7 +105,7 @@
         </ng-container>
 
         <tr *ngIf="rows.length === 0">
-            <td colspan="6" class="text-center text-muted">
+            <td colspan="7" class="text-center text-muted">
                 No streams configured yet.
             </td>
         </tr>

@@ -95,7 +95,7 @@
         <button type="button" class="btn btn-sm btn-secondary" (click)="onCancel()">
             Cancel
         </button>
-        <button type="button" class="btn btn-sm btn-primary" (click)="onApply()">
+        <button type="button" class="btn btn-sm btn-primary" (click)="onApply()" [disabled]="readonly">
             Apply
         </button>
     </div>

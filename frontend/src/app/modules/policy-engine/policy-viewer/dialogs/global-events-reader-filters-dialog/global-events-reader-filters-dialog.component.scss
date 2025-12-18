@@ -1,98 +1,80 @@
 .filters-dialog {
-    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 
     .branch {
-        padding-bottom: 12px;
-        margin-bottom: 12px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    }
-
-    .branch:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 6px;
+        padding: 10px;
+        background: #fff;
     }
 
     .branch-header {
-        display: grid;
-        grid-template-columns: 1fr 220px auto;
-        gap: 8px;
-        align-items: end;
-        margin-bottom: 8px;
-    }
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
 
-    .branch-title {
-        font-weight: 600;
-        align-self: center;
-    }
+        .branch-title {
+            flex: 1;
+            min-width: 200px;
+        }
 
-    .branch-type {
-        display: grid;
-        grid-template-rows: auto auto;
-        gap: 4px;
+        .branch-type {
+            display: flex;
+            align-items: center;
+            gap: 8px;
 
-        label {
-            margin: 0;
-            font-size: 11px;
-            color: rgba(0, 0, 0, 0.6);
+            label {
+                margin: 0;
+                font-size: 12px;
+                opacity: 0.8;
+            }
+
+            select {
+                width: 140px;
+            }
         }
     }
 
     .schema-row {
-        display: grid;
-        grid-template-columns: 80px 1fr;
-        gap: 8px;
+        display: flex;
         align-items: center;
-        padding: 6px 8px;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 4px;
-        margin-bottom: 8px;
+        gap: 10px;
+        margin: 6px 0 10px 0;
 
         .schema-label {
             font-weight: 600;
-        }
-
-        .schema-value {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            font-size: 12px;
+            opacity: 0.8;
         }
 
         .schema-id {
             font-family: monospace;
+            font-size: 12px;
         }
 
         .schema-name {
             margin-left: 6px;
-            color: rgba(0, 0, 0, 0.6);
-        }
-    }
-
-    table {
-        width: 100%;
-
-        th {
-            text-align: left;
-        }
-
-        th,
-        td {
-            padding: 4px 6px;
-            vertical-align: middle;
+            opacity: 0.8;
+            font-size: 12px;
         }
     }
 
     .no-validation {
-        padding: 8px;
+        padding: 10px;
         border: 1px dashed rgba(0, 0, 0, 0.2);
-        border-radius: 4px;
-        color: rgba(0, 0, 0, 0.65);
+        border-radius: 6px;
+        opacity: 0.85;
+        font-size: 13px;
     }
 
     .footer {
         display: flex;
         justify-content: flex-end;
         gap: 8px;
-        margin-top: 12px;
+        margin-top: 6px;
     }
 }
