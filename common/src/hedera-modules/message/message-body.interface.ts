@@ -293,6 +293,10 @@ export interface VcMessageBody extends MessageBody {
      * Option
      */
     option: any;
+    /**
+     * Tags
+     */
+    tags: any[];
 }
 
 /**
@@ -327,6 +331,10 @@ export interface VpMessageBody extends MessageBody {
      * Option
      */
     option: any;
+    /**
+     * Tags
+     */
+    tags: any[];
 }
 
 /**
