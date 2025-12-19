@@ -17,7 +17,7 @@
         "class-transformer": "^0.5.1",
         "class-validator": "^0.14.0",
         "dotenv": "^16.0.0",
-        "express": "^5.1.0",
+        "express": "^4.22.0",
         "gulp": "^5.0.0",
         "gulp-rename": "^2.0.0",
         "gulp-sourcemaps": "^3.0.0",

@@ -26,7 +26,7 @@
         "cron": "^4.3.0",
         "dotenv": "^16.0.0",
         "excel4node": "^1.8.2",
-        "express": "^5.1.0",
+        "express": "^4.22.0",
         "express-fileupload": "^1.4.0",
         "hpp": "^0.2.3",
         "jszip": "^3.7.1",
