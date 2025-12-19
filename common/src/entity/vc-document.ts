@@ -268,7 +268,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     oldVersion?: boolean;
 
     /**
-     * Parent message
+     * Original VC doc id for revision
      */
     @Property({ nullable: true })
     initId?: string;

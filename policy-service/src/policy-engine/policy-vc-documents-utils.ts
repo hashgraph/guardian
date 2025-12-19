@@ -294,6 +294,7 @@ export class PolicyVcDocumentsUtils {
         vcMessage.setRef(item.startMessageId);
         vcMessage.setUser(user.roleMessage);
         vcMessage.setOwnerAccount(user.hederaAccountId);
+        vcMessage.setInitId(item.initId);
         return vcMessage;
     }
 

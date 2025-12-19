@@ -98,6 +98,11 @@ export class VcDocument {
      * @protected
      */
     protected evidences: any[];
+    /**
+     * InitId
+     * @protected
+     */
+    protected initId: string;
 
     /**
      * Constructor
@@ -187,6 +192,23 @@ export class VcDocument {
         } else if (typeof issuer.getDid === 'function') {
             this.issuer = new Issuer(issuer.getDid());
         }
+    }
+
+    /**
+    * Get initId
+    */
+    public getInitId(): string {
+        if (this.initId) {
+            return this.initId;
+        }
+        return null;
+    }
+
+    /**
+    * Set initId
+    */
+    public setInitId(initId: string) {
+        this.initId = initId;
     }
 
     /**

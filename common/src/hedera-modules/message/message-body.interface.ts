@@ -293,6 +293,10 @@ export interface VcMessageBody extends MessageBody {
      * Option
      */
     option: any;
+    /**
+    * InitId
+    */
+    initId: string;
 }
 
 /**
