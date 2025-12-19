@@ -188,6 +188,8 @@ a.go-back-link svg {
 .policy-header[policy-status="DEMO"],
 .policy-header[policy-status="DRY-RUN"] {
     top: 170px;
+    background: #000;
+    color: #fff;
 }
 
 .policy-container {

@@ -1,12 +1,11 @@
 import axios from 'axios';
 import { create } from 'kubo-rpc-client'
 import { FilebaseClient } from '@filebase/client';
-import { CarReader } from '@ipld/car';
-import * as Delegation from '@ucanto/core/delegation';
-import * as Signer from '@ucanto/principal/ed25519';
-import * as Client from '@web3-storage/w3up-client';
+import { StoreMemory } from '@storacha/client/stores/memory';
+import * as Proof from '@storacha/client/proof';
+import { Signer } from '@storacha/client/principal/ed25519';
+import * as Client from '@storacha/client';
 import * as url from 'url';
-import { StoreMemory } from '@web3-storage/access'
 import CID from 'cids';
 
 /**
@@ -73,12 +72,15 @@ export class IpfsClientClass {
 
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.WEB3STORAGE: {
+                if (!this.options.w3s) {
+                    throw new Error('Web3Storage key and proof are not set');
+                }
                 const principal = Signer.parse(this.options.w3s.key);
                 client = await Client.create({
                     principal,
                     store: new StoreMemory()
                 });
-                const proof = await this.parseProof(this.options.w3s.proof);
+                const proof = await Proof.parse(this.options.w3s.proof.replace(/[\r\n]+/g, ''));
                 const space = await client.addSpace(proof);
                 await client.setCurrentSpace(space.did());
                 break;
@@ -90,7 +92,6 @@ export class IpfsClientClass {
                 }
 
                 client = new FilebaseClient({ token: this.options.filebase } as any)
-
                 break;
             }
 
@@ -104,7 +105,6 @@ export class IpfsClientClass {
                     host: hostname,
                     port: parseInt(port, 10),
                 });
-
                 break;
             }
 
@@ -169,7 +169,7 @@ export class IpfsClientClass {
             }
 
             case IpfsProvider.WEB3STORAGE: {
-                await this.client.capability.store.remove(cid);
+                await this.client.remove(cid, { shards: true });
                 return true;
             }
 
@@ -182,15 +182,6 @@ export class IpfsClientClass {
                 throw new Error(`${this.IPFS_PROVIDER} provider is unknown`);
             }
         }
-    }
-
-    private async parseProof(data) {
-        const blocks = [];
-        const reader = await CarReader.fromBytes(Buffer.from(data, 'base64'));
-        for await (const block of reader.blocks()) {
-            blocks.push(block);
-        }
-        return Delegation.importDAG(blocks);
     }
 
     /**

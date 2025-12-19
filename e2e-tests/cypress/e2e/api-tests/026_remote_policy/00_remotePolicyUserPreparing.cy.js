@@ -213,7 +213,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                             role: "STANDARD_REGISTRY",
                             inviteId: response.body.inviteId,
                             terms: {
-                                name: "MGS.v1",
+                                name: "MGS.v2",
                                 accepted: true
                             }
                         }
@@ -236,7 +236,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                                             authorization,
                                         },
                                         body: {
-                                            terms: "MGS.v1",
+                                            terms: "MGS.v2",
                                         }
                                     }).then((response) => {
                                         cy.request({
@@ -308,7 +308,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                         role: "USER",
                         inviteId: response.body.inviteId,
                         terms: {
-                            name: "MGS.v1",
+                            name: "MGS.v2",
                             accepted: true
                         }
                     }
@@ -322,7 +322,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                                 authorization,
                             },
                             body: {
-                                terms: "MGS.v1",
+                                terms: "MGS.v2",
                             }
                         }).then((response) => {
                             cy.request({

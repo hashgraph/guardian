@@ -1116,7 +1116,8 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     user.parent ? {
                         $or: [
                             { owner: { $eq: user.parent } },
-                            { owner: { $exists: false } }
+                            { owner: { $exists: false } },
+                            { owner: null },
                         ]
                     } as FilterObject<Token> : {}
                 );

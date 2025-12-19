@@ -165,6 +165,8 @@ import { PolicyRepositoryComponent } from './policy-repository/policy-repository
 import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
 import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
+import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
+import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
 
 @NgModule({
     declarations: [
@@ -287,7 +289,9 @@ import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.comp
         AddSavepointDialog,
         IgnoreRulesDialog,
         OnLoadSavepointDialog,
-        PolicyRepositoryComponent
+        PolicyRepositoryComponent,
+        UserPolicyDialog,
+        ChangeBlockSettingsDialog
     ],
     imports: [
         CommonModule,

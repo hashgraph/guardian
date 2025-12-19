@@ -1113,6 +1113,11 @@ export interface IPolicyInstance {
      * Policy location
      */
     readonly locationType: LocationType;
+
+    /**
+     * Relayer Account
+     */
+    readonly relayerAccount: boolean;
 }
 
 /**

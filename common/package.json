@@ -5,7 +5,7 @@
         "@azure/identity": "^4.10.0",
         "@azure/keyvault-secrets": "^4.9.0",
         "@google-cloud/secret-manager": "^4.2.2",
-        "@guardian/interfaces": "3.4.0",
+        "@guardian/interfaces": "3.4.1",
         "@hashgraph/sdk": "2.72.0",
         "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
         "@meeco/cryppo": "^2.0.2",
@@ -44,7 +44,7 @@
         "papaparse": "5.5.3",
         "reflect-metadata": "^0.1.13",
         "ws": "^8.2.1",
-        "@formulajs/formulajs": "4.5.1",
+        "@formulajs/formulajs": "4.5.4",
         "prom-client": "^14.1.1",
         "seq-logging": "^2.2.0"
     },
@@ -82,5 +82,5 @@
         "test:stability": "mocha tests/stability.test.js"
     },
     "type": "module",
-    "version": "3.4.0"
+    "version": "3.4.1"
 }

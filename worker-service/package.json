@@ -2,26 +2,25 @@
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@filebase/client": "^0.0.5",
-        "@guardian/common": "3.4.0",
-        "@guardian/interfaces": "3.4.0",
+        "@guardian/common": "3.4.1",
+        "@guardian/interfaces": "3.4.1",
         "@hashgraph/sdk": "2.72.0",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
-        "@web3-storage/access": "^18.1.0",
-        "@web3-storage/w3up-client": "^12.0.0",
+        "@storacha/client": "1.8.21",
         "axios": "^1.8.3",
+        "cids": "^1.1.9",
         "dotenv": "^16.0.0",
+        "fireblocks-sdk": "^5.33.0",
         "kubo-rpc-client": "^5.1.0",
         "reflect-metadata": "^0.1.13",
-        "rxjs": "^7.8.1",
-        "fireblocks-sdk": "^5.33.0",
-        "cids": "^1.1.9"
+        "rxjs": "^7.8.1"
     },
     "description": "",
     "devDependencies": {
-        "@types/node": "^22.15.19",
         "@types/glob": "^8.1.0",
+        "@types/node": "^22.15.19",
         "chai": "4.3.4",
         "gulp": "^5.0.0",
         "gulp-rename": "^2.0.0",
@@ -55,5 +54,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.4.0"
+    "version": "3.4.1"
 }

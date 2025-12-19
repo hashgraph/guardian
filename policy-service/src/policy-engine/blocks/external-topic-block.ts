@@ -21,6 +21,7 @@ import {
     VCMessage,
     VcHelper,
     IPFS,
+    SchemaPackageMessage,
 } from '@guardian/common';
 import {
     ExternalDocuments,
@@ -40,7 +41,7 @@ interface TopicResult {
     /**
      * Policy Schemas
      */
-    schemas?: SchemaMessage[];
+    schemas?: SchemaMessage[] | SchemaPackageMessage[];
     /**
      * Policy Version
      */
@@ -79,6 +80,14 @@ enum SchemaStatus {
     NotVerified = 'NOT_VERIFIED',
     Incompatible = 'INCOMPATIBLE',
     Compatible = 'COMPATIBLE',
+}
+
+interface SchemaItem {
+    id: string,
+    name: string,
+    cid: string,
+    sub: string,
+    status: SchemaStatus
 }
 
 /**
@@ -306,7 +315,7 @@ export class ExternalTopicBlock {
      * @param item
      * @private
      */
-    private async verification(item: any): Promise<void> {
+    private async verification(item: SchemaItem): Promise<void> {
         try {
             const schema = await this.getSchema();
             if (!schema) {
@@ -317,7 +326,7 @@ export class ExternalTopicBlock {
                 item.status = SchemaStatus.Incompatible;
                 return;
             }
-            const document = await IPFS.getFile(item.cid, 'str');
+            const document = await this.loadSchemaDocument(item);
             const base = this.getSchemaFields(schema.document);
             const extension = this.getSchemaFields(document);
             const verified = this.ifExtendFields(extension, base);
@@ -325,6 +334,30 @@ export class ExternalTopicBlock {
         } catch (error) {
             item.status = SchemaStatus.Incompatible;
             return;
+        }
+    }
+
+    /**
+     * Load Schema
+     * @param item
+     * @private
+     */
+    private async loadSchemaDocument(item: SchemaItem): Promise<void> {
+        try {
+            const row = await IPFS.getFile(item.cid, 'str');
+            let document: any;
+            if (typeof row === 'string') {
+                document = JSON.parse(row);
+            } else {
+                document = row;
+            }
+            if (item.sub) {
+                return document[item.sub];
+            } else {
+                return document;
+            }
+        } catch (error) {
+            return null;
         }
     }
 
@@ -401,8 +434,10 @@ export class ExternalTopicBlock {
                 }
                 topicTree.policyTopic = topicMessage;
                 const messages: any[] = await MessageServer.getTopicMessages({ topicId, userId });
-                topicTree.schemas = messages.filter((m: SchemaMessage) =>
-                    m.action === MessageAction.PublishSchema);
+                topicTree.schemas = messages.filter((m: SchemaMessage | SchemaPackageMessage) => (
+                    m.action === MessageAction.PublishSchema ||
+                    m.action === MessageAction.PublishSchemas
+                ));
                 topicTree.instance = messages.find((m: PolicyMessage) =>
                     m.action === MessageAction.PublishPolicy &&
                     m.instanceTopicId === topicTree.instanceTopic.topicId);
@@ -436,15 +471,7 @@ export class ExternalTopicBlock {
             const topic = topicTree.root;
             const policy = topicTree.policyTopic;
             const instance = topicTree.instance;
-            const list = [];
-            for (const schema of topicTree.schemas) {
-                list.push({
-                    id: schema.getContextUrl(UrlType.url),
-                    name: schema.name,
-                    cid: schema.getDocumentUrl(UrlType.cid),
-                    status: SchemaStatus.NotVerified
-                });
-            }
+            const schemas = await this.parseSchemaMessages(topicTree.schemas);
             item.status = TaskStatus.NeedSchema;
             item.documentTopicId = topic.topicId?.toString();
             item.policyTopicId = policy.topicId?.toString();
@@ -452,7 +479,7 @@ export class ExternalTopicBlock {
             item.documentMessage = topic.toMessageObject();
             item.policyMessage = policy.toMessageObject();
             item.policyInstanceMessage = instance.toMessageObject();
-            item.schemas = list;
+            item.schemas = schemas;
             item.active = false;
             item.lastMessage = '';
             item.lastUpdate = '';
@@ -463,6 +490,56 @@ export class ExternalTopicBlock {
             ref.databaseServer.updateExternalTopic(item);
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             this.updateStatus(ref, item, user);
+        }
+    }
+
+    private async parseSchemaMessages(messages: SchemaMessage[] | SchemaPackageMessage[]): Promise<SchemaItem[]> {
+        const list: SchemaItem[] = [];
+        for (const message of messages) {
+            if (message.action === MessageAction.PublishSchema) {
+                list.push({
+                    id: message.getContextUrl(UrlType.url),
+                    name: message.name,
+                    cid: message.getDocumentUrl(UrlType.cid),
+                    sub: null,
+                    status: SchemaStatus.NotVerified
+                });
+            }
+            if (message.action === MessageAction.PublishSchemas) {
+                const schemas = await this.parsePackage(message as SchemaPackageMessage);
+                for (const schema of schemas) {
+                    list.push(schema);
+                }
+            }
+        }
+        return list;
+    }
+
+    private async parsePackage(message: SchemaPackageMessage): Promise<SchemaItem[]> {
+        try {
+            const list: SchemaItem[] = [];
+            const contextUrl = message.getContextUrl(UrlType.url);
+            const metaCID = message.getMetadataUrl(UrlType.cid);
+            const documentCID = message.getDocumentUrl(UrlType.cid);
+            const metaData = await IPFS.getFile(metaCID, 'str');
+            const meta = JSON.parse(metaData);
+            const schemas = meta.schemas;
+            if (Array.isArray(schemas)) {
+                for (const schema of schemas) {
+                    list.push({
+                        id: contextUrl + schema.id,
+                        name: schema.name,
+                        cid: documentCID,
+                        sub: schema.id,
+                        status: SchemaStatus.NotVerified
+                    });
+                }
+            }
+            return list;
+        } catch (error) {
+            const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+            ref.error(`parsePackage: ${PolicyUtils.getErrorMessage(error)}`);
+            return [];
         }
     }
 
@@ -501,7 +578,7 @@ export class ExternalTopicBlock {
      */
     private async verificationSchemas(
         item: ExternalDocument,
-        schemas: any[],
+        schemas: SchemaItem[],
         user: PolicyUser
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
@@ -531,7 +608,7 @@ export class ExternalTopicBlock {
      */
     private async setSchema(
         item: ExternalDocument,
-        schema: any,
+        schema: SchemaItem,
         user: PolicyUser
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
@@ -555,6 +632,28 @@ export class ExternalTopicBlock {
         }
     }
 
+    private checkDocumentType(
+        document: IVC,
+        fullId: string,
+        schemaId: string,
+        schemaType: string
+    ): boolean {
+        try {
+            if (document['@context'].includes(fullId)) {
+                return true;
+            }
+            if (document['@context'].includes(schemaId)) {
+                const cs = PolicyUtils.getCredentialSubjectByDocument(document);
+                if (cs && cs.type === schemaType) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (error) {
+            return false;
+        }
+    }
+
     /**
      * Verify VC document
      * @param item
@@ -566,10 +665,14 @@ export class ExternalTopicBlock {
             return 'Invalid document';
         }
 
-        if (
-            !Array.isArray(document['@context']) ||
-            document['@context'].indexOf(item.schemaId) === -1
-        ) {
+        if (!Array.isArray(document['@context'])) {
+            return 'Invalid schema';
+        }
+
+        const fullId = item.schemaId || '';
+        const [schemaId, schemaType] = fullId.split('#');
+
+        if (!this.checkDocumentType(document, fullId, schemaId, schemaType)) {
             return 'Invalid schema';
         }
 
