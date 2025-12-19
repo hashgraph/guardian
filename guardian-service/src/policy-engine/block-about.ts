@@ -1548,22 +1548,8 @@ export const BlockAbout = {
         'defaultEvent': true,
         'properties': [
             {
-                'name': 'documentType',
-                'label': 'Document type',
-                'title': 'Type written to the global topic for reader-side filtering',
-                'type': 'Select',
-                'items': [
-                    { 'label': 'VC',   'value': 'vc' },
-                    { 'label': 'JSON', 'value': 'json' },
-                    { 'label': 'CSV',  'value': 'csv' },
-                    { 'label': 'Text', 'value': 'text' },
-                    { 'label': 'Any',  'value': 'any' }
-                ],
-                'default': 'any'
-            },
-            {
                 'name': 'topicIds',
-                'label': 'Global topic ids',
+                'label': 'Global topics',
                 'title': 'One or more Hedera topics where notifications are published',
                 'type': 'Array',
                 'items': {
@@ -1575,6 +1561,20 @@ export const BlockAbout = {
                             'label': 'Topic id',
                             'title': 'Hedera topic id',
                             'type': 'Input'
+                        },
+                        {
+                            'name': 'documentType',
+                            'label': 'Document type',
+                            'title': 'Type written to the global topic for reader-side filtering',
+                            'type': 'Select',
+                            'items': [
+                                { 'label': 'VC',   'value': 'vc' },
+                                { 'label': 'JSON', 'value': 'json' },
+                                { 'label': 'CSV',  'value': 'csv' },
+                                { 'label': 'Text', 'value': 'text' },
+                                { 'label': 'Any',  'value': 'any' }
+                            ],
+                            'default': 'vc'
                         },
                     ]
                 }

@@ -74,7 +74,9 @@ interface WriterCacheState {
         get: true,
         children: ChildrenType.None,
         control: ControlType.UI,
-        input: [PolicyInputEventType.RunEvent],
+        input: [
+            PolicyInputEventType.RunEvent,
+        ],
         output: [
             PolicyOutputEventType.RunEvent,
             PolicyOutputEventType.RefreshEvent,
@@ -84,22 +86,8 @@ interface WriterCacheState {
         defaultEvent: true,
         properties: [
             {
-                name: 'documentType',
-                label: 'Document type',
-                title: 'Type written to the global topic for reader-side filtering',
-                type: PropertyType.Select,
-                items: [
-                    { label: 'VC', value: 'vc' },
-                    { label: 'JSON', value: 'json' },
-                    { label: 'CSV', value: 'csv' },
-                    { label: 'Text', value: 'text' },
-                    { label: 'Any', value: 'any' },
-                ],
-                default: 'any',
-            },
-            {
                 name: 'topicIds',
-                label: 'Global topic ids',
+                label: 'Global topics',
                 title: 'One or more Hedera topics where notifications are published',
                 type: PropertyType.Array,
                 items: {
@@ -112,6 +100,20 @@ interface WriterCacheState {
                             title: 'Hedera topic id',
                             type: PropertyType.Input,
                         },
+                        {
+                            name: 'documentType',
+                            label: 'Document type',
+                            title: 'Type written to the global topic for reader-side filtering',
+                            type: PropertyType.Select,
+                            items: [
+                                { label: 'VC', value: 'vc' },
+                                { label: 'JSON', value: 'json' },
+                                { label: 'CSV', value: 'csv' },
+                                { label: 'Text', value: 'text' },
+                                { label: 'Any', value: 'any' },
+                            ],
+                            default: 'vc',
+                        },
                     ],
                 },
             },
@@ -120,7 +122,7 @@ interface WriterCacheState {
 })
 export class GlobalEventsWriterBlock {
     /**
-     * Extract the canonical address (messageId) from the VC/VP/VS document.
+     * Extract the canonical address (messageId) from the document.
      */
     private extractCanonicalAddress(doc: IPolicyDocument): string {
         if (doc.messageId) {
@@ -148,10 +150,9 @@ export class GlobalEventsWriterBlock {
         }
 
         const optionTopicIds = Array.isArray(ref.options?.topicIds) ? ref.options.topicIds : [];
-        const documentType: GlobalDocumentType = ref.options?.documentType;
 
-        for (const item of optionTopicIds) {
-            const topicId = item.topicId?.trim();
+        for (const topic of optionTopicIds) {
+            const topicId = topic.topicId?.trim();
             if (!topicId) {
                 continue;
             }
@@ -166,6 +167,8 @@ export class GlobalEventsWriterBlock {
                 continue;
             }
 
+            const topicDocumentType: GlobalDocumentType = topic.documentType;
+
             await ref.databaseServer.createGlobalEventsWriterStream({
                 policyId: ref.policyId,
                 blockId: ref.uuid,
@@ -173,7 +176,7 @@ export class GlobalEventsWriterBlock {
                 userDid: user.did,
                 globalTopicId: topicId,
                 active: false,
-                documentType,
+                documentType: topicDocumentType,
             });
         }
     }
@@ -425,6 +428,7 @@ export class GlobalEventsWriterBlock {
         ],
     })
     public async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<void> {
+        console.log('runAction')
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const user: PolicyUser = event?.user;
 
@@ -459,7 +463,7 @@ export class GlobalEventsWriterBlock {
 
         // Fetch streams to determine if we need to publish
         const streams = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(ref.policyId, ref.uuid, user.userId);
-        const hidden = ref.options.hidden;
+        const defaultActive = ref.defaultActive;
 
         // Cache the last document for this user
         const cacheKey = this.getCacheKey(ref, user);
@@ -469,7 +473,7 @@ export class GlobalEventsWriterBlock {
         cacheState.lastPublishedMessageId = documentMessageId;
         await ref.setShortCache(cacheKey, cacheState, user);
 
-        if (hidden) {
+        if (!defaultActive) {
             if (streams.length > 0) {
                 const {schemaContextIri, schemaIri} = this.extractSchemaIris(ref, doc);
 
@@ -486,6 +490,7 @@ export class GlobalEventsWriterBlock {
                     await this.publish(ref, user, stream.globalTopicId, payload);
                 }
             }
+
             const outState: IPolicyEventState = { data: doc } as any;
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
@@ -494,6 +499,15 @@ export class GlobalEventsWriterBlock {
             return;
         } else {
             await this.publishActiveStreams(ref, user, streams, doc, documentMessageId)
+
+            const outState: IPolicyEventState = { data: doc } as any;
+
+            console.log('outState')
+
+            // ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
+            // ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
+            // ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState);
+            // ref.backup();
         }
     }
 
@@ -529,7 +543,6 @@ export class GlobalEventsWriterBlock {
             ),
             config: {
                 eventTopics: config.eventTopics || [],
-                documentType: config.documentType
             },
             streams,
             defaultTopicIds
@@ -560,7 +573,6 @@ export class GlobalEventsWriterBlock {
         // Create a new topic and DB row
         if (operation === 'CreateTopic') {
             const createdTopicId = await this.createTopic(ref, user);
-            const documentType = ref.options.documentType;
 
             await ref.databaseServer.createGlobalEventsWriterStream({
                 policyId: ref.policyId,
@@ -569,7 +581,7 @@ export class GlobalEventsWriterBlock {
                 userDid: user.did,
                 globalTopicId: createdTopicId,
                 active: false,
-                documentType,
+                documentType: 'any',
             });
 
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
@@ -580,8 +592,6 @@ export class GlobalEventsWriterBlock {
 
         // Add existing topics as new DB rows
         if (operation === 'AddTopic') {
-            const documentType = ref.options.documentType;
-
             for (const topic of topics) {
                 try {
                     this.validateTopicId(topic.topicId, ref);
@@ -607,7 +617,7 @@ export class GlobalEventsWriterBlock {
                     userDid: user.did,
                     globalTopicId: topic.topicId,
                     active: false,
-                    documentType,
+                    documentType: 'any',
                 });
             }
 

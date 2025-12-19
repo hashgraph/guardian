@@ -37,7 +37,7 @@ export class GlobalEventsWriterStream extends RestoreEntity {
     documentType: GlobalDocumentType = 'any'
 
     @Property({ nullable: true, index: true })
-    lastPublishMessageId: string = null
+    public lastPublishMessageId: string | null = null;
 
     @BeforeCreate()
     @BeforeUpdate()

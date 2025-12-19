@@ -5,7 +5,7 @@
         <button
             type="button"
             class="btn btn-sm btn-primary"
-            (click)="addRow()"
+            (click)="openAddTopicModal()"
             [disabled]="loading">
             + Add topic
         </button>
@@ -13,52 +13,52 @@
         <button
             type="button"
             class="btn btn-sm btn-outline-primary"
-            (click)="createTopic()"
+            (click)="openCreateTopicModal()"
             [disabled]="loading">
             + Create topic
         </button>
-
-        <button
-            type="button"
-            class="btn btn-sm btn-success"
-            (click)="submit()"
-            [disabled]="!canPublish">
-            Publish
-        </button>
-    </div>
-
-    <div class="doc-type">
-        <label>Document type</label>
-
-        <select
-            class="form-control form-control-sm"
-            [ngModel]="documentType"
-            (ngModelChange)="onDocumentTypeChange($event)"
-            [disabled]="loading">
-            <option
-                *ngFor="let opt of documentTypeOptions"
-                [ngValue]="opt.value">
-                {{ opt.label }}
-            </option>
-        </select>
     </div>
 
     <table class="table table-sm table-striped table-bordered">
         <thead>
         <tr>
             <th>Topic ID</th>
+            <th style="width: 120px;">Type</th>
+            <th style="width: 70px;" class="text-center">Active</th>
             <th style="width: 60px;"></th>
         </tr>
         </thead>
 
         <tbody>
-        <tr *ngFor="let row of topicIds; let i = index">
+        <tr *ngFor="let row of streams; let i = index">
             <td>
                 <input
                     type="text"
                     class="form-control form-control-sm"
-                    [(ngModel)]="row.topicId"
-                    (ngModelChange)="onTopicIdChange()"
+                    [ngModel]="row.topicId"
+                    disabled
+                >
+            </td>
+
+            <td>
+                <select
+                    class="form-control form-control-sm"
+                    [ngModel]="row.documentType"
+                    (ngModelChange)="onStreamDocumentTypeChange(row, $event)"
+                    [disabled]="loading">
+                    <option
+                        *ngFor="let opt of documentTypeOptions"
+                        [ngValue]="opt.value">
+                        {{ opt.label }}
+                    </option>
+                </select>
+            </td>
+
+            <td class="text-center">
+                <input
+                    type="checkbox"
+                    [checked]="row.active"
+                    (change)="onActiveCheckboxChange(row, $event)"
                     [disabled]="loading"
                 >
             </td>
@@ -67,18 +67,93 @@
                 <button
                     type="button"
                     class="btn btn-sm btn-outline-danger"
-                    (click)="removeRow(i)"
-                    [disabled]="loading">
+                    (click)="deleteStream(row)"
+                    [disabled]="loading"
+                    *ngIf="!isDefaultTopic(row.topicId)">
                     ✕
                 </button>
             </td>
         </tr>
 
-        <tr *ngIf="topicIds.length === 0">
-            <td colspan="2" class="text-center text-muted">
+        <tr *ngIf="streams.length === 0">
+            <td colspan="4" class="text-center text-muted">
                 No topics configured yet.
             </td>
         </tr>
         </tbody>
     </table>
+
+    <!-- Add Topic Modal -->
+    <div class="modal-backdrop" *ngIf="addTopicModalOpen">
+        <div class="modal-card">
+            <div class="modal-title">
+                Add topic
+            </div>
+
+            <div class="modal-body">
+                <div class="field">
+                    <label>Topic ID</label>
+                    <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        [(ngModel)]="addTopicModalTopicId"
+                        [disabled]="loading"
+                    >
+                </div>
+
+                <div *ngIf="addTopicModalError" class="error">
+                    {{ addTopicModalError }}
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="closeAddTopicModal()"
+                    [disabled]="loading">
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-primary"
+                    (click)="confirmAddTopicModal()"
+                    [disabled]="loading">
+                    Create
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Topic Confirm Modal -->
+    <div class="modal-backdrop" *ngIf="createTopicModalOpen">
+        <div class="modal-card">
+            <div class="modal-title">
+                Create new topic
+            </div>
+
+            <div class="modal-body">
+                This will create a new Hedera topic and add it to your list.
+            </div>
+
+            <div class="modal-actions">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="closeCreateTopicModal()"
+                    [disabled]="loading">
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    (click)="confirmCreateTopic()"
+                    [disabled]="loading">
+                    Create
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

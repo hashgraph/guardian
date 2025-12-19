@@ -1,26 +1,14 @@
 .global-events-writer-block {
-    .header,
-    .doc-type {
+    .header {
         display: flex;
         align-items: center;
         gap: 8px;
         margin-bottom: 8px;
-    }
 
-    .header {
         h4 {
             margin: 0;
             margin-right: auto;
             font-size: 14px;
-            font-weight: 600;
-        }
-    }
-
-    .doc-type {
-        label {
-            margin: 0;
-            width: 120px;
-            font-size: 12px;
             font-weight: 600;
         }
     }
@@ -34,5 +22,63 @@
             padding: 4px 6px;
             vertical-align: middle;
         }
+    }
+
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 16px;
+    }
+
+    .modal-card {
+        width: 420px;
+        max-width: 100%;
+        background: #fff;
+        border-radius: 6px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        padding: 12px;
+    }
+
+    .modal-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .modal-body {
+        font-size: 12px;
+
+        .field {
+            display: grid;
+            grid-template-columns: 90px 1fr;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+
+            label {
+                margin: 0;
+                font-size: 12px;
+                font-weight: 600;
+            }
+        }
+
+        .error {
+            margin-top: 6px;
+            color: #b00020;
+            font-size: 12px;
+        }
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 10px;
     }
 }
