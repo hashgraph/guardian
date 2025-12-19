@@ -76,13 +76,13 @@ export class ToolBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         for (const e of this.inputEvents) {
             if (e.name === event.inputType) {
-                ref.triggerEvents(e.name, event.user, event.data);
+                ref.triggerEvents(e.name, event.user, event.data, event.actionStatus);
                 return;
             }
         }
         for (const e of this.outputEvents) {
             if (e.name === event.inputType) {
-                ref.triggerEvents(e.name, event.user, event.data);
+                ref.triggerEvents(e.name, event.user, event.data, event.actionStatus);
                 return;
             }
         }

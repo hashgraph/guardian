@@ -73,6 +73,7 @@ async function preparePolicyPreviewMessage(
     policyToImport.availability = message.availability;
     policyToImport.restoreTopicId = message.restoreTopicId;
     policyToImport.actionsTopicId = message.actionsTopicId;
+    policyToImport.recordsTopicId = message.recordsTopicId;
     notifier.completeStep(STEP_PARSE_FILE);
 
     notifier.complete();

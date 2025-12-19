@@ -1272,6 +1272,7 @@ export class PolicyUtils {
         ref: AnyBlockType,
         owner: PolicyUser,
         document: VpDocument,
+        recordActionId: string | null = null
     ): IPolicyDocument {
         return {
             policyId: ref.policyId,
@@ -1282,6 +1283,7 @@ export class PolicyUtils {
             group: owner.group,
             status: DocumentStatus.NEW,
             signature: DocumentSignature.NEW,
+            recordActionId
         };
     }
 
@@ -1291,11 +1293,16 @@ export class PolicyUtils {
      * @param owner
      * @param document
      */
-    public static createUnsignedVC(ref: AnyBlockType, document: VcDocument): IPolicyDocument {
+    public static createUnsignedVC(
+        ref: AnyBlockType, document: VcDocument,
+        recordActionId: string | null = null
+
+    ): IPolicyDocument {
         return {
             policyId: ref.policyId,
             tag: ref.tag,
-            document: document.toJsonTree()
+            document: document.toJsonTree(),
+            recordActionId
         };
     }
 
@@ -1308,7 +1315,8 @@ export class PolicyUtils {
     public static createVC(
         ref: AnyBlockType,
         owner: PolicyUser,
-        document: VcDocument
+        document: VcDocument,
+        recordActionId: string | null = null
     ): IPolicyDocument {
         return {
             policyId: ref.policyId,
@@ -1318,7 +1326,8 @@ export class PolicyUtils {
             owner: owner.did,
             group: owner.group,
             hederaStatus: DocumentStatus.NEW,
-            signature: DocumentSignature.NEW
+            signature: DocumentSignature.NEW,
+            recordActionId
         };
     }
 

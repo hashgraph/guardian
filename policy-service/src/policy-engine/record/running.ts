@@ -1,8 +1,7 @@
-import { GenerateUUIDv4, PolicyEvents, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyEvents, TopicType, RecordMethod } from '@guardian/interfaces';
 import { RunningStatus } from './status.type.js';
 import { BlockTreeGenerator } from '../block-tree-generator.js';
 import { RecordAction } from './action.type.js';
-import { RecordMethod } from './method.type.js';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -458,7 +457,7 @@ export class Running {
                     const block = PolicyComponentsUtils.GetBlockByTag<any>(this.policyId, action.target);
                     if (await this.isAvailable(block, userFull)) {
                         const doc = await this.getActionDocument(action, block);
-                        await block.setData(userFull, doc);
+                        await block.setData(userFull, doc, null, null);
                         return null;
                     } else {
                         return `Block (${action.target}) not available.`;
@@ -609,6 +608,17 @@ export class Running {
                     .getVcDocument({ 'document.id': obj.document.uuid } as any);
                 if (doc) {
                     obj.document.id = doc.id.toString();
+                }
+            }
+        }
+        //button-block-addon
+        if (block.blockType === 'buttonBlockAddon') {
+            if (obj?.uuid) {
+                const doc = await this.policyInstance
+                    .databaseServer
+                    .getVcDocument({ 'document.id': obj.uuid } as any);
+                if (doc) {
+                    obj.documentId = doc.id.toString();
                 }
             }
         }
@@ -798,10 +808,10 @@ export class Running {
      * Get current and recorded results
      * @public
      */
-    public async getResults(policyId?: string): Promise<any> {
+    public async getResults(): Promise<any> {
         if (this._id) {
             const results = await RecordImportExport
-            .loadRecordResults(policyId || this.policyId, this._startTime, this._endTime);
+                .loadRecordResults(this.policyId, this._startTime, this._endTime);
             return {
                 documents: results,
                 recorded: this._results

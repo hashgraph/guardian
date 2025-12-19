@@ -123,7 +123,7 @@ export class TagsManagerBlock {
      * @param user
      * @param blockData
      */
-    async setData(user: PolicyUser, blockData: any): Promise<any> {
+    async setData(user: PolicyUser, blockData: any,  _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (!blockData) {
             throw new BlockActionError(`Operation is unknown`, ref.blockType, ref.uuid);
@@ -144,7 +144,7 @@ export class TagsManagerBlock {
 
                 const relayerAccount = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, user.userId);
 
-                const tagUUID: string = await ref.components.generateUUID();
+                const tagUUID: string = await ref.components.generateUUID(actionStatus?.id);
                 tag.uuid = tag.uuid || tagUUID;
                 tag.operation = 'Create';
                 tag.entity = TagType.PolicyDocument;
@@ -175,7 +175,7 @@ export class TagsManagerBlock {
                     if (ref.dryRun) {
                         vcHelper.addDryRunContext(credentialSubject);
                     }
-                    const uuid = await ref.components.generateUUID();
+                    const uuid = await ref.components.generateUUID(actionStatus?.id);
 
                     const vcObject = await PolicyActionsUtils.signVC({
                         ref,

@@ -490,7 +490,7 @@ export class SendToGuardianBlock {
      */
     private async documentSender(
         document: IPolicyDocument,
-        userId: string | null
+        userId: string | null,
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
@@ -644,9 +644,9 @@ export class SendToGuardianBlock {
             await this.updateVersion(olds, event?.user?.userId);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             type: (ref.options.dataSource || ref.options.dataType),
             documents: ExternalDocuments(event.data?.data),

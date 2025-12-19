@@ -39,6 +39,12 @@ export class Record extends BaseEntity {
     action?: string;
 
     /**
+     * Record action id
+     */
+    @Property({ nullable: true })
+    recordActionId?: string;
+
+    /**
      * Time
      */
     @Property({ nullable: true, type: 'unknown' })
@@ -49,6 +55,12 @@ export class Record extends BaseEntity {
      */
     @Property({ nullable: true })
     user?: string;
+
+    /**
+     * User role
+     */
+    @Property({ nullable: true })
+    userRole?: string;
 
     /**
      * Target
@@ -67,29 +79,24 @@ export class Record extends BaseEntity {
      */
     @Property({ nullable: true })
     documentFileId?: ObjectId;
-    /**
-     * IPFS CID
-     */
-    @Property({ nullable: true })
-    ipfsCid?: string;
 
     /**
-     * IPFS URL
+     * Results (set of VC/VP/Schema documents)
      */
-    @Property({ nullable: true })
-    ipfsUrl?: string;
+    @Property({ persist: false, nullable: true, type: 'unknown' })
+    results?: any;
 
     /**
-     * IPFS timestamp
-     */
-    @Property({ nullable: true, type: 'unknown' })
-    ipfsTimestamp?: Date;
-
-    /**
-     * Source policy for copied record
+     * Results file id
      */
     @Property({ nullable: true })
-    fromPolicyId?: string;
+    resultsFileId?: ObjectId;
+
+    /**
+     * Imported from
+     */
+    @Property({ nullable: true })
+    importedFrom?: string;
 
     /**
      * Original record id when copied
@@ -113,6 +120,11 @@ export class Record extends BaseEntity {
             this.documentFileId = await this._createFile(document, 'Record');
             delete this.document;
         }
+        if (this.results) {
+            const results = JSON.stringify(this.results);
+            this.resultsFileId = await this._createFile(results, 'RecordResults');
+            delete this.results;
+        }
     }
 
     /**
@@ -125,6 +137,10 @@ export class Record extends BaseEntity {
         if (this.documentFileId) {
             const buffer = await this._loadFile(this.documentFileId);
             this.document = JSON.parse(buffer.toString());
+        }
+        if (this.resultsFileId) {
+            const buffer = await this._loadFile(this.resultsFileId);
+            this.results = JSON.parse(buffer.toString());
         }
     }
 
@@ -141,6 +157,14 @@ export class Record extends BaseEntity {
                 this.documentFileId = documentFileId;
             }
             delete this.document;
+        }
+        if (this.results) {
+            const results = JSON.stringify(this.results);
+            const resultsFileId = await this._createFile(results, 'RecordResults');
+            if (resultsFileId) {
+                this.resultsFileId = resultsFileId;
+            }
+            delete this.results;
         }
     }
 
@@ -170,6 +194,14 @@ export class Record extends BaseEntity {
                 .delete(this.documentFileId)
                 .catch((reason) => {
                     console.error(`AfterDelete: Record, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
+        }
+        if (this.resultsFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.resultsFileId)
+                .catch((reason) => {
+                    console.error(`AfterDelete: Record, ${this._id}, resultsFileId`)
                     console.error(reason)
                 });
         }
