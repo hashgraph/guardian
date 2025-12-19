@@ -1017,10 +1017,10 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     public hasTags(node: any): boolean {
-        return node?.node?._tags?.tags?.length > 0;
+        return node?.node?._tags?.length > 0;
     }
 
     public getTagsAmount(node: any): number {
-        return node?.node?._tags?.tags?.length || 0;
+        return node?.node?._tags?.length || 0;
     }
 }

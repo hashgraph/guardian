@@ -30,6 +30,10 @@ export class TagMessage extends Message {
      */
     public target: string;
     /**
+     * Linked Items
+     */
+    public linkedItems: string[];
+    /**
      * Operation
      */
     public operation: 'Create' | 'Delete';
@@ -67,6 +71,7 @@ export class TagMessage extends Message {
         this.entity = tag.entity;
         this.date = tag.date;
         this.document = tag.document;
+        this.linkedItems = tag.linkedItems;
     }
 
     /**
@@ -94,7 +99,8 @@ export class TagMessage extends Message {
             target: this.target,
             operation: this.operation,
             date: this.date,
-            entity: this.entity
+            entity: this.entity,
+            linkedItems: this.linkedItems
         }
         if (this.isDocuments()) {
             result.cid = this.getDocumentUrl(UrlType.cid);
@@ -167,6 +173,7 @@ export class TagMessage extends Message {
         message.operation = json.operation;
         message.entity = json.entity;
         message.date = json.date;
+        message.linkedItems = json.linkedItems;
         return message;
     }
 
@@ -205,6 +212,7 @@ export class TagMessage extends Message {
         result.operation = this.operation;
         result.entity = this.entity;
         result.date = this.date;
+        result.linkedItems = this.linkedItems;
         return result;
     }
 
@@ -222,6 +230,7 @@ export class TagMessage extends Message {
         result.operation = json.operation;
         result.entity = json.entity;
         result.date = json.date;
+        result.linkedItems = json.linkedItems;
         return result;
     }
 

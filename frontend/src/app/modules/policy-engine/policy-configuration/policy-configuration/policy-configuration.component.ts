@@ -514,14 +514,15 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private loadTagsData() {
         if (this.user.TAGS_TAG_READ) {
-            const ids = this.allBlocks?.map(block => this.policy.id + '#' + block.id) || [];
+            const blockIds = this.allBlocks?.map(block => block.id) || [];
 
-            this.tagsService.search(TagType.PolicyBlock, ids).subscribe((data) => {
+            this.tagsService.search(TagType.PolicyBlock, [this.policy.id], blockIds).subscribe((data) => {
+                const policyBlockTags = data[this.policy.id];
                 if (this.allBlocks) {
                     for (const block of this.allBlocks) {
-                        (block as any)._tags = data[this.policy.id + '#' + block.id];
+                        (block as any)._tags = policyBlockTags?.tags.filter((tag: any) => tag.linkedItems.includes(block.id));
                         
-                        data[block.id]?.tags.forEach((tag: any) => {
+                        policyBlockTags?.tags.forEach((tag: any) => {
                             const totalTagOptions = [
                                 ...this.tagOptions,
                                 tag.name,
@@ -531,24 +532,24 @@ export class PolicyConfigurationComponent implements OnInit {
                             ];
                         });
 
-                        const target = this.policy.id + '#' + block.id;
                         let history: TagsHistory;
                         if ((block as any)._tags) {
                             history = new TagsHistory(
-                                (block as any)._tags.entity || TagType.PolicyBlock,
-                                (block as any)._tags.target || target,
+                                policyBlockTags.entity || TagType.PolicyBlock,
+                                policyBlockTags.target || this.policy.id,
                                 this.owner,
-                                this.policy.location || LocationType.LOCAL
+                                this.policy.location || LocationType.LOCAL,
+                                [block.id]
                             );
-                            history.setData((block as any)._tags.tags);
-                            history.setDate((block as any)._tags.refreshDate);
-
+                            history.setData((block as any)._tags);
+                            history.setDate(policyBlockTags.refreshDate);
                         } else {
                             history = new TagsHistory(
                                 TagType.PolicyBlock,
-                                target,
+                                this.policy.id,
                                 this.owner,
-                                this.policy.location || LocationType.LOCAL
+                                this.policy.location || LocationType.LOCAL,
+                                [block.id]
                             );
                         }
                         this.blockTagHistories.set(block.id, history);
@@ -2432,12 +2433,22 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public onAddTagToBlocks() {
         const tagsHistory = [];
+        const linkedItems: string[] = [];
         for (const block of this.selectedBlocks.values()) {
             const tagHistory = this.blockTagHistories.get(block.id)
             if (tagHistory) {
                 tagsHistory.push(tagHistory);
             }
+            linkedItems.push(block.id);
         }
+
+        const commonHistory = new TagsHistory(
+            TagType.PolicyBlock,
+            this.policy.id,
+            this.owner,
+            this.policy.location || LocationType.LOCAL,
+            linkedItems
+        );
 
         if (tagsHistory.length > 0) {
             const dialogRef = this.dialog.open(MultipleTagsExplorerDialog, {
@@ -2449,6 +2460,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     service: this.tagsService,
                     histories: tagsHistory,
                     schemas: this.schemas,
+                    commonHistory: commonHistory,
                     items: Array.from(this.selectedBlocks.values())
                 }
             });

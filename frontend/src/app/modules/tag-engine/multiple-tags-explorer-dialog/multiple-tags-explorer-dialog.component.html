@@ -13,14 +13,20 @@
 
                         <div *ngIf="hasHistoryItems(item)" class="tags-container">
                             <div class="item" *ngFor="let historyItem of getHistoryItems(item)">
+                                <svg-icon
+                                    class="svg-icon-16"
+                                    src="/assets/images/icons/16/label.svg"
+                                    svgClass="primary-color">
+                                </svg-icon>
                                 <div class="name">
                                     {{ historyItem.name }}
                                 </div>
-                                <svg-icon
-                                    (click)="onTagDelete(item)"
+                                <!-- <svg-icon
+                                    (click)="onTagDelete(item, historyItem)"
                                     class="svg-icon-16"
                                     src="/assets/images/icons/16/circle-close.svg"
-                                    [svgClass]="'primary-color'"></svg-icon>
+                                    [svgClass]="'primary-color'">
+                                </svg-icon> -->
                             </div>
                         </div>
 

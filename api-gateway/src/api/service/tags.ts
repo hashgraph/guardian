@@ -111,7 +111,7 @@ export class TagsApi {
         @Req() req
     ): Promise<{ [localTarget: string]: TagMapDTO }> {
         try {
-            const { entity, target, targets } = body;
+            const { entity, target, targets, linkedItems } = body;
 
             let _targets: string[];
             if (!entity) {
@@ -135,8 +135,8 @@ export class TagsApi {
 
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const items = await guardians.getTags(owner, entity, _targets);
-            const dates = await guardians.getTagCache(owner, entity, _targets);
+            const items = await guardians.getTags(owner, entity, _targets, linkedItems);
+            const dates = await guardians.getTagCache(owner, entity, _targets, linkedItems);
 
             const dateMap = {};
             for (const date of dates) {

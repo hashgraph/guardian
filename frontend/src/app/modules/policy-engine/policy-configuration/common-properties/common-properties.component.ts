@@ -261,7 +261,7 @@ export class CommonPropertiesComponent implements OnInit {
     }
 
     public getTagsAmount(): number {
-        return (this.block as any)?._tags?.tags?.length || 0;
+        return (this.block as any)?._tags?.length || 0;
     }
 
     public editTags() {

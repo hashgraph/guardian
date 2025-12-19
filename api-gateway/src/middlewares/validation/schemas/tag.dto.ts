@@ -181,4 +181,11 @@ export class TagFilterDTO {
         example: Examples.MESSAGE_ID
     })
     targets?: string[];
+
+    @ApiProperty({
+        type: 'string',
+        isArray: true,
+        example: [Examples.MESSAGE_ID]
+    })
+    linkedItems?: string[];
 }

@@ -499,6 +499,10 @@ export interface TagMessageBody extends MessageBody {
      */
     target: string;
     /**
+     * Linked Items
+     */
+    linkedItems: string[];
+    /**
      * Operation
      */
     operation: 'Create' | 'Delete';

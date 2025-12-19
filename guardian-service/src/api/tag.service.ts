@@ -144,12 +144,8 @@ export async function getTarget(entity: TagType, id: string): Promise<{
                 return null;
             }
         }
-        case TagType.PolicyBlock: {
-            const [policyId, blockId] = id.split('#');
-
-            if (!policyId || !blockId) return null;
-
-            const policy = await DatabaseServer.getPolicyById(policyId);
+        case TagType.PolicyBlock: { 
+            const policy = await DatabaseServer.getPolicyById(id);
             if (!policy) return null;
 
             return {
@@ -217,6 +213,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                     } else {
                         tag.document = null;
                     }
+
                     //Message
                     if (target.target && target.topicId) {
                         tag.target = target.target;
@@ -235,6 +232,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                         tag.localTarget = target.id;
                         tag.status = 'Draft';
                     }
+ 
                     const item = await DatabaseServer.createTag(tag);
                     return new MessageResponse(item);
                 } else {
@@ -250,17 +248,22 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             owner: IOwner,
             entity: string,
-            targets: string[]
+            targets: string[],
+            linkedItems?: string[]
         }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
-                const { targets, entity } = msg;
+                const { targets, entity, linkedItems } = msg;
 
                 const filter: any = {
                     localTarget: { $in: targets },
                     entity
+                }
+
+                if (Array.isArray(linkedItems) && linkedItems.length > 0) {
+                    filter.linkedItems = { $in: linkedItems };
                 }
 
                 const items = await DatabaseServer.getTags(filter);
@@ -275,17 +278,23 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             owner: IOwner,
             entity: string,
-            targets: string[]
+            targets: string[],
+            linkedItems?: string[]
         }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
-                const { targets, entity } = msg;
+                const { targets, entity, linkedItems } = msg;
                 const filter: any = {
                     localTarget: { $in: targets },
                     entity
                 }
+
+                if (Array.isArray(linkedItems) && linkedItems.length > 0) {
+                    filter.linkedItems = { $in: linkedItems };
+                }
+
                 const items = await DatabaseServer.getTagCache(filter);
                 return new MessageResponse(items);
             } catch (error) {
@@ -426,17 +435,23 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             owner: IOwner,
             entity: string,
-            targets: string[]
+            targets: string[],
+            linkedItems: string[]
         }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
-                const { targets, entity } = msg;
+                const { targets, entity, linkedItems } = msg;
                 const filter: any = {
                     localTarget: { $in: targets },
                     entity
                 }
+
+                if (Array.isArray(linkedItems) && linkedItems.length > 0) {
+                    filter.linkedItems = { $in: linkedItems };
+                }
+
                 const items = await DatabaseServer.getTags(filter);
                 for (const item of items) {
                     delete item.id;

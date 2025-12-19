@@ -7,7 +7,7 @@ import { TagItem } from '../models/tag-item';
 import moment from 'moment';
 import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.component';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { LocationType, UserPermissions } from '@guardian/interfaces';
+import { LocationType, TagType, UserPermissions } from '@guardian/interfaces';
 
 /**
  * Dialog for creating tags.
@@ -22,7 +22,6 @@ export class MultipleTagsExplorerDialog {
     public started = false;
     public title: string = 'Tags';
     public description: string = '';
-    public select: TagMapItem | undefined;
     public open: TagItem | undefined;
     public histories: TagsHistory[] = [];
     public owner: string;
@@ -31,8 +30,8 @@ export class MultipleTagsExplorerDialog {
     public tagsService: TagsService;
     public schemas: any[] = [];
     public hasChanges: boolean = false;
-    public selectedTags: TagMapItem[] = [];
     public user: UserPermissions;
+    public commonHistory: TagsHistory;
 
     public items: any[] = []
 
@@ -57,24 +56,8 @@ export class MultipleTagsExplorerDialog {
         this.tagsService = dialogData.data?.service;
         this.histories = dialogData.data?.histories;
         this.user = dialogData.data?.user;
-        // this.selectedTags = this.history.items;
         this.items = dialogData.data?.items;
-
-        console.log(this.items);
-        
-
-        // this.owner = this.history.owner;
-        // this.select = this.history.getItem();
-        // this.setTime(this.history.time);
-        // this.tab = 1;
-
-        // if (!this.select) {
-        //     this.select = this.history.getHistory();
-        // }
-        // if (!this.selectedTags || this.selectedTags.length === 0) {
-        //     this.selectedTags = this.history.history;
-        //     this.tab = 2;
-        // }
+        this.commonHistory = dialogData.data?.commonHistory;
     }
 
     ngOnInit() {
@@ -89,10 +72,6 @@ export class MultipleTagsExplorerDialog {
         this.dialogRef.close(this.hasChanges);
     }
 
-    public onSelect(item: TagMapItem) {
-        this.select = item;
-    }
-
     public onOpen(item: TagItem) {
         if (item.open) {
             item.open = false;
@@ -102,12 +81,7 @@ export class MultipleTagsExplorerDialog {
     }
 
     public onAdd(block: any) {
-        const history = this.histories.find(item => item.target === block.policyId + '#' + block.id);
-
-        console.log(history);
-        console.log(this.histories);
-        console.log(block);
-        
+        const history = this.histories.find(item => item.target === this.commonHistory.target && item.linkedItems.includes(block.id));
         if (history) {
             const dialogRef = this.dialog.open(TagCreateDialog, {
                 width: '570px',
@@ -130,11 +104,6 @@ export class MultipleTagsExplorerDialog {
         this.loading = true;
         this.tagsService.create(tag).subscribe((data) => {
             history.add(data);
-            if (this.tab === 1) {
-                this.select = history.getItem(this.select);
-            } else {
-                this.select = history.getHistory(this.select);
-            }
             history.updateItems();
             setTimeout(() => {
                 this.loading = false;
@@ -148,40 +117,13 @@ export class MultipleTagsExplorerDialog {
         });
     }
 
-    private createMultiple(tag: any, histories: TagsHistory[]) {
-        for (const history of histories) {
-            tag = history.create(tag);
-            this.loading = true;
-            this.tagsService.create(tag).subscribe((data) => {
-                history.add(data);
-                if (this.tab === 1) {
-                    this.select = history.getItem(this.select);
-                } else {
-                    this.select = history.getHistory(this.select);
-                }
-                history.updateItems();
-                setTimeout(() => {
-                    this.loading = false;
-                    this.hasChanges = true;
-                    this.tagsService.tagsUpdated$.next();
-                }, 500);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-                this.hasChanges = false;
-            });
-        }
-    }
-
-
-    public onDelete($event: MouseEvent, item: TagItem, history: TagsHistory) {
+    private createMultiple(tag: TagItem, histories: TagsHistory[]) {
+        const newTag = this.commonHistory.create(tag);
         this.loading = true;
-        this.tagsService.delete(item.uuid).subscribe((data) => {
-            history.delete(item);
-            if (this.tab === 1) {
-                this.select = history.getItem(this.select);
-            } else {
-                this.select = history.getHistory(this.select);
+        this.tagsService.create(newTag).subscribe((data) => {
+            for (const history of histories) {
+                history.add(data);
+                history.updateItems();
             }
             setTimeout(() => {
                 this.loading = false;
@@ -200,11 +142,6 @@ export class MultipleTagsExplorerDialog {
         this.tagsService.synchronization(history.entity, history.target).subscribe((data) => {
             history.setData(data.tags);
             history.setDate(data.refreshDate);
-            if (this.tab === 1) {
-                this.select = history.getItem(this.select);
-            } else {
-                this.select = history.getHistory(this.select);
-            }
             this.setTime(history.time);
             setTimeout(() => {
                 this.loading = false;
@@ -232,14 +169,38 @@ export class MultipleTagsExplorerDialog {
         return Array.isArray(this.getHistoryItems(block)) && this.getHistoryItems(block).length > 0
     }
 
-    public getHistoryItems(block: any): TagMapItem[] {
-        const history = this.histories.find(item => item.target === block.policyId + '#' + block.id);
-        return history?.items || [];
+    public getHistory(block: any): TagsHistory | undefined {
+        const history = this.histories.find(item => item.linkedItems.includes(block.id));
+        return history;
     }
-    
-    public onTagDelete(block: any) {
-        console.log(block);
-        
+
+    public getHistoryItems(block: any): TagItem[] {
+        const history = this.histories.find(item => item.linkedItems.includes(block.id));
+        return history?.items.reduce((result: TagItem[], items) => {
+            return result.concat(items.items || []);
+        }, []) || [];
+    }
+
+    public onTagDelete(block: any, item: TagItem) {
+        const history = this.getHistory(block);
+        if (!history) {
+            return;
+        }
+
+        this.loading = true;
+        this.tagsService.delete(item.uuid).subscribe((data) => {
+            this.histories.filter(history => history)
+            history.delete(item);
+            setTimeout(() => {
+                this.loading = false;
+                this.hasChanges = true;
+                this.tagsService.tagsUpdated$.next();
+            }, 500);
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+            this.hasChanges = false;
+        });
     }
 
     public onAddForAllSelected() {

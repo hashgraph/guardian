@@ -52,6 +52,12 @@ export class Tag extends RestoreEntity {
     localTarget?: string;
 
     /**
+     * Linked Items
+     */
+    @Property({ nullable: true })
+    linkedItems?: string[];
+
+    /**
      * Target ID
      */
     @Property({ nullable: true })
