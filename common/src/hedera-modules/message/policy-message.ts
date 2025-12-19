@@ -75,7 +75,7 @@ export class PolicyMessage extends Message {
      * Records Topic Id
      */
     public recordsTopicId: string;
-    
+
     /**
      * Comments Topic Id
      */

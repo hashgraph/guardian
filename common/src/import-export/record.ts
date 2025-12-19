@@ -129,7 +129,6 @@ export class RecordImportExport {
     results?: IRecordResult[]): Promise<JSZip> {
         const baseTime = record.time ? Number(record.time) : Date.now();
 
-
         const components: IRecordComponents = {
             records: [record],
             results: results || [],
@@ -236,7 +235,6 @@ export class RecordImportExport {
         }
         return results;
     }
-
 
     /**
      * Load record results

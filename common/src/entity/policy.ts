@@ -261,7 +261,6 @@ export class Policy extends BaseEntity {
     @Property({ nullable: true })
     actionsTopicId?: string;
 
-
     /**
      * RecordsTopicId
      */
