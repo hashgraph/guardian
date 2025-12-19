@@ -235,7 +235,9 @@ function reorderImportedRecords(importedRecords: RecordEntity[]): RecordEntity[]
     const fixed = new Set<number>();
     for (let i = 0; i < n; i++) {
         const r: any = importedRecords[i];
-        if (!r) continue;
+        if (!r) {
+            continue;
+        }
         if (r.recordActionId === null || r.recordActionId === undefined) {
             out[i] = importedRecords[i];
             fixed.add(i);
@@ -247,8 +249,12 @@ function reorderImportedRecords(importedRecords: RecordEntity[]): RecordEntity[]
 
     for (let i = 0; i < n; i++) {
         const r: any = importedRecords[i];
-        if (!r) continue;
-        if (r.recordActionId === null || r.recordActionId === undefined) continue;
+        if (!r) {
+            continue;
+        }
+        if (r.recordActionId === null || r.recordActionId === undefined) {
+            continue;
+        }
 
         const key = String(r.recordActionId);
         let g = groups.get(key);
@@ -272,10 +278,14 @@ function reorderImportedRecords(importedRecords: RecordEntity[]): RecordEntity[]
 
     const findSlot = (start: number): number => {
         for (let i = start; i < n; i++) {
-            if (!out[i]) return i;
+            if (!out[i]) {
+                return i;
+            }
         }
         for (let i = 0; i < start; i++) {
-            if (!out[i]) return i;
+            if (!out[i]) {
+                return i;
+            }
         }
         return -1;
     };
@@ -284,7 +294,9 @@ function reorderImportedRecords(importedRecords: RecordEntity[]): RecordEntity[]
         let pos = g.firstIdx;
         for (const rec of g.items) {
             const slot = findSlot(pos);
-            if (slot < 0) break;
+            if (slot < 0) {
+                break;
+            }
             out[slot] = rec;
             pos = slot + 1;
         }
@@ -625,7 +637,6 @@ function buildRunActionsFromImportedRecords(
 
     return enriched.map(({ __order, origin, ...rest }) => rest);
 }
-
 
 interface RunRecordAction {
     method: string;

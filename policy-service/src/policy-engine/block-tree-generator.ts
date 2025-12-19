@@ -242,7 +242,7 @@ export class BlockTreeGenerator extends NatsService {
 
         this.getPolicyMessages(PolicyEvents.MRV_DATA, policyId, async (msg: any) => {
             const { data } = msg;
-            
+
             // <-- Record
             await RecordUtils.RecordExternalData(policyId, data);
             // Record -->

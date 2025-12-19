@@ -208,7 +208,6 @@ export class PolicyApi {
         }
     }
 
-
     /**
      * Return a list of all policies with imported records
      */

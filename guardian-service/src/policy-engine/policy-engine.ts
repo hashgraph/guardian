@@ -1239,7 +1239,6 @@ export class PolicyEngine extends NatsService {
                 notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
             }
 
-
             const createRecordsTopic = async () => {
                 notifier.startStep(STEP_CREATE_ACTION_TOPIC);
                 const recordsTopic = await topicHelper.create({

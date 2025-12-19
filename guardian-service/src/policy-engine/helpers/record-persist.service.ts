@@ -34,7 +34,7 @@ export class RecordPersistService {
             hederaOptions,
             userFull,
         } = data;
-        
+
         try {
             let topicConfig: TopicConfig;
             let operatorId: string;
@@ -54,8 +54,8 @@ export class RecordPersistService {
                 dryRun = hederaOptions.dryRun ?? null;
 
                 if (!policyMessageId) {
-                    const policy = await DatabaseServer.getPolicyById(payload.policyId) as Policy;
-                    policyMessageId = policy?.messageId || null;
+                    const policyById = await DatabaseServer.getPolicyById(payload.policyId) as Policy;
+                    policyMessageId = policyById?.messageId || null;
                 }
             } else {
                 if (!policy || !policy.recordsTopicId || !policy.owner) {
