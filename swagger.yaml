@@ -20400,10 +20400,17 @@ components:
           type: array
           items:
             type: string
+        linkedItems:
+          example:
+            - '0000000000.000000001'
+          type: array
+          items:
+            type: string
       required:
         - entity
         - target
         - targets
+        - linkedItems
     TagMapDTO:
       type: object
       properties:
