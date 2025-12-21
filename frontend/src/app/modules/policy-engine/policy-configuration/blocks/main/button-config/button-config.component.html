@@ -127,6 +127,81 @@
             </td>
         </tr>
 
+        <tr class="propRow">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName"
+                pTooltip="Read visible buttons"
+                tooltipPosition="top"
+                [tooltipOptions]="{showDelay: 300}">
+                Use uiClassState (Read)
+            </td>
+            <td class="propRowCell">
+                <p-checkbox
+                    [(ngModel)]="button.uiClassStateRead"
+                    [binary]="true"
+                    [readonly]="readonly"
+                    (blur)="onSave()"
+                    [style]="{marginLeft: '8px'}"
+                ></p-checkbox>
+            </td>
+        </tr>
+
+        <tr class="propRow">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName"
+                pTooltip="Write visible buttons"
+                tooltipPosition="top"
+                [tooltipOptions]="{showDelay: 300}">
+                Use uiClassState (Write)
+            </td>
+            <td class="propRowCell">
+                <p-checkbox
+                    [(ngModel)]="button.uiClassStateWrite"
+                    [binary]="true"
+                    [readonly]="readonly"
+                    (blur)="onSave()"
+                    [style]="{marginLeft: '8px'}"
+                ></p-checkbox>
+            </td>
+        </tr>
+
+        <tr class="propRow">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName"
+                pTooltip="List of Button Tag values"
+                tooltipPosition="top"
+                [tooltipOptions]="{showDelay: 300}">
+                Visible Buttons
+            </td>
+            <td class="propRowCell">
+                <input
+                    class="prop-input"
+                    [(ngModel)]="button.setVisibleButtons"
+                    [readonly]="readonly"
+                    (blur)="onSave()"
+                >
+            </td>
+        </tr>
+
+        <tr class="propRow">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName"
+                pTooltip="Show this button when localStorage is empty"
+                tooltipPosition="top"
+                [tooltipOptions]="{showDelay: 300}">
+                Default Visible (when LS empty)
+            </td>
+            <td class="propRowCell">
+                <p-checkbox
+                    [(ngModel)]="button.uiClassStateDefaultVisible"
+                    [binary]="true"
+                    [readonly]="readonly"
+                    (blur)="onSave()"
+                    [style]="{marginLeft: '8px'}"
+                ></p-checkbox>
+            </td>
+        </tr>
+
         <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], 'filtersGroup')"
                 [attr.collapse]="propHidden.buttons[i].filtersGroup">
