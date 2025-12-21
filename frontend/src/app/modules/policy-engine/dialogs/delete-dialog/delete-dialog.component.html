@@ -4,6 +4,13 @@
     </div>
 
     <div class="confirmation-text">{{ notificationText }}</div>
+    <div *ngIf="itemNames && itemNames.length && itemNames.length >= 0" class="confirmation-text">
+        <ul>
+            <li *ngFor="let item of itemNames">
+                <p>{{ item }}</p>
+            </li>
+        </ul>
+    </div>
 </div>
 
 <div class="dialog-footer">

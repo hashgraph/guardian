@@ -17,6 +17,13 @@
     align-content: center;
 }
 
+.checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
 .group-container {
     margin-bottom: 18px;
 

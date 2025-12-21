@@ -11,6 +11,7 @@ import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Retirement block
@@ -57,7 +58,8 @@ export class RetirementBlock {
         token: any,
         data: any,
         ref: AnyBlockType,
-        serialNumbers?: number[]
+        serialNumbers?: number[],
+        actionStatusId?: string,
     ): Promise<VcDocument> {
         const vcHelper = new VcHelper();
         const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.WIPE_TOKEN);
@@ -69,7 +71,7 @@ export class RetirementBlock {
             amount: amount.toString(),
             ...(serialNumbers && { serialNumbers: serialNumbers.join(',') })
         }
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatusId);
         const wipeVC = await vcHelper.createVerifiableCredential(
             vcSubject,
             didDocument,
@@ -115,7 +117,8 @@ export class RetirementBlock {
         user: PolicyUser,
         targetAccount: string,
         relayerAccount: string,
-        userId: string | null
+        userId: string | null,
+        actionStatus: RecordActionStep
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
@@ -123,7 +126,7 @@ export class RetirementBlock {
         const policyOwnerHederaCred = await policyOwner.loadHederaCredentials(ref, userId);
         const policyOwnerSignOptions = await policyOwner.loadSignOptions(ref, userId);
 
-        const uuid: string = await ref.components.generateUUID();
+        const uuid: string = await ref.components.generateUUID(actionStatus?.id);
 
         let serialNumbers: number[] = []
         let tokenValue: number = 0;
@@ -192,7 +195,7 @@ export class RetirementBlock {
             [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         }
 
-        const wipeVC = await this.createWipeVC(policyOwnerDidDocument, token, tokenAmount, ref, serialNumbers);
+        const wipeVC = await this.createWipeVC(policyOwnerDidDocument, token, tokenAmount, ref, serialNumbers, actionStatus?.id);
         const vcs = [].concat(documents, wipeVC);
         const vp = await this.createVP(policyOwnerDidDocument, uuid, vcs);
 
@@ -221,7 +224,7 @@ export class RetirementBlock {
                 interception: null
             });
 
-        const vcDocument = PolicyUtils.createVC(ref, user, wipeVC);
+        const vcDocument = PolicyUtils.createVC(ref, user, wipeVC, actionStatus?.id);
         vcDocument.type = DocumentCategoryType.RETIREMENT;
         vcDocument.schema = `#${wipeVC.getSubjectType()}`;
         vcDocument.messageId = vcMessageResult.getId();
@@ -249,7 +252,7 @@ export class RetirementBlock {
                 interception: null
             });
 
-        const vpDocument = PolicyUtils.createVP(ref, user, vp);
+        const vpDocument = PolicyUtils.createVP(ref, user, vp, actionStatus?.id);
         vpDocument.type = DocumentCategoryType.RETIREMENT;
         vpDocument.messageId = vpMessageResult.getId();
         vpDocument.topicId = vpMessageResult.getTopicId();
@@ -377,12 +380,13 @@ export class RetirementBlock {
             docOwner,
             targetAccount,
             relayerAccount,
-            event?.user?.userId
+            event?.user?.userId,
+            event.actionStatus
         );
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, docOwner, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data, event.actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, docOwner, null, event.actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data, event.actionStatus);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, docOwner, {
             tokenId: token.tokenId,

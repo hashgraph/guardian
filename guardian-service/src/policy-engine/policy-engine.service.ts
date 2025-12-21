@@ -20,6 +20,7 @@ import {
     MessageType,
     NatsService,
     NewNotifier,
+    NotificationStep,
     PinoLogger,
     Policy,
     PolicyAction,
@@ -71,6 +72,7 @@ import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
 import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
 import { PolicyCommentsUtils } from './policy-comments-utils.js';
+import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
 
 /**
  * PolicyEngineChannel
@@ -279,6 +281,26 @@ export class PolicyEngineService {
                     }
                     default:
                         throw new Error('Unknown type');
+                }
+            })
+
+        this.channel.getMessages(PolicyEvents.RECORD_PERSIST_STEP,
+            async (msg: PersistStepPayload) => {
+            const {
+                policyMessageId,
+                payload,
+                hederaOptions,
+                userFull
+            } = msg;
+                try {
+                    await RecordPersistService.persistStep({
+                        policyMessageId,
+                        payload,
+                        hederaOptions,
+                        userFull
+                    });
+                } catch (error: any) {
+                    console.error(`Error persisting record step for policy ${payload.policyId}`, error);
                 }
             })
 
@@ -751,6 +773,11 @@ export class PolicyEngineService {
                     const userFull = await (new Users()).getUserById(userDid, owner.id);
                     await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
                 }
+
+                if (policy.status !== PolicyStatus.PUBLISH && policy.status !== PolicyStatus.DISCONTINUED) {
+                    result.withRecords = !!policy.autoRecordSteps;
+                }
+
                 return new MessageResponse(result);
             });
 
@@ -837,6 +864,36 @@ export class PolicyEngineService {
                         await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
                     }
                     return new MessageResponse({ policies, count });
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Get policies with imported records
+         */
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICIES_WITH_IMPORTED_RECORDS,
+            async (msg: { currentPolicyId: string }) => {
+                try {
+                    const policies = await DatabaseServer.getPolicies({
+                        id: { $ne: msg.currentPolicyId },
+                        status: {
+                            $in: [
+                                PolicyStatus.DRY_RUN,
+                                PolicyStatus.DRAFT,
+                                PolicyStatus.DEMO,
+                                PolicyStatus.VIEW,
+                            ]
+                        },
+                        recordsTopicId: {
+                            $ne: null,
+                        },
+                        autoRecordSteps: true,
+                    }, {
+                        fields: ['id', 'name', 'messageId']
+                    });
+
+                    return new MessageResponse(policies);
                 } catch (error) {
                     return new MessageError(error);
                 }
@@ -1067,6 +1124,47 @@ export class PolicyEngineService {
                 return new MessageResponse(task);
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DELETE_POLICIES_ASYNC,
+            async (msg: { policyIds: string[], owner: IOwner, task: any }): Promise<IMessageResponse<any>> => {
+                const { policyIds, owner, task } = msg;
+                const notifier = await NewNotifier.create(task);
+                RunFunctionAsync(async () => {
+
+                    const policies = await DatabaseServer.getPolicies({ id: { $in: policyIds }, owner: owner.owner });
+                    if (!policies || policies?.length <= 0) {
+                        throw new Error('Policy not found');
+                    }
+
+                    const stepMap = new Map<string, NotificationStep>();
+                    const results = new Map<string, boolean>();
+
+                    for (const policy of policies) {
+                        const STEP_DELETE_TOKEN = 'DELETE POLICY (' + policy.name + ')';
+                        const deletePolicyStep = notifier.addStep(STEP_DELETE_TOKEN);
+                        stepMap.set(policy.id, deletePolicyStep);
+                    }
+
+                    for (const policy of policies) {
+                        await this.policyEngine.accessPolicy(policy, owner, 'delete');
+
+                        const deletePolicyStep = stepMap.get(policy.id);
+
+                        if (policy.status === PolicyStatus.DEMO) {
+                            const result = await this.policyEngine.deleteDemoPolicy(policy, owner, deletePolicyStep, logger);
+                            results.set(policy.id, result);
+                        } else {
+                            const result = await this.policyEngine.deletePolicy(policy, owner, deletePolicyStep, logger);
+                            results.set(policy.id, result);
+                        }
+                    }
+
+                    notifier.result(results);
+                }, async (error) => {
+                    notifier.fail(error);
+                });
+                return new MessageResponse(task);
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.SAVE_POLICIES,
             async (msg: { policyId: string, model: Policy, owner: IOwner }): Promise<IMessageResponse<Policy>> => {
                 try {
@@ -1091,7 +1189,8 @@ export class PolicyEngineService {
                 policyId: string,
                 options: {
                     policyVersion: string,
-                    policyAvailability?: PolicyAvailability
+                    policyAvailability?: PolicyAvailability,
+                    recordingEnabled?: boolean,
                 },
                 owner: IOwner
             }): Promise<IMessageResponse<any>> => {
@@ -1123,7 +1222,8 @@ export class PolicyEngineService {
                 policyId: string,
                 options: {
                     policyVersion: string,
-                    policyAvailability?: PolicyAvailability
+                    policyAvailability?: PolicyAvailability,
+                    recordingEnabled?: boolean,
                 },
                 owner: IOwner,
                 task: any
@@ -1345,7 +1445,6 @@ export class PolicyEngineService {
                             level: 3,
                         },
                     });
-                    console.log('File size: ' + file.byteLength);
                     return new BinaryMessageResponse(file);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1521,6 +1620,7 @@ export class PolicyEngineService {
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
                     policyToImport.similar = similarPolicies;
+                    policyToImport.withRecords = !!policyToImport.policy.autoRecordSteps;
                     return new MessageResponse(policyToImport);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1544,6 +1644,7 @@ export class PolicyEngineService {
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
                     policyToImport.similar = similarPolicies;
+                    policyToImport.withRecords = !!policyToImport.policy.autoRecordSteps;
                     notifier.result(policyToImport);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1583,6 +1684,7 @@ export class PolicyEngineService {
                             .setComponents(policyToImport)
                             .setUser(owner)
                             .setParentPolicyTopic(versionOfTopicId)
+                            .setImportRecords(metadata?.importRecords)
                             .setMetadata(metadata),
                         notifier.getStep(STEP_IMPORT_POLICY),
                         owner.id
@@ -1647,6 +1749,7 @@ export class PolicyEngineService {
                                 .setComponents(policyToImport)
                                 .setUser(owner)
                                 .setParentPolicyTopic(versionOfTopicId)
+                                .setImportRecords(metadata?.importRecords)
                                 .setMetadata(metadata),
                             notifier.getStep(STEP_IMPORT_POLICY),
                             owner.id

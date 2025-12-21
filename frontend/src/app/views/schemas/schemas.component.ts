@@ -13,7 +13,7 @@ import {
     TagType,
     UserPermissions
 } from '@guardian/interfaces';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, Subject, takeUntil } from 'rxjs';
 //services
 import { ProfileService } from '../../services/profile.service';
 import { SchemaService } from '../../services/schema.service';
@@ -136,6 +136,10 @@ export class SchemaConfigComponent implements OnInit {
     public textSearch: any;
 
     public element: any = {};
+
+    public isAllSelected: boolean = false;
+    public selectedItems: any[] = [];
+    public selectedItemIds: string[] = [];
 
     public onMenuClick(event: MouseEvent, overlayPanel: any, menuData: any): void {
         this.element = menuData;
@@ -328,6 +332,8 @@ export class SchemaConfigComponent implements OnInit {
     public ifDraft(element: Schema): boolean {
         return (element.status === 'DRAFT' || element.status === 'ERROR');
     }
+        
+    private _destroy$ = new Subject<void>();
 
     ngOnInit() {
         const type = this.route.snapshot.queryParams['type'];
@@ -335,6 +341,11 @@ export class SchemaConfigComponent implements OnInit {
         this.type = this.getType(type);
         this.currentTopic = topic && topic !== 'all' ? topic : '';
         this.loadProfile();
+    }
+
+    ngOnDestroy(): void {
+        this._destroy$.next();
+        this._destroy$.complete();
     }
 
     private getType(type: string): SchemaType {
@@ -614,6 +625,7 @@ export class SchemaConfigComponent implements OnInit {
                 element.__toolName = this.toolNameByTopic[element.topicId] || ' - ';
             }
             this.count = (schemasResponse.headers.get('X-Total-Count') || this.page.length) as number;
+            this.checkIsAllSelected();
             this.loadTagsData();
         }, (e) => {
             this.loadError(e);
@@ -844,8 +856,13 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Tool:
             case SchemaType.Policy:
             default: {
-                this.schemaService.delete(id, includeChildren).subscribe((data: any) => {
-                    this.loadSchemas();
+                this.schemaService.delete(id, includeChildren).subscribe(result => {
+                    const { taskId, expectation } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
                 }, (e) => {
                     this.loadError(e);
                 });
@@ -1096,23 +1113,16 @@ export class SchemaConfigComponent implements OnInit {
 
     private onDeleteSchema(element: Schema, parents?: ISchema[]): void {
         if (!Array.isArray(parents) || !parents.length) {
-            this.schemaService.getSchemaDeletionPreview(element.id, element.topicId).subscribe((result: ISchemaDeletionPreview) => {
+            this.schemaService.getSchemaDeletionPreview([element.id]).subscribe((result: ISchemaDeletionPreview) => {
                 const dialogRef = this.dialogService.open(SchemaDeleteDialogComponent, {
                     showHeader: false,
                     width: '640px',
                     styleClass: 'guardian-dialog',
                     data: {
                         header: 'Delete Schema',
-                        text: `Are you sure want to delete schema (${element.name})?`,
+                        itemNames: [element.name],
                         deletableChildren: result.deletableChildren,
-                        blockedChildren: result.blockedChildren,
-                        buttons: [{
-                            name: 'Close',
-                            class: 'secondary'
-                        }, {
-                            name: 'Delete',
-                            class: 'delete'
-                        }]
+                        blockedChildren: result.blockedChildren
                     },
                 });
                 dialogRef.onClose.subscribe((result: any) => {
@@ -1492,5 +1502,127 @@ export class SchemaConfigComponent implements OnInit {
             }, (error) => {
                 this.loading = false;
             });
+    }
+
+    public canDisplayColumn(columnName: string): boolean {
+        switch (columnName) {
+            case 'select':
+                if (this.type === SchemaType.System) {
+                    return (
+                        this.isConfirmed &&
+                        this.user.SCHEMAS_SYSTEM_SCHEMA_DELETE
+                    );
+                } else {
+                    return (
+                        this.isConfirmed &&
+                        this.user.SCHEMAS_SCHEMA_DELETE
+                    );
+                }
+        
+            default:
+                return true;
+        }
+    }
+    
+    public onSelectAllItems(event: any) {
+        if (event.checked) {
+            this.selectedItems = [...this.selectedItems, ...this.page.filter((item: any) => this.ifCanDelete(item) && !this.selectedItemIds.includes(item.id))];
+            this.selectedItemIds = this.selectedItems.map(item => item.id);
+        } else {
+            this.selectedItems = this.selectedItems.filter(item => !this.page.some(schema => item.id === schema.id));
+            this.selectedItemIds = this.selectedItems.map(item => item.id);
+        }
+
+        this.checkIsAllSelected();
+    }
+
+    public onSelectItem(item: any) {
+        const index = this.selectedItemIds.indexOf(item.id);
+        if (index === -1) {
+            this.selectedItems.push(item);
+            this.selectedItemIds.push(item.id);
+        } else {
+            this.selectedItems.splice(index, 1);
+            this.selectedItemIds.splice(index, 1);
+        }
+
+        this.checkIsAllSelected();
+    }
+
+    public checkIsAllSelected() {
+        const canDeleteItems = this.page.filter((schema: any) => this.ifCanDelete(schema));
+        this.isAllSelected = canDeleteItems?.length > 0;
+
+        canDeleteItems.forEach((schema: any) => {
+            if (!this.selectedItemIds.includes(schema.id)) {
+                this.isAllSelected = false;
+            }
+        })
+    }
+
+    public isSelected(item: any) {
+        return this.selectedItemIds.includes(item.id);
+    }
+
+    public isAnyItemSelected() {
+        return this.selectedItems.length > 0;
+    }
+
+    public isAnyDeleteDisabled() {
+        return !this.page.some((item: any) => this.ifCanDelete(item));
+    }
+
+    public isDeleteDisabled(item: any) {
+        return !this.ifCanDelete(item);
+    }
+
+    public onDeleteItems() {
+        if (this.selectedItems?.length === 1) {
+            this.onCheckDeleteSchema(this.selectedItems[0]);
+        } else if (this.selectedItems?.length >= 2) {
+            this.loading = true;
+            this.schemaService.getSchemaDeletionPreview(this.selectedItems.map(item => item.id)).subscribe((result: ISchemaDeletionPreview) => {
+                this.loading = false;
+                const dialogRef = this.dialogService.open(SchemaDeleteDialogComponent, {
+                    showHeader: false,
+                    width: '640px',
+                    styleClass: 'guardian-dialog',
+                    data: {
+                        header: 'Delete Schema',
+                        text: `Are you sure want to delete these schemas?`,
+                        itemNames: this.selectedItems
+                            .filter(item => !result.blockedChildren.some(block => item.uuid === block.schema.uuid))
+                            .map(item => item.name),
+                        deletableChildren: result.deletableChildren,
+                        blockedChildren: result.blockedChildren
+                    },
+                });
+                dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: any) => {
+                    if (result.action === 'Delete') {
+                        this.loading = true;
+                        this.schemaService.deleteMultiple(this.selectedItems.map(item => item.id), result.includeChildren)
+                            .pipe(takeUntil(this._destroy$)).subscribe(
+                                async (result) => {
+                                    const { taskId, expectation } = result;
+                                    this.router.navigate(['task', taskId], {
+                                        queryParams: {
+                                            last: btoa(location.href)
+                                        }
+                                    });
+                                },
+                                (e) => {
+                                    this.loadError(e);
+                                }
+                            );
+                    }
+                });
+            })
+        }
+    }
+
+    public onClearSelection() {
+        this.selectedItems = [];
+        this.selectedItemIds = [];
+        this.isAllSelected = false;
     }
 }

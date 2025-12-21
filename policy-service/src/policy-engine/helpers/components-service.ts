@@ -6,9 +6,11 @@ import {
     Policy as PolicyCollection,
     PolicyTool as PolicyToolCollection,
     Schema as SchemaCollection,
+    TopicConfig,
+    Users,
     VcHelper
 } from '@guardian/common';
-import { GenerateUUIDv4, PolicyHelper, SchemaEntity } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyHelper, PolicyStatus, SchemaEntity } from '@guardian/interfaces';
 import { PrivateKey } from '@hashgraph/sdk';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
@@ -28,6 +30,20 @@ export class ComponentsService {
      * Policy Owner
      */
     public readonly owner: string;
+    /**
+     * Policy Owner Id
+     */
+    public readonly ownerId: string | null;
+
+    /**
+     * Policy records topic
+     */
+    public readonly recordsTopicId: string | null;
+
+    /**
+     * Policy message id
+     */
+    public readonly policyMessageId: string | null;
     /**
      * Policy ID
      */
@@ -53,6 +69,10 @@ export class ComponentsService {
      */
     private readonly schemasByType: Map<string, SchemaCollection>;
     /**
+     * Automatic recording flag
+     */
+    private readonly _autoRecordingEnabled: boolean;
+    /**
      * Root block
      */
     private root: IPolicyBlock;
@@ -69,8 +89,12 @@ export class ComponentsService {
 
     constructor(policy: PolicyCollection, policyId: string) {
         this.owner = policy.owner;
+        this.ownerId = policy.ownerId || null;
         this.policyId = policyId;
         this.topicId = policy.topicId;
+        this.recordsTopicId = policy.recordsTopicId || null;
+        this.policyMessageId = policy.messageId || null;
+        this._autoRecordingEnabled = policy.status === PolicyStatus.PUBLISH && !!policy.autoRecordSteps;
         if (PolicyHelper.isDryRunMode(policy)) {
             this.dryRunId = policyId;
         } else {
@@ -82,9 +106,58 @@ export class ComponentsService {
         this.policyRoles = [];
         this.schemasByID = new Map();
         this.schemasByType = new Map();
-        this._recordingController = null;
+        if (this._autoRecordingEnabled) {
+            this._recordingController = new Recording(this.policyId, this.owner, {
+                mode: 'auto',
+                uploadToIpfs: true,
+                policyMessageId: this.policyMessageId
+            });
+        } else {
+            this._recordingController = null;
+        }
         this._runningController = null;
         this.logger = new PinoLogger();
+    }
+    public get autoRecordingEnabled(): boolean {
+        return this._autoRecordingEnabled;
+    }
+
+    private async prepareRecordingTransport(): Promise<void> {
+        if (!this._recordingController) {
+            return;
+        }
+        if (!this.recordsTopicId) {
+            return;
+        }
+        try {
+            const users = new Users();
+            const ownerAccount = await users.getHederaAccount(this.owner, this.ownerId);
+            const topicRow = await DatabaseServer.getTopicById(this.recordsTopicId);
+            const topicConfig = topicRow
+                ? await TopicConfig.fromObject(topicRow, false, this.ownerId)
+                : null;
+
+            this._recordingController.setHederaOptions({
+                topicId: this.recordsTopicId,
+                submitKey: topicConfig?.submitKey?.toString?.() ?? null,
+                operatorId: ownerAccount.hederaAccountId,
+                operatorKey: ownerAccount.hederaAccountKey,
+                signOptions: ownerAccount.signOptions,
+                dryRun: this.dryRunId
+            }, this.policyMessageId);
+        } catch (error: any) {
+            this.logger.error(
+                `prepareRecordingTransport failed: ${error?.message || error}`,
+                ['RECORDING', this.policyId],
+                this.ownerId
+            );
+        }
+    }
+
+    public async ensureAutoStartRecord(): Promise<void> {
+        if (this._autoRecordingEnabled && this._recordingController) {
+            await this.prepareRecordingTransport();
+        }
     }
 
     /**
@@ -215,13 +288,13 @@ export class ComponentsService {
     /**
      * Generate new UUID
      */
-    public async generateUUID(): Promise<string> {
+    public async generateUUID(actionStatusId?: string): Promise<string> {
         if (this._runningController) {
             return await this._runningController.nextUUID();
         }
         const uuid = GenerateUUIDv4();
         if (this._recordingController) {
-            await this._recordingController.generateUUID(uuid);
+            await this._recordingController.generateUUID(uuid, actionStatusId);
         }
         return uuid;
     }
@@ -229,7 +302,7 @@ export class ComponentsService {
     /**
      * Generate new DID
      */
-    public async generateDID(topicId: string): Promise<HederaDidDocument> {
+    public async generateDID(topicId: string, actionStatusId?: string): Promise<HederaDidDocument> {
         if (this._runningController) {
             return await this._runningController.nextDID(topicId);
         } else {
@@ -237,7 +310,7 @@ export class ComponentsService {
             const vcHelper = new VcHelper();
             const didDocument = await vcHelper.generateNewDid(topicId, privateKey);
             if (this._recordingController) {
-                await this._recordingController.generateDidDocument(didDocument);
+                await this._recordingController.generateDidDocument(didDocument, actionStatusId);
             }
             return didDocument;
         }

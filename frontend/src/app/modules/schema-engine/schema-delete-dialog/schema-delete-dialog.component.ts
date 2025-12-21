@@ -11,12 +11,9 @@ export class SchemaDeleteDialogComponent implements OnInit {
     public loading = true;
     public header: string;
     public text: string;
-    public buttons: {
-        name: string,
-        class: string,
-    }[];
     public includeChildren: boolean = false;
 
+    public itemNames: string[] = [];
     public deletableChildren: ISchema[] = [];
     public blockedChildren: IChildSchemaDeletionBlock[] = [];
 
@@ -26,8 +23,8 @@ export class SchemaDeleteDialogComponent implements OnInit {
     ) {
         this.header = this.config.data.header;
         this.text = this.config.data.text;
-        this.buttons = this.config.data.buttons;
 
+        this.itemNames = this.config.data.itemNames;
         this.deletableChildren = this.config.data?.deletableChildren?.map((item: any) => item.name);
         this.blockedChildren = this.config.data?.blockedChildren?.map((item: any) => ({
             schema: item.schema,
@@ -39,7 +36,11 @@ export class SchemaDeleteDialogComponent implements OnInit {
         this.loading = false;
     }
 
-    onClick(button?: any): void {
-        this.ref.close({ action: button?.name, includeChildren: this.includeChildren });
+    onClose(): void {
+        this.ref.close({ action: 'Close', includeChildren: this.includeChildren });
+    }
+
+    onDelete(): void {
+        this.ref.close({ action: 'Delete', includeChildren: this.includeChildren });
     }
 }

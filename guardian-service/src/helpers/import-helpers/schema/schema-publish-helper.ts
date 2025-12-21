@@ -85,7 +85,7 @@ export function generatePackage(options: {
         Array.from(defsArray.values()),
         additionalContexts,
         {
-            vocab: name
+            vocab: 'https://w3id.org/traceability/#undefinedTerm'
         }
     );
 

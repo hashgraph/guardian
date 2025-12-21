@@ -33,7 +33,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
-import { DeletePolicyDialogComponent } from '../dialogs/delete-policy-dialog/delete-policy-dialog.component';
+import { DeleteDialogComponent } from '../dialogs/delete-dialog/delete-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
 import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
@@ -85,7 +85,13 @@ class MenuButton {
     }
 }
 
-const columns = [{
+const columns = [ {
+    id: 'select',
+    size: '50',
+    permissions: (user: UserPermissions, type: LocationType) => {
+        return user.POLICIES_POLICY_DELETE;
+    }
+},  {
     id: 'name',
     permissions: (user: UserPermissions, type: LocationType) => {
         return true;
@@ -215,6 +221,11 @@ export class PoliciesComponent implements OnInit {
     public noFilterResults: boolean = false;
     private columns: string[] = [];
     private columnSize = new Map<string, string | undefined>();
+
+    public isAllSelected: boolean = false;
+    public selectedItems: any[] = [];
+    public selectedItemIds: string[] = [];
+
     private publishMenuOption = [
         {
             id: 'Publish',
@@ -792,6 +803,8 @@ export class PoliciesComponent implements OnInit {
                     this.columnSize.set('instance', '150')
                 }
 
+                this.checkIsAllSelected();
+
                 this.loadPolicyTags(this.policies);
             }, (e) => {
                 this.loading = false;
@@ -927,7 +940,7 @@ export class PoliciesComponent implements OnInit {
 
     private publish(
         element: any,
-        options: { policyVersion: string, policyAvailability: PolicyAvailability }
+        options: { policyVersion: string, policyAvailability: PolicyAvailability, recordingEnabled: boolean }
     ) {
         this.loading = true;
         this.policyEngineService.pushPublish(element.id, options).pipe(takeUntil(this._destroy$)).subscribe(
@@ -963,7 +976,7 @@ export class PoliciesComponent implements OnInit {
     }
 
     public deletePolicy(policy?: any) {
-        const dialogRef = this.dialogService.open(DeletePolicyDialogComponent, {
+        const dialogRef = this.dialogService.open(DeleteDialogComponent, {
             header: 'Delete Policy',
             width: '720px',
             styleClass: 'custom-dialog',
@@ -1015,7 +1028,7 @@ export class PoliciesComponent implements OnInit {
     }
 
     public deleteAllSchemas(policy?: any) {
-        const dialogRef = this.dialogService.open(DeletePolicyDialogComponent, {
+        const dialogRef = this.dialogService.open(DeleteDialogComponent, {
             header: 'Delete Schemas',
             width: '720px',
             styleClass: 'custom-dialog',
@@ -1165,11 +1178,12 @@ export class PoliciesComponent implements OnInit {
                 const versionOfTopicId = result.versionOfTopicId || null;
                 const demo = result.demo || false;
                 const tools = result.tools;
+                const importRecords = !!result.importRecords;
 
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService
-                        .pushImportByMessage(data, versionOfTopicId, { tools }, demo)
+                        .pushImportByMessage(data, versionOfTopicId, { tools, importRecords }, demo)
                         .pipe(takeUntil(this._destroy$))
                         .subscribe((result) => {
                             const { taskId, expectation } = result;
@@ -1790,5 +1804,124 @@ export class PoliciesComponent implements OnInit {
             },
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => { });
+    }
+
+    public onSelectAllItems(event: any) {
+        if (event.checked) {
+            this.selectedItems = [...this.selectedItems, ...this.policiesList.filter((item: any) => (item.status === PolicyStatus.DRAFT ||
+                 item.status === PolicyStatus.DEMO) && !this.selectedItemIds.includes(item.id))];
+            this.selectedItemIds = this.selectedItems.map(item => item.id);
+        } else {
+            this.selectedItems = this.selectedItems.filter(item => !this.policiesList.some(policy => item.id === policy.id));
+            this.selectedItemIds = this.selectedItems.map(item => item.id);
+        }
+
+        this.checkIsAllSelected();
+    }
+
+    public onSelectItem(item: any) {
+        const index = this.selectedItemIds.indexOf(item.id);
+        if (index === -1) {
+            this.selectedItems.push(item);
+            this.selectedItemIds.push(item.id);
+        } else {
+            this.selectedItems.splice(index, 1);
+            this.selectedItemIds.splice(index, 1);
+        }
+
+        this.checkIsAllSelected();
+    }
+
+    public checkIsAllSelected() {
+        const canDeleteItems = this.policiesList.filter(policy => policy.status === PolicyStatus.DRAFT ||
+            policy.status === PolicyStatus.DEMO);
+        this.isAllSelected = canDeleteItems?.length > 0;
+
+        canDeleteItems.forEach(policy => {
+            if (!this.selectedItemIds.includes(policy.id)) {
+                this.isAllSelected = false;
+            }
+        })
+    }
+
+    public isSelected(item: any) {
+        return this.selectedItemIds.includes(item.id);
+    }
+
+    public isAnyItemSelected() {
+        return this.selectedItems.length > 0;
+    }
+
+    public isAnyDeleteDisabled() {
+        return !this.policiesList.some(item => item.status === PolicyStatus.DRAFT || item.status === PolicyStatus.DEMO);
+    }
+
+    public isDeleteDisabled(item: any) {
+        return item.status !== PolicyStatus.DRAFT && item.status !== PolicyStatus.DEMO;
+    }
+
+    public onDeleteItems() {
+        if (this.selectedItems?.length > 0) {
+            const dialogRef = this.dialogService.open(DeleteDialogComponent, {
+                header: 'Delete Policies',
+                width: '720px',
+                styleClass: 'custom-dialog',
+                data: {
+                    notificationText: 'Are you sure want to delete these policies?',
+                    itemNames: this.selectedItems.map(item => item.name),
+                },
+            });
+            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
+                if (!result) {
+                    return;
+                }
+
+                const policyIds = this.selectedItems.map(item => item.id);
+
+                this.loading = true;
+                this.policyEngineService.pushDeleteMultiple(policyIds)
+                    .pipe(takeUntil(this._destroy$))
+                    .subscribe(
+                        async (result) => {
+                            for (const policyId of policyIds) {
+                                await this.indexedDb.delete(DB_NAME.GUARDIAN, STORES_NAME.POLICY_STORAGE, policyId);
+
+                                const databaseName = DB_NAME.TABLES;
+                                const storeNames = [
+                                    STORES_NAME.FILES_STORE,
+                                    STORES_NAME.DRAFT_STORE
+                                ];
+                                const keyPrefix = `${policyId}__`;
+
+                                await this.indexedDb.clearByKeyPrefixAcrossStores(
+                                    databaseName,
+                                    storeNames,
+                                    keyPrefix
+                                );
+
+                                this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policyId).catch(() =>{
+                                    //
+                                })
+                            }
+
+                            const { taskId, expectation } = result;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href),
+                                },
+                            });
+                        },
+                        (e) => {
+                            this.loading = false;
+                        }
+                    );
+            });
+        }
+    }
+
+    public onClearSelection() {
+        this.selectedItems = [];
+        this.selectedItemIds = [];
+        this.isAllSelected = false;
     }
 }

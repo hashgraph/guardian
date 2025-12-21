@@ -35,6 +35,7 @@ import { PolicyBackupService, PolicyRestoreService } from './restore-service.js'
 import { PolicyActionsService } from './actions-service.js';
 import { PolicyActionsUtils } from './policy-actions/utils.js';
 import { PolicyUtils } from './helpers/utils.js';
+import { RecordActionStep } from './record-action-step.js';
 
 /**
  * Policy tag helper
@@ -1573,9 +1574,10 @@ export class PolicyComponentsUtils {
     private static async _blockSetDataLocal(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
-        data: any
+        data: any,
+        actionStatus?: RecordActionStep
     ): Promise<MessageResponse<any> | MessageError<any>> {
-        const result = await block.setData(user, data, ActionType.COMMON);
+        const result = await block.setData(user, data, ActionType.COMMON, actionStatus);
         return new MessageResponse(result);
     }
 
@@ -1596,9 +1598,11 @@ export class PolicyComponentsUtils {
     private static async _blockSetDataCustom(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
-        data: any
+        data: any,
+        actionStatus?: RecordActionStep
     ): Promise<MessageResponse<any> | MessageError<any>> {
-        const _data = await block.setData(user, data, ActionType.LOCAL);
+        const _data = await block.setData(user, data, ActionType.LOCAL, actionStatus);
+
         const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
         if (controller) {
             const result = await controller.sendAction(block, user, _data);
@@ -1667,15 +1671,17 @@ export class PolicyComponentsUtils {
     public static async blockSetData(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
-        data: any
+        data: any,
+        actionStatus?: RecordActionStep
     ): Promise<MessageResponse<any> | MessageError<any>> {
         const error = await PolicyComponentsUtils._checkRelayerAccount(block, user, data);
         if (error) {
             return new MessageError(error, 500);
         }
+
         if (block.actionType === LocationType.LOCAL) {
             //Action - local, policy - local|remote, user - local|remote
-            return await PolicyComponentsUtils._blockSetDataLocal(block, user, data);
+            return await PolicyComponentsUtils._blockSetDataLocal(block, user, data, actionStatus);
         } else {
             //Action - custom, policy - local|remote, user - remote
             if (user.location === LocationType.REMOTE) {
@@ -1684,14 +1690,14 @@ export class PolicyComponentsUtils {
             if (block.locationType === LocationType.REMOTE) {
                 if (block.actionType === LocationType.CUSTOM) {
                     //Action - custom, policy - remote, user - local
-                    return await PolicyComponentsUtils._blockSetDataCustom(block, user, data);
+                    return await PolicyComponentsUtils._blockSetDataCustom(block, user, data, actionStatus);
                 } else {
                     //Action - remote, policy - remote, user - local
                     return await PolicyComponentsUtils._blockSetDataRemote(block, user, data);
                 }
             } else {
                 //Action - custom | remote, policy - local, user - local
-                return await PolicyComponentsUtils._blockSetDataLocal(block, user, data);
+                return await PolicyComponentsUtils._blockSetDataLocal(block, user, data, actionStatus);
             }
         }
     }

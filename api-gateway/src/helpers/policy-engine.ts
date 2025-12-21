@@ -1,4 +1,4 @@
-import { ExportMessageDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
+import { BasePolicyDTO, ExportMessageDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
@@ -77,6 +77,14 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Get policies with imported records
+     * @param owner
+     */
+    public async getPoliciesWithImportedRecords<T extends BasePolicyDTO[]>(currentPolicyId: string): Promise<T> {
+        return await this.sendMessage<T>(PolicyEngineEvents.GET_POLICIES_WITH_IMPORTED_RECORDS, { currentPolicyId });
+    }
+
+    /**
      * Get Tokens Map
      * @param owner
      * @param status
@@ -142,6 +150,20 @@ export class PolicyEngine extends NatsService {
         task: NewTask
     ): Promise<NewTask> {
         return await this.sendMessage(PolicyEngineEvents.DELETE_POLICY_ASYNC, { policyId, owner, task });
+    }
+
+    /**
+     * Async delete policy
+     * @param policyId Policy identifier
+     * @param owner User
+     * @param task Task
+     */
+    public async deletePoliciesAsync(
+        policyIds: string[],
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(PolicyEngineEvents.DELETE_POLICIES_ASYNC, { policyIds, owner, task });
     }
 
     /**

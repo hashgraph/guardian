@@ -29,6 +29,7 @@ import {
     ExternalEventType
 } from '../interfaces/external-event.js';
 import { TopicId } from '@hashgraph/sdk';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Search Topic Result
@@ -709,7 +710,8 @@ export class ExternalTopicBlock {
         item: ExternalDocument,
         hederaAccount: IHederaCredentials,
         user: PolicyUser,
-        message: VCMessage
+        message: VCMessage,
+        actionStatus: RecordActionStep
     ): Promise<void> {
         const documentRef = await this.getRelationships(ref, user);
 
@@ -743,9 +745,9 @@ export class ExternalTopicBlock {
         }
 
         const state: IPolicyEventState = { data: result };
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(result)
         }));
@@ -762,7 +764,8 @@ export class ExternalTopicBlock {
     private async receiveData(
         item: ExternalDocument,
         user: PolicyUser,
-        userId: string | null
+        userId: string | null,
+        actionStatus: RecordActionStep,
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, item.owner, userId);
@@ -773,7 +776,7 @@ export class ExternalTopicBlock {
             timeStamp: item.lastMessage
         });
         for (const message of messages) {
-            await this.checkMessage(ref, item, hederaCred, user, message);
+            await this.checkMessage(ref, item, hederaCred, user, message, actionStatus);
             item.lastMessage = message.id;
             await ref.databaseServer.updateExternalTopic(item);
         }
@@ -784,7 +787,7 @@ export class ExternalTopicBlock {
      * @param item
      * @private
      */
-    private async runByUser(item: ExternalDocument, userId: string | null): Promise<void> {
+    private async runByUser(item: ExternalDocument, userId: string | null, actionStatus: RecordActionStep): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
         item.status = TaskStatus.Processing;
@@ -793,7 +796,7 @@ export class ExternalTopicBlock {
         const user = await PolicyComponentsUtils.GetPolicyUserByDID(item.owner, null, ref, userId);
         this.updateStatus(ref, item, user);
         try {
-            await this.receiveData(item, user, userId);
+            await this.receiveData(item, user, userId, actionStatus);
             item.status = TaskStatus.Free;
             item.lastUpdate = (new Date()).toISOString();
             await ref.databaseServer.updateExternalTopic(item);
@@ -835,7 +838,7 @@ export class ExternalTopicBlock {
         const items = await ref.databaseServer.getActiveExternalTopics(ref.policyId, ref.uuid);
         for (const item of items) {
             if (item.status === TaskStatus.Free) {
-                await this.runByUser(item, userId);
+                await this.runByUser(item, userId, null);
             }
         }
     }
@@ -851,7 +854,7 @@ export class ExternalTopicBlock {
             PolicyOutputEventType.RefreshEvent
         ]
     })
-    public async setData(user: PolicyUser, data: any): Promise<any> {
+    public async setData(user: PolicyUser, data: any, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         ref.log(`setData`);
 
@@ -968,7 +971,7 @@ export class ExternalTopicBlock {
                     item.status = TaskStatus.Processing;
                     await ref.databaseServer.updateExternalTopic(item);
 
-                    this.runByUser(item, user.userId).then(null, (error) => {
+                    this.runByUser(item, user.userId, actionStatus).then(null, (error) => {
                         item.status = TaskStatus.Error;
                         ref.databaseServer.updateExternalTopic(item);
                         ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);

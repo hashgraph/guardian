@@ -90,11 +90,23 @@
     </div>
 
     <ng-container *ngIf="page && page.length > 0; else noData">
-        <div *ngIf="isAny" class="table-container">
-            <p-table [value]="page">
+        <div *ngIf="isAny" class="guardian-grid-container">
+            <p-table [value]="page"
+                class="guardian-grid-table"
+                [scrollable]="true"
+            >
                 <ng-template pTemplate="header">
-                    <tr>
+                    <tr class="guardian-grid-header">
                         <ng-container *ngIf="type === 'policy'">
+                            <th *ngIf="canDisplayColumn('select')" class="header-cell-text" style="min-width: 140px; max-width: 150px;">
+                                <p-checkbox
+                                    (onChange)="onSelectAllItems($event)"
+                                    [disabled]="isAnyDeleteDisabled()"
+                                    [ngModel]="isAllSelected"
+                                    [binary]="true"
+                                >
+                                </p-checkbox>
+                            </th>
                             <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
                                 Policy
                             </th>
@@ -181,21 +193,30 @@
                     </tr>
                 </ng-template>
                 <ng-template let-schema pTemplate="body">
-                    <tr class="schemas-grid-row" [attr.schema-status]="schema.status">
+                    <tr class="guardian-grid-row" [attr.schema-status]="schema.status">
 
                         <ng-container *ngIf="type === 'policy'">
-                            <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
-                                <a
+                            <td *ngIf="canDisplayColumn('select')" class="first-schema-grid-cell" style="min-width: 140px; max-width: 150px;">
+                                <p-checkbox
+                                    (onChange)="onSelectItem(schema)"
+                                    [disabled]="isDeleteDisabled(schema)"
+                                    [ngModel]="isSelected(schema)"
+                                    [binary]="true"
+                                >
+                                </p-checkbox>
+                            </td>
+                            <td class="row-cell-text col-200">
+                                <a class="text-truncate"
                                     [queryParams]="{ policyId: policyIdByTopic[schema.topicId] }"
                                     [routerLink]="['/policy-configuration']"
                                 >
                                     {{ policyNameByTopic[schema.topicId] }}
                                 </a>
                             </td>
-                            <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
-                                {{ schema.name }}
+                            <td [pTooltip]="schema.name" class="row-cell-text col-200">
+                                <span class="text-truncate">{{ schema.name || '–' }}</span>
                             </td>
-                            <td style="min-width: 140px;">
+                            <td class="row-cell-text">
                                 <ng-container *ngIf="schema.topicId === 'draft'; else topicExplorer">
                                     <span>Draft</span>
                                 </ng-container>
@@ -204,13 +225,13 @@
                                     </hedera-explorer>
                                 </ng-template>
                             </td>
-                            <td style="min-width: 100px;">
-                                {{ schema.version || schema.sourceVersion }}
+                            <td class="row-cell-text">
+                                <span class="text-truncate">{{ schema.version || schema.sourceVersion }}</span>
                             </td>
-                            <td style="min-width: 100px;">
-                                {{ schema.entity }}
+                            <td class="row-cell-text">
+                                <span class="text-truncate">{{ schema.entity }}</span>
                             </td>
-                            <td style="min-width: 185px;">
+                            <td class="row-cell-text" style="min-width: 185px;">
                                 <tags-explorer
                                     *ngIf="user.TAGS_TAG_READ"
                                     [user]="user"
@@ -221,7 +242,7 @@
                                     [service]="tagsService"
                                     [target]="schema.id"></tags-explorer>
                             </td>
-                            <td style="min-width: 100px;">
+                            <td class="row-cell-text" style="min-width: 100px;">
                                 <span [ngSwitch]="schema.status">
                                     <div *ngSwitchCase="'DRAFT'">
                                         <span class="schema-status status-DRAFT">Draft</span>
@@ -246,7 +267,7 @@
                                     </div>
                                 </span>
                             </td>
-                            <td class="last-schema-grid-cell" style="min-width: 140px;">
+                            <td class="row-cell-text" style="min-width: 140px;">
                                 <div class="operations-row-container">
                                     <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
                                         <div
@@ -266,10 +287,10 @@
                             </td>
                         </ng-container>
                         <ng-container *ngIf="type === 'module'">
-                            <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
-                                {{ schema.name }}
+                            <td [pTooltip]="schema.name" class="row-cell-text" style="min-width: 140px; max-width: 150px;">
+                                <span class="text-truncate">{{ schema.name }}</span>
                             </td>
-                            <td style="min-width: 100px;">
+                            <td class="row-cell-text" style="min-width: 100px;">
                                 <span [ngSwitch]="schema.status">
                                     <div *ngSwitchCase="'DRAFT'">
                                         <span class="schema-status status-DRAFT">Draft</span>
@@ -288,7 +309,7 @@
                                     </div>
                                 </span>
                             </td>
-                            <td class="last-schema-grid-cell" style="min-width: 140px;">
+                            <td class="row-cell-text" style="min-width: 140px;">
                                 <div class="operations-row-container">
                                     <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
                                         <div
@@ -308,16 +329,16 @@
                             </td>
                         </ng-container>
                         <ng-container *ngIf="type === 'tool'">
-                            <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
-                                <a [queryParams]="{toolId: toolIdByTopic[schema.topicId]}"
+                            <td class="row-cell-text col-200">
+                                <a class="text-truncate" [queryParams]="{toolId: toolIdByTopic[schema.topicId]}"
                                 [routerLink]="'/tool-configuration'">
                                     {{ toolNameByTopic[schema.topicId] }}
                                 </a>
                             </td>
-                            <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
-                                {{ schema.name }}
+                            <td [pTooltip]="schema.name" class="row-cell-text" style="min-width: 140px; max-width: 150px;">
+                                <span class="text-truncate">{{ schema.name }}</span>
                             </td>
-                            <td style="min-width: 100px;">
+                            <td class="row-cell-text" style="min-width: 100px;">
                                 <span [ngSwitch]="schema.status">
                                     <div *ngSwitchCase="'DRAFT'">
                                         <span class="schema-status status-DRAFT">Draft</span>
@@ -336,7 +357,7 @@
                                     </div>
                                 </span>
                             </td>
-                            <td class="last-schema-grid-cell" style="min-width: 140px;">
+                            <td class="row-cell-text" style="min-width: 140px;">
                                 <div class="operations-row-container">
                                     <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
                                         <div
@@ -356,16 +377,16 @@
                             </td>
                         </ng-container>
                         <ng-container *ngIf="type === 'system'">
-                            <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
-                                {{ schema.name }}
+                            <td [pTooltip]="schema.name" class="row-cell-text" style="min-width: 140px; max-width: 150px;">
+                                <span class="text-truncate">{{ schema.name }}</span>
                             </td>
-                            <td style="min-width: 140px;">
-                                {{ schema.owner }}
+                            <td class="row-cell-text" style="min-width: 140px;">
+                                <span class="text-truncate">{{ schema.owner }}</span>
                             </td>
-                            <td style="min-width: 100px;">
-                                {{ schema.entity }}
+                            <td class="row-cell-text" style="min-width: 100px;">
+                                <span class="text-truncate">{{ schema.entity }}</span>
                             </td>
-                            <td style="min-width: 100px;">
+                            <td class="row-cell-text" style="min-width: 100px;">
                                 <span>
                                     <div *ngIf="!schema.active">
                                         <span class="schema-status status-DRAFT">Inactive</span>
@@ -375,7 +396,7 @@
                                     </div>
                                 </span>
                             </td>
-                            <td class="last-schema-grid-cell" style="min-width: 140px;">
+                            <td class="row-cell-text" style="min-width: 140px;">
                                 <div class="operations-row-container">
                                     <div>
                                         <div (click)="onActive(schema)" *ngIf="!schema.active" class="btn-approve">
@@ -386,13 +407,13 @@
                             </td>
                         </ng-container>
                         <ng-container *ngIf="type === 'tag'">
-                            <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
-                                {{ schema.name }}
+                            <td [pTooltip]="schema.name" class="row-cell-text" style="min-width: 140px; max-width: 150px;">
+                                <span class="text-truncate">{{ schema.name }}</span>
                             </td>
-                            <td style="min-width: 140px;">
-                                {{ schema.owner }}
+                            <td class="row-cell-text" style="min-width: 140px;">
+                                <span class="text-truncate">{{ schema.owner }}</span>
                             </td>
-                            <td style="min-width: 100px;">
+                            <td class="row-cell-text" style="min-width: 100px;">
                                 <span [ngSwitch]="schema.status">
                                     <div *ngSwitchCase="'DRAFT'">
                                         <span class="schema-status status-DRAFT">Draft</span>
@@ -411,7 +432,7 @@
                                     </div>
                                 </span>
                             </td>
-                            <td class="last-schema-grid-cell" style="min-width: 140px;">
+                            <td class="row-cell-text" style="min-width: 140px;">
                                 <div class="operations-row-container">
                                     <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
                                         <div
@@ -431,7 +452,7 @@
                             </td>
                         </ng-container>
 
-                        <td class="last-schema-grid-cell" style="min-width: 110px; width: 110px; max-width: 110px;">
+                        <td class="row-cell-text" style="min-width: 110px; width: 110px; max-width: 110px;">
                             <div class="operations-row-container">
                                 <div style="margin-right: 12px;">
                                     <div
@@ -470,16 +491,19 @@
                 </ng-template>
                 <ng-template let-columns pTemplate="emptymessage"></ng-template>
             </p-table>
-        </div>
 
-        <app-paginator
-            *ngIf="isAny"
-            [pageIndex]="pageIndex"
-            [pageSize]="pageSize"
-            [length]="count"
-            [options]="[10, 25, 50, 100, 500]"
-            (page)="onPage($event)"
-        ></app-paginator>
+            <div class="guardian-grid-paginator">
+                <app-paginator
+                    class="guardian-grid-paginator"
+                    *ngIf="isAny"
+                    [pageIndex]="pageIndex"
+                    [pageSize]="pageSize"
+                    [length]="count"
+                    [options]="[10, 25, 50, 100, 500]"
+                    (page)="onPage($event)"
+                ></app-paginator>
+            </div>
+        </div>
     </ng-container>
     <ng-template #noData>
         <div class="guardian-user-not-data">
@@ -600,3 +624,25 @@
         </p-button>
     </div>
 </p-overlayPanel>
+
+<div *ngIf="isAnyItemSelected()" class="options-footer-container">
+    <div class="options-footer">
+        <div class="selected-info-block">
+            <span class="selected-info">{{ selectedItems.length | pluralize: 'schema' : 'schemas'}} selected</span>
+            <p-button
+                (click)="onClearSelection()"
+                class="secondary-btn"
+                [outlined]="true"
+            >
+                Clear selection
+            </p-button>
+        </div>
+        <div>
+            <p-button
+                (click)="onDeleteItems()"
+                severity="danger"
+                label="Delete selected"
+                type="button"></p-button>
+        </div>
+    </div>
+</div>

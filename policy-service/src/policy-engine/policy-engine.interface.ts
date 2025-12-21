@@ -4,6 +4,7 @@ import { PolicyUser, UserCredentials } from './policy-user.js';
 import { ComponentsService } from './helpers/components-service.js';
 import { LocationType, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';
 import { IDebugContext } from './block-engine/block-result.js';
+import { RecordActionStep } from './record-action-step.js';
 
 /**
  * Policy roles interface
@@ -317,7 +318,8 @@ export interface IPolicyBlock {
     triggerEvents<T>(
         eventType: PolicyOutputEventType | string,
         user: PolicyUser,
-        data: T
+        data: T,
+        actionStatus: RecordActionStep
     ): void;
 
     /**
@@ -329,7 +331,8 @@ export interface IPolicyBlock {
     triggerEventSync<T>(
         eventType: PolicyOutputEventType | string,
         user: PolicyUser,
-        data: T
+        data: T,
+        actionStatus: RecordActionStep
     ): Promise<any>;
 
     /**
@@ -341,7 +344,8 @@ export interface IPolicyBlock {
     triggerEvent<T>(
         event: IPolicyEvent<T>,
         user: PolicyUser,
-        data: T
+        data: T,
+        actionStatus: RecordActionStep
     ): void;
 
     /**
@@ -483,7 +487,7 @@ export interface IPolicyInterfaceBlock extends IPolicyBlock {
      * @param user
      * @param data
      */
-    setData(user: PolicyUser | null, data: any, type?: ActionType): Promise<any>;
+    setData(user: PolicyUser | null, data: any, type: ActionType, actionStatus: RecordActionStep): Promise<any>;
 
     /**
      * Get block data
@@ -616,7 +620,8 @@ export interface IPolicySourceBlock extends IPolicyBlock {
         documentId: string,
         handler: (
             document: any
-        ) => Promise<IPolicyEventState> | IPolicyEventState
+        ) => Promise<IPolicyEventState> | IPolicyEventState,
+        actionStatus: RecordActionStep
     ): Promise<void>;
 }
 
@@ -1011,6 +1016,8 @@ export interface IPolicyDBDocument<T> {
      * Relayer Account
      */
     relayerAccount?: string;
+
+    recordActionId?: string | null;
 }
 
 /**

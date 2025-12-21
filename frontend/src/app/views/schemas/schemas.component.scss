@@ -68,7 +68,7 @@
 }
 
 .loading {
-    background: #f9fafc;
+    background: #f9fafc70;
     position: absolute;
     z-index: 99;
     top: 0;
@@ -129,36 +129,33 @@ a {
     margin: 0;
 }
 
-.table-container {
-    margin-top: 0px;
-    overflow-x: auto;
-
-    ::ng-deep .p-datatable-wrapper {
-        max-height: calc(100vh - 355px);
-        overflow: auto;
-        margin-bottom: 16px;
+.grid-table-container {
+    ::ng-deep .grid-table {
+        .p-datatable-wrapper {
+            max-height: calc(-395px + 100vh);
+        }
     }
 }
 
-.table-paginator {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    column-gap: 24px;
-    padding: 0 16px 0 0;
+:host ::ng-deep .table-paginator {
+    .p-dropdown {
+        width: 125px;
+        height: 40px;
+        border-radius: 8px;
+    }
 
-    color: var(--color-grey-black-2, #23252e);
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 16px;
-    /* 114.286% */
+    .p-button {
+        border-radius: 8px;
+    }
 
-    height: 64px !important;
-    border-radius: 8px !important;
-    background: #fff;
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
+    .p-inputtext {
+        color: #848fa9;
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        align-self: center;
+    }
 }
 
 .schema-status {
@@ -419,16 +416,6 @@ a {
     border: none !important;
 }
 
-.schemas-grid-row {
-    font-family: Inter, sans-serif;
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
-    font-size: 14px;
-}
-
-.schemas-grid-row[schema-status="ERROR"] {
-    background: #fff0f0 !important;
-}
-
 .first-schema-grid-cell {
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;
@@ -443,13 +430,6 @@ a {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-:host ::ng-deep {
-    .p-datatable-table {
-        border-collapse: separate;
-        border-spacing: 0 15px;
-    }
 }
 
 .operations-row-container {
@@ -683,5 +663,101 @@ a {
         font-style: normal;
         font-weight: 600;
         line-height: normal;
+    }
+}
+
+.options-footer-container {
+    position: relative;
+    height: 0px;
+}
+
+.options-footer {
+    padding: 12px 48px;
+    padding-left: calc(var(--header-width-expand) + 48px);
+    display: flex;
+    justify-content: space-between;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    border-top: 1px solid var(--color-grey-3, #E1E7EF);
+    background: #FFF;
+
+    .selected-info-block {
+        display: flex;
+        gap: 16px;
+        align-content: center;
+        align-items: center;
+
+        ::ng-deep .p-button {
+            padding: 8px 16px;
+        }
+    }
+
+    .selected-info {
+        font-family: Inter, sans-serif;
+        font-weight: 400;
+        font-style: Regular;
+        font-size: 14px;
+        line-height: 100%;
+        letter-spacing: 0%;
+        vertical-align: middle;
+        color: var(--color-grey-5, #848FA9);
+    }
+
+    ::ng-deep {
+        .p-button {
+            padding: 5px 12px;
+            min-width: 120px;
+            border-radius: 8px;
+            background: var(--color-accent-red-1, #FF432A);
+
+            .p-button-label {
+                font-family: Inter;
+                font-size: 14px;
+                font-style: normal;
+                font-weight: 500;
+                line-height: 30px;
+                color: var(--color-grey-white, #FFF);
+            }
+
+            &:disabled {
+                border-radius: 8px;
+                border: 1px solid var(--color-grey-3, #E1E7EF);
+                background: var(--color-grey-1, #F9FAFC);
+
+                .p-button-label {
+                    font-family: Inter;
+                    font-size: 14px;
+                    font-style: normal;
+                    font-weight: 500;
+                    line-height: 30px;
+                    color: var(--color-grey-4, #AAB7C4);
+                }
+            }
+        }
+
+        .p-button-outlined {
+            border-radius: 8px;
+            border: 1px solid var(--color-secondary, #CDDDFD);
+            background: var(--color-color-grey-white, #FFF);
+
+            .p-button-label {
+                font-family: Inter;
+                font-size: 14px;
+                font-style: normal;
+                font-weight: 500;
+                line-height: 30px;
+                color: var(--color-primary, #0031ff);
+            }
+        }
+    }
+}
+
+.guardian-grid-container {
+    ::ng-deep .guardian-grid-table {
+        .p-datatable-wrapper {
+            max-height: calc(-385px + 100vh);
+        }
     }
 }
