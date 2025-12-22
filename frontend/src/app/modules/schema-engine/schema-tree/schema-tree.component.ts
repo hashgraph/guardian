@@ -1,13 +1,29 @@
-import {
-    Component,
-    OnInit,
-    Inject,
-    ViewChild,
-    ElementRef,
-    HostListener,
-} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SchemaService } from 'src/app/services/schema.service';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { TreeGraphComponent } from '../../common/tree-graph/tree-graph.component';
+import { TreeSource } from '../../common/tree-graph/tree-source';
+import { TreeNode } from '../../common/tree-graph/tree-node';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { InformService } from 'src/app/services/inform.service';
+import { TagsService } from 'src/app/services/tag.service';
+
+interface SchemaTreeNode extends TreeNode<{ name: string; isTagged?: boolean }> {
+    searchHighlighted?: boolean;
+}
+
+interface TagItem {
+    entity: string;
+    localTarget: string;
+    name?: string;
+    id: string;
+    document?: {
+        credentialSubject?: Array<{
+            type?: string;
+        }>;
+    };
+}
 
 @Component({
     selector: 'app-schema-tree',
@@ -15,47 +31,158 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     styleUrls: ['./schema-tree.component.scss'],
 })
 export class SchemaTreeComponent implements OnInit {
-    @ViewChild('canvas', { static: true })
-    canvas: ElementRef<HTMLCanvasElement>;
-    @ViewChild('content', { static: true })
-    content: ElementRef<HTMLDivElement>;
-    @ViewChild('main', { static: true })
-    main: ElementRef<HTMLDivElement>;
-
-    private _ctx!: CanvasRenderingContext2D;
-
-    private _rectWidth: number = 150;
-    private _rectWidthGap: number = 50;
-    private _rectHeightGap: number = 50;
-    private _lineWidth: number = 2.5;
-    private _fontSize: number = 14;
-    private _minRectHeight: number = 50;
-
     public loading = false;
-    public isMoving: boolean = false;
     public header: string;
-    public schema: { id: string; name: string }
+    public schema: any;
+    public searchField: string = '';
+
+    private tree: TreeGraphComponent;
+    private source: TreeSource<SchemaTreeNode>;
+    private fetchedSchemaIds: Set<string> = new Set();
+
+    public get zoom(): number {
+        if (this.tree) {
+            return Math.round(this.tree.zoom * 100);
+        } else {
+            return 100;
+        }
+    }
 
     constructor(
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private schemaService: SchemaService
+        private schemaService: SchemaService,
+        private informService: InformService,
+        private tagsService: TagsService
     ) {
         this.header = this.config.header || '';
         this.schema = this.config.data;
     }
 
     ngOnInit(): void {
-        this._ctx = this.canvas.nativeElement.getContext('2d') as any;
         this.loading = true;
-        console.log('this.schema', this.schema)
-        this.schemaService
-            .getSchemaTree(this.schema.id)
-            .subscribe((result: any) => {
-                const convertedTree = this.covertTree(result);
-                this.drawSchemas(convertedTree);
-                this.loading = false;
+        this.fetchedSchemaIds.clear();
+
+        const taggedSchemaTypes = this.getTaggedSchemaTypes();
+        const mainSchemaType = this.schema.iri?.replace(/^#/, '') || '';
+        this.fetchedSchemaIds.add(mainSchemaType);
+
+        const uniqueTaggedTypes = taggedSchemaTypes.filter((type: string) => {
+            if (this.fetchedSchemaIds.has(type)) {
+                return false;
+            }
+            this.fetchedSchemaIds.add(type);
+            return true;
+        });
+
+        const mainSchemaRequest = this.createSchemaTreeRequest(this.schema.id, this.schema.name);
+
+        if (uniqueTaggedTypes.length > 0) {
+            this.loadTaggedSchemas(mainSchemaRequest, uniqueTaggedTypes);
+        } else {
+            this.executeTreeRequests([mainSchemaRequest]);
+        }
+    }
+
+    private createSchemaTreeRequest(schemaId: string, schemaName: string): Observable<any> {
+        return this.schemaService.getSchemaTree(schemaId).pipe(
+            catchError(() => {
+                this.informService.errorShortMessage(`Failed to load schema tree: ${schemaName}`, 'Schema Tree Error');
+                return of(null);
+            })
+        );
+    }
+
+    private loadTaggedSchemas(mainSchemaRequest: Observable<any>, uniqueTaggedTypes: string[]): void {
+        this.tagsService
+            .getSchemas({ pageIndex: 0, pageSize: 1000 })
+            .pipe(
+                map((response) => response.body || []),
+                catchError(() => {
+                    this.informService.errorShortMessage('Failed to load tag schemas', 'Schema Tree Error');
+                    return of([]);
+                })
+            )
+            .subscribe((tagSchemas: any[]) => {
+                const taggedSchemaRequests = uniqueTaggedTypes.map((type: string) => {
+                    const iri = `#${type}`;
+                    const matchedSchema = tagSchemas.find((s) => s.iri === iri);
+
+                    if (matchedSchema?._id) {
+                        return this.createSchemaTreeRequest(matchedSchema._id, matchedSchema.name);
+                    }
+                    return of(null);
+                });
+
+                this.executeTreeRequests([mainSchemaRequest, ...taggedSchemaRequests]);
             });
+    }
+
+    private executeTreeRequests(requests: Observable<any>[]): void {
+        forkJoin(requests).subscribe((results) => {
+            const allNodes: SchemaTreeNode[] = [];
+
+            results.forEach((result, index) => {
+                if (result) {
+                    const isTagged = index > 0; // First result is main schema, rest are tagged
+                    const nodes = this.traverse(result, { isRoot: true, isTagged });
+                    allNodes.push(...nodes);
+                }
+            });
+
+            if (allNodes.length > 0) {
+                this.source = new TreeSource<SchemaTreeNode>(allNodes);
+                if (this.tree) {
+                    this.tree.setData(this.source);
+                }
+            } else {
+                this.informService.errorShortMessage('No schema data available to display', 'Schema Tree Error');
+            }
+
+            this.loading = false;
+        });
+    }
+
+    private getTaggedSchemaTypes(): string[] {
+        const tags: TagItem[] = this.schema?._tags?.tags || [];
+        return tags
+            .filter((tag) => tag.entity === 'Schema' && tag.document?.credentialSubject?.[0]?.type)
+            .map((tag) => tag.document!.credentialSubject![0].type!);
+    }
+
+    private traverse(
+        node: { name: string; children: any[] },
+        { isRoot = false, isTagged = false }: { isRoot?: boolean; isTagged?: boolean } = {}
+    ): SchemaTreeNode[] {
+        const nodeType = isRoot ? 'root' : 'sub';
+        const treeNode: SchemaTreeNode = new TreeNode<{ name: string; isTagged?: boolean }>(node.name, nodeType, {
+            name: node.name,
+            isTagged,
+        }) as SchemaTreeNode;
+        treeNode.searchHighlighted = false;
+
+        if (isRoot && isTagged) {
+            treeNode.entity = 'tagged';
+        }
+
+        return [
+            treeNode,
+            ...(node.children || []).flatMap((child) => {
+                treeNode.addId(child.name);
+                return this.traverse(child, { isTagged });
+            }),
+        ];
+    }
+
+    public initTree($event: TreeGraphComponent) {
+        this.tree = $event;
+        if (this.source) {
+            this.tree.setData(this.source);
+        }
+    }
+
+    public createNodes($event: any) {
+        this.tree.move(18, 46);
     }
 
     public getHeader(): string {
@@ -66,225 +193,46 @@ export class SchemaTreeComponent implements OnInit {
         this.dialogRef.close(null);
     }
 
-    private covertTree(root: { name: string; children: any[] }) {
-        const stack: any = [
-            {
-                node: root,
-                lvl: 1,
-            },
-        ];
-        const result: any[][] = [[root]];
-        while (stack.length > 0) {
-            const arg = stack.shift();
-            if (arg?.node?.children?.length > 0) {
-                result[arg.lvl] = result[arg.lvl] || [];
-                result[arg.lvl].push(
-                    ...arg.node.children.map((child: any) =>
-                        Object.assign(child, { parent: arg.node })
-                    )
-                );
-                stack.push(
-                    ...arg.node.children.map((node: any) => ({
-                        node,
-                        lvl: arg.lvl + 1,
-                    }))
-                );
+    public onZoom(d: number) {
+        if (this.tree) {
+            this.tree.onZoom(d);
+            if (d === 0) {
+                this.tree.move(18, 46);
             }
         }
-        return result;
     }
 
-    private splitSchemaName(name: string) {
-        const result = [];
-        while (name.length > 0) {
-            result.push(name.substring(0, 20));
-            name = name.slice(20);
-        }
-        return result;
-    }
+    public onSchemaFilter() {
+        if (this.source) {
+            let highlighted: SchemaTreeNode | null = null;
+            const searchLower = this.searchField.toLowerCase().trim();
 
-    private getOffset(count: number) {
-        return (count * this._rectWidth + (count - 1) * this._rectWidthGap) / 2;
-    }
-
-    private maxHeightOnLvl(nodes: any[]) {
-        const maxStringOnLvl = Math.max(
-            ...nodes.map((item) => item.name.length, 0)
-        );
-        const countParts = Math.ceil(maxStringOnLvl / 20);
-        const maxHeightOnLvl = countParts * this._fontSize + this._fontSize;
-        return maxHeightOnLvl > this._minRectHeight
-            ? maxHeightOnLvl
-            : this._minRectHeight;
-    }
-
-    private setBackground(
-        ctx: CanvasRenderingContext2D,
-        width: number,
-        height: number,
-        color: string = 'white'
-    ) {
-        ctx.fillStyle = color;
-        ctx.fillRect(0, 0, width, height);
-    }
-
-    private drawSchemaLine(
-        ctx: CanvasRenderingContext2D,
-        parent: { x: number; y: number; color: string },
-        current: { x: number; y: number }
-    ) {
-        ctx.strokeStyle = parent.color;
-        ctx.beginPath();
-        ctx.moveTo(parent.x, parent.y);
-        ctx.lineTo(current.x, current.y);
-        ctx.stroke();
-        ctx.closePath();
-    }
-
-    private drawSchema(
-        ctx: any,
-        schema: {
-            name: string;
-            x?: number;
-            y?: number;
-            color?: string;
-            type: string;
-        },
-        offset: { x: number; y: number },
-        height: number
-    ) {
-        ctx.beginPath();
-        ctx.lineWidth = this._lineWidth;
-        ctx.strokeStyle = this.stringToHex(schema.type);
-        ctx.font = `500 ${this._fontSize}px Roboto, "Helvetica Neue", sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
-        ctx.fillStyle = 'black';
-        const splitTest = this.splitSchemaName(schema.name);
-        for (let i = 0; i < splitTest.length; i++) {
-            const text = splitTest[i];
-            ctx.fillText(
-                text,
-                offset.x + this._rectWidth / 2,
-                offset.y +
-                height / 2 +
-                (i - splitTest.length / 2) * this._fontSize
-            );
-        }
-
-        ctx.roundRect(offset.x, offset.y, this._rectWidth, height, 10);
-        ctx.stroke();
-        ctx.closePath();
-
-        schema.x = offset.x + this._rectWidth / 2;
-        schema.y = offset.y + height;
-        schema.color = ctx.strokeStyle as any;
-    }
-
-    private drawSchemas(flatTree: any[][]) {
-        const maxCountOnLvl = Math.max(
-            ...flatTree.map((item) => item.length, 0)
-        );
-        const rectHeights = flatTree.reduce(
-            (sum, item) => (sum += this.maxHeightOnLvl(item)),
-            0
-        );
-        this.canvas.nativeElement.height =
-            2 * this._lineWidth +
-            rectHeights +
-            this._rectHeightGap * (flatTree.length - 1);
-        this.canvas.nativeElement.width =
-            2 * this._lineWidth +
-            maxCountOnLvl * this._rectWidth +
-            (maxCountOnLvl - 1) * this._rectWidthGap;
-
-        this.canvas.nativeElement.width =
-            this.main.nativeElement.offsetWidth >
-                this.canvas.nativeElement.width
-                ? this.main.nativeElement.offsetWidth
-                : this.canvas.nativeElement.width;
-        this.setBackground(
-            this._ctx,
-            this.canvas.nativeElement.width,
-            this.canvas.nativeElement.height
-        );
-        let offsetY = this._lineWidth;
-        for (let lvl = 0; lvl < flatTree.length; lvl++) {
-            let offsetX =
-                this.canvas.nativeElement.width / 2 -
-                this.getOffset(flatTree[lvl].length);
-            const maxHeightOnLvl = this.maxHeightOnLvl(flatTree[lvl]);
-            for (const schema of flatTree[lvl]) {
-                if (schema.parent) {
-                    this.drawSchemaLine(this._ctx, schema.parent, {
-                        x: offsetX + this._rectWidth / 2,
-                        y: offsetY,
-                    });
+            for (const node of this.source.nodes) {
+                if (searchLower && node.data.name.toLowerCase().includes(searchLower)) {
+                    node.searchHighlighted = true;
+                    if (!highlighted) {
+                        highlighted = node;
+                    }
+                } else {
+                    node.searchHighlighted = false;
                 }
-                this.drawSchema(
-                    this._ctx,
-                    schema,
-                    {
-                        x: offsetX,
-                        y: offsetY,
-                    },
-                    maxHeightOnLvl
-                );
-                offsetX += this._rectWidth + this._rectWidthGap;
             }
-            offsetY += this._rectHeightGap + maxHeightOnLvl;
+
+            if (highlighted) {
+                this.onNavTarget(highlighted);
+            }
         }
     }
 
-    private stringToHex(str: string): any {
-        let hash = 0;
-        str.split('').forEach((char) => {
-            hash = char.charCodeAt(0) + ((hash << 5) - hash);
-        });
-        let color = '#';
-        for (let i = 0; i < 3; i++) {
-            const value = (hash >> (i * 8)) & 0xff;
-            color += value.toString(16).padStart(2, '0');
-        }
-        return color;
-    }
-
-    public download() {
-        var image = this.canvas.nativeElement
-            .toDataURL('image/png')
-            .replace('image/png', 'image/octet-stream');
-        var element = document.createElement('a');
-        element.setAttribute('href', image);
-        element.setAttribute('download', `${this.schema.name}.png`);
-        element.click();
-    }
-
-    public startMove() {
-        this.isMoving = true;
-        document.body.classList.add('inherit-cursor');
-        document.body.style.cursor = 'grabbing';
-    }
-
-    @HostListener('window:mouseup')
-    stopMove() {
-        this.isMoving = false;
-        document.body.classList.remove('inherit-cursor');
-        document.body.style.cursor = '';
-    }
-
-    @HostListener('window:mousemove', ['$event'])
-    move(event: MouseEvent) {
-        if (!this.isMoving) {
-            return;
-        }
-        const scrollX = this.content.nativeElement.scrollLeft - event.movementX;
-        const offsetY = this.content.nativeElement.scrollTop - event.movementY;
-        if (scrollX >= 0 && scrollX < this.content.nativeElement.scrollWidth) {
-            this.content.nativeElement.scrollLeft = scrollX;
-        }
-
-        if (offsetY >= 0 && offsetY < this.content.nativeElement.scrollHeight) {
-            this.content.nativeElement.scrollTop = offsetY;
+    public onNavTarget(highlighted: SchemaTreeNode) {
+        const el = document.querySelector(`.tree-node[node-id="${highlighted.uuid}"]`);
+        const grid = el?.parentElement?.parentElement;
+        if (el && grid) {
+            const elCoord = el.getBoundingClientRect();
+            const gridCoord = grid.getBoundingClientRect();
+            const x = elCoord.left - gridCoord.left;
+            const y = elCoord.top - gridCoord.top;
+            this.tree?.move(-x + 50, -y + 56);
         }
     }
 }

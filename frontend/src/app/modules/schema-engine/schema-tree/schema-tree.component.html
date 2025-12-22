@@ -1,32 +1,56 @@
 <div class="dialog-header">
     <div class="header-container">
-        <div class="header-text">{{getHeader()}}</div>
+        <div class="header-text">{{ getHeader() }}</div>
     </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
     </div>
 </div>
-<div #main class="dialog-body">
-    <div #content class="content" (mousedown)="startMove()">
-        <canvas #canvas [style.display]="loading ? 'none' : 'block'"></canvas>
-        <div *ngIf="loading" class="loading">
-            <p-progressSpinner></p-progressSpinner>
+<div class="dialog-body">
+    <div *ngIf="loading" class="loading">
+        <p-progressSpinner></p-progressSpinner>
+    </div>
+    <div class="tree-container">
+        <app-tree-graph (init)="initTree($event)" (render)="createNodes($event)">
+            <ng-template #nodeTemplate let-node="node">
+                <div class="tree-node {{ node.type }}-node {{ node.entity }}-entity" [attr.search-highlighted]="node.searchHighlighted">
+                    <div class="node-header">
+                        {{ node.data.name }}
+                    </div>
+                </div>
+            </ng-template>
+        </app-tree-graph>
+    </div>
+    <div class="schema-search">
+        <div class="guardian-search">
+            <input id="schemaSearch" [(ngModel)]="searchField" placeholder="Search" pInputText type="text" (change)="onSchemaFilter()" />
+        </div>
+    </div>
+    <div class="zoom-toolbar">
+        <div class="zoom-button">
+            <button class="guardian-icon-button" (click)="onZoom(0)">
+                <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/center.svg" svgClass="icon-color-primary"> </svg-icon>
+            </button>
+        </div>
+        <div class="zoom-button">
+            <button class="guardian-icon-button" (click)="onZoom(1)">
+                <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/add.svg" svgClass="icon-color-primary"> </svg-icon>
+            </button>
+        </div>
+        <div class="zoom-button">
+            <div class="zoom-label">{{ zoom }}%</div>
+        </div>
+        <div class="zoom-button">
+            <button class="guardian-icon-button" (click)="onZoom(-1)">
+                <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/minus.svg" svgClass="icon-color-primary"> </svg-icon>
+            </button>
         </div>
     </div>
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
         <div class="cancel-button">
-            <button 
-                (click)="onClose()" 
-                class="guardian-button guardian-button-secondary"
-            >Cancel</button>
-        </div>
-        <div>
-            <button 
-                (click)="download()" 
-                class="guardian-button guardian-button-primary"
-            >Download</button>
+            <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
         </div>
     </div>
 </div>
