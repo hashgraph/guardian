@@ -287,6 +287,8 @@ Make the recording of the runs for published policies executions 'on' by default
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3008](https://github.com/hashgraph/guardian/issues/3008)
 
+Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/policies/capture-replay-and-compare-data-for-published-policies](https://guardian.hedera.com/guardian/standard-registry/policies/capture-replay-and-compare-data-for-published-policies)
+
 **Formula-linked definitions enhancements**
 
 1. "Name" column in formula records table should be wider. Now it's unreadable
