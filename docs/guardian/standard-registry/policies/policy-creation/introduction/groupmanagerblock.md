@@ -30,11 +30,11 @@ This block allows to manage group membership, add and remove users from the grou
 
 First step is to select the role to invite the user as shown below:
 
-<figure><img src="../../../../../.gitbook/assets/image (34).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (34) (1).png" alt=""><figcaption></figcaption></figure>
 
 Next step is to copy and send the unique invite or the link to the invite.
 
-<figure><img src="../../../../../.gitbook/assets/image (35).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (35) (2).png" alt=""><figcaption></figcaption></figure>
 
 #### 2.4 **Removing users from groups**
 

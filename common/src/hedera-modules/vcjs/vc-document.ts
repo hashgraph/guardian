@@ -1,4 +1,4 @@
-import { Timestamp } from '@hashgraph/sdk';
+import { Timestamp } from '@hiero-ledger/sdk';
 import { Hashing } from '../hashing.js';
 import { TimestampUtils } from '../timestamp-utils.js';
 import { IVC, SignatureType } from '@guardian/interfaces';

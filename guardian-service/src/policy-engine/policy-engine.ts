@@ -986,7 +986,8 @@ export class PolicyEngine extends NatsService {
         availability: PolicyAvailability,
         notifier: INotificationStep,
         logger: PinoLogger,
-        userId: string | null
+        userId: string | null,
+        recordingEnabled: boolean,
     ): Promise<Policy> {
         // <-- Steps
         const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
@@ -1238,6 +1239,31 @@ export class PolicyEngine extends NatsService {
                 notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
             }
 
+            const createRecordsTopic = async () => {
+                notifier.startStep(STEP_CREATE_ACTION_TOPIC);
+                const recordsTopic = await topicHelper.create({
+                    type: TopicType.RecordsTopic,
+                    name: TopicType.RecordsTopic,
+                    description: TopicType.RecordsTopic,
+                    owner: user.owner,
+                    policyId: model.id.toString(),
+                    policyUUID: model.uuid
+                }, user.id, { admin: true, submit: false });
+                await recordsTopic.saveKeys(user.id);
+                await DatabaseServer.saveTopic(recordsTopic.toObject());
+                model.recordsTopicId = recordsTopic.topicId;
+                notifier.completeStep(STEP_CREATE_ACTION_TOPIC);
+            }
+            if (model.status === PolicyStatus.PUBLISH_ERROR) {
+                if (!!model.recordsTopicId) {
+                    await createRecordsTopic();
+                } else {
+                    notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
+                }
+            } else {
+                await createRecordsTopic();
+            }
+
             const createCommentsTopic = async () => {
                 notifier.startStep(STEP_CREATE_COMMENTS_TOPIC);
                 const commentsTopic = await topicHelper.create({
@@ -1265,7 +1291,7 @@ export class PolicyEngine extends NatsService {
 
             const configToPublish = structuredClone(model.config);
             this.cleanHeadersRecursive(configToPublish, ['httpRequestBlock']);
-
+            model.autoRecordSteps = !!recordingEnabled;
             const modelToPublish = Object.assign(Object.create(Object.getPrototypeOf(model)), model);
             modelToPublish.config = configToPublish;
 
@@ -1332,6 +1358,7 @@ export class PolicyEngine extends NatsService {
             model.status = PolicyStatus.PUBLISH_ERROR;
             model.version = '';
             model.hash = '';
+            model.autoRecordSteps = false;
             model = await DatabaseServer.updatePolicy(model);
             throw error
         }
@@ -1519,7 +1546,8 @@ export class PolicyEngine extends NatsService {
     public async validateAndPublishPolicy(
         options: {
             policyVersion: string,
-            policyAvailability?: PolicyAvailability
+            policyAvailability?: PolicyAvailability,
+            recordingEnabled?: boolean,
         },
         policyId: string,
         owner: IOwner,
@@ -1542,6 +1570,7 @@ export class PolicyEngine extends NatsService {
 
         const version = options.policyVersion;
         const availability = options.policyAvailability || PolicyAvailability.PRIVATE;
+        const recordingEnabled = !!options.recordingEnabled;
 
         notifier.startStep(STEP_FIND_POLICY);
         const policy = await DatabaseServer.getPolicyById(policyId);
@@ -1610,7 +1639,8 @@ export class PolicyEngine extends NatsService {
                 availability,
                 notifier.getStep(STEP_PUBLISH_POLICY),
                 logger,
-                userId
+                userId,
+                recordingEnabled
             );
             notifier.completeStep(STEP_PUBLISH_POLICY);
 

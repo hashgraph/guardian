@@ -5124,6 +5124,47 @@ paths:
       summary: Creates a new policy.
       tags:
         - policies
+  /policies/with-imported-records/{policyId}:
+    get:
+      description: Returns all policies with imported records.
+      operationId: PolicyApi_getPoliciesWithImportedRecords
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BasePolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Return a list of all policies with imported records.
+      tags:
+        - policies
   /policies/migrate-data:
     post:
       description: >-
@@ -12908,6 +12949,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: fromPolicyId
+          required: true
+          in: query
+          schema:
+            type: string
       requestBody:
         required: true
         description: A zip file containing record to be run.
@@ -17746,7 +17792,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 3.4.0
+  version: 3.4.1
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -19898,6 +19944,18 @@ components:
       required:
         - messageId
         - key
+    BasePolicyDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        name:
+          type: string
+          example: Policy name
+      required:
+        - id
+        - name
     MigrationConfigPoliciesDTO:
       type: object
       properties:
@@ -19991,6 +20049,10 @@ components:
             - private
             - public
           example: private
+        recordingEnabled:
+          type: boolean
+          example: false
+          description: Record policy actions
       required:
         - policyVersion
     PolicyValidationDTO:

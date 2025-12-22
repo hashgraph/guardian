@@ -123,7 +123,9 @@ export class ButtonBlockAddon {
         blockData: {
             documentId: string;
             dialogResult: unknown;
-        }
+        },
+        _,
+        actionStatus
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const parent = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(
@@ -144,7 +146,8 @@ export class ButtonBlockAddon {
                 return {
                     data: document,
                 };
-            }
+            },
+            actionStatus
         );
         ref.backup();
     }

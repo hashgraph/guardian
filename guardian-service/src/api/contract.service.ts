@@ -42,8 +42,8 @@ import {
     UserRole,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { AccountId, TokenId } from '@hashgraph/sdk';
-import { proto } from '@hashgraph/proto';
+import { AccountId, TokenId } from '@hiero-ledger/sdk';
+import { proto } from '@hiero-ledger/proto';
 import * as ethers from 'ethers';
 import { contractCall, contractQuery, createContract, createContractV2, customContractCall } from './helpers/index.js';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
