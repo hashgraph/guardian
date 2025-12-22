@@ -285,6 +285,11 @@ export class MintBlock {
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
+        const tags = await PolicyUtils.getBlockTags(ref);
+        for (const document of documents) {
+            document.setTags(tags);
+        }
+
         const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
         if (Number.isNaN(amount) || !Number.isFinite(amount) || amount < 0) {
@@ -296,7 +301,10 @@ export class MintBlock {
         const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref, userId);
 
         const mintVC = await this.createMintVC(policyOwnerDid, token, tokenAmount, ref);
+        mintVC.setTags(tags);
+
         const reportVC = await this.createReportVC(ref, policyOwnerCred, user, documents, messages, additionalMessages, userId);
+
         let vp: any;
         if (reportVC && reportVC.length) {
             const vcs = [...reportVC, mintVC];
@@ -305,6 +313,7 @@ export class MintBlock {
             const vcs = [...documents, mintVC];
             vp = await this.createVP(policyOwnerDid, uuid, vcs);
         }
+        vp.setTags(tags);
 
         ref.log(`Topic Id: ${topicId}`);
 
@@ -336,6 +345,9 @@ export class MintBlock {
                 interception: null
             });
         const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC);
+
+        PolicyUtils.setDocumentTags(mintVcDocument, tags);
+
         mintVcDocument.type = DocumentCategoryType.MINT;
         mintVcDocument.schema = `#${mintVC.getSubjectType()}`;
         mintVcDocument.messageId = vcMessageResult.getId();

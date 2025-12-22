@@ -623,19 +623,19 @@ export class SendToGuardianBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
 
-        const tags = await this.getBlockTags(ref);
+        const tags = await PolicyUtils.getBlockTags(ref);
 
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
         if (Array.isArray(docs)) {
             const newDocs = [];
             for (const doc of docs) {
-                this.setDocumentTags(doc, tags);
+                PolicyUtils.setDocumentTags(doc, tags);
                 const newDoc = await this.documentSender(doc, event?.user?.userId);
                 newDocs.push(newDoc);
             }
             event.data.data = newDocs;
         } else {
-            this.setDocumentTags(docs, tags);
+            PolicyUtils.setDocumentTags(docs, tags);
             event.data.data = await this.documentSender(docs, event?.user?.userId);
         }
 
@@ -657,46 +657,5 @@ export class SendToGuardianBlock {
         }));
 
         ref.backup();
-    }
-
-    /**
-     * Get block tags
-     * @param ref
-     */
-    private async getBlockTags(ref: AnyBlockType): Promise<Tag[]> {
-        const target = ref.policyId + '#' + ref.uuid;
-        const filter: any = {
-            localTarget: target,
-            entity: TagType.PolicyBlock
-        }
-        const tags = await ref.databaseServer.getTags(filter);
-        return tags;
-    }
-
-    /**
-     * Set document tags
-     * @param document
-     * @param tags
-     */
-    private setDocumentTags(document: IPolicyDocument, tags: Tag[]) {
-        if (!document || !tags || tags.length <= 0) {
-            return;
-        }
-
-        document.document.tags = [];
-        for (const tag of tags) {
-            const [policyId, blockId] = tag.target.split('#');
-
-            document.document.tags.push({
-                name: tag.name,
-                description: tag.description,
-                owner: tag.owner,
-                target: tag.target,
-                messageId: tag.messageId,
-                topicId: tag.topicId,
-                policyId,
-                blockId
-            });
-        }
     }
 }

@@ -169,6 +169,9 @@ export class HttpRequestBlock {
         const doc = await this.requestDocument(method, url, headers, requestBody ? JSON.parse(requestBody) : undefined, event?.user?.userId);
         const item = PolicyUtils.createVC(ref, event.user, doc);
 
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(item, tags);
+
         const state: IPolicyEventState = { data: item };
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);

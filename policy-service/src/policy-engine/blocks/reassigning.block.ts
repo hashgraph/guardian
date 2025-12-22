@@ -103,6 +103,10 @@ export class ReassigningBlock {
         });
 
         let item = PolicyUtils.createVC(ref, owner, vc);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(item, tags);
+
         item.type = document.type;
         item.schema = document.schema;
         item.assignedTo = document.assignedTo;

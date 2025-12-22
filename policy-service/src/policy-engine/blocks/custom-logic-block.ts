@@ -475,6 +475,10 @@ export class CustomLogicBlock {
         });
 
         const item = PolicyUtils.createVC(ref, owner, newVC);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(item, tags);
+
         item.type = outputSchema.iri;
         item.schema = outputSchema.iri;
         item.relationships = relationships.length ? relationships : null;

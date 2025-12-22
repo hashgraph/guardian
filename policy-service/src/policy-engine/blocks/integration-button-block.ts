@@ -125,6 +125,9 @@ export class IntegrationButtonBlock {
 
         const mintVcDocument = PolicyUtils.createVC(ref, user, integrationVCClass);
 
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(mintVcDocument, tags);
+
         mintVcDocument.type = DocumentCategoryType.INTEGRATION;
         mintVcDocument.schema = `#${integrationVCClass.getSubjectType()}`;
         mintVcDocument.documentFields = Array.from(

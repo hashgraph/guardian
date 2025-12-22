@@ -350,6 +350,10 @@ export class PolicyRolesBlock {
         });
 
         const vcDocument = PolicyUtils.createVC(ref, user, vc);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(vcDocument, tags);
+
         vcDocument.type = DocumentCategoryType.USER_ROLE;
         vcDocument.schema = `#${vc.getSubjectType()}`;
         vcDocument.messageId = message.getId();
