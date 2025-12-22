@@ -199,11 +199,14 @@ export class RequestVcDocumentBlock {
             const draft = data.draft;
             const draftId = data.draftId;
             const editType = ref.options.editType;
+            const forceRelayerAccount = ref.options.forceRelayerAccount;
+            const inheritRelayerAccount = PolicyComponentsUtils.IsInheritRelayerAccount(ref.policyId, forceRelayerAccount);
 
             const documentRef = await this.getRelationships(ref, data.ref);
 
             //Relayer Account
-            const relayerAccount = await PolicyUtils.getRelayerAccount(ref, user.did, data.relayerAccount, documentRef, user.userId);
+            const [relayerAccount, documentOwner]
+                = await PolicyUtils.getRelayerAccountAndOwner(ref, user, data.relayerAccount, documentRef, inheritRelayerAccount);
 
             //Prepare Credential Subject
             const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document, actionStatus?.id);
@@ -236,7 +239,7 @@ export class RequestVcDocumentBlock {
             }
 
             //Create Verifiable Credential
-            const item = await this.createVerifiableCredential(user, relayerAccount, credentialSubject, actionStatus?.id);
+            const item = await this.createVerifiableCredential(user, documentOwner, relayerAccount, credentialSubject, actionStatus?.id);
             PolicyUtils.setDocumentRef(item, documentRef);
 
             //Update metadata
@@ -424,25 +427,26 @@ export class RequestVcDocumentBlock {
     }
 
     private async createVerifiableCredential(
-        user: PolicyUser,
+        issuer: PolicyUser,
+        owner: PolicyUser,
         relayerAccount: string,
         credentialSubject: any,
         actionStatusId: string
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
-        const groupContext = await PolicyUtils.getGroupContext(ref, user);
+        const groupContext = await PolicyUtils.getGroupContext(ref, issuer);
         const uuid = await ref.components.generateUUID(actionStatusId);
 
         const vc = await PolicyActionsUtils.signVC({
             ref,
             subject: credentialSubject,
-            issuer: user.did,
+            issuer: issuer.did,
             relayerAccount,
             options: { uuid, group: groupContext },
-            userId: user.userId
+            userId: issuer.userId
         });
-        const item = PolicyUtils.createVC(ref, user, vc, actionStatusId);
+        const item = PolicyUtils.createVC(ref, owner, vc, actionStatusId);
 
         const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, this._schema);
         const schemaIRI = ref.options.schema;

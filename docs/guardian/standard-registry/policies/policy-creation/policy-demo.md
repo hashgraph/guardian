@@ -84,3 +84,16 @@ To get complete information about tools, please refer to [Tools](../../../../../
 ### 3. Filtering Policies
 
 On the Policy page, it is now possible to filter the policies list by policy name and tags. All available tags are presented in the dropdown list, which you can create using "Create Tag" for each policy, which makes it easier using the filter.
+
+### 4. Select and Delete Multiple Policies
+
+Users can select and delete policies from the Policies table in Guardian UI and also through the API.
+
+<figure><img src="../../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="info" %}
+Note:
+
+1. Selected items remain selection across pagination.
+2. Dependencies are considered when deleting multiple schemas.
+{% endhint %}

@@ -1,8 +1,8 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@indexer/interfaces": "3.4.0",
-        "@indexer/common": "3.4.0",
+        "@indexer/interfaces": "3.4.1",
+        "@indexer/common": "3.4.1",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
@@ -57,5 +57,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.4.0"
+    "version": "3.4.1"
 }
