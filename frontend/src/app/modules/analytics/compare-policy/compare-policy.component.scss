@@ -257,7 +257,8 @@
 
 .report-item[type="LEFT"] .block-tree,
 .report-item[type="RIGHT"] .block-tree {
-    background: var(--left-right-color);
+	background: var(--absent-color);
+	color: lightblue;
 }
 
 .report-item[type="PARTLY"] .block-tree {
@@ -285,10 +286,9 @@
 }
 
 :host.colorblind-mode {
-    --full-color: #648fff;
-    --partly-color: #ffb000;
-    --left-right-color: #fe6100;
-    --absent-color: #d55e00;
+	--full-color: #b8ccff;
+	--partly-color: #d49e25;
+	--absent-color: #4a2c6a;
     --hover-color: rgb(229 229 229 / 50%);
 
 	 --full-color-bg: rgba(100, 143, 255, 0.15);
@@ -490,7 +490,7 @@
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-	 font-weight: 600;
+	 font-weight: 500;
 }
 
 .block-icon {
