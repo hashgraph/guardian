@@ -19289,6 +19289,7 @@ components:
             - USER_PERMISSIONS
             - POLICY_DISCUSSION_V2
             - POLICY_COMMENT
+            - POLICY_EXPORT_PROOF
           example: POLICY
         iri:
           type: string
