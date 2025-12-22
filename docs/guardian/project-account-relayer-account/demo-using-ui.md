@@ -1,5 +1,11 @@
 # 💻 Demo using UI
 
+[Step By Step](demo-using-ui.md#step-by-step)
+
+[Demo](demo-using-ui.md#demo-video)
+
+## Step By Step
+
 ## 1. Overview
 
 Relayer accounts are Hedera accounts designated to execute on-chain transactions associated with specific policy subflows during runtime.
@@ -90,3 +96,7 @@ Unless the policy is configured to send minted tokens to a specific account, tok
 <figure><img src="../../.gitbook/assets/image (11) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/image (12) (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+## Demo Video
+
+[Youtube](https://youtu.be/uCzTu3Tu4oQ?si=B9XCgRCXht2jia9F)
