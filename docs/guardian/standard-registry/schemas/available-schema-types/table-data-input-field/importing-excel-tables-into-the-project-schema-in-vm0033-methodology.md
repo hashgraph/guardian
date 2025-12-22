@@ -1,6 +1,6 @@
 # Importing Excel Tables into the Project Schema in VM0033 methodology
 
-To test this feature, VM0033 schemas excel file containing multiple pages was provided as an example.&#x20;
+To test this feature, VM0033 schemas excel file containing multiple pages was provided as an example.
 
 Each page in the Excel file must be converted into a CSV file, and each CSV file should be uploaded as a separate table field. T
 
@@ -9,17 +9,17 @@ The name of each page can be used as the corresponding table field name.
 In policy **VM0033**, three table fields were added to the **Project Description (Auto)** schema.\
 Screenshots of the _8.2ProjectEmissions_ Excel page and the corresponding table in the VC document are provided for reference.
 
-<figure><img src="../../../../../.gitbook/assets/unknown (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (9) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/unknown (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (10) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 5.1 Adding Table Fields to the Policy Schema
 
 In the example of policy **VM0033**, three table fields were added to the **Project Description (Auto)** schema. Each table field retains the same name as in the original Excel file.
 
-<figure><img src="../../../../../.gitbook/assets/unknown (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (11) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/unknown (12).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (12) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 5.2 Importing Converted CSV Files into Table Fields
 

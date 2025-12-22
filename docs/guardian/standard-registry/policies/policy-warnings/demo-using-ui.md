@@ -4,6 +4,12 @@ icon: sidebar-flip
 
 # Demo using UI
 
+[Step By Step](demo-using-ui.md#id-1.-step-by-step)
+
+[Demo Video](demo-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step
+
 ### Purpose
 
 Policy warnings improve authoring reliability by notifying users about non-fatal issues in policy definitions.
@@ -22,7 +28,7 @@ Toolbar → Validation → ▾ → Configuration.
 
 From this dialog, users can enable or disable the display of warnings and informational messages by category.
 
-<figure><img src="../../../../.gitbook/assets/unknown (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### Default Behavior
 
@@ -30,7 +36,7 @@ From this dialog, users can enable or disable the display of warnings and inform
 * Errors are always visible and affect policy validity.
 * Filtering of warnings and information is handled on the backend through the ignoreRules configuration.
 
-<figure><img src="../../../../.gitbook/assets/unknown (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### Message Severity
 
@@ -59,7 +65,7 @@ The filtering mechanism allows selective visibility control:
 **Important: Turning on only “Warnings” or “Information” is not sufficient; you must also enable specific categories (see below).**
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/unknown (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Categories
 
@@ -77,13 +83,13 @@ The filtering mechanism allows selective visibility control:
 
 Categories explicitly marked in the validation registry as info (e.g., minor deprecations, legacy hints).
 
-<figure><img src="../../../../.gitbook/assets/unknown (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/unknown (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/unknown (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/unknown (6) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (6) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Behavior in the Editor
 
@@ -131,3 +137,7 @@ Validation logic inspects:
 * Implicit links: Blocks with defaultEvent === true, unless properties.stopPropagation === true.
 
 These connect automatically to the next sibling block in sequence.
+
+## 2. Demo Video
+
+[Youtube](https://youtu.be/VYKE2NAbfmI?si=9RwWglglvlWrfLbL\&t=191)

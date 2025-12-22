@@ -13,7 +13,7 @@ To compare the policies, we need to click on **Compare** button in the policies 
 
 When Compare button is clicked, we get a pop up to select policies, which we want to perform comparison off.
 
-<figure><img src="../../../../.gitbook/assets/image (529).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (865).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Comparison Result
 
@@ -76,18 +76,13 @@ We have several Display settings in Policy Blocks section:
 
 **Display Settings:** description and show/hide settings for each color/type of difference:
 
-- **Icons:** In addition to colors, icons are displayed between the compared blocks to help users quickly identify the type of difference.
-- **Color-blind mode:** A "Color-blind mode" toggle is available in the comparison toolbar to switch between the standard color scheme and an accessible color palette optimized for users with color vision deficiencies.
+**Icons:** In addition to colors, icons are displayed between the compared blocks to help users quickly identify the type of difference.
 
-| Icon  | Color         | Color Blind Mode | Purpose                                                                                 |
-| ----- | ------------- | ---------------- | --------------------------------------------------------------------------------------- |
-|       | Green         | Blue             | blocks are equal, including their child blocks                                          |
-| [≠]   | Green - Amber | Blue - Orange    | blocks are equal, but their child blocks are different                                  |
-| ≈     | Amber         | Orange           | blocks are of the same type and are partially equal, there are some notable differences |
-| + / - | Red           | Purple           | blocks are absent in the other Policy                                                   |
+* **Color-blind mode:** A "Color-blind mode" toggle is available in the comparison toolbar to switch between the standard color scheme and an accessible color palette optimized for users with color vision deficiencies.
 
-<figure><img src="../../../../.gitbook/assets/policy-compare-colorblind-mode-1.png" alt=""><figcaption></figcaption></figure>
+<table><thead><tr><th width="374">Color</th><th>Color Blind Mode</th><th>Purpose</th></tr></thead><tbody><tr><td>Green</td><td>Blue</td><td>blocks are equal, including their child blocks</td></tr><tr><td>Green - Amber</td><td>Blue-Orange</td><td>blocks are equal, but their child blocks are different</td></tr><tr><td>Amber</td><td>Orange</td><td>blocks are of the same type and are partially equal, there are some notable differences</td></tr><tr><td>Red</td><td>Purple</td><td>blocks are absent in the other Policy</td></tr></tbody></table>
 
+<figure><img src="../../../../.gitbook/assets/image (864).png" alt=""><figcaption></figcaption></figure>
 
 Block comparison displays can be unfolded to display a detailed view of the block Properties.
 
