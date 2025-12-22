@@ -20,10 +20,11 @@ Guardian's policy workflow engine supports bidirectional integration with extern
 Guardian's `dataTransformationAddon` block enables transformation of Guardian project data into formats required by external registry systems. This block executes JavaScript transformation code that converts Guardian document structures into external API formats.
 
 **Primary Applications:**
-- Submitting project data to Verra Project Hub
-- Integrating with Gold Standard registry systems
-- Preparing data for CDM project submissions
-- Custom registry platform integration
+
+* Submitting project data to Verra Project Hub
+* Integrating with Gold Standard registry systems
+* Preparing data for CDM project submissions
+* Custom registry platform integration
 
 ### VM0033 DataTransformation Implementation
 
@@ -41,7 +42,7 @@ The VM0033 policy demonstrates production-grade data transformation in the proje
 }
 ```
 
-![Data transformation block in VM0033](images/README/image.png)
+![Data transformation block in VM0033](<../../../.gitbook/assets/image (190).png>)
 
 ### Transformation Code Structure
 
@@ -113,6 +114,7 @@ The dataTransformationAddon block executes JavaScript code that transforms Guard
 ### Data Transformation Best Practices
 
 **1. Field Mapping Strategy**
+
 ```javascript
 // Use defensive programming for nested objects
 const projectData = credentialSubject?.projectDetails?.data || {};
@@ -124,6 +126,7 @@ json.projectType = credentialSubject.projectType || '14'; // Default for project
 ```
 
 **2. Data Type Conversions**
+
 ```javascript
 // Date format transformations
 json.estimatedProjectStartDate = credentialSubject.startDate ?
@@ -135,6 +138,7 @@ json.projectSize = credentialSubject.projectArea ?
 ```
 
 **3. Complex Object Transformations**
+
 ```javascript
 // VCS-specific transformations
 if (credentialSubject.vcsDetails) {
@@ -165,9 +169,10 @@ if (credentialSubject.projectLocations) {
 
 Guardian's `externalDataBlock` enables reception of monitoring data from external devices, IoT sensors, and third-party MRV systems. This pattern can be used for automated monitoring reports and real-time project tracking. It is the approaches used in Gold standard's metered energy cooking policy implemented on Guardian.
 
-![External MRV data integration flow in metered policy](images/README/image-1.png)
+![External MRV data integration flow in metered policy](<../../../.gitbook/assets/image-1 (11).png>)
 
 **External Data Flow:**
+
 1. Project validation triggers MRV configuration generation. Download config button binds to validated projects.
 2. Download MRV configuration file
 3. External devices/servers use the config to prepare a VC and send data to `/external` endpoint
@@ -233,17 +238,20 @@ Guardian implements a download-based pattern for external data integration. When
 Guardian exposes an `/external` endpoint for receiving data from external systems:
 
 **Endpoint Structure:**
+
 ```
 POST /api/v1/policies/{policyId}/blocks/{blockId}/external
 ```
 
 **Authentication:**
+
 ```javascript
 // Bearer token authentication
 Authorization: Bearer <project_token>
 ```
 
 **Data Payload Format:**
+
 ```json
 {
   "document": {
@@ -331,16 +339,18 @@ async receiveData(data: IPolicyDocument) {
 Guardian includes an MRV sender tool that simulates external data submission. The source code is available here - https://github.com/hashgraph/guardian/tree/main/mrv-sender
 
 **Key Configuration Elements:**
-- **URL**: External endpoint (`https://guardianservice.app/api/v1/external`)
-- **Hedera Integration**: Account ID and private key for blockchain transactions
-- **Schema Context**: Complete JSON-LD schema definition with field types
-- **DID Documents**: Verification methods and authentication keys
-- **Policy References**: Policy ID, tag, and document reference for linking
+
+* **URL**: External endpoint (`https://guardianservice.app/api/v1/external`)
+* **Hedera Integration**: Account ID and private key for blockchain transactions
+* **Schema Context**: Complete JSON-LD schema definition with field types
+* **DID Documents**: Verification methods and authentication keys
+* **Policy References**: Policy ID, tag, and document reference for linking
 
 **Data Generation Options:**
-- **Values Mode**: Use specific values for each field
-- **Templates Mode**: Use predefined data templates
-- **Random Mode**: Generate random values within specified ranges
+
+* **Values Mode**: Use specific values for each field
+* **Templates Mode**: Use predefined data templates
+* **Random Mode**: Generate random values within specified ranges
 
 ## Chapter Summary
 
@@ -351,26 +361,29 @@ This chapter demonstrated Guardian's bidirectional integration capabilities thro
 **External Data Reception** using `externalDataBlock` and MRV configurations enables automated monitoring data collection from external devices and systems. The metered energy policy pattern demonstrates how projects generate downloadable MRV configuration files that external systems use to submit data back to Guardian.
 
 **Key Implementation Elements:**
-- JavaScript-based data transformation within Guardian policy blocks
-- Comprehensive MRV configuration files with schema definitions and DID documents
-- Hedera blockchain integration for secure data transactions
-- Schema validation and document verification for incoming data
-- Timer-based aggregation for monitoring report generation
+
+* JavaScript-based data transformation within Guardian policy blocks
+* Comprehensive MRV configuration files with schema definitions and DID documents
+* Hedera blockchain integration for secure data transactions
+* Schema validation and document verification for incoming data
+* Timer-based aggregation for monitoring report generation
 
 These integration patterns enable Guardian to function as a comprehensive platform in environmental certification ecosystems, supporting both automated data collection and seamless registry integration.
 
 **Next Steps**: Chapter 26 will explore advanced Guardian features including troubleshooting and common implementation issues.
 
----
+***
 
 ## Artifacts and References
 
 ### Related Documentation
-- [External Data Workflow Block](../../_shared/docs/available-policy-workflow-blocks/external-data-workflow-block.md)
-- [Custom Logic Block](../../_shared/docs/available-policy-workflow-blocks/customlogicblock.md)
-- [VM0033 Policy JSON](../../_shared/artifacts/vm0033-policy.json)
+
+* [External Data Workflow Block](../../_shared/docs/available-policy-workflow-blocks/external-data-workflow-block.md)
+* [Custom Logic Block](../../_shared/docs/available-policy-workflow-blocks/customlogicblock.md)
+* [VM0033 Policy JSON](../../_shared/artifacts/vm0033-policy.json)
 
 ### Code Examples
-- [dataTransformationAddon Configuration](#vm0033-datatransformation-implementation)
-- [External Data Submission Format](#external-data-submission-endpoint)
-- [MRV Configuration Structure](#mrv-configuration-download-pattern)
+
+* [dataTransformationAddon Configuration](./#vm0033-datatransformation-implementation)
+* [External Data Submission Format](./#external-data-submission-endpoint)
+* [MRV Configuration Structure](./#mrv-configuration-download-pattern)

@@ -167,15 +167,15 @@ export class HttpRequestBlock {
         const requestBody = this.replaceVariablesInString(JSON.stringify(inputObject), variablesObj);
 
         const doc = await this.requestDocument(method, url, headers, requestBody ? JSON.parse(requestBody) : undefined, event?.user?.userId);
-        const item = PolicyUtils.createVC(ref, event.user, doc);
+        const item = PolicyUtils.createVC(ref, event.user, doc, event.actionStatus?.id);
 
         const tags = await PolicyUtils.getBlockTags(ref);
         PolicyUtils.setDocumentTags(item, tags);
 
         const state: IPolicyEventState = { data: item };
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, state);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, state, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
                 documents: ExternalDocuments(item)

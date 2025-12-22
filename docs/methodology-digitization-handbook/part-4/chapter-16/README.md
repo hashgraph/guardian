@@ -60,21 +60,23 @@ function transformProjectData(guardianDocument) {
 }
 ```
 
-![Sample project view in Verra Project Hub](images/README/image.png)
+![Sample project view in Verra Project Hub](<../../../.gitbook/assets/image (77).png>)
 
 ### Implementation Use Cases
 
 **Carbon Registry Integration:**
-- Automatic project listing with Verra, Gold Standard, or other registries
-- Real-time status synchronization between Guardian and external systems
-- Standardized data exchange for multi-registry projects
+
+* Automatic project listing with Verra, Gold Standard, or other registries
+* Real-time status synchronization between Guardian and external systems
+* Standardized data exchange for multi-registry projects
 
 **Corporate Reporting:**
-- Transform carbon project data for corporate sustainability reporting
-- Generate API payloads for ESG reporting platforms
-- Create standardized data formats for carbon accounting systems
 
----
+* Transform carbon project data for corporate sustainability reporting
+* Generate API payloads for ESG reporting platforms
+* Create standardized data formats for carbon accounting systems
+
+***
 
 ## 2. Document Validation Blocks
 
@@ -133,6 +135,7 @@ Guardian's `documentValidatorBlock` ensures document integrity and compliance th
 ### Practical Validation Examples
 
 **Project Eligibility Validation:**
+
 ```json
 {
   "blockType": "documentValidatorBlock",
@@ -158,6 +161,7 @@ Guardian's `documentValidatorBlock` ensures document integrity and compliance th
 ```
 
 **VVB Assignment Validation:**
+
 ```json
 {
   "blockType": "documentValidatorBlock",
@@ -180,7 +184,7 @@ Guardian's `documentValidatorBlock` ensures document integrity and compliance th
 
 **Note**: While VM0033 doesn't use `documentValidatorBlock` in its current implementation, it relies on other validation mechanisms including `documentsSourceAddon` filters and `customLogicBlock` validations to ensure document integrity.
 
----
+***
 
 ## 3. External Data Integration
 
@@ -260,9 +264,9 @@ External data integration includes validation mechanisms to ensure data quality:
 }
 ```
 
-![External MRV data example - Taken from Metered energy policy](images/README/image-1.png)
+![External MRV data example - Taken from Metered energy policy](<../../../.gitbook/assets/image-1 (7).png>)
 
----
+***
 
 ## 4. Policy Testing Framework
 
@@ -276,7 +280,7 @@ Dry-run mode enables complete policy testing as the name suggests. Policy develo
 
 You can trigger dry run either via policy editor UI or API
 
-![Click dry run on top of menu bar in policy editor UI](images/README/image-2.png)
+![Click dry run on top of menu bar in policy editor UI](<../../../.gitbook/assets/image-2 (6).png>)
 
 ```bash
 # Via API
@@ -295,26 +299,26 @@ PUT /api/v1/policies/{policyId}/dry-run
 
 **Key Operations Available in Dry-Run Mode:**
 
-1. **Restart**: Reset policy state and remove all previous dry-run records
-   ```bash
-   POST /api/v1/policies/{policyId}/dry-run/restart
-   ```
+1.  **Restart**: Reset policy state and remove all previous dry-run records
 
-2. **View Transactions**: Examine mock blockchain transactions
-   ```bash
-   GET /api/v1/policies/{policyId}/dry-run/transactions?pageIndex=0&pageSize=100
-   ```
+    ```bash
+    POST /api/v1/policies/{policyId}/dry-run/restart
+    ```
+2.  **View Transactions**: Examine mock blockchain transactions
 
-3. **View Artifacts**: Review all generated documents
-   ```bash
-   GET /api/v1/policies/{policyId}/dry-run/artifacts?pageIndex=0&pageSize=100
-   ```
+    ```bash
+    GET /api/v1/policies/{policyId}/dry-run/transactions?pageIndex=0&pageSize=100
+    ```
+3.  **View Artifacts**: Review all generated documents
 
-4. **View IPFS Files**: Check files that would be stored in IPFS
-   ```bash
-   GET /api/v1/policies/{policyId}/dry-run/ipfs?pageIndex=0&pageSize=100
-   ```
+    ```bash
+    GET /api/v1/policies/{policyId}/dry-run/artifacts?pageIndex=0&pageSize=100
+    ```
+4.  **View IPFS Files**: Check files that would be stored in IPFS
 
+    ```bash
+    GET /api/v1/policies/{policyId}/dry-run/ipfs?pageIndex=0&pageSize=100
+    ```
 5. **Savepoints**: Create and restore workflow checkpoints for testing different scenarios
 
 ### Programmatic Policy Testing
@@ -441,7 +445,7 @@ When tests fail, Guardian provides detailed comparison and debugging information
 2. **Test Data Management**: Create realistic test datasets matching production scenarios, use boundary value testing for numerical inputs
 3. **Continuous Testing**: Run tests after each policy modification, automate testing in CI/CD pipelines
 
----
+***
 
 ## 5. Demo Mode for Simplified Testing
 
@@ -451,10 +455,10 @@ Guardian provides **Demo Mode** as a simplified approach to policy testing, part
 
 Demo Mode operates similarly to dry-run but with enhanced user interface simplification:
 
-- **Read-Only Policy Processing**: All policy processing is read-only, policy editing is not possible
-- **No External Communication**: No communication with external systems such as Hedera network or IPFS
-- **Simplified UI**: Streamlined interface designed for ease of use
-- **Local Storage**: All artifacts stored locally similar to dry-run mode
+* **Read-Only Policy Processing**: All policy processing is read-only, policy editing is not possible
+* **No External Communication**: No communication with external systems such as Hedera network or IPFS
+* **Simplified UI**: Streamlined interface designed for ease of use
+* **Local Storage**: All artifacts stored locally similar to dry-run mode
 
 ## Summary
 
@@ -466,20 +470,21 @@ Chapter 16 demonstrated Guardian's advanced policy patterns essential for produc
 4. **Policy Testing**: Dry-run mode and automated testing frameworks validate complete workflows before production deployment
 5. **Demo Mode**: Simplified testing environment for quick policy validation and novice user training
 
-These patterns enable Guardian policies to integrate with real-world carbon markets, environmental monitoring systems, and corporate reporting platforms while maintaining data integrity and audit trails.
----
+## These patterns enable Guardian policies to integrate with real-world carbon markets, environmental monitoring systems, and corporate reporting platforms while maintaining data integrity and audit trails.
 
 **Next Steps**: Part V covers the calculation logic implementation, diving deep into methodology-specific emission reduction calculations and the JavaScript calculation engine that powers Guardian's environmental accounting.
 
 **Prerequisites Check**: Ensure you have:
-- [ ] Completed Chapters 14-15 (Policy architecture and VM0033 implementation)
-- [ ] Access to external API documentation for your methodology
-- [ ] Test datasets for policy validation
-- [ ] Understanding of your methodology's data requirements
 
-**Time Investment**: ~25 minutes reading + ~90 minutes hands-on testing with dry-run mode
+* [ ] Completed Chapters 14-15 (Policy architecture and VM0033 implementation)
+* [ ] Access to external API documentation for your methodology
+* [ ] Test datasets for policy validation
+* [ ] Understanding of your methodology's data requirements
+
+**Time Investment**: \~25 minutes reading + \~90 minutes hands-on testing with dry-run mode
 
 **Practical Exercises**:
+
 1. **Dry-Run Testing**: Import and set up VM0033 in dry-run mode and test complete project lifecycle
 2. **External Data Integration**: Configure external data block for your methodology's monitoring requirements
 3. **Document Validation**: Implement validation rules for your specific business logic

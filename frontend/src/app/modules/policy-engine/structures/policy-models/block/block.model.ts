@@ -77,6 +77,10 @@ export class PolicyBlock {
         }
     }
 
+    public get folder(): PolicyFolder | undefined {
+        return this._module;
+    }
+
     public get policyId(): string | undefined {
         return this._module?.id;
     }
@@ -417,6 +421,13 @@ export class PolicyBlock {
     public changeArtifactPosition(prevIndex: number, currentIndex: number) {
         moveItemInArray(this._artifacts, prevIndex, currentIndex);
         this._changed = true;
+    }
+
+    public change(parent: boolean = false) {
+        this._changed = true;
+        if (parent && this._module) {
+            this._module.changed = true;
+        }
     }
 
     public emitUpdate() {

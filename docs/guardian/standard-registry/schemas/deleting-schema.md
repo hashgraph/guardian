@@ -27,7 +27,7 @@ When deleting a schema that has child schemas:
 ### 2.2 Deleting Schemas with Parent Dependencies
 
 If the selected schema depends on one or more parent schemas, deletion is not allowed.\
-&#x20;In this case:
+In this case:
 
 * The modal displays a warning message explaining that the scheme cannot be deleted due to existing dependencies.
 
@@ -38,3 +38,16 @@ If the selected schema depends on one or more parent schemas, deletion is not al
 User will now be able to delete all schemas for a particular policy by using "Delete All Schemas" button:
 
 <figure><img src="../../../.gitbook/assets/image (457).png" alt=""><figcaption></figcaption></figure>
+
+### 2.4 Delete Multiple Schemas
+
+Added ability to select and delete items from schema table in Guardian UI.
+
+<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="success" %}
+Note:
+
+1. Selected items remain selection across pagination.
+2. Dependencies are considered when deleting multiple schemas.
+{% endhint %}

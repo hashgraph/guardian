@@ -10,6 +10,7 @@ import { VcHelper, VcDocumentDefinition as VcDocument } from '@guardian/common';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Request VC document block
@@ -159,7 +160,7 @@ export class UploadVcDocumentBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async setData(user: PolicyUser, data: any): Promise<any> {
+    async setData(user: PolicyUser, data: any, _, actionStatus: RecordActionStep): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         if (!user.did) {
@@ -188,7 +189,7 @@ export class UploadVcDocumentBlock {
                     ;
                     const vc = VcDocument.fromJsonTree(document);
 
-                    const doc = PolicyUtils.createVC(ref, user, vc);
+                    const doc = PolicyUtils.createVC(ref, user, vc, actionStatus?.id);
 
                     const tags = await PolicyUtils.getBlockTags(ref);
                     PolicyUtils.setDocumentTags(doc, tags);
@@ -205,9 +206,9 @@ export class UploadVcDocumentBlock {
             }
 
             const state: IPolicyEventState = { data: retArray };
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
                 documents: ExternalDocuments(retArray)
             }));

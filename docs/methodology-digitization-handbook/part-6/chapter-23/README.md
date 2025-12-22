@@ -13,6 +13,7 @@ Guardian's APIs enable programmatic access to all functionality available throug
 Guardian uses JWT-based authentication for API access. All API calls require authentication headers except for initial login and registration endpoints.
 
 **Access Token API:**
+
 ```bash
 curl 'https://guardianservice.app/api/v1/accounts/access-token' \
   -H 'sec-ch-ua-platform: "macOS"' \
@@ -26,30 +27,33 @@ curl 'https://guardianservice.app/api/v1/accounts/access-token' \
 ```
 
 Refresh token is available in response of login(or loginByEmail) endpoints
+
 ```bash
 https://guardianservice.app/api/v1/accounts/loginByEmail
 ```
 
-**Base API URL Pattern:**
-All Guardian APIs follow the pattern: `https://guardianservice.app/api/v1/`. If you're using local setup - host would update to `http://localhost:3000` depending on your port configuration.
+**Base API URL Pattern:** All Guardian APIs follow the pattern: `https://guardianservice.app/api/v1/`. If you're using local setup - host would update to `http://localhost:3000` depending on your port configuration.
 
 For dry-run operations, the typical URL structure is:
-- Policy blocks: `/api/v1/policies/{policyId}/blocks/{blockId}`
-- Dry-run operations: `/api/v1/policies/{policyId}/dry-run/`
+
+* Policy blocks: `/api/v1/policies/{policyId}/blocks/{blockId}`
+* Dry-run operations: `/api/v1/policies/{policyId}/dry-run/`
 
 ### VM0033 Policy API Structure
 
 Submitting data via APIs is much faster than manual form filling if schema is too big. Using the [VM0033 policy JSON](../../_shared/artifacts/vm0033-policy.json) we analyzed, here's how API endpoints map to actual policy blocks:
 
 **VM0033 Key Block IDs from Policy JSON:**
-- PDD Submission Block: `55df4f18-d3e5-4b93-af87-703a52c704d6` - UUID of `add_project_bnt`
-- Monitoring Report Block: `53caa366-4c21-46ff-b16d-f95a850f7c7c` - UUID of `add_report_bnt`
+
+* PDD Submission Block: `55df4f18-d3e5-4b93-af87-703a52c704d6` - UUID of `add_project_bnt`
+* Monitoring Report Block: `53caa366-4c21-46ff-b16d-f95a850f7c7c` - UUID of `add_report_bnt`
 
 For every dry run triggered, these IDs change so make sure you have the latest ones.
 
-![Add Project Button JSON config](images/README/image.png)
+![Add Project Button JSON config](<../../../.gitbook/assets/image (172).png>)
 
 **API Endpoint Construction:**
+
 ```bash
 # VM0033 Policy ID from dry-run URL or policy JSON
 POLICY_ID="689d5badaf8487e6c32c8a2a"
@@ -66,7 +70,7 @@ POST https://guardianservice.app/api/v1/policies/689d5badaf8487e6c32c8a2a/blocks
 
 ```
 
-![Authorization header can be extracted via dev tools console](images/README/image-1.png)
+![Authorization header can be extracted via dev tools console](<../../../.gitbook/assets/image-1 (9).png>)
 
 ## Dry-Run API Operations
 
@@ -375,24 +379,28 @@ API integration transforms Guardian methodology implementations from manual proc
 ### Key API Integration Patterns:
 
 **Automated Data Submission:**
-- PDD and monitoring report API automation using requestVcDocumentBlock endpoints
-- Multi-year monitoring data generation and submission workflows
-- Error handling and validation for automated submissions
+
+* PDD and monitoring report API automation using requestVcDocumentBlock endpoints
+* Multi-year monitoring data generation and submission workflows
+* Error handling and validation for automated submissions
 
 **Dry-Run API Operations:**
-- Virtual user creation and management for multi-stakeholder testing
-- Programmatic workflow execution and validation
-- Artifact collection and analysis for testing validation
+
+* Virtual user creation and management for multi-stakeholder testing
+* Programmatic workflow execution and validation
+* Artifact collection and analysis for testing validation
 
 **External System Integration:**
-- IoT sensor data transformation and submission to Guardian monitoring workflows
-- Registry integration with automated project listing and status synchronization
-- Real-time data pipeline integration for continuous monitoring operations
+
+* IoT sensor data transformation and submission to Guardian monitoring workflows
+* Registry integration with automated project listing and status synchronization
+* Real-time data pipeline integration for continuous monitoring operations
 
 **Production API Management:**
-- Rate limiting and retry logic for robust production operations
-- Performance testing and load validation for production scalability
-- Error handling and monitoring for long-term operational reliability
+
+* Rate limiting and retry logic for robust production operations
+* Performance testing and load validation for production scalability
+* Error handling and monitoring for long-term operational reliability
 
 ### Implementation Workflow:
 
@@ -405,6 +413,6 @@ API integration transforms Guardian methodology implementations from manual proc
 
 API integration enables methodology implementations that scale from prototype testing to production operations, supporting hundreds of projects and thousands of stakeholders while maintaining accuracy and compliance with methodology requirements.
 
----
+***
 
 **Next Steps:** This completes Part VI: Integration and Testing. Your methodology implementation is now ready for production deployment with comprehensive testing coverage and scalable API automation capabilities.

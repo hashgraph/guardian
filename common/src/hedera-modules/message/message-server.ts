@@ -1,4 +1,4 @@
-import { AccountId, PrivateKey, TopicId, } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, TopicId, } from '@hiero-ledger/sdk';
 import { GenerateUUIDv4, ISignOptions, SignType, WorkerTaskType } from '@guardian/interfaces';
 import { IPFS, PinoLogger, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
@@ -33,6 +33,7 @@ import { INotificationStep, NewNotifier } from '../../notification/index.js';
 import { SchemaPackageMessage } from './schema-package-message.js';
 import { CommentMessage } from './comment-message.js';
 import { DiscussionMessage } from './discussion-message.js';
+import { PolicyRecordMessage } from './policy-record-message.js';
 
 interface LoadMessageOptions {
     messageId: string,
@@ -469,6 +470,9 @@ export class MessageServer {
             case MessageType.PolicyDiscussion:
                 message = DiscussionMessage.fromMessageObject(json);
                 break;
+            case MessageType.PolicyRecordStep:
+                message = PolicyRecordMessage.fromMessageObject(json);
+                break;
 
             // Default schemas
             case 'schema-document':
@@ -563,6 +567,9 @@ export class MessageServer {
                 break;
             case MessageType.PolicyDiscussion:
                 message = DiscussionMessage.fromJson(json);
+                break;
+            case MessageType.PolicyRecordStep:
+                message = PolicyRecordMessage.fromJson(json);
                 break;
             // Default schemas
             case 'schema-document':

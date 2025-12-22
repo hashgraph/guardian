@@ -57,7 +57,7 @@ export class IntegrationButtonBlock {
          * Tag
          */
         tag: any
-    }): Promise<any> {
+    }, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const requestNameSplited = ref.options.requestName.split('_');
 
@@ -121,9 +121,9 @@ export class IntegrationButtonBlock {
 
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, user.userId);
         const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref, user.userId);
-        const integrationVCClass = await this.createIntegrationVC(policyOwnerDid, type === IntegrationDataTypes.GEOTIFF ? responseFromRequest : JSON.stringify(responseFromRequest), ref, user.userId, dataForRequestStr, type, parsedData ? JSON.stringify(parsedData) : '');
+        const integrationVCClass = await this.createIntegrationVC(policyOwnerDid, type === IntegrationDataTypes.GEOTIFF ? responseFromRequest : JSON.stringify(responseFromRequest), ref, user.userId, dataForRequestStr, type, parsedData ? JSON.stringify(parsedData) : '', actionStatus?.id);
 
-        const mintVcDocument = PolicyUtils.createVC(ref, user, integrationVCClass);
+        const mintVcDocument = PolicyUtils.createVC(ref, user, integrationVCClass, actionStatus?.id);
 
         const tags = await PolicyUtils.getBlockTags(ref);
         PolicyUtils.setDocumentTags(mintVcDocument, tags);
@@ -139,9 +139,9 @@ export class IntegrationButtonBlock {
 
         const state: IPolicyEventState = { data: mintVcDocument };
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             documents: ExternalDocuments(mintVcDocument)
@@ -195,6 +195,7 @@ export class IntegrationButtonBlock {
         requestParams: string,
         type: IntegrationDataTypes,
         parsedData: string,
+        actionStatusId: string,
     ): Promise<VcDocumentDefinition> {
         const vcHelper = new VcHelper();
         const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.INTEGRATION_DATA_V2);
@@ -208,7 +209,7 @@ export class IntegrationButtonBlock {
             parsedData,
         }
 
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatusId);
         const mintVC = await vcHelper.createVerifiableCredential(
             vcSubject,
             didDocument,

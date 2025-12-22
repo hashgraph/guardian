@@ -262,6 +262,18 @@ export class Policy extends BaseEntity {
     actionsTopicId?: string;
 
     /**
+     * RecordsTopicId
+     */
+    @Property({ nullable: true })
+    recordsTopicId?: string;
+
+    /**
+     * Automatically record policy steps
+     */
+    @Property({ nullable: true })
+    autoRecordSteps?: boolean;
+
+    /**
      * old file id
      */
     @Property({ persist: false, nullable: true })

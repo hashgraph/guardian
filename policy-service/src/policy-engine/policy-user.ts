@@ -401,6 +401,9 @@ export class UserCredentials {
     }
 
     private async isRelayerAccount(relayerAccount: string, userId: string | null): Promise<boolean> {
+        if (!relayerAccount) {
+            return false;
+        }
         if (relayerAccount && relayerAccount !== this._hederaAccountId) {
             return true;
         }

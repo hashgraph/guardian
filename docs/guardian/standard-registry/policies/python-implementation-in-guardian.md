@@ -21,7 +21,7 @@ A new dropdown setting has been added to the Custom Logic block in the Policy Ed
 
 <figure><img src="../../../.gitbook/assets/image (3) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### Use Case
 
@@ -69,7 +69,7 @@ This field helps track the Guardian system version that was used to generate or 
 * Python execution is subject to the limitations and security constraints defined in Guardian's runtime.
 {% endhint %}
 
-### 4.  Supported Python Libraries and its Versions&#x20;
+### 4. Supported Python Libraries and its Versions
 
 | Library Name | Version |
 | :----------: | :-----: |

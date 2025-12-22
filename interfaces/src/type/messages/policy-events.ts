@@ -52,4 +52,5 @@ export enum PolicyEvents {
     APPLY_SAVEPOINT = 'apply-savepoint',
     CREATE_POLICY_DISCUSSION = 'policy-event-create-policy-discussion',
     CREATE_POLICY_COMMENT = 'policy-event-create-policy-comment',
+    RECORD_PERSIST_STEP = 'RECORD_PERSIST_STEP',
 }

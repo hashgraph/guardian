@@ -25,6 +25,7 @@ export class PublishPolicyDialog {
         value: 'public'
     }];
     public currentType = 'private';
+    public recordingEnabled = true;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -45,7 +46,8 @@ export class PublishPolicyDialog {
         if (!this.isPublishDisabled) {
             this.ref.close({
                 policyVersion: this.versionControl.value,
-                policyAvailability: this.currentType
+                policyAvailability: this.currentType,
+                recordingEnabled: this.recordingEnabled
             });
         }
     }

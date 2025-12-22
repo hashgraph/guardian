@@ -157,7 +157,7 @@ export class RequestVcDocumentBlockAddon {
             PolicyOutputEventType.RefreshEvent,
         ],
     })
-    async setData(user: PolicyUser, _data: IPolicyDocument): Promise<any> {
+    async setData(user: PolicyUser, _data: IPolicyDocument, _, actionStatus): Promise<any> {
         const ref =
             PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
@@ -204,9 +204,12 @@ export class RequestVcDocumentBlockAddon {
 
                 const _vcHelper = new VcHelper();
                 const idType = ref.options.idType;
+                const forceRelayerAccount = ref.options.forceRelayerAccount;
+                const inheritRelayerAccount = PolicyComponentsUtils.IsInheritRelayerAccount(ref.policyId, forceRelayerAccount);
 
                 //Relayer Account
-                const relayerAccount = await PolicyUtils.getRelayerAccount(ref, user.did, _data.relayerAccount, documentRef, user.userId);
+                const [relayerAccount, documentOwner]
+                    = await PolicyUtils.getRelayerAccountAndOwner(ref, user, _data.relayerAccount, documentRef, inheritRelayerAccount);
 
                 const credentialSubject = document;
                 credentialSubject.policyId = ref.policyId;
@@ -219,7 +222,7 @@ export class RequestVcDocumentBlockAddon {
                     user,
                     relayerAccount,
                     userId: user.userId
-                });
+                }, actionStatus?.id);
                 if (newId) {
                     credentialSubject.id = newId;
                 }
@@ -246,7 +249,7 @@ export class RequestVcDocumentBlockAddon {
                 }
 
                 const groupContext = await PolicyUtils.getGroupContext(ref, user);
-                const uuid = await ref.components.generateUUID();
+                const uuid = await ref.components.generateUUID(actionStatus?.id);
 
                 const vc = await PolicyActionsUtils.signVC({
                     ref,
@@ -256,7 +259,7 @@ export class RequestVcDocumentBlockAddon {
                     options: { uuid, group: groupContext },
                     userId: user.userId
                 });
-                let item = PolicyUtils.createVC(ref, user, vc);
+                let item = PolicyUtils.createVC(ref, documentOwner, vc, actionStatus?.id);
 
                 const tags = await PolicyUtils.getBlockTags(ref);
                 PolicyUtils.setDocumentTags(item, tags);
@@ -276,7 +279,8 @@ export class RequestVcDocumentBlockAddon {
                 }
 
                 return state;
-            }
+            },
+            actionStatus
         );
 
         ref.backup();

@@ -99,7 +99,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 <figure><img src="../../../.gitbook/assets/image (51) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (29) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (29) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. Registry can review account applications by clicking manage accounts
 
@@ -115,7 +115,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 6. Once VER issue request is approved, an end-to-end trust chain can be viewed by administrator. Since everything is happening transparently on public ledger(Hedera), anyone can trace the source of credits and each step that happened in the process.
 
-<figure><img src="../../../.gitbook/assets/image (28) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (28) (2) (2).png" alt=""><figcaption></figcaption></figure>
 
 **Project Proponent Flow**
 
@@ -165,7 +165,7 @@ VVB is the external independent third party responsible for reviewing Project De
 
 2. After PDD approval, proponents will be able to send monitoring reports for review. Once approved, project proponents will be able to claim corresponding VERs.
 
-<figure><img src="../../../.gitbook/assets/image (24) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (24) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Future proofing(Automated credit issuance)
 

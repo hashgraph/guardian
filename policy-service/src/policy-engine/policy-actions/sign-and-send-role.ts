@@ -19,7 +19,7 @@ export class SignAndSendRole {
         message: RoleMessage;
     }> {
         const { ref, subject, group, uuid, relayerAccount, userId } = options;
-        const did = group.owner;
+        const did = group.did;
         const vcHelper = new VcHelper();
         const userCred = await PolicyUtils.getUserCredentials(ref, did, userId);
         const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
@@ -65,7 +65,7 @@ export class SignAndSendRole {
         userId: string | null
     }): Promise<any> {
         const { ref, subject, group, uuid, relayerAccount, userId } = options;
-        const did = group.owner;
+        const did = group.did;
         const vcHelper = new VcHelper();
         const userAccount = await PolicyUtils.getHederaAccountId(ref, did, userId);
 
