@@ -259,6 +259,10 @@ export class MultiSignBlock {
 
             const vpMessageId = vpMessageResult.getId();
             const vpDocument = PolicyUtils.createVP(ref, docOwner, vp);
+
+            const tags = await PolicyUtils.getBlockTags(ref);
+            PolicyUtils.setDocumentTags(vpDocument, tags);
+
             vpDocument.type = DocumentCategoryType.MULTI_SIGN;
             vpDocument.messageId = vpMessageId;
             vpDocument.topicId = vpMessageResult.getTopicId();

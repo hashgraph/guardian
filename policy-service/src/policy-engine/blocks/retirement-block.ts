@@ -256,6 +256,7 @@ export class RetirementBlock {
             });
 
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
+        PolicyUtils.setDocumentTags(vpDocument, tags);
         vpDocument.type = DocumentCategoryType.RETIREMENT;
         vpDocument.messageId = vpMessageResult.getId();
         vpDocument.topicId = vpMessageResult.getTopicId();

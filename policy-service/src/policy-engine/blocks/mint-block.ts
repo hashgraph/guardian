@@ -381,6 +381,7 @@ export class MintBlock {
             });
         const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
+        PolicyUtils.setDocumentTags(vpDocument, tags);
         vpDocument.type = DocumentCategoryType.MINT;
         vpDocument.messageId = vpMessageId;
         vpDocument.topicId = vpMessageResult.getTopicId();
