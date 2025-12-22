@@ -11,7 +11,7 @@ import {
     VcHelper
 } from '@guardian/common';
 import { GenerateUUIDv4, PolicyHelper, PolicyStatus, SchemaEntity } from '@guardian/interfaces';
-import { PrivateKey } from '@hashgraph/sdk';
+import { PrivateKey } from '@hiero-ledger/sdk';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { Recording, Running } from '../record/index.js';

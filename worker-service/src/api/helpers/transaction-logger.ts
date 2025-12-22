@@ -16,7 +16,7 @@ import {
     TopicMessageSubmitTransaction,
     Transaction,
     TransferTransaction
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 /**
  * Transaction logger

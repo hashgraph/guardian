@@ -19,6 +19,7 @@
         "@formulajs/formulajs": "4.5.4",
         "@guardian/common": "3.4.1",
         "@guardian/interfaces": "3.4.1",
+        "@hiero-ledger/proto": "2.25.0",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
         "@nestjs/common": "^11.0.11",
