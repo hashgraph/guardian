@@ -1,10 +1,10 @@
 import { BlockActionError } from '../errors/index.js';
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
-import { DocumentStatus, LocationType, TagType } from '@guardian/interfaces';
+import { DocumentStatus, LocationType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { DIDMessage, HederaDidDocument, Message, MessageAction, MessageMemo, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VCMessage, VpDocument as VpDocumentCollection, VpDocumentDefinition as VpDocument, VPMessage, Tag } from '@guardian/common';
+import { DIDMessage, HederaDidDocument, Message, MessageAction, MessageMemo, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VCMessage, VpDocument as VpDocumentCollection, VpDocumentDefinition as VpDocument, VPMessage } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';

@@ -144,9 +144,11 @@ export async function getTarget(entity: TagType, id: string): Promise<{
                 return null;
             }
         }
-        case TagType.PolicyBlock: { 
+        case TagType.PolicyBlock: {
             const policy = await DatabaseServer.getPolicyById(id);
-            if (!policy) return null;
+            if (!policy) {
+                return null;
+            };
 
             return {
                 id,
@@ -232,7 +234,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                         tag.localTarget = target.id;
                         tag.status = 'Draft';
                     }
- 
+
                     const item = await DatabaseServer.createTag(tag);
                     return new MessageResponse(item);
                 } else {

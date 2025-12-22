@@ -181,6 +181,9 @@
                     </div>
 
                     <div *ngIf="isToolStyle(item)" class="block-body tool-body">
+                        <div *ngIf="hasTags(item)" class="block-tag-count">
+                            <span>{{ getTagsAmount(item) }}</span>
+                        </div>
                         <div class="block-item" (click)="onSelect($event, item)">
                             <div class="module-item-icon">
                                 <svg-icon src="/assets/images/icons/handyman.svg" svgClass="icon-style-handyman"></svg-icon>

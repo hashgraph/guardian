@@ -1905,7 +1905,7 @@ export class PolicyUtils {
             return null;
         }
     }
-            
+
     /**
      * Get block tags
      * @param ref
