@@ -6,7 +6,7 @@
 
 1. It allows to setup suggestion priority order of policies and modules. A user with SR role can drag and drop items to create specific prioritized sequence of policies to use for suggestions.
 
-<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. Suggestion mode can be turned on by clicking on “Suggestions” button in policy/module configurator
 

@@ -43,7 +43,7 @@ User will now be able to delete all schemas for a particular policy by using "De
 
 Added ability to select and delete items from schema table in Guardian UI.
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="success" %}
 Note:

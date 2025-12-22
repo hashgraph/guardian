@@ -26,7 +26,7 @@ Execution is controlled through a step-by-step interface in the UI, enabling use
 
 Users can adjust various configuration options related to the block directly within the dry-run interface. This avoids the need to navigate back to the main policy editor and streamlines the testing workflow.
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -118,7 +118,7 @@ Upon completion of the dry-run, the results are split into several tabs:
 
 <figure><img src="../../../../.gitbook/assets/image (11) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (12) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (12) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/image (13) (1) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
