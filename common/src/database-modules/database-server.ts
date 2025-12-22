@@ -55,7 +55,8 @@ import {
     PolicyAction,
     PolicyKey,
     PolicyComment,
-    PolicyDiscussion
+    PolicyDiscussion,
+    GlobalEventsReaderStream, GlobalEventsWriterStream
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -5311,5 +5312,122 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getPolicyGroups(filters: any, options?: unknown): Promise<PolicyRolesCollection[]> {
         return await new DataBaseHelper(PolicyRolesCollection).find(filters, options);
+    }
+
+    public async getGlobalEventsStreamsByUser(
+        policyId: string,
+        blockId: string,
+        userId: string
+    ): Promise<GlobalEventsReaderStream[]> {
+        const helper = new DataBaseHelper<GlobalEventsReaderStream>(GlobalEventsReaderStream);
+        return await helper.find({
+            policyId,
+            blockId,
+            userId,
+        });
+    }
+
+    public async getActiveGlobalEventsStreamsByUser(
+        policyId: string,
+        blockId: string,
+        userId: string
+    ): Promise<GlobalEventsReaderStream[]> {
+        const helper = new DataBaseHelper<GlobalEventsReaderStream>(GlobalEventsReaderStream);
+        return await helper.find({
+            policyId,
+            blockId,
+            userId,
+            active: true,
+        });
+    }
+
+    public async getActiveGlobalEventsStreams(
+        policyId: string,
+        blockId: string
+    ): Promise<GlobalEventsReaderStream[]> {
+        const helper = new DataBaseHelper<GlobalEventsReaderStream>(GlobalEventsReaderStream);
+        return await helper.find({
+            policyId,
+            blockId,
+            active: true,
+        });
+    }
+
+    public async createGlobalEventsStream(
+        data: Partial<GlobalEventsReaderStream>
+    ): Promise<GlobalEventsReaderStream> {
+        const helper = new DataBaseHelper<GlobalEventsReaderStream>(GlobalEventsReaderStream);
+        return await helper.save(data as any) as GlobalEventsReaderStream;
+    }
+
+    public async updateGlobalEventsStream(
+        stream: GlobalEventsReaderStream
+    ): Promise<GlobalEventsReaderStream> {
+        const helper = new DataBaseHelper<GlobalEventsReaderStream>(GlobalEventsReaderStream);
+        return await helper.save(stream);
+    }
+
+    public async deleteGlobalEventsStream(
+        stream: GlobalEventsReaderStream
+    ): Promise<void> {
+        const helper = new DataBaseHelper<GlobalEventsReaderStream>(GlobalEventsReaderStream);
+
+        await helper.delete(stream);
+    }
+
+    public async getGlobalEventsStreamByUserTopic(
+        policyId: string,
+        blockId: string,
+        userId: string,
+        globalTopicId: string
+    ): Promise<GlobalEventsReaderStream | null> {
+        const helper = new DataBaseHelper<GlobalEventsReaderStream>(GlobalEventsReaderStream);
+
+        return await helper.findOne({
+            policyId,
+            blockId,
+            userId,
+            globalTopicId,
+        });
+    }
+
+    public async getGlobalEventsWriterStreamsByUser(
+        policyId: string,
+        blockId: string,
+        userId: string
+    ): Promise<GlobalEventsWriterStream[]> {
+        const helper = new DataBaseHelper<GlobalEventsWriterStream>(GlobalEventsWriterStream);
+        return await helper.find({ policyId, blockId, userId });
+    }
+
+    public async getGlobalEventsWriterStreamByUserTopic(
+        policyId: string,
+        blockId: string,
+        userId: string,
+        globalTopicId: string
+    ): Promise<GlobalEventsWriterStream | null> {
+        const helper = new DataBaseHelper<GlobalEventsWriterStream>(GlobalEventsWriterStream);
+        return await helper.findOne({ policyId, blockId, userId, globalTopicId });
+    }
+
+    public async createGlobalEventsWriterStream(
+        data: Partial<GlobalEventsWriterStream>
+    ): Promise<GlobalEventsWriterStream> {
+        const helper = new DataBaseHelper<GlobalEventsWriterStream>(GlobalEventsWriterStream);
+        return await helper.save(data as any) as GlobalEventsWriterStream;
+    }
+
+    public async updateGlobalEventsWriterStream(
+        stream: GlobalEventsWriterStream
+    ): Promise<GlobalEventsWriterStream> {
+        const helper = new DataBaseHelper<GlobalEventsWriterStream>(GlobalEventsWriterStream);
+        return await helper.save(stream);
+    }
+
+    public async deleteGlobalEventsWriterStream(
+        stream: GlobalEventsWriterStream
+    ): Promise<void> {
+        const helper = new DataBaseHelper<GlobalEventsWriterStream>(GlobalEventsWriterStream);
+        await helper.delete(stream);
     }
 }

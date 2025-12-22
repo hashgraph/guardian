@@ -1,0 +1,179 @@
+<div class="global-events-reader-block">
+    <div class="header">
+        <h4>Global events</h4>
+
+        <div class="actions">
+            <button
+                type="button"
+                class="btn btn-sm btn-primary"
+                (click)="openAddTopicModal()"
+                [disabled]="readonly || loading">
+                + Add event topic
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                (click)="openCreateTopicModal()"
+                [disabled]="readonly || loading">
+                + Create topic
+            </button>
+        </div>
+    </div>
+
+    <table class="table table-sm table-striped table-bordered">
+        <thead>
+        <tr>
+            <th style="width: 320px;">Event topic ID</th>
+            <th style="width: 120px;">Status</th>
+            <th style="width: 260px;">Last cursor</th>
+            <th style="width: 80px;">Active</th>
+            <th style="width: 90px;">Filters</th>
+            <th style="width: 60px;"></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <ng-container *ngFor="let row of rows; let i = index">
+            <tr [class.row-saving]="row.saving">
+                <td>
+                    <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        [(ngModel)]="row.globalTopicId"
+                        readonly
+                        [disabled]="loading || row.saving">
+                </td>
+
+                <td>
+                    <span
+                        class="badge"
+                        [ngClass]="{
+                            'badge-success': row.status === 'FREE',
+                            'badge-danger': row.status === 'ERROR',
+                            'badge-warning': row.status === 'PROCESSING'
+                        }">
+                        {{ row.status || '-' }}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="text-muted">{{ row.lastMessageCursor || '-' }}</span>
+                </td>
+
+                <td class="text-center">
+                    <input
+                        type="checkbox"
+                        [ngModel]="row.active"
+                        (ngModelChange)="onActiveChanged(row, $event)"
+                        [disabled]="readonly || loading || row.saving">
+                </td>
+
+                <td class="text-center">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        (click)="openFilters(row)"
+                        [disabled]="readonly || loading || row.saving">
+                        Filters
+                    </button>
+                </td>
+
+                <td class="text-center">
+                    <span
+                        class="default-delete-tooltip-wrapper"
+                        [attr.title]="row.isDefault ? 'Default topics cannot be deleted' : null">
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            (click)="removeRow(i)"
+                            [disabled]="readonly || loading || row.saving || row.isDefault">
+                            ✕
+                        </button>
+                    </span>
+                </td>
+            </tr>
+        </ng-container>
+
+        <tr *ngIf="rows.length === 0">
+            <td colspan="6" class="text-center text-muted">
+                No streams configured yet.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Add Topic Modal -->
+    <div class="modal-backdrop" *ngIf="addTopicModalOpen">
+        <div class="modal-card">
+            <div class="modal-title">
+                Add existing topic
+            </div>
+
+            <div class="modal-body">
+                <div class="field">
+                    <label>Topic ID</label>
+                    <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        [(ngModel)]="addTopicModalTopicId"
+                        [disabled]="loading"
+                    >
+                </div>
+
+                <div *ngIf="addTopicModalError" class="error">
+                    {{ addTopicModalError }}
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="closeAddTopicModal()"
+                    [disabled]="loading">
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-primary"
+                    (click)="confirmAddTopicModal()"
+                    [disabled]="loading">
+                    Add
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Topic Confirm Modal -->
+    <div class="modal-backdrop" *ngIf="createTopicModalOpen">
+        <div class="modal-card">
+            <div class="modal-title">
+                Create new topic
+            </div>
+
+            <div class="modal-body">
+                This will create a new Hedera topic and add it to your list.
+            </div>
+
+            <div class="modal-actions">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="closeCreateTopicModal()"
+                    [disabled]="loading">
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    (click)="confirmCreateTopic()"
+                    [disabled]="loading">
+                    Create
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

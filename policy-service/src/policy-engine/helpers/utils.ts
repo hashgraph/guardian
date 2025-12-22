@@ -326,7 +326,7 @@ export class PolicyUtils {
     }
 
     /**
-     * Get subject id
+     * Get subject
      * @param data
      */
     public static getCredentialSubject(data: any): any {
@@ -345,10 +345,10 @@ export class PolicyUtils {
     }
 
     /**
-     * Get subject type
+     * Get subject
      * @param document
      */
-    public static getCredentialSubjectType(document: any): any {
+    public static getCredentialSubjectByDocument(document: any): any {
         try {
             if (document) {
                 if (Array.isArray(document.credentialSubject)) {
