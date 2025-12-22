@@ -57,6 +57,7 @@ export interface GlobalEventsReaderGetDataResponse {
     readonly: boolean;
     config: ReaderConfig;
     streams: GlobalEventsStreamRow[];
+    defaultTopicIds?: string[];
 }
 
 export interface FiltersDialogResult {
@@ -89,6 +90,16 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         documentType: 'any',
         branches: [],
     };
+
+    public defaultTopicIds: string[] = [];
+
+    // Modal: Add Topic
+    public addTopicModalOpen: boolean = false;
+    public addTopicModalTopicId: string = '';
+    public addTopicModalError: string = '';
+
+    // Modal: Create Topic confirm
+    public createTopicModalOpen: boolean = false;
 
     private socket: any;
     private filtersDialogRef: DynamicDialogRef | null = null;
@@ -179,6 +190,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                 documentType: 'any',
                 branches: [],
             };
+            this.defaultTopicIds = [];
             return;
         }
 
@@ -189,18 +201,26 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             branches: [],
         };
 
+        this.defaultTopicIds = (data.defaultTopicIds || [])
+            .map((t) => this.normalizeTopicId(t))
+            .filter((t) => t.length > 0);
+
+        const defaultSet = new Set<string>(this.defaultTopicIds);
+
         const streams = Array.isArray(data.streams) ? data.streams : [];
 
         this.rows = streams.map((s) => {
             const fallbackBranchTypes = this.buildDefaultBranchTypesMap();
             const serverBranchTypes = s.branchDocumentTypeByBranch || {};
 
+            const topicId = this.normalizeTopicId(s.globalTopicId);
+
             const row: GlobalEventsStreamRow = {
-                globalTopicId: s.globalTopicId || '',
+                globalTopicId: topicId,
                 active: !!s.active,
                 status: s.status || 'FREE',
                 lastMessageCursor: s.lastMessageCursor || '',
-                isDefault: !!s.isDefault,
+                isDefault: !!s.isDefault || defaultSet.has(topicId),
                 filterFieldsByBranch: s.filterFieldsByBranch || {},
                 branchDocumentTypeByBranch: Object.keys(serverBranchTypes).length > 0
                     ? (serverBranchTypes as any)
@@ -215,6 +235,18 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
 
     private normalizeTopicId(value: unknown): string {
         return String(value ?? '').trim();
+    }
+
+    public isDefaultTopic(topicId: string): boolean {
+        const normalized = this.normalizeTopicId(topicId);
+        if (!normalized) {
+            return false;
+        }
+        return this.defaultTopicIds.includes(normalized);
+    }
+
+    public hasDefaultTopics(): boolean {
+        return this.rows.some((r) => !!r?.isDefault);
     }
 
     private buildDefaultBranchTypesMap(): Record<string, DocumentType> {
@@ -259,26 +291,139 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         this.changeDetector.detectChanges();
     }
 
-    public addRow(): void {
+    // -----------------------------
+    // Add Topic (modal)
+    // -----------------------------
+
+    public openAddTopicModal(): void {
         if (this.readonly) {
             return;
         }
 
-        this.rows = [
-            ...this.rows,
-            {
-                globalTopicId: '',
-                active: false,
-                status: 'FREE',
-                lastMessageCursor: '',
-                isDefault: false,
-                filterFieldsByBranch: {},
-                branchDocumentTypeByBranch: this.buildDefaultBranchTypesMap(),
-                isNew: true,
-                saving: false,
-            },
-        ];
+        this.addTopicModalTopicId = '';
+        this.addTopicModalError = '';
+        this.addTopicModalOpen = true;
     }
+
+    public closeAddTopicModal(): void {
+        this.addTopicModalOpen = false;
+    }
+
+    public confirmAddTopicModal(): void {
+        if (this.readonly) {
+            return;
+        }
+
+        const topicId = this.normalizeTopicId(this.addTopicModalTopicId);
+        if (!topicId) {
+            this.addTopicModalError = 'Topic ID is required';
+            return;
+        }
+
+        this.loading = true;
+
+        const payload = {
+            globalTopicId: topicId,
+            active: false,
+            filterFieldsByBranch: {},
+            branchDocumentTypeByBranch: this.buildDefaultBranchTypesMap(),
+        };
+
+        this.policyEngineService.setBlockData(this.id, this.policyId, {
+            operation: 'AddTopic',
+            value: { streams: [payload] },
+        }).pipe(
+            finalize(() => {
+                this.loading = false;
+                this.changeDetector.detectChanges();
+            }),
+        ).subscribe(
+            () => {
+                this.addTopicModalOpen = false;
+                this.loadData();
+            },
+            (e) => {
+                // eslint-disable-next-line no-console
+                console.error(e?.error || e);
+            },
+        );
+    }
+
+    // -----------------------------
+    // Create Topic (confirm modal)
+    // -----------------------------
+
+    public openCreateTopicModal(): void {
+        if (this.readonly) {
+            return;
+        }
+
+        this.createTopicModalOpen = true;
+    }
+
+    public closeCreateTopicModal(): void {
+        this.createTopicModalOpen = false;
+    }
+
+    public confirmCreateTopic(): void {
+        if (this.readonly) {
+            return;
+        }
+        if (!this.policyId || !this.id) {
+            return;
+        }
+
+        this.loading = true;
+
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                operation: 'CreateTopic',
+                value: { streams: [] },
+            })
+            .pipe(
+                finalize(() => {
+                    this.loading = false;
+                    this.changeDetector.detectChanges();
+                }),
+            )
+            .subscribe(
+                (res: any) => {
+                    this.createTopicModalOpen = false;
+
+                    const topicId = this.normalizeTopicId(res?.topicId);
+                    if (!topicId) {
+                        this.loadData();
+                        return;
+                    }
+
+                    this.rows = [
+                        {
+                            globalTopicId: topicId,
+                            active: false,
+                            status: 'FREE',
+                            lastMessageCursor: '',
+                            isDefault: false,
+                            filterFieldsByBranch: {},
+                            branchDocumentTypeByBranch: this.buildDefaultBranchTypesMap(),
+                            isNew: false,
+                            saving: false,
+                        },
+                        ...this.rows,
+                    ];
+
+                    this.changeDetector.detectChanges();
+                    this.loadData();
+                },
+                (e) => {
+                    // eslint-disable-next-line no-console
+                    console.error(e?.error || e);
+                },
+            );
+    }
+
+    // -----------------------------
+    // Delete
+    // -----------------------------
 
     public removeRow(index: number): void {
         if (this.readonly) {
@@ -293,11 +438,14 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        // Draft row: remove locally
         if (row.isNew) {
             const copy = [...this.rows];
             copy.splice(index, 1);
             this.rows = copy;
+            return;
+        }
+
+        if (row.isDefault) {
             return;
         }
 
@@ -326,110 +474,15 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         );
     }
 
-    public saveRow(row: GlobalEventsStreamRow): void {
-        if (this.readonly) {
-            return;
-        }
-        if (!row || !row.isNew) {
-            return;
-        }
-
-        const topicId = this.normalizeTopicId(row.globalTopicId);
-        if (!topicId) {
-            return;
-        }
-
-        this.setRowSaving(row, true);
-
-        const payload = {
-            globalTopicId: topicId,
-            active: false,
-            filterFieldsByBranch: {},
-            branchDocumentTypeByBranch: row.branchDocumentTypeByBranch || this.buildDefaultBranchTypesMap(),
-        };
-
-        this.policyEngineService.setBlockData(this.id, this.policyId, {
-            operation: 'AddTopic',
-            value: { streams: [payload] },
-        }).pipe(
-            finalize(() => {
-                this.setRowSaving(row, false);
-            }),
-        ).subscribe(
-            () => {
-                row.isNew = false;
-                row.active = false;
-                this.loadData();
-            },
-            (e) => {
-                // eslint-disable-next-line no-console
-                console.error(e?.error || e);
-            },
-        );
-    }
-
-    public createTopic(): void {
-        if (this.readonly) {
-            return;
-        }
-        if (!this.policyId || !this.id) {
-            return;
-        }
-
-        this.loading = true;
-
-        this.policyEngineService
-            .setBlockData(this.id, this.policyId, {
-                operation: 'CreateTopic',
-                value: {},
-            })
-            .pipe(
-                finalize(() => {
-                    this.loading = false;
-                    this.changeDetector.detectChanges();
-                }),
-            )
-            .subscribe(
-                (res: any) => {
-                    const topicId = this.normalizeTopicId(res?.topicId);
-                    if (!topicId) {
-                        this.loadData();
-                        return;
-                    }
-
-                    // show instantly
-                    this.rows = [
-                        {
-                            globalTopicId: topicId,
-                            active: false,
-                            status: 'FREE',
-                            lastMessageCursor: '',
-                            isDefault: false,
-                            filterFieldsByBranch: {},
-                            branchDocumentTypeByBranch: this.buildDefaultBranchTypesMap(),
-                            isNew: false,
-                            saving: false,
-                        },
-                        ...this.rows,
-                    ];
-
-                    this.changeDetector.detectChanges();
-
-                    // sync with server (status/cursor/etc)
-                    this.loadData();
-                },
-                (e) => {
-                    // eslint-disable-next-line no-console
-                    console.error(e?.error || e);
-                },
-            );
-    }
+    // -----------------------------
+    // Filters / Update
+    // -----------------------------
 
     public onActiveChanged(row: GlobalEventsStreamRow, value: boolean): void {
         if (this.readonly) {
             return;
         }
-        if (!row || row.isNew) {
+        if (!row) {
             return;
         }
         if (row.saving) {
@@ -442,9 +495,6 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
 
     public openFilters(row: GlobalEventsStreamRow): void {
         if (!row) {
-            return;
-        }
-        if (row.isNew) {
             return;
         }
 

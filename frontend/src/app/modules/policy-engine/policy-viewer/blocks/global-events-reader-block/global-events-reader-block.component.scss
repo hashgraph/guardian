@@ -31,4 +31,62 @@
             vertical-align: middle;
         }
     }
+
+    .default-hint {
+        margin-top: 6px;
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    // Disabled button tooltip helper (native title)
+    .default-delete-tooltip-wrapper {
+        display: inline-block;
+    }
+
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 24px;
+    }
+
+    .modal-card {
+        background: #ffffff;
+        border-radius: 10px;
+        min-width: 420px;
+        max-width: 720px;
+        width: 100%;
+        padding: 14px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .modal-body {
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .error {
+            color: #b00020;
+            font-size: 12px;
+        }
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 10px;
+    }
 }

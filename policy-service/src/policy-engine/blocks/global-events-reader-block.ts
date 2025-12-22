@@ -2,7 +2,7 @@ import { CronJob } from 'cron';
 
 import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
-import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType} from '../interfaces/index.js';
 import {
     AnyBlockType,
     IPolicyDocument,
@@ -23,6 +23,7 @@ import {
     Workers
 } from '@guardian/common';
 import { WorkerTaskType } from '@guardian/interfaces';
+import {TopicId} from "@hashgraph/sdk";
 
 /**
  * Message fetched from Hedera topic via worker-service.
@@ -35,8 +36,6 @@ export interface GlobalTopicMessage {
 }
 
 type GlobalDocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
-
-type StreamOperation = 'Create' | 'Update' | 'Delete';
 
 /**
  * GlobalEvent payload stored in a global events topic.
@@ -53,7 +52,7 @@ interface GlobalEvent {
 interface GlobalEventReaderBranchConfig {
     branchEvent: string;
     documentType?: GlobalDocumentType;
-    schema?: string; // local policy schema id (from DB)
+    schema?: string;
 }
 
 interface GlobalEventReaderConfig {
@@ -116,6 +115,7 @@ type FilterCheckResult =
         children: ChildrenType.Special,
         control: ControlType.UI,
         input: [
+            PolicyInputEventType.RunEvent,
             PolicyInputEventType.TimerEvent
         ],
         output: [
@@ -188,6 +188,111 @@ type FilterCheckResult =
 class GlobalEventsReaderBlock {
     private readonly schemasCache: Map<string, Schema | null> = new Map();
     private job: CronJob | null = null;
+
+    private validateTopicId(topicId: string, ref: AnyBlockType): void {
+        try {
+            TopicId.fromString(topicId);
+        } catch (_e) {
+            throw new BlockActionError('Invalid topic id format', ref.blockType, ref.uuid);
+        }
+    }
+
+    private async forceActivateDefaultTopics(ref: AnyBlockType, user: PolicyUser): Promise<void> {
+        const config = (ref.options || {}) as GlobalEventReaderConfig;
+        const configuredTopicIds = this.extractConfiguredTopicIds(config);
+
+        for (const topicIdRaw of configuredTopicIds) {
+            const topicId = String(topicIdRaw || '').trim();
+            if (!topicId) {
+                continue;
+            }
+
+            try {
+                this.validateTopicId(topicId, ref);
+            } catch (_e) {
+                continue;
+            }
+
+            const existing = await ref.databaseServer.getGlobalEventsStreamByUserTopic(
+                ref.policyId,
+                ref.uuid,
+                user.userId,
+                topicId
+            );
+
+            if (existing) {
+                if (existing.active !== true) {
+                    existing.active = true;
+                    await ref.databaseServer.updateGlobalEventsStream(existing);
+                }
+                continue;
+            }
+
+            await ref.databaseServer.createGlobalEventsStream({
+                policyId: ref.policyId,
+                blockId: ref.uuid,
+                userId: user.userId,
+                userDid: user.did,
+                globalTopicId: topicId,
+                active: true,
+                lastMessageCursor: '',
+                status: GlobalEventsStreamStatus.Free,
+                filterFieldsByBranch: {},
+                branchDocumentTypeByBranch: {},
+            });
+        }
+    }
+
+    // Creates default stream rows in DB for this user if missing.
+    private async ensureDefaultStreams(ref: AnyBlockType, user: PolicyUser): Promise<void> {
+        const existing = await ref.databaseServer.getGlobalEventsStreamsByUser(
+            ref.policyId,
+            ref.uuid,
+            user.userId
+        );
+
+        const existingTopicIds = new Set<string>();
+
+        for (const stream of existing) {
+            const topicId = String(stream?.globalTopicId || '').trim();
+            if (topicId) {
+                existingTopicIds.add(topicId);
+            }
+        }
+
+        const config = (ref.options || {}) as GlobalEventReaderConfig;
+        const optionTopicIds = Array.isArray(config.eventTopics) ? config.eventTopics : [];
+
+        for (const topic of optionTopicIds) {
+            const topicId = String(topic?.topicId || '').trim();
+            if (!topicId) {
+                continue;
+            }
+
+            try {
+                this.validateTopicId(topicId, ref);
+            } catch (_e) {
+                continue;
+            }
+
+            if (existingTopicIds.has(topicId)) {
+                continue;
+            }
+
+            await ref.databaseServer.createGlobalEventsStream({
+                policyId: ref.policyId,
+                blockId: ref.uuid,
+                userId: user.userId,
+                userDid: user.did,
+                globalTopicId: topicId,
+                active: false,
+                lastMessageCursor: '',
+                status: GlobalEventsStreamStatus.Free,
+                filterFieldsByBranch: {},
+                branchDocumentTypeByBranch: {},
+            });
+        }
+    }
 
     /**
      * Same pattern as ExternalTopicBlock:
@@ -777,6 +882,45 @@ class GlobalEventsReaderBlock {
         }
     }
 
+
+    @ActionCallback({
+        type: PolicyInputEventType.RunEvent,
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ReleaseEvent,
+            PolicyOutputEventType.ErrorEvent,
+        ],
+    })
+    public async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const user: PolicyUser = event?.user;
+
+        if (!user) {
+            throw new BlockActionError('User is required', ref.blockType, ref.uuid);
+        }
+
+        // Ensure default streams exist. This creates DB rows
+        // from the block configuration if none exist for this user.
+        await this.ensureDefaultStreams(ref, user);
+
+        const state: IPolicyEventState = (event as any)?.data || (event as any);
+
+        // Hidden block behavior
+        if (!ref.defaultActive) {
+            await this.forceActivateDefaultTopics(ref, user);
+
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
+
+            ref.backup();
+            return;
+        }
+
+        return;
+    }
+
     /**
      * =========================
      * UI: getData / setData
@@ -787,8 +931,10 @@ class GlobalEventsReaderBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const config = (ref.options || {}) as GlobalEventReaderConfig;
 
+        await this.ensureDefaultStreams(ref, user);
+
         const configuredTopicIds = this.extractConfiguredTopicIds(config);
-        const configuredTopicIdSet = new Set(configuredTopicIds);
+        const configuredTopicIdSet = new Set<string>(configuredTopicIds);
 
         const dbStreams = await ref.databaseServer.getGlobalEventsStreamsByUser(
             ref.policyId,
@@ -796,52 +942,14 @@ class GlobalEventsReaderBlock {
             user.userId
         );
 
-        const byTopicId = new Map<string, GlobalEventsReaderStream>();
-        for (const stream of dbStreams || []) {
-            const topicId = (stream.globalTopicId || '').trim();
-            if (!topicId) {
-                continue;
-            }
-            byTopicId.set(topicId, stream);
-        }
-
         const rows: UiStreamRow[] = [];
 
-        // 1) defaults from config -> virtual rows unless user has DB override
-        for (const topicId of configuredTopicIds) {
-            const dbRow = byTopicId.get(topicId);
-
-            if (dbRow) {
-                rows.push({
-                    globalTopicId: topicId,
-                    active: Boolean(dbRow.active),
-                    status: dbRow.status || GlobalEventsStreamStatus.Free,
-                    lastMessageCursor: dbRow.lastMessageCursor || '',
-                    isDefault: true,
-                    filterFieldsByBranch: dbRow.filterFieldsByBranch || {},
-                    branchDocumentTypeByBranch: dbRow.branchDocumentTypeByBranch || {},
-                });
-            } else {
-                rows.push({
-                    globalTopicId: topicId,
-                    active: false,
-                    status: GlobalEventsStreamStatus.Free,
-                    lastMessageCursor: '',
-                    isDefault: true,
-                    filterFieldsByBranch: {},
-                    branchDocumentTypeByBranch: {},
-                });
-            }
-        }
-
-        // 2) user-added topics (not present in defaults)
         for (const stream of dbStreams || []) {
-            const topicId = (stream.globalTopicId || '').trim();
-            if (!topicId) {
-                continue;
-            }
+            const topicId = String(stream?.globalTopicId || '').trim();
 
-            if (configuredTopicIdSet.has(topicId)) {
+            try {
+                this.validateTopicId(topicId, ref);
+            } catch (_e) {
                 continue;
             }
 
@@ -850,7 +958,7 @@ class GlobalEventsReaderBlock {
                 active: Boolean(stream.active),
                 status: stream.status || GlobalEventsStreamStatus.Free,
                 lastMessageCursor: stream.lastMessageCursor || '',
-                isDefault: false,
+                isDefault: configuredTopicIdSet.has(topicId),
                 filterFieldsByBranch: stream.filterFieldsByBranch || {},
                 branchDocumentTypeByBranch: stream.branchDocumentTypeByBranch || {},
             });
@@ -869,9 +977,106 @@ class GlobalEventsReaderBlock {
                 documentType: config.documentType || 'any',
                 branches: config.branches || []
             },
-            streams: rows
+            streams: rows,
+            defaultTopicIds: configuredTopicIds,
         };
     }
+
+    // public async getData(user: PolicyUser): Promise<IPolicyGetData> {
+    //     const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+    //     const config = (ref.options || {}) as GlobalEventReaderConfig;
+    //
+    //     await this.ensureDefaultStreams(ref, user);
+    //
+    //     const configuredTopicIds = this.extractConfiguredTopicIds(config);
+    //     const configuredTopicIdSet = new Set(configuredTopicIds);
+    //
+    //     const dbStreams = await ref.databaseServer.getGlobalEventsStreamsByUser(
+    //         ref.policyId,
+    //         ref.uuid,
+    //         user.userId
+    //     );
+    //
+    //     const byTopicId = new Map<string, GlobalEventsReaderStream>();
+    //     for (const stream of dbStreams || []) {
+    //         const topicId = (stream.globalTopicId || '').trim();
+    //
+    //         try {
+    //             this.validateTopicId(topicId, ref);
+    //         } catch (_e) {
+    //             continue;
+    //         }
+    //
+    //         byTopicId.set(topicId, stream);
+    //     }
+    //
+    //     const rows: UiStreamRow[] = [];
+    //
+    //     // 1) defaults from config -> virtual rows unless user has DB override
+    //     for (const topicId of configuredTopicIds) {
+    //         const dbRow = byTopicId.get(topicId);
+    //
+    //         if (dbRow) {
+    //             rows.push({
+    //                 globalTopicId: topicId,
+    //                 active: Boolean(dbRow.active),
+    //                 status: dbRow.status || GlobalEventsStreamStatus.Free,
+    //                 lastMessageCursor: dbRow.lastMessageCursor || '',
+    //                 isDefault: true,
+    //                 filterFieldsByBranch: dbRow.filterFieldsByBranch || {},
+    //                 branchDocumentTypeByBranch: dbRow.branchDocumentTypeByBranch || {},
+    //             });
+    //         } else {
+    //             rows.push({
+    //                 globalTopicId: topicId,
+    //                 active: false,
+    //                 status: GlobalEventsStreamStatus.Free,
+    //                 lastMessageCursor: '',
+    //                 isDefault: true,
+    //                 filterFieldsByBranch: {},
+    //                 branchDocumentTypeByBranch: {},
+    //             });
+    //         }
+    //     }
+    //
+    //     // 2) user-added topics (not present in defaults)
+    //     for (const stream of dbStreams || []) {
+    //         const topicId = (stream.globalTopicId || '').trim();
+    //         if (!topicId) {
+    //             continue;
+    //         }
+    //
+    //         if (configuredTopicIdSet.has(topicId)) {
+    //             continue;
+    //         }
+    //
+    //         rows.push({
+    //             globalTopicId: topicId,
+    //             active: Boolean(stream.active),
+    //             status: stream.status || GlobalEventsStreamStatus.Free,
+    //             lastMessageCursor: stream.lastMessageCursor || '',
+    //             isDefault: false,
+    //             filterFieldsByBranch: stream.filterFieldsByBranch || {},
+    //             branchDocumentTypeByBranch: stream.branchDocumentTypeByBranch || {},
+    //         });
+    //     }
+    //
+    //     return {
+    //         id: ref.uuid,
+    //         blockType: ref.blockType,
+    //         actionType: ref.actionType,
+    //         readonly: (
+    //             ref.actionType === LocationType.REMOTE &&
+    //             user.location === LocationType.REMOTE
+    //         ),
+    //         config: {
+    //             eventTopics: config.eventTopics || [],
+    //             documentType: config.documentType || 'any',
+    //             branches: config.branches || []
+    //         },
+    //         streams: rows
+    //     };
+    // }
 
     /**
      * Create a new dynamic global topic using user's relayer credentials.
@@ -947,13 +1152,15 @@ class GlobalEventsReaderBlock {
         const configuredTopicIdSet = new Set<string>(this.extractConfiguredTopicIds(config));
 
         const value: SetDataPayload = data?.value ?? { streams: [] };
-        const streams = Array.isArray(value.streams) ? value.streams : [];
+        const streams = value.streams ?? [];
 
         // ==========================================================
         // Create topic - create Hedera topic + create DB stream row
         // ==========================================================
         if (operation === 'CreateTopic') {
             const topicId = await this.createTopic(ref, user);
+
+            this.validateTopicId(topicId, ref);
 
             await ref.databaseServer.createGlobalEventsStream({
                 policyId: ref.policyId,
@@ -976,7 +1183,10 @@ class GlobalEventsReaderBlock {
 
         for (const item of streams) {
             const topicId = (item?.globalTopicId || '').trim();
-            if (!topicId) {
+
+            try {
+                this.validateTopicId(topicId, ref);
+            } catch (_e) {
                 continue;
             }
 
@@ -991,6 +1201,10 @@ class GlobalEventsReaderBlock {
             // DELETE
             // ==========================================================
             if (operation === 'Delete') {
+                if (configuredTopicIdSet.has(topicId)) {
+                    continue;
+                }
+
                 if (existing) {
                     await ref.databaseServer.deleteGlobalEventsStream(existing);
                 }
