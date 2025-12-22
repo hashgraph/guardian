@@ -97,3 +97,7 @@ Behavior:
 * A "Show more / Show less" toggle controls the expanded state and switches the JSON container between a compact and expanded height.
 
 <figure><img src="../../../../.gitbook/assets/unknown (5).png" alt=""><figcaption></figcaption></figure>
+
+## 8. Demo Video
+
+[Youtube](https://youtu.be/i6dLrYfP7r4?si=3mtSmkOR26mjLy20\&t=115)

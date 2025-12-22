@@ -4,6 +4,12 @@ icon: sidebar-flip
 
 # Demo using UI
 
+[Step By Step](demo-using-ui.md#id-1.-step-by-step)
+
+[Demo Video](demo-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step
+
 ### Purpose
 
 Policy warnings improve authoring reliability by notifying users about non-fatal issues in policy definitions.
@@ -131,3 +137,7 @@ Validation logic inspects:
 * Implicit links: Blocks with defaultEvent === true, unless properties.stopPropagation === true.
 
 These connect automatically to the next sibling block in sequence.
+
+## 2. Demo Video
+
+[Youtube](https://youtu.be/VYKE2NAbfmI?si=9RwWglglvlWrfLbL\&t=191)

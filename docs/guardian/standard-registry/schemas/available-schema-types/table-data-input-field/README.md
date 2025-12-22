@@ -75,3 +75,7 @@ What it does:
 * Preview is limited to the first rows/columns
 
 <figure><img src="../../../../../.gitbook/assets/unknown (8).png" alt=""><figcaption></figcaption></figure>
+
+## Demo Video
+
+[Youtube](https://youtu.be/m3waGJ7qgs4?si=0bEJusqaQ2hPEU4t\&t=121)
