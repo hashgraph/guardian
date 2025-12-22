@@ -273,6 +273,15 @@ export class Policy extends BaseEntity {
     @Property({ persist: false, nullable: true })
     _hashMapFileId?: ObjectId;
 
+    @Property({ nullable: true })
+    originalZipId?: ObjectId;
+
+    @Property({ nullable: true })
+    originalChanged?: boolean;
+
+    @Property({ nullable: true })
+    originalHash?: string;
+
     /**
      * Set policy defaults
      */

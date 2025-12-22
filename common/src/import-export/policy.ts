@@ -2,7 +2,13 @@ import JSZip from 'jszip';
 import { Artifact, Formula, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { ImportExportUtils } from './utils.js';
-import { PolicyCategoryExport, SchemaCategory } from '@guardian/interfaces';
+import { PolicyCategoryExport, SchemaCategory, IOwner, SchemaHelper, Schema as InterfaceSchema, SchemaEntity, GenerateUUIDv4 } from '@guardian/interfaces';
+import stringify from 'fast-json-stable-stringify';
+import crypto from 'crypto';
+import { VcHelper } from '../helpers/vc-helper.js';
+import { DataBaseHelper } from '../helpers/index.js';
+import { ObjectId } from 'bson';
+
 
 interface IArtifact {
     name: string;
@@ -197,96 +203,85 @@ export class PolicyImportExport {
      * @returns Zip file
      */
     public static async generateZipFile(components: IPolicyComponents): Promise<JSZip> {
-        const policyObject = { ...components.policy };
-        policyObject.id = (components.policy.id || components.policy._id)?.toString();
-        delete policyObject._id;
-        delete policyObject.messageId;
-        delete policyObject.status;
-        delete policyObject.createDate;
-
         const zip = new JSZip();
+        const preparedComponents: IPolicyComponents = this.preparePolicyComponents(components);
 
         zip.folder('artifacts');
-        for (const artifact of components.artifacts) {
+        for (const artifact of preparedComponents.artifacts) {
             zip.file(`artifacts/${artifact.uuid}`, artifact.data);
         }
 
-        zip.file(`artifacts/metadata.json`, JSON.stringify(components.artifacts.map(item => {
-            return {
+        zip.file(`artifacts/metadata.json`, JSON.stringify(preparedComponents.artifacts.map(item => {
+            const artifactItem = {
                 name: item.name,
                 uuid: item.uuid,
                 extention: item.extention
             }
+            return artifactItem;
         })));
 
         zip.folder('tokens');
-        for (const token of components.tokens) {
-            const item = { ...token };
-            item.id = (item.id || item._id)?.toString();
-            delete item._id;
-            delete item.adminId;
-            delete item.owner;
-            delete item.wipeContractId;
-            zip.file(`tokens/${item.tokenName}.json`, JSON.stringify(item));
+        for (const token of preparedComponents.tokens) {
+            zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
         }
 
         zip.folder('schemas');
-        for (const schema of components.schemas) {
-            const item = { ...schema };
-            item.id = (item.id || item._id)?.toString();
-            delete item._id;
-            delete item.status;
-            delete item.readonly;
-            zip.file(`schemas/${item.iri}.json`, JSON.stringify(item));
+        for (const schema of preparedComponents.schemas) {
+            zip.file(`schemas/${schema.iri}.json`, JSON.stringify(schema));
         }
 
         zip.folder('systemSchemas');
-        for (const schema of components.systemSchemas) {
-            const item = { ...schema };
-            item.id = (item.id || item._id)?.toString();
-            delete item._id;
-            delete item.status;
-            delete item.readonly;
-            zip.file(`systemSchemas/${item.iri}.json`, JSON.stringify(item));
+        for (const schema of preparedComponents.systemSchemas) {
+            zip.file(`systemSchemas/${schema.iri}.json`, JSON.stringify(schema));
         }
 
         zip.folder('tools');
-        for (const tool of components.tools) {
-            const item = {
-                id: (tool.id || tool._id)?.toString(),
-                name: tool.name,
-                description: tool.description,
-                messageId: tool.messageId,
-                owner: tool.creator,
-                hash: tool.hash
-            };
-            zip.file(`tools/${tool.hash}.json`, JSON.stringify(item));
+        for (const tool of preparedComponents.tools) {
+            zip.file(`tools/${tool.hash}.json`, JSON.stringify(tool));
         }
 
         zip.folder('tags');
-        for (let index = 0; index < components.tags.length; index++) {
-            const tag = { ...components.tags[index] };
-            tag.id = (tag.id || tag._id)?.toString();
-            delete tag._id;
-            tag.status = 'History';
-            zip.file(`tags/${index}.json`, JSON.stringify(tag));
+        for (let index = 0; index < preparedComponents.tags.length; index++) {
+            zip.file(`tags/${index}.json`, JSON.stringify(preparedComponents.tags[index]));
         }
 
         zip.folder('tests');
-        for (const test of components.tests) {
+        for (const test of preparedComponents.tests) {
             zip.file(`tests/${test.uuid}.record`, test.data);
         }
 
         zip.folder('formulas');
-        for (const formula of components.formulas) {
-            const item = { ...formula };
-            item.id = (item.id || item._id)?.toString();
-            delete item._id;
-            delete item.status;
-            zip.file(`formulas/${item.uuid}.json`, JSON.stringify(item));
+        for (const formula of preparedComponents.formulas) {
+            zip.file(`formulas/${formula.uuid}.json`, JSON.stringify(formula));
         }
 
-        zip.file(PolicyImportExport.policyFileName, JSON.stringify(policyObject));
+        const hashSum = this.getPolicyHash(preparedComponents);
+
+        let credentialSubject: any = { 
+            name: preparedComponents.policy.name,
+            description: preparedComponents.policy.description,
+            version: preparedComponents.policy.codeVersion,
+            hash: hashSum,
+        }
+
+        const policySchema = await DatabaseServer.getSchemaByType(preparedComponents.policy.topicId, SchemaEntity.POLICY_EXPORT_PROOF);
+        credentialSubject = SchemaHelper.updateObjectContext(new InterfaceSchema(policySchema), credentialSubject);
+
+        const vcHelper = new VcHelper();
+        const didDocument = await vcHelper.loadDidDocument(preparedComponents.policy?.owner, preparedComponents.policy?.ownerId);
+        
+        if(didDocument) {
+            const vc = await vcHelper.createVerifiableCredential(
+                credentialSubject,
+                didDocument,
+                null,
+                null
+            );
+
+            zip.file('proof.json', JSON.stringify(vc.getDocument()));
+        }
+
+        zip.file(PolicyImportExport.policyFileName, JSON.stringify(preparedComponents.policy));
         return zip;
     }
 
@@ -320,7 +315,6 @@ export class PolicyImportExport {
             Promise.all(fileEntries.filter(file => /^formulas\/.+/.test(file[0])).map(file => file[1].async('string'))),
             Promise.all(fileEntries.filter(file => /^systemSchem[a,e]s\/.+/.test(file[0])).map(file => file[1].async('string'))),
         ]);
-
         const tokens = tokensStringArray.map(item => JSON.parse(item));
         const schemas = schemasStringArray.map(item => JSON.parse(item));
         const tools = toolsStringArray.map(item => JSON.parse(item));
@@ -331,6 +325,15 @@ export class PolicyImportExport {
         const metaDataFile = (Object.entries(content.files).find(file => file[0] === 'artifacts/metadata.json'));
         const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
         const metaDataBody: any[] = JSON.parse(metaDataString);
+
+        // const proofDataFile = (Object.entries(content.files).find(file => file[0] === 'proof.json'));
+        // const proofDataString = proofDataFile && await proofDataFile[1].async('string') || '[]';
+        // const proofDataBody = JSON.parse(proofDataString);
+
+        //proofDataBody.credentialSubject[0].hash
+        //const vcHelper = new VcHelper();
+        // const verify = await vcHelper.verifyVC(proofDataBody);
+        // console.log('verified proof', verify);
 
         let artifacts: any;
         if (includeArtifactsData) {
@@ -372,7 +375,7 @@ export class PolicyImportExport {
             policy.categoriesExport = [];
         }
 
-        return {
+        const policyComponents: IPolicyComponents = {
             policy,
             tokens,
             schemas,
@@ -382,7 +385,26 @@ export class PolicyImportExport {
             tools,
             tests,
             formulas
-        };
+        }
+
+        const hashSum = this.getPolicyHash(policyComponents);
+        console.log('hashSum', hashSum);
+
+        return policyComponents;
+    }
+
+    private static _createFile(_id: string, json: string | Buffer, name: string): Promise<ObjectId> {
+        return new Promise<ObjectId>((resolve, reject) => {
+            try {
+                const fileName = `${name}_${_id?.toString()}_${GenerateUUIDv4()}`;
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
+                const fileId = fileStream.id;
+                fileStream.write(json);
+                fileStream.end(() => resolve(fileId));
+            } catch (error) {
+                reject(error)
+            }
+        });
     }
 
     /**
@@ -461,5 +483,123 @@ export class PolicyImportExport {
         const schemas = await new DatabaseServer().find(Schema, { topicId, readonly: false });
         const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: toolsTopicMap } });
         return { schemas, toolSchemas };
+    }
+
+    public static getPolicyHash(items: IPolicyComponents): string {
+        const preparedItems = this.preparePolicyComponents(items);
+        this.removeField(preparedItems, 'id');
+        this.removeField(preparedItems, 'schema');
+
+        const json = stringify(preparedItems);
+        return crypto.createHash('sha256').update(json).digest('hex');
+    }
+
+    private static preparePolicyComponents(components: IPolicyComponents): IPolicyComponents {
+        const policyObject = structuredClone(components.policy);
+        
+        policyObject.id = (components.policy.id || components.policy._id)?.toString();
+        delete policyObject._id;
+        delete policyObject.messageId;
+        delete policyObject.status;
+        delete policyObject.createDate;
+
+        const artifacts = components.artifacts.map(a => ({
+            name: a.name,
+            uuid: a.uuid,
+            extention: a.extention,
+            data: a.data,
+        }));
+
+        const tokens = components.tokens.map(token => {
+            const item: any = { ...token };
+            item.id = (item.id || item._id)?.toString();
+            delete item._id;
+            delete item.adminId;
+            delete item.owner;
+            delete item.wipeContractId;
+            return item;
+        });
+
+        const schemas = components.schemas.map(schema => {
+            const item: any = { ...schema };
+            item.id = (item.id || item._id)?.toString();
+            delete item._id;
+            delete item.status;
+            delete item.readonly;
+            return item;
+        });
+
+        const systemSchemas = components.systemSchemas.map(schema => {
+            const item: any = { ...schema };
+            item.id = (item.id || item._id)?.toString();
+            delete item._id;
+            delete item.status;
+            delete item.readonly;
+            return item;
+        });
+
+        const tools: PolicyTool[] = components.tools.map(tool => {
+            tool.id =  (tool.id || tool._id)?.toString();
+            tool.owner = tool.creator;
+
+            return tool;
+        });
+
+        const tags = components.tags.map(tag => {
+            const item: any = { ...tag };
+            item.id = (item.id || item._id)?.toString();
+            delete item._id;
+            item.status = 'History';
+            return item;
+        });
+
+        const tests = components.tests.map(test => ({
+            ...test
+        }));
+
+        const formulas = components.formulas.map(formula => {
+            const item: any = { ...formula };
+            item.id = (item.id || item._id)?.toString();
+            delete item._id;
+            delete item.status;
+            return item;
+        });
+
+        return {
+            policy: policyObject,
+            tokens,
+            schemas,
+            systemSchemas,
+            artifacts,
+            tags,
+            tools,
+            tests,
+            formulas
+        };
+    }
+
+    static async saveOriginalZip(policy: Policy, zipFile: any) {
+        const fileName = `${policy.name}_zip_${GenerateUUIDv4()}`;
+        //todo id
+        const fileId = await this._createFile('68f5be7934668980efb8f98a', zipFile, fileName);
+        console.log('FILE_ID', fileId);
+        policy.originalZipId = fileId; 
+    }
+
+    static async removeField(obj, fieldName) {
+        if (Array.isArray(obj)) {
+            obj.forEach(item => this.removeField(item, fieldName));
+            return;
+        }
+
+        if (obj !== null && typeof obj === "object") {
+            for (const key of Object.keys(obj)) {
+                if (key === fieldName) {
+                    delete obj[key];
+                } else {
+                    this.removeField(obj[key], fieldName);
+                }
+            }
+        }
     }
 }

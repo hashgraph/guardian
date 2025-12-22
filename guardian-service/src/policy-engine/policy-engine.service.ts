@@ -1171,6 +1171,22 @@ export class PolicyEngineService {
                     }
                     let result = await DatabaseServer.updatePolicyConfig(policyId, model);
                     result = await PolicyImportExportHelper.updatePolicyComponents(result, logger, owner.id);
+
+                    console.log('result.originalZipId', result.originalZipId);
+                    console.log('result.originalChanged', result.originalChanged);
+
+                    //check if original policies changed
+                    if(result && result.originalZipId && !result.originalChanged) {
+                        const policyComponents = await PolicyImportExport.loadPolicyComponents(result);
+                        const policyHash = PolicyImportExport.getPolicyHash(policyComponents);
+                        console.log('current policy hash', policyHash);
+                        console.log('original hash', result.originalHash);
+
+                        if(policyHash !== result.originalHash) {
+                            result.originalChanged = true;
+                        }
+                    }
+
                     return new MessageResponse(result);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1534,6 +1550,15 @@ export class PolicyEngineService {
                     if (demo) {
                         await this.policyEngine.startDemo(result.policy, owner, logger, NewNotifier.empty());
                     }
+
+                    if(result.policy) //todo
+                    {
+                        await PolicyImportExport.saveOriginalZip(result.policy, zip);
+                        result.policy.originalChanged = false;
+                        const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
+                        result.policy.originalHash = policyHash;
+                    } 
+
                     return new MessageResponse(true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1568,6 +1593,9 @@ export class PolicyEngineService {
 
                     await logger.info(`Import policy by file`, ['GUARDIAN_SERVICE'], owner?.id);
                     const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
+                    console.log('IMPOORT ASYNC');
+                    const clonedComponents = structuredClone(policyToImport);
+                    
                     const result = await PolicyImportExportHelper.importPolicy(
                         demo ? ImportMode.DEMO : ImportMode.COMMON,
                         (new ImportPolicyOptions(logger))
@@ -1596,10 +1624,28 @@ export class PolicyEngineService {
                         policyId: result.policy.id,
                         errors: result.errors
                     });
+
+                    if(result.policy) //todo
+                    {
+                        await PolicyImportExport.saveOriginalZip(result.policy, Buffer.from(zip.data));
+                        result.policy.originalChanged = false;
+                        const policyHash = await PolicyImportExport.getPolicyHash(clonedComponents);
+                        console.log('!policyHash async!', policyHash);
+                        result.policy.originalHash = policyHash;
+
+                        console.log('result.policy.id', result.policy.id);
+                        console.log('result.policy', JSON.stringify(result.policy));
+
+                        await DatabaseServer.updatePolicy(result.policy);
+                        //let policy = await this.policyEngine.(model, owner, notifier, logger);
+                    } 
+
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
                     notifier.fail(error);
                 });
+
+
                 return new MessageResponse(task);
             });
 
