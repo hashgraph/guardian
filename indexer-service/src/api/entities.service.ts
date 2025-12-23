@@ -2005,10 +2005,13 @@ export class EntityService {
 
             const versions = await em.find(Message, {
                 type: MessageType.VC_DOCUMENT,
-                "options.initId": messageId
+                $or: [
+                    { consensusTimestamp: messageId },
+                    { "options.initId": messageId }
+                ]
             } as any, {
                 orderBy: {
-                    consensusTimestamp: 'ASC'
+                    consensusTimestamp: 'DESC'
                 }
             });
 

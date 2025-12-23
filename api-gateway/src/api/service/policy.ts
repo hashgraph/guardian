@@ -4396,37 +4396,29 @@ export class PolicyApi {
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_MANAGE,
-        // UserRole.STANDARD_REGISTRY,
-        // UserRole.USER,
     )
-    // @ApiOperation({
-    //     summary: 'Sends data to the specified block.',
-    //     description: 'Sends data to the specified block.',
-    // })
-    // @ApiParam({
-    //     name: 'policyId',
-    //     type: String,
-    //     description: 'Policy Id',
-    //     required: true,
-    //     example: Examples.DB_ID
-    // })
-    // @ApiBody({
-    //     description: 'Data',
-    //     type: Object
-    // })
-    // @ApiOkResponse({
-    //     description: 'Successful operation.',
-    //     type: BlockDTO
-    // })
-    // @ApiServiceUnavailableResponse({
-    //     description: 'Block Unavailable.',
-    //     type: ServiceUnavailableErrorDTO,
-    // })
-    // @ApiInternalServerErrorResponse({
-    //     description: 'Internal server error.',
-    //     type: InternalServerErrorDTO,
-    // })
-    //@ApiExtraModels(BlockDTO, InternalServerErrorDTO)
+    @ApiOperation({
+        summary: 'Create new version vc document.',
+        description: 'Create new version vc document.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Data',
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
     @HttpCode(HttpStatus.OK)
     async createNewVersionVcDocument(
         @AuthUser() user: IAuthUser,
@@ -4443,43 +4435,38 @@ export class PolicyApi {
     }
 
     /**
-    * Create new version VC document
+    * Get all version VC documents
     */
     @Get('/:policyId/get-all-version-vc-documents/:documentId')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_MANAGE,
-        // UserRole.STANDARD_REGISTRY,
-        // UserRole.USER,
     )
-    // @ApiOperation({
-    //     summary: 'Sends data to the specified block.',
-    //     description: 'Sends data to the specified block.',
-    // })
-    // @ApiParam({
-    //     name: 'policyId',
-    //     type: String,
-    //     description: 'Policy Id',
-    //     required: true,
-    //     example: Examples.DB_ID
-    // })
-    // @ApiBody({
-    //     description: 'Data',
-    //     type: Object
-    // })
-    // @ApiOkResponse({
-    //     description: 'Successful operation.',
-    //     type: BlockDTO
-    // })
-    // @ApiServiceUnavailableResponse({
-    //     description: 'Block Unavailable.',
-    //     type: ServiceUnavailableErrorDTO,
-    // })
-    // @ApiInternalServerErrorResponse({
-    //     description: 'Internal server error.',
-    //     type: InternalServerErrorDTO,
-    // })
-    //@ApiExtraModels(BlockDTO, InternalServerErrorDTO)
+    @ApiOperation({
+        summary: 'Get all version VC documents.',
+        description: 'Get all version VC documents.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Document Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
     @HttpCode(HttpStatus.OK)
     async getAllVersionVcDocuments(
         @AuthUser() user: IAuthUser,

@@ -278,7 +278,7 @@
             <div *ngIf="ifSimpleArray(item)" class="form-field-array">
                 <div class="label-field" id="detail-section">
                     <div
-                        *ngIf="!isChildSchema && formModel.controls"
+                        *ngIf="!isChildSchema && formModel.controls && !isEditMode"
                         class="page-number"
                     >
                         {{ i }}/{{ formModel.controls.length - 1 }}
@@ -825,7 +825,7 @@
                         <ng-template pTemplate="header">
                             <div class="group-label-field" id="detail-section">
                                 <div
-                                    *ngIf="!isChildSchema && formModel.controls"
+                                    *ngIf="!isChildSchema && formModel.controls && !isEditMode"
                                     class="page-number"
                                 >
                                     {{ i }}/{{ formModel.controls.length - 1 }}
