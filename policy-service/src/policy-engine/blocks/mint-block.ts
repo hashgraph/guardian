@@ -290,9 +290,6 @@ export class MintBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
         const tags = await PolicyUtils.getBlockTags(ref);
-        for (const document of documents) {
-            document.setTags(tags);
-        }
 
         const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
@@ -305,8 +302,6 @@ export class MintBlock {
         const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref, userId);
 
         const mintVC = await this.createMintVC(policyOwnerDid, token, tokenAmount, ref, actionStatus?.id);
-        mintVC.setTags(tags);
-
         const reportVC = await this.createReportVC(ref, policyOwnerCred, user, documents, messages, additionalMessages, userId, actionStatus?.id);
 
         let vp: any;

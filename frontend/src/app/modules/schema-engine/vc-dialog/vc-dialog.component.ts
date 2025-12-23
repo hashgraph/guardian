@@ -40,6 +40,7 @@ export class VCViewerDialog {
     public documentId?: string;
     public schemaId?: string;
     public messageId?: string;
+    public tags?: any[] = [];
     public user: UserPermissions = new UserPermissions();
     public additionalOptionsData?: {
         type: string;
@@ -101,6 +102,7 @@ export class VCViewerDialog {
         this.title = title;
         this.json = document ? JSON.stringify((document), null, 4) : '';
         this.text = document || '';
+        this.tags = document?.tags;
 
         const fileSizeBytes = new Blob([typeof document === 'string' ? document : JSON.stringify(document)]).size;
         this.fileSize = Math.round((fileSizeBytes / (1024 * 1024)));

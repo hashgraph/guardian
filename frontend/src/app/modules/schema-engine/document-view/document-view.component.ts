@@ -26,7 +26,6 @@ export class DocumentViewComponent implements OnInit {
     @Input('discussion') discussionData!: any;
     @Input('discussion-action') discussionAction: boolean = false;
     @Input('discussion-view') discussionView: boolean = false;
-    @Input('tags') tags: any[] = [];
 
     @Input() dryRun?: boolean = false;
     @Input() policyId?: string;

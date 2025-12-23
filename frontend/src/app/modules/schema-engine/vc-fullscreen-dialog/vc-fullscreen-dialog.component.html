@@ -17,8 +17,22 @@
             </button>
         </div>
 
-        <div class="header-text">
-            {{title}}
+        <div class="header-container">
+            <div class="header-text">
+                {{title}}
+            </div>
+            <div *ngIf="tags && tags.length > 0" class="tags-container">
+                <div class="tag-item" *ngFor="let tag of tags">
+                    <svg-icon
+                        class="svg-icon-16"
+                        src="/assets/images/icons/16/label.svg"
+                        svgClass="primary-color">
+                    </svg-icon>
+                    <div class="name">
+                        {{ tag.name }}
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="header-toolbar">
@@ -88,7 +102,6 @@
                         [schemaId]="schemaId"
                         [schema]="schema"
                         [document]="document"
-                        [tags]="tags"
                         [relayer-account]="relayerAccount"
                         [getByUser]="getByUser"
                         [type]="type"
