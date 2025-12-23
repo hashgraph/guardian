@@ -594,16 +594,22 @@
 
 <div *ngIf="isAnyItemSelected()" class="options-footer-container">
     <div class="options-footer">
-        <div>
-            <p class="selected-info">{{ selectedItems.length | pluralize: 'policy' : 'policies'}} selected</p>
+        <div class="selected-info-block">
+            <span class="selected-info">{{ selectedItems.length | pluralize: 'policy' : 'policies'}} selected</span>
+            <p-button
+                (click)="onClearSelection()"
+                class="secondary-btn"
+                [outlined]="true"
+            >
+                Clear selection
+            </p-button>
         </div>
         <div>
-            <button
+            <p-button
                 (click)="onDeleteItems()"
-                class="p-button-danger"
+                severity="danger"
                 label="Delete selected"
-                pButton
-                type="button"></button>
+                type="button"></p-button>
         </div>
     </div>
 </div>

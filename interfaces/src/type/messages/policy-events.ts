@@ -52,6 +52,7 @@ export enum PolicyEvents {
     APPLY_SAVEPOINT = 'apply-savepoint',
     CREATE_POLICY_DISCUSSION = 'policy-event-create-policy-discussion',
     CREATE_POLICY_COMMENT = 'policy-event-create-policy-comment',
+    RECORD_PERSIST_STEP = 'RECORD_PERSIST_STEP',
     CREATE_NEW_VERSION_VC_DOCUMENT = 'policy-event-create-new-version-vc-document',
     GET_ALL_NEW_VERSION_VC_DOCUMENTS = 'policy-event-get-all-new-version-vc-documents',
 }

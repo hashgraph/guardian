@@ -16,11 +16,11 @@ Guardian offers three ways to configure workflow blocks:
 2. **Events Tab**: Graphical event connection management
 3. **JSON Tab**: Direct JSON manipulation for advanced configurations
 
-![Guardian Block Configuration - Properties Tab](images/README/image.png)
+![Guardian Block Configuration - Properties Tab](<../../../.gitbook/assets/image (74).png>)
 
-![Guardian Block Configuration - Events Tab](images/README/image-1.png)
+![Guardian Block Configuration - Events Tab](<../../../.gitbook/assets/image-1 (6).png>)
 
-![Guardian Block Configuration - JSON Tab](images/README/image-2.png)
+![Guardian Block Configuration - JSON Tab](<../../../.gitbook/assets/image-2 (5).png>)
 
 ### Block Structure Basics
 
@@ -42,24 +42,25 @@ Every Guardian workflow blocks follow similar JSON structure:
 ```
 
 **Key Configuration Elements:**
-- **id**: Unique identifier (Guardian auto-generates)
-- **blockType**: Defines block functionality
-- **tag**: Human-readable name for referencing in events
-- **permissions**: Which roles can access this block
-- **uiMetaData**: Display settings and user interface configuration
-- **children**: Nested blocks for containers
-- **events**: Event triggers connecting to other blocks
+
+* **id**: Unique identifier (Guardian auto-generates)
+* **blockType**: Defines block functionality
+* **tag**: Human-readable name for referencing in events
+* **permissions**: Which roles can access this block
+* **uiMetaData**: Display settings and user interface configuration
+* **children**: Nested blocks for containers
+* **events**: Event triggers connecting to other blocks
 
 ### Permission Patterns
 
 Guardian uses role-based permissions consistently across blocks:
 
-- `["OWNER"]`: Standard Registry only
-- `["Project_Proponent"]`: Project Developers only
-- `["VVB"]`: Validation/Verification Bodies only
-- `["OWNER", "Project_Proponent"]`: Multiple roles
-- `["ANY_ROLE"]`: All authenticated users
-- `["NO_ROLE"]`: Unauthenticated users (role selection)
+* `["OWNER"]`: Standard Registry only
+* `["Project_Proponent"]`: Project Developers only
+* `["VVB"]`: Validation/Verification Bodies only
+* `["OWNER", "Project_Proponent"]`: Multiple roles
+* `["ANY_ROLE"]`: All authenticated users
+* `["NO_ROLE"]`: Unauthenticated users (role selection)
 
 ## Data Input and Management Blocks
 
@@ -70,6 +71,7 @@ These blocks handle document collection, storage, and display.
 Transforms your Part III schemas into interactive forms. VM0033 uses this for PDD and monitoring report submission.
 
 **Basic Configuration:**
+
 ```json
 {
   "blockType": "requestVcDocumentBlock",
@@ -84,23 +86,23 @@ Transforms your Part III schemas into interactive forms. VM0033 uses this for PD
 }
 ```
 
-**VM0033 Example - PDD Submission:**
-The VM0033 policy uses `new_project` block to collect Project Design Documents. The `schemaId` references the PDD schema, automatically generating form fields for:
-- Project details and location
-- Baseline emission calculations
-- Project emission parameters
-- Monitoring plan specifications
+**VM0033 Example - PDD Submission:** The VM0033 policy uses `new_project` block to collect Project Design Documents. The `schemaId` references the PDD schema, automatically generating form fields for:
 
-**Your Implementation:**
-Replace VM0033's schema ID with your Part III PDD schema UUID. Guardian automatically creates form fields based on your schema structure.
+* Project details and location
+* Baseline emission calculations
+* Project emission parameters
+* Monitoring plan specifications
+
+**Your Implementation:** Replace VM0033's schema ID with your Part III PDD schema UUID. Guardian automatically creates form fields based on your schema structure.
 
 ### sendToGuardianBlock: Document Storage
 
 Stores submitted documents to database or Hedera blockchain with status tracking.
 
-![Guardian sendToGuardianBlock Configuration](images/README/image-3.png)
+![Guardian sendToGuardianBlock Configuration](<../../../.gitbook/assets/image-3 (3).png>)
 
 **Database Storage Configuration:**
+
 ```json
 {
   "id": "0c6dabc8-43aa-424e-bd80-972302ebdc18",
@@ -120,6 +122,7 @@ Stores submitted documents to database or Hedera blockchain with status tracking
 ```
 
 **Hedera Blockchain Storage Configuration:**
+
 ```json
 {
   "id": "8b45d09b-03a2-4f9f-9162-6ebb2f3878a9",
@@ -148,23 +151,25 @@ Stores submitted documents to database or Hedera blockchain with status tracking
 | **Immutability** | Mutable  | Immutable | Hedera for audit trails                |
 | **Transparency** | Private  | Public    | Hedera for verification                |
 
-**Status Management:**
-The `options` array sets document status values that other blocks can filter on. For example:
-- `"Waiting to be Added"`: New submissions awaiting registry review
-- `"Waiting for Validation"`: Projects ready for VVB assignment
-- `"Validated"`: Successfully validated projects
-- `"Minting"`: Approved for token issuance
+**Status Management:** The `options` array sets document status values that other blocks can filter on. For example:
+
+* `"Waiting to be Added"`: New submissions awaiting registry review
+* `"Waiting for Validation"`: Projects ready for VVB assignment
+* `"Validated"`: Successfully validated projects
+* `"Minting"`: Approved for token issuance
 
 **Key Configuration Fields:**
-- `entityType`: Groups related documents (e.g., "project", "report")
-- `topic`: Hedera topic for blockchain storage organization. Helpful with Guardian indexer querying.
-- `documentType`: "vc" for Verifiable Credentials, "vp" for Verifiable Presentations
+
+* `entityType`: Groups related documents (e.g., "project", "report")
+* `topic`: Hedera topic for blockchain storage organization. Helpful with Guardian indexer querying.
+* `documentType`: "vc" for Verifiable Credentials, "vp" for Verifiable Presentations
 
 ### interfaceDocumentsSourceBlock: Document Grids
 
 Displays document collections with filtering, search, and action buttons. Works with child `documentsSourceAddon` blocks to provide data.
 
 **VM0033 Real Configuration - Project Pipeline:**
+
 ```json
 {
   "blockType": "interfaceDocumentsSourceBlock",
@@ -228,14 +233,16 @@ Displays document collections with filtering, search, and action buttons. Works 
 ```
 
 **Key Configuration Properties:**
-- **uiMetaData.fields**: Array defining grid columns and their properties
-- **dataType**: Handled by child `documentsSourceAddon` blocks
-- **bindBlock**: References another block (buttonBlock) to embed in the column
-- **bindGroup**: Links to specific `documentsSourceAddon` child blocks for conditional display
+
+* **uiMetaData.fields**: Array defining grid columns and their properties
+* **dataType**: Handled by child `documentsSourceAddon` blocks
+* **bindBlock**: References another block (buttonBlock) to embed in the column
+* **bindGroup**: Links to specific `documentsSourceAddon` child blocks for conditional display
 
 **Field Type Details:**
 
 **Text Fields:**
+
 ```json
 {
   "title": "Project Name",
@@ -246,6 +253,7 @@ Displays document collections with filtering, search, and action buttons. Works 
 ```
 
 **Button Fields:**
+
 ```json
 {
   "title": "Document",
@@ -259,6 +267,7 @@ Displays document collections with filtering, search, and action buttons. Works 
 ```
 
 **Block Fields (for embedded buttons):**
+
 ```json
 {
   "title": "Operations",
@@ -269,8 +278,7 @@ Displays document collections with filtering, search, and action buttons. Works 
 }
 ```
 
-**Required Child Blocks:**
-interfaceDocumentsSourceBlock must have child `documentsSourceAddon` blocks that provide the actual data. The `bindGroup` property links specific columns to specific data sources.
+**Required Child Blocks:** interfaceDocumentsSourceBlock must have child `documentsSourceAddon` blocks that provide the actual data. The `bindGroup` property links specific columns to specific data sources.
 
 ## Logic and Calculation Blocks
 
@@ -281,6 +289,7 @@ These blocks process data, validate inputs, and execute methodology calculations
 Executes JavaScript or Python for emission reduction calculations using schema field data.
 
 **VM0033 Real Configuration:**
+
 ```json
 {
   "blockType": "customLogicBlock",
@@ -291,12 +300,14 @@ Executes JavaScript or Python for emission reduction calculations using schema f
 ```
 
 **Key Configuration Properties:**
-- **expression**: JavaScript or Python code as a string
-- **permissions**: Which roles can trigger the calculation
-- **defaultActive**: Whether the block executes automatically
-- **onErrorAction**: How to handle calculation errors
+
+* **expression**: JavaScript or Python code as a string
+* **permissions**: Which roles can trigger the calculation
+* **defaultActive**: Whether the block executes automatically
+* **onErrorAction**: How to handle calculation errors
 
 **VM0033 JavaScript Example:**
+
 ```javascript
 // Wetland restoration emission reduction calculation
 function calculateEmissionReductions() {
@@ -357,14 +368,14 @@ function calculateEmissionReductions() {
 calculateEmissionReductions();
 ```
 
-**Your Implementation:**
-Use your Part III schema field names as JavaScript variables. The calculation result creates new document fields accessible by other blocks.
+**Your Implementation:** Use your Part III schema field names as JavaScript variables. The calculation result creates new document fields accessible by other blocks.
 
 ### documentValidatorBlock: Data Validation
 
 Validates documents against methodology rules beyond basic schema validation.
 
 **Configuration Pattern:**
+
 ```json
 {
   "blockType": "documentValidatorBlock",
@@ -382,16 +393,18 @@ Validates documents against methodology rules beyond basic schema validation.
 ```
 
 **Validation Rules:**
-- Field value comparisons (`>=`, `<=`, `==`, `!=`)
-- Cross-field validation (one field depends on another)
-- Date range checking for monitoring periods
-- Numeric range validation for emission factors
+
+* Field value comparisons (`>=`, `<=`, `==`, `!=`)
+* Cross-field validation (one field depends on another)
+* Date range checking for monitoring periods
+* Numeric range validation for emission factors
 
 ### switchBlock: Conditional Branching
 
 Creates different workflow paths based on data values or user decisions.
 
 **Configuration Pattern:**
+
 ```json
 {
   "blockType": "switchBlock",
@@ -407,11 +420,11 @@ Creates different workflow paths based on data values or user decisions.
 }
 ```
 
-**VM0033 Usage:**
-VVB validation decisions create different paths:
-- **Approved**: Project proceeds to monitoring phase
-- **Rejected**: Project returns to developer for revision
-- **Conditional Approval**: Project requires minor corrections
+**VM0033 Usage:** VVB validation decisions create different paths:
+
+* **Approved**: Project proceeds to monitoring phase
+* **Rejected**: Project returns to developer for revision
+* **Conditional Approval**: Project requires minor corrections
 
 ## Token and Asset Management Blocks
 
@@ -422,6 +435,7 @@ These blocks handle carbon credit lifecycle from calculation to retirement.
 Issues VCU tokens based on verified emission reduction calculations.
 
 **VM0033 Real Configuration:**
+
 ```json
 {
   "blockType": "mintDocumentBlock",
@@ -434,14 +448,15 @@ Issues VCU tokens based on verified emission reduction calculations.
 ```
 
 **Key Configuration Properties:**
-- **rule**: JSON path to calculated emission reduction value (without "document.credentialSubject.0." prefix)
-- **tokenId**: UUID of the token template defined in policy configuration
-- **accountType**:
-  - `"default"`: Assigns tokens to policy owner (Standard Registry)
-  - `"user"`: Assigns tokens to document submitter (Project Developer)
 
-**Token Template Reference:**
-The `tokenId` must match a token defined in the policy's `policyTokens` array:
+* **rule**: JSON path to calculated emission reduction value (without "document.credentialSubject.0." prefix)
+* **tokenId**: UUID of the token template defined in policy configuration
+* **accountType**:
+  * `"default"`: Assigns tokens to policy owner (Standard Registry)
+  * `"user"`: Assigns tokens to document submitter (Project Developer)
+
+**Token Template Reference:** The `tokenId` must match a token defined in the policy's `policyTokens` array:
+
 ```json
 {
   "policyTokens": [
@@ -455,14 +470,14 @@ The `tokenId` must match a token defined in the policy's `policyTokens` array:
 }
 ```
 
-**VM0033 Integration:**
-VM0033 uses `automatic_report` customLogicBlock to calculate emission reductions, which outputs the `net_GHG_emissions_reductions_and_removals.NERRWE` field that the mint block references.
+**VM0033 Integration:** VM0033 uses `automatic_report` customLogicBlock to calculate emission reductions, which outputs the `net_GHG_emissions_reductions_and_removals.NERRWE` field that the mint block references.
 
 ### tokenActionBlock: Token Operations
 
 Handles token transfers, retirements, and account management.
 
 **Configuration Pattern:**
+
 ```json
 {
   "blockType": "tokenActionBlock",
@@ -474,17 +489,19 @@ Handles token transfers, retirements, and account management.
 ```
 
 **Available Actions:**
-- `"transfer"`: Move tokens between accounts
-- `"freeze"`: Temporarily lock tokens
-- `"unfreeze"`: Unlock frozen tokens
-- `"grantKyc"`: Grant know-your-customer status
-- `"revokeKyc"`: Revoke KYC status
+
+* `"transfer"`: Move tokens between accounts
+* `"freeze"`: Temporarily lock tokens
+* `"unfreeze"`: Unlock frozen tokens
+* `"grantKyc"`: Grant know-your-customer status
+* `"revokeKyc"`: Revoke KYC status
 
 ### retirementDocumentBlock: Permanent Token Removal
 
 Permanently removes tokens from circulation with retirement certificates.
 
 **Configuration Pattern:**
+
 ```json
 {
   "blockType": "retirementDocumentBlock",
@@ -504,6 +521,7 @@ These blocks organize user interfaces and manage workflow progression.
 Creates tabs, or a simple basic vertical layout for organizing workflow interfaces.
 
 **Tab Container Pattern:**
+
 ```json
 {
   "blockType": "interfaceContainerBlock",
@@ -528,6 +546,7 @@ Creates tabs, or a simple basic vertical layout for organizing workflow interfac
 Manages user role selection and assignment within policies.
 
 **Configuration Pattern:**
+
 ```json
 {
   "blockType": "policyRolesBlock",
@@ -546,6 +565,7 @@ Manages user role selection and assignment within policies.
 Creates buttons for state transitions and custom workflow actions. Used for approve/reject decisions with optional dialogs.
 
 **VM0033 Real Configuration - Approve/Reject Buttons:**
+
 ```json
 {
   "blockType": "buttonBlock",
@@ -577,17 +597,20 @@ Creates buttons for state transitions and custom workflow actions. Used for appr
 ```
 
 **Button Types:**
-- **selector**: Simple button that sets a field value
-- **selector-dialog**: Button with confirmation dialog for additional input
+
+* **selector**: Simple button that sets a field value
+* **selector-dialog**: Button with confirmation dialog for additional input
 
 **Button Configuration Properties:**
-- **tag**: Button identifier for event configuration (Button_0, Button_1, etc.)
-- **field**: Document field to modify (typically "option.status")
-- **value**: Value to set when button is clicked
-- **uiClass**: CSS class for styling (btn-approve, btn-reject, etc.)
-- **filters**: Array of conditions that control button visibility
+
+* **tag**: Button identifier for event configuration (Button\_0, Button\_1, etc.)
+* **field**: Document field to modify (typically "option.status")
+* **value**: Value to set when button is clicked
+* **uiClass**: CSS class for styling (btn-approve, btn-reject, etc.)
+* **filters**: Array of conditions that control button visibility
 
 **VM0033 Event Integration:**
+
 ```json
 {
   "events": [
@@ -607,7 +630,7 @@ Creates buttons for state transitions and custom workflow actions. Used for appr
 }
 ```
 
-Each button output (Button_0, Button_1) can trigger different target blocks, allowing different workflows based on which button is clicked.
+Each button output (Button\_0, Button\_1) can trigger different target blocks, allowing different workflows based on which button is clicked.
 
 ## Event Configuration Patterns
 
@@ -617,15 +640,16 @@ Events connect blocks together, creating automated workflows. Guardian provides 
 
 The Events tab provides an intuitive interface for connecting blocks:
 
-![Guardian Events Tab Configuration](images/README/image-4.png)
+![Guardian Events Tab Configuration](<../../../.gitbook/assets/image-4 (2).png>)
 
 **Event Configuration Fields:**
-- **Event Type**: Output Event (triggers when block completes)
-- **Source**: Current Block (the triggering block)
-- **Output Event**: RunEvent (completion trigger)
-- **Target**: Next Block (destination block)
-- **Input Event**: RunEvent (what the target block receives)
-- **Event Actor**: Event Initiator (who can trigger this event)
+
+* **Event Type**: Output Event (triggers when block completes)
+* **Source**: Current Block (the triggering block)
+* **Output Event**: RunEvent (completion trigger)
+* **Target**: Next Block (destination block)
+* **Input Event**: RunEvent (what the target block receives)
+* **Event Actor**: Event Initiator (who can trigger this event)
 
 ### Basic Event Structure
 
@@ -646,6 +670,7 @@ The Events tab provides an intuitive interface for connecting blocks:
 ### Common Event Patterns
 
 **Document Submission Flow:**
+
 ```json
 {
   "source": "new_project",
@@ -656,6 +681,7 @@ The Events tab provides an intuitive interface for connecting blocks:
 ```
 
 **UI Refresh After Save:**
+
 ```json
 {
   "source": "save_new_project",
@@ -672,6 +698,7 @@ The Events tab provides an intuitive interface for connecting blocks:
 Creates dynamic document filters based on status, date, or custom criteria.
 
 **VM0033 Real Configuration:**
+
 ```json
 {
   "blockType": "filtersAddon",
@@ -698,18 +725,20 @@ Creates dynamic document filters based on status, date, or custom criteria.
 ```
 
 **Key Configuration Properties:**
-- **type**: Filter UI type - `"dropdown"` for select options, `"text"` for input fields
-- **queryType**: Filter logic - `"equal"`, `"not_equal"`, `"contains"`, etc.
-- **field**: Document field to filter on
-- **optionName**: Field path for dropdown option labels
-- **optionValue**: Field path for dropdown option values
-- **canBeEmpty**: Whether filter allows empty/no selection
+
+* **type**: Filter UI type - `"dropdown"` for select options, `"text"` for input fields
+* **queryType**: Filter logic - `"equal"`, `"not_equal"`, `"contains"`, etc.
+* **field**: Document field to filter on
+* **optionName**: Field path for dropdown option labels
+* **optionValue**: Field path for dropdown option values
+* **canBeEmpty**: Whether filter allows empty/no selection
 
 ### Document Data Source with documentsSourceAddon
 
 Provides filtered document collections to interfaceDocumentsSourceBlock parent containers.
 
 **VM0033 Real Configuration:**
+
 ```json
 {
   "blockType": "documentsSourceAddon",
@@ -733,48 +762,53 @@ Provides filtered document collections to interfaceDocumentsSourceBlock parent c
 ```
 
 **Key Configuration Properties:**
-- **dataType**: Document type - `"vc-documents"` for Verifiable Credentials, `"vp-documents"` for Verifiable Presentations
-- **schema**: Schema UUID to filter documents by
-- **filters**: Array of filter conditions to apply to document collection
-- **onlyOwnDocuments**: Boolean - whether to show only user's own documents
-- **defaultActive**: Boolean - whether this addon is active by default
+
+* **dataType**: Document type - `"vc-documents"` for Verifiable Credentials, `"vp-documents"` for Verifiable Presentations
+* **schema**: Schema UUID to filter documents by
+* **filters**: Array of filter conditions to apply to document collection
+* **onlyOwnDocuments**: Boolean - whether to show only user's own documents
+* **defaultActive**: Boolean - whether this addon is active by default
 
 **Filter Options:**
-- **type**: `"equal"`, `"not_equal"`, `"contains"`, `"not_contains"`, `"in"`, `"not_in"`
-- **field**: Document field path (e.g., `"option.status"`, `"document.credentialSubject.0.field1"`)
-- **value**: Value or comma-separated values to filter by
 
+* **type**: `"equal"`, `"not_equal"`, `"contains"`, `"not_contains"`, `"in"`, `"not_in"`
+* **field**: Document field path (e.g., `"option.status"`, `"document.credentialSubject.0.field1"`)
+* **value**: Value or comma-separated values to filter by
 
 ## Block Configuration Best Practices
 
 ### Naming Conventions
 
 Use unique, descriptive, consistent tag names:
-- `new_project` for PDD submission blocks
-- `save_project` for document storage blocks
-- `project_grid_[role]` for role-specific grids
-- `calculate_[type]` for calculation blocks
+
+* `new_project` for PDD submission blocks
+* `save_project` for document storage blocks
+* `project_grid_[role]` for role-specific grids
+* `calculate_[type]` for calculation blocks
 
 ### Permission Design
 
 Design permissions for least privilege:
-- Document submission: Role-specific (`["Project_Proponent"]`)
-- Document review: Authority roles (`["OWNER", "VVB"]`)
-- Administrative functions: Registry only (`["OWNER"]`)
+
+* Document submission: Role-specific (`["Project_Proponent"]`)
+* Document review: Authority roles (`["OWNER", "VVB"]`)
+* Administrative functions: Registry only (`["OWNER"]`)
 
 ### Error Handling
 
 Include validation and error handling blocks:
-- Pre-validation before expensive operations
-- Clear error messages for user guidance
-- Fallback paths for edge cases
+
+* Pre-validation before expensive operations
+* Clear error messages for user guidance
+* Fallback paths for edge cases
 
 ### Performance Optimization
 
 Optimize for user experience:
-- Use `onlyOwnDocuments: true` for large document sets
-- Implement pagination for document grids
-- Cache calculation results where appropriate
+
+* Use `onlyOwnDocuments: true` for large document sets
+* Implement pagination for document grids
+* Cache calculation results where appropriate
 
 ## Testing Your Block Configuration
 
@@ -788,24 +822,28 @@ Test block configurations incrementally using Guardian's policy editor:
 4. **Data Flow Testing**: Submit test data through complete workflows using policy dry runs
 
 **Guardian UI Testing Tips:**
-- **Properties Tab**: Quick validation of basic settings and permissions
-- **JSON Tab**: Verify complex configurations and nested structures
-- **Events Tab**: Visual verification of workflow connections and event flows
-- **Policy Preview**: Test complete workflows before publishing
+
+* **Properties Tab**: Quick validation of basic settings and permissions
+* **JSON Tab**: Verify complex configurations and nested structures
+* **Events Tab**: Visual verification of workflow connections and event flows
+* **Policy Preview**: Test complete workflows before publishing
 
 ### Common Configuration Issues
 
 **Schema Reference Errors:**
-- Verify schema UUIDs match your Part III schemas
-- Check field path references in grids and calculations
+
+* Verify schema UUIDs match your Part III schemas
+* Check field path references in grids and calculations
 
 **Permission Problems:**
-- Ensure users have appropriate roles assigned
-- Check `onlyOwnDocuments` settings for document visibility
+
+* Ensure users have appropriate roles assigned
+* Check `onlyOwnDocuments` settings for document visibility
 
 **Event Connection Issues:**
-- Verify source and target block tags match exactly
-- Check event input/output types are compatible
+
+* Verify source and target block tags match exactly
+* Check event input/output types are compatible
 
 ## Integration with Part III Schemas
 
@@ -814,6 +852,7 @@ Test block configurations incrementally using Guardian's policy editor:
 Your Part III schemas become form fields and calculation variables:
 
 **PDD Schema → Form Fields:**
+
 ```
 Schema Field: "project_title" → Form Input: Text field with validation
 Schema Field: "baseline_emissions" → Form Input: Number field with units
@@ -821,6 +860,7 @@ Schema Field: "monitoring_frequency" → Form Input: Dropdown selection
 ```
 
 **Monitoring Schema → Calculation Variables:**
+
 ```javascript
 // In customLogicBlock
 const baseline = document.baseline_emissions_total;
@@ -831,32 +871,36 @@ const leakage = document.leakage_emissions_calculated;
 ### Validation Rule Integration
 
 Schema validation rules automatically apply to requestVcDocumentBlock forms:
-- Required fields become mandatory
-- Number ranges enforce min/max values
-- Pattern validation ensures data format consistency
-- Enum values create dropdown selections
+
+* Required fields become mandatory
+* Number ranges enforce min/max values
+* Pattern validation ensures data format consistency
+* Enum values create dropdown selections
 
 ## Next Steps and Chapter 15 Preview
 
 Chapter 14 covered Guardian's workflow blocks and configuration patterns. You now understand how to:
-- Configure data input blocks with your Part III schemas
-- Set up calculation blocks for emission reduction formulas
-- Create token management workflows for VCU issuance
-- Design user interfaces with container and navigation blocks
+
+* Configure data input blocks with your Part III schemas
+* Set up calculation blocks for emission reduction formulas
+* Create token management workflows for VCU issuance
+* Design user interfaces with container and navigation blocks
 
 **Chapter 15 Deep Dive**: Now that you understand individual blocks, Chapter 15 analyzes VM0033's complete policy implementation, showing how these blocks work together in a production methodology. You'll trace the complete workflow from PDD submission to VCU token issuance, understanding real-world policy patterns.
 
----
+***
 
 **Prerequisites Check:** Ensure you have:
-- [ ] Completed Chapter 13 (Policy Architecture Understanding)
-- [ ] Access to Guardian platform for hands-on block configuration
-- [ ] Your Part III schemas with known UUIDs for integration
-- [ ] VM0033.policy file for reference examples
 
-**Time Investment**: ~30 minutes reading + ~90 minutes hands-on practice with block configuration
+* [ ] Completed Chapter 13 (Policy Architecture Understanding)
+* [ ] Access to Guardian platform for hands-on block configuration
+* [ ] Your Part III schemas with known UUIDs for integration
+* [ ] VM0033.policy file for reference examples
+
+**Time Investment**: \~30 minutes reading + \~90 minutes hands-on practice with block configuration
 
 **Practical Exercises:**
+
 1. **Visual Configuration Practice**: Use Guardian's Properties tab to configure a requestVcDocumentBlock with your Part III PDD schema
 2. **Event Connection Practice**: Use the Events tab to connect form submission to document storage blocks
 3. **JSON Configuration Practice**: Manually configure sendToGuardianBlock for both database and Hedera storage

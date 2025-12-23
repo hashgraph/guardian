@@ -72,6 +72,11 @@ export class PolicyMessage extends Message {
      */
     public actionsTopicId: string;
     /**
+     * Records Topic Id
+     */
+    public recordsTopicId: string;
+
+    /**
      * Comments Topic Id
      */
     public commentsTopicId: string;
@@ -102,6 +107,7 @@ export class PolicyMessage extends Message {
         this.availability = model.availability;
         this.restoreTopicId = model.restoreTopicId;
         this.actionsTopicId = model.actionsTopicId;
+        this.recordsTopicId = model.recordsTopicId;
         this.commentsTopicId = model.commentsTopicId;
         this.document = toBuffer(zip);
     }
@@ -137,6 +143,7 @@ export class PolicyMessage extends Message {
             availability: this.availability,
             restoreTopicId: this.restoreTopicId,
             actionsTopicId: this.actionsTopicId,
+            recordsTopicId: this.recordsTopicId,
             commentsTopicId: this.commentsTopicId,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url)
@@ -239,6 +246,7 @@ export class PolicyMessage extends Message {
         message.availability = json.availability;
         message.restoreTopicId = json.restoreTopicId;
         message.actionsTopicId = json.actionsTopicId;
+        message.recordsTopicId = json.recordsTopicId;
         message.commentsTopicId = json.commentsTopicId;
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(json.action)
             && json.effectiveDate) {
@@ -298,6 +306,7 @@ export class PolicyMessage extends Message {
         result.availability = this.availability;
         result.restoreTopicId = this.restoreTopicId;
         result.actionsTopicId = this.actionsTopicId;
+        result.recordsTopicId = this.recordsTopicId;
         result.commentsTopicId = this.commentsTopicId;
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
             result.effectiveDate = this.discontinuedDate;
@@ -325,6 +334,7 @@ export class PolicyMessage extends Message {
         result.availability = json.availability;
         result.restoreTopicId = json.restoreTopicId;
         result.actionsTopicId = json.actionsTopicId;
+        result.recordsTopicId = json.recordsTopicId;
         result.commentsTopicId = json.commentsTopicId;
         result.discontinuedDate = json.effectiveDate;
         result.document = json.document;

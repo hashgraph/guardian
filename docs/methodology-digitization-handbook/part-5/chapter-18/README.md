@@ -8,19 +8,19 @@ This chapter teaches you how to implement methodology calculations as working co
 
 After completing this chapter, you will be able to:
 
-- Translate methodology equations into executable JavaScript or Python code
-- Implement formulas for baseline emissions, project emissions, and net emission reductions
-- Process monitoring data through mathematical models defined in VM0033 methodology
-- Validate equation implementations against Allcot test artifact input/output data
-- Handle data precision and validation requirements for accurate calculations
-- Structure mathematical calculations for production-ready environmental credit systems
+* Translate methodology equations into executable JavaScript or Python code
+* Implement formulas for baseline emissions, project emissions, and net emission reductions
+* Process monitoring data through mathematical models defined in VM0033 methodology
+* Validate equation implementations against Allcot test artifact input/output data
+* Handle data precision and validation requirements for accurate calculations
+* Structure mathematical calculations for production-ready environmental credit systems
 
 ## Prerequisites
 
-- Completed Part IV: Policy Workflow Design and Implementation
-- Understanding of VM0033 methodology and equations from Part I
-- Basic programming knowledge for implementing mathematical formulas (JavaScript or Python)
-- Access to validation artifacts: [equation implementations](../../_shared/artifacts/er-calculations.js), [test input data](../../_shared/artifacts/final-PDD-vc.json), and [Allcot validation spreadsheet](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx)
+* Completed Part IV: Policy Workflow Design and Implementation
+* Understanding of VM0033 methodology and equations from Part I
+* Basic programming knowledge for implementing mathematical formulas (JavaScript or Python)
+* Access to validation artifacts: [equation implementations](../../_shared/artifacts/er-calculations.js), [test input data](../../_shared/artifacts/final-PDD-vc.json), and [Allcot validation spreadsheet](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx)
 
 ## Guardian customLogicBlock: Your Calculation Engine
 
@@ -39,7 +39,7 @@ You can write your calculations in **JavaScript** or **Python** - Guardian suppo
 }
 ```
 
-![customLogicBlock in VM0033's PDD submission flow](images/README/image.png)
+![customLogicBlock in VM0033's PDD submission flow](<../../../.gitbook/assets/image (151).png>)
 
 ### Understanding Your Input Data
 
@@ -178,6 +178,7 @@ function processInstance(instance, project_boundary) {
 Baseline emissions implement the scientific equations from VM0033 Section 8.1 - representing the "business as usual" scenario without restoration. Each equation in the methodology PDF more or less becomes a function in your code.
 
 **Example: VM0033 Equation 8.1.1 - Soil CO2 Emissions**
+
 ```
 Methodology Equation: GHGBSL,soil,CO₂,i,t = -(44/12) × ΔCBSL,soil,i,t × Ai,t
 Code Implementation: asl.GHGBSL_soil_CO2_i_t = -(3.6666666666666665 * asl.delta_C_BSL_soil_i_t)
@@ -275,6 +276,7 @@ function processBaselineEmissions(baseline, crediting_period, baseline_soil_CH4,
 Project emissions implement equations from VM0033 Section 8.2 - the restoration scenario calculations. These equations typically show reduced emissions and increased sequestration compared to baseline.
 
 **Example: VM0033 Equation 8.2.3 - Project Biomass Change**
+
 ```
 Methodology Equation: ΔCWPS,biomass,i,t = ΔCWPS,tree or shrub,i,t + ΔCWPS,herb,i,t
 Code Implementation: asl.delta_C_WPS_biomass_i_t = asl.delta_C_WPS_tree_or_shrub_i_t + asl.delta_C_WPS_herb_i_t
@@ -344,6 +346,7 @@ function processProjectEmissions(project, project_soil_CH4, project_soil_CH4_app
 This implements VM0033's core equation that transforms baseline and project emissions into verified carbon units (VCUs). Each line of code corresponds to specific equations in Section 8.5 of the methodology.
 
 **Example: VM0033 Equation 8.5.1 - Net Emission Reductions**
+
 ```
 Methodology Equation: NERRₜ = ΣGHGᵦₛₗ,ₜ - ΣGHGwₚₛ,ₜ - ΣGHGₗₖ,ₜ - ΣGHGwₚₛ,soil deduction,ₜ + FRPₜ
 Code Implementation: rec.NERRWE = getGHGBSL(...) + getGHGWPS(...) + rec.FRP - rec.GHG_LK - rec.GHG_WPS_soil_deduction
@@ -590,9 +593,10 @@ Choose the language you're more comfortable with - both produce identical result
 While Chapter 21 covers comprehensive testing, here are quick validation techniques while you're developing:
 
 **Quick Testing Strategies:**
-- **Debug logging**: `debug('Processing year:', year_t, 'Emissions:', asl.GHGBSL_soil_CO2_i_t);`
-- **Guardian testing interface**: Use Chapter 21's testing guide with [final-PDD-vc.json](../../_shared/artifacts/final-PDD-vc.json) data
-- **Unit tests**: `const expected = -(CARBON_TO_CO2 * 100) * 10; debug('Test passed:', Math.abs(result - expected) < 0.01);`
+
+* **Debug logging**: `debug('Processing year:', year_t, 'Emissions:', asl.GHGBSL_soil_CO2_i_t);`
+* **Guardian testing interface**: Use Chapter 21's testing guide with [final-PDD-vc.json](../../_shared/artifacts/final-PDD-vc.json) data
+* **Unit tests**: `const expected = -(CARBON_TO_CO2 * 100) * 10; debug('Test passed:', Math.abs(result - expected) < 0.01);`
 
 ## Real Results: ABC Mangrove Project
 
@@ -611,7 +615,7 @@ Using VM0033's calculation engine with the ABC Blue Carbon Mangrove Project data
 
 This demonstrates what your code should produce - substantial carbon credits from mangrove restoration that follow the methodology calculations exactly.
 
----
+***
 
 ## Deep Dive: VM0033 Production Implementation Analysis
 
@@ -624,6 +628,7 @@ This deep dive examines the complete production implementation of VM0033 tidal w
 The 1261-line er-calculations.js contains 25+ interconnected functions implementing the full VM0033 methodology. Here's the complete function catalog mapped to test artifact worksheets:
 
 #### Core Architecture Overview
+
 ```javascript
 // VM0033 Production Implementation: 25+ Functions in 6 Major Categories
 
@@ -672,21 +677,23 @@ calc()                           // Entry point function
 ```
 
 #### Test Artifact Mapping
-Each function maps directly to specific data models defined within VM0033_Allcot_Test_Case_Artifact.xlsx:
-- **ProjectBoundary (27x13)** → getProjectBoundaryValue(), processInstance() boundary logic
-- **QuantificationApproach (8x22)** → getQuantificationValue(), SOC approach selection
-- **StratumLevelInput + UI Req (49x29)** → All stratum processing functions
-- **MonitoringPeriodInputs (158x8)** → processMonitoringSubmergence(), monitoring functions
-- **5.1_TemporalBoundary (36x24)** → calculatePDTSDT(), temporal boundary functions
-- **8.1BaselineEmissions (158x84)** → processBaselineEmissions() complete logic
-- **8.2ProjectEmissions (158x83)** → processProjectEmissions() complete logic
-- **8.5NetERR (53x23)** → processNETERR() and all VCU calculation functions
+
+Each function maps directly to specific data models defined within VM0033\_Allcot\_Test\_Case\_Artifact.xlsx:
+
+* **ProjectBoundary (27x13)** → getProjectBoundaryValue(), processInstance() boundary logic
+* **QuantificationApproach (8x22)** → getQuantificationValue(), SOC approach selection
+* **StratumLevelInput + UI Req (49x29)** → All stratum processing functions
+* **MonitoringPeriodInputs (158x8)** → processMonitoringSubmergence(), monitoring functions
+* **5.1\_TemporalBoundary (36x24)** → calculatePDTSDT(), temporal boundary functions
+* **8.1BaselineEmissions (158x84)** → processBaselineEmissions() complete logic
+* **8.2ProjectEmissions (158x83)** → processProjectEmissions() complete logic
+* **8.5NetERR (53x23)** → processNETERR() and all VCU calculation functions
 
 ## Section 3: Temporal Boundary System (Lines 181-350)
 
 ### Peat and Soil Depletion Time Calculations
 
-VM0033 calculates when carbon pools will be depleted to determine crediting periods. This maps directly to the **5.1_TemporalBoundary** worksheet (36x24) in our test artifact.
+VM0033 calculates when carbon pools will be depleted to determine crediting periods. This maps directly to the **5.1\_TemporalBoundary** worksheet (36x24) in our test artifact.
 
 #### calculatePDTSDT() - Temporal Boundary Implementation (Lines 181-286)
 
@@ -868,22 +875,24 @@ function calculateRemainingPercentage(match, D41) {
 ```
 
 **Test Artifact Cross-Reference:**
-- The temporal boundary calculations map to **5.1_TemporalBoundary** worksheet rows 5-36
-- PDT calculations use peat depth and loss rates from **StratumLevelInput** columns M-P
-- SDT calculations use soil characteristics from **StratumLevelInput** columns Q-T
-- 100-year projections cross-reference **5.2.4_Ineligible wetland areas** worksheet
+
+* The temporal boundary calculations map to **5.1\_TemporalBoundary** worksheet rows 5-36
+* PDT calculations use peat depth and loss rates from **StratumLevelInput** columns M-P
+* SDT calculations use soil characteristics from **StratumLevelInput** columns Q-T
+* 100-year projections cross-reference **5.2.4\_Ineligible wetland areas** worksheet
 
 This temporal boundary system determines:
+
 1. **When carbon pools will be depleted** in the baseline scenario
 2. **How long emission reductions can be credited** for each stratum
 3. **Which calculation approach to use** (total stock vs stock loss)
-4. **The temporal scope** for SOC_MAX calculations
+4. **The temporal scope** for SOC\_MAX calculations
 
 ## Section 4: SOC Calculation Approaches (Lines 352-516)
 
 ### Two Ways to Calculate Soil Organic Carbon Benefits
 
-VM0033 offers two approaches for calculating soil organic carbon benefits. Both map to the **5.2.4_Ineligible wetland areas** worksheet (47x30) in our test artifact.
+VM0033 offers two approaches for calculating soil organic carbon benefits. Both map to the **5.2.4\_Ineligible wetland areas** worksheet (47x30) in our test artifact.
 
 #### totalStockApproach() - Compare 100-Year Carbon Stocks (Lines 352-458)
 
@@ -1089,9 +1098,9 @@ function stockLossApproach(baseline, stock_loss_approach_parameters,
 }
 ```
 
-#### SOC_MAX_calculation() - Approach Selector (Lines 508-514)
+#### SOC\_MAX\_calculation() - Approach Selector (Lines 508-514)
 
-This function selects which approach to use and calculates the final SOC_MAX value:
+This function selects which approach to use and calculates the final SOC\_MAX value:
 
 ```javascript
 // From er-calculations.js:508-514 - SOC approach selector
@@ -1119,10 +1128,11 @@ function SOC_MAX_calculation(baseline, peat_strata_input_coverage_100_years,
 ```
 
 **Test Artifact Cross-Reference:**
-- SOC calculations map to **5.2.4_Ineligible wetland areas** worksheet columns A-AD
-- Total stock approach uses 100-year projections from columns B-H
-- Stock loss approach uses carbon loss rates from columns I-O
-- Both approaches feed into SOC_MAX value in column AD
+
+* SOC calculations map to **5.2.4\_Ineligible wetland areas** worksheet columns A-AD
+* Total stock approach uses 100-year projections from columns B-H
+* Stock loss approach uses carbon loss rates from columns I-O
+* Both approaches feed into SOC\_MAX value in column AD
 
 ## Section 1: Monitoring and Submergence Processing (Lines 39-94)
 
@@ -1210,11 +1220,12 @@ function getDeltaCBSLAGBiomassForStratumAndYear(
 ```
 
 **Test Artifact Cross-Reference:**
-- Submergence data maps to **MonitoringPeriodInputs** worksheet columns A-H
-- `is_submerged` values from column B
-- `submergence_T` periods from column C
-- `area_submerged_percentage` from column D
-- Calculated `delta_C_BSL_agbiomass_i_t` values stored in column H
+
+* Submergence data maps to **MonitoringPeriodInputs** worksheet columns A-H
+* `is_submerged` values from column B
+* `submergence_T` periods from column C
+* `area_submerged_percentage` from column D
+* Calculated `delta_C_BSL_agbiomass_i_t` values stored in column H
 
 ## Section 2: Specialized Calculator Functions (Lines 95-180)
 
@@ -1336,9 +1347,10 @@ function calculateNetVCU(O6, O5, V6) {
 ```
 
 **Test Artifact Cross-Reference:**
-- Allocation deductions map to **8.1BaselineEmissions** and **8.2ProjectEmissions** allocation columns
-- VCU change calculations feed into **8.5NetERR** worksheet VCU change columns M-P
-- Fire reduction premiums cross-reference **FireReductionPremium + UI Req** worksheet
+
+* Allocation deductions map to **8.1BaselineEmissions** and **8.2ProjectEmissions** allocation columns
+* VCU change calculations feed into **8.5NetERR** worksheet VCU change columns M-P
+* Fire reduction premiums cross-reference **FireReductionPremium + UI Req** worksheet
 
 ## Section 8: Complete processInstance Orchestration (Lines 1126-1241)
 
@@ -1535,14 +1547,16 @@ Finally, the function orchestrates all the calculations in the correct order:
 ```
 
 **Test Artifact Cross-Reference:**
-- **ProjectBoundary** worksheet → Project boundary parameter extraction (lines 1132-1159)
-- **QuantificationApproach** worksheet → Quantification approach parameters (lines 1162-1170)
-- **IndividualParameters** worksheet → Individual parameter extraction (lines 1173-1184)
-- **MonitoringPeriodInputs** worksheet → Monitoring data processing (lines 1186-1200)
-- **IF Wood Product Is Included** worksheet → Wood product data (lines 1211-1218)
-- All calculation worksheets → Orchestrated function calls (lines 1221-1240)
+
+* **ProjectBoundary** worksheet → Project boundary parameter extraction (lines 1132-1159)
+* **QuantificationApproach** worksheet → Quantification approach parameters (lines 1162-1170)
+* **IndividualParameters** worksheet → Individual parameter extraction (lines 1173-1184)
+* **MonitoringPeriodInputs** worksheet → Monitoring data processing (lines 1186-1200)
+* **IF Wood Product Is Included** worksheet → Wood product data (lines 1211-1218)
+* All calculation worksheets → Orchestrated function calls (lines 1221-1240)
 
 This orchestration demonstrates production-level implementation where:
+
 1. **Parameter extraction is conditional** - only extract what you need
 2. **Calculation order matters** - temporal boundaries before emissions, emissions before VCUs
 3. **Every major worksheet** in the test artifact maps to specific code sections
@@ -1803,12 +1817,13 @@ function processBaselineEmissions(baseline, crediting_period, baseline_soil_CH4,
 ```
 
 **Key Production Features:**
-- **AR Tool Integration** - integration with AR Tool 14 (afforestation) and AR Tool 05 (fuel)
-- **Temporal Boundary Application** - PDT/SDT constraints applied to actual emission calculations
-- **Submergence Integration** - Monitoring data affects biomass calculations
-- **Multiple Calculation Methods** - Field data, proxies, IPCC factors handled
-- **Defensive Programming** - Safe defaults and null checks throughout
-- **Year-level Aggregation** - Proper summing across strata and time
+
+* **AR Tool Integration** - integration with AR Tool 14 (afforestation) and AR Tool 05 (fuel)
+* **Temporal Boundary Application** - PDT/SDT constraints applied to actual emission calculations
+* **Submergence Integration** - Monitoring data affects biomass calculations
+* **Multiple Calculation Methods** - Field data, proxies, IPCC factors handled
+* **Defensive Programming** - Safe defaults and null checks throughout
+* **Year-level Aggregation** - Proper summing across strata and time
 
 Each function processes multi-dimensional calculations across temporal and spatial boundaries
 
@@ -1857,11 +1872,12 @@ function calculatePDTSDT(baseline, isProjectQuantifyBSLReduction, temporalBounda
 }
 ```
 
-This corresponds directly to the **5.1_TemporalBoundary** worksheet in our test artifact (36x24 dimensions), which contains:
-- Peat thickness measurements (cm) - Column C in test data
-- Subsidence rates (cm/year) - Column D in test data
-- Calculated PDT values for each stratum - Column E in test data
-- SOC depletion time calculations - Column F in test data
+This corresponds directly to the **5.1\_TemporalBoundary** worksheet in our test artifact (36x24 dimensions), which contains:
+
+* Peat thickness measurements (cm) - Column C in test data
+* Subsidence rates (cm/year) - Column D in test data
+* Calculated PDT values for each stratum - Column E in test data
+* SOC depletion time calculations - Column F in test data
 
 #### 2. Fire Emissions Processing with Multi-Pool Carbon Dynamics
 
@@ -1934,11 +1950,12 @@ function processFireEmissions(baseline, temporal_boundary) {
 ```
 
 This implementation maps precisely to the **8.1BaselineEmissions** worksheet rows handling fire emission calculations, which include:
-- Fire area data (hectares) - Columns K-M in test data
-- Above-ground biomass (tC/ha) - Columns N-P in test data
-- Below-ground biomass (tC/ha) - Columns Q-S in test data
-- Combustion factors - Columns T-V in test data
-- Root combustion factors - Columns W-Y in test data
+
+* Fire area data (hectares) - Columns K-M in test data
+* Above-ground biomass (tC/ha) - Columns N-P in test data
+* Below-ground biomass (tC/ha) - Columns Q-S in test data
+* Combustion factors - Columns T-V in test data
+* Root combustion factors - Columns W-Y in test data
 
 #### 3. Soil Carbon Stock Approaches Implementation
 
@@ -2108,10 +2125,11 @@ function processProjectEmissions(project, project_soil_CH4, project_soil_CH4_app
 ```
 
 This corresponds to the **8.2ProjectEmissions** worksheet (158x83 dimensions) containing:
-- Machinery fuel consumption data - Columns F-H in test data
-- Transportation emission factors - Columns I-K in test data
-- Restoration activity schedules - Columns L-N in test data
-- Equipment operation parameters - Columns O-Q in test data
+
+* Machinery fuel consumption data - Columns F-H in test data
+* Transportation emission factors - Columns I-K in test data
+* Restoration activity schedules - Columns L-N in test data
+* Equipment operation parameters - Columns O-Q in test data
 
 #### 2. Soil GHG Emissions Under Restored Conditions
 
@@ -2300,11 +2318,12 @@ function applyUncertaintyAndBufferDeductions(netErrArray, NERError, allowable_un
 ```
 
 This maps directly to the **8.5NetERR** worksheet (53x23 dimensions) which contains:
-- Annual emission reduction calculations - Columns C-E in test data
-- Uncertainty percentage applications - Columns F-H in test data
-- Buffer percentage deductions - Columns I-K in test data
-- NERRWE cap applications - Columns L-N in test data
-- Final creditable volumes - Columns O-Q in test data
+
+* Annual emission reduction calculations - Columns C-E in test data
+* Uncertainty percentage applications - Columns F-H in test data
+* Buffer percentage deductions - Columns I-K in test data
+* NERRWE cap applications - Columns L-N in test data
+* Final creditable volumes - Columns O-Q in test data
 
 ## Section 6: Complete processProjectEmissions Implementation (Lines 715-926)
 
@@ -2535,8 +2554,9 @@ asl.ET_FC_I_t_ar_tool_5_WPS = stratum.ar_tool_05.ET_FC_y;
 ```
 
 This corresponds to the **6.2ARTool14ProjectData** worksheet (2x4 dimensions) where AR Tool 14 calculates carbon stock changes in:
-- Tree biomass - Column C in test data
-- Shrub biomass - Column D in test data
+
+* Tree biomass - Column C in test data
+* Shrub biomass - Column D in test data
 
 And **6.4ARTool5ProjectData** worksheet (43x4 dimensions) where AR Tool 05 calculates fossil fuel consumption for project machinery and operations.
 
@@ -2641,11 +2661,12 @@ yearRec.GHG_WPS = yearRec.GHG_WPS_biomass + yearRec.GHG_WPS_soil + yearRec.GHG_W
 This produces the annual project scenario emissions that feed into net emission reduction calculations. The final aggregation creates cumulative totals across all monitoring years using the `reduce` operations.
 
 The function outputs correspond to **7.3ProjectScenarioGHGEmissions** worksheet (43x7 dimensions) which contains:
-- Annual biomass emission changes - Column C
-- Annual soil emissions - Column D
-- Annual fuel consumption emissions - Column E
-- Annual burning emissions - Column F
-- Total annual project emissions - Column G
+
+* Annual biomass emission changes - Column C
+* Annual soil emissions - Column D
+* Annual fuel consumption emissions - Column E
+* Annual burning emissions - Column F
+* Total annual project emissions - Column G
 
 ## Section 7: Complete processNETERR Implementation (Lines 927-1118)
 
@@ -2983,10 +3004,11 @@ if (idx === 0) {
 ```
 
 This produces the final creditable carbon units for each monitoring year. The outputs correspond to **8.4NetERRFinalCalculations** worksheet (43x6 dimensions) which contains:
-- Gross emission reductions - Column C
-- Uncertainty-adjusted reductions - Column D
-- Buffer deductions - Column E
-- Final VCU issuance - Column F
+
+* Gross emission reductions - Column C
+* Uncertainty-adjusted reductions - Column D
+* Buffer deductions - Column E
+* Final VCU issuance - Column F
 
 The function establishes total VCU quantities that determine final carbon credit issuance amounts for the project.
 
@@ -2994,16 +3016,16 @@ The function establishes total VCU quantities that determine final carbon credit
 
 You've learned how to translate scientific equations from environmental methodologies into executable code that produces verified carbon credits. The key principles:
 
-- **Equation-to-Code Translation** - Every methodology equation becomes a function in your customLogicBlock
-- **Scientific Precision Required** - Use defensive programming to handle edge cases while maintaining mathematical accuracy
-- **Allcot Test Artifact is Your Benchmark** - Your code must reproduce manual calculations exactly for scientific validity
-- **Field Access Utilities** enable clean implementation of complex mathematical formulas
-- **Both JavaScript and Python supported** - choose the language that best implements your equations
-- **The VM0033 code deep dive** how complex environmental methodology calculations are implemented, tested, and validated in production Guardian systems with extreme precision and comprehensive error handling
-- **Advanced optimization techniques** ensure production-ready performance for large-scale environmental credit programs
+* **Equation-to-Code Translation** - Every methodology equation becomes a function in your customLogicBlock
+* **Scientific Precision Required** - Use defensive programming to handle edge cases while maintaining mathematical accuracy
+* **Allcot Test Artifact is Your Benchmark** - Your code must reproduce manual calculations exactly for scientific validity
+* **Field Access Utilities** enable clean implementation of complex mathematical formulas
+* **Both JavaScript and Python supported** - choose the language that best implements your equations
+* **The VM0033 code deep dive** how complex environmental methodology calculations are implemented, tested, and validated in production Guardian systems with extreme precision and comprehensive error handling
+* **Advanced optimization techniques** ensure production-ready performance for large-scale environmental credit programs
 
 Your equation implementations are the foundation of environmental credit integrity. When coded properly, they transform scientific methodology equations into verified carbon units that represent real, measured emission reductions from restoration projects.
 
 The next chapter explores Formula Linked Definitions (FLDs) for managing parameter relationships, and Chapter 21 covers comprehensive testing to ensure your calculations are production-ready.
 
----
+***

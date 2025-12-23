@@ -1621,7 +1621,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onClearSelection() {
-        this.selectedItems = []
+        this.selectedItems = [];
         this.selectedItemIds = [];
         this.isAllSelected = false;
     }

@@ -1,5 +1,5 @@
 import { TimeoutError } from '@guardian/interfaces';
-import { PrivateKey } from '@hashgraph/sdk';
+import { PrivateKey } from '@hiero-ledger/sdk';
 
 /**
  * Timeout decorator

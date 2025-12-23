@@ -951,4 +951,8 @@ export class PolicyTemplate {
         }
         return policy;
     }
+
+    public find(types: string[]): PolicyBlock[] {
+        return this.allBlocks?.filter((b) => types.includes(b.blockType)) || [];
+    }
 }

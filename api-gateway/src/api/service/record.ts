@@ -243,12 +243,13 @@ export class RecordApi {
         @Param('policyId') policyId: string,
         @Body() file: any,
         @Query('importRecords') importRecords: string,
-        @Query('syncNewRecords') syncNewRecords: string
+        @Query('syncNewRecords') syncNewRecords: string,
+        @Query('fromPolicyId') fromPolicyId: string,
     ) {
         const owner = new EntityOwner(user);
         await checkPolicyByRecord(policyId, owner);
         try {
-            const options = { file, importRecords: importRecords === 'true', syncNewRecords: syncNewRecords === 'true' };
+            const options = { file, importRecords: importRecords === 'true', syncNewRecords: syncNewRecords === 'true', fromPolicyId };
             const guardians = new Guardians();
             return await guardians.runRecord(policyId, owner, options);
         } catch (error) {

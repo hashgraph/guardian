@@ -9,6 +9,7 @@ import { MessageServer, MessageStatus, PolicyRoles } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Document action clock with UI
@@ -85,7 +86,8 @@ export class GroupManagerBlock {
         groupId: string,
         did: string,
         text: string,
-        userId: string | null
+        userId: string | null,
+        actionStatus: RecordActionStep,
     ): Promise<void> {
         if (user.did === did) {
             throw new Error(`Permission denied`);
@@ -138,7 +140,7 @@ export class GroupManagerBlock {
         }
 
         const target = await PolicyComponentsUtils.GetPolicyUserByGroup(member, ref, userId);
-        ref.triggerInternalEvent('remove-user', { target, user });
+        ref.triggerInternalEvent('remove-user', { target, user, actionStatus });
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, user, null));
     }
 
@@ -210,7 +212,7 @@ export class GroupManagerBlock {
      * @param user
      * @param blockData
      */
-    async setData(user: PolicyUser, blockData: any): Promise<any> {
+    async setData(user: PolicyUser, blockData: any, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             action: blockData?.action
@@ -227,7 +229,8 @@ export class GroupManagerBlock {
                 blockData.group,
                 blockData.user,
                 blockData.message,
-                user.userId
+                user.userId,
+                actionStatus
             );
             result = { deleted: true };
         }

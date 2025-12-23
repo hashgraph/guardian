@@ -59,6 +59,11 @@ export class PolicyEngineService {
         return this.http.get<any[]>(`${this.url}`, header) as any;
     }
 
+    public allWithImportedRecords(policyId: string): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/with-imported-records/${policyId}`);
+    }
+    
+
     public create(policy: any): Observable<void> {
         return this.http.post<any>(`${this.url}/`, policy);
     }
@@ -100,7 +105,7 @@ export class PolicyEngineService {
 
     public pushPublish(
         policyId: string,
-        options: { policyVersion: string, policyAvailability: PolicyAvailability }
+        options: { policyVersion: string, policyAvailability: PolicyAvailability, recordingEnabled: boolean }
     ): Observable<{ taskId: string, expectation: number }> {
         return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/publish`, options);
     }

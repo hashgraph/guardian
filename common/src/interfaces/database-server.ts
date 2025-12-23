@@ -1,6 +1,6 @@
 //entities
 import { AssignedEntityType, IVC, MintTransactionStatus, PolicyTestStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
-import { TopicId } from '@hashgraph/sdk';
+import { TopicId } from '@hiero-ledger/sdk';
 import { FilterQuery } from '@mikro-orm/core';
 import {
     AggregateVC,

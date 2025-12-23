@@ -1,4 +1,4 @@
-# Chapter 8: Schema Architecture and Design Principles
+# Chapter 8: Schema Architecture and Foundations
 
 Guardian's schema system is more sophisticated than simple data collection forms. When implementing VM0033, we needed to translate over 400 structured data components for wetland restoration methodology requirements into Guardian's schema architecture. This required understanding how schemas integrate with Guardian's broader platform capabilities while maintaining usability for different stakeholder types.
 
@@ -6,18 +6,19 @@ This chapter demonstrates schema development foundations using VM0033 implementa
 
 The schema architecture establishes the foundation for translating methodology requirements from Part II analysis into working Guardian data structures. Rather than building everything at once, establishing architectural understanding first enables building schemas that handle complexity while remaining practical for real-world use.
 
-![VM0033 Schemas](images/README/image.png)
+![VM0033 Schemas](<../../../.gitbook/assets/image (68).png>)
 
 ## Guardian Schema System Foundation
 
 Guardian schemas serve multiple functions beyond data collection. They define data structures, generate user interfaces, implement validation rules, support calculation frameworks, and create audit trails through Verifiable Credentials integration.
 
 **Guardian Schema Functions**:
-- **Data Structure Definition**: Specify exactly what information gets collected and how it's organized
-- **User Interface Generation**: Automatically create forms that stakeholders use for data input
-- **Validation Rule Implementation**: Ensure data meets methodology requirements before acceptance
-- **Calculation Framework Support**: Provide data structures that calculation logic operates on
-- **Audit Trail Creation**: Generate immutable records for every data submission and modification
+
+* **Data Structure Definition**: Specify exactly what information gets collected and how it's organized
+* **User Interface Generation**: Automatically create forms that stakeholders use for data input
+* **Validation Rule Implementation**: Ensure data meets methodology requirements before acceptance
+* **Calculation Framework Support**: Provide data structures that calculation logic operates on
+* **Audit Trail Creation**: Generate immutable records for every data submission and modification
 
 VM0033 demonstrates how these functions work together. The methodology's complex calculation requirements needed schemas that could capture parameter data accurately, generate usable interfaces for Project Developers and VVBs, validate data according to VM0033 specifications, and support calculation workflows for emission reduction quantification.
 
@@ -50,10 +51,11 @@ For VM0033 we implemented a two-part schema structure that separates project des
 The Project Description schema establishes all foundational project information while supporting multiple certification pathways. For VM0033, this meant supporting both VCS-only projects and VCS+CCB projects through conditional logic that adapts the interface based on certification selection.
 
 **Core Project Description Components**:
-- **Project Metadata**: Title, location, timeline, proponent information, and basic project characterization
-- **Certification Pathway Management**: Conditional logic supporting VCS v4.4 requirements and optional CCB benefits documentation
-- **Stakeholder Information**: Project developer details, VVB assignments, and community consultation documentation
-- **Methodology Implementation**: Project boundary definition, quantification approach selection, and baseline scenario establishment
+
+* **Project Metadata**: Title, location, timeline, proponent information, and basic project characterization
+* **Certification Pathway Management**: Conditional logic supporting VCS v4.4 requirements and optional CCB benefits documentation
+* **Stakeholder Information**: Project developer details, VVB assignments, and community consultation documentation
+* **Methodology Implementation**: Project boundary definition, quantification approach selection, and baseline scenario establishment
 
 VM0033's Project Description schema contains 3,779 rows of structured data. This demonstrates how complex environmental methodologies require extensive information capture while maintaining usability for stakeholder workflows.
 
@@ -86,12 +88,13 @@ Translating methodology parameters into Guardian field configurations requires p
 Every methodology parameter from Part II analysis translates into Guardian fields using a consistent structure that captures all necessary information for implementation and validation.
 
 **Required Parameter Fields**:
-- **Description**: Clear explanation of what the parameter represents and how it's used in methodology calculations
-- **Unit**: Measurement units (t CO2e, hectares, percentage) matching methodology specifications exactly
-- **Equation**: Reference to specific methodology equations where the parameter appears
-- **Source of data**: Methodology requirements for how this parameter should be determined
-- **Value applied**: Actual parameter values, often with stratum-specific or project-specific breakdowns
-- **Justification**: Required explanation for parameter selection and data source choices
+
+* **Description**: Clear explanation of what the parameter represents and how it's used in methodology calculations
+* **Unit**: Measurement units (t CO2e, hectares, percentage) matching methodology specifications exactly
+* **Equation**: Reference to specific methodology equations where the parameter appears
+* **Source of data**: Methodology requirements for how this parameter should be determined
+* **Value applied**: Actual parameter values, often with stratum-specific or project-specific breakdowns
+* **Justification**: Required explanation for parameter selection and data source choices
 
 For example, VM0033's BD (Biomass Density) parameter implementation:
 
@@ -113,19 +116,22 @@ VM0033's multiple calculation pathways required conditional logic that shows rel
 **Conditional Logic Examples from VM0033**:
 
 **Certification Type Selection**:
-- Selecting "VCS v4.4" shows core VCS requirements
-- Selecting "VCS + CCB" adds community and biodiversity benefit documentation requirements
-- Each pathway maintains methodology compliance while avoiding unnecessary complexity
+
+* Selecting "VCS v4.4" shows core VCS requirements
+* Selecting "VCS + CCB" adds community and biodiversity benefit documentation requirements
+* Each pathway maintains methodology compliance while avoiding unnecessary complexity
 
 **Quantification Approach Selection**:
-- "Direct method" shows field measurement data entry forms
-- "Indirect method" shows estimation parameter inputs
-- Each method implements VM0033's approved calculation approaches
+
+* "Direct method" shows field measurement data entry forms
+* "Indirect method" shows estimation parameter inputs
+* Each method implements VM0033's approved calculation approaches
 
 **Soil Emission Calculation Selection**:
-- CO2 approach selection determines which soil carbon stock calculation methods appear
-- CH4 and N2O approach selections control emission factor parameter visibility
-- Each combination implements VM0033's flexible calculation framework
+
+* CO2 approach selection determines which soil carbon stock calculation methods appear
+* CH4 and N2O approach selections control emission factor parameter visibility
+* Each combination implements VM0033's flexible calculation framework
 
 This conditional structure ensures users see only methodology-relevant fields based on their project characteristics, reducing complexity while ensuring requirements coverage.
 
@@ -134,9 +140,10 @@ This conditional structure ensures users see only methodology-relevant fields ba
 **Progressive Disclosure**: Complex calculation parameters appear only after basic project information completion. This prevents overwhelming initial experiences while ensuring users understand project context before diving into technical details.
 
 **Role-Based Interface**: Different stakeholder roles see appropriate field sets:
-- **Project Developers** see data entry requirements with guidance
-- **VVBs** see verification-focused interfaces with tabs for validation & verification reports
-- **Standard Registry** sees approval-focused documentation with key decision points highlighted
+
+* **Project Developers** see data entry requirements with guidance
+* **VVBs** see verification-focused interfaces with tabs for validation & verification reports
+* **Standard Registry** sees approval-focused documentation with key decision points highlighted
 
 **Contextual Help**: We're working on a new feature to enable field-level methodology references, calculation explanations and source justifications in Guardian schemas.
 

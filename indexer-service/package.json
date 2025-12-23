@@ -1,8 +1,8 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@indexer/common": "3.4.0",
-        "@indexer/interfaces": "3.4.0",
+        "@indexer/common": "3.4.1",
+        "@indexer/interfaces": "3.4.1",
         "mongodb": "6.16.0",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
@@ -61,5 +61,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.4.0"
+    "version": "3.4.1"
 }

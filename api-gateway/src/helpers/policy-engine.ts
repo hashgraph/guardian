@@ -1,4 +1,4 @@
-import { ExportMessageDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
+import { BasePolicyDTO, ExportMessageDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
@@ -74,6 +74,14 @@ export class PolicyEngine extends NatsService {
         count: number
     }>(options: any, owner: IOwner): Promise<T> {
         return await this.sendMessage<T>(PolicyEngineEvents.GET_POLICIES_V2, { options, owner });
+    }
+
+    /**
+     * Get policies with imported records
+     * @param owner
+     */
+    public async getPoliciesWithImportedRecords<T extends BasePolicyDTO[]>(currentPolicyId: string): Promise<T> {
+        return await this.sendMessage<T>(PolicyEngineEvents.GET_POLICIES_WITH_IMPORTED_RECORDS, { currentPolicyId });
     }
 
     /**

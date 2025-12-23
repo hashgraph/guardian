@@ -45,7 +45,7 @@ import {
     TransactionRecord,
     TransactionRecordQuery,
     TransferTransaction
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import { HederaUtils, timeout } from './utils.js';
 import axios, { AxiosResponse } from 'axios';
 import { Environment } from './environment.js';
@@ -164,11 +164,11 @@ export class HederaSDKHelper {
         dryRun: string = null,
         networkOptions: NetworkOptions
     ) {
-        Environment.setNetwork(networkOptions.network);
         Environment.setLocalNodeAddress(networkOptions.localNodeAddress);
         Environment.setLocalNodeProtocol(networkOptions.localNodeProtocol);
         Environment.setNodes(networkOptions.nodes);
         Environment.setMirrorNodes(networkOptions.mirrorNodes);
+        Environment.setNetwork(networkOptions.network);
         this.dryRun = dryRun || null;
         this.client = Environment.createClient();
         this.network = this.client?.ledgerId?.toString();
@@ -183,11 +183,11 @@ export class HederaSDKHelper {
      * @private
      */
     public static setNetwork(networkOptions: NetworkOptions) {
-        Environment.setNetwork(networkOptions.network);
         Environment.setLocalNodeAddress(networkOptions.localNodeAddress);
         Environment.setLocalNodeProtocol(networkOptions.localNodeProtocol);
         Environment.setNodes(networkOptions.nodes);
         Environment.setMirrorNodes(networkOptions.mirrorNodes);
+        Environment.setNetwork(networkOptions.network);
         return HederaSDKHelper;
     }
 

@@ -34,6 +34,7 @@ export enum PolicyEngineEvents {
     BLOCK_BY_TAG = 'policy-engine-event-get-block-by-tag',
     GET_POLICIES = 'policy-engine-event-get-policies',
     GET_POLICIES_V2 = 'policy-engine-event-get-policies-V2',
+    GET_POLICIES_WITH_IMPORTED_RECORDS = 'policy-engine-event-get-policies-with-imported-records',
     GET_POLICY = 'policy-engine-event-get-policy',
     GET_BLOCK_PARENTS = 'policy-engine-event-get-block-parents',
     BLOCK_ABOUT = 'policy-engine-event-block-about',

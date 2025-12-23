@@ -1,4 +1,4 @@
-import { PrivateKey } from '@hashgraph/sdk';
+import { PrivateKey } from '@hiero-ledger/sdk';
 import { Bls12381G2KeyPair } from '@mattrglobal/jsonld-signatures-bbs';
 import { VerificationMethod } from './verification-method.js';
 

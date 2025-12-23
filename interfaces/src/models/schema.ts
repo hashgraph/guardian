@@ -508,4 +508,37 @@ export class Schema implements ISchema {
             return null;
         }
     }
+
+    /**
+     * Create Schema
+     */
+    public static fromDocument(document: ISchemaDocument): Schema | null {
+        try {
+            return new Schema({ document });
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
+
+    /**
+     * Create Schema
+     */
+    public static fromVc(document: any): Schema | null {
+        try {
+            const defsObj = document.$defs;
+            if (!defsObj) {
+                return null;
+            }
+            const defsKeys = Object.keys(defsObj);
+            for (const key of defsKeys) {
+                const nestedSchema = defsObj[key];
+                return new Schema({ document: nestedSchema });
+            }
+            return null;
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
 }
