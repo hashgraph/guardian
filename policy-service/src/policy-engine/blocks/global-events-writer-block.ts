@@ -125,7 +125,7 @@ export class GlobalEventsWriterBlock {
      * Extract the canonical address (messageId) from the document.
      */
     private extractCanonicalAddress(doc: IPolicyDocument): string {
-        if (doc.messageId) {
+        if (doc?.messageId) {
             return String(doc.messageId);
         }
         return '';
@@ -521,6 +521,8 @@ export class GlobalEventsWriterBlock {
             throw new BlockActionError('User is required', ref.blockType, ref.uuid);
         }
 
+        console.log('getData', 'writer')
+
         // Ensure default streams exist. This creates DB rows
         // from the block configuration if none exist for this user.
         await this.ensureDefaultStreams(ref, user);
@@ -556,6 +558,8 @@ export class GlobalEventsWriterBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const operation = data?.operation;
         const streams = data?.streams ?? [];
+
+        console.log('setData', 'writer')
 
         if (!user) {
             throw new BlockActionError('User is required', ref.blockType, ref.uuid);
@@ -661,7 +665,6 @@ export class GlobalEventsWriterBlock {
 
         // Update active flags and document type
         if (operation === 'Update') {
-;
             const setStreamsDbMap = new Map<string, GlobalEventsWriterStream>();
 
             for (const stream of streams) {
@@ -682,9 +685,8 @@ export class GlobalEventsWriterBlock {
             const doc = cacheState.doc
 
             const documentMessageId: string = this.extractCanonicalAddress(doc);
-            const { schemaContextIri, schemaIri } = this.extractSchemaIris(ref, doc);
 
-            console.log('streams', streams)
+            const { schemaContextIri, schemaIri } = this.extractSchemaIris(ref, doc);
 
             // Update existing streams
             for (const streamSetData of streams) {
@@ -695,10 +697,10 @@ export class GlobalEventsWriterBlock {
                     const active = streamSetData.active
                     const documentType = streamSetData.documentType
 
-                    if(typeof active === 'boolean' && active) {
+                    if(typeof active === 'boolean') {
                         streamDb.active = active
                         console.log('streamDb.lastPublishMessageId', streamDb.lastPublishMessageId)
-                        if(!streamDb.lastPublishMessageId) {
+                        if(!streamDb.lastPublishMessageId && doc?.topicId && active) {
                             console.log('publish')
                             const payload: GlobalEvent = {
                                 documentType: streamSetData.documentType,
@@ -710,14 +712,16 @@ export class GlobalEventsWriterBlock {
                             };
 
                             await this.publish(ref, user, streamDb.globalTopicId, payload);
+
+                            if(lastPublishedMessageId) {
+                                streamDb.lastPublishMessageId = lastPublishedMessageId;
+                            }
                         }
                     }
 
                     if(documentType) {
                         streamDb.documentType = documentType
                     }
-
-                    streamDb.lastPublishMessageId = lastPublishedMessageId;
 
                     await ref.databaseServer.updateGlobalEventsWriterStream(streamDb);
                 }

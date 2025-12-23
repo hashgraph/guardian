@@ -622,6 +622,7 @@ export class SendToGuardianBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
+        console.log('sentToGuardian block runAction, data =', event.data?.data);
 
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
         if (Array.isArray(docs)) {
