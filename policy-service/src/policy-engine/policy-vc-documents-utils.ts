@@ -38,11 +38,17 @@ export class PolicyVcDocumentsUtils {
         docs.push(firstVCDocument);
 
         if (firstVCDocument?.oldVersion) {
+            const conditions = [];
+            if (firstVCDocument.id) {
+                conditions.push({ initId: firstVCDocument.id });
+            }
+
+            if (firstVCDocument.messageId) {
+                conditions.push({ initId: firstVCDocument.messageId });
+            }
+
             const vcDocuments = await db.getVcDocuments({
-                $or: [
-                    { initId: firstVCDocument.id },
-                    { initId: firstVCDocument.messageId },
-                ],
+                $or: conditions,
             });
 
             if (Array.isArray(vcDocuments)) {
@@ -111,7 +117,15 @@ export class PolicyVcDocumentsUtils {
             const value = this.getNestedValue(document, path);
 
             if (value !== undefined && value !== null) {
-                this.setNestedValue(newCredentialSubject, path, value);
+                const normalizedValue =
+                    Array.isArray(value) && value.length === 1
+                        ? value[0]
+                        : value;
+                this.setNestedValue(
+                    newCredentialSubject,
+                    path,
+                    normalizedValue
+                );
             }
         });
 
@@ -196,27 +210,131 @@ export class PolicyVcDocumentsUtils {
         return schema;
     }
 
-    private static setNestedValue(obj, path, value) {
+    private static getNestedValue(obj: any, path: string): any {
         const keys = path.split(".");
-        let current = obj;
 
-        for (let i = 0; i < keys.length - 1; i++) {
-            const key = keys[i];
-            if (!current[key]) {
-                current[key] = {};
+        const traverse = (current: any, keyIndex: number): any[] => {
+            if (current === undefined || current === null) {
+                return [];
             }
-            current = current[key];
-        }
 
-        current[keys[keys.length - 1]] = value;
+            const currentKey = keys[keyIndex];
+            const isLastKey = keyIndex === keys.length - 1;
+
+            if (Array.isArray(current)) {
+                const allValues: any[] = [];
+
+                current.forEach((item) => {
+                    if (item && typeof item === "object") {
+                        if (isLastKey) {
+                            if (item[currentKey] !== undefined) {
+                                allValues.push(item[currentKey]);
+                            }
+                        } else {
+                            const nestedValues = traverse(
+                                item[currentKey],
+                                keyIndex + 1
+                            );
+                            allValues.push(...nestedValues);
+                        }
+                    }
+                });
+
+                return allValues;
+            } else if (current && typeof current === "object") {
+                if (isLastKey) {
+                    return current[currentKey] !== undefined
+                        ? [current[currentKey]]
+                        : [];
+                } else {
+                    return traverse(current[currentKey], keyIndex + 1);
+                }
+            } else {
+                return [];
+            }
+        };
+
+        const values = traverse(obj, 0);
+        return values.length > 0 ? values : undefined;
     }
 
-    private static getNestedValue(obj, path) {
-        return path.split(".").reduce((current, key) => {
-            return current && current[key] !== undefined
-                ? current[key]
-                : undefined;
-        }, obj);
+    private static setNestedValue(obj: any, path: string, value: any): void {
+        const keys = path.split(".");
+
+        const traverseAndSet = (
+            current: any,
+            keyIndex: number,
+            valueToSet: any
+        ): void => {
+            if (current === undefined || current === null) {
+                return;
+            }
+
+            const currentKey = keys[keyIndex];
+            const isLastKey = keyIndex === keys.length - 1;
+            const isSecondLastKey = keyIndex === keys.length - 2;
+
+            if (Array.isArray(current)) {
+                if (isLastKey) {
+                    if (Array.isArray(valueToSet)) {
+                        current.forEach((item, index) => {
+                            if (
+                                item &&
+                                typeof item === "object" &&
+                                index < valueToSet.length
+                            ) {
+                                item[currentKey] = valueToSet[index];
+                            }
+                        });
+                    } else {
+                        current.forEach((item) => {
+                            if (item && typeof item === "object") {
+                                item[currentKey] = valueToSet;
+                            }
+                        });
+                    }
+                } else {
+                    current.forEach((item, index) => {
+                        if (item && typeof item === "object") {
+                            if (item[currentKey] === undefined) {
+                                item[currentKey] = isSecondLastKey ? [] : {};
+                            } else if (item[currentKey] === null) {
+                                item[currentKey] = isSecondLastKey ? [] : {};
+                            }
+                            const nextValue =
+                                Array.isArray(valueToSet) &&
+                                index < valueToSet.length
+                                    ? valueToSet[index]
+                                    : valueToSet;
+
+                            traverseAndSet(
+                                item[currentKey],
+                                keyIndex + 1,
+                                nextValue
+                            );
+                        }
+                    });
+                }
+            } else if (current && typeof current === "object") {
+                if (isLastKey) {
+                    current[currentKey] = valueToSet;
+                } else {
+                    if (current[currentKey] === undefined) {
+                        current[currentKey] = isSecondLastKey ? [] : {};
+                    } else if (current[currentKey] === null) {
+                        current[currentKey] = isSecondLastKey ? [] : {};
+                    }
+
+                    traverseAndSet(
+                        current[currentKey],
+                        keyIndex + 1,
+                        valueToSet
+                    );
+                }
+            }
+        };
+
+        traverseAndSet(obj, 0, value);
     }
 
     private static async createVerifiableCredential(
