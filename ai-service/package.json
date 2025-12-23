@@ -11,7 +11,7 @@
         "@langchain/core": "1.0.4",
         "@langchain/openai": "1.1.0",
         "@langchain/textsplitters": "1.0.0",
-        "@mikro-orm/core": "6.4.16",
+        "@mikro-orm/core": "6.6.2",
         "@mikro-orm/mongodb": "6.4.16",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
