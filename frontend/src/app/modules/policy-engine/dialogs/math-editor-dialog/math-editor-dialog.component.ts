@@ -3,8 +3,14 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
 import { Schema, SchemaField } from '@guardian/interfaces';
 import { MathLiveComponent } from 'src/app/modules/common/mathlive/mathlive.component';
 import { FieldLinkDialog } from '../field-link-dialog/field-link-dialog.component';
-import { Context, Formula, getValueByPath, Group, Link } from './models';
+import { getValueByPath } from './model/models';
+import { Context } from './model/context';
+import { Group } from './model/group';
+import { FieldLink } from './model/link';
+import { Formula } from './model/formula';
 import { SchemaVariables } from '../../structures';
+import { Code } from './model/code';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 
 /**
  * Dialog.
@@ -24,23 +30,25 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public test = false;
     public block: any;
     public properties: any;
+    public policyId: string;
 
     public scope: Group;
 
     public keyboard: boolean = false;
 
+    public schema: Schema | undefined;
     private schemas: SchemaVariables[];
-    private schema: Schema | undefined;
     private schemasName: string = '';
     private schemasFieldMap: Map<string, SchemaField> = new Map<string, SchemaField>();
 
-    public code: string = '';
+    public code: Code;
 
-    public step: string = 'formulas';
+    public step: string = 'step_1';
+    public codeTab: string = 'general';
 
     public codeMirrorOptions: any = {
         theme: 'default',
-        mode: 'javascript',
+        mode: 'block-code-lang',
         styleActiveLine: true,
         lineNumbers: true,
         lineWrapping: true,
@@ -55,30 +63,66 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         autoFocus: true
     };
     context: Context | null;
+    private codeEditor: any;
+
+    public dataType: string = 'schema';
+    public fileExtension = 'json';
+    public fileLabel = 'Add json .json file';
+    public fileBuffer: any;
+    public error: any;
+    public schemaValue: UntypedFormGroup;
+    public jsonValue: string;
+    public fileValue: any;
+    public _value: any;
+
+    public result: any;
 
     constructor(
         private dialogRef: DynamicDialogRef,
         private dialogService: DialogService,
         private config: DynamicDialogConfig,
+        private fb: UntypedFormBuilder,
     ) {
         this.data = this.config.data;
         this.scope = new Group();
+        this.code = new Code();
 
         // this.scope.addVariable();
         this.scope.addFormula('x', '1');
         this.scope.addFormula('y', 'x + 10');
         this.scope.addFormula('z(a, b)', 'a + b');
+        this.scope.addFormula('r', 'z(x, y) + 1');
+        this.code.text =
+            `
+//Registrant Id
+const m = getField('f1');
+document.field0 = 5;
+const y = { 
+    context: this, 
+    document: document, 
+    formulas: formulas, 
+    variables: variables, 
+    m:m, 
+    z: formulas['z'](1, 2),
+    Array:Array,
+    n: NaN,
+    t: typeof ''
+}
+`;
     }
 
     ngOnInit() {
         this.initDialog = false;
         this.loading = true;
+        this.policyId = this.data.policyId;
         this.expression = this.data.expression;
         this.test = this.data.test;
         this.block = this.data.block;
         this.properties = this.block.properties;
         this.schemas = this.data.schemas;
         this.schema = this.schemas?.find((v) => v.value === this.properties?.schema)?.data;
+        this.schemaValue = this.fb.group({});
+        this.jsonValue = '';
 
         this.schema = this.schemas[1].data;
 
@@ -97,13 +141,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public onSave(): void {
         this.dialogRef.close({
             type: 'save',
-            expression: this.expression
-        });
-    }
-
-    public onTest(): void {
-        this.dialogRef.close({
-            type: 'test',
             expression: this.expression
         });
     }
@@ -137,8 +174,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.scope.deleteFormula(formula);
     }
 
-    public deleteVariable(variable: Link) {
+    public deleteVariable(variable: FieldLink) {
         this.scope.deleteVariable(variable);
+    }
+
+    public deleteOutput(output: FieldLink) {
+        this.scope.deleteOutput(output);
     }
 
     public addFormula() {
@@ -147,6 +188,10 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public addVariable() {
         this.scope.addVariable();
+    }
+
+    public addOutput() {
+        this.scope.addOutput();
     }
 
     private updateSchema() {
@@ -161,7 +206,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }
     }
 
-    public onLink(item: Link) {
+    public onLink(item: FieldLink) {
         if (!this.schema) {
             return;
         }
@@ -177,6 +222,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 item.field = result.value;
+                item.update();
             }
         });
     }
@@ -197,32 +243,57 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         return this.schemasFieldMap.get(link)?.path || '';
     }
 
-    public deleteLink(item: Link, $event: any) {
+    public getItemValue(value: any) {
+        if (value === undefined || value === null) {
+            return '';
+        }
+        if (typeof value === 'string') {
+            return value;
+        }
+        if (typeof value === 'object') {
+            return JSON.stringify(value);
+        }
+        return String(value);
+    }
+
+    public deleteLink(item: FieldLink, $event: any) {
         $event.preventDefault();
         $event.stopPropagation();
         item.field = null;
     }
 
     public onStep(step: string) {
+        this.error = null;
+        this.loading = false;
+        try {
+            this._value = this.getJsonValue();
+        } catch (error) {
+            console.error(error);
+            this.error = error?.toString();
+            return;
+        }
         this.step = step;
+        this.setValue(this._value);
+        this.loading = true;
+        setTimeout(() => {
+            this.loading = false;
+        }, 1000);
     }
 
     public getHeader(step: string) {
         switch (step) {
-            case 'formulas':
-                return 'Formulas & Variables';
-            case 'code':
-                return 'Code';
-            case 'set':
-                return 'Set';
-            case 'data':
+            case 'step_1':
+                return 'Variables';
+            case 'step_2':
+                return 'Formulas';
+            case 'step_3':
+                return 'Output data';
+
+
+            case 'step_4':
                 return 'Input Data';
-            case 'formulas_results':
-                return 'Formulas & Variables';
-            case 'code_results':
-                return 'Code';
-            case 'set_results':
-                return 'Set';
+            case 'step_5':
+                return 'Results';
             default:
                 return null;
         }
@@ -234,33 +305,28 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public onValidate() {
         if (this.scope) {
             this.scope.validate();
-
-            this.context = this.scope.createContext();
-            if (!this.context) {
-                return;
-            }
-
-            const doc = {
-                f1: [
-                    {
-                        f2: [1]
-                    },
-                    {
-                        f2: [3]
-                    }
-                ]
-            };
-
-            this.context.setDocument(doc);
-            const formulas = this.context.formulas;
-            const variables = this.context.variables;
-            const getField = this.context.getField;
-
-            formulas['z'](1, 2);
-            const t = getField('f1.f2');
-
-            debugger;
         }
+    }
+
+    private indexOf(text: string, item: string, offset: number): number {
+        let index = text.indexOf(item);
+        for (let i = 0; i < offset; i++) {
+            index = text.indexOf(item, index + 1);
+        }
+        return index;
+    }
+
+    private getCursor() {
+        if (!this.code?.text) {
+            return 0;
+        }
+        if (this.codeEditor) {
+            const cursor = this.codeEditor.getCursor();
+            let index = this.indexOf(this.code.text, '\n', cursor.line - 1);
+            index = index + cursor.ch + 1;
+            return index;
+        }
+        return this.code.text.length;
     }
 
     public addVariableLink() {
@@ -277,17 +343,189 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         });
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
-                this.code = this.code + '\r\n';
-                this.code = this.code + `//${result.fullName}` + '\r\n';
-                this.code = this.code + `const _ = get('${result.value}');` + '\r\n';
+                const cursor = this.getCursor();
+                const type = this.getFieldType(result.value);
+                let text = '';
+                text = text + '\r\n';
+                text = text + `//${result.fullName}` + '\r\n';
+                text = text + `//${type}` + '\r\n';
+                text = text + `const _ /*name*/ = getField('${result.value}');` + '\r\n';
+
+                this.code.text = this.code.text.slice(0, cursor) + text + this.code.text.slice(cursor);
             }
         });
     }
 
     public addComponent() {
-        const result = this.context?.components[2];
-        if (result) {
-            this.code = this.code + `${result.value}`;
+        // const result = this.context?.components[2];
+        // if (result) {
+        //     this.code.text = this.code.text + `${result.value}`;
+        // }
+    }
+
+    public onCodeChangeTab(tab: any) {
+        this.codeTab = tab.index === 0 ? 'general' : 'advanced';
+    }
+
+    public cursorActivity($event: any) {
+        this.codeEditor = $event;
+    }
+
+    public importFromFile(event: any) {
+        const reader = new FileReader()
+        reader.readAsText(event);
+        reader.addEventListener('load', (e: any) => {
+            this.fileBuffer = e.target.result;
+            this.fileValue = JSON.parse(this.fileBuffer);
+        });
+    }
+
+    public initForm($event: any) {
+        this.schemaValue = $event;
+    }
+
+    private getJsonValue() {
+        switch (this.dataType) {
+            case 'schema':
+                return this.schemaValue.value;
+            case 'json':
+                const json = JSON.parse(this.jsonValue);
+                return json;
+            case 'file':
+                return this.fileValue;
+            default:
+                return this._value;
+        }
+    }
+
+    private setValue(value: any) {
+        switch (this.dataType) {
+            case 'schema':
+                this._value = value;
+                this.schemaValue.setValue(value);
+                break;
+            case 'json':
+                this._value = value;
+                try {
+                    this.jsonValue = JSON.stringify(value, null, 4);
+                } catch (error) {
+                    console.error(error)
+                }
+                break;
+            case 'file':
+                this._value = value;
+                try {
+                    this.fileValue = JSON.stringify(value, null, 4);
+                } catch (error) {
+                    console.error(error)
+                }
+                break;
+            default:
+                this._value = value;
+                break;
+        }
+    }
+
+    private getValue() {
+        switch (this.dataType) {
+            case 'schema':
+                return this.schemaValue.value;
+            case 'json':
+                try {
+                    const json = JSON.parse(this.jsonValue);
+                    return json;
+                } catch (error) {
+                    console.error(error)
+                    return null;
+                }
+            case 'file':
+                return this.fileValue;
+            default:
+                return null;
+        }
+    }
+
+    public onTest(): void {
+        try {
+            this.loading = true;
+            this.result = null;
+            const doc = this.getValue();
+
+            if (!this.scope) {
+                this.loading = false;
+                this.error = 'Invalid config';
+                return;
+            }
+
+            this.context = this.scope.createContext();
+            if (!this.context) {
+                this.loading = false;
+                this.error = 'Invalid config';
+                for (const element of this.scope.variables) {
+                    if (element.invalid && !element.empty) {
+                        this.onStep('step_1');
+                        return;
+                    }
+                }
+                for (const element of this.scope.formulas) {
+                    if (element.invalid && !element.empty) {
+                        this.onStep('step_2');
+                        return;
+                    }
+                }
+                for (const element of this.scope.outputs) {
+                    if (element.invalid && !element.empty) {
+                        this.onStep('step_3');
+                        return;
+                    }
+                }
+                return;
+            }
+
+            this.context.setDocument(doc);
+            const context = this.context.getContext();
+            context.document = doc;
+
+            const input = JSON.parse(JSON.stringify(doc));
+            const variables = this.scope.variables;
+            const formulas = this.scope.formulas;
+            const outputs = this.scope.outputs;
+            for (const item of this.scope.items) {
+                item.value = context.scope[item.name];
+            }
+
+            let builtCode: Function;
+            try {
+                this.code.setContext(context);
+                builtCode = this.code.build();
+                const output = builtCode();
+                this.result = {
+                    valid: true,
+                    error: '',
+                    variables: variables,
+                    formulas: formulas,
+                    outputs: outputs,
+                    input: input,
+                    output: output
+                }
+            } catch (error) {
+                this.error = 'Invalid code';
+                this.result = {
+                    valid: true,
+                    error: String(error),
+                    variables: variables,
+                    formulas: formulas,
+                    outputs: outputs,
+                    input: input,
+                    output: ''
+                }
+            }
+            this.loading = false;
+            this.onStep('step_5');
+        } catch (error) {
+            this.loading = false;
+            this.error = 'Invalid config';
+            return;
         }
     }
 }

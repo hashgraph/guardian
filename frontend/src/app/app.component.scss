@@ -194,7 +194,8 @@ body {
                 background: #f7f7f7;
             }
 
-            i, svg {
+            i,
+            svg {
                 height: 28px;
                 width: 28px;
                 margin: 4px;
@@ -266,6 +267,7 @@ body {
 ::ng-deep ngx-codemirror {
     width: 100%;
 }
+
 ::ng-deep .CodeMirror {
     height: 100% !important;
 }
@@ -477,7 +479,7 @@ body {
 }
 
 ::ng-deep td.propRowCell.cellName,
-::ng-deep .propRow .propRowCell{
+::ng-deep .propRow .propRowCell {
     align-content: center;
 }
 
@@ -492,4 +494,10 @@ body {
 ::ng-deep .p-tabview-nav li.p-highlight .p-tabview-nav-link {
     color: var(--color-primary);
     border-color: var(--color-primary);
+}
+
+::ng-deep {
+    .cm-block-code-highlight {
+        color: var(--formula-function-color, #E50299);
+    }
 }

@@ -20,6 +20,7 @@ export class MathConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
+    private policyId!: string | undefined;
 
     propHidden: any = {
     };
@@ -48,6 +49,7 @@ export class MathConfigComponent implements OnInit {
         this.item = block;
         this.properties = block.properties;
         this.schemas = this.moduleVariables?.schemas || [];
+        this.policyId = block.policyId;
     }
 
     onHide(item: any, prop: any) {
@@ -97,6 +99,7 @@ export class MathConfigComponent implements OnInit {
             styleClass: 'guardian-dialog',
             data: {
                 test: true,
+                policyId: this.policyId,
                 block: this.currentBlock,
                 schemas: this.schemas,
                 expression: this.properties.expression,
