@@ -202,7 +202,7 @@ export class ExtractDataBlock {
             }
         }
         const state = { data: sources };
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
     }
 
     /**
@@ -234,7 +234,7 @@ export class ExtractDataBlock {
             source: docs,
             data: result
         };
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
     }
 
     /**

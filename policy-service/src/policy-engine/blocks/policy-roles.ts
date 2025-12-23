@@ -435,9 +435,9 @@ export class PolicyRolesBlock {
         const userGroup = await ref.databaseServer.setUserInGroup(group);
         const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref, user.userId);
         if (data.invitation) {
-            ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null, actionStatus);
         } else {
-            ref.triggerEvents(PolicyOutputEventType.CreateGroup, newUser, null, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.CreateGroup, newUser, null, actionStatus);
         }
 
         await PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance);

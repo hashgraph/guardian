@@ -182,6 +182,11 @@ export interface IPolicyBlock {
     readonly policyAvailability: PolicyAvailability;
 
     /**
+     * Sync events
+     */
+    readonly syncEvents: boolean;
+
+    /**
      * Policy location
      */
     readonly locationType: LocationType;

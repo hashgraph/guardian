@@ -189,9 +189,9 @@ export class ExternalDataBlock {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, null);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, null);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, null);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, null);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, null);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(doc)
         }));

@@ -450,7 +450,7 @@ export class MintBlock {
             await MintService.retry(event.data.data.messageId, event.user.did, ref.policyOwner, ref, event?.user?.userId);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
     }
 
     /**
@@ -520,9 +520,9 @@ export class MintBlock {
 
         const state: IPolicyEventState = event.data;
         state.result = vp;
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, event.actionStatus);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, event.actionStatus);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, event.actionStatus);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             tokenId: token.tokenId,

@@ -269,15 +269,15 @@ export class RequestVcDocumentBlock {
 
             //Trigger Events
             if (draft) {
-                ref.triggerEvents(PolicyOutputEventType.DraftEvent, user, state, actionStatus);
+                await ref.triggerEvents(PolicyOutputEventType.DraftEvent, user, state, actionStatus);
             } else {
-                ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+                await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
             }
             if (draft || editType === 'edit') {
-                ref.triggerEvents(PolicyOutputEventType.ReferenceEvent, user, { data: documentRef }, actionStatus);
+                await ref.triggerEvents(PolicyOutputEventType.ReferenceEvent, user, { data: documentRef }, actionStatus);
             }
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
                 documents: ExternalDocuments(item)
             }));

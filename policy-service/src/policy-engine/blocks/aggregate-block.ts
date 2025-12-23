@@ -182,8 +182,8 @@ export class AggregateBlock {
         if (documents.length || ref.options.emptyData) {
             const state: IPolicyEventState = { data: documents };
             const user = await PolicyUtils.getPolicyUserById(ref, userId);
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(
                 new ExternalEvent(ExternalEventType.TickCron, ref, user, {
                     documents: ExternalDocuments(documents),
@@ -285,8 +285,8 @@ export class AggregateBlock {
             const user = await PolicyUtils.getDocumentOwner(ref, document, userId);
             rawEntities = await this.removeDocuments(ref, rawEntities);
             const state: IPolicyEventState = { data: rawEntities };
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickAggregate, ref, user, {
                 documents: ExternalDocuments(rawEntities)
             }));

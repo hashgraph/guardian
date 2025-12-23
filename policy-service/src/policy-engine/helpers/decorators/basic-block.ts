@@ -351,17 +351,21 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvents<U>(
+            public async triggerEvents<U>(
                 output: PolicyOutputEventType,
                 user: PolicyUser,
                 data: U,
                 actionStatus: RecordActionStep
-            ): void {
+            ): Promise<void> {
                 const status = actionStatus;
 
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
-                        link.run(user, data, status);
+                        if (link.source.syncEvents) {
+                            await link.run(user, data, status);
+                        } else {
+                            link.run(user, data, status);
+                        }
                     }
                 }
             }

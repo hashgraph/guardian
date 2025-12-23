@@ -278,12 +278,12 @@ export class SplitBlock {
                     return c.document;
                 })
             };
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Chunk, ref, user, {
                 documents: ExternalDocuments(state.data)
             }));
         }
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, { data: documents }, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, { data: documents }, actionStatus);
     }
 
     /**

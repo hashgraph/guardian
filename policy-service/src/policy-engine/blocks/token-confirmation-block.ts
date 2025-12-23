@@ -156,8 +156,8 @@ export class TokenConfirmationBlock {
             throw new BlockActionError(`Document not found`, ref.blockType, ref.uuid)
         }
 
-        ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data, actionStatus);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, blockState.user, {
             userAction: data.action,
             action: ref.options.action
