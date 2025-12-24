@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Stage 0: Use node image for base image for all stages
-ARG NODE_VERSION=20.19.5-alpine
+ARG NODE_VERSION=24.12.0-alpine
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
 WORKDIR /usr/local/app
 # Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory
@@ -19,6 +19,7 @@ RUN yarn pack
 FROM base AS common
 COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY --link common/package.json common/tsconfig*.json yarn.lock ./
+COPY --link patches patches/
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
     yarn install
@@ -30,6 +31,7 @@ FROM base AS deps
 COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
 COPY --link guardian-service/package.json guardian-service/tsconfig*.json yarn.lock ./
+COPY --link patches patches/
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
     yarn install --prod

@@ -8,7 +8,7 @@ import { SecretManager } from '../secret-manager.js';
 import { Wallet } from '../../wallet/index.js';
 import { SecretManagerType } from '../secret-manager-config.js';
 import { exit } from 'process';
-import { DatabaseServer } from '../../database-modules';
+import { DatabaseServer } from '../../database-modules/database-server.js';
 
 const globalEnvPath = path.join(process.cwd(), '../.env')
 // const authEnvPath = path.join(process.cwd(), '../auth-service/.env')

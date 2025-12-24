@@ -1,41 +1,24 @@
 {
     "compilerOptions": {
-        "module": "ESNext",
-        "target": "es2022",
-        "lib": [
-            "es5",
-            "es6",
-            "ES2021.String"
-        ],
-        "moduleResolution": "node",
-        "sourceMap": false,
-        "outDir": "dist/",
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
         "baseUrl": "./src",
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "lib": [
+            "ES2023"
+        ],
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "outDir": "dist/",
         "paths": {
-            "@entity/*": [
-                "entity/*"
+            "@analytics": [
+                "analytics/index"
             ],
             "@api/*": [
                 "api/*"
             ],
-            "@subscribers/*": [
-                "subscribers/*"
-            ],
-            "@helpers/*": [
-                "helpers/*"
-            ],
-            "@policy-engine/*": [
-                "policy-engine/*"
-            ],
             "@auth/*": [
                 "auth/*"
-            ],
-            "@hedera-modules": [
-                "hedera-modules/index"
             ],
             "@database-modules": [
                 "database-modules/index"
@@ -43,17 +26,32 @@
             "@document-loader/*": [
                 "document-loader/*"
             ],
-            "@analytics": [
-                "analytics/index"
+            "@entity/*": [
+                "entity/*"
+            ],
+            "@hedera-modules": [
+                "hedera-modules/index"
+            ],
+            "@helpers/*": [
+                "helpers/*"
+            ],
+            "@policy-engine/*": [
+                "policy-engine/*"
+            ],
+            "@subscribers/*": [
+                "subscribers/*"
             ]
-        }
+        },
+        "skipLibCheck": true,
+        "sourceMap": false,
+        "strict": false,
+        "target": "ES2023"
     },
-    "include": [
-        "src/**/*",
-        "../interfaces/src/type/TopicType.ts"
-    ],
     "exclude": [
         "node_modules"
     ],
-    "compileOnSave": true
+    "include": [
+        "src/**/*",
+        "../interfaces/src/type/TopicType.ts"
+    ]
 }

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import CID from 'cids';
-import { BaseNode, CheckFileResponse } from './base-node';
+import { BaseNode, CheckFileResponse } from './base-node.js';
 
 export class HttpNode implements BaseNode {
     private readonly LOAD_TIMEOUT: number = 60 * 1000;

@@ -1,28 +1,28 @@
 {
     "compilerOptions": {
-        "module": "ESNext",
-        "target": "es2022",
-        "lib": [
-            "esnext"
-        ],
-        "moduleResolution": "node",
-        "sourceMap": false,
-        "outDir": "dist/",
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
         "baseUrl": "./src",
-        "paths": {}
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "lib": [
+            "ES2023"
+        ],
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "outDir": "dist/",
+        "paths": {},
+        "skipLibCheck": true,
+        "sourceMap": false,
+        "strict": false,
+        "target": "ES2023"
     },
+    "exclude": [
+        "node_modules"
+    ],
     "include": [
         "src/**/*",
         "../interfaces/src/type/TopicType.ts"
     ],
-    "exclude": [
-        "node_modules"
-    ],
-    "compileOnSave": true,
     "tsc-alias": {
         "resolveFullPaths": true,
         "verbose": false
