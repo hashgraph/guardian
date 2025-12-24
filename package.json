@@ -1,6 +1,8 @@
 {
     "devDependencies": {
-        "detect-secrets": "^1.0.6"
+        "detect-secrets": "^1.0.6",
+        "patch-package": "^8.0.1",
+        "postinstall-postinstall": "^2.1.0"
     },
     "name": "guardian",
     "packageManager": "yarn@1.22.21",
@@ -12,32 +14,34 @@
     },
     "scripts": {
         "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*",
+        "postinstall": "patch-package",
         "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\""
     },
     "version": "3.4.1",
     "workspaces": [
-        "interfaces",
-        "common",
-        "api-gateway",
-        "auth-service",
-        "guardian-service",
-        "logger-service",
-        "mrv-sender",
-        "topic-viewer",
-        "queue-service",
-        "tree-viewer",
-        "analytics-service",
-        "worker-service",
-        "policy-service",
-        "api-tests",
         "ai-service",
-        "notification-service",
-        "topic-listener-service",
-        "indexer-interfaces",
-        "indexer-common",
+        "analytics-service",
+        "api-gateway",
+        "api-tests",
+        "application-events",
+        "auth-service",
+        "common",
+        "contracts",
+        "guardian-service",
         "indexer-api-gateway",
+        "indexer-common",
+        "indexer-interfaces",
         "indexer-service",
         "indexer-worker-service",
-        "contracts"
+        "interfaces",
+        "logger-service",
+        "mrv-sender",
+        "notification-service",
+        "policy-service",
+        "queue-service",
+        "topic-listener-service",
+        "topic-viewer",
+        "tree-viewer",
+        "worker-service"
     ]
 }

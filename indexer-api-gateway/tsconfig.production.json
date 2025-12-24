@@ -1,29 +1,29 @@
 {
-    "compileOnSave": true,
     "compilerOptions": {
         "baseUrl": "./src",
         "declaration": true,
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
-        "resolveJsonModule": true,
         "experimentalDecorators": true,
-        "inlineSourceMap": false,
-        "skipLibCheck": true,
         "lib": [
-            "esnext"
+            "ES2023"
         ],
-        "module": "ESNext",
-        "moduleResolution": "node",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "outDir": "dist/",
         "paths": {
-            "#dto": [
-                "dto/index"
-            ],
             "#decorators": [
                 "decorators/index"
+            ],
+            "#dto": [
+                "dto/index"
             ]
         },
-        "target": "es2022"
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "sourceMap": false,
+        "strict": false,
+        "target": "ES2023"
     },
     "exclude": [
         "node_modules",

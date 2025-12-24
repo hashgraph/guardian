@@ -1,24 +1,24 @@
 {
-    "compileOnSave": true,
     "compilerOptions": {
-        "skipLibCheck": true,
         "declaration": true,
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
         "experimentalDecorators": true,
-        "inlineSourceMap": true,
         "lib": [
-            "es6"
+            "ES2023"
         ],
         "module": "NodeNext",
-        "moduleResolution": "nodenext",
+        "moduleResolution": "NodeNext",
         "outDir": "dist/",
-        "target": "es2022",
         "paths": {
             "#constants/*": [
                 "./src/constants/*"
             ]
-        }
+        },
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "strict": false,
+        "target": "ES2023"
     },
     "exclude": [
         "node_modules",

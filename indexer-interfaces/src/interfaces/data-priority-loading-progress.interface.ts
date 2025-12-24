@@ -1,4 +1,4 @@
-import { PriorityStatus } from '../types';
+import { PriorityStatus } from '../types/priority-status.type.js';
 
 /**
  * Data Priority Loading Progress

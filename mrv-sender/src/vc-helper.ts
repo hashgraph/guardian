@@ -5,7 +5,7 @@ import { ld as vcjs } from '@transmute/vc.js';
 
 export class VCHelper {
     private documentLoaders: DocumentLoader[];
-    private loader: DocumentLoaderFunction;
+    private loader!: DocumentLoaderFunction;
 
     constructor() {
         this.documentLoaders = [];
