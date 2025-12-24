@@ -18,6 +18,8 @@ services:
     restart: always
     expose:
       - 27017
+    ports:
+      - "27017:27017"
 
   mongo-express:
     image: mongo-express:1.0.2-20

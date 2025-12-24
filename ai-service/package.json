@@ -6,25 +6,22 @@
     "dependencies": {
         "@guardian/common": "3.4.1",
         "@guardian/interfaces": "3.4.1",
-        "@langchain/classic": "1.0.2",
-        "@langchain/community": "1.0.2",
-        "@langchain/core": "1.0.4",
-        "@langchain/openai": "1.1.0",
-        "@langchain/textsplitters": "1.0.0",
-        "@mikro-orm/core": "6.4.16",
-        "@mikro-orm/mongodb": "6.4.16",
-        "@nestjs/common": "^11.0.11",
-        "@nestjs/core": "^11.0.11",
-        "@types/express": "^5.0.1",
-        "@types/node": "^22.15.19",
-        "dotenv": "^16.3.1",
-        "express": "^5.1.0",
+        "@langchain/classic": "1.0.7",
+        "@langchain/community": "1.1.1",
+        "@langchain/core": "1.1.7",
+        "@langchain/openai": "1.2.0",
+        "@langchain/textsplitters": "1.0.1",
+        "@mikro-orm/core": "6.6.2",
+        "@mikro-orm/mongodb": "6.6.2",
+        "@nestjs/common": "11.1.11",
+        "@nestjs/core": "11.1.11",
+        "dotenv": "16.6.1",
+        "express": "5.2.1",
         "faiss-node": "0.5.1",
-        "langchain": "1.0.4",
-        "module-alias": "2.2.3",
+        "langchain": "1.2.2",
+        "patch-package": "8.0.1",
         "prebuild": "13.0.1",
-        "rxjs": "^7.8.1",
-        "typescript": "^5.8.3"
+        "rxjs": "7.8.2"
     },
     "imports": {
         "#constants": "./dist/constants/index.js"
@@ -35,11 +32,15 @@
         "debug": "nodemon dist/index.js",
         "dev:docker": "nodemon .",
         "dev": "tsc -w",
-        "start": "node dist/index.js"
+        "start": "node dist/index.js",
+        "postinstall": "patch-package"
     },
     "devDependencies": {
+        "@types/express": "5.0.6",
         "@types/glob": "^8.1.0",
-        "nodemon": "^3.0.1"
+        "@types/node": "24.10.4",
+        "nodemon": "3.1.11",
+        "typescript": "^5.8.3"
     },
     "type": "module"
 }

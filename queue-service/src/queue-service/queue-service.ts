@@ -1,6 +1,6 @@
 import { DatabaseServer, IAuthUser, MAP_TASKS_AGGREGATION_FILTERS, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, ITask, OrderDirection, QueueEvents, WorkerEvents } from '@guardian/interfaces';
-import { TaskEntity } from '../entity/task';
+import { TaskEntity } from '../entity/task.js';
 
 @Singleton
 export class QueueService extends NatsService {
