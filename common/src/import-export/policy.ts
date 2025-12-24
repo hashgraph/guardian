@@ -393,10 +393,9 @@ export class PolicyImportExport {
         return policyComponents;
     }
 
-    private static _createFile(_id: string, json: string | Buffer, name: string): Promise<ObjectId> {
+    private static _createFile(json: string | Buffer, fileName: string): Promise<ObjectId> {
         return new Promise<ObjectId>((resolve, reject) => {
             try {
-                const fileName = `${name}_${_id?.toString()}_${GenerateUUIDv4()}`;
                 const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
                 const fileId = fileStream.id;
                 fileStream.write(json);
@@ -487,11 +486,78 @@ export class PolicyImportExport {
 
     public static getPolicyHash(items: IPolicyComponents): string {
         const preparedItems = this.preparePolicyComponents(items);
-        this.removeField(preparedItems, 'id');
-        this.removeField(preparedItems, 'schema');
+        const cleanedBeforeHash = this.cleanBeforeHash(preparedItems);
 
-        const json = stringify(preparedItems);
+        const json = stringify(cleanedBeforeHash);
         return crypto.createHash('sha256').update(json).digest('hex');
+    }
+
+    private static cleanBeforeHash(components: IPolicyComponents): IPolicyComponents {
+        const resultComponents = structuredClone(components);
+        delete resultComponents.policy.policyTag;
+        delete resultComponents.policy.name;
+        delete resultComponents.policy.uuid;
+        delete resultComponents.policy.topicId;
+        delete resultComponents.policy.commentsTopicId;
+        delete resultComponents.policy.instanceTopicId;
+        delete resultComponents.policy.recordsTopicId;
+        delete resultComponents.policy.synchronizationTopicId;
+        delete resultComponents.policy.version;
+        delete resultComponents.policy.hash;
+
+        this.removeField(resultComponents.policy, 'id');
+
+        resultComponents.schemas.forEach(schema => {
+            delete schema.id;
+            delete schema.createDate;
+            delete schema.updateDate;
+            delete schema.documentURL;
+            delete schema.contextURL;
+            delete schema.messageId;
+            delete schema.topicId;
+            delete schema.sourceVersion;
+        });
+
+        resultComponents.systemSchemas.forEach(systemSchema => {
+            delete systemSchema.createDate;
+            delete systemSchema.updateDate;
+            delete systemSchema.documentURL;
+            delete systemSchema.contextURL;
+            delete systemSchema.messageId;
+            delete systemSchema.topicId;
+        });
+
+        const schemaIds = new Map();
+        let counter = 0;
+        
+        //todo
+        resultComponents.schemas.forEach(schema => {
+            const id = schema.version ? 
+                       `${schema.uuid}&${schema.version}` : 
+                       schema.uuid;
+
+            schemaIds.set(id, `@${counter}`);
+            console.log(`${id} | ${counter}`);
+            counter++;
+        });
+
+        resultComponents.systemSchemas.forEach(systemSchema => {
+            schemaIds.set(systemSchema.id, `@${counter}`);
+            console.log(`${systemSchema.id} | ${counter}`);
+            counter++;
+        });
+
+        resultComponents.schemas.forEach(schema => {
+            delete schema.version;
+        });
+
+        let componentsJson = JSON.stringify(resultComponents);
+        schemaIds.forEach((value, key)  => {
+            componentsJson = componentsJson.replaceAll(key, value);
+            console.log(`REPLACE | ${key} | ${value}`);
+        });
+
+        return JSON.parse(componentsJson);
     }
 
     private static preparePolicyComponents(components: IPolicyComponents): IPolicyComponents {
@@ -502,6 +568,13 @@ export class PolicyImportExport {
         delete policyObject.messageId;
         delete policyObject.status;
         delete policyObject.createDate;
+        delete policyObject.updateDate;
+        delete policyObject.hashMapFileId;
+        delete policyObject.configFileId;
+        delete policyObject.originalChanged;
+        delete policyObject.originalHash;
+        delete policyObject.originalZipId;
+        delete policyObject.hashMap;
 
         const artifacts = components.artifacts.map(a => ({
             name: a.name,
@@ -526,6 +599,9 @@ export class PolicyImportExport {
             delete item._id;
             delete item.status;
             delete item.readonly;
+            delete item.documentFileId;
+            delete item.contextFileId;
+
             return item;
         });
 
@@ -535,6 +611,9 @@ export class PolicyImportExport {
             delete item._id;
             delete item.status;
             delete item.readonly;
+            delete item.documentFileId;
+            delete item.contextFileId;
+
             return item;
         });
 
@@ -578,12 +657,12 @@ export class PolicyImportExport {
         };
     }
 
-    static async saveOriginalZip(policy: Policy, zipFile: any) {
-        const fileName = `${policy.name}_zip_${GenerateUUIDv4()}`;
-        //todo id
-        const fileId = await this._createFile('68f5be7934668980efb8f98a', zipFile, fileName);
+    static async saveOriginalZip(zipFile: any, policyName?: string): Promise<ObjectId> {
+        const fileName = `${policyName}_zip_${GenerateUUIDv4()}`;
+        const fileId = await this._createFile(zipFile, fileName);
         console.log('FILE_ID', fileId);
-        policy.originalZipId = fileId; 
+
+        return fileId;
     }
 
     static async removeField(obj, fieldName) {

@@ -81,6 +81,21 @@ export class PolicyMessage extends Message {
      */
     public commentsTopicId: string;
 
+    /**
+     * Current Hash
+     */
+    public currentHash: string;
+
+    /**
+     * Original Hash
+     */
+    public originalHash: string;
+
+    /**
+     * Original Message Id
+     */
+    public originalMessageId: string;
+
     constructor(type: MessageType.Policy | MessageType.InstancePolicy, action: MessageAction) {
         super(action, type);
         this._responseType = 'raw';
@@ -92,7 +107,7 @@ export class PolicyMessage extends Message {
      * @param model
      * @param zip
      */
-    public setDocument(model: Policy, zip?: ArrayBuffer | Buffer): void {
+    public setDocument(model: Policy, zip?: ArrayBuffer | Buffer, currentHash?: string): void {
         this.uuid = model.uuid;
         this.name = model.name;
         this.description = model.description;
@@ -110,6 +125,9 @@ export class PolicyMessage extends Message {
         this.recordsTopicId = model.recordsTopicId;
         this.commentsTopicId = model.commentsTopicId;
         this.document = toBuffer(zip);
+        this.currentHash = currentHash;
+        this.originalHash = model.originalHash;
+        this.originalMessageId = model.originalMessageId;
     }
 
     /**
@@ -146,7 +164,10 @@ export class PolicyMessage extends Message {
             recordsTopicId: this.recordsTopicId,
             commentsTopicId: this.commentsTopicId,
             cid: this.getDocumentUrl(UrlType.cid),
-            uri: this.getDocumentUrl(UrlType.url)
+            uri: this.getDocumentUrl(UrlType.url),
+            currentHash: this.currentHash,
+            originalHash: this.originalHash,
+            originalMessageId: this.originalMessageId
         };
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
             messageObject.effectiveDate = this.discontinuedDate?.toISOString();
@@ -248,6 +269,10 @@ export class PolicyMessage extends Message {
         message.actionsTopicId = json.actionsTopicId;
         message.recordsTopicId = json.recordsTopicId;
         message.commentsTopicId = json.commentsTopicId;
+        message.currentHash = json.currentHash;
+        message.originalHash = json.originalHash;
+        message.originalMessageId = json.originalMessageId;
+        
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(json.action)
             && json.effectiveDate) {
             message.discontinuedDate = new Date(json.effectiveDate)
@@ -308,6 +333,9 @@ export class PolicyMessage extends Message {
         result.actionsTopicId = this.actionsTopicId;
         result.recordsTopicId = this.recordsTopicId;
         result.commentsTopicId = this.commentsTopicId;
+        result.currentHash = this.currentHash;
+        result.originalHash = this.originalHash;
+        result.originalMessageId = this.originalMessageId;
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
             result.effectiveDate = this.discontinuedDate;
         }
@@ -338,6 +366,9 @@ export class PolicyMessage extends Message {
         result.commentsTopicId = json.commentsTopicId;
         result.discontinuedDate = json.effectiveDate;
         result.document = json.document;
+        result.currentHash = json.currentHash;
+        result.originalHash = json.originalHash;
+        result.originalMessageId = json.originalMessageId;
         return result;
     }
 

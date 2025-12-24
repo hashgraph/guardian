@@ -151,6 +151,18 @@ export interface PolicyMessageBody extends MessageBody {
      * URI
      */
     uri: string;
+    /**
+     * Current Hash
+     */
+    currentHash?: string;
+    /**
+     * Original Hash
+     */
+    originalHash?: string;
+    /**
+     * Original Message Id
+     */
+    originalMessageId?: string;
 }
 
 /**

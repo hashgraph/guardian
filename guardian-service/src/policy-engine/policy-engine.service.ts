@@ -1178,10 +1178,6 @@ export class PolicyEngineService {
                     let result = await DatabaseServer.updatePolicyConfig(policyId, model);
                     result = await PolicyImportExportHelper.updatePolicyComponents(result, logger, owner.id);
 
-                    console.log('result.originalZipId', result.originalZipId);
-                    console.log('result.originalChanged', result.originalChanged);
-
-                    //check if original policies changed
                     if(result && result.originalZipId && !result.originalChanged) {
                         const policyComponents = await PolicyImportExport.loadPolicyComponents(result);
                         const policyHash = PolicyImportExport.getPolicyHash(policyComponents);
@@ -1190,6 +1186,10 @@ export class PolicyEngineService {
 
                         if(policyHash !== result.originalHash) {
                             result.originalChanged = true;
+
+                            if(result.id) {
+                                await DatabaseServer.updatePolicy(result);
+                            }
                         }
                     }
 
@@ -1558,12 +1558,17 @@ export class PolicyEngineService {
                         await this.policyEngine.startDemo(result.policy, owner, logger, NewNotifier.empty());
                     }
 
-                    if(result.policy) //todo
+                    if(result.policy)
                     {
-                        await PolicyImportExport.saveOriginalZip(result.policy, zip);
-                        result.policy.originalChanged = false;
+                        const originalFileId = await PolicyImportExport.saveOriginalZip(Buffer.from(zip.data), result.policy.name);
                         const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
                         result.policy.originalHash = policyHash;
+                        result.policy.originalChanged = false;
+                        result.policy.originalZipId = originalFileId;
+
+                        if(result.policy?.id) {
+                            await DatabaseServer.updatePolicy(result.policy);
+                        }
                     } 
 
                     return new MessageResponse(true);
@@ -1600,7 +1605,6 @@ export class PolicyEngineService {
 
                     await logger.info(`Import policy by file`, ['GUARDIAN_SERVICE'], owner?.id);
                     const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
-                    console.log('IMPOORT ASYNC');
                     const clonedComponents = structuredClone(policyToImport);
                     
                     const result = await PolicyImportExportHelper.importPolicy(
@@ -1632,19 +1636,17 @@ export class PolicyEngineService {
                         errors: result.errors
                     });
 
-                    if(result.policy) //todo
+                    if(result.policy)
                     {
-                        await PolicyImportExport.saveOriginalZip(result.policy, Buffer.from(zip.data));
-                        result.policy.originalChanged = false;
-                        const policyHash = await PolicyImportExport.getPolicyHash(clonedComponents);
-                        console.log('!policyHash async!', policyHash);
+                        const originalFileId = await PolicyImportExport.saveOriginalZip(Buffer.from(zip.data), result.policy.name);
+                        const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
                         result.policy.originalHash = policyHash;
+                        result.policy.originalChanged = false;
+                        result.policy.originalZipId = originalFileId;
 
-                        console.log('result.policy.id', result.policy.id);
-                        console.log('result.policy', JSON.stringify(result.policy));
-
-                        await DatabaseServer.updatePolicy(result.policy);
-                        //let policy = await this.policyEngine.(model, owner, notifier, logger);
+                        if(result.policy?.id) {
+                            await DatabaseServer.updatePolicy(result.policy);
+                        }
                     } 
 
                 }, async (error) => {
@@ -1748,6 +1750,19 @@ export class PolicyEngineService {
                             notifier.getStep(STEP_START_POLICY)
                         );
                     }
+
+                    if(result.policy)
+                    {
+                        const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
+                        result.policy.originalHash = policyHash;
+                        result.policy.originalChanged = false;
+                        result.policy.messageId = messageId;
+
+                        if(result.policy?.id) {
+                            await DatabaseServer.updatePolicy(result.policy);
+                        }
+                    } 
+
                     return new MessageResponse(true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1819,6 +1834,18 @@ export class PolicyEngineService {
                             policyId: result.policy.id,
                             errors: result.errors
                         });
+
+                        if(result.policy)
+                        {
+                            const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
+                            result.policy.originalHash = policyHash;
+                            result.policy.originalChanged = false;
+                            result.policy.messageId = messageId;
+
+                            if(result.policy?.id) {
+                                await DatabaseServer.updatePolicy(result.policy);
+                            }
+                        } 
                     } catch (error) {
                         await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                         notifier.fail(error);

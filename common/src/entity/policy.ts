@@ -294,6 +294,9 @@ export class Policy extends BaseEntity {
     @Property({ nullable: true })
     originalHash?: string;
 
+    @Property({ nullable: true })
+    originalMessageId?: string;
+    
     /**
      * Set policy defaults
      */
