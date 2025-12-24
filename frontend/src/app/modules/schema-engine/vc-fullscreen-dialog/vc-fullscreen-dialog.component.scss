@@ -29,7 +29,7 @@
             font-size: 32px;
             line-height: 40px;
             vertical-align: middle;
-            color: #23252E;
+            color: #23252e;
             margin-top: 16px;
             margin-bottom: 16px;
         }
@@ -42,7 +42,7 @@
             flex-direction: row;
 
             .download-btn {
-                width: 90px;
+                min-width: 90px;
                 height: 40px;
                 margin-right: 8px;
             }
@@ -56,6 +56,16 @@
             .compare-btn {
                 width: 200px;
                 height: 40px;
+                margin-right: 8px;
+            }
+
+            .version-dropdown {
+                height: 40px;
+                margin-right: 8px;
+            }
+
+            .mode-btn {
+                height: 40px;
             }
         }
     }
@@ -68,7 +78,7 @@
 
         .tab-container {
             padding: 0px 48px 0px 40px;
-            border-bottom: 1px solid #E1E7EF;
+            border-bottom: 1px solid #e1e7ef;
             height: 41px;
             min-height: 41px;
             max-height: 41px;
@@ -80,7 +90,7 @@
             height: 100%;
 
             .document-content {
-                background: #F9FAFC;
+                background: #f9fafc;
                 padding: 24px 48px;
                 position: absolute;
                 left: 0px;
@@ -94,14 +104,14 @@
                 }
 
                 .document-viewer {
-                    &::ng-deep>form {
+                    &::ng-deep > form {
                         position: absolute;
                         left: 0;
                         right: 0;
                         top: 0;
                         bottom: 0;
 
-                        &>.form-body {
+                        & > .form-body {
                             padding: 24px 48px;
                             display: block;
                             overflow: auto;
@@ -139,7 +149,7 @@
                 right: 0px;
                 width: 400px;
                 overflow: hidden;
-                border-left: 1px solid #E1E7EF;
+                border-left: 1px solid #e1e7ef;
             }
 
             &[collapse="true"] {
@@ -151,6 +161,43 @@
                     width: 76px;
                 }
             }
+        }
+
+        .guardian-accordion-container {
+            padding: 24px 48px;
+            overflow: auto;
+            width: 100%;
+            height: calc(100% - 129px);
+        }
+    }
+}
+
+:host ::ng-deep {
+    .version-dropdown {
+        .p-dropdown {
+            border: 1px solid var(--guardian-primary-color);
+            border-radius: 6px;
+            color: var(--guardian-primary-color);
+
+            box-shadow: none !important;
+            outline: none !important;
+            
+            &:focus {
+                box-shadow: none !important;
+                outline: none !important;
+            }
+        }
+
+        .p-dropdown-label {
+            color: var(--guardian-primary-color);
+        }
+
+        .p-dropdown-trigger {
+            color: var(--guardian-primary-color);
+        }
+
+        .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+            color: var(--guardian-primary-color);
         }
     }
 }

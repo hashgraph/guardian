@@ -167,6 +167,7 @@ import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-di
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
 import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
+import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
 
 @NgModule({
     declarations: [
@@ -291,7 +292,8 @@ import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialo
         OnLoadSavepointDialog,
         PolicyRepositoryComponent,
         UserPolicyDialog,
-        ChangeBlockSettingsDialog
+        ChangeBlockSettingsDialog,
+        ApproveUpdateVcDocumentDialogComponent
     ],
     imports: [
         CommonModule,

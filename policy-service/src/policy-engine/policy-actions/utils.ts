@@ -19,7 +19,7 @@ import { PolicyDiscussionAction } from './policy-discussion.js';
 import { PolicyCommentAction } from './policy-comment.js';
 
 export class PolicyActionsUtils {
-    private static needKey(status: PolicyStatus, availability: PolicyAvailability): boolean {
+    public static needKey(status: PolicyStatus, availability: PolicyAvailability): boolean {
         switch (status) {
             case PolicyStatus.DRY_RUN:
             case PolicyStatus.DEMO:

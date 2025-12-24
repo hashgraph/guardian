@@ -4440,4 +4440,100 @@ export class PolicyApi {
     }
 
     //#endregion
+
+    //#region VC Docs
+
+    /**
+     * Create new version VC document
+     */
+    @Post('/:policyId/create-new-version-vc-document')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Create new version vc document.',
+        description: 'Create new version vc document.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Data',
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async createNewVersionVcDocument(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.createNewVersionVcDocument(user, policyId, body);
+        } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get all version VC documents
+     */
+    @Get('/:policyId/get-all-version-vc-documents/:documentId')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Get all version VC documents.',
+        description: 'Get all version VC documents.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Document Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getAllVersionVcDocuments(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('documentId') documentId: string
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getAllVersionVcDocuments(user, policyId, documentId);
+        } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+    //#endregion
 }

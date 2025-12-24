@@ -44,11 +44,23 @@
                     type="document" 
                     class="compare-container"
                     buttonStyle="guardian"></app-compare-btn>
+
+                <p-dropdown
+                    *ngIf="allVcDocs.length > 1"
+                    [options]="versionOptions"
+                    [(ngModel)]="selectedVersionIndex"
+                    (onChange)="onVersionChange($event)"
+                    placeholder="Select Revision"
+                    class="version-dropdown"
+                    [appendTo]="'body'"
+                    styleClass="guardian-dropdown"
+                ></p-dropdown>
             </div>
         </div>
         <div class="view-dialog-content">
             <ng-container *ngIf="viewDocument === true">
                 <app-document-view 
+                    *ngIf="!loading"
                     [policyId]="policyId"
                     [documentId]="documentId"
                     [schemaId]="schemaId"

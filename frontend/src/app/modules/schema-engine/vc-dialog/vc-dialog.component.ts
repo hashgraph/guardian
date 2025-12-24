@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Schema, UserPermissions, IntegrationDataTypes } from '@guardian/interfaces';
 import { SchemaService } from '../../../services/schema.service';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 
 /**
  * Dialog for display json
@@ -50,13 +51,19 @@ export class VCViewerDialog {
     public fileSize: number = 0;
     public canExport: boolean = true;
 
+    public allVcDocs: any[] = [];
+    public versionOptions: { label: string; value: number }[] = [];
+    public selectedVersionIndex: number = 0;
+
     constructor(
         public dialogRef: DynamicDialogRef,
         public dialogConfig: DynamicDialogConfig,
         private schemaService: SchemaService,
         private profileService: ProfileService,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        private ref: ChangeDetectorRef,
+        private policyEngineService: PolicyEngineService,
     ) {
     }
 
@@ -128,6 +135,7 @@ export class VCViewerDialog {
         this.viewDocumentOptions = [...this.viewDocumentOptions, ...additionalOptions];
         this.additionalOptionsData = additionalOptionsData;
 
+        this.loadAllVersionVcDocuments();
         this.getSubSchemes(schemaId, topicId, category);
     }
 
@@ -184,5 +192,83 @@ export class VCViewerDialog {
         a.click();
 
         URL.revokeObjectURL(url);
+    }
+
+    public loadAllVersionVcDocuments() {
+        if (this.policyId && this.documentId) {
+            this.policyEngineService.getAllVersionVcDocuments(
+                this.policyId,
+                this.documentId
+            ).subscribe(
+                (vcDocs) => {
+                    if (!!vcDocs && vcDocs.length > 0) {
+                        this.allVcDocs = vcDocs;
+                        this.initVersionSelector();
+                    }
+                }
+            );
+        }
+    }
+
+    private initVersionSelector() {
+        if (this.allVcDocs.length > 1) {
+            const currentIndex = this.allVcDocs.findIndex(
+                (doc) => !doc.oldVersion
+            );
+
+            this.selectedVersionIndex = currentIndex !== -1 ? currentIndex : 0;
+
+            this.versionOptions = this.allVcDocs.map((doc, index) => {
+                const date = new Date(doc.createDate).toLocaleString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                });
+                
+                if (!doc.oldVersion) {
+                    return { label: date + ' (Latest)', value: index };
+                }
+                return { label: date, value: index };
+            });
+        }
+
+        this.selectVcDocument(
+            this.allVcDocs[this.selectedVersionIndex]?.document
+        );
+    }
+
+    public onVersionChange(event: any) {
+        this.selectedVersionIndex = event.value;
+        this.selectVcDocument(
+            this.allVcDocs[this.selectedVersionIndex].document
+        );
+    }
+
+    private selectVcDocument(document: any) {
+        this.loading = true;
+        this.document = document;
+        this.setJson();
+        setTimeout(() => {
+            this.loading = false;
+            this.ref.markForCheck(); 
+            this.ref.detectChanges();
+        }, 500);
+    }
+
+    private setJson() {
+        if (this.document) {
+            if (typeof document === 'string') {
+                this.json = this.document;
+            } else {
+                this.json = JSON.stringify(this.document, null, 4);
+            }
+        } else {
+            this.type = 'JSON';
+            this.toggle = false;
+            this.json = '';
+        }
     }
 }
