@@ -312,7 +312,7 @@ export class MintBlock {
             const vcs = [...documents, mintVC];
             vp = await this.createVP(policyOwnerDid, uuid, vcs);
         }
-        vp.setTags(tags);
+        vp.addTags(tags);
 
         ref.log(`Topic Id: ${topicId}`);
 

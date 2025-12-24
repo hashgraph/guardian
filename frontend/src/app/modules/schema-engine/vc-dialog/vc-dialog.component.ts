@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Schema, UserPermissions, IntegrationDataTypes } from '@guardian/interfaces';
 import { SchemaService } from '../../../services/schema.service';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-dialog.component';
 
 /**
  * Dialog for display json
@@ -54,6 +55,7 @@ export class VCViewerDialog {
     constructor(
         public dialogRef: DynamicDialogRef,
         public dialogConfig: DynamicDialogConfig,
+        private dialogService: DialogService,
         private schemaService: SchemaService,
         private profileService: ProfileService,
         private route: ActivatedRoute,
@@ -186,5 +188,18 @@ export class VCViewerDialog {
         a.click();
 
         URL.revokeObjectURL(url);
+    }
+
+    public onOpenTag(tag: any) {
+        this.dialogService.open(ViewerDialog, {
+            showHeader: false,
+            width: '850px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Tag',
+                type: 'JSON',
+                value: tag,
+            }
+        });
     }
 }

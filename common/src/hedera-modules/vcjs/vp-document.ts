@@ -205,6 +205,23 @@ export class VpDocument {
     }
 
     /**
+     * Add tags
+     * @param tags
+     */
+    public addTags(tags: any): void {
+        if (!tags || tags.length <= 0) {
+            return;
+        }
+        this.tags = this.tags || [];
+        for (const tag of tags) {
+            if (this.tags.some(item => item.messageId === tag.messageId)) {
+                continue;
+            }
+            this.tags.push(tag);
+        }
+    }
+
+    /**
      * Get verifiable credential
      * @param index
      */

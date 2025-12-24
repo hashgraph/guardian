@@ -1910,17 +1910,20 @@ export class PolicyUtils {
      * Get block tags
      * @param ref
      */
-    public static async getBlockTags(ref: AnyBlockType): Promise<Tag[]> {
+    public static async getBlockTags(ref: AnyBlockType): Promise<any[]> {
         const target = ref.policyId;
         const filter: any = {
             localTarget: target,
             entity: TagType.PolicyBlock,
             linkedItems: { $in: [ref.uuid] }
         }
-        const tags = await ref.databaseServer.getTags(filter);
-        return tags;
-    }
+        const options: any = {
+            fields: ['name', 'description', 'owner', 'target', 'topicId', 'messageId']
+        }
 
+        const tags = await ref.databaseServer.getTags(filter, options);
+        return tags.map(({ _id, ...rest }) => rest);
+    }
     /**
      * Set document tags
      * @param document
@@ -1935,14 +1938,7 @@ export class PolicyUtils {
             if (document.document.tags.some(item => item.messageId === tag.messageId)) {
                 continue;
             }
-            document.document.tags.push({
-                name: tag.name,
-                description: tag.description,
-                owner: tag.owner,
-                target: tag.target,
-                topicId: tag.topicId,
-                messageId: tag.messageId,
-            });
+            document.document.tags.push(tag);
         }
     }
 }

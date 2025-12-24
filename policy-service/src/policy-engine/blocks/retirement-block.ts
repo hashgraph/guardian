@@ -201,8 +201,8 @@ export class RetirementBlock {
         const vcs = [].concat(documents, wipeVC);
         const vp = await this.createVP(policyOwnerDidDocument, uuid, vcs);
 
-        wipeVC.setTags(tags);
-        vp.setTags(tags);
+        wipeVC.addTags(tags);
+        vp.addTags(tags);
 
         const messageServer = new MessageServer({
             operatorId: policyOwnerHederaCred.hederaAccountId,

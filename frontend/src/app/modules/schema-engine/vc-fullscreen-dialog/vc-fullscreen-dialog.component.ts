@@ -1,5 +1,5 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { UserPermissions } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -7,6 +7,7 @@ import { PolicyComments } from '../../common/policy-comments/policy-comments.com
 import { forkJoin, Subject, Subscription, takeUntil } from 'rxjs';
 import { DocumentViewComponent } from '../document-view/document-view.component';
 import { CommentsService } from 'src/app/services/comments.service';
+import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-dialog.component';
 
 /**
  * Dialog for display json
@@ -58,6 +59,7 @@ export class VCFullscreenDialog {
     constructor(
         public dialogRef: DynamicDialogRef,
         public dialogConfig: DynamicDialogConfig,
+        private dialogService: DialogService,
         private profileService: ProfileService,
         private commentsService: CommentsService,
         private route: ActivatedRoute,
@@ -281,5 +283,18 @@ export class VCFullscreenDialog {
         } else {
             this.discussionAction = false;
         }
+    }
+
+    public onOpenTag(tag: any) {
+        this.dialogService.open(ViewerDialog, {
+            showHeader: false,
+            width: '850px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Tag',
+                type: 'JSON',
+                value: tag,
+            }
+        });
     }
 }
