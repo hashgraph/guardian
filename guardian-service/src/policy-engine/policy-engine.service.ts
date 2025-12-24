@@ -808,6 +808,7 @@ export class PolicyEngineService {
                             'policyGroups',
                             'policyRoles',
                             'discontinuedDate',
+                            'originalChanged'
                         ]
                     };
                     const _pageSize = parseInt(pageSize, 10);
@@ -1530,10 +1531,11 @@ export class PolicyEngineService {
                 owner: IOwner,
                 versionOfTopicId: string,
                 metadata: any,
-                demo: boolean
+                demo: boolean,
+                originalTracking: boolean
             }): Promise<IMessageResponse<boolean>> => {
                 try {
-                    const { zip, owner, versionOfTopicId, metadata, demo } = msg;
+                    const { zip, owner, versionOfTopicId, metadata, demo, originalTracking } = msg;
                     if (!zip) {
                         throw new Error('file in body is empty');
                     }
@@ -1558,7 +1560,7 @@ export class PolicyEngineService {
                         await this.policyEngine.startDemo(result.policy, owner, logger, NewNotifier.empty());
                     }
 
-                    if(result.policy)
+                    if(originalTracking && result.policy)
                     {
                         const originalFileId = await PolicyImportExport.saveOriginalZip(Buffer.from(zip.data), result.policy.name);
                         const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
@@ -1585,9 +1587,10 @@ export class PolicyEngineService {
                 versionOfTopicId: string,
                 metadata: any,
                 demo: boolean,
-                task: any
+                task: any,
+                originalTracking: boolean
             }): Promise<IMessageResponse<any>> => {
-                const { zip, owner, versionOfTopicId, task, metadata, demo } = msg;
+                const { zip, owner, versionOfTopicId, task, metadata, demo, originalTracking } = msg;
                 const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
@@ -1605,7 +1608,6 @@ export class PolicyEngineService {
 
                     await logger.info(`Import policy by file`, ['GUARDIAN_SERVICE'], owner?.id);
                     const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
-                    const clonedComponents = structuredClone(policyToImport);
                     
                     const result = await PolicyImportExportHelper.importPolicy(
                         demo ? ImportMode.DEMO : ImportMode.COMMON,
@@ -1636,7 +1638,7 @@ export class PolicyEngineService {
                         errors: result.errors
                     });
 
-                    if(result.policy)
+                    if(originalTracking && result.policy)
                     {
                         const originalFileId = await PolicyImportExport.saveOriginalZip(Buffer.from(zip.data), result.policy.name);
                         const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
@@ -1648,7 +1650,6 @@ export class PolicyEngineService {
                             await DatabaseServer.updatePolicy(result.policy);
                         }
                     } 
-
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
                     notifier.fail(error);

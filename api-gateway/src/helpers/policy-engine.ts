@@ -448,11 +448,12 @@ export class PolicyEngine extends NatsService {
         task: NewTask,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC,
-            { zip, owner, task, versionOfTopicId, metadata, demo }
+            { zip, owner, task, versionOfTopicId, metadata, demo, originalTracking }
         );
     }
 

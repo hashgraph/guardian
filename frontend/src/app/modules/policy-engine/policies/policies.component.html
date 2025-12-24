@@ -209,6 +209,10 @@
                                     pFrozenColumn>Operations
                                 </th>
                                 <th
+                                    *ngIf="canDisplayColumn('modified')"
+                                    class="header-cell-text cell-description">Modified
+                                </th>
+                                <th
                                     *ngIf="canDisplayColumn('description')"
                                     class="header-cell-text cell-description">Description
                                 </th>
@@ -354,6 +358,51 @@
                                             <svg-icon src="/assets/images/icons/menu-2.svg"
                                                       svgClass="primary-color"></svg-icon>
                                         </div>
+                                    </div>
+                                </td>
+                                <td
+                                    *ngIf="canDisplayColumn('modified')"
+                                    class="text-truncate cell-description"
+                                >
+                                    <div *ngIf="policy?.originalChanged === true">
+                                        <button
+                                            class="guardian-button guardian-button-secondary original-status-btn"
+                                            pTooltip="Policy was modified after import"
+                                            tooltipPosition="bottom"
+                                            pButton>
+                                            <div class="guardian-button-icon">
+                                                <svg-icon
+                                                    class="icon-btn"
+                                                    src="/assets/images/icons/compare.svg"
+                                                    svgClass="icon-color-primary">
+                                                </svg-icon>
+                                            </div>
+                                            <div class="guardian-button-label">Compare</div>
+                                        </button>
+                                    </div>
+
+                                    <div *ngIf="policy?.originalChanged === false">
+                                        <button 
+                                            class="button secondary original-status-btn" 
+                                            [disabled]="true"
+                                            label="No changes" 
+                                            pButton>
+                                        </button>
+                                    </div>
+
+                                    <div *ngIf="policy?.originalChanged === undefined">
+                                        <span
+                                            pTooltip="Policy modification tracking was likely disabled"
+                                            tooltipPosition="bottom"
+                                        >
+                                            <button 
+                                                class="button secondary original-status-btn" 
+                                                [disabled]="true"
+                                                label="Status unavailable"
+                                                pTooltip="Policy modification tracking was likely disabled"
+                                                pButton>
+                                            </button>
+                                        </span>
                                     </div>
                                 </td>
                                 <td

@@ -101,6 +101,11 @@ const columns = [ {
     permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
+},{
+    id: 'modified',
+    permissions: (user: UserPermissions, type: LocationType) => {
+        return true;
+    }
 }, {
     id: 'topic',
     permissions: (user: UserPermissions, type: LocationType) => {
@@ -1179,6 +1184,7 @@ export class PoliciesComponent implements OnInit {
                 const demo = result.demo || false;
                 const tools = result.tools;
                 const importRecords = !!result.importRecords;
+                const originalTracking = !!result.originalTracking;
 
                 this.loading = true;
                 if (type == 'message') {
@@ -1198,7 +1204,7 @@ export class PoliciesComponent implements OnInit {
                         });
                 } else if (type == 'file') {
                     this.policyEngineService
-                        .pushImportByFile(data, versionOfTopicId, { tools }, demo)
+                        .pushImportByFile(data, versionOfTopicId, { tools }, demo, originalTracking)
                         .pipe(takeUntil(this._destroy$)).subscribe((result) => {
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
