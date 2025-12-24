@@ -480,12 +480,41 @@ class GlobalEventsReaderBlock {
     ): Promise<void> {
         const payload = await this.loadPayload(ref, event, user.userId);
 
-        const document: IPolicyDocument = {
-            document: payload
-        } as any;
+        console.log('payload', payload)
+
+        let payloadObject: any = payload;
+
+        try {
+            payloadObject = JSON.parse(payload);
+
+            const rawCidOrUri = String(payloadObject?.cid || payloadObject?.uri || '').trim();
+            const cid = rawCidOrUri.replace(/^ipfs:\/\//, '').trim();
+
+            if (cid) {
+                let file = await IPFS.getFile(cid, 'str', { userId: user.userId });
+
+                if (file && file.type === 'Buffer' && Array.isArray(file.data)) {
+                    file = Buffer.from(file.data).toString('utf-8');
+                }
+
+                console.log('JSON.parse(String(file))', JSON.parse(String(file)))
+
+                payloadObject = JSON.parse(String(file));
+            }
+        } catch (_e) {
+            //
+        }
+
+        const policyDocument: IPolicyDocument = {
+            document: payloadObject,
+            owner: user.did,
+            relayerAccount: user.hederaAccountId,
+            topicId: event.documentTopicId,
+            messageId: event.documentMessageId,
+        };
 
         const baseState: GlobalReaderEventState = {
-            data: document,
+            data: policyDocument,
             user,
             event
         };
@@ -597,12 +626,14 @@ class GlobalEventsReaderBlock {
 
             const stateForBranch: IPolicyEventState = {
                 ...baseState,
-                type: branchEvent
+                data: policyDocument,
             } as any;
 
             console.log('triggerEvents', stateForBranch)
 
-            ref.triggerEvents(branchEvent, user, stateForBranch);
+            // ref.triggerEvents(branchEvent, user, stateForBranch);
+
+            await ref.triggerEventSync(branchEvent, user, stateForBranch);
 
             PolicyComponentsUtils.ExternalEventFn(
                 new ExternalEvent(ExternalEventType.Run, ref, user, {
@@ -612,8 +643,8 @@ class GlobalEventsReaderBlock {
             );
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, baseState);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
+        // ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, baseState);
+        // ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
     }
 
     private async loadPayload(

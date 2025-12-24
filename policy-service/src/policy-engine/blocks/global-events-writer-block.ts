@@ -59,8 +59,7 @@ interface SetDataPayload {
  * Cached state per-user. Keeps last processed document and the last published messageId
  */
 interface WriterCacheState {
-    doc?: IPolicyDocument;
-    lastPublishedMessageId?: string;
+    docs?: IPolicyDocument[];
 }
 
 @EventBlock({
@@ -428,7 +427,8 @@ export class GlobalEventsWriterBlock {
         ],
     })
     public async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<void> {
-        console.log('runAction')
+        console.log('runAction');
+
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const user: PolicyUser = event?.user;
 
@@ -436,78 +436,90 @@ export class GlobalEventsWriterBlock {
             throw new BlockActionError('User is required', ref.blockType, ref.uuid);
         }
 
-        const state: IPolicyEventState = (event)?.data || (event as any);
-        const doc: IPolicyDocument = state?.data as IPolicyDocument;
+        const state: IPolicyEventState = event?.data;
+        const payload = state?.data ?? [];
 
-        if (!doc || !doc.topicId) {
+        const docs: IPolicyDocument[] = Array.isArray(payload) ? payload : [payload];
+
+        console.log('docs', docs)
+
+        if (docs.length === 0) {
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.backup();
-
             return;
         }
 
-        const documentMessageId: string = this.extractCanonicalAddress(doc);
-        if (!documentMessageId) {
-            throw new BlockActionError(
-                'Canonical document address (messageId) is missing',
-                ref.blockType,
-                ref.uuid
-            );
-        }
-
-        // Ensure default streams exist. This creates DB rows
-        // from the block configuration if none exist for this user.
         await this.ensureDefaultStreams(ref, user);
 
-        // Fetch streams to determine if we need to publish
-        const streams = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(ref.policyId, ref.uuid, user.userId);
+        const streams = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(
+            ref.policyId,
+            ref.uuid,
+            user.userId
+        );
         const defaultActive = ref.defaultActive;
 
-        // Cache the last document for this user
         const cacheKey = this.getCacheKey(ref, user);
         const cacheState = await this.getCacheState(ref, user, cacheKey);
 
-        cacheState.doc = doc;
-        cacheState.lastPublishedMessageId = documentMessageId;
-        await ref.setShortCache(cacheKey, cacheState, user);
+        console.log('defaultActive', defaultActive);
+        cacheState.docs = docs;
 
-        if (!defaultActive) {
-            if (streams.length > 0) {
-                const {schemaContextIri, schemaIri} = this.extractSchemaIris(ref, doc);
-
-                for (const stream of streams) {
-                    const payload: GlobalEvent = {
-                        documentType: stream.documentType,
-                        documentTopicId: doc.topicId,
-                        documentMessageId: documentMessageId,
-                        schemaContextIri,
-                        schemaIri,
-                        timestamp: new Date().toISOString(),
-                    };
-
-                    await this.publish(ref, user, stream.globalTopicId, payload);
-                }
+        for (const doc of docs) {
+            if (!doc) {
+                continue;
             }
 
-            const outState: IPolicyEventState = { data: doc } as any;
+            console.log('doc', doc.document);
+
+            const documentMessageId: string = this.extractCanonicalAddress(doc);
+            if (!documentMessageId) {
+                throw new BlockActionError(
+                    'Canonical document address (messageId) is missing',
+                    ref.blockType,
+                    ref.uuid
+                );
+            }
+
+            if (!doc.topicId) {
+                continue;
+            }
+
+            if (!defaultActive) {
+                if (streams.length > 0) {
+                    const { schemaContextIri, schemaIri } = this.extractSchemaIris(ref, doc);
+
+                    for (const stream of streams) {
+                        const eventPayload: GlobalEvent = {
+                            documentType: stream.documentType,
+                            documentTopicId: doc.topicId,
+                            documentMessageId,
+                            schemaContextIri,
+                            schemaIri,
+                            timestamp: new Date().toISOString(),
+                        };
+
+                        await this.publish(ref, user, stream.globalTopicId, eventPayload);
+
+                        stream.lastPublishMessageId = documentMessageId;
+                        await ref.databaseServer.updateGlobalEventsWriterStream(stream);
+                    }
+                }
+            } else {
+                await this.publishActiveStreams(ref, user, streams, doc, documentMessageId);
+            }
+        }
+
+        await ref.setShortCache(cacheKey, cacheState, user);
+
+        const outState: IPolicyEventState = { data: payload };
+
+        if (!defaultActive) {
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState);
             ref.backup();
-            return;
-        } else {
-            await this.publishActiveStreams(ref, user, streams, doc, documentMessageId)
-
-            const outState: IPolicyEventState = { data: doc } as any;
-
-            console.log('outState')
-
-            // ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
-            // ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
-            // ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState);
-            // ref.backup();
         }
     }
 
@@ -671,66 +683,77 @@ export class GlobalEventsWriterBlock {
                 this.validateTopicId(stream.topicId, ref);
             }
 
-            const streamsDb = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(ref.policyId, ref.uuid, user.userId);
+            const streamsDb = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(
+                ref.policyId,
+                ref.uuid,
+                user.userId
+            );
 
             for (const streamDb of streamsDb) {
                 setStreamsDbMap.set(streamDb.globalTopicId, streamDb);
             }
 
-            // Cache the last document for this user
             const cacheKey = this.getCacheKey(ref, user);
             const cacheState = await this.getCacheState(ref, user, cacheKey);
 
-            const lastPublishedMessageId = cacheState.lastPublishedMessageId;
-            const doc = cacheState.doc
+            const docs = cacheState.docs || [];
 
-            const documentMessageId: string = this.extractCanonicalAddress(doc);
-
-            const { schemaContextIri, schemaIri } = this.extractSchemaIris(ref, doc);
-
-            // Update existing streams
             for (const streamSetData of streams) {
-                const topicId = streamSetData.topicId;
+                const globalTopicId = streamSetData.topicId;
 
-                if (setStreamsDbMap.has(topicId)) {
-                    const streamDb = setStreamsDbMap.get(topicId)!;
-                    const active = streamSetData.active
-                    const documentType = streamSetData.documentType
+                if (!setStreamsDbMap.has(globalTopicId)) {
+                    continue;
+                }
 
-                    if(typeof active === 'boolean') {
-                        streamDb.active = active
-                        console.log('streamDb.lastPublishMessageId', streamDb.lastPublishMessageId)
-                        if(!streamDb.lastPublishMessageId && doc?.topicId && active) {
-                            console.log('publish')
+                const streamDb = setStreamsDbMap.get(globalTopicId)!;
+
+                const active = streamSetData.active;
+                const documentType = streamSetData.documentType;
+
+                if (typeof active === 'boolean') {
+                    streamDb.active = active;
+
+                    if (active && !streamDb.lastPublishMessageId) {
+                        for (const doc of docs) {
+                            if (!doc?.topicId) {
+                                continue;
+                            }
+
+                            const documentMessageId: string = this.extractCanonicalAddress(doc);
+                            if (!documentMessageId) {
+                                continue;
+                            }
+
+                            const { schemaContextIri, schemaIri } = this.extractSchemaIris(ref, doc);
+
                             const payload: GlobalEvent = {
-                                documentType: streamSetData.documentType,
+                                documentType: documentType,
                                 documentTopicId: doc.topicId,
-                                documentMessageId,
-                                schemaContextIri,
-                                schemaIri,
+                                documentMessageId: documentMessageId,
+                                schemaContextIri: schemaContextIri,
+                                schemaIri: schemaIri,
                                 timestamp: new Date().toISOString(),
                             };
 
                             await this.publish(ref, user, streamDb.globalTopicId, payload);
 
-                            if(lastPublishedMessageId) {
-                                streamDb.lastPublishMessageId = lastPublishedMessageId;
-                            }
+                            // Save last published message id for this stream
+                            streamDb.lastPublishMessageId = documentMessageId;
                         }
                     }
-
-                    if(documentType) {
-                        streamDb.documentType = documentType
-                    }
-
-                    await ref.databaseServer.updateGlobalEventsWriterStream(streamDb);
                 }
+
+                if (documentType) {
+                    streamDb.documentType = documentType;
+                }
+
+                await ref.databaseServer.updateGlobalEventsWriterStream(streamDb);
             }
 
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {} as any);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
             ref.backup();
 
-            return {}
+            return {};
         }
 
         throw new BlockActionError('Invalid operation', ref.blockType, ref.uuid);
