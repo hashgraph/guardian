@@ -73,8 +73,8 @@ export class VCMessage extends Message {
      */
     public option: any;
     /**
-    * InitId
-    */
+     * InitId
+     */
     public initId: string;
 
     constructor(

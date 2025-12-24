@@ -4444,8 +4444,8 @@ export class PolicyApi {
     //#region VC Docs
 
     /**
-    * Create new version VC document
-    */
+     * Create new version VC document
+     */
     @Post('/:policyId/create-new-version-vc-document')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
@@ -4489,8 +4489,8 @@ export class PolicyApi {
     }
 
     /**
-    * Get all version VC documents
-    */
+     * Get all version VC documents
+     */
     @Get('/:policyId/get-all-version-vc-documents/:documentId')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,

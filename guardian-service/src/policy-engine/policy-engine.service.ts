@@ -4398,11 +4398,11 @@ export class PolicyEngineService {
                 }
             });
         //#endregion
-    
+
         //#region VC Docs
         this.channel.getMessages(PolicyEngineEvents.CREATE_NEW_VERSION_VC_DOCUMENT,
             async (msg: { user: IAuthUser, policyId: string, data: any }) => {
-                try { 
+                try {
                     const { user, policyId, data } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
@@ -4415,12 +4415,12 @@ export class PolicyEngineService {
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
-                }                
+                }
             })
-        
+
          this.channel.getMessages(PolicyEngineEvents.GET_All_NEW_VERSION_VC_DOCUMENTS,
              async (msg: { user: IAuthUser, policyId: string, documentId: string }) => {
-                try {     
+                try {
                     const { user, policyId: policyId, documentId: documentId } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
@@ -4429,12 +4429,12 @@ export class PolicyEngineService {
                             user,
                             documentId
                         });
-                    
+
                     return new MessageResponse(docs);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
-                } 
+                }
             })
         //#endregion
     }

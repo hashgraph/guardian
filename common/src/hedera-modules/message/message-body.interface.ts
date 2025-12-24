@@ -298,8 +298,8 @@ export interface VcMessageBody extends MessageBody {
      */
     option: any;
     /**
-    * InitId
-    */
+     * InitId
+     */
     initId: string;
 }
 
@@ -405,23 +405,23 @@ export interface SynchronizationMessageBody extends MessageBody {
     /**
      * User DID
      */
-    user?: string,
+    user?: string;
     /**
      * Policy ID (Topic ID)
      */
-    policy?: string,
+    policy?: string;
     /**
      * Policy Type
      */
-    policyType?: MultiPolicyType,
+    policyType?: MultiPolicyType;
     /**
      * Message Id
      */
-    messageId?: string,
+    messageId?: string;
     /**
      * Token Id
      */
-    tokenId?: string,
+    tokenId?: string;
     /**
      * Token amount
      */

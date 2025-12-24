@@ -195,8 +195,8 @@ export class VcDocument {
     }
 
     /**
-    * Get initId
-    */
+     * Get initId
+     */
     public getInitId(): string {
         if (this.initId) {
             return this.initId;
@@ -205,8 +205,8 @@ export class VcDocument {
     }
 
     /**
-    * Set initId
-    */
+     * Set initId
+     */
     public setInitId(initId: string) {
         this.initId = initId;
     }

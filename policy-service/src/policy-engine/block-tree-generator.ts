@@ -394,8 +394,7 @@ export class BlockTreeGenerator extends NatsService {
             PolicyEvents.GET_ALL_NEW_VERSION_VC_DOCUMENTS,
             policyId,
             async (msg: any) => {
-                const { user, documentId } = msg;
-                const userFull = await this.getUser(policyInstance, user);
+                const { documentId } = msg;
                 const docs = await PolicyVcDocumentsUtils.getAllVersionVcDocuments(documentId);
                 return new MessageResponse(docs);
             }
