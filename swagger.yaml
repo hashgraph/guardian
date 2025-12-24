@@ -7143,6 +7143,13 @@ paths:
           schema:
             example: true
             type: boolean
+        - name: originalTracking
+          required: false
+          in: query
+          description: Save original state of the policy
+          schema:
+            example: true
+            type: boolean
       requestBody:
         required: true
         description: A zip file containing policy config.
@@ -7191,6 +7198,13 @@ paths:
           required: false
           in: query
           description: Import policy in demo mode.
+          schema:
+            example: true
+            type: boolean
+        - name: originalTracking
+          required: false
+          in: query
+          description: Save original state of the policy
           schema:
             example: true
             type: boolean
@@ -18170,6 +18184,8 @@ components:
         version:
           type: string
           example: 1.0.0
+        originalChanged:
+          type: string
         config:
           type: object
           additionalProperties: true
