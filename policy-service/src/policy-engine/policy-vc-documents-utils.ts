@@ -46,6 +46,10 @@ export class PolicyVcDocumentsUtils {
                 conditions.push({ initId: firstVCDocument.messageId });
             }
 
+            if (firstVCDocument.initId) {
+                conditions.push({ initId: firstVCDocument.initId });
+            }
+
             const vcDocuments = await db.getVcDocuments({
                 $or: conditions,
             });
