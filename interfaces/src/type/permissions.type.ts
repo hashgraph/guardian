@@ -83,6 +83,7 @@ export enum PermissionActions {
     UPDATE = 'UPDATE',
     DELETE = 'DELETE',
     REVIEW = 'REVIEW',
+    TAG = 'TAG',
     //
     AUDIT = 'AUDIT',
     EXECUTE = 'EXECUTE',
@@ -169,6 +170,7 @@ export enum Permissions {
     POLICIES_RECORD_ALL = 'POLICIES_RECORD_ALL',
     POLICIES_POLICY_AUDIT = 'POLICIES_POLICY_AUDIT',
     POLICIES_POLICY_MANAGE = 'POLICIES_POLICY_MANAGE',
+    POLICIES_POLICY_TAG = "POLICIES_POLICY_TAG",
     //POLICY
     POLICIES_EXTERNAL_POLICY_READ = 'POLICIES_EXTERNAL_POLICY_READ',
     POLICIES_EXTERNAL_POLICY_CREATE = 'POLICIES_EXTERNAL_POLICY_CREATE',
@@ -758,6 +760,16 @@ export const PermissionsArray: {
             disabled: false,
             dependOn: [
                 Permissions.POLICIES_POLICY_READ
+            ]
+        },
+        {
+            name: Permissions.POLICIES_POLICY_TAG,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.POLICY,
+            action: PermissionActions.TAG,
+            disabled: false,
+            dependOn: [
+                Permissions.POLICIES_POLICY_REVIEW
             ]
         },
         {

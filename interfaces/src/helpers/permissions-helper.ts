@@ -304,6 +304,10 @@ export class UserPermissions {
         return this.check(Permissions.POLICIES_POLICY_AUDIT);
     }
 
+    public get POLICIES_POLICY_TAG(): boolean {
+        return this.check(Permissions.POLICIES_POLICY_TAG);
+    }
+
     //SCHEMAS
     public get SCHEMAS_SCHEMA_READ(): boolean {
         return this.check(Permissions.SCHEMAS_SCHEMA_READ);
