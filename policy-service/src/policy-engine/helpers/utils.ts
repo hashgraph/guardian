@@ -1935,6 +1935,9 @@ export class PolicyUtils {
         }
         document.document.tags = document.document.tags || [];
         for (const tag of tags) {
+            if (!tag.inheritTags) {
+                continue;
+            }
             if (document.document.tags.some(item => item.messageId === tag.messageId)) {
                 continue;
             }

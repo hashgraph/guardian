@@ -49,6 +49,10 @@ export class TagMessage extends Message {
      * Document
      */
     public document: any;
+    /**
+     * Inherit tags
+     */
+    public inheritTags: boolean;
 
     constructor(action: MessageAction) {
         super(action, MessageType.Tag);
@@ -72,6 +76,7 @@ export class TagMessage extends Message {
         this.date = tag.date;
         this.document = tag.document;
         this.linkedItems = tag.linkedItems;
+        this.inheritTags = tag.inheritTags;
     }
 
     /**
@@ -100,7 +105,8 @@ export class TagMessage extends Message {
             operation: this.operation,
             date: this.date,
             entity: this.entity,
-            linkedItems: this.linkedItems
+            linkedItems: this.linkedItems,
+            inheritTags: this.inheritTags
         }
         if (this.isDocuments()) {
             result.cid = this.getDocumentUrl(UrlType.cid);
@@ -174,6 +180,7 @@ export class TagMessage extends Message {
         message.entity = json.entity;
         message.date = json.date;
         message.linkedItems = json.linkedItems;
+        message.inheritTags = json.inheritTags;
         return message;
     }
 
@@ -213,6 +220,7 @@ export class TagMessage extends Message {
         result.entity = this.entity;
         result.date = this.date;
         result.linkedItems = this.linkedItems;
+        result.inheritTags = this.inheritTags;
         return result;
     }
 
@@ -231,6 +239,7 @@ export class TagMessage extends Message {
         result.entity = json.entity;
         result.date = json.date;
         result.linkedItems = json.linkedItems;
+        result.inheritTags = json.inheritTags;
         return result;
     }
 

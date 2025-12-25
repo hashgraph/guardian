@@ -109,6 +109,12 @@ export class Tag extends RestoreEntity {
     date: string;
 
     /**
+     * Inherit tags
+     */
+    @Property({ nullable: true })
+    inheritTags: boolean;
+
+    /**
      * Create document
      */
     @BeforeCreate()

@@ -518,6 +518,10 @@ export interface TagMessageBody extends MessageBody {
      * Date
      */
     date: string;
+    /**
+     * Inherit tags
+     */
+    inheritTags: boolean;
 }
 
 /**

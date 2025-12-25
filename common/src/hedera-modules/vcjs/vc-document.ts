@@ -310,6 +310,9 @@ export class VcDocument {
         }
         this.tags = this.tags || [];
         for (const tag of tags) {
+            if (!tag.inheritTags) {
+                continue;
+            }
             if (this.tags.some(item => item.messageId === tag.messageId)) {
                 continue;
             }

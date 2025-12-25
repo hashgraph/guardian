@@ -442,70 +442,73 @@ export class PolicyConfigurationComponent implements OnInit {
                 return;
             }
 
-            forkJoin([
-                this.tokenService.menuList(),
-                this.policyEngineService.getBlockInformation(),
-                this.schemaService.getSchemas(this.policyTemplate.topicId),
-                this.modulesService.menuList(),
-                this.toolsService.menuList(),
-                this.policyEngineService.getPolicyCategories(),
-                this.contractService.getContracts({ type: ContractType.WIPE }),
-            ]).pipe(takeUntil(this._destroy$)).subscribe( async (data) => {
-                const tokens = data[0] || [];
-                const blockInformation = data[1] || {};
-                const schemas = data[2] || [];
-                const modules = data[3] || [];
-                const tools = data[4] || [];
-                this.categories = data[5] || [];
-                this.wipeContracts = data[6].body || [];
+            this.loadTagsData();
 
-                this.registeredService.registerConfig(blockInformation);
-                this.tokens = tokens.map((e: any) => new Token(e));
-                this.schemas = SchemaHelper.map(schemas) || [];
-                this.modules = modules;
-                this.tools.setItems(tools);
+            if (this.user.POLICIES_POLICY_UPDATE) {
+                forkJoin([
+                    this.tokenService.menuList(),
+                    this.policyEngineService.getBlockInformation(),
+                    this.schemaService.getSchemas(this.policyTemplate.topicId),
+                    this.modulesService.menuList(),
+                    this.toolsService.menuList(),
+                    this.policyEngineService.getPolicyCategories(),
+                    this.contractService.getContracts({ type: ContractType.WIPE }),
+                ]).pipe(takeUntil(this._destroy$)).subscribe( async (data) => {
+                    const tokens = data[0] || [];
+                    const blockInformation = data[1] || {};
+                    const schemas = data[2] || [];
+                    const modules = data[3] || [];
+                    const tools = data[4] || [];
+                    this.categories = data[5] || [];
+                    this.wipeContracts = data[6].body || [];
 
-                this.policyTemplate.setTokens(this.tokens);
-                this.policyTemplate.setSchemas(this.schemas);
-                this.policyTemplate.setTools(this.tools.items);
-                await this.finishedLoad(this.policyTemplate);
+                    this.registeredService.registerConfig(blockInformation);
+                    this.tokens = tokens.map((e: any) => new Token(e));
+                    this.schemas = SchemaHelper.map(schemas) || [];
+                    this.modules = modules;
+                    this.tools.setItems(tools);
 
-                this.categories.forEach((item: IPolicyCategory) => {
-                    switch (item.type) {
-                        case PolicyCategoryType.APPLIED_TECHNOLOGY_TYPE:
-                            this.allCategories.appliedTechnologyTypeOptions.push(item);
-                            break;
-                        case PolicyCategoryType.MITIGATION_ACTIVITY_TYPE:
-                            this.allCategories.migrationActivityTypeOptions.push(item);
-                            break;
-                        case PolicyCategoryType.PROJECT_SCALE:
-                            this.allCategories.projectScaleOptions.push(item);
-                            break;
-                        case PolicyCategoryType.SECTORAL_SCOPE:
-                            this.allCategories.sectoralScopeOptions.push(item);
-                            break;
-                        case PolicyCategoryType.SUB_TYPE:
-                            this.allCategories.subTypeOptions.push(item);
-                            break;
-                        default:
-                            break;
-                    }
-                })
+                    this.policyTemplate.setTokens(this.tokens);
+                    this.policyTemplate.setSchemas(this.schemas);
+                    this.policyTemplate.setTools(this.tools.items);
+                    await this.finishedLoad(this.policyTemplate);
 
-                if (this.policyTemplate?.categories?.length && this.policyTemplate?.categories.length > 0) {
-                    this.policyCategoriesMapped = [];
-                    this.policyTemplate?.categories?.forEach(id => {
-                        const category = this.categories.find((cat: IPolicyCategory) => cat.id === id);
-                        if (category) {
-                            this.policyCategoriesMapped.push(category);
+                    this.categories.forEach((item: IPolicyCategory) => {
+                        switch (item.type) {
+                            case PolicyCategoryType.APPLIED_TECHNOLOGY_TYPE:
+                                this.allCategories.appliedTechnologyTypeOptions.push(item);
+                                break;
+                            case PolicyCategoryType.MITIGATION_ACTIVITY_TYPE:
+                                this.allCategories.migrationActivityTypeOptions.push(item);
+                                break;
+                            case PolicyCategoryType.PROJECT_SCALE:
+                                this.allCategories.projectScaleOptions.push(item);
+                                break;
+                            case PolicyCategoryType.SECTORAL_SCOPE:
+                                this.allCategories.sectoralScopeOptions.push(item);
+                                break;
+                            case PolicyCategoryType.SUB_TYPE:
+                                this.allCategories.subTypeOptions.push(item);
+                                break;
+                            default:
+                                break;
                         }
                     })
-                }
-                this.loadTagsData();
-            }, ({ message }) => {
-                this.loading = false;
-                console.error(message);
-            });
+
+                    if (this.policyTemplate?.categories?.length && this.policyTemplate?.categories.length > 0) {
+                        this.policyCategoriesMapped = [];
+                        this.policyTemplate?.categories?.forEach(id => {
+                            const category = this.categories.find((cat: IPolicyCategory) => cat.id === id);
+                            if (category) {
+                                this.policyCategoriesMapped.push(category);
+                            }
+                        })
+                    }
+                }, ({ message }) => {
+                    this.loading = false;
+                    console.error(message);
+                });
+            }
         }, ({ message }) => {
             this.loading = false;
             console.error(message);
@@ -2461,7 +2464,8 @@ export class PolicyConfigurationComponent implements OnInit {
                     histories: tagsHistory,
                     schemas: this.schemas,
                     commonHistory: commonHistory,
-                    items: Array.from(this.selectedBlocks.values())
+                    items: Array.from(this.selectedBlocks.values()),
+                    inheritTagsOption: true,
                 }
             });
             dialogRef
@@ -2485,7 +2489,8 @@ export class PolicyConfigurationComponent implements OnInit {
                         user: this.user,
                         service: this.tagsService,
                         history: tagHistory,
-                        schemas: this.schemas
+                        schemas: this.schemas,
+                        inheritTagsOption: true,
                     }
                 });
                 dialogRef
@@ -2499,7 +2504,8 @@ export class PolicyConfigurationComponent implements OnInit {
                     closable: true,
                     header: 'New Tag',
                     data: {
-                        schemas: this.tagSchemas
+                        schemas: this.tagSchemas,
+                        inheritTagsOption: true,
                     }
                 });
                 dialogRef.onClose.subscribe(async (result) => {

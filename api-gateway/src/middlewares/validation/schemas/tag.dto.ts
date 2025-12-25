@@ -1,5 +1,6 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { Examples } from '../examples.js';
+import { IsBoolean, IsOptional } from 'class-validator';
 
 export class TagDTO {
     @ApiProperty({
@@ -111,6 +112,16 @@ export class TagDTO {
         additionalProperties: true
     })
     document?: any;
+
+    @ApiProperty({
+        type: 'boolean',
+        required: false,
+        example: false,
+        description: 'Inherit tags',
+    })
+    @IsBoolean()
+    @IsOptional()
+    inheritTags?: boolean;
 }
 
 @ApiExtraModels(TagDTO)

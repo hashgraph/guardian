@@ -2,12 +2,9 @@ import { Component } from '@angular/core';
 import { TagCreateDialog } from '../tags-create-dialog/tags-create-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
 import { TagsHistory } from '../models/tags-history';
-import { TagMapItem } from '../models/tag-map-item';
 import { TagItem } from '../models/tag-item';
-import moment from 'moment';
-import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.component';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { LocationType, TagType, UserPermissions } from '@guardian/interfaces';
+import { LocationType, UserPermissions } from '@guardian/interfaces';
 
 /**
  * Dialog for creating tags.
@@ -34,6 +31,7 @@ export class MultipleTagsExplorerDialog {
     public commonHistory: TagsHistory;
 
     public items: any[] = []
+    public inheritTagsOption: boolean = false;
 
     public get canCreate(): boolean {
         if (this.user) {
@@ -58,6 +56,7 @@ export class MultipleTagsExplorerDialog {
         this.user = dialogData.data?.user;
         this.items = dialogData.data?.items;
         this.commonHistory = dialogData.data?.commonHistory;
+        this.inheritTagsOption = dialogData.data?.inheritTagsOption;
     }
 
     ngOnInit() {
@@ -88,7 +87,8 @@ export class MultipleTagsExplorerDialog {
                 closable: true,
                 header: 'New Tag',
                 data: {
-                    schemas: this.schemas
+                    schemas: this.schemas,
+                    inheritTagsOption: this.inheritTagsOption,
                 }
             });
             dialogRef.onClose.subscribe(async (result) => {
@@ -137,34 +137,6 @@ export class MultipleTagsExplorerDialog {
         });
     }
 
-    public onUpdate(history: TagsHistory) {
-        this.loading = true;
-        this.tagsService.synchronization(history.entity, history.target).subscribe((data) => {
-            history.setData(data.tags);
-            history.setDate(data.refreshDate);
-            this.setTime(history.time);
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
-    }
-
-    private setTime(time: string | undefined) {
-        if (time) {
-            const m = moment(time);
-            if (m.isValid()) {
-                this.time = m.fromNow();
-            } else {
-                this.time = undefined;
-            }
-        } else {
-            this.time = undefined;
-        }
-    }
-
     public hasHistoryItems(block: any): boolean {
         return Array.isArray(this.getHistoryItems(block)) && this.getHistoryItems(block).length > 0
     }
@@ -211,6 +183,7 @@ export class MultipleTagsExplorerDialog {
             data: {
                 entities: this.items,
                 schemas: this.schemas,
+                inheritTagsOption: this.inheritTagsOption,
             }
         });
         dialogRef.onClose.subscribe(async (result) => {

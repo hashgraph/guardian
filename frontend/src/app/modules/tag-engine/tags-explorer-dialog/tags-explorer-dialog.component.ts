@@ -33,6 +33,7 @@ export class TagsExplorerDialog {
     public hasChanges: boolean = false;
     public selectedTags: TagMapItem[] = [];
     public user: UserPermissions;
+    public inheritTagsOption: boolean = false;
 
     public get canCreate(): boolean {
         if (this.user) {
@@ -56,6 +57,7 @@ export class TagsExplorerDialog {
         this.history = dialogData.data?.history;
         this.user = dialogData.data?.user;
         this.selectedTags = this.history.items;
+        this.inheritTagsOption = dialogData.data?.inheritTagsOption;
 
         this.owner = this.history.owner;
         this.select = this.history.getItem();
@@ -97,7 +99,8 @@ export class TagsExplorerDialog {
             closable: true,
             header: this.title,
             data: {
-                schemas: this.schemas
+                schemas: this.schemas,
+                inheritTagsOption: this.inheritTagsOption,
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
