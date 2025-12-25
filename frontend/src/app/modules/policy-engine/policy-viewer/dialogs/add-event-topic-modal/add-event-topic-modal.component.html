@@ -1,0 +1,72 @@
+<p-dialog
+    [visible]="visible"
+    [modal]="true"
+    [closable]="false"
+    [dismissableMask]="!loading"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="add-event-topic-dialog"
+    (onHide)="onCancel()"
+>
+    <div class="dialog">
+        <div class="header">
+            <div class="title">Add Event Topic</div>
+
+            <button
+                class="icon-btn"
+                type="button"
+                (click)="onCancel()"
+                [disabled]="loading"
+                aria-label="Close"
+            >
+                <i class="pi pi-times"></i>
+            </button>
+        </div>
+
+        <div class="field">
+            <div class="label">Topic ID</div>
+
+            <input
+                #topicIdInput
+                pInputText
+                [ngModel]="topicId"
+                (ngModelChange)="onTopicIdChange($event, topicIdInput)"
+                (keypress)="onKeyPress($event)"
+                (paste)="onPaste($event, topicIdInput)"
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                [disabled]="loading"
+                [attr.maxlength]="maxLength"
+                placeholder="0.0.123"
+            />
+
+        </div>
+
+        <div class="action-buttons footer">
+            <div class="cancel-button">
+                <button
+                    (click)="onCancel()"
+                    class="button secondary"
+                    pButton
+                    label="Cancel"
+                    [disabled]="loading"
+                >
+                </button>
+            </div>
+
+            <div>
+                <button
+                    (click)="onAddClick()"
+                    class="button"
+                    pButton
+                    label="Add"
+                    [disabled]="!canAdd"
+                >
+                </button>
+            </div>
+        </div>
+    </div>
+</p-dialog>

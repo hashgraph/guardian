@@ -35,8 +35,6 @@ export interface GlobalTopicMessage {
     runningHash?: string;
 }
 
-type GlobalDocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
-
 /**
  * GlobalEvent payload stored in a global events topic.
  */
@@ -120,6 +118,27 @@ type SchemaFieldIndex = {
     byDescription: Map<string, SchemaFieldRef>;
 };
 
+export const GLOBAL_DOCUMENT_TYPE_LABELS = {
+    vc: 'VC',
+    json: 'JSON',
+    csv: 'CSV',
+    text: 'Text',
+    any: 'Any',
+} as const;
+
+// Supported document types for filtering/publish metadata
+export type GlobalDocumentType = keyof typeof GLOBAL_DOCUMENT_TYPE_LABELS;
+
+export const GLOBAL_DOCUMENT_TYPE_ITEMS: Array<{ label: string; value: GlobalDocumentType }> =
+    Object.entries(GLOBAL_DOCUMENT_TYPE_LABELS).map(([value, label]) => {
+        return {
+            label: String(label),
+            value: value as GlobalDocumentType,
+        };
+    });
+
+export const GLOBAL_DOCUMENT_TYPE_DEFAULT = 'vc';
+
 @EventBlock({
     blockType: 'globalEventsReaderBlock',
     commonBlock: false,
@@ -181,14 +200,8 @@ type SchemaFieldIndex = {
                             label: 'Document type',
                             title: 'Expected message type for this branch (reader-side filtering)',
                             type: PropertyType.Select,
-                            items: [
-                                { label: 'VC', value: 'vc' },
-                                { label: 'JSON', value: 'json' },
-                                { label: 'CSV', value: 'csv' },
-                                { label: 'Text', value: 'text' },
-                                { label: 'Any', value: 'any' },
-                            ],
-                            default: 'vc',
+                            items: GLOBAL_DOCUMENT_TYPE_ITEMS,
+                            default: GLOBAL_DOCUMENT_TYPE_DEFAULT,
                         },
                         {
                             name: 'schema',
@@ -1150,7 +1163,7 @@ class GlobalEventsReaderBlock {
             ),
             config: {
                 eventTopics: config.eventTopics || [],
-                documentType: config.documentType || 'any',
+                documentType: config.documentType,
                 branches: config.branches || []
             },
             streams: rows,

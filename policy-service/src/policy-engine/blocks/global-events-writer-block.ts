@@ -22,9 +22,6 @@ import { LocationType, TopicType } from '@guardian/interfaces';
 import {GlobalEventsWriterStream, Message, MessageServer, TopicConfig, TopicHelper} from '@guardian/common';
 import { TopicId } from '@hashgraph/sdk';
 
-// Supported document types for filtering/publish metadata
-export type GlobalDocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
-
 /**
  * Payload sent to global topics. Consumers can use documentType,
  * schemaContextIri and schemaIri for filtering/routing.
@@ -61,6 +58,27 @@ interface SetDataPayload {
 interface WriterCacheState {
     docs?: IPolicyDocument[];
 }
+
+export const GLOBAL_DOCUMENT_TYPE_LABELS = {
+    vc: 'VC',
+    json: 'JSON',
+    csv: 'CSV',
+    text: 'Text',
+    any: 'Any',
+} as const;
+
+// Supported document types for filtering/publish metadata
+export type GlobalDocumentType = keyof typeof GLOBAL_DOCUMENT_TYPE_LABELS;
+
+export const GLOBAL_DOCUMENT_TYPE_ITEMS: Array<{ label: string; value: GlobalDocumentType }> =
+    Object.entries(GLOBAL_DOCUMENT_TYPE_LABELS).map(([value, label]) => {
+        return {
+            label: String(label),
+            value: value as GlobalDocumentType,
+        };
+    });
+
+export const GLOBAL_DOCUMENT_TYPE_DEFAULT = "vc";
 
 @EventBlock({
     blockType: 'globalEventsWriterBlock',
@@ -104,14 +122,8 @@ interface WriterCacheState {
                             label: 'Document type',
                             title: 'Type written to the global topic for reader-side filtering',
                             type: PropertyType.Select,
-                            items: [
-                                { label: 'VC', value: 'vc' },
-                                { label: 'JSON', value: 'json' },
-                                { label: 'CSV', value: 'csv' },
-                                { label: 'Text', value: 'text' },
-                                { label: 'Any', value: 'any' },
-                            ],
-                            default: 'vc',
+                            items: GLOBAL_DOCUMENT_TYPE_ITEMS,
+                            default: GLOBAL_DOCUMENT_TYPE_DEFAULT,
                         },
                     ],
                 },
@@ -166,7 +178,20 @@ export class GlobalEventsWriterBlock {
                 continue;
             }
 
-            const topicDocumentType: GlobalDocumentType = topic.documentType;
+            const topicDocumentType: GlobalDocumentType = topic.documentType
+
+            if (existingTopicIds.has(topicId)) {
+                const existingStream = existing.find((s) => {
+                    return s?.globalTopicId === topicId;
+                });
+
+                if (existingStream && existingStream.documentType !== topicDocumentType) {
+                    existingStream.documentType = topicDocumentType;
+                    await ref.databaseServer.updateGlobalEventsWriterStream(existingStream);
+                }
+
+                continue;
+            }
 
             await ref.databaseServer.createGlobalEventsWriterStream({
                 policyId: ref.policyId,
@@ -556,7 +581,8 @@ export class GlobalEventsWriterBlock {
                 eventTopics: config.eventTopics || [],
             },
             streams,
-            defaultTopicIds
+            defaultTopicIds,
+            documentTypeOptions: GLOBAL_DOCUMENT_TYPE_ITEMS,
         };
     }
 
@@ -581,6 +607,8 @@ export class GlobalEventsWriterBlock {
         // from the block configuration if none exist for this user.
         await this.ensureDefaultStreams(ref, user);
 
+        const defaultDocumentType: GlobalDocumentType = GLOBAL_DOCUMENT_TYPE_DEFAULT;
+
         // Create a new topic and DB row
         if (operation === 'CreateTopic') {
             const createdTopicId = await this.createTopic(ref, user);
@@ -592,7 +620,7 @@ export class GlobalEventsWriterBlock {
                 userDid: user.did,
                 globalTopicId: createdTopicId,
                 active: false,
-                documentType: 'any',
+                documentType: defaultDocumentType,
             });
 
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
@@ -628,7 +656,7 @@ export class GlobalEventsWriterBlock {
                     userDid: user.did,
                     globalTopicId: topic.topicId,
                     active: false,
-                    documentType: 'any',
+                    documentType: defaultDocumentType,
                 });
             }
 

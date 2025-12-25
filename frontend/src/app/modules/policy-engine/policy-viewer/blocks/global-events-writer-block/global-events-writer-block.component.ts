@@ -7,12 +7,15 @@ import {
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, Subject, Subscription } from 'rxjs';
-import { catchError, debounceTime } from 'rxjs/operators';
+import {catchError, debounceTime, finalize} from 'rxjs/operators';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import {DialogService, DynamicDialogRef} from "primeng/dynamicdialog";
+import {ConfirmDialog} from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
+
+export type WriterOperation = 'AddTopic' | 'CreateTopic' | 'Delete' | 'Update';
 
 export type GlobalDocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
-export type WriterOperation = 'AddTopic' | 'CreateTopic' | 'Delete' | 'Update';
 
 export interface WriterStreamRow {
     topicId: string;
@@ -28,6 +31,12 @@ export interface WriterGetDataResponse {
     }>;
 
     defaultTopicIds?: string[];
+    documentTypeOptions?: Array<{ label: string; value: GlobalDocumentType }>;
+}
+
+export interface DocumentTypeOption {
+    label: string;
+    value: GlobalDocumentType;
 }
 
 @Component({
@@ -49,21 +58,11 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
 
     public streams: WriterStreamRow[] = [];
 
-    public readonly documentTypeOptions: Array<{ label: string; value: GlobalDocumentType }> = [
-        { label: 'vc', value: 'vc' },
-        { label: 'json', value: 'json' },
-        { label: 'csv', value: 'csv' },
-        { label: 'text', value: 'text' },
-        { label: 'any', value: 'any' },
-    ];
+    public documentTypeOptions: Array<{ label: string; value: GlobalDocumentType }> = [];
 
-    // Modal: Add Topic
     public addTopicModalOpen: boolean = false;
     public addTopicModalTopicId: string = '';
     public addTopicModalError: string = '';
-
-    // Modal: Create Topic confirm
-    public createTopicModalOpen: boolean = false;
 
     private socket: any;
 
@@ -72,10 +71,13 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
 
     public defaultTopicIds: string[] = [];
 
+    private confirmDialogRef: DynamicDialogRef | null = null;
+
     constructor(
         private readonly policyEngineService: PolicyEngineService,
         private readonly wsService: WebSocketService,
         private readonly changeDetector: ChangeDetectorRef,
+        private readonly dialogService: DialogService,
     ) {
     }
 
@@ -98,6 +100,11 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     public ngOnDestroy(): void {
         if (this.socket) {
             this.socket.unsubscribe();
+        }
+
+        if (this.confirmDialogRef) {
+            this.confirmDialogRef.close();
+            this.confirmDialogRef = null;
         }
 
         this.subscriptions.unsubscribe();
@@ -139,6 +146,8 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
 
     private applyData(data: WriterGetDataResponse | null): void {
         this.defaultTopicIds = (data?.defaultTopicIds || []).map((t) => String(t).trim());
+
+        this.documentTypeOptions = data?.documentTypeOptions || [];
 
         this.streams = (data?.streams || []).map((s) => {
             return {
@@ -198,7 +207,11 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     }
 
     public onStreamDocumentTypeChange(row: WriterStreamRow, value: GlobalDocumentType | null): void {
-        row.documentType = (value || 'any') as GlobalDocumentType;
+        if (!value) {
+            return;
+        }
+
+        row.documentType = value;
         this.markUpdateChanged();
     }
 
@@ -228,8 +241,11 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         this.addTopicModalOpen = false;
     }
 
-    public confirmAddTopicModal(): void {
-        if (this.static) {
+    public confirmAddTopicModal(topicId: string): void {
+        const trimmedTopicId = String(topicId || '').trim();
+
+        if (!trimmedTopicId) {
+            this.addTopicModalError = 'Topic ID is required';
             return;
         }
 
@@ -237,20 +253,14 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const topicId = (this.addTopicModalTopicId || '').trim();
-        if (!topicId) {
-            this.addTopicModalError = 'Topic ID is required';
-            return;
-        }
-
+        this.addTopicModalError = '';
         this.loading = true;
 
         const payload = {
             operation: 'AddTopic' as WriterOperation,
             streams: [
                 {
-                    topicId,
-                    documentType: 'any' as GlobalDocumentType,
+                    topicId: trimmedTopicId,
                     active: false,
                 },
             ],
@@ -258,62 +268,20 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
 
         this.policyEngineService
             .setBlockData(this.id, this.policyId, payload)
+            .pipe(
+                finalize(() => {
+                    this.loading = false;
+                    this.changeDetector.detectChanges();
+                }),
+            )
             .subscribe(
                 () => {
                     this.addTopicModalOpen = false;
                     this.loadData();
                 },
                 (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                    this.changeDetector.detectChanges();
-                },
-            );
-    }
-
-    // -----------------------------
-    // Create Topic (confirm modal)
-    // -----------------------------
-
-    public openCreateTopicModal(): void {
-        if (this.static) {
-            return;
-        }
-
-        this.createTopicModalOpen = true;
-    }
-
-    public closeCreateTopicModal(): void {
-        this.createTopicModalOpen = false;
-    }
-
-    public confirmCreateTopic(): void {
-        if (this.static) {
-            return;
-        }
-
-        if (!this.policyId || !this.id) {
-            return;
-        }
-
-        this.loading = true;
-
-        const payload = {
-            operation: 'CreateTopic' as WriterOperation,
-            streams: [],
-        };
-
-        this.policyEngineService
-            .setBlockData(this.id, this.policyId, payload)
-            .subscribe(
-                () => {
-                    this.createTopicModalOpen = false;
-                    this.loadData();
-                },
-                (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                    this.changeDetector.detectChanges();
+                    console.error(e?.error);
+                    this.addTopicModalError = 'Failed to add topic';
                 },
             );
     }
@@ -360,5 +328,73 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     public isDefaultTopic(topicId: string): boolean {
         const normalized = (topicId || '').trim();
         return this.defaultTopicIds.includes(normalized);
+    }
+
+    public trackByTopicId(_index: number, row: any): string {
+        return String(row?.topicId || row?.globalTopicId || _index);
+    }
+
+    public openCreateTopicModal(): void {
+        if (this.loading) {
+            return;
+        }
+
+        if (!this.policyId || !this.id) {
+            return;
+        }
+
+        if (this.confirmDialogRef) {
+            this.confirmDialogRef.close();
+            this.confirmDialogRef = null;
+        }
+
+        this.confirmDialogRef = this.dialogService.open(ConfirmDialog, {
+            styleClass: 'confirm-dialog',
+            closable: false,
+            dismissableMask: true,
+            showHeader: false,
+            data: {
+                title: 'Create Topic',
+                description: 'Create a new global event topic?',
+                submitButton: 'Create',
+                cancelButton: 'Cancel',
+            },
+        });
+
+        this.confirmDialogRef.onClose.subscribe((ok: boolean | null) => {
+            this.confirmDialogRef = null;
+
+            if (ok !== true) {
+                return;
+            }
+
+            this.confirmCreateTopic();
+        });
+    }
+
+    private confirmCreateTopic(): void {
+        if (!this.policyId || !this.id) {
+            return;
+        }
+
+        this.loading = true;
+
+        const payload = {
+            operation: 'CreateTopic' as WriterOperation,
+            streams: [],
+        };
+
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, payload)
+            .subscribe(
+                () => {
+                    this.loadData();
+                },
+                (e) => {
+                    console.error(e?.error || e);
+                    this.loading = false;
+                    this.changeDetector.detectChanges();
+                },
+            );
     }
 }
