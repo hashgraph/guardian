@@ -110,10 +110,15 @@ type SchemaBatchItem = {
     name?: string;
 };
 
+type SchemaFieldRef = {
+    field: SchemaField;
+    documentPath: string;
+};
+
 type SchemaFieldIndex = {
-    byName: Map<string, SchemaField>;
-    byTitle: Map<string, SchemaField>;
-    byDescription: Map<string, SchemaField>;
+    byName: Map<string, SchemaFieldRef>;
+    byTitle: Map<string, SchemaFieldRef>;
+    byDescription: Map<string, SchemaFieldRef>;
 };
 
 @EventBlock({
@@ -190,7 +195,7 @@ type SchemaFieldIndex = {
                             name: 'schema',
                             label: 'Schema',
                             title: 'Local policy schema (validate VC before routing)',
-                            type: PropertyType.Schemas
+                            type: PropertyType.Schemas,
                         }
                     ]
                 }
@@ -312,7 +317,7 @@ class GlobalEventsReaderBlock {
      * cron tick calls run(null) and processes DB-bound active streams.
      */
     protected async afterInit(): Promise<void> {
-        const cronMask = process.env.GLOBAL_NOTIFICATIONS_SCHEDULER || '0 */1 * * * *';
+        const cronMask = process.env.GLOBAL_NOTIFICATIONS_SCHEDULER || '*/30 * * * * *';
 
         this.job = new CronJob(cronMask, () => {
             this.run().then();
@@ -480,8 +485,6 @@ class GlobalEventsReaderBlock {
     ): Promise<void> {
         const payload = await this.loadPayload(ref, event, user.userId);
 
-        console.log('payload', payload)
-
         let payloadObject: any = payload;
 
         try {
@@ -496,8 +499,6 @@ class GlobalEventsReaderBlock {
                 if (file && file.type === 'Buffer' && Array.isArray(file.data)) {
                     file = Buffer.from(file.data).toString('utf-8');
                 }
-
-                console.log('JSON.parse(String(file))', JSON.parse(String(file)))
 
                 payloadObject = JSON.parse(String(file));
             }
@@ -535,8 +536,6 @@ class GlobalEventsReaderBlock {
             }
         }
 
-        // console.log('currentSchema', currentSchema)
-
         for (const branch of branches) {
             const branchEvent = branch.branchEvent.trim();
             if (!branchEvent) {
@@ -553,19 +552,13 @@ class GlobalEventsReaderBlock {
                 isVcDocument = branch.documentType === 'vc';
             }
 
-            // console.log('isVcDocument', isVcDocument)
+            const expectedType = isTypeDocumentByBranch ? branchDocumentTypeByBranch[branchEvent].trim() : 'any'
 
-            const expectedType = isTypeDocumentByBranch
-                ? String(branchDocumentTypeByBranch[branchEvent] || 'any').trim()
-                : String(branch.documentType || 'any').trim();
-
-            const incomingType = String(event.documentType || 'any').trim();
+            const incomingType = event.documentType.trim() || 'any'
 
             if (expectedType !== 'any' && expectedType !== incomingType) {
                 continue;
             }
-
-            // console.log('expectedType', expectedType)
 
             if (isVcDocument) {
                 const validationError = await this.validateDocuments(user, baseState);
@@ -575,50 +568,36 @@ class GlobalEventsReaderBlock {
 
                 const branchFilters = filterFieldsByBranch[branchEvent] ?? {};
 
+                const localSchema = await this.getSchemaById(branch.schema);
+
                 /**
                  * If there are no filters, skip schema requirement.
                  * If filters exist but schema is not loaded -> treat as skip, not error.
                  */
                 const hasFilters = Object.keys(branchFilters).length > 0;
 
-                console.log('hasFilters', hasFilters)
-
-                if (isVcDocument && branch.schema) {
+                if (branch.schema) {
                     if (!currentSchema) {
                         continue;
                     }
 
-                    // const localSchema = await this.getSchemaById(branch.schema);
-                    // console.log('localSchema', localSchema)
-                    // if (!localSchema) {
-                    //     continue;
-                    // }
-                    //
-                    // const ok = this.isSchemaCompatible(currentSchema, localSchema.document);
-                    // console.log('ok', ok)
-                    // if (!ok) {
-                    //     continue;
-                    // }
-                }
-
-                if (hasFilters && !currentSchema) {
-                    ref.error(
-                        `GlobalEventsReader: skip filters because schema is not resolved (topic=${event.documentTopicId}, branch=${branchEvent}})`
-                    );
-                    continue;
-                }
-
-                if (hasFilters) {
-                    const check = await this.validateStreamFilters(payload, branchFilters, currentSchema);
-
-                    if (check.action === 'skip') {
+                    if (!localSchema) {
                         continue;
                     }
 
-                    if (check.action === 'error') {
-                        ref.error(
-                            `GlobalEventsReader: filters error (topic=${event.documentTopicId}, branch=${branchEvent}): ${check.reason}`
-                        );
+                    const ok = this.isSchemaCompatible(currentSchema, localSchema.document);
+                    if (!ok) {
+                        continue;
+                    }
+                }
+
+                const localSchemaDoc = localSchema?.document || null;
+
+                if (hasFilters) {
+                    const check = this.validateStreamFilters(payloadObject, branchFilters, localSchemaDoc);
+
+                    if (check.action !== 'ok') {
+                        ref.error(`Filters: ${check.reason}; topic=${event.documentTopicId}; branch=${branchEvent}`);
                         continue;
                     }
                 }
@@ -628,10 +607,6 @@ class GlobalEventsReaderBlock {
                 ...baseState,
                 data: policyDocument,
             } as any;
-
-            console.log('triggerEvents', stateForBranch)
-
-            // ref.triggerEvents(branchEvent, user, stateForBranch);
 
             await ref.triggerEventSync(branchEvent, user, stateForBranch);
 
@@ -643,8 +618,8 @@ class GlobalEventsReaderBlock {
             );
         }
 
-        // ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, baseState);
-        // ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, baseState);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
     }
 
     private async loadPayload(
@@ -703,25 +678,6 @@ class GlobalEventsReaderBlock {
                 ref.uuid
             );
         }
-    }
-
-    private extractIpfsCid(iri: string): string {
-        let value = String(iri || '').trim();
-
-        if (!value) {
-            return '';
-        }
-
-        if (value.startsWith('ipfs://')) {
-            value = value.slice('ipfs://'.length);
-        }
-
-        const hashIndex = value.indexOf('#');
-        if (hashIndex !== -1) {
-            value = value.slice(0, hashIndex);
-        }
-
-        return value.trim();
     }
 
     private async loadSchemaDocumentFromBatchItem(
@@ -898,37 +854,6 @@ class GlobalEventsReaderBlock {
             return [];
         }
     }
-
-    // private async loadSchemaBatch(
-    //     ref: AnyBlockType,
-    //     schemaContextIri: string,
-    //     userId: string
-    // ): Promise<any[]> {
-    //     const cid = this.extractIpfsCid(schemaContextIri);
-    //
-    //     if (!cid) {
-    //         return [];
-    //     }
-    //
-    //     try {
-    //         const row = await IPFS.getFile(cid, 'str', { userId });
-    //         const text = typeof row === 'string' ? row : JSON.stringify(row);
-    //         const parsed = JSON.parse(text);
-    //
-    //         if (Array.isArray(parsed)) {
-    //             return parsed;
-    //         }
-    //         if (Array.isArray(parsed.schemas)) {
-    //             return parsed.schemas;
-    //         }
-    //         return [parsed];
-    //     } catch (error) {
-    //         ref.error(
-    //             `globalEventsReader: schema load failed: ${PolicyUtils.getErrorMessage(error)} (cid=${cid})`
-    //         );
-    //         return [];
-    //     }
-    // }
 
     /**
      * =========================
@@ -1222,102 +1147,6 @@ class GlobalEventsReaderBlock {
         };
     }
 
-    // public async getData(user: PolicyUser): Promise<IPolicyGetData> {
-    //     const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-    //     const config = (ref.options || {}) as GlobalEventReaderConfig;
-    //
-    //     await this.ensureDefaultStreams(ref, user);
-    //
-    //     const configuredTopicIds = this.extractConfiguredTopicIds(config);
-    //     const configuredTopicIdSet = new Set(configuredTopicIds);
-    //
-    //     const dbStreams = await ref.databaseServer.getGlobalEventsStreamsByUser(
-    //         ref.policyId,
-    //         ref.uuid,
-    //         user.userId
-    //     );
-    //
-    //     const byTopicId = new Map<string, GlobalEventsReaderStream>();
-    //     for (const stream of dbStreams || []) {
-    //         const topicId = (stream.globalTopicId || '').trim();
-    //
-    //         try {
-    //             this.validateTopicId(topicId, ref);
-    //         } catch (_e) {
-    //             continue;
-    //         }
-    //
-    //         byTopicId.set(topicId, stream);
-    //     }
-    //
-    //     const rows: UiStreamRow[] = [];
-    //
-    //     // 1) defaults from config -> virtual rows unless user has DB override
-    //     for (const topicId of configuredTopicIds) {
-    //         const dbRow = byTopicId.get(topicId);
-    //
-    //         if (dbRow) {
-    //             rows.push({
-    //                 globalTopicId: topicId,
-    //                 active: Boolean(dbRow.active),
-    //                 status: dbRow.status || GlobalEventsStreamStatus.Free,
-    //                 lastMessageCursor: dbRow.lastMessageCursor || '',
-    //                 isDefault: true,
-    //                 filterFieldsByBranch: dbRow.filterFieldsByBranch || {},
-    //                 branchDocumentTypeByBranch: dbRow.branchDocumentTypeByBranch || {},
-    //             });
-    //         } else {
-    //             rows.push({
-    //                 globalTopicId: topicId,
-    //                 active: false,
-    //                 status: GlobalEventsStreamStatus.Free,
-    //                 lastMessageCursor: '',
-    //                 isDefault: true,
-    //                 filterFieldsByBranch: {},
-    //                 branchDocumentTypeByBranch: {},
-    //             });
-    //         }
-    //     }
-    //
-    //     // 2) user-added topics (not present in defaults)
-    //     for (const stream of dbStreams || []) {
-    //         const topicId = (stream.globalTopicId || '').trim();
-    //         if (!topicId) {
-    //             continue;
-    //         }
-    //
-    //         if (configuredTopicIdSet.has(topicId)) {
-    //             continue;
-    //         }
-    //
-    //         rows.push({
-    //             globalTopicId: topicId,
-    //             active: Boolean(stream.active),
-    //             status: stream.status || GlobalEventsStreamStatus.Free,
-    //             lastMessageCursor: stream.lastMessageCursor || '',
-    //             isDefault: false,
-    //             filterFieldsByBranch: stream.filterFieldsByBranch || {},
-    //             branchDocumentTypeByBranch: stream.branchDocumentTypeByBranch || {},
-    //         });
-    //     }
-    //
-    //     return {
-    //         id: ref.uuid,
-    //         blockType: ref.blockType,
-    //         actionType: ref.actionType,
-    //         readonly: (
-    //             ref.actionType === LocationType.REMOTE &&
-    //             user.location === LocationType.REMOTE
-    //         ),
-    //         config: {
-    //             eventTopics: config.eventTopics || [],
-    //             documentType: config.documentType || 'any',
-    //             branches: config.branches || []
-    //         },
-    //         streams: rows
-    //     };
-    // }
-
     /**
      * Create a new dynamic global topic using user's relayer credentials.
      * Returns created topicId.
@@ -1556,7 +1385,7 @@ class GlobalEventsReaderBlock {
     }
 
     private validateStreamFilters(
-        payload: string,
+        document: string,
         branchFilters: Record<string, string>,
         currentSchemaDoc: any,
     ): FilterCheckResult {
@@ -1568,12 +1397,12 @@ class GlobalEventsReaderBlock {
         }
 
         if (!currentSchemaDoc) {
-            return { action: 'skip', reason: 'Schema is not resolved' };
+            return { action: 'error', reason: 'Schema not resolved for filters' };
         }
 
-        const vcDocument = this.tryParseJson(payload);
+        const vcDocument = this.tryParseJson(document);
         if (!vcDocument) {
-            return { action: 'skip', reason: 'Invalid VC JSON payload' };
+            return { action: 'error', reason: 'Invalid VC JSON for filters' };
         }
 
         const schemaIndex = this.buildSchemaFieldIndex(currentSchemaDoc);
@@ -1584,18 +1413,26 @@ class GlobalEventsReaderBlock {
         for (const filterLabel of filterKeys) {
             const expectedValue = filters[filterLabel];
 
-            const schemaField = this.resolveSchemaFieldByLabel(schemaIndex, filterLabel);
-            if (!schemaField) {
-                return { action: 'error', reason: `Filter field "${filterLabel}" not found in schema` };
+            const schemaFieldRef = this.resolveSchemaFieldByLabel(schemaIndex, filterLabel);
+            if (!schemaFieldRef) {
+                return { action: 'error', reason: `Unknown filter label="${filterLabel}" (not found in schema)` };
             }
 
-            const actualValue = this.getValueBySchemaFieldName(vcDocument, schemaField.name);
+            const documentPath = String(schemaFieldRef.documentPath ?? '').trim();
+            if (!documentPath) {
+                return { action: 'error', reason: `Cannot resolve document path for "${filterLabel}"` };
+            }
+
+            const actualValue = this.getValueBySchemaFieldName(vcDocument, documentPath);
             if (typeof actualValue === 'undefined') {
-                return { action: 'skip', reason: `Missing field "${schemaField.name}"` };
+                return { action: 'error', reason: `Field missing: label="${filterLabel}", path="${documentPath}", expected="${expectedValue.trim()}"` };
             }
 
-            if (String(actualValue ?? '').trim() !== expectedValue) {
-                return { action: 'skip', reason: `Mismatch "${filterLabel}"` };
+            const actual = String(actualValue ?? '').trim();
+            const expected = String(expectedValue ?? '').trim();
+
+            if (actual !== expected) {
+                return { action: 'error', reason: `Value mismatch: label="${filterLabel}", path="${documentPath}", expected="${expected}", actual="${actual}"` };
             }
         }
 
@@ -1639,65 +1476,82 @@ class GlobalEventsReaderBlock {
         }
     }
 
-    private flattenSchemaFields(fields: SchemaField[]): SchemaField[] {
-        const result: SchemaField[] = [];
-        const stack: SchemaField[] = Array.isArray(fields) ? [...fields] : [];
-
-        while (stack.length > 0) {
-            const current = stack.pop();
-            if (!current) {
-                continue;
-            }
-
-            result.push(current);
-
-            if (Array.isArray(current.fields) && current.fields.length > 0) {
-                for (const child of current.fields) {
-                    stack.push(child);
-                }
-            }
-        }
-
-        return result;
-    }
-
     private buildSchemaFieldIndex(schemaDoc: any): SchemaFieldIndex | null {
         const schemaFieldsTree = this.getSchemaFields(schemaDoc);
         if (!schemaFieldsTree || schemaFieldsTree.length === 0) {
             return null;
         }
 
-        const flat = this.flattenSchemaFields(schemaFieldsTree);
+        const byName = new Map<string, SchemaFieldRef>();
+        const byTitle = new Map<string, SchemaFieldRef>();
+        const byDescription = new Map<string, SchemaFieldRef>();
 
-        const byName = new Map<string, SchemaField>();
-        const byTitle = new Map<string, SchemaField>();
-        const byDescription = new Map<string, SchemaField>();
+        const stack: Array<{ field: SchemaField; prefix: string }> = [];
 
-        for (const field of flat) {
+        for (const field of schemaFieldsTree) {
+            stack.push({ field, prefix: '' });
+        }
+
+        while (stack.length > 0) {
+            const item = stack.pop();
+            if (!item) {
+                continue;
+            }
+
+            const field = item.field;
+
+            const name = String(field?.name ?? '').trim();
+            const documentPath = this.joinDocumentPath(item.prefix, name);
+            const ref: SchemaFieldRef = {
+                field,
+                documentPath,
+            };
+
             const nameKey = this.normalizeText(field?.name);
             if (nameKey) {
-                byName.set(nameKey, field);
+                byName.set(nameKey, ref);
             }
 
             const titleKey = this.normalizeText(field?.title);
             if (titleKey) {
-                byTitle.set(titleKey, field);
+                byTitle.set(titleKey, ref);
             }
 
             const descKey = this.normalizeText(field?.description);
             if (descKey) {
-                byDescription.set(descKey, field);
+                byDescription.set(descKey, ref);
+            }
+
+            if (Array.isArray(field.fields) && field.fields.length > 0) {
+                for (const child of field.fields) {
+                    stack.push({ field: child, prefix: documentPath });
+                }
             }
         }
 
         return {
             byName,
             byTitle,
-            byDescription
+            byDescription,
         };
     }
 
-    private resolveSchemaFieldByLabel(index: SchemaFieldIndex, label: string): SchemaField | null {
+    private joinDocumentPath(prefix: string, name: string): string {
+        const p = String(prefix ?? '').trim();
+        const n = String(name ?? '').trim();
+
+        if (!n) {
+            return p;
+        }
+
+        if (!p) {
+            return n;
+        }
+
+        return `${p}.${n}`;
+    }
+
+    private resolveSchemaFieldByLabel(index: SchemaFieldIndex, label: string): SchemaFieldRef | null {
         const key = this.normalizeText(label);
         if (!key) {
             return null;
@@ -1849,6 +1703,37 @@ class GlobalEventsReaderBlock {
         }
 
         return p;
+    }
+
+    private normalizeSchemaFieldPath(value: unknown): string {
+        const raw = String(value ?? '').trim();
+        if (!raw) {
+            return '';
+        }
+
+        if (!raw.includes('/')) {
+            return raw;
+        }
+
+        const parts: string[] = [];
+        for (const part of raw.split('/')) {
+            const trimmed = String(part ?? '').trim();
+            if (!trimmed) {
+                continue;
+            }
+            parts.push(trimmed);
+        }
+
+        if (parts.length === 0) {
+            return '';
+        }
+
+        const first = parts[0];
+        if (first && first.startsWith('#')) {
+            parts.shift();
+        }
+
+        return parts.join('.');
     }
 }
 

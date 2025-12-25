@@ -111,6 +111,9 @@ export class GlobalEventsReaderFiltersDialogComponent {
         if (!branch) {
             return;
         }
+        if (!branch.schemaId) {
+            return;
+        }
         if (this.readonly) {
             return;
         }

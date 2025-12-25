@@ -441,8 +441,6 @@ export class GlobalEventsWriterBlock {
 
         const docs: IPolicyDocument[] = Array.isArray(payload) ? payload : [payload];
 
-        console.log('docs', docs)
-
         if (docs.length === 0) {
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
@@ -463,7 +461,6 @@ export class GlobalEventsWriterBlock {
         const cacheKey = this.getCacheKey(ref, user);
         const cacheState = await this.getCacheState(ref, user, cacheKey);
 
-        console.log('defaultActive', defaultActive);
         cacheState.docs = docs;
 
         for (const doc of docs) {

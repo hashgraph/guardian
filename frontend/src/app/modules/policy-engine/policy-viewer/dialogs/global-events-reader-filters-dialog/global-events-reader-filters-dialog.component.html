@@ -18,7 +18,7 @@
             </div>
 
             <button
-                *ngIf="branch.documentType === 'vc'"
+                *ngIf="branch.documentType === 'vc' && branch.schemaId"
                 type="button"
                 class="btn btn-sm btn-outline-primary"
                 (click)="addFilterItem(branch)"
@@ -35,8 +35,8 @@
             </div>
         </div>
 
-        <ng-container *ngIf="branch.documentType === 'vc'; else noValidation">
-            <table class="table table-sm table-bordered">
+        <ng-container *ngIf="branch.documentType === 'vc' && branch.schemaId; else noValidation">
+        <table class="table table-sm table-bordered">
                 <thead>
                 <tr>
                     <th>Field label (title/description/name)</th>
@@ -81,8 +81,12 @@
         </ng-container>
 
         <ng-template #noValidation>
-            <div class="no-validation">
+            <div class="no-validation" *ngIf="branch.documentType !== 'vc'">
                 This document type does not support any validation/filters in this UI.
+            </div>
+
+            <div class="no-validation" *ngIf="branch.documentType === 'vc' && !branch.schemaId">
+                Select a schema in block settings to enable filters for this branch.
             </div>
         </ng-template>
     </div>
