@@ -174,7 +174,7 @@ export class GlobalEventsWriterBlock {
                 userId: user.userId,
                 userDid: user.did,
                 globalTopicId: topicId,
-                active: false,
+                active: true,
                 documentType: topicDocumentType,
             });
         }
@@ -567,8 +567,6 @@ export class GlobalEventsWriterBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const operation = data?.operation;
         const streams = data?.streams ?? [];
-
-        console.log('setData', 'writer')
 
         if (!user) {
             throw new BlockActionError('User is required', ref.blockType, ref.uuid);

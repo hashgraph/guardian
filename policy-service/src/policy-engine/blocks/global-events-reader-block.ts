@@ -100,7 +100,6 @@ export enum GlobalEventsStreamStatus {
 
 type FilterCheckResult =
     | { action: 'ok' }
-    | { action: 'skip'; reason: string }
     | { action: 'error'; reason: string };
 
 type SchemaBatchItem = {
@@ -189,7 +188,7 @@ type SchemaFieldIndex = {
                                 { label: 'Text', value: 'text' },
                                 { label: 'Any', value: 'any' },
                             ],
-                            default: 'any',
+                            default: 'vc',
                         },
                         {
                             name: 'schema',
@@ -303,7 +302,7 @@ class GlobalEventsReaderBlock {
                 userId: user.userId,
                 userDid: user.did,
                 globalTopicId: topicId,
-                active: false,
+                active: true,
                 lastMessageCursor: '',
                 status: GlobalEventsStreamStatus.Free,
                 filterFieldsByBranch: {},
@@ -557,6 +556,9 @@ class GlobalEventsReaderBlock {
             const incomingType = event.documentType.trim() || 'any'
 
             if (expectedType !== 'any' && expectedType !== incomingType) {
+                ref.warn(
+                    `GlobalEventsReader: branch skipped by type (topic=${event.documentTopicId}, branch=${branchEvent}): expected="${expectedType}", actual="${incomingType}"`
+                );
                 continue;
             }
 
@@ -578,15 +580,24 @@ class GlobalEventsReaderBlock {
 
                 if (branch.schema) {
                     if (!currentSchema) {
+                        ref.warn(
+                            `GlobalEventsReader: schema validation failed (topic=${event.documentTopicId}, branch=${branchEvent}): incoming VC schema is not resolved (schemaIri=${String(event.schemaIri ?? '').trim() || '-'})`
+                        );
                         continue;
                     }
 
                     if (!localSchema) {
+                        ref.warn(
+                            `GlobalEventsReader: schema validation failed (topic=${event.documentTopicId}, branch=${branchEvent}): local schema is not resolved (schemaId=${String(branch.schema ?? '').trim() || '-'})`
+                        );
                         continue;
                     }
 
                     const ok = this.isSchemaCompatible(currentSchema, localSchema.document);
                     if (!ok) {
+                        ref.warn(
+                            `GlobalEventsReader: schema validation failed (topic=${event.documentTopicId}, branch=${branchEvent}): incompatible schemas (incomingSchemaIri=${String(event.schemaIri ?? '').trim() || '-'}, localSchemaId=${String(branch.schema ?? '').trim() || '-'})`
+                        );
                         continue;
                     }
                 }
@@ -597,7 +608,7 @@ class GlobalEventsReaderBlock {
                     const check = this.validateStreamFilters(payloadObject, branchFilters, localSchemaDoc);
 
                     if (check.action !== 'ok') {
-                        ref.error(`Filters: ${check.reason}; topic=${event.documentTopicId}; branch=${branchEvent}`);
+                        ref.warn(`GlobalEventsReader: ${check.reason}; topic=${event.documentTopicId}; branch=${branchEvent}`);
                         continue;
                     }
                 }

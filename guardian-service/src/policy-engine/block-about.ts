@@ -1640,7 +1640,7 @@ export const BlockAbout = {
                                 { 'label': 'Text', 'value': 'text' },
                                 { 'label': 'Any',  'value': 'any' }
                             ],
-                            'default': 'any'
+                            'default': 'vc'
                         },
                         {
                             'name': 'schema',
