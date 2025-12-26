@@ -1,10 +1,11 @@
 import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, SimpleChanges, ViewChild, Inject } from '@angular/core';
 import { FlatBlockNode } from '../../structures/tree-model/block-node';
 import { CdkDropList } from '@angular/cdk/drag-drop';
-import { PolicyBlock, BlocLine, BlockRect, EventCanvas, PolicyFolder, PolicyItem } from '../../structures';
+import { PolicyBlock, BlocLine, BlockRect, EventCanvas, PolicyFolder, PolicyItem, PolicyTemplate } from '../../structures';
 import { RegisteredService } from '../../services/registered.service';
 import { ThemeService } from '../../../../services/theme.service';
 import { BLOCK_TYPE_TIPS } from 'src/app/injectors/block-type-tips.injector';
+import { PolicyStatus } from '@guardian/interfaces';
 
 enum BlockStyle {
     None = 'None',
@@ -1014,6 +1015,14 @@ export class PolicyTreeComponent implements OnInit {
 
     public isBlockSelected(node: any): boolean {
         return this.selectedBlocks.has(node.id);
+    }
+
+    public canEditTags(): boolean {
+        if (this.module instanceof PolicyTemplate) {
+            return this.module.status === PolicyStatus.PUBLISH;
+        }
+
+        return false;
     }
 
     public hasTags(node: any): boolean {

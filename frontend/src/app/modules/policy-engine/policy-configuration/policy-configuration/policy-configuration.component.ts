@@ -2462,7 +2462,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     user: this.user,
                     service: this.tagsService,
                     histories: tagsHistory,
-                    schemas: this.schemas,
+                    schemas: this.tagSchemas,
                     commonHistory: commonHistory,
                     items: Array.from(this.selectedBlocks.values()),
                     inheritTagsOption: true,
@@ -2489,7 +2489,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         user: this.user,
                         service: this.tagsService,
                         history: tagHistory,
-                        schemas: this.schemas,
+                        schemas: this.tagSchemas,
                         inheritTagsOption: true,
                     }
                 });

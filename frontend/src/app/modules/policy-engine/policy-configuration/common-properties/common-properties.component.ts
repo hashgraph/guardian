@@ -1,5 +1,5 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { BlockErrorActions, GenerateUUIDv4 } from '@guardian/interfaces';
+import { BlockErrorActions, GenerateUUIDv4, PolicyStatus } from '@guardian/interfaces';
 import { RegisteredService } from '../../services/registered.service';
 import {
     IBlockAbout,
@@ -270,7 +270,7 @@ export class CommonPropertiesComponent implements OnInit {
 
     public canEditTags(): boolean {
         if (this.module instanceof PolicyTemplate) {
-            return this.module.isPublished;
+            return this.module.status === PolicyStatus.PUBLISH;
         }
 
         return false;
