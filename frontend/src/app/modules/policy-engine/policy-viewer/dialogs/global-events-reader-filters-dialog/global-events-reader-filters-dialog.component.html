@@ -40,8 +40,7 @@
                         <div class="gerf-schema-label">Schema</div>
 
                         <div class="gerf-schema-value">
-                            <span class="gerf-schema-id">{{ branch.schemaId }}</span>
-                            <span class="gerf-schema-name" *ngIf="branch.schemaName">({{ branch.schemaName }})</span>
+                            <span class="gerf-schema-id">{{ branch.schemaName || branch.schemaId }}</span>
                         </div>
 
                         <ng-container *ngIf="(branch.items || []).length > 0; else gerfNoItems">

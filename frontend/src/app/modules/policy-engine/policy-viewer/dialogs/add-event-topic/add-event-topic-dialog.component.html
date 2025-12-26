@@ -26,23 +26,27 @@
         <div class="field">
             <div class="label">Topic ID</div>
 
-            <input
-                #topicIdInput
-                pInputText
-                [ngModel]="topicId"
-                (ngModelChange)="onTopicIdChange($event, topicIdInput)"
-                (keypress)="onKeyPress($event)"
-                (paste)="onPaste($event, topicIdInput)"
-                type="text"
-                inputmode="numeric"
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-                [disabled]="loading"
-                [attr.maxlength]="maxLength"
-                placeholder="0.0.123"
-            />
+            <div class="topic-id-input">
+                <span class="prefix">0.0.</span>
 
+                <input
+                    #digitsInput
+                    pInputText
+                    [(ngModel)]="topicDigits"
+                    (beforeinput)="onBeforeInput($event)"
+                    (input)="onInput(digitsInput)"
+                    (paste)="onPaste($event, digitsInput)"
+                    (drop)="onDrop($event, digitsInput)"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    [disabled]="loading"
+                    [attr.maxlength]="maxDigits"
+                    placeholder="0000000"
+                />
+            </div>
         </div>
 
         <div class="action-buttons footer">

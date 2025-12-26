@@ -1211,6 +1211,28 @@ class GlobalEventsReaderBlock {
             });
         }
 
+        const branches = config.branches ?? [];
+        const branchesWithSchemaName: Array<any> = [];
+
+        for (const branch of branches) {
+            let schemaName: string | undefined;
+
+            if (branch.schema) {
+                const localSchema = await this.getSchemaById(branch.schema);
+
+                schemaName = localSchema?.name;
+
+                if (!schemaName) {
+                    schemaName = branch.schema;
+                }
+            }
+
+            branchesWithSchemaName.push({
+                ...branch,
+                schemaName,
+            });
+        }
+
         return {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -1228,6 +1250,7 @@ class GlobalEventsReaderBlock {
             defaultTopicIds: configuredTopicIds,
             showNextButton: config.showNextButton,
             documentTypeOptions: GLOBAL_DOCUMENT_TYPE_ITEMS,
+            branchesWithSchemaName
         };
     }
 
@@ -1275,7 +1298,7 @@ class GlobalEventsReaderBlock {
                 user.userId,
                 {
                     admin: true,
-                    submit: true,
+                    submit: false,
                 }
             );
 

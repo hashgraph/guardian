@@ -170,7 +170,7 @@ import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialo
 import { GlobalEventsWriterBlockComponent} from "./policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
 import { GlobalEventsReaderBlockComponent } from "./policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component";
 import { GlobalEventsReaderFiltersDialogComponent } from "./policy-viewer/dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component";
-import { AddEventTopicModalComponent } from "./policy-viewer/dialogs/add-event-topic-modal/add-event-topic-modal.component";
+import { AddEventTopicDialogComponent } from "./policy-viewer/dialogs/add-event-topic/add-event-topic-dialog.component";
 
 @NgModule({
     declarations: [
@@ -298,7 +298,7 @@ import { AddEventTopicModalComponent } from "./policy-viewer/dialogs/add-event-t
         GlobalEventsReaderBlockComponent,
         GlobalEventsReaderFiltersDialogComponent,
         GlobalEventsWriterBlockComponent,
-        AddEventTopicModalComponent
+        AddEventTopicDialogComponent
     ],
     imports: [
         CommonModule,

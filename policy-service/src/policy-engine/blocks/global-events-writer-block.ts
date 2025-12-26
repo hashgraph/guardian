@@ -437,7 +437,7 @@ export class GlobalEventsWriterBlock {
                 user.userId,
                 {
                     admin: true,
-                    submit: true,
+                    submit: false,
                 }
             );
             if (!created?.topicId) {

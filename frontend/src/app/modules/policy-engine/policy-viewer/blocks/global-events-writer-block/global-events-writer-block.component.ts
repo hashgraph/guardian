@@ -7,11 +7,11 @@ import {
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, Subject, Subscription } from 'rxjs';
-import {catchError, debounceTime, finalize} from 'rxjs/operators';
+import { catchError, debounceTime, finalize } from 'rxjs/operators';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import {DialogService, DynamicDialogRef} from "primeng/dynamicdialog";
-import {ConfirmDialog} from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 export type WriterOperation = 'AddTopic' | 'CreateTopic' | 'Delete' | 'Update';
 
@@ -35,15 +35,11 @@ export interface WriterGetDataResponse {
     documentTypeOptions?: Array<{ label: string; value: GlobalDocumentType }>;
 }
 
-export interface DocumentTypeOption {
-    label: string;
-    value: GlobalDocumentType;
-}
-
 @Component({
     selector: 'global-events-writer-block',
     templateUrl: './global-events-writer-block.component.html',
     styleUrls: ['./global-events-writer-block.component.scss'],
+    providers: [DialogService],
 })
 export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     @Input('id')
@@ -65,16 +61,21 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     public addTopicModalTopicId: string = '';
     public addTopicModalError: string = '';
 
+    public defaultTopicIds: string[] = [];
+    public showNextButton: boolean = false;
+
     private socket: any;
 
     private readonly updateChanges$ = new Subject<void>();
     private readonly subscriptions = new Subscription();
 
-    public defaultTopicIds: string[] = [];
-
-    public showNextButton: boolean = false;
-
     private confirmDialogRef: DynamicDialogRef | null = null;
+
+    /**
+     * If WS update arrives during loading - we mark reload and re-run loadData
+     * without dropping the spinner.
+     */
+    private pendingReload: boolean = false;
 
     constructor(
         private readonly policyEngineService: PolicyEngineService,
@@ -113,19 +114,30 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         this.subscriptions.unsubscribe();
     }
 
+    private setLoading(value: boolean): void {
+        this.loading = value;
+        this.changeDetector.detectChanges();
+    }
+
     private onUpdate(blocks: string[]): void {
-        if (Array.isArray(blocks) && blocks.includes(this.id)) {
-            this.loadData();
+        if (!Array.isArray(blocks) || !blocks.includes(this.id)) {
+            return;
         }
+
+        if (this.loading) {
+            this.pendingReload = true;
+            return;
+        }
+
+        this.loadData();
     }
 
     private loadData(): void {
-        this.loading = true;
+        this.setLoading(true);
 
         if (this.static) {
             this.applyData(this.static as WriterGetDataResponse | null);
-            this.loading = false;
-            this.changeDetector.detectChanges();
+            this.setLoading(false);
             return;
         }
 
@@ -139,24 +151,36 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
                     console.error(e.error);
                     return of(null);
                 }),
+                finalize(() => {
+                    if (this.pendingReload) {
+                        this.pendingReload = false;
+                        this.loadData();
+                        return;
+                    }
+
+                    this.setLoading(false);
+                }),
             )
             .subscribe((data: WriterGetDataResponse | null) => {
                 this.applyData(data);
-                this.loading = false;
-                this.changeDetector.detectChanges();
             });
     }
 
     private applyData(data: WriterGetDataResponse | null): void {
-        this.defaultTopicIds = (data?.defaultTopicIds || []).map((t) => String(t).trim());
+        this.defaultTopicIds = (data?.defaultTopicIds || [])
+            .map((t) => String(t).trim())
+            .filter((t) => t.length > 0);
 
         this.showNextButton = Boolean(data?.showNextButton);
-        this.documentTypeOptions = data?.documentTypeOptions || [];
+
+        this.documentTypeOptions = Array.isArray(data?.documentTypeOptions)
+            ? data!.documentTypeOptions!
+            : [];
 
         this.streams = (data?.streams || []).map((s) => {
             return {
-                topicId: String(s.globalTopicId),
-                documentType: (s.documentType) as GlobalDocumentType,
+                topicId: String(s.globalTopicId || '').trim(),
+                documentType: (s.documentType || 'any') as GlobalDocumentType,
                 active: Boolean(s.active),
             };
         });
@@ -171,6 +195,10 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
+        if (this.loading) {
+            return;
+        }
+
         if (!this.policyId || !this.id) {
             return;
         }
@@ -179,21 +207,45 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     }
 
     private saveUpdateDraft(): void {
+        if (this.static) {
+            return;
+        }
+
+        if (this.loading) {
+            return;
+        }
+
         if (!this.policyId || !this.id) {
             return;
         }
+
+        this.setLoading(true);
 
         const payload = {
             operation: 'Update' as WriterOperation,
             streams: this.normalizeStreamsForUpdate(),
         };
 
+        let shouldReload: boolean = false;
+
         this.policyEngineService
             .setBlockData(this.id, this.policyId, payload)
+            .pipe(
+                finalize(() => {
+                    if (shouldReload) {
+                        this.loadData();
+                        return;
+                    }
+
+                    this.setLoading(false);
+                }),
+            )
             .subscribe(
-                () => {},
+                () => {
+                    shouldReload = true;
+                },
                 (e) => {
-                    console.error(e.error);
+                    console.error(e?.error || e);
                 },
             );
     }
@@ -202,7 +254,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         return this.streams
             .map((s) => {
                 return {
-                    topicId: (s?.topicId || '').trim(),
+                    topicId: String(s?.topicId || '').trim(),
                     documentType: (s?.documentType || 'any') as GlobalDocumentType,
                     active: Boolean(s?.active),
                 };
@@ -211,7 +263,15 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     }
 
     public onStreamDocumentTypeChange(row: WriterStreamRow, value: GlobalDocumentType | null): void {
+        if (!row) {
+            return;
+        }
+
         if (!value) {
+            return;
+        }
+
+        if (this.loading) {
             return;
         }
 
@@ -219,11 +279,21 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         this.markUpdateChanged();
     }
 
-    public onActiveCheckboxChange(row: WriterStreamRow, event: Event): void {
-        const input = event.target as HTMLInputElement | null;
+    public onActiveChanged(row: WriterStreamRow, value: boolean): void {
+        if (!row) {
+            return;
+        }
 
-        row.active = Boolean(input?.checked);
+        if (this.static) {
+            return;
+        }
 
+        if (this.loading) {
+            return;
+        }
+
+        // Default topic CAN be updated (same behavior as Reader).
+        row.active = Boolean(value);
         this.markUpdateChanged();
     }
 
@@ -236,20 +306,35 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
+        if (this.loading) {
+            return;
+        }
+
         this.addTopicModalTopicId = '';
         this.addTopicModalError = '';
         this.addTopicModalOpen = true;
+        this.changeDetector.detectChanges();
     }
 
     public closeAddTopicModal(): void {
         this.addTopicModalOpen = false;
+        this.changeDetector.detectChanges();
     }
 
     public confirmAddTopicModal(topicId: string): void {
+        if (this.static) {
+            return;
+        }
+
+        if (this.loading) {
+            return;
+        }
+
         const trimmedTopicId = String(topicId || '').trim();
 
         if (!trimmedTopicId) {
             this.addTopicModalError = 'Topic ID is required';
+            this.changeDetector.detectChanges();
             return;
         }
 
@@ -258,7 +343,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         }
 
         this.addTopicModalError = '';
-        this.loading = true;
+        this.setLoading(true);
 
         const payload = {
             operation: 'AddTopic' as WriterOperation,
@@ -270,22 +355,30 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             ],
         };
 
+        let shouldReload: boolean = false;
+
         this.policyEngineService
             .setBlockData(this.id, this.policyId, payload)
             .pipe(
                 finalize(() => {
-                    this.loading = false;
-                    this.changeDetector.detectChanges();
+                    if (shouldReload) {
+                        this.loadData();
+                        return;
+                    }
+
+                    this.setLoading(false);
                 }),
             )
             .subscribe(
                 () => {
+                    shouldReload = true;
                     this.addTopicModalOpen = false;
-                    this.loadData();
+                    this.changeDetector.detectChanges();
                 },
                 (e) => {
-                    console.error(e?.error);
+                    console.error(e?.error || e);
                     this.addTopicModalError = 'Failed to add topic';
+                    this.changeDetector.detectChanges();
                 },
             );
     }
@@ -295,7 +388,15 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     // -----------------------------
 
     public deleteStream(row: WriterStreamRow): void {
+        if (!row) {
+            return;
+        }
+
         if (this.static) {
+            return;
+        }
+
+        if (this.loading) {
             return;
         }
 
@@ -303,42 +404,55 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const topicId = (row?.topicId || '').trim();
+        const topicId = String(row?.topicId || '').trim();
         if (!topicId) {
             return;
         }
 
-        this.loading = true;
+        if (this.isDefaultTopic(topicId)) {
+            return;
+        }
+
+        this.setLoading(true);
 
         const payload = {
             operation: 'Delete' as WriterOperation,
             streams: [{ topicId }],
         };
 
+        let shouldReload: boolean = false;
+
         this.policyEngineService
             .setBlockData(this.id, this.policyId, payload)
+            .pipe(
+                finalize(() => {
+                    if (shouldReload) {
+                        this.loadData();
+                        return;
+                    }
+
+                    this.setLoading(false);
+                }),
+            )
             .subscribe(
                 () => {
-                    this.loadData();
+                    shouldReload = true;
                 },
                 (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                    this.changeDetector.detectChanges();
+                    console.error(e?.error || e);
                 },
             );
     }
 
-    public isDefaultTopic(topicId: string): boolean {
-        const normalized = (topicId || '').trim();
-        return this.defaultTopicIds.includes(normalized);
-    }
-
-    public trackByTopicId(_index: number, row: any): string {
-        return String(row?.topicId || row?.globalTopicId || _index);
-    }
+    // -----------------------------
+    // Create Topic
+    // -----------------------------
 
     public openCreateTopicModal(): void {
+        if (this.static) {
+            return;
+        }
+
         if (this.loading) {
             return;
         }
@@ -352,23 +466,26 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             this.confirmDialogRef = null;
         }
 
-        this.confirmDialogRef = this.dialogService.open(ConfirmDialog, {
-            styleClass: 'confirm-dialog',
+        this.confirmDialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
             closable: false,
             dismissableMask: true,
-            showHeader: false,
+            styleClass: 'create-topic-custom-confirm-dialog',
+            width: '520px',
             data: {
-                title: 'Create Topic',
-                description: 'Create a new global event topic?',
-                submitButton: 'Create',
-                cancelButton: 'Cancel',
+                header: 'Create Topic',
+                text: 'Create a new global event topic?',
+                buttons: [
+                    { name: 'Cancel', class: 'secondary' },
+                    { name: 'Create', class: 'primary' },
+                ],
             },
         });
 
-        this.confirmDialogRef.onClose.subscribe((ok: boolean | null) => {
+        this.confirmDialogRef.onClose.subscribe((action: string | null) => {
             this.confirmDialogRef = null;
 
-            if (ok !== true) {
+            if (action !== 'Create') {
                 return;
             }
 
@@ -377,43 +494,67 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     }
 
     private confirmCreateTopic(): void {
+        if (this.static) {
+            return;
+        }
+
+        if (this.loading) {
+            return;
+        }
+
         if (!this.policyId || !this.id) {
             return;
         }
 
-        this.loading = true;
+        this.setLoading(true);
 
         const payload = {
             operation: 'CreateTopic' as WriterOperation,
             streams: [],
         };
 
+        let shouldReload: boolean = false;
+
         this.policyEngineService
             .setBlockData(this.id, this.policyId, payload)
+            .pipe(
+                finalize(() => {
+                    if (shouldReload) {
+                        this.loadData();
+                        return;
+                    }
+
+                    this.setLoading(false);
+                }),
+            )
             .subscribe(
                 () => {
-                    this.loadData();
+                    shouldReload = true;
                 },
                 (e) => {
                     console.error(e?.error || e);
-                    this.loading = false;
-                    this.changeDetector.detectChanges();
                 },
             );
     }
+
+    // -----------------------------
+    // Next
+    // -----------------------------
 
     public onNext(): void {
         if (this.static) {
             return;
         }
+
         if (!this.policyId || !this.id) {
             return;
         }
+
         if (this.loading) {
             return;
         }
 
-        this.loading = true;
+        this.setLoading(true);
 
         const payload = {
             operation: 'Next' as any,
@@ -424,15 +565,32 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             .setBlockData(this.id, this.policyId, payload)
             .pipe(
                 finalize(() => {
-                    this.loading = false;
-                    this.changeDetector.detectChanges();
+                    this.setLoading(false);
                 }),
             )
             .subscribe(
-                () => {},
+                () => {
+                },
                 (e) => {
                     console.error(e?.error || e);
                 },
             );
+    }
+
+    // -----------------------------
+    // Helpers
+    // -----------------------------
+
+    public isDefaultTopic(topicId: string): boolean {
+        const normalized = String(topicId || '').trim();
+        return this.defaultTopicIds.includes(normalized);
+    }
+
+    public trackByTopicId(index: number, row: WriterStreamRow): string {
+        const key = String(row?.topicId || '').trim();
+        if (key) {
+            return key;
+        }
+        return String(index);
     }
 }

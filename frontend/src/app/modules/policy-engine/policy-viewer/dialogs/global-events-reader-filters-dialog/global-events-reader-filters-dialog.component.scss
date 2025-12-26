@@ -1,18 +1,19 @@
-:host ::ng-deep .global-events-reader-filters-dialog .p-dialog {
+::ng-deep .global-events-reader-filters-dialog .p-dialog {
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
     background: var(--color-grey-white);
 }
 
-:host ::ng-deep .global-events-reader-filters-dialog .p-dialog-header {
+::ng-deep .global-events-reader-filters-dialog .p-dialog-header {
     display: none;
 }
 
-:host ::ng-deep .global-events-reader-filters-dialog .p-dialog-content {
+::ng-deep .global-events-reader-filters-dialog .p-dialog-content {
     padding: 0;
     overflow: hidden;
     background: var(--color-grey-white);
+    border-radius: 10px;
 }
 
 .gerf {
@@ -247,9 +248,9 @@
     border: 1px solid var(--color-primary);
     background: transparent;
     color: var(--color-primary);
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 600;
-    padding: 0 12px;
+    padding: 0 24px;
     display: inline-flex;
     align-items: center;
     gap: 8px;

@@ -13,7 +13,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { GlobalEventsReaderFiltersDialogComponent } from '../../dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component';
-import {ConfirmDialog} from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
+import { CustomConfirmDialogComponent } from "src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component";
 
 type StreamStatus = 'FREE' | 'PROCESSING' | 'ERROR' | string;
 export type DocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
@@ -65,6 +65,8 @@ export interface GlobalEventsReaderGetDataResponse {
 
     showNextButton?: boolean;
     documentTypeOptions?: Array<{ label: string; value: DocumentType }>;
+
+    branchesWithSchemaName?: BranchConfig[];
 }
 
 @Component({
@@ -146,6 +148,10 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
     }
 
     private onUpdate(blocks: string[]): void {
+        if (this.readonly || this.loading) {
+            return;
+        }
+
         if (Array.isArray(blocks) && blocks.includes(this.id)) {
             this.loadData();
         }
@@ -197,6 +203,10 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
+        if (Array.isArray((data as any).branchesWithSchemaName)) {
+            this.config.branches = (data as any).branchesWithSchemaName;
+        }
+
         this.readonly = !!data.readonly;
         this.config = data.config || {
             eventTopics: [],
@@ -211,6 +221,8 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         this.defaultTopicIds = (data.defaultTopicIds || [])
             .map((t) => this.normalizeTopicId(t))
             .filter((t) => t.length > 0);
+
+        this.config.branches = data.branchesWithSchemaName ?? []
 
         const defaultSet = new Set<string>(this.defaultTopicIds);
         const streams = Array.isArray(data.streams) ? data.streams : [];
@@ -260,7 +272,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
     // -----------------------------
 
     public openAddTopicModal(): void {
-        if (this.readonly) {
+        if (this.readonly || this.loading) {
             return;
         }
 
@@ -273,14 +285,16 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         this.addTopicModalOpen = false;
     }
 
-    public confirmAddTopicModal(): void {
-        if (this.readonly) {
+    public confirmAddTopicModal(topicIdFromModal?: string): void {
+        if (this.readonly || this.loading) {
             return;
         }
 
-        const topicId = this.normalizeTopicId(this.addTopicModalTopicId);
+        const topicId = this.normalizeTopicId(topicIdFromModal ?? this.addTopicModalTopicId);
+
         if (!topicId) {
             this.addTopicModalError = 'Topic ID is required';
+            this.changeDetector.detectChanges();
             return;
         }
 
@@ -292,23 +306,33 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             filterFieldsByBranch: {},
         };
 
-        this.policyEngineService.setBlockData(this.id, this.policyId, {
-            operation: 'AddTopic',
-            value: { streams: [payload] },
-        }).pipe(
-            finalize(() => {
-                this.loading = false;
-                this.changeDetector.detectChanges();
-            }),
-        ).subscribe(
-            () => {
-                this.addTopicModalOpen = false;
-                this.loadData();
-            },
-            (e) => {
-                console.error(e?.error || e);
-            },
-        );
+        let shouldReload: boolean = false;
+
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                operation: 'AddTopic',
+                value: { streams: [payload] },
+            })
+            .pipe(
+                finalize(() => {
+                    if (shouldReload) {
+                        this.loadData();
+                        return;
+                    }
+
+                    this.loading = false;
+                    this.changeDetector.detectChanges();
+                }),
+            )
+            .subscribe(
+                () => {
+                    shouldReload = true;
+                    this.addTopicModalOpen = false;
+                },
+                (e) => {
+                    console.error(e?.error || e);
+                },
+            );
     }
 
     // -----------------------------
@@ -319,6 +343,11 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         if (this.readonly) {
             return;
         }
+
+        if (this.loading) {
+            return;
+        }
+
         if (index < 0 || index >= this.rows.length) {
             return;
         }
@@ -344,7 +373,10 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
+        this.loading = true;
         this.setRowSaving(row, true);
+
+        let shouldReload: boolean = false;
 
         this.policyEngineService.setBlockData(this.id, this.policyId, {
             operation: 'Delete',
@@ -352,26 +384,35 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         }).pipe(
             finalize(() => {
                 this.setRowSaving(row, false);
+
+                if (shouldReload) {
+                    this.loadData();
+                    return;
+                }
+
+                this.loading = false;
+                this.changeDetector.detectChanges();
             }),
         ).subscribe(
             () => {
-                this.loadData();
+                shouldReload = true;
             },
             (e) => {
-                // eslint-disable-next-line no-console
                 console.error(e?.error || e);
             },
         );
     }
+
 
     // -----------------------------
     // Filters / Update
     // -----------------------------
 
     public onActiveChanged(row: GlobalEventsStreamRow, value: boolean): void {
-        if (this.readonly) {
+        if (this.readonly || this.loading) {
             return;
         }
+
         if (!row) {
             return;
         }
@@ -384,6 +425,10 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
     }
 
     public openFilters(row: GlobalEventsStreamRow): void {
+        if (this.readonly || this.loading) {
+            return;
+        }
+
         if (!row) {
             return;
         }
@@ -432,11 +477,20 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
+        if (this.loading) {
+            return;
+        }
+
+        if (row.saving) {
+            return;
+        }
+
         const topicId = this.normalizeTopicId(row.globalTopicId);
         if (!topicId) {
             return;
         }
 
+        this.loading = true;
         this.setRowSaving(row, true);
 
         const payload = {
@@ -446,22 +500,33 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             branchDocumentTypeByBranch: row.branchDocumentTypeByBranch,
         };
 
+        let shouldReload: boolean = false;
+
         this.policyEngineService.setBlockData(this.id, this.policyId, {
             operation: 'Update',
             value: { streams: [payload] },
         }).pipe(
             finalize(() => {
                 this.setRowSaving(row, false);
+
+                if (shouldReload) {
+                    this.loadData();
+                    return;
+                }
+
+                this.loading = false;
+                this.changeDetector.detectChanges();
             }),
         ).subscribe(
             () => {
-                this.loadData();
+                shouldReload = true;
             },
             (e) => {
                 console.error(e?.error || e);
             },
         );
     }
+
 
     public formatLastUpdate(cursor: string): string {
         const raw = String(cursor || '').trim();
@@ -540,23 +605,32 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             this.confirmDialogRef = null;
         }
 
-        this.confirmDialogRef = this.dialogService.open(ConfirmDialog, {
-            styleClass: 'confirm-dialog',
+        this.confirmDialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
             closable: false,
             dismissableMask: true,
-            showHeader: false,
+            styleClass: 'create-topic-custom-confirm-dialog',
+            width: '520px',
             data: {
-                title: 'Create Topic',
-                description: 'Create a new global event topic?',
-                submitButton: 'Create',
-                cancelButton: 'Cancel',
+                header: 'Create Topic',
+                text: 'Create a new global event topic?',
+                buttons: [
+                    {
+                        name: 'Cancel',
+                        class: 'secondary',
+                    },
+                    {
+                        name: 'Create',
+                        class: 'primary',
+                    },
+                ],
             },
         });
 
-        this.confirmDialogRef.onClose.subscribe((ok: boolean | null) => {
+        this.confirmDialogRef.onClose.subscribe((action: string | null) => {
             this.confirmDialogRef = null;
 
-            if (ok !== true) {
+            if (action !== 'Create') {
                 return;
             }
 
@@ -565,11 +639,17 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
     }
 
     private confirmCreateTopic(): void {
+        if (this.readonly || this.loading) {
+            return;
+        }
+
         if (!this.policyId || !this.id) {
             return;
         }
 
         this.loading = true;
+
+        let shouldReload: boolean = false;
 
         this.policyEngineService
             .setBlockData(this.id, this.policyId, {
@@ -578,13 +658,18 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             })
             .pipe(
                 finalize(() => {
+                    if (shouldReload) {
+                        this.loadData();
+                        return;
+                    }
+
                     this.loading = false;
                     this.changeDetector.detectChanges();
                 }),
             )
             .subscribe(
                 () => {
-                    this.loadData();
+                    shouldReload = true;
                 },
                 (e) => {
                     console.error(e?.error || e);
