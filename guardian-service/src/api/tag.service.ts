@@ -309,23 +309,31 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             owner: IOwner,
             entity: TagType,
-            target: string
+            target: string,
+            linkedItems?: string[]
         }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
 
-                const { owner, target, entity } = msg;
+                const { owner, target, entity, linkedItems } = msg;
                 const localTarget = target;
                 const filter: any = { localTarget, entity };
+
+                if (Array.isArray(linkedItems) && linkedItems.length > 0) {
+                    filter.linkedItems = { $in: linkedItems };
+                }
 
                 const targetObject = await getTarget(entity, localTarget);
                 if (targetObject) {
                     if (targetObject.topicId) {
                         const messageServer = new MessageServer(null);
                         const messages = await messageServer.getMessages<TagMessage>(targetObject.topicId, owner.id, MessageType.Tag);
-                        const items = await DatabaseServer.getTags({ localTarget, entity, status: 'Published' });
+
+                        filter.status = 'Published';
+
+                        const items = await DatabaseServer.getTags(filter);
                         const map = new Map<string, any>();
                         for (const message of messages) {
                             if (message.target === targetObject.target) {

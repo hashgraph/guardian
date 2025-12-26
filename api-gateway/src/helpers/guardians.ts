@@ -2439,8 +2439,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async synchronizationTags(owner: IOwner, entity: string, target: string): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { owner, entity, target });
+    public async synchronizationTags(owner: IOwner, entity: string, target: string, linkedItems?: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { owner, entity, target, linkedItems });
     }
 
     /**

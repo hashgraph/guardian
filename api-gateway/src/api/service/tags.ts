@@ -267,7 +267,7 @@ export class TagsApi {
         @Req() req
     ): Promise<TagMapDTO> {
         try {
-            const { entity, target } = body;
+            const { entity, target, linkedItems } = body;
             if (!entity) {
                 throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY);
             }
@@ -277,7 +277,7 @@ export class TagsApi {
 
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const tags = await guardians.synchronizationTags(owner, entity, target);
+            const tags = await guardians.synchronizationTags(owner, entity, target, linkedItems);
 
             const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));

@@ -162,7 +162,7 @@ export class TagsExplorerDialog {
 
     public onUpdate() {
         this.loading = true;
-        this.tagsService.synchronization(this.history.entity, this.history.target).subscribe((data) => {
+        this.tagsService.synchronization(this.history.entity, this.history.target, this.history.linkedItems).subscribe((data) => {
             this.history.setData(data.tags);
             this.history.setDate(data.refreshDate);
             if (this.tab === 1) {
