@@ -185,8 +185,9 @@ export class GlobalEventsWriterBlock {
                     return s?.globalTopicId === topicId;
                 });
 
-                if (existingStream && existingStream.documentType !== topicDocumentType) {
-                    existingStream.documentType = topicDocumentType;
+                if (existingStream) {
+                    // && existingStream.documentType !== topicDocumentType
+                    // existingStream.documentType = topicDocumentType;
                     await ref.databaseServer.updateGlobalEventsWriterStream(existingStream);
                 }
 
@@ -358,7 +359,7 @@ export class GlobalEventsWriterBlock {
                     },
                 };
             })();
-            console.log('sendMessage1')
+
             await messageServer.sendMessage(rawMessage as Message, {
                 sendToIPFS: false,
                 memo: 'GlobalEvent',
@@ -493,7 +494,7 @@ export class GlobalEventsWriterBlock {
                 continue;
             }
 
-            console.log('doc', doc.document);
+            console.log('doc');
 
             const documentMessageId: string = this.extractCanonicalAddress(doc);
             if (!documentMessageId) {
@@ -607,8 +608,6 @@ export class GlobalEventsWriterBlock {
         // from the block configuration if none exist for this user.
         await this.ensureDefaultStreams(ref, user);
 
-        const defaultDocumentType: GlobalDocumentType = GLOBAL_DOCUMENT_TYPE_DEFAULT;
-
         // Create a new topic and DB row
         if (operation === 'CreateTopic') {
             const createdTopicId = await this.createTopic(ref, user);
@@ -620,7 +619,7 @@ export class GlobalEventsWriterBlock {
                 userDid: user.did,
                 globalTopicId: createdTopicId,
                 active: false,
-                documentType: defaultDocumentType,
+                documentType: GLOBAL_DOCUMENT_TYPE_DEFAULT,
             });
 
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
@@ -656,7 +655,7 @@ export class GlobalEventsWriterBlock {
                     userDid: user.did,
                     globalTopicId: topic.topicId,
                     active: false,
-                    documentType: defaultDocumentType,
+                    documentType: GLOBAL_DOCUMENT_TYPE_DEFAULT,
                 });
             }
 

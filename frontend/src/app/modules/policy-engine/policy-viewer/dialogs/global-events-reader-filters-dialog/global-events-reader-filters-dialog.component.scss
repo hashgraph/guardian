@@ -1,80 +1,379 @@
-.filters-dialog {
+:host ::ng-deep .global-events-reader-filters-dialog .p-dialog {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    background: var(--color-grey-white);
+}
+
+:host ::ng-deep .global-events-reader-filters-dialog .p-dialog-header {
+    display: none;
+}
+
+:host ::ng-deep .global-events-reader-filters-dialog .p-dialog-content {
+    padding: 0;
+    overflow: hidden;
+    background: var(--color-grey-white);
+}
+
+.gerf {
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+    color: var(--color-grey-black-1);
+    padding: 22px 24px 18px;
     display: flex;
     flex-direction: column;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+.gerf-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.gerf-title {
+    font-family: var(--font-family-poppins, 'Poppins', sans-serif);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 28px;
+    color: var(--color-grey-black-1);
+}
+
+.gerf-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--color-grey-5);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.06s ease;
+}
+
+.gerf-close:hover {
+    background: var(--color-grey-2);
+}
+
+.gerf-close:active {
+    transform: translateY(1px);
+}
+
+.gerf-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 620px;
+    overflow: auto;
+    padding-right: 6px;
+}
+
+.gerf-branch {
+    border: 1px solid var(--color-grey-3);
+    border-radius: 12px;
+    background: var(--color-grey-white);
+    padding: 14px 16px;
+}
+
+.gerf-branch-title {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.gerf-branch-title-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-grey-5);
+}
+
+.gerf-branch-title-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-grey-black-1);
+}
+
+.gerf-type {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.gerf-label {
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 600;
+    color: var(--color-grey-black-2);
+}
+
+.gerf-select {
+    width: 100%;
+    height: 38px;
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3);
+    background: var(--color-grey-white);
+    padding: 0 40px 0 12px;
+    font-size: 13px;
+    color: var(--color-grey-black-1);
+    outline: none;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image:
+        linear-gradient(45deg, transparent 50%, var(--color-grey-5) 50%),
+        linear-gradient(135deg, var(--color-grey-5) 50%, transparent 50%);
+    background-position:
+        calc(100% - 18px) 50%,
+        calc(100% - 12px) 50%;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+}
+
+.gerf-select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(65, 105, 226, 0.14);
+}
+
+.gerf-schema {
+    margin-top: 12px;
+    border: 1px solid var(--color-grey-3);
+    border-radius: 12px;
+    background: var(--color-grey-1);
+    padding: 12px 12px 10px;
+}
+
+.gerf-schema-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-grey-black-2);
+    margin-bottom: 4px;
+}
+
+.gerf-schema-value {
+    font-size: 12px;
+    color: var(--color-grey-black-1);
+    margin-bottom: 10px;
+}
+
+.gerf-schema-id {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.gerf-schema-name {
+    margin-left: 6px;
+    color: var(--color-grey-5);
+    font-weight: 600;
+}
+
+.gerf-items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.gerf-item {
+    display: grid;
+    grid-template-columns: 1fr 36px;
+    gap: 12px;
+    align-items: end;
+}
+
+.gerf-item-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 14px;
+}
 
-    .branch {
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 6px;
-        padding: 10px;
-        background: #fff;
-    }
+.gerf-field-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
 
-    .branch-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        margin-bottom: 10px;
+.gerf-input {
+    width: 100%;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3);
+    background: var(--color-grey-white);
+    padding: 0 12px;
+    font-size: 13px;
+    color: var(--color-grey-black-1);
+    outline: none;
+    box-sizing: border-box;
+}
 
-        .branch-title {
-            flex: 1;
-            min-width: 200px;
-        }
+.gerf-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(65, 105, 226, 0.14);
+}
 
-        .branch-type {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+.gerf-trash {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--color-accent-red-1);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.06s ease;
+}
 
-            label {
-                margin: 0;
-                font-size: 12px;
-                opacity: 0.8;
-            }
+.gerf-trash:hover:not(:disabled) {
+    background: rgba(255, 67, 42, 0.08);
+}
 
-            select {
-                width: 140px;
-            }
-        }
-    }
+.gerf-trash:active {
+    transform: translateY(1px);
+}
 
-    .schema-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 6px 0 10px 0;
+.gerf-trash:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
-        .schema-label {
-            font-weight: 600;
-            font-size: 12px;
-            opacity: 0.8;
-        }
+.gerf-add {
+    margin-top: 10px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--color-primary);
+    background: transparent;
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    width: fit-content;
+    transition: background 0.15s ease, transform 0.06s ease;
+}
 
-        .schema-id {
-            font-family: monospace;
-            font-size: 12px;
-        }
+.gerf-add:hover:not(:disabled) {
+    background: rgba(65, 105, 226, 0.08);
+}
 
-        .schema-name {
-            margin-left: 6px;
-            opacity: 0.8;
-            font-size: 12px;
-        }
-    }
+.gerf-add:active {
+    transform: translateY(1px);
+}
 
-    .no-validation {
-        padding: 10px;
-        border: 1px dashed rgba(0, 0, 0, 0.2);
-        border-radius: 6px;
-        opacity: 0.85;
-        font-size: 13px;
-    }
+.gerf-add:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
 
-    .footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        margin-top: 6px;
-    }
+.gerf-empty-panel {
+    margin-top: 12px;
+    border: 1px solid var(--color-grey-3);
+    border-radius: 12px;
+    background: var(--color-grey-1);
+    min-height: 170px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px;
+    text-align: center;
+}
+
+.gerf-empty-panel-icon {
+    font-size: 22px;
+    color: var(--color-grey-4);
+}
+
+.gerf-empty-panel-text {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--color-grey-5);
+    max-width: 520px;
+}
+
+.gerf-empty {
+    border-radius: 12px;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px;
+    text-align: center;
+}
+
+.gerf-empty-icon {
+    font-size: 22px;
+    color: var(--color-grey-4);
+}
+
+.gerf-empty-text {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--color-grey-5);
+}
+
+.gerf-empty-in-schema .gerf-add {
+    margin-top: 2px;
+}
+
+.gerf-no-branches {
+    border: 1px solid var(--color-grey-3);
+    border-radius: 12px;
+    background: var(--color-grey-1);
+    padding: 14px 16px;
+    font-size: 12px;
+    color: var(--color-grey-5);
+}
+
+.gerf-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-grey-3);
+}
+
+.gerf-btn {
+    height: 34px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0 18px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, transform 0.06s ease, opacity 0.15s ease;
+}
+
+.gerf-btn:active {
+    transform: translateY(1px);
+}
+
+.gerf-btn-outline {
+    border-color: var(--color-primary);
+    background: transparent;
+    color: var(--color-primary);
+}
+
+.gerf-btn-outline:hover {
+    background: rgba(65, 105, 226, 0.08);
+}
+
+.gerf-btn-primary {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-grey-white);
+}
+
+.gerf-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }

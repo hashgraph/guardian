@@ -52,6 +52,10 @@
                 <div class="gew-topic-value">
                     {{ row.topicId }}
                 </div>
+
+                <span class="ger-default-pill" *ngIf="isDefaultTopic(row.topicId)">
+                    DEFAULT
+                </span>
             </div>
 
             <div class="gew-cell gew-col-active">

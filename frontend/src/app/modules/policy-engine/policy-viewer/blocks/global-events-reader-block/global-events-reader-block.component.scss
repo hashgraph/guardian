@@ -1,92 +1,298 @@
-.global-events-reader-block {
-    .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 12px;
+.ger-card {
+    background: var(--color-grey-white, #ffffff);
+    border: 1px solid var(--color-grey-3, #e1e7ef);
+    border-radius: 12px;
+    padding: 16px;
+}
 
-        h4 {
-            margin: 0;
-        }
+.ger-header {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
 
-        .actions {
-            display: flex;
-            gap: 8px;
-        }
-    }
+.ger-title {
+    font-family: var(--font-family-poppins, 'Poppins', sans-serif);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-grey-black-1, #181818);
+}
 
-    .row-saving {
-        opacity: 0.65;
+.ger-toolbar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
 
-        input,
-        button {
-            pointer-events: none;
-        }
-    }
+.ger-toolbar-left {
+    display: flex;
+    align-items: center;
+    min-width: 220px;
+}
 
-    table {
-        td,
-        th {
-            vertical-align: middle;
-        }
-    }
+.ger-header-actions {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+}
 
-    .default-hint {
-        margin-top: 6px;
-        font-size: 12px;
-        color: #6c757d;
-    }
+:host ::ng-deep .ger-header-actions .p-button {
+    height: 28px;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+}
 
-    // Disabled button tooltip helper (native title)
-    .default-delete-tooltip-wrapper {
-        display: inline-block;
-    }
+:host ::ng-deep .ger-toolbar-left .p-dropdown {
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3, #e1e7ef);
+    width: 240px;
+}
 
-    .modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.35);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 2000;
-        padding: 24px;
-    }
+:host ::ng-deep .ger-toolbar-left .p-dropdown .p-dropdown-label {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--color-grey-black-1, #181818);
+    padding: 0 12px;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+}
 
-    .modal-card {
-        background: #ffffff;
-        border-radius: 10px;
-        min-width: 420px;
-        max-width: 720px;
-        width: 100%;
-        padding: 14px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    }
+:host ::ng-deep .ger-toolbar-left .p-dropdown .p-dropdown-trigger {
+    width: 32px;
+}
 
-    .modal-title {
-        font-weight: 600;
-        margin-bottom: 10px;
-    }
+.ger-table {
+    border: 1px solid var(--color-grey-3, #e1e7ef);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--color-grey-white, #ffffff);
+}
 
-    .modal-body {
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
+.ger-row {
+    display: grid;
+    grid-template-columns: 1fr 110px 160px 88px 220px 110px 44px;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--color-grey-2, #eff3f7);
+    background: var(--color-grey-white, #ffffff);
+}
 
-        .error {
-            color: #b00020;
-            font-size: 12px;
-        }
-    }
+.ger-col-status,
+.ger-col-update,
+.ger-col-active,
+.ger-col-conditions,
+.ger-col-save,
+.ger-col-actions {
+    justify-content: center;
+}
 
-    .modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        margin-top: 10px;
-    }
+.ger-muted {
+    font-size: 14px;
+    line-height: 16px;
+    color: var(--color-grey-6, #848fa9);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+}
+
+.ger-row:first-child {
+    border-top: none;
+}
+
+.ger-row-head {
+    padding: 10px 16px;
+}
+
+.ger-row-head .ger-cell {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-grey-5, #848fa9);
+    text-transform: uppercase;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+}
+
+.ger-row-saving {
+    opacity: 0.65;
+}
+
+.ger-cell {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.ger-col-status,
+.ger-col-active,
+.ger-col-conditions,
+.ger-col-actions {
+    justify-content: center;
+}
+
+.ger-col-topic {
+    gap: 10px;
+}
+
+.ger-topic-value {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--color-grey-black-1, #181818);
+    user-select: text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+}
+
+.ger-default-pill {
+    height: 18px;
+    padding: 0 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    background: rgba(65, 105, 226, 0.12);
+    color: var(--color-primary, #4169E2);
+    white-space: nowrap;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+}
+
+.ger-status-pill {
+    height: 22px;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    background: var(--color-grey-2, #eff3f7);
+    color: var(--color-grey-black-1, #181818);
+    white-space: nowrap;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+}
+
+.ger-status-processing {
+    background: var(--color-accent-yellow-2, #fff2d8);
+    color: var(--color-grey-black-1, #181818);
+}
+
+.ger-status-error {
+    background: var(--color-accent-red-2, #f5d7d7);
+    color: var(--color-accent-red-1, #ff432a);
+}
+
+.ger-conditions-pill {
+    height: 22px;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    background: var(--color-grey-2, #eff3f7);
+    color: var(--color-grey-black-1, #181818);
+    white-space: nowrap;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+}
+
+.ger-conditions-custom {
+    background: rgba(65, 105, 226, 0.12);
+    color: var(--color-primary, #4169E2);
+}
+
+.ger-icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.06s ease;
+    color: var(--color-grey-5, #848fa9);
+}
+
+.ger-icon-btn:active {
+    transform: translateY(1px);
+}
+
+.ger-icon-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ger-icon-btn-edit {
+    margin-left: 8px;
+}
+
+.ger-icon-btn-edit:hover:not(:disabled) {
+    background: rgba(176, 181, 186, 0.18); /* grey-4 with alpha */
+}
+
+.ger-icon-btn-danger {
+    color: var(--color-accent-red-1, #ff432a);
+}
+
+.ger-icon-btn-danger:hover:not(:disabled) {
+    background: rgba(255, 67, 42, 0.10); /* red-1 with alpha */
+}
+
+.ger-empty {
+    padding: 14px 16px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--color-grey-5, #848fa9);
+    border-top: 1px solid var(--color-grey-2, #eff3f7);
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+}
+
+.ger-checkbox {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ger-checkbox input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    margin: 0;
+}
+
+.ger-checkbox span {
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--color-grey-3, #e1e7ef);
+    border-radius: 3px;
+    background: var(--color-grey-white, #ffffff);
+    display: inline-block;
+}
+
+.ger-checkbox input:checked + span {
+    background: var(--color-primary, #4169E2);
+    border-color: var(--color-primary, #4169E2);
+    box-shadow: 0 0 0 2px rgba(65, 105, 226, 0.18);
 }

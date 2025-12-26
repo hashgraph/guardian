@@ -12,9 +12,8 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import {
-    GlobalEventsReaderFiltersDialogComponent
-} from '../../dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component';
+import { GlobalEventsReaderFiltersDialogComponent } from '../../dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component';
+import {ConfirmDialog} from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
 
 type StreamStatus = 'FREE' | 'PROCESSING' | 'ERROR' | string;
 export type DocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
@@ -53,16 +52,23 @@ export interface GlobalEventsStreamRow {
     saving: boolean;
 }
 
+export interface FiltersDialogResult {
+    filterFieldsByBranch: Record<string, Record<string, string>>;
+    branchDocumentTypeByBranch: Record<string, DocumentType>;
+}
+
 export interface GlobalEventsReaderGetDataResponse {
     readonly: boolean;
     config: ReaderConfig;
     streams: GlobalEventsStreamRow[];
     defaultTopicIds?: string[];
+
+    documentTypeOptions?: Array<{ label: string; value: DocumentType }>;
 }
 
-export interface FiltersDialogResult {
-    filterFieldsByBranch: Record<string, Record<string, string>>;
-    branchDocumentTypeByBranch: Record<string, DocumentType>;
+export interface GlobalEventsStreamRow {
+    filterFieldsByBranch?: Record<string, Record<string, string>>;
+    branchDocumentTypeByBranch?: Record<string, DocumentType>;
 }
 
 @Component({
@@ -98,20 +104,15 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
     public addTopicModalTopicId: string = '';
     public addTopicModalError: string = '';
 
-    // Modal: Create Topic confirm
     public createTopicModalOpen: boolean = false;
 
     private socket: any;
     private filtersDialogRef: DynamicDialogRef | null = null;
     private filtersDialogCloseSub: Subscription | null = null;
 
-    public readonly documentTypes: Array<{ label: string; value: DocumentType }> = [
-        { label: 'VC', value: 'vc' },
-        { label: 'JSON', value: 'json' },
-        { label: 'CSV', value: 'csv' },
-        { label: 'Text', value: 'text' },
-        { label: 'Any', value: 'any' },
-    ];
+    public documentTypeOptions: Array<{ label: string; value: DocumentType }> = [];
+
+    private confirmDialogRef: DynamicDialogRef | null = null;
 
     constructor(
         private readonly policyEngineService: PolicyEngineService,
@@ -142,6 +143,11 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             this.filtersDialogRef.close();
             this.filtersDialogRef = null;
         }
+
+        if (this.confirmDialogRef) {
+            this.confirmDialogRef.close();
+            this.confirmDialogRef = null;
+        }
     }
 
     private onUpdate(blocks: string[]): void {
@@ -167,7 +173,6 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                         return of(null);
                     }
 
-                    // eslint-disable-next-line no-console
                     console.error(e.error);
                     return of(null);
                 }),
@@ -191,6 +196,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                 branches: [],
             };
             this.defaultTopicIds = [];
+            this.documentTypeOptions = [];
             return;
         }
 
@@ -201,18 +207,18 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             branches: [],
         };
 
+        this.documentTypeOptions = Array.isArray(data.documentTypeOptions)
+            ? data.documentTypeOptions
+            : [];
+
         this.defaultTopicIds = (data.defaultTopicIds || [])
             .map((t) => this.normalizeTopicId(t))
             .filter((t) => t.length > 0);
 
         const defaultSet = new Set<string>(this.defaultTopicIds);
-
         const streams = Array.isArray(data.streams) ? data.streams : [];
 
         this.rows = streams.map((s) => {
-            const fallbackBranchTypes = this.buildDefaultBranchTypesMap();
-            const serverBranchTypes = s.branchDocumentTypeByBranch || {};
-
             const topicId = this.normalizeTopicId(s.globalTopicId);
 
             const row: GlobalEventsStreamRow = {
@@ -222,9 +228,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                 lastMessageCursor: s.lastMessageCursor || '',
                 isDefault: !!s.isDefault || defaultSet.has(topicId),
                 filterFieldsByBranch: s.filterFieldsByBranch || {},
-                branchDocumentTypeByBranch: Object.keys(serverBranchTypes).length > 0
-                    ? (serverBranchTypes as any)
-                    : fallbackBranchTypes,
+                branchDocumentTypeByBranch: s.branchDocumentTypeByBranch as any,
                 isNew: false,
                 saving: false,
             };
@@ -247,43 +251,6 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
 
     public hasDefaultTopics(): boolean {
         return this.rows.some((r) => !!r?.isDefault);
-    }
-
-    private buildDefaultBranchTypesMap(): Record<string, DocumentType> {
-        const result: Record<string, DocumentType> = {};
-        const branches = Array.isArray(this.config?.branches) ? this.config.branches : [];
-
-        for (const branch of branches) {
-            const branchEvent = String(branch?.branchEvent ?? '').trim();
-            if (!branchEvent) {
-                continue;
-            }
-
-            const cfgType = String(branch?.documentType ?? '').toLowerCase().trim();
-            const normalized = this.normalizeDocumentType(cfgType);
-
-            result[branchEvent] = normalized;
-        }
-
-        return result;
-    }
-
-    private normalizeDocumentType(value: string): DocumentType {
-        const v = String(value ?? '').toLowerCase().trim();
-
-        if (v === 'vc') {
-            return 'vc';
-        }
-        if (v === 'json') {
-            return 'json';
-        }
-        if (v === 'csv') {
-            return 'csv';
-        }
-        if (v === 'text') {
-            return 'text';
-        }
-        return 'any';
     }
 
     private setRowSaving(row: GlobalEventsStreamRow, saving: boolean): void {
@@ -326,7 +293,6 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             globalTopicId: topicId,
             active: false,
             filterFieldsByBranch: {},
-            branchDocumentTypeByBranch: this.buildDefaultBranchTypesMap(),
         };
 
         this.policyEngineService.setBlockData(this.id, this.policyId, {
@@ -343,82 +309,9 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                 this.loadData();
             },
             (e) => {
-                // eslint-disable-next-line no-console
                 console.error(e?.error || e);
             },
         );
-    }
-
-    // -----------------------------
-    // Create Topic (confirm modal)
-    // -----------------------------
-
-    public openCreateTopicModal(): void {
-        if (this.readonly) {
-            return;
-        }
-
-        this.createTopicModalOpen = true;
-    }
-
-    public closeCreateTopicModal(): void {
-        this.createTopicModalOpen = false;
-    }
-
-    public confirmCreateTopic(): void {
-        if (this.readonly) {
-            return;
-        }
-        if (!this.policyId || !this.id) {
-            return;
-        }
-
-        this.loading = true;
-
-        this.policyEngineService
-            .setBlockData(this.id, this.policyId, {
-                operation: 'CreateTopic',
-                value: { streams: [] },
-            })
-            .pipe(
-                finalize(() => {
-                    this.loading = false;
-                    this.changeDetector.detectChanges();
-                }),
-            )
-            .subscribe(
-                (res: any) => {
-                    this.createTopicModalOpen = false;
-
-                    const topicId = this.normalizeTopicId(res?.topicId);
-                    if (!topicId) {
-                        this.loadData();
-                        return;
-                    }
-
-                    this.rows = [
-                        {
-                            globalTopicId: topicId,
-                            active: false,
-                            status: 'FREE',
-                            lastMessageCursor: '',
-                            isDefault: false,
-                            filterFieldsByBranch: {},
-                            branchDocumentTypeByBranch: this.buildDefaultBranchTypesMap(),
-                            isNew: false,
-                            saving: false,
-                        },
-                        ...this.rows,
-                    ];
-
-                    this.changeDetector.detectChanges();
-                    this.loadData();
-                },
-                (e) => {
-                    // eslint-disable-next-line no-console
-                    console.error(e?.error || e);
-                },
-            );
     }
 
     // -----------------------------
@@ -499,9 +392,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         }
 
         const branches = Array.isArray(this.config?.branches) ? this.config.branches : [];
-        const branchDocumentTypeByBranch = row.branchDocumentTypeByBranch
-            ? { ...row.branchDocumentTypeByBranch }
-            : this.buildDefaultBranchTypesMap();
+        const branchDocumentTypeByBranch = row.branchDocumentTypeByBranch ?? {}
 
         if (this.filtersDialogCloseSub) {
             this.filtersDialogCloseSub.unsubscribe();
@@ -514,13 +405,13 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         }
 
         this.filtersDialogRef = this.dialogService.open(GlobalEventsReaderFiltersDialogComponent, {
-            header: `Edit filters for topic ${this.normalizeTopicId(row.globalTopicId) || '-'}`,
+            showHeader: false,
             width: '720px',
             styleClass: 'global-events-reader-filters-dialog',
             data: {
                 readonly: this.readonly,
                 branches,
-                documentTypes: this.documentTypes,
+                documentTypes: this.documentTypeOptions,
                 filterFieldsByBranch: row.filterFieldsByBranch || {},
                 branchDocumentTypeByBranch,
             },
@@ -531,8 +422,8 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                 return;
             }
 
-            row.filterFieldsByBranch = result.filterFieldsByBranch || {};
-            row.branchDocumentTypeByBranch = result.branchDocumentTypeByBranch || {};
+            row.filterFieldsByBranch = result.filterFieldsByBranch;
+            row.branchDocumentTypeByBranch = result.branchDocumentTypeByBranch;
 
             this.changeDetector.detectChanges();
             this.updateRow(row);
@@ -554,8 +445,8 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         const payload = {
             globalTopicId: topicId,
             active: !!row.active,
-            filterFieldsByBranch: row.filterFieldsByBranch || {},
-            branchDocumentTypeByBranch: row.branchDocumentTypeByBranch || this.buildDefaultBranchTypesMap(),
+            filterFieldsByBranch: row.filterFieldsByBranch,
+            branchDocumentTypeByBranch: row.branchDocumentTypeByBranch,
         };
 
         this.policyEngineService.setBlockData(this.id, this.policyId, {
@@ -570,9 +461,137 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                 this.loadData();
             },
             (e) => {
-                // eslint-disable-next-line no-console
                 console.error(e?.error || e);
             },
         );
+    }
+
+    public formatLastUpdate(cursor: string): string {
+        const raw = String(cursor || '').trim();
+        if (!raw) {
+            return '-';
+        }
+
+        const parts = raw.split('.');
+        const seconds = Number(parts[0]);
+        const nanosRaw = String(parts[1] || '0');
+
+        const ms = Number(nanosRaw.padEnd(3, '0').slice(0, 3));
+        const date = new Date((seconds * 1000) + ms);
+
+        return new Intl.DateTimeFormat('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        }).format(date).replace(',', '');
+    }
+
+    public getFiltersCount(row: GlobalEventsStreamRow): number {
+        const byBranch = row.filterFieldsByBranch;
+
+        if (!byBranch) {
+            return 0;
+        }
+
+        const branchKeys = Object.keys(byBranch);
+
+        let total = 0;
+
+        for (const branchEvent of branchKeys) {
+            const filters = byBranch[branchEvent];
+            const filterLabels = Object.keys(filters);
+
+            for (const label of filterLabels) {
+                const value = filters[label];
+
+                if (String(label).trim() && String(value).trim()) {
+                    total++;
+                }
+            }
+        }
+
+        return total;
+    }
+
+    public getFiltersLabel(row: GlobalEventsStreamRow): string {
+        const count = this.getFiltersCount(row);
+
+        if (count > 0) {
+            return `Custom (${count})`;
+        }
+
+        return 'Default';
+    }
+
+    public openCreateTopicModal(): void {
+        if (this.loading) {
+            return;
+        }
+
+        if (this.readonly) {
+            return;
+        }
+
+        if (!this.policyId || !this.id) {
+            return;
+        }
+
+        if (this.confirmDialogRef) {
+            this.confirmDialogRef.close();
+            this.confirmDialogRef = null;
+        }
+
+        this.confirmDialogRef = this.dialogService.open(ConfirmDialog, {
+            styleClass: 'confirm-dialog',
+            closable: false,
+            dismissableMask: true,
+            showHeader: false,
+            data: {
+                title: 'Create Topic',
+                description: 'Create a new global event topic?',
+                submitButton: 'Create',
+                cancelButton: 'Cancel',
+            },
+        });
+
+        this.confirmDialogRef.onClose.subscribe((ok: boolean | null) => {
+            this.confirmDialogRef = null;
+
+            if (ok !== true) {
+                return;
+            }
+
+            this.confirmCreateTopic();
+        });
+    }
+
+    private confirmCreateTopic(): void {
+        if (!this.policyId || !this.id) {
+            return;
+        }
+
+        this.loading = true;
+
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                operation: 'CreateTopic',
+                value: { streams: [] },
+            })
+            .pipe(
+                finalize(() => {
+                    this.loading = false;
+                    this.changeDetector.detectChanges();
+                }),
+            )
+            .subscribe(
+                () => {
+                    this.loadData();
+                },
+                (e) => {
+                    console.error(e?.error || e);
+                },
+            );
     }
 }

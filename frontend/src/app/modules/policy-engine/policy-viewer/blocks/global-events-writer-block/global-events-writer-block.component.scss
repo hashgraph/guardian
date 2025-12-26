@@ -1,6 +1,6 @@
 .gew-card {
-    background: #ffffff;
-    border: 1px solid #e9eef7;
+    background: var(--color-grey-white, #FFFFFF);
+    border: 1px solid var(--color-grey-3, #E1E7EF);
     border-radius: 12px;
     padding: 16px;
 }
@@ -14,7 +14,7 @@
 }
 
 .gew-title {
-    font-family: Poppins, sans-serif;
+    font-family: var(--font-family-poppins, 'Poppins', sans-serif);
     font-size: 14px;
     font-weight: 600;
     color: var(--color-grey-black-1, #181818);
@@ -36,10 +36,10 @@
 }
 
 .gew-table {
-    border: 1px solid #e1e7ef;
+    border: 1px solid var(--color-grey-3, #E1E7EF);
     border-radius: 10px;
     overflow: hidden;
-    background: #ffffff;
+    background: var(--color-grey-white, #FFFFFF);
 }
 
 .gew-row {
@@ -47,8 +47,8 @@
     grid-template-columns: 1fr 88px 88px 44px;
     align-items: center;
     padding: 12px 16px;
-    border-top: 1px solid #e9eef7;
-    background: #ffffff;
+    border-top: 1px solid var(--color-grey-3, #E1E7EF);
+    background: var(--color-grey-white, #FFFFFF);
 }
 
 .gew-row:first-child {
@@ -63,12 +63,15 @@
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.06em;
-    color: #8fa0bf;
+    color: var(--color-grey-5, #848FA9);
+    text-transform: uppercase;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
 }
 
 .gew-cell {
     display: flex;
     align-items: center;
+    min-width: 0;
 }
 
 .gew-col-active,
@@ -85,19 +88,22 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
 }
 
 .gew-select {
     height: 24px;
     border-radius: 6px;
-    border: 1px solid var(--color-primary, #0031ff);
-    background: #ffffff;
+    border: 1px solid var(--color-primary, #4169E2);
+    background: var(--color-grey-white, #FFFFFF);
     padding: 0 26px 0 10px;
     font-size: 12px;
     line-height: 16px;
     color: var(--color-grey-black-1, #181818);
     outline: none;
     cursor: pointer;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
 }
 
 .gew-select:disabled {
@@ -114,8 +120,8 @@
     display: grid;
     place-items: center;
     cursor: pointer;
-    color: #ff4d4f;
-    transition: background .15s ease, transform .06s ease;
+    color: var(--color-accent-red-1, #FF432A);
+    transition: background 0.15s ease, transform 0.06s ease;
 }
 
 .gew-icon-btn:active {
@@ -128,17 +134,19 @@
 }
 
 .gew-icon-btn:hover:not(:disabled) {
-    background: rgba(255, 77, 79, 0.08);
+    background: rgba(255, 67, 42, 0.08);
 }
 
 .gew-empty {
     padding: 14px 16px;
     text-align: center;
     font-size: 12px;
-    color: #8fa0bf;
-    border-top: 1px solid #e9eef7;
+    color: var(--color-grey-5, #848FA9);
+    border-top: 1px solid var(--color-grey-3, #E1E7EF);
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
 }
 
+/* checkbox */
 .gew-checkbox {
     position: relative;
     width: 16px;
@@ -159,14 +167,31 @@
 .gew-checkbox span {
     width: 14px;
     height: 14px;
-    border: 1px solid #c9d6f2;
+    border: 1px solid var(--color-grey-3, #E1E7EF);
     border-radius: 3px;
-    background: #ffffff;
+    background: var(--color-grey-white, #FFFFFF);
     display: inline-block;
 }
 
 .gew-checkbox input:checked + span {
-    background: var(--color-primary, #0031ff);
-    border-color: var(--color-primary, #0031ff);
-    box-shadow: 0 0 0 2px rgba(0, 49, 255, 0.12);
+    background: var(--color-primary, #4169E2);
+    border-color: var(--color-primary, #4169E2);
+    box-shadow: 0 0 0 2px rgba(65, 105, 226, 0.12);
+}
+
+.ger-default-pill {
+    height: 18px;
+    padding: 0 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    background: rgba(65, 105, 226, 0.12);
+    color: var(--color-primary, #4169E2);
+    white-space: nowrap;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
 }

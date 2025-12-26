@@ -1,179 +1,152 @@
-<div class="global-events-reader-block">
-    <div class="header">
-        <h4>Global events</h4>
+<div class="ger-card">
+    <div class="ger-header">
+        <div class="ger-title">
+            Global Events Reader
+        </div>
+    </div>
 
-        <div class="actions">
+    <div class="ger-toolbar">
+        <div class="ger-toolbar-left"></div>
+
+        <div class="ger-header-actions">
             <button
                 type="button"
-                class="btn btn-sm btn-primary"
+                pButton
+                class="button ger-header-btn"
+                label="Add Event Topic"
                 (click)="openAddTopicModal()"
-                [disabled]="readonly || loading">
-                + Add event topic
+                [disabled]="readonly || loading"
+            >
             </button>
 
             <button
                 type="button"
-                class="btn btn-sm btn-outline-primary"
+                pButton
+                class="button ger-header-btn"
+                label="Create Topic"
                 (click)="openCreateTopicModal()"
-                [disabled]="readonly || loading">
-                + Create topic
+                [disabled]="readonly || loading"
+            >
             </button>
         </div>
     </div>
 
-    <table class="table table-sm table-striped table-bordered">
-        <thead>
-        <tr>
-            <th style="width: 320px;">Event topic ID</th>
-            <th style="width: 120px;">Status</th>
-            <th style="width: 260px;">Last cursor</th>
-            <th style="width: 80px;">Active</th>
-            <th style="width: 90px;">Filters</th>
-            <th style="width: 60px;"></th>
-        </tr>
-        </thead>
+    <div class="ger-table">
+        <div class="ger-row ger-row-head">
+            <div class="ger-cell ger-col-topic">
+                EVENT TOPIC ID
+            </div>
 
-        <tbody>
-        <ng-container *ngFor="let row of rows; let i = index">
-            <tr [class.row-saving]="row.saving">
-                <td>
-                    <input
-                        type="text"
-                        class="form-control form-control-sm"
-                        [(ngModel)]="row.globalTopicId"
-                        readonly
-                        [disabled]="loading || row.saving">
-                </td>
+            <div class="ger-cell ger-col-status">
+                STATUS
+            </div>
 
-                <td>
-                    <span
-                        class="badge"
-                        [ngClass]="{
-                            'badge-success': row.status === 'FREE',
-                            'badge-danger': row.status === 'ERROR',
-                            'badge-warning': row.status === 'PROCESSING'
-                        }">
-                        {{ row.status || '-' }}
-                    </span>
-                </td>
+            <div class="ger-cell ger-col-update">
+                LAST UPDATE
+            </div>
 
-                <td>
-                    <span class="text-muted">{{ row.lastMessageCursor || '-' }}</span>
-                </td>
+            <div class="ger-cell ger-col-active">
+                ACTIVE
+            </div>
 
-                <td class="text-center">
+            <div class="ger-cell ger-col-conditions">
+                CONDITIONS
+            </div>
+
+            <div class="ger-cell ger-col-save">
+                SAVE
+            </div>
+
+            <div class="ger-cell ger-col-actions"></div>
+        </div>
+
+        <div
+            class="ger-row"
+            *ngFor="let row of rows; let i = index"
+            [class.ger-row-saving]="row.saving"
+        >
+            <div class="ger-cell ger-col-topic">
+                <div class="ger-topic-value" [title]="row.globalTopicId">
+                    {{ row.globalTopicId }}
+                </div>
+
+                <span class="ger-default-pill" *ngIf="row.isDefault">
+                    DEFAULT
+                </span>
+            </div>
+
+            <div class="ger-cell ger-col-status">
+                <span
+                    class="ger-status-pill"
+                    [class.ger-status-processing]="row.status === 'PROCESSING'"
+                    [class.ger-status-error]="row.status === 'ERROR'"
+                >
+                    {{ row.status }}
+                </span>
+            </div>
+
+            <div class="ger-cell ger-col-update">
+                <div class="ger-muted">
+                    {{ formatLastUpdate(row.lastMessageCursor) }}
+                </div>
+            </div>
+
+            <div class="ger-cell ger-col-active">
+                <label class="ger-checkbox">
                     <input
                         type="checkbox"
-                        [ngModel]="row.active"
-                        (ngModelChange)="onActiveChanged(row, $event)"
-                        [disabled]="readonly || loading || row.saving">
-                </td>
-
-                <td class="text-center">
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-outline-primary"
-                        (click)="openFilters(row)"
-                        [disabled]="readonly || loading || row.saving">
-                        Filters
-                    </button>
-                </td>
-
-                <td class="text-center">
-                    <span
-                        class="default-delete-tooltip-wrapper"
-                        [attr.title]="row.isDefault ? 'Default topics cannot be deleted' : null">
-                        <button
-                            type="button"
-                            class="btn btn-sm btn-outline-danger"
-                            (click)="removeRow(i)"
-                            [disabled]="readonly || loading || row.saving || row.isDefault">
-                            ✕
-                        </button>
-                    </span>
-                </td>
-            </tr>
-        </ng-container>
-
-        <tr *ngIf="rows.length === 0">
-            <td colspan="6" class="text-center text-muted">
-                No streams configured yet.
-            </td>
-        </tr>
-        </tbody>
-    </table>
-
-    <!-- Add Topic Modal -->
-    <div class="modal-backdrop" *ngIf="addTopicModalOpen">
-        <div class="modal-card">
-            <div class="modal-title">
-                Add existing topic
+                        [checked]="row.active"
+                        (change)="onActiveChanged(row, $any($event.target).checked)"
+                        [disabled]="readonly || loading || row.saving"
+                    />
+                    <span></span>
+                </label>
             </div>
 
-            <div class="modal-body">
-                <div class="field">
-                    <label>Topic ID</label>
-                    <input
-                        type="text"
-                        class="form-control form-control-sm"
-                        [(ngModel)]="addTopicModalTopicId"
-                        [disabled]="loading"
-                    >
-                </div>
+            <div class="ger-cell ger-col-conditions">
+                <span
+                    class="ger-conditions-pill"
+                    [class.ger-conditions-custom]="getFiltersCount(row) > 0"
+                >
+                    {{ getFiltersLabel(row) }}
+                </span>
 
-                <div *ngIf="addTopicModalError" class="error">
-                    {{ addTopicModalError }}
-                </div>
-            </div>
-
-            <div class="modal-actions">
                 <button
                     type="button"
-                    class="btn btn-sm btn-outline-secondary"
-                    (click)="closeAddTopicModal()"
-                    [disabled]="loading">
-                    Cancel
+                    class="ger-icon-btn ger-icon-btn-edit"
+                    (click)="openFilters(row)"
+                    [disabled]="readonly || loading || row.saving"
+                    aria-label="Edit conditions"
+                    title="Edit"
+                >
+                    <i class="pi pi-pencil"></i>
                 </button>
+            </div>
 
+            <div class="ger-cell ger-col-actions">
                 <button
                     type="button"
-                    class="btn btn-sm btn-primary"
-                    (click)="confirmAddTopicModal()"
-                    [disabled]="loading">
-                    Add
+                    class="ger-icon-btn ger-icon-btn-danger"
+                    (click)="removeRow(i)"
+                    [disabled]="readonly || loading || row.saving || row.isDefault"
+                    aria-label="Delete topic"
+                    title="Delete"
+                >
+                    <i class="pi pi-trash"></i>
                 </button>
             </div>
         </div>
-    </div>
 
-    <!-- Create Topic Confirm Modal -->
-    <div class="modal-backdrop" *ngIf="createTopicModalOpen">
-        <div class="modal-card">
-            <div class="modal-title">
-                Create new topic
-            </div>
-
-            <div class="modal-body">
-                This will create a new Hedera topic and add it to your list.
-            </div>
-
-            <div class="modal-actions">
-                <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary"
-                    (click)="closeCreateTopicModal()"
-                    [disabled]="loading">
-                    Cancel
-                </button>
-
-                <button
-                    type="button"
-                    class="btn btn-sm btn-outline-primary"
-                    (click)="confirmCreateTopic()"
-                    [disabled]="loading">
-                    Create
-                </button>
-            </div>
+        <div class="ger-empty" *ngIf="!rows.length">
+            No topics configured yet.
         </div>
     </div>
 </div>
+
+<app-add-event-topic-modal
+    [visible]="addTopicModalOpen"
+    [loading]="loading"
+    (cancel)="closeAddTopicModal()"
+    (add)="confirmAddTopicModal()"
+>
+</app-add-event-topic-modal>

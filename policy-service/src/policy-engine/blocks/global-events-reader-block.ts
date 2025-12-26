@@ -227,51 +227,51 @@ class GlobalEventsReaderBlock {
         }
     }
 
-    private async forceActivateDefaultTopics(ref: AnyBlockType, user: PolicyUser): Promise<void> {
-        const config = (ref.options || {}) as GlobalEventReaderConfig;
-        const configuredTopicIds = this.extractConfiguredTopicIds(config);
-
-        for (const topicIdRaw of configuredTopicIds) {
-            const topicId = String(topicIdRaw || '').trim();
-            if (!topicId) {
-                continue;
-            }
-
-            try {
-                this.validateTopicId(topicId, ref);
-            } catch (_e) {
-                continue;
-            }
-
-            const existing = await ref.databaseServer.getGlobalEventsStreamByUserTopic(
-                ref.policyId,
-                ref.uuid,
-                user.userId,
-                topicId
-            );
-
-            if (existing) {
-                if (existing.active !== true) {
-                    existing.active = true;
-                    await ref.databaseServer.updateGlobalEventsStream(existing);
-                }
-                continue;
-            }
-
-            await ref.databaseServer.createGlobalEventsStream({
-                policyId: ref.policyId,
-                blockId: ref.uuid,
-                userId: user.userId,
-                userDid: user.did,
-                globalTopicId: topicId,
-                active: true,
-                lastMessageCursor: '',
-                status: GlobalEventsStreamStatus.Free,
-                filterFieldsByBranch: {},
-                branchDocumentTypeByBranch: {},
-            });
-        }
-    }
+    // private async forceActivateDefaultTopics(ref: AnyBlockType, user: PolicyUser): Promise<void> {
+    //     const config = (ref.options || {}) as GlobalEventReaderConfig;
+    //     const configuredTopicIds = this.extractConfiguredTopicIds(config);
+    //
+    //     for (const topicIdRaw of configuredTopicIds) {
+    //         const topicId = String(topicIdRaw || '').trim();
+    //         if (!topicId) {
+    //             continue;
+    //         }
+    //
+    //         try {
+    //             this.validateTopicId(topicId, ref);
+    //         } catch (_e) {
+    //             continue;
+    //         }
+    //
+    //         const existing = await ref.databaseServer.getGlobalEventsStreamByUserTopic(
+    //             ref.policyId,
+    //             ref.uuid,
+    //             user.userId,
+    //             topicId
+    //         );
+    //
+    //         if (existing) {
+    //             if (existing.active !== true) {
+    //                 existing.active = true;
+    //                 await ref.databaseServer.updateGlobalEventsStream(existing);
+    //             }
+    //             continue;
+    //         }
+    //
+    //         await ref.databaseServer.createGlobalEventsStream({
+    //             policyId: ref.policyId,
+    //             blockId: ref.uuid,
+    //             userId: user.userId,
+    //             userDid: user.did,
+    //             globalTopicId: topicId,
+    //             active: true,
+    //             lastMessageCursor: '',
+    //             status: GlobalEventsStreamStatus.Free,
+    //             filterFieldsByBranch: {},
+    //             branchDocumentTypeByBranch: {},
+    //         });
+    //     }
+    // }
 
     // Creates default stream rows in DB for this user if missing.
     private async ensureDefaultStreams(ref: AnyBlockType, user: PolicyUser): Promise<void> {
@@ -292,6 +292,17 @@ class GlobalEventsReaderBlock {
 
         const config = (ref.options || {}) as GlobalEventReaderConfig;
         const optionTopicIds = Array.isArray(config.eventTopics) ? config.eventTopics : [];
+
+        const defaultBranchDocumentTypeByBranch: BranchDocumentTypeByBranch = {};
+
+        for (const branch of config.branches || []) {
+            const branchEvent = branch.branchEvent;
+            if (!branchEvent) {
+                continue;
+            }
+
+            defaultBranchDocumentTypeByBranch[branchEvent] = branch.documentType
+        }
 
         for (const topic of optionTopicIds) {
             const topicId = String(topic?.topicId || '').trim();
@@ -319,7 +330,7 @@ class GlobalEventsReaderBlock {
                 lastMessageCursor: '',
                 status: GlobalEventsStreamStatus.Free,
                 filterFieldsByBranch: {},
-                branchDocumentTypeByBranch: {},
+                branchDocumentTypeByBranch: defaultBranchDocumentTypeByBranch,
             });
         }
     }
@@ -535,7 +546,7 @@ class GlobalEventsReaderBlock {
         let currentSchemaItem: SchemaBatchItem | null = null;
         let currentSchema: any | null = null;
 
-        if (event.documentType === 'vc') {
+        if (event.documentType === GLOBAL_DOCUMENT_TYPE_DEFAULT) {
             const schemaBatch = await this.loadSchemaBatch(ref, event.documentTopicId, user.userId);
 
             const schemaRef = event.schemaIri?.trim();
@@ -559,14 +570,14 @@ class GlobalEventsReaderBlock {
             let isVcDocument: boolean
 
             if(isTypeDocumentByBranch) {
-                isVcDocument = branchDocumentTypeByBranch[branchEvent] === 'vc';
+                isVcDocument = branchDocumentTypeByBranch[branchEvent] === GLOBAL_DOCUMENT_TYPE_DEFAULT;
             } else {
-                isVcDocument = branch.documentType === 'vc';
+                isVcDocument = branch.documentType === GLOBAL_DOCUMENT_TYPE_DEFAULT;
             }
 
-            const expectedType = isTypeDocumentByBranch ? branchDocumentTypeByBranch[branchEvent].trim() : 'any'
+            const expectedType = isTypeDocumentByBranch ? branchDocumentTypeByBranch[branchEvent].trim() : GLOBAL_DOCUMENT_TYPE_DEFAULT
 
-            const incomingType = event.documentType.trim() || 'any'
+            const incomingType = event.documentType.trim() || GLOBAL_DOCUMENT_TYPE_DEFAULT
 
             if (expectedType !== 'any' && expectedType !== incomingType) {
                 ref.warn(
@@ -1097,7 +1108,7 @@ class GlobalEventsReaderBlock {
 
         // Hidden block behavior
         if (!ref.defaultActive) {
-            await this.forceActivateDefaultTopics(ref, user);
+            // await this.forceActivateDefaultTopics(ref, user);
 
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
@@ -1168,6 +1179,7 @@ class GlobalEventsReaderBlock {
             },
             streams: rows,
             defaultTopicIds: configuredTopicIds,
+            documentTypeOptions: GLOBAL_DOCUMENT_TYPE_ITEMS,
         };
     }
 
@@ -1247,6 +1259,18 @@ class GlobalEventsReaderBlock {
         const value: SetDataPayload = data?.value ?? { streams: [] };
         const streams = value.streams ?? [];
 
+        const defaultBranchDocumentTypeByBranch: BranchDocumentTypeByBranch = {};
+
+        for (const branch of config.branches || []) {
+            const branchEvent = branch.branchEvent;
+            if (!branchEvent) {
+                continue;
+            }
+
+            defaultBranchDocumentTypeByBranch[branchEvent] = GLOBAL_DOCUMENT_TYPE_DEFAULT;
+        }
+
+
         // ==========================================================
         // Create topic - create Hedera topic + create DB stream row
         // ==========================================================
@@ -1254,6 +1278,8 @@ class GlobalEventsReaderBlock {
             const topicId = await this.createTopic(ref, user);
 
             this.validateTopicId(topicId, ref);
+
+            const defaultBranchDocumentTypeByBranch: BranchDocumentTypeByBranch = {};
 
             await ref.databaseServer.createGlobalEventsStream({
                 policyId: ref.policyId,
@@ -1265,7 +1291,7 @@ class GlobalEventsReaderBlock {
                 lastMessageCursor: '',
                 status: GlobalEventsStreamStatus.Free,
                 filterFieldsByBranch: {},
-                branchDocumentTypeByBranch: {},
+                branchDocumentTypeByBranch: defaultBranchDocumentTypeByBranch,
             });
 
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
@@ -1314,15 +1340,6 @@ class GlobalEventsReaderBlock {
 
             const active = item.active;
             const filterFieldsByBranch: FilterFieldsByBranch = item?.filterFieldsByBranch ?? {};
-            const branchDocumentTypeByBranch: Record<string, string> = item?.branchDocumentTypeByBranch ?? {};
-
-            for (const branchEvent of Object.keys(branchDocumentTypeByBranch)) {
-                const rawType = String(branchDocumentTypeByBranch[branchEvent] ?? '').toLowerCase().trim();
-
-                if (rawType !== 'vc') {
-                    delete filterFieldsByBranch[branchEvent];
-                }
-            }
 
             const isDefaultTopic = configuredTopicIdSet.has(topicId);
 
@@ -1356,7 +1373,7 @@ class GlobalEventsReaderBlock {
                     lastMessageCursor: '',
                     status: GlobalEventsStreamStatus.Free,
                     filterFieldsByBranch,
-                    branchDocumentTypeByBranch
+                    branchDocumentTypeByBranch: defaultBranchDocumentTypeByBranch
                 });
 
                 continue;
@@ -1370,7 +1387,7 @@ class GlobalEventsReaderBlock {
                 if (existing) {
                     existing.active = active;
                     existing.filterFieldsByBranch = filterFieldsByBranch;
-                    existing.branchDocumentTypeByBranch = branchDocumentTypeByBranch;
+                    existing.branchDocumentTypeByBranch = item.branchDocumentTypeByBranch;
 
                     await ref.databaseServer.updateGlobalEventsStream(existing);
                     continue;
@@ -1388,7 +1405,7 @@ class GlobalEventsReaderBlock {
                         lastMessageCursor: '',
                         status: GlobalEventsStreamStatus.Free,
                         filterFieldsByBranch,
-                        branchDocumentTypeByBranch
+                        branchDocumentTypeByBranch: item.branchDocumentTypeByBranch
                     });
                     continue;
                 }
