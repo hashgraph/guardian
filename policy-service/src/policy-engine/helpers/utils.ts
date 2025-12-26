@@ -1918,7 +1918,7 @@ export class PolicyUtils {
             linkedItems: { $in: [ref.uuid] }
         }
         const options: any = {
-            fields: ['name', 'description', 'owner', 'target', 'topicId', 'messageId']
+            fields: ['name', 'description', 'owner', 'target', 'topicId', 'messageId', 'inheritTags']
         }
 
         const tags = await ref.databaseServer.getTags(filter, options);

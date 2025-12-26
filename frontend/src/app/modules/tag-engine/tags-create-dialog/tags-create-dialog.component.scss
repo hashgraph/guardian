@@ -20,6 +20,7 @@
 
 .entity-tag-blocks-container {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
 }
 
