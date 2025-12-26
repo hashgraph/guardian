@@ -14,6 +14,9 @@ export class TreeListItem<T> {
     public search: string[];
     public searchChildren: string[];
 
+    public id: string;
+    public name: string;
+
     constructor(data: T, parent: TreeListItem<T> | null, lvl: number) {
         this.data = data;
         this.parent = parent;
@@ -27,6 +30,9 @@ export class TreeListItem<T> {
         this.search = [];
         this.searchChildren = [];
         this.searchHighlighted = '';
+
+        this.id = (data as any)?.id || '';
+        this.name = (data as any)?.name || '';
 
         if (this.parent) {
             this.path = [...this.parent.path, this];

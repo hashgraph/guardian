@@ -11,6 +11,8 @@ import { Formula } from './model/formula';
 import { SchemaVariables } from '../../structures';
 import { Code } from './model/code';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { TreeListData, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
+import { FieldData } from 'src/app/modules/common/models/schema-node';
 
 /**
  * Dialog.
@@ -75,7 +77,24 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public fileValue: any;
     public _value: any;
 
+    public resultStep: string;
     public result: any;
+    public codeMirrorOptions2: any = {
+        theme: 'default',
+        mode: 'javascript',
+        styleActiveLine: true,
+        lineNumbers: true,
+        lineWrapping: true,
+        foldGutter: false,
+        gutters: [
+            'CodeMirror-linenumbers',
+        ],
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        lint: true,
+        readonly: true,
+        autoFocus: true
+    };
 
     constructor(
         private dialogRef: DynamicDialogRef,
@@ -120,12 +139,9 @@ const y = {
         this.block = this.data.block;
         this.properties = this.block.properties;
         this.schemas = this.data.schemas;
-        this.schema = this.schemas?.find((v) => v.value === this.properties?.schema)?.data;
+        this.schema = this.schemas?.find((v) => v.value === this.properties?.inputSchema)?.data;
         this.schemaValue = this.fb.group({});
         this.jsonValue = '';
-
-        this.schema = this.schemas[1].data;
-
         this.updateSchema();
     }
 
@@ -206,6 +222,17 @@ const y = {
         }
     }
 
+    private createSchemaView(schema: any) {
+        const fields = TreeListData.fromObject<FieldData>(schema, 'fields', (item) => {
+            item.id = item.data?.path;
+            item.name = item.data?.description;
+            return item;
+        });
+        const items = TreeListView.createView(fields, (s) => { return !s.parent });
+        items.setSearchRules((item) => [`(${item.description || ''})`.toLocaleLowerCase()]);
+        return items;
+    }
+
     public onLink(item: FieldLink) {
         if (!this.schema) {
             return;
@@ -215,8 +242,9 @@ const y = {
             width: '800px',
             styleClass: 'guardian-dialog',
             data: {
-                link: item.field,
-                schema: this.schema,
+                title: this.schema?.name || 'Set Link',
+                value: item.field,
+                view: this.createSchemaView(this.schema),
             },
         });
         dialogRef.onClose.subscribe((result: any | null) => {
@@ -277,7 +305,7 @@ const y = {
         this.loading = true;
         setTimeout(() => {
             this.loading = false;
-        }, 1000);
+        }, 500);
     }
 
     public getHeader(step: string) {
@@ -338,7 +366,8 @@ const y = {
             width: '800px',
             styleClass: 'guardian-dialog',
             data: {
-                schema: this.schema,
+                title: this.schema?.name || 'Set Link',
+                view: this.createSchemaView(this.schema),
             },
         });
         dialogRef.onClose.subscribe((result: any | null) => {
@@ -350,17 +379,50 @@ const y = {
                 text = text + `//${result.fullName}` + '\r\n';
                 text = text + `//${type}` + '\r\n';
                 text = text + `const _ /*name*/ = getField('${result.value}');` + '\r\n';
+                text = text + '\r\n';
 
                 this.code.text = this.code.text.slice(0, cursor) + text + this.code.text.slice(cursor);
             }
         });
     }
 
+    private createComponentView() {
+        if (!this.scope) {
+            return;
+        }
+        this.scope.validate();
+        const context = this.scope.createContext();
+        const components = context?.getComponents() || [];
+        const data = TreeListData.fromObject<any>({ components }, 'components', (item) => {
+            if (item.data) {
+                item.id = item.data.value;
+                item.name = item.data.name;
+            }
+
+            return item;
+        });
+        const items = TreeListView.createView(data, (s) => { return !s.parent });
+        items.setSearchRules((item) => [`(${item.name || ''})`.toLocaleLowerCase()]);
+        return items;
+    }
+
     public addComponent() {
-        // const result = this.context?.components[2];
-        // if (result) {
-        //     this.code.text = this.code.text + `${result.value}`;
-        // }
+        const dialogRef = this.dialogService.open(FieldLinkDialog, {
+            showHeader: false,
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Select components',
+                view: this.createComponentView(),
+            },
+        });
+        dialogRef.onClose.subscribe((result: any | null) => {
+            if (result) {
+                const cursor = this.getCursor();
+                const text = ` ${result.value} `;
+                this.code.text = this.code.text.slice(0, cursor) + text + this.code.text.slice(cursor);
+            }
+        });
     }
 
     public onCodeChangeTab(tab: any) {
@@ -486,7 +548,6 @@ const y = {
             const context = this.context.getContext();
             context.document = doc;
 
-            const input = JSON.parse(JSON.stringify(doc));
             const variables = this.scope.variables;
             const formulas = this.scope.formulas;
             const outputs = this.scope.outputs;
@@ -494,11 +555,24 @@ const y = {
                 item.value = context.scope[item.name];
             }
 
+            let input: string = '';
+            try {
+                input = doc ? JSON.stringify(doc, null, 4) : '';
+            } catch (error) {
+                input = '';
+            }
+
             let builtCode: Function;
             try {
                 this.code.setContext(context);
                 builtCode = this.code.build();
                 const output = builtCode();
+                let _output: string = '';
+                try {
+                    _output = doc ? JSON.stringify(output, null, 4) : '';
+                } catch (error) {
+                    _output = '';
+                }
                 this.result = {
                     valid: true,
                     error: '',
@@ -506,8 +580,9 @@ const y = {
                     formulas: formulas,
                     outputs: outputs,
                     input: input,
-                    output: output
+                    output: _output
                 }
+                this.resultStep = 'output';
             } catch (error) {
                 this.error = 'Invalid code';
                 this.result = {
@@ -519,6 +594,7 @@ const y = {
                     input: input,
                     output: ''
                 }
+                this.resultStep = 'errors';
             }
             this.loading = false;
             this.onStep('step_5');
@@ -527,5 +603,9 @@ const y = {
             this.error = 'Invalid config';
             return;
         }
+    }
+
+    public onResultStep(step: string) {
+        this.resultStep = step;
     }
 }

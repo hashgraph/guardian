@@ -1,6 +1,6 @@
 <div class="dialog-header">
     <div class="header-container">
-        <div class="header-text">Set Link</div>
+        <div class="header-text">{{title}}</div>
     </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
@@ -8,8 +8,24 @@
 </div>
 <div class="dialog-body">
     <div class="context">
+        <div class="search">
+            <div class="guardian-search">
+                <input 
+                    id="search" 
+                    [(ngModel)]="search" 
+                    placeholder="Search" 
+                    pInputText
+                    type="text" 
+                    (change)="onFilter()" />
+            </div>
+        </div>
         <div *ngIf="items" class="field-tree">
-            <div *ngFor="let item of items.data.items" class="field-item">
+            <div 
+                *ngFor="let item of items.data.items" 
+                class="field-item"
+                [attr.highlighted]="item.highlighted"
+                [attr.search-highlighted]="item.searchHighlighted"
+            >
                 <div class="field-offset"
                     [style.width.px]="24*item.lvl"
                     [style.min-width.px]="24*item.lvl"></div>
@@ -18,18 +34,18 @@
                         *ngIf="item.expandable"
                         class="guardian-collapse collapse-24"
                         [attr.collapsed]="item.collapsed"
-                        (click)="onCollapseField(item)"
+                        (click)="onCollapseItem(item)"
                     >
                     </div>
                 </div>
-                <div *ngIf="!item.expandable" class="field-select" (click)="onSelectField(item)">
+                <div *ngIf="!item.expandable" class="field-select" (click)="onSelectItem(item)">
                     <p-radioButton 
                         class="guardian-radio-button radio-button-24"
-                        [value]="item.data.path" 
-                        [ngModel]="path"></p-radioButton>
+                        [value]="item.id" 
+                        [ngModel]="value"></p-radioButton>
                 </div>
-                <div class="field-name" (click)="onSelectField(item)">
-                    {{item.data.description}}
+                <div class="field-name" (click)="onSelectItem(item)">
+                    {{item.name}}
                 </div>
             </div>
         </div>
@@ -46,7 +62,7 @@
             <button 
                 (click)="onSubmit()" 
                 class="guardian-button guardian-button-primary"
-                [disabled]="!path">Confirm</button>
+                [disabled]="!value">Confirm</button>
         </div>
     </div>
 </div>

@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
-import { FieldData } from 'src/app/modules/common/models/schema-node';
+import { TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 
 @Component({
     selector: 'field-link-dialog',
@@ -10,20 +9,20 @@ import { FieldData } from 'src/app/modules/common/models/schema-node';
 })
 export class FieldLinkDialog {
     public loading = true;
-    public schema: any;
-    public path: string | null;
     public items: TreeListView<any> | null;
     public item: TreeListItem<any> | null;
+    public title: string;
+    public search: string;
+    public value: string | null;
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private dialogService: DialogService,
     ) {
-        this.schema = this.config.data?.schema;
-        this.path = this.config.data?.link;
-        const fields = TreeListData.fromObject<FieldData>(this.schema, 'fields');
-        this.items = TreeListView.createView(fields, (s) => { return !s.parent });
+        this.title = this.config.data?.title;
+        this.value = this.config.data?.value;
+        this.items = this.config.data?.view;
     }
 
     ngOnInit() {
@@ -37,39 +36,30 @@ export class FieldLinkDialog {
         this.ref.close(null);
     }
 
-    public onCollapseField(item: TreeListItem<any>) {
+    public onCollapseItem(item: TreeListItem<any>) {
         if (this.items) {
             this.items.collapse(item, !item.collapsed);
             this.items.updateHidden();
         }
     }
 
-    public onSelectField(item: TreeListItem<any>) {
+    public onSelectItem(item: TreeListItem<any>) {
         if (item.expandable) {
-            this.onCollapseField(item);
+            this.onCollapseItem(item);
             return;
         }
-        this.path = item.data.path;
-        this.item = item;
-    }
-
-    public onSelectVariable(item: TreeListItem<any>) {
-        if (item.expandable) {
-            this.onCollapseField(item);
-            return;
-        }
-        this.path = item.data.uuid;
+        this.value = item.id;
         this.item = item;
     }
 
     public onSubmit(): void {
-        if (this.path) {
+        if (this.value && this.item) {
             const parents = this.getParents(this.item);
-            const fullName = parents.map(e => e?.data?.description).join('|');
+            const fullName = parents.map(e => e.name).join('|');
             this.ref.close({
-                name: this.item?.data?.description,
                 fullName: fullName,
-                value: this.path
+                name: this.item.name,
+                value: this.value
             });
         }
     }
@@ -82,5 +72,10 @@ export class FieldLinkDialog {
         } else {
             return [];
         }
+    }
+
+    public onFilter() {
+        const search = (this.search || '').toLowerCase();
+        this.items?.searchItems(search, 0);
     }
 }

@@ -69,6 +69,21 @@
         user-select: none;
         pointer-events: none;
     }
+
+    &.vertical-button {
+        flex-direction: column;
+        padding: 6px;
+
+        .guardian-button-label {
+            padding: 0px;
+        }
+
+        .guardian-button-icon {
+            height: 24px;
+            width: 24px;
+            margin-bottom: 4px;
+        }
+    }
 }
 
 button.guardian-button[disabled],

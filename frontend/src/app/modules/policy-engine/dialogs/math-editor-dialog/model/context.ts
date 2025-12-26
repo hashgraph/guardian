@@ -9,7 +9,6 @@ export class Context {
     public valid: boolean = false;
 
     private getField: (path: string) => any;
-    private components: any[] = [];
     private variables: any = {};
     private formulas: any = {};
     private scope: any = {};
@@ -24,7 +23,6 @@ export class Context {
         this.formulas = {};
         this.scope = {};
         this.getField = this.__get.bind({});
-        this.components = [];
     }
 
     public setDocument(doc: any) {
@@ -40,7 +38,6 @@ export class Context {
         }
         this.update(doc);
         return {
-            components: this.components,
             variables: this.variables,
             formulas: this.formulas,
             scope: this.scope,
@@ -51,13 +48,58 @@ export class Context {
 
     public getContext() {
         return {
-            components: this.components,
             variables: this.variables,
             formulas: this.formulas,
             scope: this.scope,
             document: this.document,
             getField: this.getField,
         }
+    }
+
+    public getComponents() {
+        const components = [];
+        const variableComponents: any[] = [];
+        const functionComponents: any[] = [];
+        for (const item of this.list) {
+            if (item.type === 'link') {
+                variableComponents.push({
+                    type: 'link',
+                    name: item.name,
+                    value: `variables[${item.name}]`
+                });
+            }
+            if (item.type === 'variable') {
+                variableComponents.push({
+                    type: 'variable',
+                    name: item.functionName,
+                    value: `variables['${item.functionName}']`
+                });
+            }
+            if (item.type === 'function') {
+                const paramsNames = item.functionParams.map((name) => `_ /*${name}*/`).join(',');
+                functionComponents.push({
+                    type: 'function',
+                    name: `${item.functionName}(${item.functionParams.join(',')})`,
+                    value: `formulas['${item.functionName}'](${paramsNames})`
+                });
+            }
+        }
+
+        if (variableComponents.length) {
+            components.push({
+                id: 'variables',
+                name: 'Variables',
+                components: variableComponents
+            });
+        }
+        if (functionComponents.length) {
+            components.push({
+                id: 'formulas',
+                name: 'Formulas',
+                components: functionComponents
+            });
+        }
+        return components;
     }
 
     private getValueByPath(doc: any, path: string): any {
@@ -78,7 +120,6 @@ export class Context {
         this.formulas = {};
         this.scope = {};
         this.getField = this.__get.bind(doc);
-        this.components = [];
         try {
             const ce = new ComputeEngine();
             for (const item of this.list) {
@@ -89,11 +130,6 @@ export class Context {
                     }
                     this.variables[item.name] = item.value;
                     this.scope[item.name] = item.value;
-                    this.components.push({
-                        type: 'link',
-                        name: item.name,
-                        value: `variables[${item.name}]`
-                    });
                 }
                 if (item.type === 'variable') {
                     const latex = item.getLatex();
@@ -106,14 +142,9 @@ export class Context {
                             ce.assign(item.functionName, convertValue(item.value));
                         }
                     }
-                    this.components.push({
-                        type: 'variable',
-                        name: item.functionName,
-                        value: `variables['${item.functionName}']`
-                    });
                 }
                 if (item.type === 'function') {
-                    const latex /**/ = item.getLatex();
+                    const latex = item.getLatex();
                     if (latex) {
                         ce.assign(item.functionName, ce.parse(latex));
                         this.formulas[item.functionName] = this.__evaluate.bind({
@@ -123,12 +154,6 @@ export class Context {
                         });
                         this.scope[item.functionName] = 'Function';
                     }
-                    const paramsNames = item.functionParams.map((name) => `_ /*${name}*/`).join(',');
-                    this.components.push({
-                        type: 'function',
-                        name: item.functionName,
-                        value: `formulas['${item.functionName}'](${paramsNames})`
-                    });
                 }
             }
             this.ce = ce;

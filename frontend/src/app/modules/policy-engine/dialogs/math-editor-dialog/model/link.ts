@@ -30,7 +30,7 @@ export class FieldLink {
     }
 
     public get path(): string {
-        return '';
+        return this.field || '';
     }
 
     public get invalid(): boolean {
