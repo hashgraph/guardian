@@ -34,7 +34,7 @@
     <div class="ger-table">
         <div class="ger-row ger-row-head">
             <div class="ger-cell ger-col-topic">
-                EVENT TOPIC ID
+                TOPIC ID
             </div>
 
             <div class="ger-cell ger-col-status">
@@ -71,7 +71,7 @@
                 </div>
 
                 <span class="ger-default-pill" *ngIf="row.isDefault">
-                    DEFAULT
+                    DEFAULT TOPIC
                 </span>
             </div>
 
@@ -81,7 +81,7 @@
                     [class.ger-status-processing]="row.status === 'PROCESSING'"
                     [class.ger-status-error]="row.status === 'ERROR'"
                 >
-                    {{ row.status }}
+                    <span class="ger-status-text">{{ row.status }}</span>
                 </span>
             </div>
 
@@ -92,15 +92,12 @@
             </div>
 
             <div class="ger-cell ger-col-active">
-                <label class="ger-checkbox">
-                    <input
-                        type="checkbox"
-                        [checked]="row.active"
-                        (change)="onActiveChanged(row, $any($event.target).checked)"
-                        [disabled]="readonly || loading || row.saving"
-                    />
-                    <span></span>
-                </label>
+                <p-checkbox
+                    [(ngModel)]="row.active"
+                    [binary]="true"
+                    [disabled]="readonly || loading || row.saving"
+                    (onChange)="onActiveChanged(row, $event.checked)"
+                ></p-checkbox>
             </div>
 
             <div class="ger-cell ger-col-conditions">
@@ -143,13 +140,13 @@
     </div>
 </div>
 
-<app-add-event-topic-modal
+<app-add-event-topic
     [visible]="addTopicModalOpen"
     [loading]="loading"
     (cancel)="closeAddTopicModal()"
-    (add)="confirmAddTopicModal()"
+    (add)="confirmAddTopicModal($event)"
 >
-</app-add-event-topic-modal>
+</app-add-event-topic>
 
 <div class="progress-footer" id="block-progress-footer" *ngIf="showNextButton">
     <div></div>
@@ -165,4 +162,8 @@
         >
         </button>
     </div>
+</div>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

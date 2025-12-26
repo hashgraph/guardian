@@ -1,14 +1,18 @@
-<div class="gew-card">
-    <div class="gew-header">
-        <div class="gew-title">
+<div class="ger-card">
+    <div class="ger-header">
+        <div class="ger-title">
             Global Events Writer
         </div>
+    </div>
 
-        <div class="gew-header-actions">
+    <div class="ger-toolbar">
+        <div class="ger-toolbar-left"></div>
+
+        <div class="ger-header-actions">
             <button
                 type="button"
                 pButton
-                class="button gew-header-btn"
+                class="button ger-header-btn"
                 label="Add Event Topic"
                 (click)="openAddTopicModal()"
                 [disabled]="loading"
@@ -18,7 +22,7 @@
             <button
                 type="button"
                 pButton
-                class="button gew-header-btn"
+                class="button ger-header-btn"
                 label="Create Topic"
                 (click)="openCreateTopicModal()"
                 [disabled]="loading"
@@ -27,52 +31,50 @@
         </div>
     </div>
 
-    <div class="gew-table">
-        <div class="gew-row gew-row-head">
-            <div class="gew-cell gew-col-topic">
+    <div class="ger-table">
+        <div class="ger-row ger-row-head">
+            <div class="ger-cell ger-col-topic">
                 TOPIC ID
             </div>
 
-            <div class="gew-cell gew-col-active">
+            <div class="ger-cell ger-col-active">
                 ACTIVE
             </div>
 
-            <div class="gew-cell gew-col-type">
+            <div class="ger-cell ger-col-type">
                 TYPE
             </div>
 
-            <div class="gew-cell gew-col-actions"></div>
+            <div class="ger-cell ger-col-actions"></div>
         </div>
 
         <div
-            class="gew-row"
+            class="ger-row"
             *ngFor="let row of streams; trackBy: trackByTopicId"
         >
-            <div class="gew-cell gew-col-topic">
-                <div class="gew-topic-value">
+            <div class="ger-cell ger-col-topic">
+                <div class="ger-topic-value" [title]="row.topicId">
                     {{ row.topicId }}
                 </div>
 
                 <span class="ger-default-pill" *ngIf="isDefaultTopic(row.topicId)">
-                    DEFAULT
+                    DEFAULT TOPIC
                 </span>
             </div>
 
-            <div class="gew-cell gew-col-active">
-                <label class="gew-checkbox">
-                    <input
-                        type="checkbox"
-                        [checked]="row.active"
-                        (change)="onActiveCheckboxChange(row, $event)"
-                        [disabled]="loading"
-                    />
-                    <span></span>
-                </label>
+            <div class="ger-cell ger-col-active">
+                <p-checkbox
+                    class="ger-checkbox"
+                    [(ngModel)]="row.active"
+                    [binary]="true"
+                    [disabled]="loading"
+                    (onChange)="onActiveChanged(row, $event.checked)"
+                ></p-checkbox>
             </div>
 
-            <div class="gew-cell gew-col-type">
+            <div class="ger-cell ger-col-type">
                 <select
-                    class="gew-select"
+                    class="ger-select"
                     [ngModel]="row.documentType"
                     (ngModelChange)="onStreamDocumentTypeChange(row, $event)"
                     [disabled]="loading || !documentTypeOptions.length"
@@ -86,13 +88,12 @@
                 </select>
             </div>
 
-            <div class="gew-cell gew-col-actions">
+            <div class="ger-cell ger-col-actions">
                 <button
                     type="button"
-                    class="gew-icon-btn gew-icon-btn-danger"
+                    class="ger-icon-btn ger-icon-btn-danger"
                     (click)="deleteStream(row)"
-                    [disabled]="loading"
-                    *ngIf="!isDefaultTopic(row.topicId)"
+                    [disabled]="loading || isDefaultTopic(row.topicId)"
                     aria-label="Delete topic"
                     title="Delete"
                 >
@@ -101,19 +102,19 @@
             </div>
         </div>
 
-        <div class="gew-empty" *ngIf="!streams || streams.length === 0">
+        <div class="ger-empty" *ngIf="!streams || streams.length === 0">
             No topics configured yet.
         </div>
     </div>
 </div>
 
-<app-add-event-topic-modal
+<app-add-event-topic
     [visible]="addTopicModalOpen"
     [loading]="loading"
     (cancel)="closeAddTopicModal()"
     (add)="confirmAddTopicModal($event)"
 >
-</app-add-event-topic-modal>
+</app-add-event-topic>
 
 <div class="progress-footer" id="block-progress-footer" *ngIf="showNextButton">
     <div></div>
@@ -129,4 +130,8 @@
         >
         </button>
     </div>
+</div>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>
