@@ -103,6 +103,13 @@ export const GLOBAL_DOCUMENT_TYPE_DEFAULT = "vc";
         defaultEvent: true,
         properties: [
             {
+                name: 'showNextButton',
+                label: 'Show Next button',
+                title: 'Show button to move to next block with cached payload',
+                type: PropertyType.Checkbox,
+                default: false,
+            },
+            {
                 name: 'topicIds',
                 label: 'Global topics',
                 title: 'One or more Hedera topics where notifications are published',
@@ -127,7 +134,7 @@ export const GLOBAL_DOCUMENT_TYPE_DEFAULT = "vc";
                         },
                     ],
                 },
-            },
+            }
         ],
     },
 })
@@ -498,11 +505,10 @@ export class GlobalEventsWriterBlock {
 
             const documentMessageId: string = this.extractCanonicalAddress(doc);
             if (!documentMessageId) {
-                throw new BlockActionError(
-                    'Canonical document address (messageId) is missing',
-                    ref.blockType,
-                    ref.uuid
+                ref.warn(
+                    'GlobalEventsWriter: Canonical document address (messageId) is missing; skip publish'
                 );
+                continue;
             }
 
             if (!doc.topicId) {
@@ -583,6 +589,7 @@ export class GlobalEventsWriterBlock {
             },
             streams,
             defaultTopicIds,
+            showNextButton: config.showNextButton,
             documentTypeOptions: GLOBAL_DOCUMENT_TYPE_ITEMS,
         };
     }
@@ -743,6 +750,9 @@ export class GlobalEventsWriterBlock {
 
                             const documentMessageId: string = this.extractCanonicalAddress(doc);
                             if (!documentMessageId) {
+                                ref.warn(
+                                    'GlobalEventsWriter: Canonical document address (messageId) is missing; skip publish'
+                                );
                                 continue;
                             }
 
@@ -773,6 +783,27 @@ export class GlobalEventsWriterBlock {
             }
 
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
+            ref.backup();
+
+            return {};
+        }
+
+        // Handle "Next" (go to next block with cached payload)
+        if (operation === 'Next') {
+            const cacheKey = this.getCacheKey(ref, user);
+            const cacheState = await this.getCacheState(ref, user, cacheKey);
+
+            const payload = cacheState.docs.length > 1 ? cacheState.docs : cacheState.docs[0];
+
+            if (!payload) {
+                throw new BlockActionError('No cached payload to continue', ref.blockType, ref.uuid);
+            }
+
+            const outState: IPolicyEventState = { data: payload };
+
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState);
             ref.backup();
 
             return {};

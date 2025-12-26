@@ -1548,6 +1548,13 @@ export const BlockAbout = {
         'defaultEvent': true,
         'properties': [
             {
+                'name': 'showNextButton',
+                'label': 'Show Next button',
+                'title': 'Show button to move to next block with cached payload',
+                'type': 'Checkbox',
+                'default': false,
+            },
+            {
                 'name': 'topicIds',
                 'label': 'Global topics',
                 'title': 'One or more Hedera topics where notifications are published',
@@ -1595,6 +1602,13 @@ export const BlockAbout = {
         'output': null,
         'defaultEvent': true,
         'properties': [
+            {
+                'name': 'showNextButton',
+                'label': 'Show Next button',
+                'title': 'Show button to move to next block with cached payload',
+                'type': 'Checkbox',
+                'default': false,
+            },
             {
                 'name': 'eventTopics',
                 'label': 'Event topics',

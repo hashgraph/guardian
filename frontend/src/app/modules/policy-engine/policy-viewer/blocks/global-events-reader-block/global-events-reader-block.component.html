@@ -150,3 +150,19 @@
     (add)="confirmAddTopicModal()"
 >
 </app-add-event-topic-modal>
+
+<div class="progress-footer" id="block-progress-footer" *ngIf="showNextButton">
+    <div></div>
+    <div>
+        <button
+            type="button"
+            pButton
+            class="p-button"
+            label="Next"
+            (click)="onNext()"
+            [disabled]="loading"
+            form="roles-form"
+        >
+        </button>
+    </div>
+</div>

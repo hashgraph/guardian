@@ -30,6 +30,7 @@ export interface WriterGetDataResponse {
         active: boolean;
     }>;
 
+    showNextButton?: boolean;
     defaultTopicIds?: string[];
     documentTypeOptions?: Array<{ label: string; value: GlobalDocumentType }>;
 }
@@ -70,6 +71,8 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     private readonly subscriptions = new Subscription();
 
     public defaultTopicIds: string[] = [];
+
+    public showNextButton: boolean = false;
 
     private confirmDialogRef: DynamicDialogRef | null = null;
 
@@ -147,6 +150,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     private applyData(data: WriterGetDataResponse | null): void {
         this.defaultTopicIds = (data?.defaultTopicIds || []).map((t) => String(t).trim());
 
+        this.showNextButton = Boolean(data?.showNextButton);
         this.documentTypeOptions = data?.documentTypeOptions || [];
 
         this.streams = (data?.streams || []).map((s) => {
@@ -394,6 +398,40 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
                     console.error(e?.error || e);
                     this.loading = false;
                     this.changeDetector.detectChanges();
+                },
+            );
+    }
+
+    public onNext(): void {
+        if (this.static) {
+            return;
+        }
+        if (!this.policyId || !this.id) {
+            return;
+        }
+        if (this.loading) {
+            return;
+        }
+
+        this.loading = true;
+
+        const payload = {
+            operation: 'Next' as any,
+            streams: [],
+        };
+
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, payload)
+            .pipe(
+                finalize(() => {
+                    this.loading = false;
+                    this.changeDetector.detectChanges();
+                }),
+            )
+            .subscribe(
+                () => {},
+                (e) => {
+                    console.error(e?.error || e);
                 },
             );
     }

@@ -63,12 +63,8 @@ export interface GlobalEventsReaderGetDataResponse {
     streams: GlobalEventsStreamRow[];
     defaultTopicIds?: string[];
 
+    showNextButton?: boolean;
     documentTypeOptions?: Array<{ label: string; value: DocumentType }>;
-}
-
-export interface GlobalEventsStreamRow {
-    filterFieldsByBranch?: Record<string, Record<string, string>>;
-    branchDocumentTypeByBranch?: Record<string, DocumentType>;
 }
 
 @Component({
@@ -99,18 +95,17 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
 
     public defaultTopicIds: string[] = [];
 
-    // Modal: Add Topic
     public addTopicModalOpen: boolean = false;
     public addTopicModalTopicId: string = '';
     public addTopicModalError: string = '';
-
-    public createTopicModalOpen: boolean = false;
 
     private socket: any;
     private filtersDialogRef: DynamicDialogRef | null = null;
     private filtersDialogCloseSub: Subscription | null = null;
 
     public documentTypeOptions: Array<{ label: string; value: DocumentType }> = [];
+
+    public showNextButton: boolean = false;
 
     private confirmDialogRef: DynamicDialogRef | null = null;
 
@@ -187,6 +182,8 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
     }
 
     private applyData(data: GlobalEventsReaderGetDataResponse | null): void {
+        this.showNextButton = Boolean(data?.showNextButton);
+
         if (!data) {
             this.rows = [];
             this.readonly = true;
@@ -589,6 +586,39 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                 () => {
                     this.loadData();
                 },
+                (e) => {
+                    console.error(e?.error || e);
+                },
+            );
+    }
+
+    public onNext(): void {
+        if (this.static) {
+            return;
+        }
+        if (!this.policyId || !this.id) {
+            return;
+        }
+        if (this.loading) {
+            return;
+        }
+
+        this.loading = true;
+
+        const payload = {
+            operation: 'Next',
+        };
+
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, payload)
+            .pipe(
+                finalize(() => {
+                    this.loading = false;
+                    this.changeDetector.detectChanges();
+                }),
+            )
+            .subscribe(
+                () => {},
                 (e) => {
                     console.error(e?.error || e);
                 },

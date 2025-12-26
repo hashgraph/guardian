@@ -57,6 +57,8 @@ interface GlobalEventReaderConfig {
     eventTopics?: Array<{ topicId: string }>;
     documentType?: GlobalDocumentType;
     branches?: GlobalEventReaderBranchConfig[];
+    showNextButton: boolean;
+
 }
 
 type FilterFieldsByBranch = Record<string, Record<string, string>>;
@@ -118,6 +120,10 @@ type SchemaFieldIndex = {
     byDescription: Map<string, SchemaFieldRef>;
 };
 
+interface CacheState {
+    docs?: IPolicyDocument[];
+}
+
 export const GLOBAL_DOCUMENT_TYPE_LABELS = {
     vc: 'VC',
     json: 'JSON',
@@ -162,6 +168,13 @@ export const GLOBAL_DOCUMENT_TYPE_DEFAULT = 'vc';
         ],
         defaultEvent: true,
         properties: [
+            {
+                name: 'showNextButton',
+                label: 'Show Next button',
+                title: 'Show button to move to next block with cached payload',
+                type: PropertyType.Checkbox,
+                default: false,
+            },
             {
                 name: 'eventTopics',
                 label: 'Event topics',
@@ -1080,6 +1093,28 @@ class GlobalEventsReaderBlock {
         }
     }
 
+    /**
+     * Builds a unique cache key for storing the last document per-user.
+     */
+    private getCacheKey(ref: AnyBlockType, user: PolicyUser): string {
+        return `globalEventsReaderBlock:last:${ref.policyId}:${ref.uuid}:${user.userId}`;
+    }
+
+    /**
+     * Retrieves the cached state for the given user.
+     */
+    private async getCacheState(ref: AnyBlockType, user: PolicyUser, cacheKey: string): Promise<CacheState> {
+        let cacheState: CacheState = {};
+        try {
+            const cached = await ref.getCache<CacheState>(cacheKey, user);
+            if (cached && typeof cached === 'object') {
+                cacheState = cached;
+            }
+        } catch (_e) {
+            //
+        }
+        return cacheState;
+    }
 
     @ActionCallback({
         type: PolicyInputEventType.RunEvent,
@@ -1094,7 +1129,7 @@ class GlobalEventsReaderBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const user: PolicyUser = event?.user;
 
-        console.log('readerBlock runAction, data =', event.data?.data);
+        console.log('readerBlock runAction, data =');
 
         if (!user) {
             throw new BlockActionError('User is required', ref.blockType, ref.uuid);
@@ -1105,13 +1140,25 @@ class GlobalEventsReaderBlock {
         await this.ensureDefaultStreams(ref, user);
 
         const state: IPolicyEventState = (event as any)?.data || (event as any);
+        const payload = state?.data ?? [];
+
+        const docs: IPolicyDocument[] = Array.isArray(payload) ? payload : [payload];
+
+        const cacheKey = this.getCacheKey(ref, user);
+        const cacheState = await this.getCacheState(ref, user, cacheKey);
+
+        cacheState.docs = docs;
+
+        await ref.setShortCache(cacheKey, cacheState, user);
+
+        const outState: IPolicyEventState = { data: payload };
 
         // Hidden block behavior
         if (!ref.defaultActive) {
             // await this.forceActivateDefaultTopics(ref, user);
 
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
 
             ref.backup();
@@ -1179,6 +1226,7 @@ class GlobalEventsReaderBlock {
             },
             streams: rows,
             defaultTopicIds: configuredTopicIds,
+            showNextButton: config.showNextButton,
             documentTypeOptions: GLOBAL_DOCUMENT_TYPE_ITEMS,
         };
     }
@@ -1249,7 +1297,8 @@ class GlobalEventsReaderBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
         const operation = data?.operation;
-        if (operation !== 'Update' && operation !== 'CreateTopic' && operation !== 'AddTopic' && operation !== 'Delete') {
+        console.log('operation', operation)
+        if (operation !== 'Update' && operation !== 'CreateTopic' && operation !== 'AddTopic' && operation !== 'Delete' && operation !== 'Next') {
             throw new BlockActionError('Invalid operation', ref.blockType, ref.uuid);
         }
 
@@ -1270,6 +1319,26 @@ class GlobalEventsReaderBlock {
             defaultBranchDocumentTypeByBranch[branchEvent] = GLOBAL_DOCUMENT_TYPE_DEFAULT;
         }
 
+        // Handle "Next" (go to next block with cached payload)
+        if (operation === 'Next') {
+            const cacheKey = this.getCacheKey(ref, user);
+            const cacheState = await this.getCacheState(ref, user, cacheKey);
+
+            const payload = cacheState.docs.length > 1 ? cacheState.docs : cacheState.docs[0];
+
+            if (!payload) {
+                throw new BlockActionError('No cached payload to next', ref.blockType, ref.uuid);
+            }
+
+            const outState: IPolicyEventState = { data: payload };
+
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState);
+            ref.backup();
+
+            return {};
+        }
 
         // ==========================================================
         // Create topic - create Hedera topic + create DB stream row
