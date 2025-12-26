@@ -160,6 +160,10 @@ p-table {
     &.small-guardian-tooltip {
         font-size: 12px;
     }
+
+    &.wide-guardian-tooltip {
+        min-width: 400px;
+    }
 }
 
 button.mat-raised-button,

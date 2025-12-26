@@ -92,6 +92,31 @@
     height: 40px;
 }
 
+.tags-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
+    color: #bababa;
+    pointer-events: all;
+
+    .tags-display-count {
+        font-family: Inter;
+        font-weight: 400;
+        font-style: Regular;
+        font-size: 14px;
+        line-height: 12px;
+        text-align: right;
+        vertical-align: middle;
+    }
+
+    ::ng-deep .p-button {
+        background: none;
+        border: none;
+        color: var(--color-primary, #4169E2);
+    }
+}
+
 ::ng-deep .propRowCell input.prop-input {
     min-height: 38px;
     font-size: 16px !important;

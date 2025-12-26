@@ -179,7 +179,8 @@ const columns = [ {
                 user.POLICIES_POLICY_CREATE ||
                 user.POLICIES_POLICY_UPDATE ||
                 user.POLICIES_POLICY_REVIEW ||
-                user.POLICIES_POLICY_DELETE
+                user.POLICIES_POLICY_DELETE ||
+                user.POLICIES_POLICY_TAG
             )
         } else {
             return false;

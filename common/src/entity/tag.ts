@@ -52,6 +52,12 @@ export class Tag extends RestoreEntity {
     localTarget?: string;
 
     /**
+     * Linked Items
+     */
+    @Property({ nullable: true })
+    linkedItems?: string[];
+
+    /**
      * Target ID
      */
     @Property({ nullable: true })
@@ -101,6 +107,12 @@ export class Tag extends RestoreEntity {
      */
     @Property({ nullable: false })
     date: string;
+
+    /**
+     * Inherit tags
+     */
+    @Property({ nullable: true })
+    inheritTags: boolean;
 
     /**
      * Create document

@@ -1,6 +1,18 @@
 <div class="dialog-header">
     <div class="header-container">
         <div class="header-text">{{title}}</div>
+        <div *ngIf="tags && tags.length > 0" class="tags-container">
+            <div class="tag-item" *ngFor="let tag of tags" (click)="onOpenTag(tag)">
+                <svg-icon
+                    class="svg-icon-16"
+                    src="/assets/images/icons/16/label.svg"
+                    svgClass="primary-color">
+                </svg-icon>
+                <div class="name">
+                    {{ tag.name }}
+                </div>
+            </div>
+        </div>
     </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>

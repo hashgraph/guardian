@@ -59,6 +59,10 @@ export class VcDocument {
      */
     public static readonly EVIDENCE = 'evidence';
     /**
+     * Tags
+     */
+    public static readonly TAGS = 'tags';
+    /**
      * ID
      * @protected
      */
@@ -98,6 +102,11 @@ export class VcDocument {
      * @protected
      */
     protected evidences: any[];
+    /**
+     * Tags
+     * @protected
+     */
+    protected tags: any[];
 
     /**
      * Constructor
@@ -277,6 +286,41 @@ export class VcDocument {
     }
 
     /**
+     * Get tags
+     */
+    public getTags(): any {
+        return this.tags;
+    }
+
+    /**
+     * Set tags
+     * @param tags
+     */
+    public setTags(tags: any): void {
+        this.tags = tags;
+    }
+
+    /**
+     * Add tags
+     * @param tags
+     */
+    public addTags(tags: any): void {
+        if (!tags || tags.length <= 0) {
+            return;
+        }
+        this.tags = this.tags || [];
+        for (const tag of tags) {
+            if (!tag.inheritTags) {
+                continue;
+            }
+            if (this.tags.some(item => item.messageId === tag.messageId)) {
+                continue;
+            }
+            this.tags.push(tag);
+        }
+    }
+
+    /**
      * Get subject type
      */
     public getSubjectType(): string {
@@ -364,6 +408,10 @@ export class VcDocument {
             rootObject[VcDocument.PROOF] = this.proof;
         }
 
+        if (this.tags) {
+            rootObject[VcDocument.TAGS] = this.tags;
+        }
+
         return rootObject;
     }
 
@@ -443,6 +491,10 @@ export class VcDocument {
 
         if (json[VcDocument.PROOF]) {
             result.proof = json[VcDocument.PROOF];
+        }
+
+        if (json[VcDocument.TAGS]) {
+            result.tags = json[VcDocument.TAGS];
         }
 
         return result;
