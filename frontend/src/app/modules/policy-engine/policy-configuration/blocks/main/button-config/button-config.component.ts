@@ -54,9 +54,6 @@ export class ButtonConfigComponent implements OnInit {
         this.item = block;
         this.properties = block.properties;
         this.properties.uiMetaData = this.properties.uiMetaData || {};
-
-        this.ensureUiMetaDataDefaults();
-
         this.properties.uiMetaData.buttons = this.properties.uiMetaData.buttons || [];
 
         this.ensureButtonsDefaults(this.properties.uiMetaData.buttons);
@@ -76,9 +73,9 @@ export class ButtonConfigComponent implements OnInit {
             name: '',
             type: 'selector',
             filters: [],
-            uiClassStateRead: false,
-            uiClassStateWrite: false,
-            setVisibleButtons: ''
+            incomingHideEventsEnabled: false,
+            outgoingHideEventsEnabled: false,
+            visibleButtons: ''
         })
         this.propHidden.buttons[this.properties.uiMetaData.buttons.length - 1] = {};
     }
@@ -103,35 +100,15 @@ export class ButtonConfigComponent implements OnInit {
         this.item.changed = true;
     }
 
-    private ensureUiMetaDataDefaults(): void {
-        const uiMetaData = this.properties.uiMetaData;
-
-        if (typeof uiMetaData.enableIndividualFilters !== 'boolean') {
-            uiMetaData.enableIndividualFilters = false;
-        }
-    }
-
     private ensureButtonsDefaults(buttons: any[]): void {
         if (!Array.isArray(buttons)) {
             return;
         }
 
         for (const button of buttons) {
-            if (typeof button.uiClassStateRead !== 'boolean') {
-                button.uiClassStateRead = false;
-            }
-
-            if (typeof button.uiClassStateWrite !== 'boolean') {
-                button.uiClassStateWrite = false;
-            }
-
-            if (typeof button.setVisibleButtons !== 'string') {
-                button.setVisibleButtons = '';
-            }
-
-            if (typeof button.uiClassStateDefaultVisible !== 'boolean') {
-                button.uiClassStateDefaultVisible = true;
-            }
+            button.incomingHideEventsEnabled ??= false;
+            button.outgoingHideEventsEnabled ??= false;
+            button.visibleButtons ??= '';
         }
     }
 }

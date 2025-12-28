@@ -65,8 +65,9 @@ export interface GlobalEventsReaderGetDataResponse {
 
     showNextButton?: boolean;
     documentTypeOptions?: Array<{ label: string; value: DocumentType }>;
-
     branchesWithSchemaName?: BranchConfig[];
+    userId: string,
+    userDid: string,
 }
 
 @Component({
@@ -188,7 +189,8 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
     }
 
     private applyData(data: GlobalEventsReaderGetDataResponse | null): void {
-        this.showNextButton = Boolean(data?.showNextButton);
+        const userDid = data?.userDid;
+        this.showNextButton = Boolean(data?.showNextButton) && !localStorage.getItem('POLICY_HIDE_EVENTS')?.includes(`"${userDid}":{"${this.policyId}":`);
 
         if (!data) {
             this.rows = [];
@@ -617,12 +619,6 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
 
         this.policyEngineService
             .setBlockData(this.id, this.policyId, payload)
-            .pipe(
-                finalize(() => {
-                    this.loading = false;
-                    this.changeDetector.detectChanges();
-                }),
-            )
             .subscribe(
                 () => {},
                 (e) => {

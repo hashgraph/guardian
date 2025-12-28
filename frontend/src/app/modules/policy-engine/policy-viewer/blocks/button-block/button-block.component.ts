@@ -32,9 +32,9 @@ export class ButtonBlockComponent implements OnInit {
     readonly: boolean = false;
     private readonly _commentField: string = 'option.comment';
 
-    private uiClassStateUserId: string | null = null;
+    private hideEventsUserId: string | '' = '';
 
-    private readonly POLICY_BUTTONS_ACCEPTING: string = 'POLICY_BUTTONS_ACCEPTING';
+    private readonly HIDE_EVENTS_STORAGE_KEY: string = 'POLICY_HIDE_EVENTS';
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -108,11 +108,12 @@ export class ButtonBlockComponent implements OnInit {
             this.enableIndividualFilters = this.uiMetaData.enableIndividualFilters;
             this.buttons = this.uiMetaData.buttons || [];
 
-            this.uiClassStateUserId = this.extractUserId(data);
+            this.hideEventsUserId = data.userDid
+            ;
         } else {
             this.data = null;
 
-            this.uiClassStateUserId = null;
+            this.hideEventsUserId = '';
         }
 
         if (!this.buttons) {
@@ -133,7 +134,7 @@ export class ButtonBlockComponent implements OnInit {
             }
         }
 
-        this.applyUiClassStateVisibilityV2();
+        this.applyIncomingHideEventsVisibility();
 
         this.cdref.detectChanges();
     }
@@ -216,7 +217,7 @@ export class ButtonBlockComponent implements OnInit {
     }
 
     onSelect(button: any) {
-        this.writeUiClassStateV2(button);
+        this.writeOutgoingHideEventsState(button);
 
         this.setObjectValue(this.data, button.field, button.value);
         this.commonVisible = false;
@@ -268,147 +269,39 @@ export class ButtonBlockComponent implements OnInit {
         });
     }
 
-    private buildUiClassStateStorageKeyV2(): string | null {
-        if (!this.policyId) {
-            return null;
-        }
-        if (!this.uiClassStateUserId) {
-            return null;
-        }
-        return this.POLICY_BUTTONS_ACCEPTING;
-    }
-
-
-    private extractUserId(blockData: any): string | null {
-        if (!blockData) {
-            return null;
-        }
-
-        const user = blockData.user;
-        if (user && user.id) {
-            return String(user.id);
-        }
-        if (user && user.did) {
-            return String(user.did);
-        }
-        if (blockData.userId) {
-            return String(blockData.userId);
-        }
-        if (blockData.userDid) {
-            return String(blockData.userDid);
-        }
-
-        return null;
-    }
-
-    private parseCsv(value: any): string[] {
-        if (typeof value !== 'string') {
-            return [];
-        }
-
-        return value
-            .split(',')
-            .map((x) => String(x).trim())
-            .filter((x) => {
-                return !!x;
-            });
-    }
-
-    private hasAnyUiClassStateConfigV2(): boolean {
-        return (this.buttons || []).some((b: any) => {
-            return (
-                b &&
-                (typeof b.uiClassStateRead === 'boolean' ||
-                    typeof b.uiClassStateWrite === 'boolean' ||
-                    typeof b.setVisibleButtons === 'string' ||
-                    typeof b.uiClassStateDefaultVisible === 'boolean') // [ADDED]
-            );
-        });
-    }
-
-    private hasAnyUiClassStateReadV2(): boolean {
-        return (this.buttons || []).some((b: any) => {
-            return !!(b && b.uiClassStateRead === true);
-        });
-    }
-
-    private applyUiClassStateVisibilityV2(): void {
-        if (!this.hasAnyUiClassStateConfigV2()) {
+    private clearHideEventsValue(store: Record<string, Record<string, string>>): void {
+        const byUser = store[this.hideEventsUserId];
+        if (!byUser) {
             return;
         }
 
-        if (!this.hasAnyUiClassStateReadV2()) {
-            return;
+        if ( byUser[this.policyId]) {
+            delete byUser[this.policyId];
         }
 
-        const key = this.buildUiClassStateStorageKeyV2();
-        if (!key) {
-            return;
+        const policyIds = Object.keys(byUser);
+        if (!policyIds.length) {
+            delete store[this.hideEventsUserId];
         }
 
-        const raw = this.readUiClassStateValueV2();
-        const allowed = this.parseCsv(raw);
+        console.log('store', store)
 
-        if (allowed.length === 0) {
-            for (const button of this.buttons || []) {
-                if (!button || button.uiClassStateRead !== true) {
-                    continue;
-                }
-
-                const isDefault = button.uiClassStateDefaultVisible === true;
-                button.visible = !!button.visible && isDefault;
-            }
-            return;
-        }
-
-        for (const button of this.buttons || []) {
-            if (!button || button.uiClassStateRead !== true) {
-                continue;
-            }
-
-            const name = button.name ? String(button.name).trim() : '';
-            const tag = button.tag ? String(button.tag).trim() : '';
-
-            const match = (name && allowed.includes(name)) || (tag && allowed.includes(tag));
-            button.visible = !!button.visible && match;
+        const userIds = Object.keys(store);
+        if (!userIds.length) {
+            localStorage.removeItem(this.HIDE_EVENTS_STORAGE_KEY);
         }
     }
 
-    private writeUiClassStateV2(button: any): void {
-        if (!this.hasAnyUiClassStateConfigV2()) {
-            return;
-        }
-
-        const key = this.buildUiClassStateStorageKeyV2();
-        if (!key) {
-            return;
-        }
-
-        this.clearUiClassStateValueV2();
-
-        if (!button || button.uiClassStateWrite !== true) {
-            return;
-        }
-
-        const value = typeof button.setVisibleButtons === 'string'
-            ? String(button.setVisibleButtons).trim()
-            : '';
-
-        if (value) {
-            this.setUiClassStateValueV2(value);
-        }
-    }
-
-    private readPolicyButtonsAcceptingStore(): Record<string, Record<string, string>> {
-        const raw = localStorage.getItem(this.POLICY_BUTTONS_ACCEPTING);
+    private readHideEventsStore(): Record<string, Record<string, string>> {
+        const raw = localStorage.getItem(this.HIDE_EVENTS_STORAGE_KEY);
         if (!raw) {
             return {};
         }
 
         try {
             const parsed = JSON.parse(raw);
-            if (parsed && typeof parsed === 'object') {
-                return parsed as Record<string, Record<string, string>>;
+            if (typeof parsed === 'object') {
+                return parsed;
             }
         } catch (_e) {
             //
@@ -417,80 +310,75 @@ export class ButtonBlockComponent implements OnInit {
         return {};
     }
 
-    private writePolicyButtonsAcceptingStore(store: Record<string, Record<string, string>>): void {
-        const userIds = Object.keys(store);
-        if (userIds.length === 0) {
-            localStorage.removeItem(this.POLICY_BUTTONS_ACCEPTING);
+    private writeOutgoingHideEventsState(button: any): void {
+        if (!this.policyId) {
+            return;
+        }
+        if (!this.hideEventsUserId) {
             return;
         }
 
-        localStorage.setItem(this.POLICY_BUTTONS_ACCEPTING, JSON.stringify(store));
+        const store = this.readHideEventsStore();
+
+        this.clearHideEventsValue(store);
+
+        const value = button.visibleButtons
+
+        if (button.outgoingHideEventsEnabled && value) {
+            if (!store[this.hideEventsUserId]) {
+                store[this.hideEventsUserId] = {};
+            }
+
+            store[this.hideEventsUserId][this.policyId] = value;
+        }
+
+        localStorage.setItem(this.HIDE_EVENTS_STORAGE_KEY, JSON.stringify(store));
     }
 
-    private readUiClassStateValueV2(): string | null {
-        if (!this.policyId) {
-            return null;
-        }
-        if (!this.uiClassStateUserId) {
-            return null;
-        }
-
-        const store = this.readPolicyButtonsAcceptingStore();
-        const byUser = store[this.uiClassStateUserId];
+    private readHideEventsValue(): string {
+        const store = this.readHideEventsStore();
+        const byUser = store[this.hideEventsUserId];
         if (!byUser) {
-            return null;
+            return '';
         }
 
-        const value = byUser[this.policyId];
-        if (typeof value !== 'string') {
-            return null;
-        }
-
-        return value;
+        return byUser[this.policyId] ?? '';
     }
 
-    private clearUiClassStateValueV2(): void {
+    private applyIncomingHideEventsVisibility(): void {
         if (!this.policyId) {
             return;
         }
-        if (!this.uiClassStateUserId) {
+
+        if (!this.hideEventsUserId) {
             return;
         }
 
-        const store = this.readPolicyButtonsAcceptingStore();
-        const byUser = store[this.uiClassStateUserId];
-        if (!byUser) {
+        const isAnyIncomingHideEventsEnabled = (this.buttons || []).some((b: any) => b?.incomingHideEventsEnabled);
+
+        if (!isAnyIncomingHideEventsEnabled) {
             return;
         }
 
-        if (Object.prototype.hasOwnProperty.call(byUser, this.policyId)) {
-            delete byUser[this.policyId];
+        const stored = this.readHideEventsValue();
+
+        const allowedButtons = stored.split(',').map((x) => x.trim()).filter((x) => x);
+        for (const button of this.buttons || []) {
+            if (!button?.incomingHideEventsEnabled) {
+                continue;
+            }
+
+            if (!allowedButtons.length) {
+                button.visible = false;
+                continue;
+            }
+
+            const name = button.name;
+            const tag = button.tag;
+
+            const match = name && allowedButtons.includes(name) || tag && allowedButtons.includes(tag);
+
+            button.visible = button.visible && match;
         }
-
-        const policyIds = Object.keys(byUser);
-        if (policyIds.length === 0) {
-            delete store[this.uiClassStateUserId];
-        }
-
-        this.writePolicyButtonsAcceptingStore(store);
-    }
-
-    private setUiClassStateValueV2(value: string): void {
-        if (!this.policyId) {
-            return;
-        }
-        if (!this.uiClassStateUserId) {
-            return;
-        }
-
-        const store = this.readPolicyButtonsAcceptingStore();
-
-        if (!store[this.uiClassStateUserId]) {
-            store[this.uiClassStateUserId] = {};
-        }
-
-        store[this.uiClassStateUserId][this.policyId] = value;
-
-        this.writePolicyButtonsAcceptingStore(store);
     }
 }

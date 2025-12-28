@@ -591,6 +591,8 @@ export class GlobalEventsWriterBlock {
             defaultTopicIds,
             showNextButton: config.showNextButton,
             documentTypeOptions: GLOBAL_DOCUMENT_TYPE_ITEMS,
+            userId: user.userId,
+            userDid: user.did,
         };
     }
 

@@ -1250,7 +1250,9 @@ class GlobalEventsReaderBlock {
             defaultTopicIds: configuredTopicIds,
             showNextButton: config.showNextButton,
             documentTypeOptions: GLOBAL_DOCUMENT_TYPE_ITEMS,
-            branchesWithSchemaName
+            branchesWithSchemaName,
+            userId: user.userId,
+            userDid: user.did,
         };
     }
 

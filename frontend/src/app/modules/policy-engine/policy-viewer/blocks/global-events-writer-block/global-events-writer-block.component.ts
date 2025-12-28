@@ -33,6 +33,8 @@ export interface WriterGetDataResponse {
     showNextButton?: boolean;
     defaultTopicIds?: string[];
     documentTypeOptions?: Array<{ label: string; value: GlobalDocumentType }>;
+    userId: string,
+    userDid: string,
 }
 
 @Component({
@@ -158,7 +160,8 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             .map((t) => String(t).trim())
             .filter((t) => t.length > 0);
 
-        this.showNextButton = Boolean(data?.showNextButton);
+        const userDid = data?.userDid;
+        this.showNextButton = Boolean(data?.showNextButton) && !localStorage.getItem('POLICY_HIDE_EVENTS')?.includes(`"${userDid}":{"${this.policyId}":`);
 
         this.documentTypeOptions = Array.isArray(data?.documentTypeOptions)
             ? data!.documentTypeOptions!
@@ -464,11 +467,6 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
 
         this.policyEngineService
             .setBlockData(this.id, this.policyId, payload)
-            .pipe(
-                finalize(() => {
-                    this.setLoading(false);
-                }),
-            )
             .subscribe(
                 () => {},
                 (e) => {
