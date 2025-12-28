@@ -1144,6 +1144,14 @@ class GlobalEventsReaderBlock {
 
         const docs: IPolicyDocument[] = Array.isArray(payload) ? payload : [payload];
 
+        if (!docs.length || ref.dryRun) {
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, state);
+            ref.backup();
+            return;
+        }
+
         const cacheKey = this.getCacheKey(ref, user);
         const cacheState = await this.getCacheState(ref, user, cacheKey);
 
@@ -1177,6 +1185,24 @@ class GlobalEventsReaderBlock {
     public async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const config = (ref.options || {}) as GlobalEventReaderConfig;
+
+        if (ref.dryRun) {
+            return {
+                id: ref.uuid,
+                blockType: ref.blockType,
+                actionType: ref.actionType,
+                readonly: true,
+                config: {
+                    eventTopics: config.eventTopics || [],
+                },
+                streams: [],
+                defaultTopicIds: [],
+                showNextButton: false,
+                documentTypeOptions: GLOBAL_DOCUMENT_TYPE_ITEMS,
+                userId: user.userId,
+                userDid: user.did,
+            };
+        }
 
         await this.ensureDefaultStreams(ref, user);
 
@@ -1237,10 +1263,7 @@ class GlobalEventsReaderBlock {
             id: ref.uuid,
             blockType: ref.blockType,
             actionType: ref.actionType,
-            readonly: (
-                ref.actionType === LocationType.REMOTE &&
-                user.location === LocationType.REMOTE
-            ),
+            readonly: (ref.actionType === LocationType.REMOTE && user.location === LocationType.REMOTE) || !!ref.dryRun,
             config: {
                 eventTopics: config.eventTopics || [],
                 documentType: config.documentType,
@@ -1321,8 +1344,12 @@ class GlobalEventsReaderBlock {
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
+        if (ref.dryRun) {
+            throw new BlockActionError('Block is disabled in dry run mode', ref.blockType, ref.uuid);
+        }
+
         const operation = data?.operation;
-        console.log('operation', operation)
+
         if (operation !== 'Update' && operation !== 'CreateTopic' && operation !== 'AddTopic' && operation !== 'Delete' && operation !== 'Next') {
             throw new BlockActionError('Invalid operation', ref.blockType, ref.uuid);
         }

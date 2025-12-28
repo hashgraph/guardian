@@ -209,7 +209,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             this.config.branches = (data as any).branchesWithSchemaName;
         }
 
-        this.readonly = !!data.readonly;
+        this.readonly = data.readonly;
         this.config = data.config || {
             eventTopics: [],
             documentType: 'any',

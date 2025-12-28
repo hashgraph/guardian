@@ -474,10 +474,10 @@ export class GlobalEventsWriterBlock {
 
         const docs: IPolicyDocument[] = Array.isArray(payload) ? payload : [payload];
 
-        if (docs.length === 0) {
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
+        if (!docs.length || ref.dryRun) {
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, state);
             ref.backup();
             return;
         }
@@ -558,6 +558,25 @@ export class GlobalEventsWriterBlock {
     public async getData(user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const config = ref.options || {}
+
+        if (ref.dryRun) {
+            return {
+                id: ref.uuid,
+                blockType: ref.blockType,
+                actionType: ref.actionType,
+                readonly: true,
+                config: {
+                    eventTopics: config.eventTopics || [],
+                },
+                streams: [],
+                defaultTopicIds: [],
+                showNextButton: false,
+                documentTypeOptions: GLOBAL_DOCUMENT_TYPE_ITEMS,
+                userId: user.userId,
+                userDid: user.did,
+            };
+        }
+
         if (!user) {
             throw new BlockActionError('User is required', ref.blockType, ref.uuid);
         }
@@ -580,10 +599,7 @@ export class GlobalEventsWriterBlock {
             id: ref.uuid,
             blockType: ref.blockType,
             actionType: ref.actionType,
-            readonly: (
-                ref.actionType === LocationType.REMOTE &&
-                user.location === LocationType.REMOTE
-            ),
+            readonly: (ref.actionType === LocationType.REMOTE && user.location === LocationType.REMOTE) || !!ref.dryRun,
             config: {
                 eventTopics: config.eventTopics || [],
             },
@@ -603,6 +619,10 @@ export class GlobalEventsWriterBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const operation = data?.operation;
         const streams = data?.streams ?? [];
+
+        if (ref.dryRun) {
+            throw new BlockActionError('Block is disabled in dry run mode', ref.blockType, ref.uuid);
+        }
 
         if (!user) {
             throw new BlockActionError('User is required', ref.blockType, ref.uuid);

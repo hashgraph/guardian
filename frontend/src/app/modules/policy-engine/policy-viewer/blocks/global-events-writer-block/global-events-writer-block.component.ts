@@ -35,6 +35,7 @@ export interface WriterGetDataResponse {
     documentTypeOptions?: Array<{ label: string; value: GlobalDocumentType }>;
     userId: string,
     userDid: string,
+    readonly: boolean;
 }
 
 @Component({
@@ -69,6 +70,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     private socket: any;
 
     private confirmDialogRef: DynamicDialogRef | null = null;
+    public readonly: boolean = true;
 
     /**
      * If WS update arrives during loading - we mark reload and re-run loadData
@@ -156,6 +158,15 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     }
 
     private applyData(data: WriterGetDataResponse | null): void {
+        if (!data) {
+            this.readonly = true;
+            this.defaultTopicIds = [];
+            this.documentTypeOptions = [];
+            return;
+        }
+
+        this.readonly = data.readonly;
+
         this.defaultTopicIds = (data?.defaultTopicIds || [])
             .map((t) => String(t).trim())
             .filter((t) => t.length > 0);
