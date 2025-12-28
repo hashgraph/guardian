@@ -140,13 +140,13 @@
     </div>
 </div>
 
-<app-add-event-topic
+<app-add-global-event-topic
     [visible]="addTopicModalOpen"
     [loading]="loading"
     (cancel)="closeAddTopicModal()"
     (add)="confirmAddTopicModal($event)"
 >
-</app-add-event-topic>
+</app-add-global-event-topic>
 
 <div class="progress-footer" id="block-progress-footer" *ngIf="showNextButton">
     <div></div>

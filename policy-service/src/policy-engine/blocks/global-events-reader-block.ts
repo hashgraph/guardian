@@ -1057,19 +1057,19 @@ class GlobalEventsReaderBlock {
         stream: GlobalEventsReaderStream,
     ): Promise<void> {
 
-        stream.status = GlobalEventsStreamStatus.Processing;
-        await ref.databaseServer.updateGlobalEventsStream(stream);
+        // stream.status = GlobalEventsStreamStatus.Processing;
+        // await ref.databaseServer.updateGlobalEventsStream(stream);
 
         try {
             const user = await PolicyComponentsUtils.GetPolicyUserByDID(stream.userDid, null, ref, stream.userId);
 
             await this.pollStream(ref, user, stream);
 
-            stream.status = GlobalEventsStreamStatus.Free;
-            await ref.databaseServer.updateGlobalEventsStream(stream);
+            // stream.status = GlobalEventsStreamStatus.Free;
+            // await ref.databaseServer.updateGlobalEventsStream(stream);
         } catch (error) {
-            stream.status = GlobalEventsStreamStatus.Free;
-            await ref.databaseServer.updateGlobalEventsStream(stream);
+            // stream.status = GlobalEventsStreamStatus.Free;
+            // await ref.databaseServer.updateGlobalEventsStream(stream);
 
             ref.error(`GlobalEventsReader: runByStream failed: ${PolicyUtils.getErrorMessage(error)}`);
         }

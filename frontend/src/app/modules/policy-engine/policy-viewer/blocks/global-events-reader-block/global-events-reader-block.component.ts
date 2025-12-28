@@ -250,26 +250,10 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         return String(value ?? '').trim();
     }
 
-    public isDefaultTopic(topicId: string): boolean {
-        const normalized = this.normalizeTopicId(topicId);
-        if (!normalized) {
-            return false;
-        }
-        return this.defaultTopicIds.includes(normalized);
-    }
-
-    public hasDefaultTopics(): boolean {
-        return this.rows.some((r) => !!r?.isDefault);
-    }
-
     private setRowSaving(row: GlobalEventsStreamRow, saving: boolean): void {
         row.saving = saving;
         this.changeDetector.detectChanges();
     }
-
-    // -----------------------------
-    // Add Topic (modal)
-    // -----------------------------
 
     public openAddTopicModal(): void {
         if (this.readonly || this.loading) {
@@ -298,6 +282,10 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
+        this.addTopicModalOpen = false;
+        this.addTopicModalError = '';
+        this.changeDetector.detectChanges();
+
         this.loading = true;
 
         const payload = {
@@ -306,38 +294,19 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             filterFieldsByBranch: {},
         };
 
-        let shouldReload: boolean = false;
-
         this.policyEngineService
             .setBlockData(this.id, this.policyId, {
                 operation: 'AddTopic',
                 value: { streams: [payload] },
             })
-            .pipe(
-                finalize(() => {
-                    if (shouldReload) {
-                        this.loadData();
-                        return;
-                    }
-
-                    this.loading = false;
-                    this.changeDetector.detectChanges();
-                }),
-            )
             .subscribe(
                 () => {
-                    shouldReload = true;
-                    this.addTopicModalOpen = false;
                 },
                 (e) => {
                     console.error(e?.error || e);
                 },
             );
     }
-
-    // -----------------------------
-    // Delete
-    // -----------------------------
 
     public removeRow(index: number): void {
         if (this.readonly) {
@@ -376,37 +345,20 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.setRowSaving(row, true);
 
-        let shouldReload: boolean = false;
-
         this.policyEngineService.setBlockData(this.id, this.policyId, {
             operation: 'Delete',
             value: { streams: [{ globalTopicId: topicId }] },
         }).pipe(
             finalize(() => {
                 this.setRowSaving(row, false);
-
-                if (shouldReload) {
-                    this.loadData();
-                    return;
-                }
-
-                this.loading = false;
-                this.changeDetector.detectChanges();
             }),
         ).subscribe(
-            () => {
-                shouldReload = true;
-            },
+            () => {},
             (e) => {
                 console.error(e?.error || e);
             },
         );
     }
-
-
-    // -----------------------------
-    // Filters / Update
-    // -----------------------------
 
     public onActiveChanged(row: GlobalEventsStreamRow, value: boolean): void {
         if (this.readonly || this.loading) {
@@ -500,33 +452,17 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             branchDocumentTypeByBranch: row.branchDocumentTypeByBranch,
         };
 
-        let shouldReload: boolean = false;
-
         this.policyEngineService.setBlockData(this.id, this.policyId, {
             operation: 'Update',
             value: { streams: [payload] },
         }).pipe(
-            finalize(() => {
-                this.setRowSaving(row, false);
-
-                if (shouldReload) {
-                    this.loadData();
-                    return;
-                }
-
-                this.loading = false;
-                this.changeDetector.detectChanges();
-            }),
         ).subscribe(
-            () => {
-                shouldReload = true;
-            },
+            () => {},
             (e) => {
                 console.error(e?.error || e);
             },
         );
     }
-
 
     public formatLastUpdate(cursor: string): string {
         const raw = String(cursor || '').trim();
@@ -649,28 +585,13 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
 
         this.loading = true;
 
-        let shouldReload: boolean = false;
-
         this.policyEngineService
             .setBlockData(this.id, this.policyId, {
                 operation: 'CreateTopic',
                 value: { streams: [] },
             })
-            .pipe(
-                finalize(() => {
-                    if (shouldReload) {
-                        this.loadData();
-                        return;
-                    }
-
-                    this.loading = false;
-                    this.changeDetector.detectChanges();
-                }),
-            )
             .subscribe(
-                () => {
-                    shouldReload = true;
-                },
+                () => {},
                 (e) => {
                     console.error(e?.error || e);
                 },

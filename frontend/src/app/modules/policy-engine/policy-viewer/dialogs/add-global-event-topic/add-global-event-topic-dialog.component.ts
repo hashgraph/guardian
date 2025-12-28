@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
 @Component({
-    selector: 'app-add-event-topic',
-    templateUrl: './add-event-topic-dialog.component.html',
-    styleUrls: ['./add-event-topic-dialog.component.scss']
+    selector: 'app-add-global-event-topic',
+    templateUrl: './add-global-event-topic-dialog.component.html',
+    styleUrls: ['./add-global-event-topic-dialog.component.scss']
 })
-export class AddEventTopicDialogComponent implements OnChanges {
+export class AddGlobalEventTopicDialogComponent implements OnChanges {
     @Input()
     public visible: boolean = false;
 

@@ -6,8 +6,8 @@ import {
     OnInit,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable, of, Subject, Subscription } from 'rxjs';
-import { catchError, debounceTime, finalize } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -66,9 +66,6 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
 
     private socket: any;
 
-    private readonly updateChanges$ = new Subject<void>();
-    private readonly subscriptions = new Subscription();
-
     private confirmDialogRef: DynamicDialogRef | null = null;
 
     /**
@@ -88,14 +85,6 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     public ngOnInit(): void {
         if (!this.static) {
             this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
-
-            this.subscriptions.add(
-                this.updateChanges$
-                    .pipe(debounceTime(300))
-                    .subscribe(() => {
-                        this.saveUpdateDraft();
-                    }),
-            );
         }
 
         this.loadData();
@@ -110,8 +99,6 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             this.confirmDialogRef.close();
             this.confirmDialogRef = null;
         }
-
-        this.subscriptions.unsubscribe();
     }
 
     private setLoading(value: boolean): void {
@@ -186,11 +173,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         });
     }
 
-    // -----------------------------
-    // Update (debounced)
-    // -----------------------------
-
-    private markUpdateChanged(): void {
+    private updateStream(row: WriterStreamRow): void {
         if (this.static) {
             return;
         }
@@ -203,19 +186,12 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.updateChanges$.next();
-    }
-
-    private saveUpdateDraft(): void {
-        if (this.static) {
+        if (!row) {
             return;
         }
 
-        if (this.loading) {
-            return;
-        }
-
-        if (!this.policyId || !this.id) {
+        const topicId = String(row.topicId || '').trim();
+        if (!topicId) {
             return;
         }
 
@@ -223,43 +199,25 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
 
         const payload = {
             operation: 'Update' as WriterOperation,
-            streams: this.normalizeStreamsForUpdate(),
+            streams: [
+                {
+                    topicId,
+                    documentType: (row.documentType || 'any') as GlobalDocumentType,
+                    active: Boolean(row.active),
+                },
+            ],
         };
-
-        let shouldReload: boolean = false;
 
         this.policyEngineService
             .setBlockData(this.id, this.policyId, payload)
-            .pipe(
-                finalize(() => {
-                    if (shouldReload) {
-                        this.loadData();
-                        return;
-                    }
-
-                    this.setLoading(false);
-                }),
-            )
             .subscribe(
-                () => {
-                    shouldReload = true;
-                },
+                () => {},
                 (e) => {
                     console.error(e?.error || e);
+                    this.setLoading(false);
+                    this.loadData();
                 },
             );
-    }
-
-    private normalizeStreamsForUpdate(): WriterStreamRow[] {
-        return this.streams
-            .map((s) => {
-                return {
-                    topicId: String(s?.topicId || '').trim(),
-                    documentType: (s?.documentType || 'any') as GlobalDocumentType,
-                    active: Boolean(s?.active),
-                };
-            })
-            .filter((s) => s.topicId.length > 0);
     }
 
     public onStreamDocumentTypeChange(row: WriterStreamRow, value: GlobalDocumentType | null): void {
@@ -276,7 +234,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         }
 
         row.documentType = value;
-        this.markUpdateChanged();
+        this.updateStream(row);
     }
 
     public onActiveChanged(row: WriterStreamRow, value: boolean): void {
@@ -292,14 +250,9 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        // Default topic CAN be updated (same behavior as Reader).
         row.active = Boolean(value);
-        this.markUpdateChanged();
+        this.updateStream(row);
     }
-
-    // -----------------------------
-    // Add Topic (modal)
-    // -----------------------------
 
     public openAddTopicModal(): void {
         if (this.static) {
@@ -345,6 +298,10 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         this.addTopicModalError = '';
         this.setLoading(true);
 
+        this.addTopicModalOpen = false;
+        this.addTopicModalError = '';
+        this.changeDetector.detectChanges();
+
         const payload = {
             operation: 'AddTopic' as WriterOperation,
             streams: [
@@ -355,26 +312,10 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             ],
         };
 
-        let shouldReload: boolean = false;
-
         this.policyEngineService
             .setBlockData(this.id, this.policyId, payload)
-            .pipe(
-                finalize(() => {
-                    if (shouldReload) {
-                        this.loadData();
-                        return;
-                    }
-
-                    this.setLoading(false);
-                }),
-            )
             .subscribe(
-                () => {
-                    shouldReload = true;
-                    this.addTopicModalOpen = false;
-                    this.changeDetector.detectChanges();
-                },
+                () => {},
                 (e) => {
                     console.error(e?.error || e);
                     this.addTopicModalError = 'Failed to add topic';
@@ -382,10 +323,6 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
                 },
             );
     }
-
-    // -----------------------------
-    // Delete
-    // -----------------------------
 
     public deleteStream(row: WriterStreamRow): void {
         if (!row) {
@@ -420,33 +357,15 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             streams: [{ topicId }],
         };
 
-        let shouldReload: boolean = false;
-
         this.policyEngineService
             .setBlockData(this.id, this.policyId, payload)
-            .pipe(
-                finalize(() => {
-                    if (shouldReload) {
-                        this.loadData();
-                        return;
-                    }
-
-                    this.setLoading(false);
-                }),
-            )
             .subscribe(
-                () => {
-                    shouldReload = true;
-                },
+                () => {},
                 (e) => {
                     console.error(e?.error || e);
                 },
             );
     }
-
-    // -----------------------------
-    // Create Topic
-    // -----------------------------
 
     public openCreateTopicModal(): void {
         if (this.static) {
@@ -513,33 +432,15 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             streams: [],
         };
 
-        let shouldReload: boolean = false;
-
         this.policyEngineService
             .setBlockData(this.id, this.policyId, payload)
-            .pipe(
-                finalize(() => {
-                    if (shouldReload) {
-                        this.loadData();
-                        return;
-                    }
-
-                    this.setLoading(false);
-                }),
-            )
             .subscribe(
-                () => {
-                    shouldReload = true;
-                },
+                () => {},
                 (e) => {
                     console.error(e?.error || e);
                 },
             );
     }
-
-    // -----------------------------
-    // Next
-    // -----------------------------
 
     public onNext(): void {
         if (this.static) {
@@ -569,17 +470,12 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
                 }),
             )
             .subscribe(
-                () => {
-                },
+                () => {},
                 (e) => {
                     console.error(e?.error || e);
                 },
             );
     }
-
-    // -----------------------------
-    // Helpers
-    // -----------------------------
 
     public isDefaultTopic(topicId: string): boolean {
         const normalized = String(topicId || '').trim();
