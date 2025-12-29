@@ -59,7 +59,7 @@
             <button
                 *ngIf="isCurrentUserOwner"
                 pButton
-                [disabled]="!isCurrentSelectedVersion"
+                [disabled]="!isCurrentSelectedVersion || vcDocStatusEqRejectOrRevoke"
                 (click)="onEditMode()"
                 class="guardian-button guardian-button-secondary mode-btn"
             >

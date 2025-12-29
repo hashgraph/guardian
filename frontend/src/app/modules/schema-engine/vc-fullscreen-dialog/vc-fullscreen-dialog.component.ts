@@ -20,6 +20,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { PolicyComments } from '../../common/policy-comments/policy-comments.component';
 import {
     audit,
+    finalize,
     forkJoin,
     interval,
     Subject,
@@ -131,6 +132,10 @@ export class VCFullscreenDialog {
         return (
             !!this.currentSelectedVcDoc && !this.currentSelectedVcDoc.oldVersion
         );
+    }
+
+    get vcDocStatusEqRejectOrRevoke(): any {
+        return this.currentSelectedVcDoc?.option?.status === 'Revoked' || this.currentSelectedVcDoc?.option?.status === 'Rejected';
     }
 
     ngOnInit() {
@@ -540,6 +545,9 @@ export class VCFullscreenDialog {
                     documentId: this.lastVersionVcDoc.id ?? this.documentId,
                     document: data,
                 })
+                .pipe(
+                    finalize(() => this.loading = false)
+                )
                 .subscribe((status) => {
                     if (status.ok) {
                         this.onEditMode(true);
@@ -563,7 +571,7 @@ export class VCFullscreenDialog {
         if (!Array.isArray($event)) {
             if ($event.id === 'submit') {
                 $event.disabled = () => {
-                    return !this.dataForm.valid || this.loading;
+                    return !this.dataForm.valid || this.loading || !this.dataForm.dirty;
                 };
             }
         }
@@ -595,14 +603,14 @@ export class VCFullscreenDialog {
         }
 
         this.selectVcDocument(
-            this.allVcDocs[this.selectedVersionIndex]?.document
+            this.currentSelectedVcDoc?.document
         );
     }
 
     public onVersionChange(event: any) {
         this.selectedVersionIndex = event.value;
         this.selectVcDocument(
-            this.allVcDocs[this.selectedVersionIndex].document
+            this.currentSelectedVcDoc?.document
         );
     }
 
