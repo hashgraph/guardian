@@ -54,7 +54,7 @@ interface GlobalEventReaderBranchConfig {
 }
 
 interface GlobalEventReaderConfig {
-    eventTopics?: Array<{ topicId: string }>;
+    eventTopics?: Array<{ topicId: string, active: boolean }>;
     documentType?: GlobalDocumentType;
     branches?: GlobalEventReaderBranchConfig[];
     showNextButton: boolean;

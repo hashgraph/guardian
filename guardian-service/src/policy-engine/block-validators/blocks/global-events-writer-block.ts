@@ -11,7 +11,7 @@ export class GlobalEventsWriterBlock {
         try {
             await CommonBlock.validate(validator, ref);
 
-            const topicIds = (ref.options as any)?.topicIds;
+            const topicIds = ref.options?.topicIds;
             if (!Array.isArray(topicIds)) {
                 validator.addError('Option "topicIds" must be an array');
                 return;

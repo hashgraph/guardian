@@ -2,12 +2,7 @@ import {AfterDelete, BeforeCreate, BeforeUpdate, Entity, Property} from '@mikro-
 import {RestoreEntity} from '../models/index.js';
 import {DataBaseHelper} from '../helpers/index.js';
 import {DeleteCache} from './delete-cache.js';
-
-export enum GlobalEventsStreamStatus {
-    Free = 'FREE',
-    Processing = 'PROCESSING',
-    Error = 'ERROR'
-}
+import { GlobalEventsStreamStatus } from '@guardian/interfaces';
 
 @Entity()
 export class GlobalEventsReaderStream extends RestoreEntity {
@@ -20,8 +15,8 @@ export class GlobalEventsReaderStream extends RestoreEntity {
     @Property({ nullable: false, index: true })
     userId!: string;
 
-    @Property({ nullable: true, index: true })
-    userDid?: string;
+    @Property({ nullable: false, index: true })
+    userDid!: string;
 
     @Property({ nullable: false, index: true })
     globalTopicId!: string;
@@ -44,12 +39,6 @@ export class GlobalEventsReaderStream extends RestoreEntity {
     @BeforeCreate()
     @BeforeUpdate()
     public prepareEntity(): void {
-        this.lastMessageCursor = this.lastMessageCursor ?? '';
-        this.status = this.status ?? GlobalEventsStreamStatus.Free;
-        this.active = this.active ?? false;
-        this.filterFieldsByBranch = this.filterFieldsByBranch ?? {};
-        this.branchDocumentTypeByBranch = this.branchDocumentTypeByBranch ?? {};
-
         this._updatePropHash({
             policyId: this.policyId,
             blockId: this.blockId,

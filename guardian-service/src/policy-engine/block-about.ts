@@ -1531,7 +1531,7 @@ export const BlockAbout = {
     },
     'globalEventsWriterBlock': {
         'label': 'Global Events Writer',
-        'title': 'Add \'Global Events Writer\' Block',
+        'title': 'Global Events Writer',
         'post': true,
         'get': true,
         'children': 'None',
@@ -1597,7 +1597,7 @@ export const BlockAbout = {
     },
     'globalEventsReaderBlock': {
         'label': 'Global Events Reader',
-        'title': `Add 'Global Events Reader' Block`,
+        'title': `Global Events Reader`,
         'post': true,
         'get': true,
         'children': 'Special',
@@ -1619,7 +1619,7 @@ export const BlockAbout = {
             {
                 'name': 'eventTopics',
                 'label': 'Event topics',
-                'title': 'Hedera topic ids to listen (add/remove items)',
+                'title': 'Hedera topic ids to listen',
                 'type': 'Array',
                 'items': {
                     'label': 'Event topic',
@@ -1653,7 +1653,7 @@ export const BlockAbout = {
                         {
                             'name': 'branchEvent',
                             'label': 'Branch event',
-                            'title': 'Output event name (connect in Events tab)',
+                            'title': 'Output event name',
                             'type': 'Input'
                         },
                         {

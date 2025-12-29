@@ -216,8 +216,6 @@ export class IndexedDbRegistryService {
             connection = await openDB(databaseName);
         }
 
-        console.log('connection')
-
         for (const storeName of storeNames) {
             if (!connection.objectStoreNames.contains(storeName)) {
                 continue;

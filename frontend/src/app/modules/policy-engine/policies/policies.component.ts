@@ -919,8 +919,6 @@ export class PoliciesComponent implements OnInit {
             keyPrefix
         );
 
-        console.log('element.id', element.id);
-
         return this.indexedDb.clearByKeyPrefixAcrossStores(
             DB_NAME.HIDE_EVENTS_UI_STATE,
             [STORES_NAME.POLICY_HIDE_EVENTS_STORE],

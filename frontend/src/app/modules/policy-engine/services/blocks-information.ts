@@ -492,7 +492,7 @@ const GlobalEventsReaderBlock: IBlockSetting = {
         output: (value: any, block: PolicyBlock) => {
             const result: string[] = Array.isArray(value) ? value.slice() : [];
 
-            const branches = (block as any).properties?.branches;
+            const branches = block.properties?.branches;
             if (Array.isArray(branches)) {
                 for (const b of branches) {
                     const ev = String(b?.branchEvent || '').trim();

@@ -11,7 +11,7 @@ export class GlobalEventsReaderBlock {
         try {
             await CommonBlock.validate(validator, ref);
 
-            const options: any = ref.options ?? {};
+            const options = ref.options ?? {};
 
             if (options.eventTopics) {
                 if (!Array.isArray(options.eventTopics)) {

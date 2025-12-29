@@ -1,17 +1,8 @@
-import {
-    Entity,
-    Property,
-    BeforeCreate,
-    BeforeUpdate,
-    AfterDelete,
-} from '@mikro-orm/core';
-
+import { Entity, Property, BeforeCreate, BeforeUpdate, AfterDelete } from '@mikro-orm/core';
 import { RestoreEntity } from '../models/index.js';
 import { DataBaseHelper } from '../helpers/index.js';
 import { DeleteCache } from './delete-cache.js';
-
-// Supported document types for filtering/publish metadata
-export type GlobalDocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
+import {GlobalDocumentType, GlobalEventsStreamStatus} from '@guardian/interfaces';
 
 @Entity()
 export class GlobalEventsWriterStream extends RestoreEntity {
@@ -24,7 +15,7 @@ export class GlobalEventsWriterStream extends RestoreEntity {
     @Property({ nullable: false, index: true })
     userId!: string;
 
-    @Property({ nullable: true, index: true })
+    @Property({ nullable: false, index: true })
     userDid!: string;
 
     @Property({ nullable: false, index: true })
@@ -34,7 +25,7 @@ export class GlobalEventsWriterStream extends RestoreEntity {
     active: boolean = false;
 
     @Property({ nullable: false, index: true })
-    documentType: GlobalDocumentType = 'any'
+    documentType: GlobalDocumentType = 'any';
 
     @Property({ nullable: true, index: true })
     public lastPublishMessageId: string | null = null;
@@ -42,8 +33,6 @@ export class GlobalEventsWriterStream extends RestoreEntity {
     @BeforeCreate()
     @BeforeUpdate()
     public prepareEntity(): void {
-        this.active = this.active ?? false;
-
         this._updatePropHash({
             policyId: this.policyId,
             blockId: this.blockId,
