@@ -243,6 +243,7 @@ export class PolicyDTO {
         type: 'string',
         required: false
     })
+    @IsOptional()
     @IsBoolean()
     originalChanged?: boolean;
 

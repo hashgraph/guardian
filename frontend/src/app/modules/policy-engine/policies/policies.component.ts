@@ -1189,7 +1189,7 @@ export class PoliciesComponent implements OnInit {
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService
-                        .pushImportByMessage(data, versionOfTopicId, { tools, importRecords }, demo)
+                        .pushImportByMessage(data, versionOfTopicId, { tools, importRecords }, demo, originalTracking)
                         .pipe(takeUntil(this._destroy$))
                         .subscribe((result) => {
                             const { taskId, expectation } = result;
@@ -1460,6 +1460,15 @@ export class PoliciesComponent implements OnInit {
                     },
                 });
             }
+        });
+    }
+    
+    public async comparePolicyOrigin(policy: any) {
+        this.router.navigate(['/compare'], {
+            queryParams: {
+                type: 'policy',
+                policyId: policy.id
+            },
         });
     }
 

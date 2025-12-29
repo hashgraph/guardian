@@ -2487,6 +2487,13 @@ export class PolicyApi {
         required: false,
         example: true
     })
+    @ApiQuery({
+        name: 'originalTracking',
+        type: Boolean,
+        description: 'Save original state of the policy',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'Message.',
         type: ImportMessageDTO,
@@ -2506,7 +2513,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO,
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean
+        @Query('demo') demo?: boolean,
+        @Query('originalTracking') originalTracking?: boolean
     ): Promise<PolicyDTO[]> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -2519,7 +2527,8 @@ export class PolicyApi {
                 new EntityOwner(user),
                 versionOfTopicId,
                 body.metadata,
-                demo
+                demo,
+                originalTracking
             );
             return await getOldResult(user);
         } catch (error) {
@@ -2553,6 +2562,13 @@ export class PolicyApi {
         required: false,
         example: true
     })
+    @ApiQuery({
+        name: 'originalTracking',
+        type: Boolean,
+        description: 'Save original state of the policy',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'Message.',
         type: ImportMessageDTO,
@@ -2571,7 +2587,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO,
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean
+        @Query('demo') demo?: boolean,
+        @Query('originalTracking') originalTracking?: boolean
     ): Promise<any> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -2588,7 +2605,8 @@ export class PolicyApi {
                     task,
                     versionOfTopicId,
                     body.metadata,
-                    demo
+                    demo,
+                    originalTracking
                 );
             },
             async (error) => {

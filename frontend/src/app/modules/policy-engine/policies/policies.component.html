@@ -366,6 +366,7 @@
                                 >
                                     <div *ngIf="policy?.originalChanged === true">
                                         <button
+                                            (click)="comparePolicyOrigin(policy)"
                                             class="guardian-button guardian-button-secondary original-status-btn"
                                             pTooltip="Policy was modified after import"
                                             tooltipPosition="bottom"

@@ -1,3 +1,5 @@
+import { ObjectId } from "bson";
+
 /**
  * Schema data types
  */
@@ -163,6 +165,8 @@ export interface IPolicyRawData {
     policyGroups?: string[];
     policyTopics?: string[];
     policyTokens?: string[];
+    originalZipId?: ObjectId;
+    originalMessageId?: string;
 }
 
 /**

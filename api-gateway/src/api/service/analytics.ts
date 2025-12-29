@@ -1,5 +1,5 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
-import { ApiInternalServerErrorResponse, ApiBody, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { ApiInternalServerErrorResponse, ApiBody, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { EntityOwner, Permissions } from '@guardian/interfaces';
 import { FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, InternalServerErrorDTO, CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, SearchPoliciesDTO, FilterToolsDTO, CompareToolsDTO, FilterSearchBlocksDTO, SearchBlocksDTO, Examples } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
@@ -206,6 +206,59 @@ export class AnalyticsApi {
                 filters.childrenLvl,
                 filters.idLvl
             );
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Compare policy with original state 
+     */
+    @Post('/compare/policy/original/:policyId')
+    @Auth(
+        Permissions.ANALYTIC_POLICY_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOperation({
+        summary: 'Compare policies with original state.',
+        description: 'Compare policies with original state.' + ONLY_SR,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: ComparePoliciesDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(FilterPoliciesDTO, ComparePoliciesDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async compareOriginalPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() filters: FilterPoliciesDTO
+    ): Promise<ComparePoliciesDTO> {
+        const owner = new EntityOwner(user);
+
+        try {
+            const guardians = new Guardians();
+            const comparedResult = await guardians.compareOriginalPolicies(
+                owner,
+                null,
+                policyId,
+                filters.eventsLvl,
+                filters.propLvl,
+                filters.childrenLvl,
+                filters.idLvl
+            );
+            return comparedResult;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

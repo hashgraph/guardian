@@ -1179,21 +1179,21 @@ export class PolicyEngineService {
                     let result = await DatabaseServer.updatePolicyConfig(policyId, model);
                     result = await PolicyImportExportHelper.updatePolicyComponents(result, logger, owner.id);
 
-                    if(result && result.originalZipId && !result.originalChanged) {
+                    if(result && (result.originalZipId || result.originalMessageId)) {
                         const policyComponents = await PolicyImportExport.loadPolicyComponents(result);
                         const policyHash = PolicyImportExport.getPolicyHash(policyComponents);
-                        console.log('current policy hash', policyHash);
-                        console.log('original hash', result.originalHash);
 
                         if(policyHash !== result.originalHash) {
                             result.originalChanged = true;
+                        } else {
+                            result.originalChanged = false;
+                        }
 
-                            if(result.id) {
-                                await DatabaseServer.updatePolicy(result);
-                            }
+                        if(result.id) {
+                            await DatabaseServer.updatePolicy(result);
                         }
                     }
-
+                    
                     return new MessageResponse(result);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1708,10 +1708,11 @@ export class PolicyEngineService {
                 owner: IOwner,
                 versionOfTopicId: string,
                 metadata: any,
-                demo: boolean
+                demo: boolean,
+                originalTracking: boolean
             }): Promise<IMessageResponse<boolean>> => {
                 try {
-                    const { messageId, owner, versionOfTopicId, metadata, demo } = msg;
+                    const { messageId, owner, versionOfTopicId, metadata, demo, originalTracking } = msg;
                     if (!messageId) {
                         throw new Error('Policy ID in body is empty');
                     }
@@ -1752,12 +1753,12 @@ export class PolicyEngineService {
                         );
                     }
 
-                    if(result.policy)
+                    if(originalTracking && result.policy)
                     {
                         const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
                         result.policy.originalHash = policyHash;
                         result.policy.originalChanged = false;
-                        result.policy.messageId = messageId;
+                        result.policy.originalMessageId = messageId;
 
                         if(result.policy?.id) {
                             await DatabaseServer.updatePolicy(result.policy);
@@ -1778,9 +1779,10 @@ export class PolicyEngineService {
                 versionOfTopicId: string,
                 metadata: any,
                 demo: boolean,
-                task: any
+                task: any,
+                originalTracking: boolean
             }): Promise<IMessageResponse<boolean>> => {
-                const { messageId, owner, versionOfTopicId, task, metadata, demo } = msg;
+                const { messageId, owner, versionOfTopicId, task, metadata, demo, originalTracking } = msg;
                 const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
@@ -1836,12 +1838,13 @@ export class PolicyEngineService {
                             errors: result.errors
                         });
 
-                        if(result.policy)
+                        if(originalTracking && result.policy)
                         {
                             const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
+                            console.log('policy message hash', policyHash);
                             result.policy.originalHash = policyHash;
                             result.policy.originalChanged = false;
-                            result.policy.messageId = messageId;
+                            result.policy.originalMessageId = messageId;
 
                             if(result.policy?.id) {
                                 await DatabaseServer.updatePolicy(result.policy);

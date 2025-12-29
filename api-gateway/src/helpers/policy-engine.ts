@@ -470,11 +470,12 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ): Promise<boolean> {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE,
-            { messageId, owner, versionOfTopicId, metadata, demo }
+            { messageId, owner, versionOfTopicId, metadata, demo, originalTracking }
         );
     }
 
@@ -493,11 +494,12 @@ export class PolicyEngine extends NatsService {
         task: NewTask,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC,
-            { messageId, owner, versionOfTopicId, task, metadata, demo }
+            { messageId, owner, versionOfTopicId, task, metadata, demo, originalTracking }
         );
     }
 
