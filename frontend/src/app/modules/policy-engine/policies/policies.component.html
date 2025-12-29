@@ -5,7 +5,7 @@
 
     <ng-container *ngIf="!isConfirmed">
         <div class="not-exist">
-            Before starting work you need to get DID
+            Before starting work you needм to get DID
             <a [routerLink]="['/profile']">here</a>
         </div>
     </ng-container>
@@ -59,7 +59,7 @@
                             label="Clear filters"
                             pButton></button>
                 </form>
-    
+
                 <div class="actions-container-btns">
                     <p-button
                         *ngIf="user.POLICIES_POLICY_CREATE"
@@ -125,7 +125,7 @@
             </div>
         </ng-container>
 
-        <ng-container *ngIf="tab === 'remote'"> 
+        <ng-container *ngIf="tab === 'remote'">
             <div class="actions-container" *ngIf="user.POLICIES_EXTERNAL_POLICY_CREATE">
                 <form *ngIf="hasPolicies" [formGroup]="filtersForm" class="policy-filters">
                     <span class="p-input-icon-right">
@@ -422,7 +422,7 @@
                                     class="cell-140 text-truncate"
                                 >
                                     <span class="text-truncate">
-                                        <hedera-explorer 
+                                        <hedera-explorer
                                             [params]="policy.topicId"
                                             type="topics">{{ policy.topicId }}</hedera-explorer>
                                     </span>

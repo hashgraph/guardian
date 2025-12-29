@@ -6,6 +6,8 @@ import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.c
 import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
 import { PolicyStatus } from '@guardian/interfaces';
+import { IndexedDbRegistryService } from "src/app/services/indexed-db-registry.service";
+import { DB_NAME, STORES_NAME } from 'src/app/constants';
 
 /**
  * Component for display block of 'Buttons' type.
@@ -34,14 +36,15 @@ export class ButtonBlockComponent implements OnInit {
 
     private hideEventsUserId: string | '' = '';
 
-    private readonly HIDE_EVENTS_STORAGE_KEY: string = 'POLICY_HIDE_EVENTS';
+    public incomingHideEventsLoading: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private dialogService: DialogService,
-        private cdref: ChangeDetectorRef
+        private cdref: ChangeDetectorRef,
+        private indexedDbRegistry: IndexedDbRegistryService
     ) {
     }
 
@@ -134,7 +137,18 @@ export class ButtonBlockComponent implements OnInit {
             }
         }
 
-        this.applyIncomingHideEventsVisibility();
+        this.incomingHideEventsLoading = (this.buttons || []).some((b: any) => b?.incomingHideEventsEnabled);
+
+        if (this.incomingHideEventsLoading) {
+            void this.applyIncomingHideEventsVisibility()
+                .catch((e) => {
+                    console.error(e);
+                })
+                .finally(() => {
+                    this.incomingHideEventsLoading = false;
+                    this.cdref.detectChanges();
+                });
+        }
 
         this.cdref.detectChanges();
     }
@@ -217,7 +231,13 @@ export class ButtonBlockComponent implements OnInit {
     }
 
     onSelect(button: any) {
-        this.writeOutgoingHideEventsState(button);
+        void this.clearOutgoingHideEventsState()
+            .then(() => {
+                return this.writeOutgoingHideEventsState(button);
+            })
+            .catch((e) => {
+                console.error(e);
+            });
 
         this.setObjectValue(this.data, button.field, button.value);
         this.commonVisible = false;
@@ -269,48 +289,18 @@ export class ButtonBlockComponent implements OnInit {
         });
     }
 
-    private clearHideEventsValue(store: Record<string, Record<string, string>>): void {
-        const byUser = store[this.hideEventsUserId];
-        if (!byUser) {
-            return;
-        }
-
-        if ( byUser[this.policyId]) {
-            delete byUser[this.policyId];
-        }
-
-        const policyIds = Object.keys(byUser);
-        if (!policyIds.length) {
-            delete store[this.hideEventsUserId];
-        }
-
-        console.log('store', store)
-
-        const userIds = Object.keys(store);
-        if (!userIds.length) {
-            localStorage.removeItem(this.HIDE_EVENTS_STORAGE_KEY);
-        }
+    private async ensureHideEventsStore(): Promise<void> {
+        await this.indexedDbRegistry.registerStore(DB_NAME.HIDE_EVENTS_UI_STATE, {
+            name: STORES_NAME.POLICY_HIDE_EVENTS_STORE,
+            options: { keyPath: 'key' }
+        });
     }
 
-    private readHideEventsStore(): Record<string, Record<string, string>> {
-        const raw = localStorage.getItem(this.HIDE_EVENTS_STORAGE_KEY);
-        if (!raw) {
-            return {};
-        }
-
-        try {
-            const parsed = JSON.parse(raw);
-            if (typeof parsed === 'object') {
-                return parsed;
-            }
-        } catch (_e) {
-            //
-        }
-
-        return {};
+    private buildHideEventsKey(): string {
+        return `${this.hideEventsUserId}::${this.policyId}`;
     }
 
-    private writeOutgoingHideEventsState(button: any): void {
+    private async clearOutgoingHideEventsState(): Promise<void> {
         if (!this.policyId) {
             return;
         }
@@ -318,34 +308,58 @@ export class ButtonBlockComponent implements OnInit {
             return;
         }
 
-        const store = this.readHideEventsStore();
+        await this.ensureHideEventsStore();
 
-        this.clearHideEventsValue(store);
+        await this.indexedDbRegistry.delete(
+            DB_NAME.HIDE_EVENTS_UI_STATE,
+            STORES_NAME.POLICY_HIDE_EVENTS_STORE,
+            this.buildHideEventsKey()
+        );
+    }
+
+    private async writeOutgoingHideEventsState(button: any): Promise<void> {
+        if (!this.policyId) {
+            return;
+        }
+        if (!this.hideEventsUserId) {
+            return;
+        }
 
         const value = button.visibleButtons
 
-        if (button.outgoingHideEventsEnabled && value) {
-            if (!store[this.hideEventsUserId]) {
-                store[this.hideEventsUserId] = {};
+        if (!button?.outgoingHideEventsEnabled) {
+            return;
+        }
+
+        if (!value) {
+            return;
+        }
+
+        await this.ensureHideEventsStore();
+
+        await this.indexedDbRegistry.put(
+            DB_NAME.HIDE_EVENTS_UI_STATE,
+            STORES_NAME.POLICY_HIDE_EVENTS_STORE,
+            {
+                key: this.buildHideEventsKey(),
+                value
             }
-
-            store[this.hideEventsUserId][this.policyId] = value;
-        }
-
-        localStorage.setItem(this.HIDE_EVENTS_STORAGE_KEY, JSON.stringify(store));
+        );
     }
 
-    private readHideEventsValue(): string {
-        const store = this.readHideEventsStore();
-        const byUser = store[this.hideEventsUserId];
-        if (!byUser) {
-            return '';
-        }
+    private async readHideEventsValue(): Promise<string> {
+        await this.ensureHideEventsStore();
 
-        return byUser[this.policyId] ?? '';
+        const record = await this.indexedDbRegistry.get<any>(
+            DB_NAME.HIDE_EVENTS_UI_STATE,
+            STORES_NAME.POLICY_HIDE_EVENTS_STORE,
+            this.buildHideEventsKey()
+        );
+
+        return record?.value ?? '';
     }
 
-    private applyIncomingHideEventsVisibility(): void {
+    private async applyIncomingHideEventsVisibility(): Promise<void> {
         if (!this.policyId) {
             return;
         }
@@ -360,7 +374,7 @@ export class ButtonBlockComponent implements OnInit {
             return;
         }
 
-        const stored = this.readHideEventsValue();
+        const stored = await this.readHideEventsValue();
 
         const allowedButtons = stored.split(',').map((x) => x.trim()).filter((x) => x);
         for (const button of this.buttons || []) {
