@@ -260,7 +260,8 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         }
 
         this.setPreviewLimitMessage();
-        this.hydrated = true;
+        this.hydrateFromFile()
+        // this.hydrated = true;
     }
 
     ngOnDestroy(): void {
@@ -269,7 +270,6 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
     private async loadCsvTextFromIdb(idbKey: string): Promise<string | null> {
         const record: any = await this.idb.get(DB_NAME.TABLES, STORES_NAME.FILES_STORE, idbKey);
-
 
         if (!record || !record.blob) {
             return null;
