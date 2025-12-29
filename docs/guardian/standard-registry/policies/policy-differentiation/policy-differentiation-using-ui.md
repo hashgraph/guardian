@@ -76,12 +76,18 @@ We have several Display settings in Policy Blocks section:
 
 **Display Settings:** description and show/hide settings for each color/type of difference:
 
-| Color         | Purpose                                                                                 |
-| ------------- | --------------------------------------------------------------------------------------- |
-| Green         | blocks are equal, including their child blocks                                          |
-| Green - Amber | blocks are equal, but their child blocks are different                                  |
-| Amber         | blocks are of the same type and are partially equal, there are some notable differences |
-| Red           | blocks are absent in the other Policy                                                   |
+- **Icons:** In addition to colors, icons are displayed between the compared blocks to help users quickly identify the type of difference.
+- **Color-blind mode:** A "Color-blind mode" toggle is available in the comparison toolbar to switch between the standard color scheme and an accessible color palette optimized for users with color vision deficiencies.
+
+| Icon  | Color         | Color Blind Mode | Purpose                                                                                 |
+| ----- | ------------- | ---------------- | --------------------------------------------------------------------------------------- |
+|       | Green         | Blue             | blocks are equal, including their child blocks                                          |
+| [≠]   | Green - Amber | Blue - Orange    | blocks are equal, but their child blocks are different                                  |
+| ≈     | Amber         | Orange           | blocks are of the same type and are partially equal, there are some notable differences |
+| + / - | Red           | Purple           | blocks are absent in the other Policy                                                   |
+
+<figure><img src="../../../../.gitbook/assets/policy-compare-colorblind-mode-1.png" alt=""><figcaption></figcaption></figure>
+
 
 Block comparison displays can be unfolded to display a detailed view of the block Properties.
 
