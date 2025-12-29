@@ -1755,7 +1755,9 @@ export class PolicyEngineService {
 
                     if(originalTracking && result.policy)
                     {
-                        const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
+                        const policyComponents = await PolicyImportExport.loadPolicyComponents(result.policy);
+                        const policyHash = await PolicyImportExport.getPolicyHash(policyComponents);
+                            
                         result.policy.originalHash = policyHash;
                         result.policy.originalChanged = false;
                         result.policy.originalMessageId = messageId;
@@ -1840,8 +1842,9 @@ export class PolicyEngineService {
 
                         if(originalTracking && result.policy)
                         {
-                            const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
-                            console.log('policy message hash', policyHash);
+                            const policyComponents = await PolicyImportExport.loadPolicyComponents(result.policy);
+                            const policyHash = await PolicyImportExport.getPolicyHash(policyComponents);
+                            
                             result.policy.originalHash = policyHash;
                             result.policy.originalChanged = false;
                             result.policy.originalMessageId = messageId;

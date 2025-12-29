@@ -326,15 +326,6 @@ export class PolicyImportExport {
         const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
         const metaDataBody: any[] = JSON.parse(metaDataString);
 
-        // const proofDataFile = (Object.entries(content.files).find(file => file[0] === 'proof.json'));
-        // const proofDataString = proofDataFile && await proofDataFile[1].async('string') || '[]';
-        // const proofDataBody = JSON.parse(proofDataString);
-
-        //proofDataBody.credentialSubject[0].hash
-        //const vcHelper = new VcHelper();
-        // const verify = await vcHelper.verifyVC(proofDataBody);
-        // console.log('verified proof', verify);
-
         let artifacts: any;
         if (includeArtifactsData) {
             const data = fileEntries.filter(file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json').map(async file => {
@@ -485,7 +476,9 @@ export class PolicyImportExport {
     }
 
     public static getPolicyHash(items: IPolicyComponents): string {
-        const preparedItems = this.preparePolicyComponents(items);
+        const clonedItems = structuredClone(items);
+
+        const preparedItems = this.preparePolicyComponents(clonedItems);
         const cleanedBeforeHash = this.cleanBeforeHash(preparedItems);
 
         const json = stringify(cleanedBeforeHash);
@@ -493,68 +486,91 @@ export class PolicyImportExport {
     }
 
     private static cleanBeforeHash(components: IPolicyComponents): IPolicyComponents {
-        const resultComponents = structuredClone(components);
-        delete resultComponents.policy.policyTag;
-        delete resultComponents.policy.name;
-        delete resultComponents.policy.uuid;
-        delete resultComponents.policy.topicId;
-        delete resultComponents.policy.commentsTopicId;
-        delete resultComponents.policy.instanceTopicId;
-        delete resultComponents.policy.recordsTopicId;
-        delete resultComponents.policy.synchronizationTopicId;
-        delete resultComponents.policy.version;
-        delete resultComponents.policy.hash;
+        delete components.policy.policyTag;
+        delete components.policy.name;
+        delete components.policy.uuid;
+        delete components.policy.topicId;
+        delete components.policy.commentsTopicId;
+        delete components.policy.instanceTopicId;
+        delete components.policy.recordsTopicId;
+        delete components.policy.synchronizationTopicId;
+        delete components.policy.version;
+        delete components.policy.hash;
+        delete components.policy.autoRecordSteps;
+        delete components.policy.availability;
+        delete components.policy.creator;
+        delete components.policy.owner;
+        delete components.policy.locationType;
+        delete components.policy.originalMessageId;
+        delete components.policy.policyNavigation;
 
-        this.removeField(resultComponents.policy, 'id');
+        this.removeField(components.policy, 'id');
+        this.removeField(components, 'guardianVersion');
+        this.removeField(components, 'systemSchemas');
 
-        resultComponents.schemas.forEach(schema => {
+        components.schemas.sort((schemaA, schemaB) => schemaA.name > schemaB.name ? -1 : 1);
+
+        components.schemas.forEach(schema => {
             delete schema.id;
             delete schema.createDate;
             delete schema.updateDate;
             delete schema.documentURL;
-            delete schema.contextURL;
             delete schema.messageId;
             delete schema.topicId;
             delete schema.sourceVersion;
+            delete schema.creator;
+            delete schema.owner;
+            delete schema.codeVersion;
         });
 
-        resultComponents.systemSchemas.forEach(systemSchema => {
-            delete systemSchema.createDate;
-            delete systemSchema.updateDate;
-            delete systemSchema.documentURL;
-            delete systemSchema.contextURL;
-            delete systemSchema.messageId;
-            delete systemSchema.topicId;
+        components.tokens.forEach(token => {
+            delete token.id;
+            delete token._id;
+            delete token.createDate;
+            delete token.updateDate;
+            delete token.owner;
+            delete token.creator;
+            delete token.topicId;
+            delete token.policyId;
+            delete token.draftToken;
+            delete token._docHash;
+            delete token._propHash;
         });
 
         const schemaIds = new Map();
-        let counter = 0;
+        const tokenIds = new Map();
+
+        let tokenCounter = 0;
+        let schemaCounter = 0;
         
-        //todo
-        resultComponents.schemas.forEach(schema => {
-            const id = schema.version ? 
-                       `${schema.uuid}&${schema.version}` : 
-                       schema.uuid;
-
-            schemaIds.set(id, `@${counter}`);
-            console.log(`${id} | ${counter}`);
-            counter++;
+        components.schemas.forEach(schema => {
+            schemaIds.set(`schema:${schema.uuid}#${schema.uuid}`, `@${schemaCounter}`);
+            schemaIds.set(`schema:${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
+            schemaIds.set(`schema:${schema.uuid}`, `@${schemaCounter}`);
+            schemaIds.set(`${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
+            schemaIds.set(schema.uuid, `@${schemaCounter}`);
+            
+            schemaCounter++;
         });
 
-        resultComponents.systemSchemas.forEach(systemSchema => {
-            schemaIds.set(systemSchema.id, `@${counter}`);
-            console.log(`${systemSchema.id} | ${counter}`);
-            counter++;
+        components.tokens.forEach(token => {
+            tokenIds.set(token.tokenId, `@token${tokenCounter}`)
+            console.log(`${token.tokenId} | ${tokenCounter}`);
+            tokenCounter++;
         });
 
-        resultComponents.schemas.forEach(schema => {
+        components.schemas.forEach(schema => {
             delete schema.version;
+            delete schema.contextURL;
         });
 
-        let componentsJson = JSON.stringify(resultComponents);
+        let componentsJson = JSON.stringify(components);
         schemaIds.forEach((value, key)  => {
             componentsJson = componentsJson.replaceAll(key, value);
-            console.log(`REPLACE | ${key} | ${value}`);
+        });
+
+        tokenIds.forEach((value, key)  => {
+            componentsJson = componentsJson.replaceAll(key, value);
         });
 
         return JSON.parse(componentsJson);
@@ -660,7 +676,6 @@ export class PolicyImportExport {
     static async saveOriginalZip(zipFile: any, policyName?: string): Promise<ObjectId> {
         const fileName = `${policyName}_zip_${GenerateUUIDv4()}`;
         const fileId = await this._createFile(zipFile, fileName);
-        console.log('FILE_ID', fileId);
 
         return fileId;
     }
