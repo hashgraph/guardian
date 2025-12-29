@@ -722,5 +722,9 @@ svg-icon.svg-icon-32 {
             width: 100% !important;
             margin-left: 0px !important;
         }
+
+        &::before {
+            display: none;
+        }
     }
 }

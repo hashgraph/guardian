@@ -498,6 +498,11 @@ body {
 
 ::ng-deep {
     .cm-block-code-highlight {
-        color: var(--formula-function-color, #E50299);
+        color: var(--formula-function-color, #E50299) !important;
+    }
+
+    .cm-block-code-link-highlight {
+        color: var(--formula-constant-color, #4169e2) !important;
+        text-decoration: underline;
     }
 }

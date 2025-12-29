@@ -1,9 +1,8 @@
-import { AfterContentInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterContentInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Schema, SchemaField } from '@guardian/interfaces';
 import { MathLiveComponent } from 'src/app/modules/common/mathlive/mathlive.component';
 import { FieldLinkDialog } from '../field-link-dialog/field-link-dialog.component';
-import { getValueByPath } from './model/models';
 import { Context } from './model/context';
 import { Group } from './model/group';
 import { FieldLink } from './model/link';
@@ -13,6 +12,87 @@ import { Code } from './model/code';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { TreeListData, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 import { FieldData } from 'src/app/modules/common/models/schema-node';
+
+class Tooltip {
+    public visible: boolean;
+    public text: string;
+    public x: number;
+    public y: number;
+
+    private _last: any;
+    private _check: (el: any) => boolean;
+    private _text: (el: any) => string;
+    private _container: any;
+    private _body: any;
+    private _textContainer: any;
+
+    constructor(options: {
+        container: any,
+        check: (el: any) => boolean,
+        text: (el: any) => string,
+    }) {
+        this._container = options.container;
+        this._check = options.check;
+        this._text = options.text;
+        this._last = null;
+        this.text = '';
+        this.x = -1;
+        this.y = -1;
+        this.create();
+    }
+
+    private create() {
+        this._body = document.createElement('div');
+        this._body.classList.add('guardian-dynamic-tooltip');
+        this._body.classList.add('hidden-tooltip');
+
+        const container = document.createElement('div');
+        container.classList.add('guardian-dynamic-tooltip-body');
+        this._body.appendChild(container);
+
+        this._textContainer = document.createElement('div');
+        this._textContainer.classList.add('guardian-dynamic-tooltip-text');
+        container.appendChild(this._textContainer);
+
+        this._container.appendChild(this._body);
+    }
+
+    public hover(el: any) {
+        if (this._last === el) {
+            return;
+        }
+        if (el && this._check(el)) {
+            this.show(el);
+        } else {
+            this.hide();
+        }
+    }
+
+    public show(el: any) {
+        this.visible = true;
+        this.text = this._text(el);
+
+        const pos = el.getBoundingClientRect();
+        this.x = pos.left;
+        this.y = pos.top;
+        this._textContainer.textContent = this.text;
+        this._body.classList.toggle('hidden-tooltip', false);
+        this._body.style.top = `${this.y}px`;
+        this._body.style.left = `${this.x + pos.width / 2}px`;
+    }
+
+    public hide() {
+        this.visible = false;
+        this.text = '';
+        this.x = -1;
+        this.y = -1;
+        this._body.classList.toggle('hidden-tooltip', true);
+    }
+
+    public destroy() {
+        this._container.removeChild(this._body);
+    }
+}
 
 /**
  * Dialog.
@@ -62,7 +142,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         matchBrackets: true,
         lint: true,
         readonly: false,
-        autoFocus: true
+        autoFocus: true,
     };
     context: Context | null;
     private codeEditor: any;
@@ -95,6 +175,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         readonly: true,
         autoFocus: true
     };
+    public tooltip: Tooltip;
 
     constructor(
         private dialogRef: DynamicDialogRef,
@@ -105,6 +186,20 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.data = this.config.data;
         this.scope = new Group();
         this.code = new Code();
+        this.tooltip = new Tooltip({
+            container: window.document.body,
+            check: (el: any) => {
+                return el.classList.contains('cm-block-code-link-highlight');
+            },
+            text: (el: any) => {
+                for (const className of el.classList) {
+                    if(className.startsWith('cm-path-')) {
+                        return this.getFieldName(className.substring(8));
+                    }
+                }
+                return '';
+            },
+        })
 
         // this.scope.addVariable();
         this.scope.addFormula('x', '1');
@@ -152,6 +247,10 @@ const y = {
                 this.loading = false;
             }, 1000);
         }, 100);
+    }
+
+    ngOnDestroy(): void {
+        this.tooltip.destroy();
     }
 
     public onSave(): void {
@@ -219,6 +318,7 @@ const y = {
             for (const field of fields) {
                 this.schemasFieldMap.set(String(field.path), field);
             }
+            this.codeMirrorOptions.links = Array.from(this.schemasFieldMap.keys());
         }
     }
 
@@ -607,5 +707,13 @@ const y = {
 
     public onResultStep(step: string) {
         this.resultStep = step;
+    }
+
+    @HostListener('mousemove', ['$event'])
+    onMouseEnter($event: any) {
+        if (!$event || this.step !== 'step_2' || this.codeTab !== 'advanced') {
+            return;
+        }
+        this.tooltip.hover($event.target);
     }
 }

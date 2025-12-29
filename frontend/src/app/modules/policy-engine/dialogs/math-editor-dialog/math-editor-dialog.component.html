@@ -244,6 +244,8 @@
                                         <math-live 
                                             [(value)]="item.functionBodyText" 
                                             [readonly]="false"
+                                            [menu]="false"
+                                            [keyboardType]="'evaluate'"
                                             [keyboardContainer]="contextBodyRef"
                                             (keyboard)="onKeyboard($event)"
                                             (focus)="onKeyboardFocus($event)"
