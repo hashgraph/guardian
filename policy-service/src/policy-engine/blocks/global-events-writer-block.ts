@@ -125,6 +125,13 @@ export const GLOBAL_DOCUMENT_TYPE_DEFAULT = "vc";
                             type: PropertyType.Input,
                         },
                         {
+                            name: 'active',
+                            label: 'Active by default',
+                            title: 'Add this topic stream as active for new users',
+                            type: PropertyType.Checkbox,
+                            default: true,
+                        },
+                        {
                             name: 'documentType',
                             label: 'Document type',
                             title: 'Type written to the global topic for reader-side filtering',
@@ -201,13 +208,15 @@ export class GlobalEventsWriterBlock {
                 continue;
             }
 
+            const defaultActive: boolean = topic.active;
+
             await ref.databaseServer.createGlobalEventsWriterStream({
                 policyId: ref.policyId,
                 blockId: ref.uuid,
                 userId: user.userId,
                 userDid: user.did,
                 globalTopicId: topicId,
-                active: true,
+                active: defaultActive,
                 documentType: topicDocumentType,
             });
         }

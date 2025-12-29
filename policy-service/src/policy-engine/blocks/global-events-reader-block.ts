@@ -194,6 +194,13 @@ export const GLOBAL_DOCUMENT_TYPE_DEFAULT = 'vc';
                 }
             },
             {
+                name: 'active',
+                label: 'Active by default',
+                title: 'Add this topic stream as active for new users',
+                type: PropertyType.Checkbox,
+                default: true,
+            },
+            {
                 name: 'branches',
                 label: 'Branches',
                 title: 'Branch outputs (+ optional VC schema validation per branch)',
@@ -333,13 +340,15 @@ class GlobalEventsReaderBlock {
                 continue;
             }
 
+            const defaultActive: boolean = topic.active;
+
             await ref.databaseServer.createGlobalEventsStream({
                 policyId: ref.policyId,
                 blockId: ref.uuid,
                 userId: user.userId,
                 userDid: user.did,
                 globalTopicId: topicId,
-                active: true,
+                active: defaultActive,
                 lastMessageCursor: '',
                 status: GlobalEventsStreamStatus.Free,
                 filterFieldsByBranch: {},

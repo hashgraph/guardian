@@ -1570,6 +1570,13 @@ export const BlockAbout = {
                             'type': 'Input'
                         },
                         {
+                            'name': 'active',
+                            'label': 'Active by default',
+                            'title': 'Add this topic stream as active for new users',
+                            'type': 'Checkbox',
+                            'default': true,
+                        },
+                        {
                             'name': 'documentType',
                             'label': 'Document type',
                             'title': 'Type written to the global topic for reader-side filtering',
@@ -1607,7 +1614,7 @@ export const BlockAbout = {
                 'label': 'Show Next button',
                 'title': 'Show button to move to next block with cached payload',
                 'type': 'Checkbox',
-                'default': false,
+                'default': true,
             },
             {
                 'name': 'eventTopics',
@@ -1623,7 +1630,14 @@ export const BlockAbout = {
                             'label': 'Topic ID',
                             'title': 'Hedera topic id (0.0.x)',
                             'type': 'Input'
-                        }
+                        },
+                        {
+                            'name': 'active',
+                            'label': 'Active by default',
+                            'title': 'Add this topic stream as active for new users',
+                            'type': 'Checkbox',
+                            'default': true,
+                        },
                     ]
                 }
             },
@@ -1659,7 +1673,7 @@ export const BlockAbout = {
                         {
                             'name': 'schema',
                             'label': 'Schema',
-                            'title': 'VC schema (kept always for now)',
+                            'title': 'VC schema',
                             'type': 'Schemas'
                         }
                     ]
