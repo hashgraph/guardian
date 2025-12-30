@@ -178,4 +178,9 @@ export interface SchemaField {
      * Suggest value
      */
     suggest?: any;
+
+    /**
+     * Is Field Updatable
+     */
+    isUpdatable: any;
 }

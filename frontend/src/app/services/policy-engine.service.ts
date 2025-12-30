@@ -605,4 +605,12 @@ export class PolicyEngineService {
                 throw new Error(`Invalid request type ${type}`);
         }
     }
+
+    public createNewVersionVcDocument(policyId?: string, data?: any): Observable<any> {
+        return this.http.post<void>(`${this.url}/${policyId}/create-new-version-vc-document/`, data);
+    }
+
+    public getAllVersionVcDocuments(policyId?: string, documentId?: string): Observable<any> {
+        return this.http.get<void>(`${this.url}/${policyId}/get-all-version-vc-documents/${documentId}`);
+    }
 }

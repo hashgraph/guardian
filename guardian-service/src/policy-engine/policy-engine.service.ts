@@ -4398,5 +4398,44 @@ export class PolicyEngineService {
                 }
             });
         //#endregion
+
+        //#region VC Docs
+        this.channel.getMessages(PolicyEngineEvents.CREATE_NEW_VERSION_VC_DOCUMENT,
+            async (msg: { user: IAuthUser, policyId: string, data: any }) => {
+                try {
+                    const { user, policyId, data } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const status =await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.CREATE_NEW_VERSION_VC_DOCUMENT, policyId, {
+                            user,
+                            data
+                        });
+                    return new MessageResponse(status);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            })
+
+         this.channel.getMessages(PolicyEngineEvents.GET_All_NEW_VERSION_VC_DOCUMENTS,
+             async (msg: { user: IAuthUser, policyId: string, documentId: string }) => {
+                try {
+                    const { user, policyId: policyId, documentId: documentId } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const docs = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.GET_ALL_NEW_VERSION_VC_DOCUMENTS, policyId, {
+                            user,
+                            documentId
+                        });
+
+                    return new MessageResponse(docs);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            })
+        //#endregion
     }
 }
