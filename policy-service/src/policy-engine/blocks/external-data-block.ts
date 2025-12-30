@@ -163,13 +163,16 @@ export class ExternalDataBlock {
         const documentRef = await this.getRelationships(ref, data.ref);
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);
+        const forceRelayerAccount = ref.options.forceRelayerAccount;
+        const inheritRelayerAccount = PolicyComponentsUtils.IsInheritRelayerAccount(ref.policyId, forceRelayerAccount);
 
         //Relayer Account
-        const relayerAccount = await PolicyUtils.getRelayerAccount(ref, user.did, data.relayerAccount, documentRef, user.userId);
+        const [relayerAccount, documentOwner]
+            = await PolicyUtils.getRelayerAccountAndOwner(ref, user, data.relayerAccount, documentRef, inheritRelayerAccount);
 
         const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, schema);
 
-        let doc = PolicyUtils.createVC(ref, user, vc);
+        let doc = PolicyUtils.createVC(ref, documentOwner, vc, null);
         doc.type = ref.options.entityType;
         doc.schema = ref.options.schema;
         doc.accounts = accounts;
@@ -186,9 +189,9 @@ export class ExternalDataBlock {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, null);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, null);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, null);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(doc)
         }));

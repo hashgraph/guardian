@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { TopicId } from '@hashgraph/sdk';
+import { TopicId } from '@hiero-ledger/sdk';
 import { Hashing } from '../hashing.js';
 import { MessageAction } from './message-action.js';
 import { MessageBody } from './message-body.interface.js';

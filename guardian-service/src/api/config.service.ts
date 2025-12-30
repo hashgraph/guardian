@@ -1,7 +1,7 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { Environment, IAuthUser, MessageError, MessageResponse, PinoLogger, SecretManager, ValidateConfiguration, Workers } from '@guardian/common';
 import { CommonSettings, MessageAPI } from '@guardian/interfaces';
-import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 
 /**
  * Connecting to the message broker methods of working with root address book.

@@ -12,7 +12,7 @@ export class GenerateDID {
         user: PolicyUser,
         relayerAccount: string,
         userId: string | null
-    }): Promise<string> {
+    }, actionStatusId?: string): Promise<string> {
         const { ref, user, relayerAccount, userId } = options;
         const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null, userId);
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
@@ -26,7 +26,7 @@ export class GenerateDID {
             dryRun: ref.dryRun
         });
 
-        const didObject = await ref.components.generateDID(topic.topicId);
+        const didObject = await ref.components.generateDID(topic.topicId, actionStatusId);
         const message = new DIDMessage(MessageAction.CreateDID);
         message.setDocument(didObject);
         const messageResult = await client

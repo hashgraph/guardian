@@ -736,4 +736,10 @@ export class TokenConfigComponent implements OnInit {
             });
         }
     }
+
+    public onClearSelection() {
+        this.selectedItems = [];
+        this.selectedItemIds = [];
+        this.isAllSelected = false;
+    }
 }

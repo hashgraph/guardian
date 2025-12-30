@@ -1,6 +1,6 @@
 {
     "name": "guardian-e2e-test",
-    "version": "3.4.0",
+    "version": "3.4.1",
     "description": "This a place for quardian e2e automation test suite",
     "main": "index.js",
     "scripts": {

@@ -19,17 +19,18 @@ Guardian's dry-run mode creates a sandbox environment where you can simulate mul
 3. **Create Virtual Users** - Set up users for each role (Project Proponent, VVB, OWNER)
 4. **Execute Complete Workflows** - Test full project lifecycle with role transitions
 
-![Choose role during dry run](images/README/image.png)
+![Choose role during dry run](<../../../.gitbook/assets/image (187).png>)
 
-![Switch role UI](images/README/image-1.png)
+![Switch role UI](<../../../.gitbook/assets/image-1 (10).png>)
 
-![VVB documents review UI for Registry role](images/README/image-3.png)
+![VVB documents review UI for Registry role](<../../../.gitbook/assets/image-3 (5).png>)
 
 ### Creating Virtual Users for Multi-Role Testing
 
 Guardian allows Standard Registry users (OWNER role) to create virtual users for testing different stakeholder workflows. This feature enables testing approval chains and document handoffs. You can do so via API as well.
 
 **Testing User Progression Pattern:**
+
 1. **Project Developer** submits PDD using VM0033 project description schema
 2. **Standard Registry** reviews and lists project on their platform
 3. **VVB** accepts validation assignment from project proponent and conducts project review
@@ -49,77 +50,82 @@ Let's walk through testing VM0033's complete workflow using the navigation struc
 
 The Project Proponent starts by accessing the "Projects" section and creating a new project using VM0033's PDD schema.
 
-![New Project Form](images/README/image-2.png)
+![New Project Form](<../../../.gitbook/assets/image-2 (8).png>)
 
 Testing should validate:
-- PDD form captures all required VM0033 parameters
-- Conditional schema sections display based on certification type (VCS vs VCS+CCB)
-- Calculation inputs integrate with custom logic blocks
-- Document submission creates proper audit trail
 
-![VC document submitted](images/README/image-4.png)
+* PDD form captures all required VM0033 parameters
+* Conditional schema sections display based on certification type (VCS vs VCS+CCB)
+* Calculation inputs integrate with custom logic blocks
+* Document submission creates proper audit trail
+
+![VC document submitted](<../../../.gitbook/assets/image-4 (3).png>)
 
 **Step 2: VVB Selection and Assignment**
 
 After PDD submission and approval by registry, the project developer selects a VVB for validation. Testing confirms:
-- VVB selection interface displays approved VVB list
-- Assignment notification reaches selected VVB
-- Project status updates reflect VVB assignment
-- Document access permissions transfer correctly
 
-![Project approval/rejection UI within SR role](images/README/image-5.png)
+* VVB selection interface displays approved VVB list
+* Assignment notification reaches selected VVB
+* Project status updates reflect VVB assignment
+* Document access permissions transfer correctly
 
-![VVB selection via dropdown](images/README/image-6.png)
+![Project approval/rejection UI within SR role](<../../../.gitbook/assets/image-5 (1).png>)
+
+![VVB selection via dropdown](<../../../.gitbook/assets/image-6 (1).png>)
 
 #### VVB Workflow Testing
 
 **Step 3: Project Validation Process**
 
 VVBs access assigned projects through their dedicated interface. Validation testing includes:
-- Project document review and download capabilities
-- Validation checklist and assessment tools
-- Site visit data collection and documentation
-- Validation report submission using VM0033 validation schema
 
-![Project review UI](images/README/image-7.png)
+* Project document review and download capabilities
+* Validation checklist and assessment tools
+* Site visit data collection and documentation
+* Validation report submission using VM0033 validation schema
 
-![Validation Report UI](images/README/image-8.png)
+![Project review UI](<../../../.gitbook/assets/image-7 (1).png>)
 
-![Validation Report Form](images/README/image-9.png)
+![Validation Report UI](<../../../.gitbook/assets/image-8 (1).png>)
+
+![Validation Report Form](<../../../.gitbook/assets/image-9 (1).png>)
 
 **Step 4: Monitoring Report Verification**
 
 During the crediting period, VVBs verify monitoring reports:
-- Annual monitoring data review and validation
-- Field measurement verification against monitoring plan
-- Calculation accuracy assessment using VM0033 test artifacts
-- Verification report submission with emission reduction confirmation
 
-![Validated & approved projects see monitoring report button](images/README/image-10.png)
+* Annual monitoring data review and validation
+* Field measurement verification against monitoring plan
+* Calculation accuracy assessment using VM0033 test artifacts
+* Verification report submission with emission reduction confirmation
 
-![Add report dialog](images/README/image-11.png)
+![Validated & approved projects see monitoring report button](../../../.gitbook/assets/image-10.png)
 
-![Assigned to Earthood](images/README/image-12.png)
+![Add report dialog](../../../.gitbook/assets/image-11.png)
 
-![VVB can view the report submitted with auto-calculated values](images/README/image-13.png)
+![Assigned to Earthood](../../../.gitbook/assets/image-12.png)
 
+![VVB can view the report submitted with auto-calculated values](../../../.gitbook/assets/image-13.png)
 
 #### Standard Registry (OWNER) Workflow Testing
 
 **Step 5: Project Pipeline Management**
 
 Standard Registry manages the complete project pipeline:
-- Project listing approval after successful validation
-- VVB accreditation and performance monitoring
-- Monitoring report review and compliance tracking
-- Token issuance authorization based on verified reductions
-- A verified presentation of tokens minted, each mint must have a trace of all the steps and data backing it.
+
+* Project listing approval after successful validation
+* VVB accreditation and performance monitoring
+* Monitoring report review and compliance tracking
+* Token issuance authorization based on verified reductions
+* A verified presentation of tokens minted, each mint must have a trace of all the steps and data backing it.
 
 ### Testing Workflow State Transitions
 
 Guardian policies manage complex state transitions across multiple documents and stakeholders. Effective testing validates these transitions handle edge cases and error conditions properly.
 
 **Document Status Flow Testing:**
+
 ```
 PDD: Draft → Submitted → Under Review → Validated → Approved
 Monitoring Report: Draft → Submitted → Under Verification → Verified → Credits Issued
@@ -127,11 +133,12 @@ VVB Status: Applicant → Under Review → Approved → Active → Suspended/Rev
 ```
 
 **Potential Error Conditions:**
-- VVB rejection scenarios and resubmission workflows
-- Incomplete document submission handling
-- Calculation errors and correction procedures
-- Role permission violations and access control
-- Concurrent user conflicts and resolution
+
+* VVB rejection scenarios and resubmission workflows
+* Incomplete document submission handling
+* Calculation errors and correction procedures
+* Role permission violations and access control
+* Concurrent user conflicts and resolution
 
 ## Integration Testing with Production-Scale Data
 
@@ -141,7 +148,7 @@ VM0033 projects can involve hundreds of hectares with complex stratification req
 
 **Creating Test Datasets Based on VM0033 Allcot Case:**
 
-Using the VM0033_Allcot_Test_Case_Artifact.xlsx as foundation, create expanded datasets:
+Using the VM0033\_Allcot\_Test\_Case\_Artifact.xlsx as foundation, create expanded datasets:
 
 ```javascript
 // Generate multiple project instances for load testing
@@ -165,9 +172,10 @@ const multipleProjects = generateTestProjects(vm0033BaseProject, 25);
 VM0033 projects can operate over 100-year crediting periods with annual monitoring in best scenarios. Testing long-term scenarios validates data consistency and calculation accuracy across extended timeframes using data patterns from our [VM0033 test case artifact](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx).
 
 Testing should validate:
-- Calculation consistency across monitoring/crediting periods
-- Carbon stock accumulation tracking over decades
-- Emission reduction trend validation
+
+* Calculation consistency across monitoring/crediting periods
+* Carbon stock accumulation tracking over decades
+* Emission reduction trend validation
 
 ## Cross-Component Integration Validation
 
@@ -178,6 +186,7 @@ Part VI testing validates that components from Parts III-V work together seamles
 **Schema Field Mapping Validation:**
 
 Using VM0033's schema structure, test field key consistency:
+
 ```javascript
 // Verify schema field keys match calculation block references
 const pddSchema = vm0033Policy.schemas.find(s => s.name === "PDD Schema");
@@ -203,6 +212,7 @@ function validateFieldMapping(schema, calculationCode) {
 **Important blocks for integration testing:**
 
 Test document flow through complete policy execution:
+
 1. **requestVcDocumentBlock** captures schema data correctly
 2. **customLogicBlock** processes schema fields without errors
 3. **sendToGuardianBlock** stores calculated results properly
@@ -219,6 +229,7 @@ VM0033 integrates AR-Tool14 and AR-Tool05 for biomass and soil carbon calculatio
 Start with simple workflows and progressively add complexity. This approach isolates issues and builds confidence in policy functionality.
 
 **Testing Progression:**
+
 1. **Single User, Single Document** - Basic PDD submission and processing
 2. **Single User, Complete Project** - Full project lifecycle for one user type
 3. **Multi-User, Single Project** - Role interactions and handoffs
@@ -230,19 +241,21 @@ Start with simple workflows and progressively add complexity. This approach isol
 Guardian's dry-run mode creates artifacts that help validate testing results and provide audit trails for methodology compliance.
 
 **Dry-Run Artifacts:**
-- **Transaction Log**: Mock blockchain transactions that would occur in production
-- **Document Archive**: Complete document history with version tracking
-- **IPFS Files**: Files that would be stored in distributed storage
-- **Token Operations**: Credit issuance and transfer records
-- **Audit Trail**: Complete workflow execution history
 
-![Menu bar showing artifacts tab](images/README/image-14.png)
+* **Transaction Log**: Mock blockchain transactions that would occur in production
+* **Document Archive**: Complete document history with version tracking
+* **IPFS Files**: Files that would be stored in distributed storage
+* **Token Operations**: Credit issuance and transfer records
+* **Audit Trail**: Complete workflow execution history
+
+![Menu bar showing artifacts tab](../../../.gitbook/assets/image-14.png)
 
 ### Test Data Management and Version Control
 
 Maintain test datasets that evolve with your methodology. Version control ensures testing remains valid as policies change.
 
 **Sample Test Data Organization:**
+
 ```
 test-data/
 ├── vm0033-base-cases/
@@ -260,10 +273,11 @@ test-data/
 ```
 
 Each test case should include:
-- Input parameters matching your schema structure
-- Expected calculation results from methodology spreadsheets
-- Documentation explaining test scenario purpose
-- Success criteria and validation checkpoints
+
+* Input parameters matching your schema structure
+* Expected calculation results from methodology spreadsheets
+* Documentation explaining test scenario purpose
+* Success criteria and validation checkpoints
 
 ## Chapter Summary
 
@@ -272,22 +286,25 @@ End-to-end testing validates that your methodology digitization works correctly 
 ### Key Testing Strategies:
 
 **Multi-Role Testing Framework:**
-- Virtual user creation and management
-- Complete stakeholder workflow simulation
-- Role transition and permission testing
-- Document handoff validation
+
+* Virtual user creation and management
+* Complete stakeholder workflow simulation
+* Role transition and permission testing
+* Document handoff validation
 
 **Production-Scale Validation:**
-- Large dataset processing performance
-- Multi-year monitoring period simulation
-- Concurrent user and project handling
-- Integration with external systems
+
+* Large dataset processing performance
+* Multi-year monitoring period simulation
+* Concurrent user and project handling
+* Integration with external systems
 
 **Cross-Component Integration:**
-- Schema-workflow-calculation consistency
-- Field mapping and data flow validation
-- External tool integration testing
-- End-to-end document processing
+
+* Schema-workflow-calculation consistency
+* Field mapping and data flow validation
+* External tool integration testing
+* End-to-end document processing
 
 ### Testing Workflow:
 
@@ -300,6 +317,6 @@ End-to-end testing validates that your methodology digitization works correctly 
 
 This testing approach ensures your methodology implementation handles the complexity and scale requirements of production carbon credit programs while maintaining accuracy and compliance with methodology requirements.
 
----
+***
 
 **Next Steps:** Chapter 23 covers API integration and automation, building on the testing foundation established here to enable programmatic methodology operations and external system integration.

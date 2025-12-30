@@ -171,6 +171,8 @@ import { GlobalEventsWriterBlockComponent} from "./policy-viewer/blocks/global-e
 import { GlobalEventsReaderBlockComponent } from "./policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component";
 import { GlobalEventsReaderFiltersDialogComponent } from "./policy-viewer/dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component";
 import { AddGlobalEventTopicDialogComponent } from "./policy-viewer/dialogs/add-global-event-topic/add-global-event-topic-dialog.component";
+import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
+import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
 
 @NgModule({
     declarations: [
@@ -298,7 +300,9 @@ import { AddGlobalEventTopicDialogComponent } from "./policy-viewer/dialogs/add-
         GlobalEventsReaderBlockComponent,
         GlobalEventsReaderFiltersDialogComponent,
         GlobalEventsWriterBlockComponent,
-        AddGlobalEventTopicDialogComponent
+        AddGlobalEventTopicDialogComponent,
+        ChangeBlockSettingsDialog,
+        ApproveUpdateVcDocumentDialogComponent
     ],
     imports: [
         CommonModule,

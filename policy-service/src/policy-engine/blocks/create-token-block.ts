@@ -28,6 +28,7 @@ import {
     ExternalEventType,
 } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Create Token block
@@ -149,7 +150,8 @@ export class CreateTokenBlock {
         ref: IPolicyRequestBlock,
         template: any,
         docs: IPolicyDocument | IPolicyDocument[],
-        userId: string | null
+        userId: string | null,
+        actionStatus: RecordActionStep,
     ) {
         if (!template) {
             throw new BlockActionError(
@@ -220,9 +222,9 @@ export class CreateTokenBlock {
         // #endregion
 
         const state = { data: docs };
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Set, ref, user, {
                 tokenName: createdToken.tokenName,
@@ -249,7 +251,7 @@ export class CreateTokenBlock {
             PolicyOutputEventType.RefreshEvent,
         ],
     })
-    async setData(user: PolicyUser, template: any): Promise<any> {
+    async setData(user: PolicyUser, template: any, _, actionStatus: RecordActionStep): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         ref.log(`setData`);
 
@@ -284,7 +286,8 @@ export class CreateTokenBlock {
                     )
                 ),
                 this.state?.[user.id]?.data?.data,
-                user.userId
+                user.userId,
+                actionStatus
             );
             delete this.state?.[user.id];
             await ref.saveState();
@@ -332,7 +335,8 @@ export class CreateTokenBlock {
                     })
                 ),
                 eventData.data,
-                event?.user?.userId
+                event?.user?.userId,
+                event.actionStatus
             );
         } else {
             if (!this.state.hasOwnProperty(user.id)) {

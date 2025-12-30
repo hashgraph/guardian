@@ -1093,7 +1093,7 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.errors.length === 0;
     }
 
-    private publishPolicy(options: { policyVersion: string, policyAvailability: PolicyAvailability }) {
+    private publishPolicy(options: { policyVersion: string, policyAvailability: PolicyAvailability, recordingEnabled: boolean }) {
         this.loading = true;
         this.policyEngineService.pushPublish(this.policyId, options).pipe(takeUntil(this._destroy$)).subscribe((result) => {
             const { taskId, expectation } = result;

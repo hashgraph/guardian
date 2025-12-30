@@ -26,6 +26,7 @@ export class SchemaHelper {
             unitSystem: null,
             property: null,
             isArray: null,
+            isUpdatable: null,
             isRef: null,
             readOnly: null,
             required: null,
@@ -91,7 +92,8 @@ export class SchemaHelper {
             hidden,
             suggest,
             autocalculate,
-            expression
+            expression,
+            isUpdatable
         } = SchemaHelper.parseFieldComment(field.comment);
         field.suggest = suggest;
         if (field.isRef) {
@@ -134,6 +136,7 @@ export class SchemaHelper {
         field.autocalculate = !!autocalculate;
         field.expression = expression;
         field.order = orderPosition || -1;
+        field.isUpdatable = isUpdatable;
         return field;
     }
 
@@ -635,6 +638,9 @@ export class SchemaHelper {
         }
         if (field.expression) {
             comment.expression = field.expression;
+        }
+        if (field.isUpdatable) {
+            comment.isUpdatable = field.isUpdatable;
         }
         return JSON.stringify(comment);
     }

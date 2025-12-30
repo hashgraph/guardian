@@ -7,14 +7,18 @@ import {
     MessageError,
     MessageResponse, PinoLogger,
     Policy,
+    PolicyRecordMessage,
     RecordImportExport,
-    Record as RecordEntity
+    Record as RecordEntity,
+    MessageServer,
+    MessageType,
+    MessageAction
 } from '@guardian/common';
-import { IOwner, MessageAPI, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
+import { IOwner, MessageAPI, PolicyEvents, PolicyHelper, GenerateUUIDv4 } from '@guardian/interfaces';
 import { GuardiansService } from '../helpers/guardians.js';
+import { FilterObject } from '@mikro-orm/core';
 
-const MIN_SPACING_MS = 1000;
-const RESULTS_WINDOW_PADDING_MS = 1000;
+const MIN_SPACING_MS = 3000;
 
 /**
  * Compare results
@@ -80,73 +84,112 @@ export async function syncPolicyCopiedRecords(
     logger: PinoLogger
 ): Promise<void> {
     try {
-        if (!targetPolicyId) {
-            return;
-        }
         const existingCopies = await DatabaseServer.getRecord(
             {
                 policyId: targetPolicyId,
-                fromPolicyId: { $ne: null },
-                copiedRecordId: { $ne: null }
-            } as any,
-            { orderBy: { createDate: 'ASC' } } as any
+                importedFrom: 'ipfs',
+            },
+            { orderBy: { createDate: 'ASC' } }
         );
-        if (!Array.isArray(existingCopies) || !existingCopies.length) {
+        const sourcePolicy = await DatabaseServer.getPolicyById(targetPolicyId);
+        const sourceRecordsTopicId = sourcePolicy?.recordsTopicId;
+
+        if (!sourceRecordsTopicId) {
+            await logger.error(
+                `Failed to sync copied policy records: recordsTopicId is missing for policy ${targetPolicyId}`,
+                ['POLICY_RUN_RECORD'],
+                null
+            );
             return;
         }
-        const sourcePolicyId = existingCopies[0].fromPolicyId;
-        if (!sourcePolicyId) {
-            return;
-        }
-        const copiedIds = new Set<string>();
-        for (const record of existingCopies) {
-            const id = record.copiedRecordId?.toString?.();
-            if (id) {
-                copiedIds.add(id);
-            }
-        }
-        const lastCreateDate = existingCopies[existingCopies.length - 1]?.createDate;
-        const query: any = {
-            policyId: sourcePolicyId,
-            fromPolicyId: null,
-            copiedRecordId: null
-        };
-        if (lastCreateDate) {
-            query.createDate = { $gt: lastCreateDate };
-        }
-        const sourceRecords = await DatabaseServer.getRecord(
-            query,
-            { orderBy: { createDate: 'ASC' } } as any
-        );
-        if (!Array.isArray(sourceRecords) || !sourceRecords.length) {
-            return;
-        }
-        const newRecords = sourceRecords.filter((record) => {
-            const id = record.id?.toString?.();
-            return id && !copiedIds.has(id);
+
+        const messages = await MessageServer.getMessages<PolicyRecordMessage>({
+            topicId: sourceRecordsTopicId,
+            userId: null,
+            type: MessageType.PolicyRecordStep,
+            action: MessageAction.PolicyRecordStep
         });
-        if (!newRecords.length) {
+
+        if (!messages || !messages.length) {
             return;
         }
-        for (const record of newRecords) {
-            const originalId = record.id?.toString?.();
-            const clone: any = {
-                uuid: record.uuid,
-                policyId: targetPolicyId,
-                method: record.method,
-                action: record.action,
-                time: record.time,
-                user: record.user,
-                target: record.target,
-                document: record.document,
-                documentFileId: record.documentFileId,
-                ipfsCid: record.ipfsCid,
-                ipfsUrl: record.ipfsUrl,
-                ipfsTimestamp: record.ipfsTimestamp,
-                fromPolicyId: sourcePolicyId,
-                copiedRecordId: originalId
-            };
-            await DatabaseServer.createRecord(clone);
+
+        const existingIds = new Set<string>();
+        for (const record of existingCopies) {
+            existingIds.add(record.copiedRecordId);
+        }
+
+        for (const msg of messages) {
+            try {
+                await MessageServer.loadDocument(msg);
+            } catch (e: any) {
+                await logger.error(
+                    `Failed to load copied record from IPFS for recordId=${msg.recordId}: ${e?.message || e}`,
+                    ['POLICY_RUN_RECORD'],
+                    null
+                );
+                continue;
+            }
+
+            const zipBuffer = msg.getDocument?.() as Buffer | undefined;
+            if (!zipBuffer) {
+                continue;
+            }
+
+            let parsed: any;
+            try {
+                parsed = await RecordImportExport.parseZipFile(zipBuffer);
+            } catch (e: any) {
+                await logger.error(
+                    `Failed to parse copied record zip for recordId=${msg.recordId}: ${e?.message || e}`,
+                    ['POLICY_RUN_RECORD'],
+                    null
+                );
+                continue;
+            }
+
+            const parsedRecords = parsed?.records || [];
+            const parsedResults = parsed?.results || [];
+
+            for (const recordFromZip of parsedRecords) {
+                const copiedRecordId = msg.recordId;
+                if (!copiedRecordId || existingIds.has(copiedRecordId)) {
+                    continue;
+                }
+
+                const clone = {
+                    uuid: GenerateUUIDv4(),
+                    policyId: targetPolicyId,
+                    method: recordFromZip.method || msg.method,
+                    action: recordFromZip.action || msg.actionName,
+                    time: msg.time,
+                    user: recordFromZip.user || msg.user,
+                    target: recordFromZip.target || msg.target,
+                    document: recordFromZip.document ?? null,
+                    results: parsedResults.length ? parsedResults : null,
+                    userRole: recordFromZip.userRole || null,
+                    importedFrom: 'ipfs',
+                    copiedRecordId: msg.recordId,
+                    recordActionId: msg.recordActionId
+                } as FilterObject<RecordEntity>;
+
+                const duplicate = await DatabaseServer.getRecord(
+                    {
+                        policyId: targetPolicyId,
+                        uuid: copiedRecordId,
+                        importedFrom: 'ipfs',
+                    },
+                    { limit: 1 }
+                );
+
+                if (Array.isArray(duplicate) && duplicate.length) {
+                    existingIds.add(copiedRecordId);
+                    continue;
+                }
+
+                await DatabaseServer.createRecord(clone);
+                existingIds.add(copiedRecordId);
+            }
         }
     } catch (error) {
         await logger.error(
@@ -180,19 +223,154 @@ export async function checkPolicy(
     return model;
 }
 
+function reorderImportedRecords(importedRecords: RecordEntity[]): RecordEntity[] {
+    const fallback = Date.now();
+
+    const getMs = (r: any): number =>
+        normalizeTimestamp(r?.time ?? r?.createDate ?? r?.updateDate, fallback);
+
+    const n = importedRecords.length;
+    const out: (RecordEntity | null)[] = new Array(n).fill(null);
+
+    const fixed = new Set<number>();
+    for (let i = 0; i < n; i++) {
+        const r: any = importedRecords[i];
+        if (!r) {
+            continue;
+        }
+        if (r.recordActionId === null || r.recordActionId === undefined) {
+            out[i] = importedRecords[i];
+            fixed.add(i);
+        }
+    }
+
+    type Group = { firstIdx: number; items: RecordEntity[] };
+    const groups = new Map<string, Group>();
+
+    for (let i = 0; i < n; i++) {
+        const r: any = importedRecords[i];
+        if (!r) {
+            continue;
+        }
+        if (r.recordActionId === null || r.recordActionId === undefined) {
+            continue;
+        }
+
+        const key = String(r.recordActionId);
+        let g = groups.get(key);
+        if (!g) {
+            g = { firstIdx: i, items: [] };
+            groups.set(key, g);
+        }
+        g.items.push(importedRecords[i]);
+    }
+
+    const groupList = Array.from(groups.entries())
+        .sort((a, b) => a[1].firstIdx - b[1].firstIdx);
+
+    for (const [, g] of groupList) {
+        g.items.sort((a: any, b: any) => {
+            const ta = getMs(a);
+            const tb = getMs(b);
+            return ta === tb ? 0 : (ta - tb);
+        });
+    }
+
+    const findSlot = (start: number): number => {
+        for (let i = start; i < n; i++) {
+            if (!out[i]) {
+                return i;
+            }
+        }
+        for (let i = 0; i < start; i++) {
+            if (!out[i]) {
+                return i;
+            }
+        }
+        return -1;
+    };
+
+    for (const [, g] of groupList) {
+        let pos = g.firstIdx;
+        for (const rec of g.items) {
+            const slot = findSlot(pos);
+            if (slot < 0) {
+                break;
+            }
+            out[slot] = rec;
+            pos = slot + 1;
+        }
+    }
+
+    const result = out.filter(Boolean) as RecordEntity[];
+
+    const baseMs = getMs(result[0]);
+    for (let i = 0; i < result.length; i++) {
+        (result[i] as any).time = new Date(baseMs + i * 10000).getTime();
+    }
+
+    return result;
+}
+
 async function loadImportedRecordsFromDb(
-    policyId: string
+    policyId: string,
+    policyOwner: string
 ): Promise<{ records: RunRecordAction[], results: IRecordResult[] }> {
-    const importedRecords = await DatabaseServer.getRecord(
+    let importedRecords = await DatabaseServer.getRecord(
         {
             policyId,
-            copiedRecordId: { $ne: null }
+            importedFrom: 'ipfs'
         } as any,
-        { orderBy: { time: 'ASC' } }
+        { orderBy: { time: 'ASC'} },
     );
+
     if (!importedRecords.length) {
         throw new Error('Imported records not found');
     }
+
+    importedRecords = reorderImportedRecords(importedRecords);
+    const adminRecord: any = importedRecords.find((r: any) => r?.userRole === 'Administrator');
+    const policyOwnerId: string | null = adminRecord?.user || null;
+
+    if (policyOwnerId && policyOwner && policyOwnerId !== policyOwner) {
+        for (const rec of importedRecords as any[]) {
+            if (rec?.user === policyOwnerId) {
+                rec.user = policyOwner;
+            }
+        }
+    }
+    let total = 0;
+    const resultsMap = new Map<string, IRecordResult>();
+    for (const r of importedRecords) {
+
+        const items: any[] = Array.isArray((r as any).results) ? (r as any).results : [];
+        for (const res of items) {
+            total += 1;
+            const id = res.id || res.target || r.uuid || `${Math.random()}` || '';
+            if (!id) {
+                continue;
+            }
+            const type = (res.type || '').toString().toLowerCase() as 'vc' | 'vp' | 'schema';
+            const key = `${type}:${id}`;
+            if (resultsMap.has(key) || res.document?.credentialSubject?.find?.(({ operation }) => operation === 'PUBLISH')) {
+                continue;
+            }
+            resultsMap.set(key, {
+                id,
+                type,
+                document: res.document ?? res
+            });
+        }
+
+    }
+
+    const resultsFromDb: IRecordResult[] = Array.from(resultsMap.values()).sort((a, b) => {
+        if (!a.document?.proof?.created || !b.document?.proof?.created) {
+            return 0;
+        }
+
+        return a.document?.proof?.created > b.document?.proof?.created ? 1 : -1;
+    });
     const toTimestamp = (value: any): number | null => {
         if (!value) {
             return null;
@@ -200,111 +378,86 @@ async function loadImportedRecordsFromDb(
         const timestamp = new Date(value).getTime();
         return Number.isNaN(timestamp) ? null : timestamp;
     };
-    const startTime = toTimestamp(importedRecords[1]?.time) - 10000;
-    const endTimeCandidate = toTimestamp(importedRecords[importedRecords.length - 1]?.time);
+
+    const firstRecord: any = importedRecords[0];
+    const hasStart = importedRecords.some(
+        (r: any) => (r.method || '').toUpperCase() === 'START'
+    );
+
+    if (hasStart) {
+        const startRecord: any = importedRecords.find(
+            (r: any) => (r.method || '').toUpperCase() === 'START'
+        );
+        const startUser: string | null = startRecord?.user || null;
+
+        if (startUser && policyOwner && startUser !== policyOwner) {
+            for (const rec of importedRecords) {
+                if (rec.user === startUser) {
+                    (rec as any).user = policyOwner;
+                }
+            }
+        }
+    } else if (firstRecord) {
+        const firstTimeRaw =
+            firstRecord.time ||
+            firstRecord.createDate ||
+            firstRecord.updateDate ||
+            new Date();
+
+        const firstTime = firstTimeRaw instanceof Date
+            ? firstTimeRaw
+            : new Date(firstTimeRaw);
+
+        const startRecord: any = {
+            ...firstRecord,
+            method: 'START',
+            action: null,
+            user: policyOwner || firstRecord.user || null,
+            target: null,
+            time: new Date(firstTime.getTime() - MIN_SPACING_MS)
+        };
+
+        importedRecords.unshift(startRecord);
+    }
+
+    const firstTs = toTimestamp(importedRecords[0]?.time) ?? toTimestamp(importedRecords[0]?.createDate);
+    const secondTs = toTimestamp(importedRecords[1]?.time) ?? toTimestamp(importedRecords[1]?.createDate);
+    const startTime = ((secondTs ?? firstTs ?? Date.now()) - 10000);
+    const endTimeCandidate = toTimestamp(importedRecords[importedRecords.length - 1]?.time) ??
+        toTimestamp(importedRecords[importedRecords.length - 1]?.createDate);
     const initialEndTime = endTimeCandidate ?? startTime;
     const endTime = (initialEndTime !== null && startTime !== null && initialEndTime <= startTime)
         ? startTime + 1
         : initialEndTime;
 
-    const safeStartTime = startTime ?? Date.now();
-    let safeEndTime = endTime ?? safeStartTime;
+    const safeStartTime = (startTime !== null) ? startTime : Date.now();
+    let safeEndTime = (endTime !== null) ? endTime : safeStartTime;
     if (safeEndTime <= safeStartTime) {
         safeEndTime = safeStartTime + MIN_SPACING_MS;
     }
-    const paddedEndTime = safeEndTime + RESULTS_WINDOW_PADDING_MS;
-    const firstSourceRecord: any = importedRecords.find((record: any) => record.fromPolicyId);
-    const sourcePolicyId = firstSourceRecord?.fromPolicyId || policyId;
 
     const records = buildRunActionsFromImportedRecords(policyId, importedRecords, safeStartTime);
-    const results = await RecordImportExport.loadRecordResults(
-        sourcePolicyId,
-        safeStartTime,
-        paddedEndTime
-    );
+    const results = resultsFromDb;
+
+    const seen = new Set<string>();
+    const unique: RunRecordAction[] = [];
+
+    for (const rec of records) {
+        if (rec.action !== 'CREATE_USER' && rec.action !== 'SET_USER' && rec.action !== 'GENERATE_UUID' && rec.action !== 'GENERATE_DID') {
+            const { time, ...other } = rec;
+            const str = JSON.stringify(other);
+            if (seen.has(str)) {
+                continue;
+            }
+            seen.add(str);
+        }
+        unique.push(rec);
+    }
 
     return {
-        records,
+        records: unique,
         results
     };
-}
-
-interface RunRecordAction {
-    method: string;
-    action: string | null;
-    user: string | null;
-    target: string | null;
-    time: number;
-    document?: any;
-    uuid?: string;
-}
-
-interface InternalRunRecordAction extends RunRecordAction {
-    __order: number;
-    origin: 'db' | 'synthetic';
-}
-
-function normalizeTimestamp(value: any, fallback: number): number {
-    if (typeof value === 'number' && Number.isFinite(value)) {
-        return value;
-    }
-    if (value instanceof Date) {
-        return value.getTime();
-    }
-    const parsed = new Date(value).getTime();
-    if (!Number.isNaN(parsed)) {
-        return parsed;
-    }
-    return fallback;
-}
-
-function allocatePreActionTimes(leftBound: number, baseTime: number): { createTime: number; setTime: number } {
-    const available = baseTime - leftBound;
-    let createTime = baseTime - MIN_SPACING_MS * 2;
-    let setTime = baseTime - MIN_SPACING_MS;
-
-    if (available <= MIN_SPACING_MS * 2) {
-        const step = Math.max(Math.floor(available / 3), 1);
-        createTime = leftBound + step;
-        setTime = Math.min(baseTime - 1, createTime + step);
-        if (setTime <= createTime) {
-            createTime = Math.max(leftBound + 1, baseTime - 3);
-            setTime = Math.max(createTime + 1, baseTime - 2);
-        }
-        return { createTime, setTime };
-    }
-
-    createTime = baseTime - MIN_SPACING_MS * 2;
-
-    if (createTime <= leftBound + MIN_SPACING_MS) {
-        createTime = leftBound + MIN_SPACING_MS;
-    }
-
-    setTime = baseTime - MIN_SPACING_MS;
-
-    if (setTime <= createTime) {
-        setTime = createTime + MIN_SPACING_MS;
-        if (setTime >= baseTime) {
-            setTime = baseTime - 1;
-        }
-    }
-
-    return { createTime, setTime };
-}
-
-function allocateSwitchTime(leftBound: number, baseTime: number): number {
-    const available = baseTime - leftBound;
-    if (available <= MIN_SPACING_MS) {
-        return Math.max(leftBound + 1, baseTime - 1);
-    }
-    let candidate = baseTime - MIN_SPACING_MS;
-    if (candidate <= leftBound + MIN_SPACING_MS) {
-        candidate = leftBound + MIN_SPACING_MS;
-    }
-    if (candidate >= baseTime) {
-        candidate = baseTime - 1;
-    }
-    return candidate;
 }
 
 function buildRunActionsFromImportedRecords(
@@ -314,6 +467,7 @@ function buildRunActionsFromImportedRecords(
 ): RunRecordAction[] {
     let orderCounter = 0;
     const fallbackTime = startTimeMs || Date.now();
+
     const baseActions: InternalRunRecordAction[] = importedRecords.map((record) => ({
         method: record.method,
         action: record.action ?? null,
@@ -330,6 +484,22 @@ function buildRunActionsFromImportedRecords(
         return [];
     }
 
+    const hasStart = baseActions.some((a) => (a.method || '').toUpperCase() === 'START');
+    if (!hasStart) {
+        const firstTime = baseActions[0]?.time ?? fallbackTime;
+        baseActions.unshift({
+            method: 'START',
+            action: null,
+            user: baseActions[0]?.user ?? null,
+            target: null,
+            time: firstTime - MIN_SPACING_MS,
+            document: null,
+            uuid: baseActions[0]?.uuid,
+            origin: 'synthetic',
+            __order: --orderCounter
+        });
+    }
+
     baseActions.sort((a, b) => {
         if (a.time === b.time) {
             return a.__order - b.__order;
@@ -337,31 +507,14 @@ function buildRunActionsFromImportedRecords(
         return a.time - b.time;
     });
 
-    if (baseActions[0]) {
-        baseActions[0].time = baseActions[1]?.time - 10000;
-    }
-
     const firstActionTime = baseActions[0]?.time ?? fallbackTime;
     const startTime = Number.isFinite(startTimeMs) ? startTimeMs : firstActionTime;
+
     let lastDbActionTime = startTime;
     let lastActionTime = startTime;
     const createdUsers = new Set<string>();
     let currentUser: string | null = null;
     const enriched: InternalRunRecordAction[] = [];
-
-    const firstBusinessActionTime = new Map<string, number>();
-    for (const action of baseActions) {
-        if (
-            action.user &&
-            action.method === 'ACTION' &&
-            action.action !== 'CREATE_USER' &&
-            action.action !== 'SET_USER'
-        ) {
-            if (!firstBusinessActionTime.has(action.user)) {
-                firstBusinessActionTime.set(action.user, action.time);
-            }
-        }
-    }
 
     const pushAction = (action: InternalRunRecordAction) => {
         enriched.push(action);
@@ -412,7 +565,10 @@ function buildRunActionsFromImportedRecords(
         if (action.method === 'START' || action.method === 'STOP') {
             pushAction({ ...action });
             if (action.method === 'START') {
-                currentUser = action.user || null;
+                currentUser = normalizedUser;
+                if (normalizedUser) {
+                    createdUsers.add(normalizedUser);
+                }
             } else if (action.method === 'STOP') {
                 currentUser = null;
             }
@@ -432,8 +588,7 @@ function buildRunActionsFromImportedRecords(
 
         if (action.action === 'SET_USER') {
             if (!createdUsers.has(normalizedUser)) {
-                const leftBound = Math.max(lastDbActionTime, startTime);
-                const { createTime } = allocatePreActionTimes(leftBound, action.time);
+                const { createTime } = allocatePreActionTimes(action.time);
                 insertCreateUser(normalizedUser, createTime);
             }
             currentUser = normalizedUser;
@@ -441,17 +596,12 @@ function buildRunActionsFromImportedRecords(
             continue;
         }
 
-        const firstBusinessTime = firstBusinessActionTime.get(normalizedUser);
-        const isFirstBusinessAction = firstBusinessTime !== undefined && firstBusinessTime === action.time;
-
-        if (isFirstBusinessAction && !createdUsers.has(normalizedUser)) {
-            const leftBound = Math.max(lastDbActionTime, startTime);
-            const { createTime, setTime } = allocatePreActionTimes(leftBound, action.time);
+        if (!createdUsers.has(normalizedUser)) {
+            const { createTime, setTime } = allocatePreActionTimes(action.time);
             insertCreateUser(normalizedUser, createTime);
             insertSetUser(normalizedUser, setTime);
         } else if (currentUser !== normalizedUser) {
-            const leftBound = Math.max(lastDbActionTime, lastActionTime, startTime);
-            const switchTime = allocateSwitchTime(leftBound, action.time);
+            const switchTime = action.time - 1;
             insertSetUser(normalizedUser, switchTime);
         }
 
@@ -483,7 +633,78 @@ function buildRunActionsFromImportedRecords(
         return a.time - b.time;
     });
 
+    enforceMinSpacing(enriched, MIN_SPACING_MS);
+
     return enriched.map(({ __order, origin, ...rest }) => rest);
+}
+
+interface RunRecordAction {
+    method: string;
+    action: string | null;
+    user: string | null;
+    target: string | null;
+    time: number;
+    document?: any;
+    uuid?: string;
+}
+
+interface InternalRunRecordAction extends RunRecordAction {
+    __order: number;
+    origin: 'db' | 'synthetic';
+}
+
+function normalizeTimestamp(value: any, fallback: number): number {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+    if (value instanceof Date) {
+        return value.getTime();
+    }
+    const parsed = new Date(value).getTime();
+    if (!Number.isNaN(parsed)) {
+        return parsed;
+    }
+    return fallback;
+}
+
+function enforceMinSpacing(
+    actions: InternalRunRecordAction[],
+    minSpacingMs: number
+): void {
+    if (!actions.length) {
+        return;
+    }
+
+    let lastTime = actions[0].time;
+
+    if (!Number.isFinite(lastTime)) {
+        lastTime = Date.now();
+        actions[0].time = lastTime;
+    }
+
+    for (let i = 1; i < actions.length; i++) {
+        const action = actions[i];
+        let t = action.time;
+
+        if (!Number.isFinite(t)) {
+            t = lastTime + minSpacingMs;
+        }
+
+        const minAllowed = lastTime + minSpacingMs;
+        if (t < minAllowed) {
+            t = minAllowed;
+        }
+
+        action.time = t;
+        lastTime = t;
+    }
+}
+
+function allocatePreActionTimes(baseTime: number): { createTime: number; setTime: number } {
+    const setTime = baseTime - 1;
+    const createTime = baseTime - 2;
+
+    return { createTime, setTime };
 }
 
 /**
@@ -625,27 +846,27 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Invalid parameters');
                 }
                 const { policyId, owner } = msg;
-                const options = msg.options || {};
-                const syncNewRecords = !!options.syncNewRecords
-                await checkPolicy(policyId, owner);
+                const { file, fromPolicyId, importRecords, syncNewRecords, ...options } = msg.options || {};
+                const policy = await checkPolicy(policyId, owner);
 
                 let records: RecordEntity[] | any[] = [];
                 let results: IRecordResult[] = [];
 
-                if (options.file?.data?.length) {
-                    const zip = options.file;
-                    delete options.file;
+                if (file?.data?.length) {
+                    const zip = file;
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip.data));
                     records = recordToImport.records;
                     results = recordToImport.results;
+                } else if (fromPolicyId) {
+                    const dbData = await loadImportedRecordsFromDb(fromPolicyId, policy.owner);
+                    records = dbData.records;
+                    results = dbData.results;
                 } else {
-                    delete options.importRecords;
-                    delete options.syncNewRecords;
                     if (syncNewRecords) {
                         await syncPolicyCopiedRecords(policyId, logger);
                     }
 
-                    const dbData = await loadImportedRecordsFromDb(policyId);
+                    const dbData = await loadImportedRecordsFromDb(policyId, policy.owner);
                     records = dbData.records;
                     results = dbData.results;
                 }

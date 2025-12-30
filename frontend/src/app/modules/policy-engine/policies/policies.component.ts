@@ -946,7 +946,7 @@ export class PoliciesComponent implements OnInit {
 
     private publish(
         element: any,
-        options: { policyVersion: string, policyAvailability: PolicyAvailability }
+        options: { policyVersion: string, policyAvailability: PolicyAvailability, recordingEnabled: boolean }
     ) {
         this.loading = true;
         this.policyEngineService.pushPublish(element.id, options).pipe(takeUntil(this._destroy$)).subscribe(
@@ -1941,5 +1941,11 @@ export class PoliciesComponent implements OnInit {
                     );
             });
         }
+    }
+
+    public onClearSelection() {
+        this.selectedItems = [];
+        this.selectedItemIds = [];
+        this.isAllSelected = false;
     }
 }

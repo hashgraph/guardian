@@ -22,12 +22,14 @@
     [isFormForFinishSetup]="isFormForFinishSetup"
     [isFormForRequestBlock]="isFormForRequestBlock"
     [lastSavedAt]="lastSavedAt"
+    [isEditMode]="isEditMode"
     (change)="onChange($event)"
     (destroy)="onDestroy($event)"
     (buttons)="onButtons($event)"
     (cancelBtnEvent)="onCancelBtnEvent($event)"
     (submitBtnEvent)="onSubmitBtnEvent($event)"
     (saveBtnEvent)="onSaveBtnEvent($event)"
+    (updatableBtnEvent)="onUpdatableBtnEvent()"
 >
 </app-schema-form>
 <div *ngIf="loading" class="guardian-loading">

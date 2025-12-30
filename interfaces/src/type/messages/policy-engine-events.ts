@@ -34,6 +34,7 @@ export enum PolicyEngineEvents {
     BLOCK_BY_TAG = 'policy-engine-event-get-block-by-tag',
     GET_POLICIES = 'policy-engine-event-get-policies',
     GET_POLICIES_V2 = 'policy-engine-event-get-policies-V2',
+    GET_POLICIES_WITH_IMPORTED_RECORDS = 'policy-engine-event-get-policies-with-imported-records',
     GET_POLICY = 'policy-engine-event-get-policy',
     GET_BLOCK_PARENTS = 'policy-engine-event-get-block-parents',
     BLOCK_ABOUT = 'policy-engine-event-block-about',
@@ -107,4 +108,6 @@ export enum PolicyEngineEvents {
     GET_POLICY_REPOSITORY_USERS = 'policy-engine-policy-repository-users',
     GET_POLICY_REPOSITORY_DOCUMENTS = 'policy-engine-policy-repository-documents',
     GET_POLICY_REPOSITORY_SCHEMAS = 'policy-engine-policy-repository-schemas',
+    CREATE_NEW_VERSION_VC_DOCUMENT = 'policy-engine-create-new-version-vc-document',
+    GET_All_NEW_VERSION_VC_DOCUMENTS = 'policy-engine-get-all-new-version-vc-documents'
 }
