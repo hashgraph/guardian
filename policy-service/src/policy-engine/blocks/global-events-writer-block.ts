@@ -1,14 +1,3 @@
-/**
- * GlobalEventsWriterBlock
- *
- * Server-side policy block that forwards a reference to an already anchored VC/VP/VS
- * into one or more global Hedera topics. It does not create or modify documents.
- * Instead, it stores per-user stream configurations in the database (like the
- * GlobalEventsReader block) and publishes references to VC documents when the
- * block is active or hidden. The last document processed is cached per-user so
- * that newly activated streams immediately receive the most recent message.
- */
-
 import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -17,23 +6,17 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engi
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
-
-import { LocationType, TopicType } from '@guardian/interfaces';
+import {
+    GLOBAL_DOCUMENT_TYPE_DEFAULT,
+    GLOBAL_DOCUMENT_TYPE_ITEMS,
+    GlobalDocumentType,
+    GlobalEvent,
+    LocationType,
+    TopicType
+} from '@guardian/interfaces';
 import {GlobalEventsWriterStream, Message, MessageServer, TopicConfig, TopicHelper} from '@guardian/common';
 import { TopicId } from '@hashgraph/sdk';
-
-/**
- * Payload sent to global topics. Consumers can use documentType,
- * schemaContextIri and schemaIri for filtering/routing.
- */
-interface GlobalEvent {
-    documentType: GlobalDocumentType;
-    documentTopicId: string;
-    documentMessageId: string;
-    schemaContextIri: string;
-    schemaIri: string;
-    timestamp: string;
-}
+import { WriterCacheState } from './../interfaces/index.js'
 
 /**
  * Streams in structure used when calling setData via UI.
@@ -51,34 +34,6 @@ interface SetDataPayload {
     streams: Array<SetDataStreamPayload>;
     operation: string;
 }
-
-/**
- * Cached state per-user. Keeps last processed document and the last published messageId
- */
-interface WriterCacheState {
-    docs?: IPolicyDocument[];
-}
-
-export const GLOBAL_DOCUMENT_TYPE_LABELS = {
-    vc: 'VC',
-    json: 'JSON',
-    csv: 'CSV',
-    text: 'Text',
-    any: 'Any',
-} as const;
-
-// Supported document types for filtering/publish metadata
-export type GlobalDocumentType = keyof typeof GLOBAL_DOCUMENT_TYPE_LABELS;
-
-export const GLOBAL_DOCUMENT_TYPE_ITEMS: Array<{ label: string; value: GlobalDocumentType }> =
-    Object.entries(GLOBAL_DOCUMENT_TYPE_LABELS).map(([value, label]) => {
-        return {
-            label: String(label),
-            value: value as GlobalDocumentType,
-        };
-    });
-
-export const GLOBAL_DOCUMENT_TYPE_DEFAULT = "vc";
 
 @EventBlock({
     blockType: 'globalEventsWriterBlock',
@@ -147,78 +102,52 @@ export const GLOBAL_DOCUMENT_TYPE_DEFAULT = "vc";
 })
 export class GlobalEventsWriterBlock {
     /**
-     * Extract the canonical address (messageId) from the document.
-     */
-    private extractCanonicalAddress(doc: IPolicyDocument): string {
-        if (doc?.messageId) {
-            return String(doc.messageId);
-        }
-        return '';
-    }
-
-    /**
      * Creates default stream rows in the DB for this user if none exist.
-     * New rows inherit the defaultActive and documentType from the block options.
      */
     private async ensureDefaultStreams(ref: AnyBlockType, user: PolicyUser): Promise<void> {
-        const existing = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(
+        const existingStreams = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(
             ref.policyId,
             ref.uuid,
             user.userId,
         );
 
         const existingTopicIds = new Set<string>();
-        for (const stream of existing) {
+        for (const stream of existingStreams) {
             if (stream?.globalTopicId) {
-                existingTopicIds.add(String(stream.globalTopicId).trim());
+                existingTopicIds.add(stream.globalTopicId);
             }
         }
 
-        const optionTopicIds = Array.isArray(ref.options?.topicIds) ? ref.options.topicIds : [];
+        const optionTopicIds = ref.options.topicIds ?? [];
 
-        for (const topic of optionTopicIds) {
-            const topicId = topic.topicId?.trim();
-            if (!topicId) {
+        for (const optionTopic of optionTopicIds) {
+            const optionTopicId = optionTopic.topicId;
+            if (!optionTopicId) {
                 continue;
             }
 
             try {
-                this.validateTopicId(topicId, ref);
+                this.validateTopicId(optionTopicId, ref);
             } catch (_e) {
                 continue;
             }
 
-            if (existingTopicIds.has(topicId)) {
+            if (existingTopicIds.has(optionTopicId)) {
                 continue;
             }
 
-            const topicDocumentType: GlobalDocumentType = topic.documentType
-
-            if (existingTopicIds.has(topicId)) {
-                const existingStream = existing.find((s) => {
-                    return s?.globalTopicId === topicId;
-                });
-
-                if (existingStream) {
-                    // && existingStream.documentType !== topicDocumentType
-                    // existingStream.documentType = topicDocumentType;
-                    await ref.databaseServer.updateGlobalEventsWriterStream(existingStream);
-                }
-
-                continue;
-            }
-
-            const defaultActive: boolean = topic.active;
+            const topicDocumentType: GlobalDocumentType = optionTopic.documentType
+            const defaultActive: boolean = optionTopicId.active;
 
             await ref.databaseServer.createGlobalEventsWriterStream({
                 policyId: ref.policyId,
                 blockId: ref.uuid,
                 userId: user.userId,
                 userDid: user.did,
-                globalTopicId: topicId,
+                globalTopicId: optionTopicId,
                 active: defaultActive,
                 documentType: topicDocumentType,
-            });
+            } as Partial<GlobalEventsWriterStream>);
         }
     }
 
@@ -382,7 +311,6 @@ export class GlobalEventsWriterBlock {
                 userId: user.userId,
                 interception: null,
             });
-            console.log('sendMessage2')
         } catch (err) {
             ref.error(`Publish to global topic failed: ${PolicyUtils.getErrorMessage(err)}`);
             throw new BlockActionError('Publish to global topic failed', ref.blockType, ref.uuid);
@@ -411,10 +339,9 @@ export class GlobalEventsWriterBlock {
                 documentType: topic.documentType,
                 documentTopicId: doc.topicId,
                 documentMessageId: messageId,
-                schemaContextIri,
                 schemaIri,
                 timestamp: new Date().toISOString(),
-            };
+            } as GlobalEvent;
 
             await this.publish(ref, user, topic.globalTopicId, payload);
         }
@@ -454,7 +381,7 @@ export class GlobalEventsWriterBlock {
             }
             return created.topicId;
         } catch (err) {
-            ref.error(`Create topic failed: ${(PolicyUtils as any).getErrorMessage(err)}`);
+            ref.error(`Create topic failed: ${PolicyUtils.getErrorMessage(err)}`);
             throw new BlockActionError('Create topic failed', ref.blockType, ref.uuid);
         }
     }
@@ -469,8 +396,6 @@ export class GlobalEventsWriterBlock {
         ],
     })
     public async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<void> {
-        console.log('runAction');
-
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const user: PolicyUser = event?.user;
 
@@ -491,6 +416,7 @@ export class GlobalEventsWriterBlock {
             return;
         }
 
+        // Ensure default streams exist.
         await this.ensureDefaultStreams(ref, user);
 
         const streams = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(
@@ -510,9 +436,7 @@ export class GlobalEventsWriterBlock {
                 continue;
             }
 
-            console.log('doc');
-
-            const documentMessageId: string = this.extractCanonicalAddress(doc);
+            const documentMessageId: string = doc?.messageId ?? '';
             if (!documentMessageId) {
                 ref.warn(
                     'GlobalEventsWriter: Canonical document address (messageId) is missing; skip publish'
@@ -526,17 +450,16 @@ export class GlobalEventsWriterBlock {
 
             if (!defaultActive) {
                 if (streams.length > 0) {
-                    const { schemaContextIri, schemaIri } = this.extractSchemaIris(ref, doc);
+                    const { schemaIri } = this.extractSchemaIris(ref, doc);
 
                     for (const stream of streams) {
                         const eventPayload: GlobalEvent = {
                             documentType: stream.documentType,
                             documentTopicId: doc.topicId,
                             documentMessageId,
-                            schemaContextIri,
                             schemaIri,
                             timestamp: new Date().toISOString(),
-                        };
+                        } as GlobalEvent;
 
                         await this.publish(ref, user, stream.globalTopicId, eventPayload);
 
@@ -590,10 +513,7 @@ export class GlobalEventsWriterBlock {
             throw new BlockActionError('User is required', ref.blockType, ref.uuid);
         }
 
-        console.log('getData', 'writer')
-
-        // Ensure default streams exist. This creates DB rows
-        // from the block configuration if none exist for this user.
+        // Ensure default streams exist.
         await this.ensureDefaultStreams(ref, user);
 
         const streams = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(ref.policyId, ref.uuid, user.userId);
@@ -642,11 +562,9 @@ export class GlobalEventsWriterBlock {
 
         const topics = streams.filter(stream => stream.topicId);
 
-        // Ensure default streams exist. This creates DB rows
-        // from the block configuration if none exist for this user.
+        // Ensure default streams exist.
         await this.ensureDefaultStreams(ref, user);
 
-        // Create a new topic and DB row
         if (operation === 'CreateTopic') {
             const createdTopicId = await this.createTopic(ref, user);
 
@@ -666,7 +584,6 @@ export class GlobalEventsWriterBlock {
             return {}
         }
 
-        // Add existing topics as new DB rows
         if (operation === 'AddTopic') {
             for (const topic of topics) {
                 try {
@@ -703,7 +620,6 @@ export class GlobalEventsWriterBlock {
             return {}
         }
 
-        // Delete topics from DB rows
         if (operation === 'Delete') {
             const optionTopicIds = ref.options.topicIds ?? [];
             const defaultTopicIds = new Set<string>();
@@ -711,7 +627,6 @@ export class GlobalEventsWriterBlock {
             for (const item of optionTopicIds) {
                 defaultTopicIds.add(item.topicId);
             }
-
 
             for (const topic of topics) {
                 if (defaultTopicIds.has(topic.topicId)) {
@@ -735,7 +650,6 @@ export class GlobalEventsWriterBlock {
             return {}
         }
 
-        // Update active flags and document type
         if (operation === 'Update') {
             const setStreamsDbMap = new Map<string, GlobalEventsWriterStream>();
 
@@ -779,7 +693,7 @@ export class GlobalEventsWriterBlock {
                                 continue;
                             }
 
-                            const documentMessageId: string = this.extractCanonicalAddress(doc);
+                            const documentMessageId: string = doc?.messageId ?? '';
                             if (!documentMessageId) {
                                 ref.warn(
                                     'GlobalEventsWriter: Canonical document address (messageId) is missing; skip publish'
@@ -787,16 +701,15 @@ export class GlobalEventsWriterBlock {
                                 continue;
                             }
 
-                            const { schemaContextIri, schemaIri } = this.extractSchemaIris(ref, doc);
+                            const { schemaIri } = this.extractSchemaIris(ref, doc);
 
                             const payload: GlobalEvent = {
                                 documentType: documentType,
                                 documentTopicId: doc.topicId,
                                 documentMessageId: documentMessageId,
-                                schemaContextIri: schemaContextIri,
                                 schemaIri: schemaIri,
                                 timestamp: new Date().toISOString(),
-                            };
+                            } as GlobalEvent;
 
                             await this.publish(ref, user, streamDb.globalTopicId, payload);
 
