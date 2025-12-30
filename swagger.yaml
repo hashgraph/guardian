@@ -6465,6 +6465,13 @@ paths:
           schema:
             example: 00000000-0000-0000-0000-000000000000
             type: string
+        - name: syncEvents
+          required: false
+          in: query
+          description: Sync events
+          schema:
+            example: true
+            type: boolean
       requestBody:
         required: true
         description: Data
@@ -6519,6 +6526,13 @@ paths:
           schema:
             example: block-tag
             type: string
+        - name: syncEvents
+          required: false
+          in: query
+          description: Sync events
+          schema:
+            example: true
+            type: boolean
       requestBody:
         required: true
         description: Data
