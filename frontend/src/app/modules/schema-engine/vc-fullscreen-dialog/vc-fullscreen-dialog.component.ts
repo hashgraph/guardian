@@ -36,6 +36,8 @@ import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ToastrService } from 'ngx-toastr';
 import { ApproveUpdateVcDocumentDialogComponent } from '../../policy-engine/dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component';
+import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { prepareVcData } from '../../common/models/prepare-vc-data';
 
 /**
  * Dialog for display json
@@ -115,7 +117,8 @@ export class VCFullscreenDialog {
         private fb: UntypedFormBuilder,
         private policyEngineService: PolicyEngineService,
         private toastr: ToastrService,
-        private dialog: DialogService
+        private dialog: DialogService,
+        private tablePersist: TablePersistenceService
     ) {
         this.dataForm = this.fb.group({});
     }
@@ -530,7 +533,7 @@ export class VCFullscreenDialog {
             }
         );
 
-        dialogRef.onClose.subscribe((result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
                 if (isSwitchMode) {
                     this.isEditMode = !this.isEditMode;
@@ -540,6 +543,10 @@ export class VCFullscreenDialog {
 
             this.loading = true;
             const data = this.dataForm.getRawValue();
+            
+            await this.tablePersist.persistTablesInDocument(data, false, this.policyId, this.id, undefined);
+            prepareVcData(data);
+            
             this.policyEngineService
                 .createNewVersionVcDocument(this.policyId!, {
                     documentId: this.lastVersionVcDoc.id ?? this.documentId,
