@@ -2,7 +2,7 @@ import { Entity, Property, BeforeCreate, BeforeUpdate, AfterDelete } from '@mikr
 import { RestoreEntity } from '../models/index.js';
 import { DataBaseHelper } from '../helpers/index.js';
 import { DeleteCache } from './delete-cache.js';
-import {GlobalDocumentType, GlobalEventsStreamStatus} from '@guardian/interfaces';
+import { GlobalDocumentType } from '@guardian/interfaces';
 
 @Entity()
 export class GlobalEventsWriterStream extends RestoreEntity {

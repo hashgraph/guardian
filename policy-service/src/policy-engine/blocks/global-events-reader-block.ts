@@ -8,12 +8,11 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, GlobalEventsReaderStreamRow, GlobalEventsStreamStatus,
-    LocationType, Schema, SchemaField, SchemaHelper, SetDataPayloadReader, TopicType
+    LocationType, Schema, SchemaField, SchemaHelper, SetDataPayloadReader, TopicType,  WorkerTaskType
 } from '@guardian/interfaces';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { GlobalEventsReaderStream, IPFS, MessageAction, MessageServer, SchemaMessage, SchemaPackageMessage, TopicHelper, UrlType, Workers} from '@guardian/common';
-import { WorkerTaskType } from '@guardian/interfaces';
-import {TopicId} from "@hashgraph/sdk";
+import {TopicId} from '@hashgraph/sdk';
 
 /**
  * Message fetched from Hedera topic via worker-service.
@@ -32,7 +31,7 @@ interface GlobalEventReaderBranchConfig {
 }
 
 interface GlobalEventReaderConfig {
-    eventTopics: Array<{ topicId: string, active: boolean }> | [];
+    eventTopics: { topicId: string, active: boolean }[] | [];
     documentType: GlobalDocumentType;
     branches: GlobalEventReaderBranchConfig[] | [];
     showNextButton: boolean;
@@ -732,7 +731,7 @@ class GlobalEventsReaderBlock {
     }
 
     private async parseSchemaMessages(
-        messages: Array<SchemaMessage | SchemaPackageMessage>,
+        messages: (SchemaMessage | SchemaPackageMessage)[],
         ref: AnyBlockType,
         userId: string
     ): Promise<SchemaBatchItem[]> {
@@ -1029,8 +1028,8 @@ class GlobalEventsReaderBlock {
         // Ensure default streams exist.
         await this.ensureDefaultStreams(ref, user);
 
-        const state: IPolicyEventState = (event as any)?.data || (event as any);
-        const payload = state?.data ?? [];
+        const state: IPolicyEventState = event.data;
+        const payload = state.data ?? [];
 
         const docs: IPolicyDocument[] = Array.isArray(payload) ? payload : [payload];
 
@@ -1126,7 +1125,7 @@ class GlobalEventsReaderBlock {
         }
 
         const branches = config.branches ?? [];
-        const branchesWithSchemaName: Array<any> = [];
+        const branchesWithSchemaName = [];
 
         for (const branch of branches) {
             let schemaName: string | undefined;
@@ -1288,8 +1287,6 @@ class GlobalEventsReaderBlock {
 
             this.validateTopicId(topicId, ref);
 
-            const defaultBranchDocumentTypeByBranch: Record<string, GlobalDocumentType> = {};
-
             await ref.databaseServer.createGlobalEventsStream({
                 policyId: ref.policyId,
                 blockId: ref.uuid,
@@ -1310,7 +1307,7 @@ class GlobalEventsReaderBlock {
         }
 
         for (const item of streams) {
-            const topicId = (item?.globalTopicId || '').trim();
+            const topicId = item.globalTopicId;
 
             try {
                 this.validateTopicId(topicId, ref);
@@ -1536,7 +1533,7 @@ class GlobalEventsReaderBlock {
         const byTitle = new Map<string, SchemaFieldRef>();
         const byDescription = new Map<string, SchemaFieldRef>();
 
-        const stack: Array<{ field: SchemaField; prefix: string }> = [];
+        const stack: { field: SchemaField; prefix: string }[] = [];
 
         for (const field of schemaFieldsTree) {
             stack.push({ field, prefix: '' });

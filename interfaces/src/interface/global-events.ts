@@ -14,7 +14,7 @@ export enum GlobalEventsStreamStatus {
     Error = 'ERROR'
 }
 
-export const GLOBAL_DOCUMENT_TYPE_ITEMS: Array<{ label: string; value: GlobalDocumentType }> =
+export const GLOBAL_DOCUMENT_TYPE_ITEMS: { label: string; value: GlobalDocumentType }[] =
     Object.entries(GLOBAL_DOCUMENT_TYPE_LABELS).map(([value, label]) => {
         return {
             label: String(label),
@@ -22,7 +22,7 @@ export const GLOBAL_DOCUMENT_TYPE_ITEMS: Array<{ label: string; value: GlobalDoc
         };
     });
 
-export const GLOBAL_DOCUMENT_TYPE_DEFAULT = "vc";
+export const GLOBAL_DOCUMENT_TYPE_DEFAULT = 'vc';
 
 /**
  * Payload sent to global topics.
@@ -46,7 +46,7 @@ export interface GlobalEventsReaderStreamRow {
 }
 
 export interface SetDataPayloadReader {
-    streams: Array<Partial<GlobalEventsReaderStreamRow>>;
+    streams: Partial<GlobalEventsReaderStreamRow>[];
 }
 
 export type Operation = 'AddTopic' | 'CreateTopic' | 'Delete' | 'Update' | 'Next';

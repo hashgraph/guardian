@@ -19,7 +19,7 @@ type SetDataStreamPayload = {
 };
 
 interface SetDataPayload {
-    streams: Array<SetDataStreamPayload>;
+    streams: SetDataStreamPayload[];
     operation: string;
 }
 
@@ -260,14 +260,14 @@ export class GlobalEventsWriterBlock {
                 let currentMemo: string | null = null;
                 let currentId: string | null = null;
                 let currentTopicId: string | null = null;
-                let currentLang: string | null = null;
+                // let currentLang: string | null = null;
                 return {
                     toMessage(): string {
                         return JSON.stringify(payload);
                     },
-                    setLang(lang: string): void {
-                        currentLang = lang;
-                    },
+                    // setLang(lang: string): void {
+                    //     currentLang = lang;
+                    // },
                     setMemo(memo: string): void {
                         currentMemo = memo;
                     },
@@ -320,7 +320,7 @@ export class GlobalEventsWriterBlock {
             return;
         }
 
-        const { schemaContextIri, schemaIri } = this.extractSchemaIris(ref, doc);
+        const { schemaIri } = this.extractSchemaIris(ref, doc);
 
         for (const topic of activeStreams) {
             const payload: GlobalEvent = {
@@ -692,10 +692,10 @@ export class GlobalEventsWriterBlock {
                             const { schemaIri } = this.extractSchemaIris(ref, doc);
 
                             const payload: GlobalEvent = {
-                                documentType: documentType,
+                                documentType,
                                 documentTopicId: doc.topicId,
-                                documentMessageId: documentMessageId,
-                                schemaIri: schemaIri,
+                                documentMessageId,
+                                schemaIri,
                                 timestamp: new Date().toISOString(),
                             } as GlobalEvent;
 
