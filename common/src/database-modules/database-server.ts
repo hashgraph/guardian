@@ -1,5 +1,5 @@
 import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus } from '@guardian/interfaces';
-import { TopicId } from '@hashgraph/sdk';
+import { TopicId } from '@hiero-ledger/sdk';
 import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
@@ -238,28 +238,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
         if (toUpdate.length > 0) {
             await repo.saveMany(toUpdate);
         }
-    }
-
-    /**
-     * Set IPFS metadata for record
-     * @param recordId
-     * @param metadata
-     */
-    public static async setRecordIpfsMeta(
-        recordId: ObjectId | string,
-        metadata: { cid: string, url?: string }
-    ): Promise<void> {
-        const id = recordId instanceof ObjectId ? recordId : new ObjectId(String(recordId));
-        await new DataBaseHelper(Record).updateManyRaw(
-            { _id: id },
-            {
-                $set: {
-                    ipfsCid: metadata.cid,
-                    ipfsUrl: metadata.url,
-                    ipfsTimestamp: new Date()
-                }
-            }
-        );
     }
 
     public static async removeDryRunWithEmptySavepoint(policyId: string): Promise<void> {

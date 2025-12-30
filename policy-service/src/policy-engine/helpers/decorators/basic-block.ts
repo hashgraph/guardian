@@ -11,6 +11,7 @@ import deepEqual from 'deep-equal';
 import { PolicyUser } from '../../policy-user.js';
 import { ComponentsService } from '../components-service.js';
 import { IDebugContext } from '../../block-engine/block-result.js';
+import { RecordActionStep } from '../../record-action-step.js';
 
 /**
  * Basic block decorator
@@ -353,11 +354,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public triggerEvents<U>(
                 output: PolicyOutputEventType,
                 user: PolicyUser,
-                data: U
+                data: U,
+                actionStatus: RecordActionStep
             ): void {
+                const status = actionStatus;
+
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
-                        link.run(user, data);
+                        link.run(user, data, status);
                     }
                 }
             }
@@ -371,11 +375,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public async triggerEventSync<U>(
                 output: PolicyOutputEventType,
                 user: PolicyUser,
-                data: U
+                data: U,
+                actionStatus: RecordActionStep
             ): Promise<any> {
+                const status = actionStatus;
+
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
-                        return await link.runSync(user, data);
+                        return await link.runSync(user, data, status);
                     }
                 }
 
@@ -391,7 +398,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public triggerEvent<U>(
                 event: IPolicyEvent<U>,
                 user: PolicyUser,
-                data: U
+                data: U,
+                actionStatus: RecordActionStep
             ): void {
                 console.error('triggerEvent');
             }

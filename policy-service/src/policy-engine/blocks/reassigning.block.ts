@@ -11,6 +11,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { Inject } from '../../helpers/decorators/inject.js';
 import { LocationType } from '@guardian/interfaces';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Reassigning block
@@ -52,7 +53,7 @@ export class ReassigningBlock {
      * @param user
      * @param userId
      */
-    async documentReassigning(document: IPolicyDocument, user: PolicyUser, userId: string | null): Promise<{
+    async documentReassigning(document: IPolicyDocument, user: PolicyUser, userId: string | null, actionStatus: RecordActionStep): Promise<{
         /**
          * New Document
          */
@@ -91,7 +92,7 @@ export class ReassigningBlock {
             actor = user;
         }
 
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatus?.id);
         const credentialSubject = document.document.credentialSubject[0];
         const vc = await PolicyActionsUtils.signVC({
             ref,
@@ -102,7 +103,7 @@ export class ReassigningBlock {
             userId: user.userId
         });
 
-        let item = PolicyUtils.createVC(ref, owner, vc);
+        let item = PolicyUtils.createVC(ref, owner, vc, actionStatus?.id);
         item.type = document.type;
         item.schema = document.schema;
         item.assignedTo = document.assignedTo;
@@ -137,12 +138,12 @@ export class ReassigningBlock {
         if (Array.isArray(documents)) {
             result = [];
             for (const doc of documents) {
-                const { item, actor } = await this.documentReassigning(doc, event.user, event?.user?.userId);
+                const { item, actor } = await this.documentReassigning(doc, event.user, event?.user?.userId, event.actionStatus);
                 result.push(item);
                 user = actor;
             }
         } else {
-            const { item, actor } = await this.documentReassigning(documents, event.user, event?.user?.userId);
+            const { item, actor } = await this.documentReassigning(documents, event.user, event?.user?.userId, event.actionStatus);
             result = item;
             user = actor;
         }
@@ -150,9 +151,9 @@ export class ReassigningBlock {
         event.data.data = result;
         // ref.log(`Reassigning Document: ${JSON.stringify(result)}`);
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, event.data);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, event.data, event.actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, event.actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, event.data, event.actionStatus);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(result)

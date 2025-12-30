@@ -42,6 +42,31 @@
                     label="Include newly recorded steps"
                 ></p-checkbox>
             </div>
+            <div class="record-policy-selector" *ngIf="type === 'record' && recordSource === 'otherPolicy'">
+                <label class="form-label">Policy with imported records</label>
+                <p-dropdown
+                    #policyDropdown
+                    [(ngModel)]="selectedPolicy"
+                    [options]="policiesWithImportedRecords"
+                    [optionLabel]="'name'"
+                    [filter]="true"
+                    [filterBy]="'name'"
+                    [disabled]="policiesLoading"
+                    appendTo="body"
+                    placeholder="Select policy"
+                    [panelStyle]="{ maxWidth: '656px' }"
+                    styleClass="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel"
+                    class="guardian-dropdown"
+                >
+                    <ng-template let-item pTemplate="item">
+                        <span [title]="item.name">{{ item?.name }}</span>
+                    </ng-template>
+                    <ng-template let-item pTemplate="selectedItem" >
+                        <span [title]="item.name">{{ item?.name }}</span>
+                    </ng-template>
+                </p-dropdown>
+            </div>
 
             <app-file-drag-n-drop
                 *ngIf="importType === 0 && (type !== 'record' || recordSource === 'file')"

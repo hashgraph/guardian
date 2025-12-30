@@ -169,6 +169,8 @@ import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialo
 import { MathConfigComponent } from './policy-configuration/blocks/calculate/math-config/math-config.component';
 import { MathEditorDialogComponent } from './dialogs/math-editor-dialog/math-editor-dialog.component';
 import { FieldLinkDialog } from './dialogs/field-link-dialog/field-link-dialog.component';
+import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
+import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
 
 @NgModule({
     declarations: [
@@ -295,7 +297,9 @@ import { FieldLinkDialog } from './dialogs/field-link-dialog/field-link-dialog.c
         PolicyRepositoryComponent,
         UserPolicyDialog,
         MathEditorDialogComponent,
-        FieldLinkDialog
+        FieldLinkDialog,
+        ChangeBlockSettingsDialog,
+        ApproveUpdateVcDocumentDialogComponent
     ],
     imports: [
         CommonModule,

@@ -113,6 +113,8 @@ export class DocumentsSourceAddon {
             filters.schema = ref.options.schema;
         }
 
+        filters.initId = { $exists: false }
+
         for (const filter of ref.options.filters) {
             const expr = filters[filter.field] || {};
 

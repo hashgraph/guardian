@@ -151,7 +151,8 @@ public runRecord() {
             styleClass: 'guardian-dialog',
             data: {
                 type: ImportEntityType.Record,
-                withRecords: this.withRecords
+                withRecords: this.withRecords,
+                policyId: this.policyId
             }
         });
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
@@ -160,11 +161,14 @@ public runRecord() {
                 this.recordItems = [];
                 this.overlay = null;
                 const options: any = {};
-                if ((result as any)?.importRecords) {
+                if (result?.importRecords) {
                     options.importRecords = true;
                 }
-                if ((result as any)?.syncNewRecords) {
+                if (result?.syncNewRecords) {
                     options.syncNewRecords = true;
+                }
+                if (result?.fromPolicyId) {
+                    options.fromPolicyId = result?.fromPolicyId;
                 }
                 this.recordService.runRecord(this.policyId, result.data, options).subscribe((result) => {
                     this.running = !!result;

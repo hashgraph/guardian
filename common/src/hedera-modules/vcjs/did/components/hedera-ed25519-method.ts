@@ -1,4 +1,4 @@
-import { PrivateKey } from '@hashgraph/sdk';
+import { PrivateKey } from '@hiero-ledger/sdk';
 import { Hashing } from '../../../hashing.js';
 import { VerificationMethod } from './verification-method.js';
 

@@ -63,6 +63,12 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     policyId?: string;
 
     /**
+     * Record action id
+     */
+    @Property({ nullable: true })
+    recordActionId?: string;
+
+    /**
      * Tag
      */
     @Property({ nullable: true })
@@ -262,6 +268,18 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     _oldTableFileIds?: ObjectId[];
 
     /**
+     * Last VC Version
+     */
+    @Property({ nullable: true })
+    oldVersion?: boolean;
+
+    /**
+     * Original VC doc id for revision
+     */
+    @Property({ nullable: true })
+    initId?: string;
+
+    /**
      * Document defaults
      */
     @BeforeCreate()
@@ -317,6 +335,8 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         prop.relayerAccount = this.relayerAccount;
         prop.processingStatus = this.processingStatus;
         prop.policyId = this.policyId;
+        prop.oldVersion = this.oldVersion;
+        prop.initId = this.initId;
         return prop;
     }
 

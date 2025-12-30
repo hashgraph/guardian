@@ -78,3 +78,33 @@
         }
     }
 }
+
+:host ::ng-deep {
+    .version-dropdown {
+        .p-dropdown {
+            border: 1px solid var(--guardian-primary-color);
+            border-radius: 6px;
+            color: var(--guardian-primary-color);
+
+            box-shadow: none !important;
+            outline: none !important;
+            
+            &:focus {
+                box-shadow: none !important;
+                outline: none !important;
+            }
+        }
+
+        .p-dropdown-label {
+            color: var(--guardian-primary-color);
+        }
+
+        .p-dropdown-trigger {
+            color: var(--guardian-primary-color);
+        }
+
+        .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+            color: var(--guardian-primary-color);
+        }
+    }
+}

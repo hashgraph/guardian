@@ -420,6 +420,7 @@
         "document_not_loaded_message": "The file is stored in the local repository, and if the repository is closed, upload will not be possible.",
         "documents_not_loaded_message": "The files are stored in the local repository, and if the repository is closed, upload will not be possible.",
         "schemas_not_unpacked": "The schemas has not unpacked yet.",
-        "try_unpacked": "Unpack"
+        "try_unpacked": "Unpack",
+        "document_version": "Version"
     }
 }

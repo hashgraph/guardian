@@ -106,6 +106,24 @@ export class PolicyTestDTO {
     result?: any;
 }
 
+export class BasePolicyDTO {
+    @ApiProperty({
+        type: 'string',
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    id?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: 'Policy name'
+    })
+    @IsOptional()
+    @IsString()
+    name?: string;
+}
+
 @ApiExtraModels(PolicyTestDTO)
 export class PolicyDTO {
     @ApiProperty({
@@ -523,6 +541,16 @@ export class PolicyVersionDTO {
     @IsString()
     @IsOptional()
     policyAvailability?: PolicyAvailability;
+
+    @ApiProperty({
+        type: 'boolean',
+        required: false,
+        example: false,
+        description: 'Record policy actions',
+    })
+    @IsBoolean()
+    @IsOptional()
+    recordingEnabled?: boolean;
 }
 
 export class DebugBlockDataDTO {

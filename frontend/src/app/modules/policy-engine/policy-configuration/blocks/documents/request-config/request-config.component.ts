@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import { ChangeBlockSettingsDialog } from 'src/app/modules/policy-engine/dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Settings for block of 'requestVcDocument' type.
@@ -47,7 +49,13 @@ export class RequestConfigComponent implements OnInit {
         { label: 'Edit', value: 'edit' }
     ];
 
-    constructor() {
+    public accountTypes = [
+        { label: '', value: '' },
+        { label: 'Pre-set user account', value: 'preset' },
+        { label: 'Current user account', value: 'current' },
+    ];
+
+    constructor(private dialogService: DialogService) {
         this.presetMap = [];
     }
 

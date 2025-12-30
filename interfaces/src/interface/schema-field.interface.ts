@@ -180,6 +180,11 @@ export interface SchemaField {
     suggest?: any;
 
     /**
+     * Is Field Updatable
+     */
+    isUpdatable: any;
+
+    /**
      * Full type
      */
     fullType?: string;
