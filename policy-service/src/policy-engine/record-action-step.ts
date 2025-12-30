@@ -1,21 +1,23 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
-type ZeroCallback = (id: string, timestamp: number) => void;
+type Callback = (id: string, timestamp: number) => void;
 
 export class RecordActionStep {
     public readonly id: string;
     public readonly timestemp: number;
+    public readonly syncActions: boolean;
     public counter: number;
     private callbackFired = false;
     private timer: ReturnType<typeof setTimeout> | null = null;
-    private readonly callback: ZeroCallback;
+    private readonly callback: Callback;
 
-    constructor(callback: ZeroCallback, initialCounter = 0) {
+    constructor(callback: Callback, initialCounter = 0, syncActions = false) {
         this.id = GenerateUUIDv4();
         this.timestemp = Date.now();
         this.callback = callback;
         this.counter = initialCounter;
         this.callbackFired = false;
+        this.syncActions = syncActions;
     }
 
     public inc(): void {

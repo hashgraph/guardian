@@ -2011,6 +2011,13 @@ export class PolicyApi {
         description: 'Block Identifier',
         example: Examples.UUID
     })
+    @ApiQuery({
+        name: 'syncEvents',
+        type: Boolean,
+        description: 'Sync events',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'Data',
         type: Object
@@ -2033,6 +2040,7 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('uuid') uuid: string,
+        @Query('syncEvents') syncEvents: boolean,
         @Body() body: any,
         @Req() req
     ): Promise<any> {
@@ -2042,7 +2050,7 @@ export class PolicyApi {
             const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
-            return await engineService.setBlockData(user, policyId, uuid, body);
+            return await engineService.setBlockData(user, policyId, uuid, body, !!syncEvents);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger, user.id);
@@ -2077,6 +2085,13 @@ export class PolicyApi {
         description: 'Block name (Tag)',
         example: 'block-tag',
     })
+    @ApiQuery({
+        name: 'syncEvents',
+        type: Boolean,
+        description: 'Sync events',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'Data',
         type: Object
@@ -2099,6 +2114,7 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('tagName') tagName: string,
+        @Query('syncEvents') syncEvents: boolean,
         @Body() body: any,
         @Req() req
     ): Promise<any> {
@@ -2108,7 +2124,7 @@ export class PolicyApi {
             const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
-            return await engineService.setBlockDataByTag(user, policyId, tagName, body);
+            return await engineService.setBlockDataByTag(user, policyId, tagName, body, !!syncEvents);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger, user.id);

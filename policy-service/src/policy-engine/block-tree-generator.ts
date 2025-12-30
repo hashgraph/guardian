@@ -188,7 +188,7 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA, policyId, async (msg: any) => {
-            const { user, blockId, data } = msg;
+            const { user, blockId, data, syncEvents } = msg;
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
@@ -199,7 +199,7 @@ export class BlockTreeGenerator extends NatsService {
             }
             // Available -->
 
-            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp));
+            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents);
 
             const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
 
@@ -209,7 +209,7 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, async (msg: any) => {
-            const { user, tag, data } = msg;
+            const { user, tag, data, syncEvents } = msg;
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
 
@@ -220,7 +220,7 @@ export class BlockTreeGenerator extends NatsService {
             }
             // Available -->
 
-            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp));
+            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents);
 
             const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
 

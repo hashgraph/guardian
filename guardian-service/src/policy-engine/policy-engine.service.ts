@@ -522,10 +522,11 @@ export class PolicyEngineService {
                 user: IAuthUser,
                 blockId: string,
                 policyId: string,
-                data: any
+                data: any,
+                syncEvents?: boolean,
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, blockId, policyId, data } = msg;
+                    const { user, blockId, policyId, data, syncEvents } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
@@ -533,7 +534,8 @@ export class PolicyEngineService {
                             user,
                             blockId,
                             policyId,
-                            data
+                            data,
+                            syncEvents
                         }) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -547,10 +549,11 @@ export class PolicyEngineService {
                 user: IAuthUser,
                 tag: string,
                 policyId: string,
-                data: any
+                data: any,
+                syncEvents?: boolean,
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, tag, policyId, data } = msg;
+                    const { user, tag, policyId, data, syncEvents } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
@@ -558,7 +561,8 @@ export class PolicyEngineService {
                             user,
                             tag,
                             policyId,
-                            data
+                            data,
+                            syncEvents
                         }) as any
                     return new MessageResponse(blockData);
                 } catch (error) {

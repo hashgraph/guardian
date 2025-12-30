@@ -322,9 +322,10 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         blockId: string,
-        data: any
+        data: any,
+        syncEvents?: boolean,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data });
+        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data, syncEvents });
     }
 
     /**
@@ -338,9 +339,10 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         tag: string,
-        data: any
+        data: any,
+        syncEvents?: boolean,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data });
+        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data, syncEvents });
     }
 
     /**

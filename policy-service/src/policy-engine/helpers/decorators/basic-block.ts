@@ -361,10 +361,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
-                        if (link.source.syncEvents) {
-                            await link.run(user, data, status);
+                        if (actionStatus.syncActions) {
+                            const syncRes = await link.run(user, data, status);
+
+                            return syncRes;
                         } else {
-                            link.run(user, data, status);
+                            const res = link.run(user, data, status);
+
+                            return res;
                         }
                     }
                 }
