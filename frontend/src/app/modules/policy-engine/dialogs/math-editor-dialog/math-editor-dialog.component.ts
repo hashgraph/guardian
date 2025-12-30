@@ -193,7 +193,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             },
             text: (el: any) => {
                 for (const className of el.classList) {
-                    if(className.startsWith('cm-path-')) {
+                    if (className.startsWith('cm-path-')) {
                         return this.getFieldName(className.substring(8));
                     }
                 }
@@ -202,27 +202,27 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         })
 
         // this.scope.addVariable();
-        this.scope.addFormula('x', '1');
-        this.scope.addFormula('y', 'x + 10');
-        this.scope.addFormula('z(a, b)', 'a + b');
-        this.scope.addFormula('r', 'z(x, y) + 1');
-        this.code.text =
-            `
-//Registrant Id
-const m = getField('f1');
-document.field0 = 5;
-const y = { 
-    context: this, 
-    document: document, 
-    formulas: formulas, 
-    variables: variables, 
-    m:m, 
-    z: formulas['z'](1, 2),
-    Array:Array,
-    n: NaN,
-    t: typeof ''
-}
-`;
+        //         this.scope.addFormula('x', '1');
+        //         this.scope.addFormula('y', 'x + 10');
+        //         this.scope.addFormula('z(a, b)', 'a + b');
+        //         this.scope.addFormula('r', 'z(x, y) + 1');
+        //         this.code.text =
+        // `
+        // //Registrant Id
+        // const m = getField('f1');
+        // document.field0 = 5;
+        // const y = { 
+        //     context: this, 
+        //     document: document, 
+        //     formulas: formulas, 
+        //     variables: variables, 
+        //     m:m, 
+        //     z: formulas['z'](1, 2),
+        //     Array:Array,
+        //     n: NaN,
+        //     t: typeof ''
+        // }
+        // `;
     }
 
     ngOnInit() {
@@ -318,7 +318,42 @@ const y = {
             for (const field of fields) {
                 this.schemasFieldMap.set(String(field.path), field);
             }
-            this.codeMirrorOptions.links = Array.from(this.schemasFieldMap.keys());
+            this.codeMirrorOptions.links = this.createLinks(this.schema);
+        }
+    }
+
+    private createLinks(schema: Schema): any[] {
+        const links: any[] = [];
+        this._createLinks(schema.fields, links, null, '');
+        links.sort((a, b) => a.path.length > b.path.length ? 1 : -1);
+        return links;
+    }
+
+    private _createLinks(
+        fields: SchemaField[] | undefined,
+        links: any[],
+        parent: SchemaField | null,
+        parentPattern: string | null
+    ) {
+        if (Array.isArray(fields)) {
+            for (const field of fields) {
+                let pattern: string;
+                if (parent) {
+                    if (parent.isArray) {
+                        pattern = `${parentPattern}\\[\\w+\\].${field.name}`;
+                    } else {
+                        pattern = `${parentPattern}.${field.name}`;
+                    }
+                } else {
+                    pattern = `${field.name}`;
+                }
+                links.push({
+                    path: field.path,
+                    // pattern: new RegExp('^' + field.path)
+                    pattern: new RegExp('^' + pattern)
+                })
+                this._createLinks(field.fields, links, field, pattern);
+            }
         }
     }
 
@@ -411,15 +446,15 @@ const y = {
     public getHeader(step: string) {
         switch (step) {
             case 'step_1':
-                return 'Variables';
+                return 'Inputs';
             case 'step_2':
                 return 'Formulas';
             case 'step_3':
-                return 'Output data';
+                return 'Outputs';
 
 
             case 'step_4':
-                return 'Input Data';
+                return 'Inputs';
             case 'step_5':
                 return 'Results';
             default:
