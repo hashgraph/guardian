@@ -643,13 +643,14 @@ export class TableFieldComponent implements OnInit, OnDestroy {
                 csvText = await this.loadCsvTextFromIdb(idbKey);
             }
 
-            if (!csvText && (table.fileId || '').trim()) {
-                csvText = await new Promise<string>((resolve, reject) => {
-                    this.artifactService.getFile(table.fileId!).subscribe({
-                        next: text => resolve(text),
-                        error: error => reject(error)
-                    });
-                });
+            const fileId = (table.fileId || '').trim();
+            if (!csvText && fileId) {
+                const resp = await firstValueFrom(this.artifactService.getFileBlob(fileId));
+                const gzBlob: Blob | undefined = resp instanceof Blob ? resp : (resp as any)?.body;
+                if (!gzBlob) {
+                    throw new Error('No blob');
+                }
+                csvText = await this.gzip.gunzipToText(gzBlob);
             }
 
             if (!csvText) {
