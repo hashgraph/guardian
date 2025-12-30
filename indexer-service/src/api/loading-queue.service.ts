@@ -231,6 +231,9 @@ export class LoadingQueueService {
             const em = DataBaseHelper.getEntityManager();
 
             const priorityQueueItem = await em.findOne(PriorityQueue, { priorityTimestamp });
+            if (!priorityQueueItem) {
+                return;
+            }
 
             const { status, isFinished } = await this.getPriorityStatusFromCaches(
                 em,
