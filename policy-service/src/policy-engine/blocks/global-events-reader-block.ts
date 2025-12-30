@@ -12,7 +12,7 @@ import { GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumen
 } from '@guardian/interfaces';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { GlobalEventsReaderStream, IPFS, MessageAction, MessageServer, SchemaMessage, SchemaPackageMessage, TopicHelper, UrlType, Workers} from '@guardian/common';
-import {TopicId} from '@hashgraph/sdk';
+import { TopicId } from '@hiero-ledger/sdk';
 
 /**
  * Message fetched from Hedera topic via worker-service.
@@ -548,7 +548,7 @@ class GlobalEventsReaderBlock {
                 data: policyDocument,
             } as any;
 
-            await ref.triggerEventSync(branchEvent, user, stateForBranch);
+            await ref.triggerEventSync(branchEvent, user, stateForBranch, null);
 
             PolicyComponentsUtils.ExternalEventFn(
                 new ExternalEvent(ExternalEventType.Run, ref, user, {
@@ -558,8 +558,8 @@ class GlobalEventsReaderBlock {
             );
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, baseState);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, baseState, null);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, null);
     }
 
     private async loadPayload(
@@ -1034,9 +1034,9 @@ class GlobalEventsReaderBlock {
         const docs: IPolicyDocument[] = Array.isArray(payload) ? payload : [payload];
 
         if (!docs.length || ref.dryRun) {
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, event.actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, event.actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, state, event.actionStatus);
             ref.backup();
             return;
         }
@@ -1052,9 +1052,9 @@ class GlobalEventsReaderBlock {
 
         // Hidden block behavior
         if (!ref.defaultActive) {
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState, event.actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState, event.actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, event.actionStatus);
 
             ref.backup();
             return;
@@ -1227,7 +1227,9 @@ class GlobalEventsReaderBlock {
 
     public async setData(
         user: PolicyUser,
-        data: { value: SetDataPayloadReader; operation: string }
+        data: { value: SetDataPayloadReader; operation: string },
+        _,
+        actionStatus
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
@@ -1271,9 +1273,9 @@ class GlobalEventsReaderBlock {
 
             const outState: IPolicyEventState = { data: payload };
 
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState, actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState, actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState, actionStatus);
             ref.backup();
 
             return {};
@@ -1300,7 +1302,7 @@ class GlobalEventsReaderBlock {
                 branchDocumentTypeByBranch: defaultBranchDocumentTypeByBranch,
             } as GlobalEventsReaderStream);
 
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {}, actionStatus);
             ref.backup();
 
             return { topicId };
@@ -1425,7 +1427,7 @@ class GlobalEventsReaderBlock {
             }
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {} as any);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {}, actionStatus);
         ref.backup();
 
         return {};

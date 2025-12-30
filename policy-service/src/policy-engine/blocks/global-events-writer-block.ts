@@ -9,7 +9,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, LocationType, TopicType
 } from '@guardian/interfaces';
 import {GlobalEventsWriterStream, Message, MessageServer, TopicConfig, TopicHelper} from '@guardian/common';
-import { TopicId } from '@hashgraph/sdk';
+import { TopicId } from '@hiero-ledger/sdk';
 import { CacheState } from './../interfaces/index.js'
 
 type SetDataStreamPayload = {
@@ -338,7 +338,7 @@ export class GlobalEventsWriterBlock {
     /**
      * Creates a new Hedera topic and returns its topicId.
      */
-    private async createTopic(ref: AnyBlockType, user: PolicyUser): Promise<string> {
+    private async createTopic(ref: AnyBlockType, user: PolicyUser,): Promise<string> {
         try {
             const userCredentials = await PolicyUtils.getUserCredentials(ref, user.did, user.userId);
             const relayer = await userCredentials.loadRelayerAccount(ref, user.hederaAccountId, user.userId);
@@ -397,9 +397,9 @@ export class GlobalEventsWriterBlock {
         const docs: IPolicyDocument[] = Array.isArray(payload) ? payload : [payload];
 
         if (!docs.length || ref.dryRun) {
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, event.actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, event.actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, state, event.actionStatus);
             ref.backup();
             return;
         }
@@ -465,9 +465,9 @@ export class GlobalEventsWriterBlock {
         const outState: IPolicyEventState = { data: payload };
 
         if (!defaultActive) {
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState, event.actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState, event.actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState, event.actionStatus);
             ref.backup();
         }
     }
@@ -532,7 +532,7 @@ export class GlobalEventsWriterBlock {
     /**
      * Handle UI operations from the configurator.
      */
-    public async setData(user: PolicyUser, data: SetDataPayload): Promise<any> {
+    public async setData(user: PolicyUser, data: SetDataPayload, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const operation = data.operation;
         const streams = data.streams ?? [];
@@ -566,7 +566,7 @@ export class GlobalEventsWriterBlock {
                 documentType: GLOBAL_DOCUMENT_TYPE_DEFAULT,
             });
 
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {}, actionStatus);
             ref.backup();
 
             return {}
@@ -602,7 +602,7 @@ export class GlobalEventsWriterBlock {
                 });
             }
 
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {}, actionStatus);
             ref.backup();
 
             return {}
@@ -632,7 +632,7 @@ export class GlobalEventsWriterBlock {
                     await ref.databaseServer.deleteGlobalEventsWriterStream(existing);
                 }
             }
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {}, actionStatus);
             ref.backup();
 
             return {}
@@ -714,7 +714,7 @@ export class GlobalEventsWriterBlock {
                 await ref.databaseServer.updateGlobalEventsWriterStream(streamDb);
             }
 
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {});
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {}, actionStatus);
             ref.backup();
 
             return {};
@@ -733,9 +733,9 @@ export class GlobalEventsWriterBlock {
 
             const outState: IPolicyEventState = { data: payload };
 
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, outState, actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState, actionStatus);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState, actionStatus);
             ref.backup();
 
             return {};
