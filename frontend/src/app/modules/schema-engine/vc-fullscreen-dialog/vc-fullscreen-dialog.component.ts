@@ -543,8 +543,8 @@ export class VCFullscreenDialog {
 
             this.loading = true;
             const data = this.dataForm.getRawValue();
-            
-            await this.tablePersist.persistTablesInDocument(data, false, this.policyId, this.id, undefined);
+
+            await this.tablePersist.persistTablesInDocument(data, false);
             prepareVcData(data);
             
             this.policyEngineService
