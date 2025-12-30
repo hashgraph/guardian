@@ -125,7 +125,7 @@ export class GlobalEventsWriterBlock {
             }
 
             const topicDocumentType: GlobalDocumentType = optionTopic.documentType
-            const defaultActive: boolean = optionTopicId.active;
+            const defaultActive: boolean = optionTopic.active;
 
             await ref.databaseServer.createGlobalEventsWriterStream({
                 policyId: ref.policyId,
