@@ -35,3 +35,16 @@ export interface GlobalEvent {
     timestamp: string;
 }
 
+export interface GlobalEventsReaderStreamRow {
+    globalTopicId: string;
+    active: boolean;
+    status: GlobalEventsStreamStatus;
+    filterFieldsByBranch: Record<string, Record<string, string>>;
+    branchDocumentTypeByBranch: Record<string, GlobalDocumentType>;
+    lastMessageCursor: string;
+    isDefault: boolean;
+}
+
+export interface SetDataPayloadReader {
+    streams: Array<Partial<GlobalEventsReaderStreamRow>>;
+}

@@ -2,7 +2,7 @@ import {AfterDelete, BeforeCreate, BeforeUpdate, Entity, Property} from '@mikro-
 import {RestoreEntity} from '../models/index.js';
 import {DataBaseHelper} from '../helpers/index.js';
 import {DeleteCache} from './delete-cache.js';
-import { GlobalEventsStreamStatus } from '@guardian/interfaces';
+import {GlobalDocumentType, GlobalEventsStreamStatus} from '@guardian/interfaces';
 
 @Entity()
 export class GlobalEventsReaderStream extends RestoreEntity {
@@ -34,7 +34,7 @@ export class GlobalEventsReaderStream extends RestoreEntity {
     filterFieldsByBranch: Record<string, Record<string, string>> = {};
 
     @Property({ nullable: false, type: 'json' })
-    branchDocumentTypeByBranch: Record<string, string> = {};
+    branchDocumentTypeByBranch: Record<string, GlobalDocumentType> = {};
 
     @BeforeCreate()
     @BeforeUpdate()

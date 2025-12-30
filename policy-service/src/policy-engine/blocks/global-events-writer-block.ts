@@ -6,17 +6,10 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engi
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
-import {
-    GLOBAL_DOCUMENT_TYPE_DEFAULT,
-    GLOBAL_DOCUMENT_TYPE_ITEMS,
-    GlobalDocumentType,
-    GlobalEvent,
-    LocationType,
-    TopicType
-} from '@guardian/interfaces';
+import { GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, LocationType, TopicType} from '@guardian/interfaces';
 import {GlobalEventsWriterStream, Message, MessageServer, TopicConfig, TopicHelper} from '@guardian/common';
 import { TopicId } from '@hashgraph/sdk';
-import { WriterCacheState } from './../interfaces/index.js'
+import { CacheState } from './../interfaces/index.js'
 
 /**
  * Streams in structure used when calling setData via UI.
@@ -173,10 +166,10 @@ export class GlobalEventsWriterBlock {
     /**
      * Retrieves the cached state for the given user.
      */
-    private async getCacheState(ref: AnyBlockType, user: PolicyUser, cacheKey: string): Promise<WriterCacheState> {
-        let cacheState: WriterCacheState = {};
+    private async getCacheState(ref: AnyBlockType, user: PolicyUser, cacheKey: string): Promise<CacheState> {
+        let cacheState: CacheState = {};
         try {
-            const cached = await ref.getCache<WriterCacheState>(cacheKey, user);
+            const cached = await ref.getCache<CacheState>(cacheKey, user);
             if (cached && typeof cached === 'object') {
                 cacheState = cached;
             }
