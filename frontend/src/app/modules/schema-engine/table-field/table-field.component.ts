@@ -10,6 +10,7 @@ import { GzipService } from '../../../services/gzip.service';
 import { ITableField } from '@guardian/interfaces';
 
 import {DB_NAME, STORES_NAME} from "../../../constants";
+import { firstValueFrom } from 'rxjs';
 
 export interface ITableFieldRequired extends ITableField {
     columnKeys: string[];
@@ -298,12 +299,12 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
         const fileId = (table.fileId || '').trim();
         if (fileId) {
-            return await new Promise<string>((resolve, reject) => {
-                this.artifactService.getFile(fileId).subscribe({
-                    next: (csvText: string) => resolve(csvText),
-                    error: (err) => reject(err),
-                });
-            });
+            const resp = await firstValueFrom(this.artifactService.getFileBlob(fileId));
+            const gzBlob: Blob | undefined = resp instanceof Blob ? resp : (resp as any)?.body;
+            if (!gzBlob) {
+                throw new Error('No blob');
+            }
+            return await this.gzip.gunzipToText(gzBlob);
         }
 
         if (table.columnKeys.length && table.rows.length) {
