@@ -59,6 +59,8 @@ import { TransformationButtonBlock } from './blocks/transformation-button-block.
 import { IntegrationButtonBlock } from './blocks/integration-button-block.js';
 import { HttpRequestUIAddon } from './blocks/http-request-ui-addon.js';
 import { TransformationUIAddon } from './blocks/transformation-ui-addon.js';
+import {GlobalEventsWriterBlock} from './blocks/global-events-writer-block.js';
+import {GlobalEventsReaderBlock} from './blocks/global-events-reader-block.js';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -114,7 +116,9 @@ export const validators = [
     RequestVcDocumentBlockAddon,
     DataTransformationAddon,
     HttpRequestUIAddon,
-    TransformationUIAddon
+    TransformationUIAddon,
+    GlobalEventsWriterBlock,
+    GlobalEventsReaderBlock,
 ];
 
 /**
