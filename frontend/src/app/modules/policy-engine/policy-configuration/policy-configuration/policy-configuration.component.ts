@@ -1209,6 +1209,18 @@ export class PolicyConfigurationComponent implements OnInit {
             .catch(() => {
                 //
             });
+
+        this.ensureStore(DB_NAME.HIDE_EVENTS_UI_STATE, STORES_NAME.POLICY_HIDE_EVENTS_STORE, { keyPath: 'key' })
+            .then(() => {
+                return this.indexedDb.clearByKeyPrefixAcrossStores(
+                    DB_NAME.HIDE_EVENTS_UI_STATE,
+                    [STORES_NAME.POLICY_HIDE_EVENTS_STORE],
+                    `${this.policyId}`
+                );
+            })
+            .catch(() => {
+                //
+            });
     }
 
     private dryRunPolicy() {
@@ -1884,6 +1896,18 @@ export class PolicyConfigurationComponent implements OnInit {
             storeNames,
             keyPrefix
         );
+
+        this.ensureStore(DB_NAME.HIDE_EVENTS_UI_STATE, STORES_NAME.POLICY_HIDE_EVENTS_STORE, { keyPath: 'key' })
+            .then(() => {
+                return this.indexedDb.clearByKeyPrefixAcrossStores(
+                    DB_NAME.HIDE_EVENTS_UI_STATE,
+                    [STORES_NAME.POLICY_HIDE_EVENTS_STORE],
+                    `${this.policyId}`
+                );
+            })
+            .catch(() => {
+                //
+            });
     }
 
     public async tryPublishPolicy() {

@@ -919,6 +919,12 @@ export class PoliciesComponent implements OnInit {
             storeNames,
             keyPrefix
         );
+
+        return this.indexedDb.clearByKeyPrefixAcrossStores(
+            DB_NAME.HIDE_EVENTS_UI_STATE,
+            [STORES_NAME.POLICY_HIDE_EVENTS_STORE],
+            `${element.id}`
+        );
     }
 
     private setVersion(element: any) {
@@ -974,6 +980,12 @@ export class PoliciesComponent implements OnInit {
         this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, element.id).catch(() => {
             //
         })
+
+        return this.indexedDb.clearByKeyPrefixAcrossStores(
+            DB_NAME.HIDE_EVENTS_UI_STATE,
+            [STORES_NAME.POLICY_HIDE_EVENTS_STORE],
+            `${element.id}`
+        );
     }
 
     public deletePolicy(policy?: any) {
@@ -1013,6 +1025,12 @@ export class PoliciesComponent implements OnInit {
                     this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policy.id).catch(() => {
                         //
                     })
+
+                    return this.indexedDb.clearByKeyPrefixAcrossStores(
+                        DB_NAME.HIDE_EVENTS_UI_STATE,
+                        [STORES_NAME.POLICY_HIDE_EVENTS_STORE],
+                        `${policy?.id}`
+                    );
 
                     const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
@@ -1903,6 +1921,12 @@ export class PoliciesComponent implements OnInit {
                                 this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policyId).catch(() =>{
                                     //
                                 })
+
+                                return this.indexedDb.clearByKeyPrefixAcrossStores(
+                                    DB_NAME.HIDE_EVENTS_UI_STATE,
+                                    [STORES_NAME.POLICY_HIDE_EVENTS_STORE],
+                                    `${policyId}`
+                                );
                             }
 
                             const { taskId, expectation } = result;

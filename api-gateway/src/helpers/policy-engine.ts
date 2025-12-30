@@ -1572,4 +1572,32 @@ export class PolicyEngine extends NatsService {
     ): Promise<{ documents: any[], count: number }> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_REPOSITORY_DOCUMENTS, { user, policyId, filters });
     }
+
+    /**
+     * Create new version policy document
+     * @param user
+     * @param policyId
+     * @param data
+     */
+    public async createNewVersionVcDocument(
+        user: IAuthUser,
+        policyId: string,
+        data: any
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_NEW_VERSION_VC_DOCUMENT, { user, policyId, data });
+    }
+
+    /**
+     * Get all new version policy documents
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getAllVersionVcDocuments(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_All_NEW_VERSION_VC_DOCUMENTS, { user, policyId, documentId });
+    }
 }
