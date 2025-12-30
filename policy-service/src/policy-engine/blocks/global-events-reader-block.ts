@@ -7,8 +7,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
-import {
-    GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, GlobalEventsReaderStreamRow, GlobalEventsStreamStatus,
+import { GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, GlobalEventsReaderStreamRow, GlobalEventsStreamStatus,
     LocationType, Schema, SchemaField, SchemaHelper, SetDataPayloadReader, TopicType
 } from '@guardian/interfaces';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -242,7 +241,7 @@ class GlobalEventsReaderBlock {
      * cron tick calls run(null) and processes DB-bound active streams.
      */
     protected async afterInit(): Promise<void> {
-        const cronMask = process.env.GLOBAL_EVENT_TOPIC_SCHEDULER || '5 * * * * *';
+        const cronMask = process.env.GLOBAL_EVENT_TOPIC_SCHEDULER || '*/5 * * * *';
 
         this.job = new CronJob(cronMask, () => {
             this.run().then();
@@ -1023,8 +1022,6 @@ class GlobalEventsReaderBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const user: PolicyUser = event?.user;
 
-        console.log('readerBlock runAction, data =');
-
         if (!user) {
             throw new BlockActionError('User is required', ref.blockType, ref.uuid);
         }
@@ -1075,7 +1072,7 @@ class GlobalEventsReaderBlock {
 
     public async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const config = (ref.options || {}) as GlobalEventReaderConfig;
+        const config =ref.options;
 
         if (ref.dryRun) {
             return {

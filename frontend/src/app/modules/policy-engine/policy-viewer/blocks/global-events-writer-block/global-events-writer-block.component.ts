@@ -12,10 +12,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
-
-export type WriterOperation = 'AddTopic' | 'CreateTopic' | 'Delete' | 'Update';
-
-export type GlobalDocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
+import { GlobalDocumentType } from "@guardian/interfaces";
 
 export interface WriterStreamRow {
     topicId: string;
@@ -180,8 +177,8 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
 
         this.streams = (data?.streams || []).map((s) => {
             return {
-                topicId: String(s.globalTopicId || '').trim(),
-                documentType: (s.documentType || 'any') as GlobalDocumentType,
+                topicId: s.globalTopicId,
+                documentType: s.documentType,
                 active: Boolean(s.active),
             };
         });
@@ -204,7 +201,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const topicId = String(row.topicId || '').trim();
+        const topicId = row.topicId;
         if (!topicId) {
             return;
         }
@@ -212,11 +209,11 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         this.setLoading(true);
 
         const payload = {
-            operation: 'Update' as WriterOperation,
+            operation: 'Update',
             streams: [
                 {
                     topicId,
-                    documentType: (row.documentType || 'any') as GlobalDocumentType,
+                    documentType: row.documentType,
                     active: Boolean(row.active),
                 },
             ],
@@ -297,9 +294,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const trimmedTopicId = String(topicId || '').trim();
-
-        if (!trimmedTopicId) {
+        if (!topicId) {
             this.addTopicModalError = 'Topic ID is required';
             this.changeDetector.detectChanges();
             return;
@@ -317,10 +312,10 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         this.changeDetector.detectChanges();
 
         const payload = {
-            operation: 'AddTopic' as WriterOperation,
+            operation: 'AddTopic',
             streams: [
                 {
-                    topicId: trimmedTopicId,
+                    topicId,
                     active: false,
                 },
             ],
@@ -355,7 +350,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const topicId = String(row?.topicId || '').trim();
+        const topicId = row?.topicId;
         if (!topicId) {
             return;
         }
@@ -367,7 +362,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         this.setLoading(true);
 
         const payload = {
-            operation: 'Delete' as WriterOperation,
+            operation: 'Delete',
             streams: [{ topicId }],
         };
 
@@ -442,7 +437,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         this.setLoading(true);
 
         const payload = {
-            operation: 'CreateTopic' as WriterOperation,
+            operation: 'CreateTopic',
             streams: [],
         };
 
@@ -472,7 +467,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         this.setLoading(true);
 
         const payload = {
-            operation: 'Next' as any,
+            operation: 'Next',
             streams: [],
         };
 
@@ -492,7 +487,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     }
 
     public trackByTopicId(index: number, row: WriterStreamRow): string {
-        const key = String(row?.topicId || '').trim();
+        const key = row?.topicId;
         if (key) {
             return key;
         }

@@ -6,23 +6,18 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engi
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
-import { GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, LocationType, TopicType} from '@guardian/interfaces';
+import { GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, LocationType, TopicType
+} from '@guardian/interfaces';
 import {GlobalEventsWriterStream, Message, MessageServer, TopicConfig, TopicHelper} from '@guardian/common';
 import { TopicId } from '@hashgraph/sdk';
 import { CacheState } from './../interfaces/index.js'
 
-/**
- * Streams in structure used when calling setData via UI.
- */
 type SetDataStreamPayload = {
     topicId?: string;
     documentType?: GlobalDocumentType;
     active?: boolean
 };
 
-/**
- * Structure used when calling setData via UI.
- */
 interface SetDataPayload {
     streams: Array<SetDataStreamPayload>;
     operation: string;
@@ -539,8 +534,8 @@ export class GlobalEventsWriterBlock {
      */
     public async setData(user: PolicyUser, data: SetDataPayload): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const operation = data?.operation;
-        const streams = data?.streams ?? [];
+        const operation = data.operation;
+        const streams = data.streams ?? [];
 
         if (ref.dryRun) {
             throw new BlockActionError('Block is disabled in dry run mode', ref.blockType, ref.uuid);

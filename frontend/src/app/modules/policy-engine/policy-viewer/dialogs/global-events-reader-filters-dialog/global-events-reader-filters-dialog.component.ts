@@ -1,14 +1,7 @@
 import { Component } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { GlobalDocumentType } from "@guardian/interfaces";
 
-type DocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
-
-export interface BranchConfig {
-    branchEvent: string;
-    documentType?: DocumentType | string | null;
-    schema?: string | null;
-    schemaName?: string | null;
-}
 
 export interface UiFilterItem {
     key: string;
@@ -17,23 +10,15 @@ export interface UiFilterItem {
 
 export interface UiBranchState {
     branchEvent: string;
-    documentType: DocumentType;
+    documentType: GlobalDocumentType;
     schemaId: string | null;
     schemaName: string | null;
     items: UiFilterItem[];
 }
 
-export interface FiltersDialogData {
-    readonly: boolean;
-    branches: BranchConfig[];
-    documentTypes: Array<{ label: string; value: DocumentType }>;
-    filterFieldsByBranch: Record<string, Record<string, string>>;
-    branchDocumentTypeByBranch: Record<string, DocumentType>;
-}
-
 export interface FiltersDialogResult {
     filterFieldsByBranch: Record<string, Record<string, string>>;
-    branchDocumentTypeByBranch: Record<string, DocumentType>;
+    branchDocumentTypeByBranch: Record<string, GlobalDocumentType>;
 }
 
 @Component({
@@ -43,53 +28,53 @@ export interface FiltersDialogResult {
 })
 export class GlobalEventsReaderFiltersDialogComponent {
     public readonly: boolean = false;
-    public documentTypes: Array<{ label: string; value: DocumentType }> = [];
+    public documentTypes: Array<{ label: string; value: GlobalDocumentType }> = [];
     public branches: UiBranchState[] = [];
 
     constructor(
         private readonly dialogRef: DynamicDialogRef,
         private readonly dialogConfig: DynamicDialogConfig,
     ) {
-        const data = (this.dialogConfig?.data || {}) as FiltersDialogData;
+        const data = this.dialogConfig?.data || {};
 
-        this.readonly = !!data.readonly;
-        this.documentTypes = Array.isArray(data.documentTypes) ? data.documentTypes : [];
+        this.readonly = data.readonly;
+        this.documentTypes = data.documentTypes ?? [];
 
-        const inputBranches = Array.isArray(data.branches) ? data.branches : [];
+        const inputBranches = data.branches ?? [];
         const filterFieldsByBranch = data.filterFieldsByBranch || {};
         const branchDocumentTypeByBranch = data.branchDocumentTypeByBranch || {};
 
         this.branches = inputBranches
-            .map((b) => {
-                const branchEvent = String(b?.branchEvent ?? '').trim();
+            .map((b: any) => {
+                const branchEvent = b?.branchEvent;
                 if (!branchEvent) {
                     return null;
                 }
 
                 const type = this.normalizeDocumentType(
-                    String(branchDocumentTypeByBranch[branchEvent] ?? b?.documentType ?? 'any'),
+                    String(branchDocumentTypeByBranch[branchEvent] ?? b?.documentType),
                 );
 
                 const raw = filterFieldsByBranch[branchEvent] || {};
                 const items: UiFilterItem[] = Object.keys(raw).map((k) => {
                     return {
-                        key: String(k ?? ''),
-                        value: String(raw[k] ?? ''),
+                        key: k,
+                        value: raw[k],
                     };
                 });
 
                 return {
                     branchEvent,
                     documentType: type,
-                    schemaId: b?.schema ? String(b.schema) : null,
-                    schemaName: b?.schemaName ? String(b.schemaName) : null,
+                    schemaId: b?.schema ?? null,
+                    schemaName: b?.schemaName ?? null,
                     items,
-                } as UiBranchState;
+                };
             })
-            .filter((x) => !!x) as UiBranchState[];
+            .filter((x: any) => !!x);
     }
 
-    private normalizeDocumentType(value: string): DocumentType {
+    private normalizeDocumentType(value: string): GlobalDocumentType {
         const v = String(value ?? '').toLowerCase().trim();
 
         if (v === 'vc') {
@@ -146,10 +131,10 @@ export class GlobalEventsReaderFiltersDialogComponent {
 
     public onApply(): void {
         const filterFieldsByBranch: Record<string, Record<string, string>> = {};
-        const branchDocumentTypeByBranch: Record<string, DocumentType> = {};
+        const branchDocumentTypeByBranch: Record<string, GlobalDocumentType> = {};
 
         for (const branch of this.branches) {
-            const branchEvent = String(branch?.branchEvent ?? '').trim();
+            const branchEvent = branch?.branchEvent;
             if (!branchEvent) {
                 continue;
             }
@@ -162,8 +147,8 @@ export class GlobalEventsReaderFiltersDialogComponent {
 
             const obj: Record<string, string> = {};
             for (const item of branch.items || []) {
-                const key = String(item?.key ?? '').trim();
-                const value = String(item?.value ?? '').trim();
+                const key = item?.key;
+                const value = item?.value ?? '' ;
 
                 if (!key) {
                     continue;

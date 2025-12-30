@@ -48,3 +48,5 @@ export interface GlobalEventsReaderStreamRow {
 export interface SetDataPayloadReader {
     streams: Array<Partial<GlobalEventsReaderStreamRow>>;
 }
+
+export type Operation = 'AddTopic' | 'CreateTopic' | 'Delete' | 'Update' | 'Next';

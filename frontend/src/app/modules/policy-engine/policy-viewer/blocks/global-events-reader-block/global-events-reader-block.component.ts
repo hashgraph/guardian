@@ -14,9 +14,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { GlobalEventsReaderFiltersDialogComponent } from '../../dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component';
 import { CustomConfirmDialogComponent } from "src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component";
-
-type StreamStatus = 'FREE' | 'PROCESSING' | 'ERROR' | string;
-export type DocumentType = 'vc' | 'json' | 'csv' | 'text' | 'any';
+import {GlobalEventsStreamStatus} from "@guardian/interfaces";
 
 export interface BranchConfig {
     branchEvent: string;
@@ -34,7 +32,7 @@ export interface ReaderConfig {
 export interface GlobalEventsStreamRow {
     globalTopicId: string;
     active: boolean;
-    status: StreamStatus;
+    status: GlobalEventsStreamStatus;
     lastMessageCursor: string;
     isDefault?: boolean;
 
@@ -205,8 +203,8 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        if (Array.isArray((data as any).branchesWithSchemaName)) {
-            this.config.branches = (data as any).branchesWithSchemaName;
+        if (Array.isArray(data.branchesWithSchemaName)) {
+            this.config.branches = data.branchesWithSchemaName;
         }
 
         this.readonly = data.readonly;
@@ -227,24 +225,22 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         this.config.branches = data.branchesWithSchemaName ?? []
 
         const defaultSet = new Set<string>(this.defaultTopicIds);
-        const streams = Array.isArray(data.streams) ? data.streams : [];
+        const streams = data.streams;
 
         this.rows = streams.map((s) => {
             const topicId = this.normalizeTopicId(s.globalTopicId);
 
-            const row: GlobalEventsStreamRow = {
+            return {
                 globalTopicId: topicId,
-                active: !!s.active,
+                active: s.active,
                 status: s.status || 'FREE',
                 lastMessageCursor: s.lastMessageCursor || '',
-                isDefault: !!s.isDefault || defaultSet.has(topicId),
+                isDefault: s.isDefault || defaultSet.has(topicId),
                 filterFieldsByBranch: s.filterFieldsByBranch || {},
-                branchDocumentTypeByBranch: s.branchDocumentTypeByBranch as any,
+                branchDocumentTypeByBranch: s.branchDocumentTypeByBranch,
                 isNew: false,
                 saving: false,
-            };
-
-            return row;
+            } as GlobalEventsStreamRow;
         });
     }
 
@@ -374,7 +370,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        row.active = !!value;
+        row.active = value;
         this.updateRow(row);
     }
 
@@ -449,7 +445,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
 
         const payload = {
             globalTopicId: topicId,
-            active: !!row.active,
+            active: row.active,
             filterFieldsByBranch: row.filterFieldsByBranch,
             branchDocumentTypeByBranch: row.branchDocumentTypeByBranch,
         };
