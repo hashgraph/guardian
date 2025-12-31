@@ -101,6 +101,11 @@ const columns = [ {
     permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
+},{
+    id: 'modified',
+    permissions: (user: UserPermissions, type: LocationType) => {
+        return true;
+    }
 }, {
     id: 'topic',
     permissions: (user: UserPermissions, type: LocationType) => {
@@ -1197,11 +1202,12 @@ export class PoliciesComponent implements OnInit {
                 const demo = result.demo || false;
                 const tools = result.tools;
                 const importRecords = !!result.importRecords;
+                const originalTracking = !!result.originalTracking;
 
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService
-                        .pushImportByMessage(data, versionOfTopicId, { tools, importRecords }, demo)
+                        .pushImportByMessage(data, versionOfTopicId, { tools, importRecords }, demo, originalTracking)
                         .pipe(takeUntil(this._destroy$))
                         .subscribe((result) => {
                             const { taskId, expectation } = result;
@@ -1216,7 +1222,7 @@ export class PoliciesComponent implements OnInit {
                         });
                 } else if (type == 'file') {
                     this.policyEngineService
-                        .pushImportByFile(data, versionOfTopicId, { tools }, demo)
+                        .pushImportByFile(data, versionOfTopicId, { tools }, demo, originalTracking)
                         .pipe(takeUntil(this._destroy$)).subscribe((result) => {
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
@@ -1472,6 +1478,15 @@ export class PoliciesComponent implements OnInit {
                     },
                 });
             }
+        });
+    }
+    
+    public async comparePolicyOrigin(policy: any) {
+        this.router.navigate(['/compare'], {
+            queryParams: {
+                type: 'policy',
+                policyId: policy.id
+            },
         });
     }
 
