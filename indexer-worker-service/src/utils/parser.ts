@@ -52,6 +52,7 @@ export class Parser {
                     message.options.startMessage = json.startMessage;
                     message.options.entityType = json.entityType;
                     message.options.option = json.option;
+                    message.options.initId = json.initId;
                     if (json.cid) {
                         message.files.push(json.cid);
                     }

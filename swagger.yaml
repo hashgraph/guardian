@@ -8502,6 +8502,80 @@ paths:
       summary: Get filtered policies
       tags:
         - policies
+  /policies/{policyId}/create-new-version-vc-document:
+    post:
+      description: Create new version vc document.
+      operationId: PolicyApi_createNewVersionVcDocument
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Create new version vc document.
+      tags:
+        - policies
+  /policies/{policyId}/get-all-version-vc-documents/{documentId}:
+    get:
+      description: Get all version VC documents.
+      operationId: PolicyApi_getAllVersionVcDocuments
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get all version VC documents.
+      tags:
+        - policies
   /schema/{schemaId}:
     get:
       description: >-

@@ -269,3 +269,23 @@
     width: 100%;
     height: calc(100vh - 285px);
 }
+
+::ng-deep{
+    .details-document-info{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        
+        .p-dropdown {
+            border-radius: 6px;
+            
+            box-shadow: none !important;
+            outline: none !important;
+            
+            &:focus {
+                box-shadow: none !important;
+                outline: none !important;
+            }
+        }
+    }
+}
