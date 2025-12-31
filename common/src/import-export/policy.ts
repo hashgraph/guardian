@@ -2,13 +2,12 @@ import JSZip from 'jszip';
 import { Artifact, Formula, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { ImportExportUtils } from './utils.js';
-import { PolicyCategoryExport, SchemaCategory, IOwner, SchemaHelper, Schema as InterfaceSchema, SchemaEntity, GenerateUUIDv4 } from '@guardian/interfaces';
+import { PolicyCategoryExport, SchemaCategory, SchemaHelper, Schema as InterfaceSchema, SchemaEntity, GenerateUUIDv4 } from '@guardian/interfaces';
 import stringify from 'fast-json-stable-stringify';
 import crypto from 'crypto';
 import { VcHelper } from '../helpers/vc-helper.js';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from 'bson';
-
 
 interface IArtifact {
     name: string;
@@ -204,7 +203,7 @@ export class PolicyImportExport {
      */
     public static async generateZipFile(components: IPolicyComponents): Promise<JSZip> {
         const zip = new JSZip();
-        const preparedComponents: IPolicyComponents = this.preparePolicyComponents(components);
+        const preparedComponents: IPolicyComponents = PolicyImportExport.preparePolicyComponents(components);
 
         zip.folder('artifacts');
         for (const artifact of preparedComponents.artifacts) {
@@ -255,9 +254,9 @@ export class PolicyImportExport {
             zip.file(`formulas/${formula.uuid}.json`, JSON.stringify(formula));
         }
 
-        const hashSum = this.getPolicyHash(preparedComponents);
+        const hashSum = PolicyImportExport.getPolicyHash(preparedComponents);
 
-        let credentialSubject: any = { 
+        let credentialSubject: any = {
             name: preparedComponents.policy.name,
             description: preparedComponents.policy.description,
             version: preparedComponents.policy.codeVersion,
@@ -269,7 +268,7 @@ export class PolicyImportExport {
 
         const vcHelper = new VcHelper();
         const didDocument = await vcHelper.loadDidDocument(preparedComponents.policy?.owner, preparedComponents.policy?.ownerId);
-        
+
         if(didDocument) {
             const vc = await vcHelper.createVerifiableCredential(
                 credentialSubject,
@@ -378,7 +377,7 @@ export class PolicyImportExport {
             formulas
         }
 
-        const hashSum = this.getPolicyHash(policyComponents);
+        const hashSum = PolicyImportExport.getPolicyHash(policyComponents);
         console.log('hashSum', hashSum);
 
         return policyComponents;
@@ -478,8 +477,8 @@ export class PolicyImportExport {
     public static getPolicyHash(items: IPolicyComponents): string {
         const clonedItems = structuredClone(items);
 
-        const preparedItems = this.preparePolicyComponents(clonedItems);
-        const cleanedBeforeHash = this.cleanBeforeHash(preparedItems);
+        const preparedItems = PolicyImportExport.preparePolicyComponents(clonedItems);
+        const cleanedBeforeHash = PolicyImportExport.cleanBeforeHash(preparedItems);
 
         const json = stringify(cleanedBeforeHash);
         return crypto.createHash('sha256').update(json).digest('hex');
@@ -504,9 +503,9 @@ export class PolicyImportExport {
         delete components.policy.originalMessageId;
         delete components.policy.policyNavigation;
 
-        this.removeField(components.policy, 'id');
-        this.removeField(components, 'guardianVersion');
-        this.removeField(components, 'systemSchemas');
+        PolicyImportExport.removeField(components.policy, 'id');
+        PolicyImportExport.removeField(components, 'guardianVersion');
+        PolicyImportExport.removeField(components, 'systemSchemas');
 
         components.schemas.sort((schemaA, schemaB) => schemaA.name > schemaB.name ? -1 : 1);
 
@@ -542,14 +541,12 @@ export class PolicyImportExport {
 
         let tokenCounter = 0;
         let schemaCounter = 0;
-        
         components.schemas.forEach(schema => {
             schemaIds.set(`schema:${schema.uuid}#${schema.uuid}`, `@${schemaCounter}`);
             schemaIds.set(`schema:${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
             schemaIds.set(`schema:${schema.uuid}`, `@${schemaCounter}`);
             schemaIds.set(`${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
             schemaIds.set(schema.uuid, `@${schemaCounter}`);
-            
             schemaCounter++;
         });
 
@@ -578,7 +575,6 @@ export class PolicyImportExport {
 
     private static preparePolicyComponents(components: IPolicyComponents): IPolicyComponents {
         const policyObject = structuredClone(components.policy);
-        
         policyObject.id = (components.policy.id || components.policy._id)?.toString();
         delete policyObject._id;
         delete policyObject.messageId;
@@ -675,23 +671,23 @@ export class PolicyImportExport {
 
     static async saveOriginalZip(zipFile: any, policyName?: string): Promise<ObjectId> {
         const fileName = `${policyName}_zip_${GenerateUUIDv4()}`;
-        const fileId = await this._createFile(zipFile, fileName);
+        const fileId = await PolicyImportExport._createFile(zipFile, fileName);
 
         return fileId;
     }
 
     static async removeField(obj, fieldName) {
         if (Array.isArray(obj)) {
-            obj.forEach(item => this.removeField(item, fieldName));
+            obj.forEach(item => PolicyImportExport.removeField(item, fieldName));
             return;
         }
 
-        if (obj !== null && typeof obj === "object") {
+        if (obj !== null && typeof obj === 'object') {
             for (const key of Object.keys(obj)) {
                 if (key === fieldName) {
                     delete obj[key];
                 } else {
-                    this.removeField(obj[key], fieldName);
+                    PolicyImportExport.removeField(obj[key], fieldName);
                 }
             }
         }

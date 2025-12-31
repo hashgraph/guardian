@@ -272,7 +272,6 @@ export class PolicyMessage extends Message {
         message.currentHash = json.currentHash;
         message.originalHash = json.originalHash;
         message.originalMessageId = json.originalMessageId;
-        
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(json.action)
             && json.effectiveDate) {
             message.discontinuedDate = new Date(json.effectiveDate)

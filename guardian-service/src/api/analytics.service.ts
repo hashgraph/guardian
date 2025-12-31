@@ -313,13 +313,13 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
 
                 let originalPolicyData = null;
                 if(policyData.policy.originalMessageId) {
-                    let originalAnyPolicy: IAnyPolicy = {
+                    const originalAnyPolicy: IAnyPolicy = {
                         type: 'message',
                         value: policyData.policy.originalMessageId
                     }
                     originalPolicyData = await PolicyLoader.load(originalAnyPolicy, user);
                 } else if(policyData.policy.originalZipId) {
-                    let originalAnyPolicy: IAnyPolicy = {
+                    const originalAnyPolicy: IAnyPolicy = {
                         type: 'file',
                         value: {
                             id:'',
