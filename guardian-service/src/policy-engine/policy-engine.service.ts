@@ -1641,7 +1641,8 @@ export class PolicyEngineService {
                     if(originalTracking && result.policy)
                     {
                         const originalFileId = await PolicyImportExport.saveOriginalZip(Buffer.from(zip.data), result.policy.name);
-                        const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
+                        const policyComponents = await PolicyImportExport.loadPolicyComponents(result.policy);
+                        const policyHash = await PolicyImportExport.getPolicyHash(policyComponents);
                         result.policy.originalHash = policyHash;
                         result.policy.originalChanged = false;
                         result.policy.originalZipId = originalFileId;
