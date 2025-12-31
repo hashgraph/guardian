@@ -212,7 +212,7 @@ export class AnalyticsApi {
     }
 
     /**
-     * Compare policy with original state 
+     * Compare policy with original state
      */
     @Post('/compare/policy/original/:policyId')
     @Auth(
