@@ -28,7 +28,7 @@
         "cron": "^4.3.0",
         "dotenv": "^16.0.0",
         "ethers": "^6.7.1",
-        "express": "^4.21.1",
+        "express": "^4.22.0",
         "fs-extra": "^10.0.0",
         "imurmurhash": "^0.1.4",
         "jszip": "^3.7.1",
