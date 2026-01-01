@@ -1,7 +1,7 @@
 import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ContractType, IContract, PolicyAvailability, PolicyCategoryType, Schema, SchemaHelper, Token, UserPermissions } from '@guardian/interfaces';
+import { ContractType, IContract, LocationType, PolicyAvailability, PolicyCategoryType, PolicyStatus, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { DialogService } from 'primeng/dynamicdialog';
 import { forkJoin, Observable, Subject } from 'rxjs';
@@ -37,6 +37,11 @@ import { DB_NAME, STORES_NAME } from 'src/app/constants';
 import { IgnoreRule } from '@guardian/interfaces';
 import { IgnoreRulesDialog } from "../../dialogs/ignore-rules-dialog/ignore-rules-dialog.component";
 import { SaveToolDialog, ToolSaveAction } from '../../dialogs/save-tool-dialog/save-tool-dialog.component';
+import { TagsService } from 'src/app/services/tag.service';
+import { TagCreateDialog } from 'src/app/modules/tag-engine/tags-create-dialog/tags-create-dialog.component';
+import { TagsHistory } from 'src/app/modules/tag-engine/models/tags-history';
+import { TagsExplorerDialog } from 'src/app/modules/tag-engine/tags-explorer-dialog/tags-explorer-dialog.component';
+import { MultipleTagsExplorerDialog } from 'src/app/modules/tag-engine/multiple-tags-explorer-dialog/multiple-tags-explorer-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -201,6 +206,13 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     ];
 
+    public allBlocks: PolicyItem[] = [];
+    public selectedBlocks = new Map<string, any>();
+    public blockTagHistories = new Map<string, TagsHistory>();
+    public tagSchemas: any[] = [];
+    public tagOptions: string[] = [];
+    public policy: any;
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -220,6 +232,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private analyticsService: AnalyticsService,
         private profileService: ProfileService,
         private contractService: ContractService,
+        private tagsService: TagsService,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>,
         storage: IndexedDbRegistryService
@@ -403,9 +416,13 @@ export class PolicyConfigurationComponent implements OnInit {
         this.rootId = this.policyId;
         forkJoin([
             this.profileService.getProfile(),
-            this.policyEngineService.policy(this.policyId)
-        ]).pipe(takeUntil(this._destroy$)).subscribe(([user, policy]) => {
+            this.policyEngineService.policy(this.policyId),
+            this.tagsService.getPublishedSchemas()
+        ]).pipe(takeUntil(this._destroy$)).subscribe(([user, policy, tagSchemas]) => {
             this.user = new UserPermissions(user);
+            this.owner = this.user?.did;
+
+            this.tagSchemas = SchemaHelper.map(tagSchemas || []);
 
             if (!policy) {
                 this.policyTemplate = new PolicyTemplate();
@@ -416,78 +433,143 @@ export class PolicyConfigurationComponent implements OnInit {
 
             this.policyTemplate = new PolicyTemplate(policy);
             this.onOpenRoot(this.policyTemplate);
+
+            this.policy = policy;
+            this.allBlocks = this.policyTemplate.allBlocks;
+
             if (!this.policyTemplate.valid) {
                 this.loading = false;
                 return;
             }
 
-            forkJoin([
-                this.tokenService.menuList(),
-                this.policyEngineService.getBlockInformation(),
-                this.schemaService.getSchemas(this.policyTemplate.topicId),
-                this.modulesService.menuList(),
-                this.toolsService.menuList(),
-                this.policyEngineService.getPolicyCategories(),
-                this.contractService.getContracts({ type: ContractType.WIPE }),
-            ]).pipe(takeUntil(this._destroy$)).subscribe( async (data) => {
-                const tokens = data[0] || [];
-                const blockInformation = data[1] || {};
-                const schemas = data[2] || [];
-                const modules = data[3] || [];
-                const tools = data[4] || [];
-                this.categories = data[5] || [];
-                this.wipeContracts = data[6].body || [];
+            this.loadTagsData();
 
-                this.registeredService.registerConfig(blockInformation);
-                this.tokens = tokens.map((e: any) => new Token(e));
-                this.schemas = SchemaHelper.map(schemas) || [];
-                this.modules = modules;
-                this.tools.setItems(tools);
+            if (this.user.POLICIES_POLICY_UPDATE) {
+                forkJoin([
+                    this.tokenService.menuList(),
+                    this.policyEngineService.getBlockInformation(),
+                    this.schemaService.getSchemas(this.policyTemplate.topicId),
+                    this.modulesService.menuList(),
+                    this.toolsService.menuList(),
+                    this.policyEngineService.getPolicyCategories(),
+                    this.contractService.getContracts({ type: ContractType.WIPE }),
+                ]).pipe(takeUntil(this._destroy$)).subscribe( async (data) => {
+                    const tokens = data[0] || [];
+                    const blockInformation = data[1] || {};
+                    const schemas = data[2] || [];
+                    const modules = data[3] || [];
+                    const tools = data[4] || [];
+                    this.categories = data[5] || [];
+                    this.wipeContracts = data[6].body || [];
 
-                this.policyTemplate.setTokens(this.tokens);
-                this.policyTemplate.setSchemas(this.schemas);
-                this.policyTemplate.setTools(this.tools.items);
-                await this.finishedLoad(this.policyTemplate);
+                    this.registeredService.registerConfig(blockInformation);
+                    this.tokens = tokens.map((e: any) => new Token(e));
+                    this.schemas = SchemaHelper.map(schemas) || [];
+                    this.modules = modules;
+                    this.tools.setItems(tools);
 
-                this.categories.forEach((item: IPolicyCategory) => {
-                    switch (item.type) {
-                        case PolicyCategoryType.APPLIED_TECHNOLOGY_TYPE:
-                            this.allCategories.appliedTechnologyTypeOptions.push(item);
-                            break;
-                        case PolicyCategoryType.MITIGATION_ACTIVITY_TYPE:
-                            this.allCategories.migrationActivityTypeOptions.push(item);
-                            break;
-                        case PolicyCategoryType.PROJECT_SCALE:
-                            this.allCategories.projectScaleOptions.push(item);
-                            break;
-                        case PolicyCategoryType.SECTORAL_SCOPE:
-                            this.allCategories.sectoralScopeOptions.push(item);
-                            break;
-                        case PolicyCategoryType.SUB_TYPE:
-                            this.allCategories.subTypeOptions.push(item);
-                            break;
-                        default:
-                            break;
-                    }
-                })
+                    this.policyTemplate.setTokens(this.tokens);
+                    this.policyTemplate.setSchemas(this.schemas);
+                    this.policyTemplate.setTools(this.tools.items);
+                    await this.finishedLoad(this.policyTemplate);
 
-                if (this.policyTemplate?.categories?.length && this.policyTemplate?.categories.length > 0) {
-                    this.policyCategoriesMapped = [];
-                    this.policyTemplate?.categories?.forEach(id => {
-                        const category = this.categories.find((cat: IPolicyCategory) => cat.id === id);
-                        if (category) {
-                            this.policyCategoriesMapped.push(category);
+                    this.categories.forEach((item: IPolicyCategory) => {
+                        switch (item.type) {
+                            case PolicyCategoryType.APPLIED_TECHNOLOGY_TYPE:
+                                this.allCategories.appliedTechnologyTypeOptions.push(item);
+                                break;
+                            case PolicyCategoryType.MITIGATION_ACTIVITY_TYPE:
+                                this.allCategories.migrationActivityTypeOptions.push(item);
+                                break;
+                            case PolicyCategoryType.PROJECT_SCALE:
+                                this.allCategories.projectScaleOptions.push(item);
+                                break;
+                            case PolicyCategoryType.SECTORAL_SCOPE:
+                                this.allCategories.sectoralScopeOptions.push(item);
+                                break;
+                            case PolicyCategoryType.SUB_TYPE:
+                                this.allCategories.subTypeOptions.push(item);
+                                break;
+                            default:
+                                break;
                         }
                     })
-                }
-            }, ({ message }) => {
-                this.loading = false;
-                console.error(message);
-            });
+
+                    if (this.policyTemplate?.categories?.length && this.policyTemplate?.categories.length > 0) {
+                        this.policyCategoriesMapped = [];
+                        this.policyTemplate?.categories?.forEach(id => {
+                            const category = this.categories.find((cat: IPolicyCategory) => cat.id === id);
+                            if (category) {
+                                this.policyCategoriesMapped.push(category);
+                            }
+                        })
+                    }
+                }, ({ message }) => {
+                    this.loading = false;
+                    console.error(message);
+                });
+            }
         }, ({ message }) => {
             this.loading = false;
             console.error(message);
         });
+    }
+
+    private loadTagsData() {
+        if (this.user.TAGS_TAG_READ) {
+            const blockIds = this.allBlocks?.map(block => block.id) || [];
+
+            this.tagsService.search(TagType.PolicyBlock, [this.policy.id], blockIds).subscribe((data) => {
+                const policyBlockTags = data[this.policy.id];
+                if (this.allBlocks) {
+                    for (const block of this.allBlocks) {
+                        (block as any)._tags = policyBlockTags?.tags.filter((tag: any) => tag.linkedItems.includes(block.id));
+                        
+                        policyBlockTags?.tags.forEach((tag: any) => {
+                            const totalTagOptions = [
+                                ...this.tagOptions,
+                                tag.name,
+                            ];
+                            this.tagOptions = [
+                                ...new Set(totalTagOptions),
+                            ];
+                        });
+
+                        let history: TagsHistory;
+                        if ((block as any)._tags) {
+                            history = new TagsHistory(
+                                policyBlockTags.entity || TagType.PolicyBlock,
+                                policyBlockTags.target || this.policy.id,
+                                this.owner,
+                                this.policy.location || LocationType.LOCAL,
+                                [block.id]
+                            );
+                            history.setData((block as any)._tags);
+                            history.setDate(policyBlockTags.refreshDate);
+                        } else {
+                            history = new TagsHistory(
+                                TagType.PolicyBlock,
+                                this.policy.id,
+                                this.owner,
+                                this.policy.location || LocationType.LOCAL,
+                                [block.id]
+                            );
+                        }
+                        this.blockTagHistories.set(block.id, history);
+                    }
+                }
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }
     }
 
     private loadModule(): void {
@@ -613,7 +695,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
         root.subscribe(this.onConfigChange.bind(this));
 
-        this.onSelect(this.openFolder.root);
+        this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
         this.updateComponents();
         this.updateModules();
         this.updateTools();
@@ -747,6 +829,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.openFolder =
                 this.rootTemplate.getModule(this.openFolder) ||
                 this.rootTemplate.getRootModule();
+
             this.currentBlock = this.openFolder.root;
             this.updateMenuStatus();
         }
@@ -1270,6 +1353,8 @@ export class PolicyConfigurationComponent implements OnInit {
         }, ({ message }) => {
             console.error(message);
         });
+
+        this.handleTagsUpdate();
     }
 
     public async ngOnDestroy(): Promise<void> {
@@ -1327,7 +1412,13 @@ export class PolicyConfigurationComponent implements OnInit {
         this.options.save();
     }
 
-    public onSelect(block?: PolicyItem): boolean {
+    
+    public owner: string;
+
+    public onSelect(event: { block?: PolicyItem, isMultiSelect: boolean }): boolean {
+        const block = event.block;
+        const isMultiSelect = event.isMultiSelect;
+
         this.nextBlock = null;
         this.nestedBlock = null;
         this.currentBlock = this.openFolder.getBlock(block);
@@ -1337,6 +1428,22 @@ export class PolicyConfigurationComponent implements OnInit {
         // this.changeDetector.detectChanges();
         this.findSuggestedBlocks(this.currentBlock);
         this.updateMenuStatus();
+
+        if (this.canEditTags() && this.currentBlock && !this.currentBlock.isRoot) {
+            if (isMultiSelect) {
+                if (!this.selectedBlocks.has(this.currentBlock.id)) {
+                    this.selectedBlocks.set(this.currentBlock.id, this.currentBlock);
+                } else {
+                    this.selectedBlocks.delete(this.currentBlock.id);
+                }
+            } else {
+                this.selectedBlocks.clear();
+                this.selectedBlocks.set(this.currentBlock.id, this.currentBlock);
+            }
+        } else if (this.currentBlock?.isRoot && !isMultiSelect) {
+            this.selectedBlocks.clear();
+        }
+
         return false;
     }
 
@@ -1432,14 +1539,14 @@ export class PolicyConfigurationComponent implements OnInit {
             nested ? this.currentBlock : this.currentBlock?.parent,
             type
         );
-        this.onSelect(this.currentBlock);
+        this.onSelect({ block: this.currentBlock, isMultiSelect: false});
         this.updateMenuStatus();
     }
 
     public onSuggestionsClick() {
         this.isSuggestionsEnabled = !this.isSuggestionsEnabled;
         if (this.isSuggestionsEnabled && this.currentBlock) {
-            this.onSelect(this.currentBlock);
+            this.onSelect({ block: this.currentBlock, isMultiSelect: false});
         }
     }
 
@@ -1483,7 +1590,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public onDelete(block: any) {
         this.openFolder.removeBlock(block);
         this.updateTemporarySchemas();
-        this.onSelect(this.openFolder.root);
+        this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
         return false;
     }
 
@@ -1743,7 +1850,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const config = policy.config;
             this.policyTemplate.rebuild(config);
             this.setErrors(results, 'policy');
-            this.onSelect(this.openFolder.root);
+            this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
             this.loading = false;
         }, (e) => {
             this.loading = false;
@@ -2028,7 +2135,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.moduleTemplate.rebuild(module);
             this.setErrors(results, 'module');
             this.onOpenRoot(this.moduleTemplate);
-            this.onSelect(this.openFolder.root);
+            this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
             this.loading = false;
         }, (e) => {
             this.loading = false;
@@ -2150,7 +2257,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.toolTemplate.rebuild(tool);
             this.setErrors(results, 'tool');
             this.onOpenRoot(this.toolTemplate);
-            this.onSelect(this.openFolder.root);
+            this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
             this.loading = false;
         }, (e) => {
             this.loading = false;
@@ -2345,5 +2452,124 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.validationRuleOptions.map(
             (option) => option.rule as IgnoreRule
         );
+    }
+
+    public getSelectedBlock(): any {
+        return this.currentBlock as any;
+    }
+
+    public onAddTagToBlocks() {
+        const tagsHistory = [];
+        const linkedItems: string[] = [];
+        for (const block of this.selectedBlocks.values()) {
+            const tagHistory = this.blockTagHistories.get(block.id)
+            if (tagHistory) {
+                tagsHistory.push(tagHistory);
+            }
+            linkedItems.push(block.id);
+        }
+
+        const commonHistory = new TagsHistory(
+            TagType.PolicyBlock,
+            this.policy.id,
+            this.owner,
+            this.policy.location || LocationType.LOCAL,
+            linkedItems
+        );
+
+        if (tagsHistory.length > 0) {
+            const dialogRef = this.dialog.open(MultipleTagsExplorerDialog, {
+                width: '750px',
+                closable: false,
+                header: 'Tags',
+                data: {
+                    user: this.user,
+                    service: this.tagsService,
+                    histories: tagsHistory,
+                    schemas: this.tagSchemas,
+                    commonHistory: commonHistory,
+                    items: Array.from(this.selectedBlocks.values()),
+                    inheritTagsOption: true,
+                }
+            });
+            dialogRef
+            .onClose
+            .subscribe(async (result) =>
+                result ? this.tagsService.tagsUpdated$.next() : null
+            );
+        }
+    }
+
+    public onAddTag() {
+        if (this.canEditTags() && this.currentBlock) {
+            const tagHistory = this.blockTagHistories.get(this.currentBlock.id);
+            if (tagHistory) {
+                const dialogRef = this.dialog.open(TagsExplorerDialog, {
+                    width: '750px',
+                    height: '600px',
+                    closable: false,
+                    header: 'Tags',
+                    data: {
+                        user: this.user,
+                        service: this.tagsService,
+                        history: tagHistory,
+                        schemas: this.tagSchemas,
+                        inheritTagsOption: true,
+                    }
+                });
+                dialogRef
+                .onClose
+                .subscribe(async (result) =>
+                    result ? this.tagsService.tagsUpdated$.next() : null
+                );
+            } else {
+                const dialogRef = this.dialog.open(TagCreateDialog, {
+                    width: '750px',
+                    closable: true,
+                    header: 'New Tag',
+                    data: {
+                        schemas: this.tagSchemas,
+                        inheritTagsOption: true,
+                    }
+                });
+                dialogRef.onClose.subscribe(async (result) => {
+                    if (result) {
+                        this.onCreateTag(result, this.currentBlock!.id);
+                    }
+                });
+            }
+        }
+    }
+
+    private onCreateTag(tag: any, id: string) {
+        const history = this.blockTagHistories.get(id);
+        
+        if (!history) {
+            return;
+        }
+
+        tag = history.create(tag);
+
+        this.loading = true;
+        this.tagsService.create(tag).subscribe((data) => {
+            history.add(data);
+            this.tagsService.tagsUpdated$.next();
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    private handleTagsUpdate(): void {
+        this.tagsService.tagsUpdated$.pipe(takeUntil(this._destroy$)).subscribe({
+            next: () => this.loadData(),
+        });
+    }
+
+    public canEditTags(): boolean {
+        return this.policy?.status === PolicyStatus.PUBLISH;
     }
 }
