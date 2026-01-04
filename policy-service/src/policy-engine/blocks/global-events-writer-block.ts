@@ -260,14 +260,14 @@ export class GlobalEventsWriterBlock {
                 let currentMemo: string | null = null;
                 let currentId: string | null = null;
                 let currentTopicId: string | null = null;
-                // let currentLang: string | null = null;
+
                 return {
                     toMessage(): string {
                         return JSON.stringify(payload);
                     },
-                    // setLang(lang: string): void {
-                    //     currentLang = lang;
-                    // },
+                    setLang(lang: string): void {
+                        return;
+                    },
                     setMemo(memo: string): void {
                         currentMemo = memo;
                     },
