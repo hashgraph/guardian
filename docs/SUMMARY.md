@@ -622,6 +622,7 @@
       * [APIs related](guardian/standard-registry/policies/policy-warnings/apis-related/README.md)
         * [Validates selected policy](guardian/standard-registry/policies/policy-warnings/apis-related/validates-selected-policy.md)
     * [🪅 Multiple Draft](guardian/standard-registry/policies/multiple-draft.md)
+    * [Multi-Workflow Engine](guardian/standard-registry/policies/multi-workflow-engine.md)
   * [Bring your own DIDs](guardian/standard-registry/bring-your-own-dids/README.md)
     * [Bring your own (BYO) DIDs UI](guardian/standard-registry/bring-your-own-dids/bring-your-own-byo-dids-ui.md)
     * [APIs](guardian/standard-registry/bring-your-own-dids/apis/README.md)

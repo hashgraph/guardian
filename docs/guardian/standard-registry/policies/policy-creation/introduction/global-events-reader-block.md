@@ -30,3 +30,25 @@ Subscribes to global topics and routes incoming events into policy branches.
 * Events tab - setting output events to the branches.
 
 <figure><img src="../../../../../.gitbook/assets/unknown (3).png" alt=""><figcaption></figcaption></figure>
+
+## 1.2 API
+
+* Uses the standard policy blocks API (setData), same as other blocks.
+* Reader/Writer don’t introduce a new API — they only define their own payload format and supported operation values.
+
+```
+Reader payload (Update streams):
+{
+  "operation": "Update",
+  "value": {
+    "streams": [
+      {
+        "globalTopicId": "0.0.7559767",
+        "active": true,
+        "branchDocumentTypeByBranch": { "branch 1": "vc", "branch 2": "vc" },
+        "filterFieldsByBranch": {}
+      }
+    ]
+  }
+}
+```
