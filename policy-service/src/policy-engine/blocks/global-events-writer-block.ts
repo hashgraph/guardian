@@ -256,11 +256,11 @@ export class GlobalEventsWriterBlock {
                 signOptions: hederaAccount.signOptions,
                 dryRun: ref.dryRun,
             }).setTopicObject(topic);
-            const rawMessage = (() => {
-                let currentMemo: string | null = null;
-                let currentId: string | null = null;
-                let currentTopicId: string | null = null;
 
+            let currentMemo: string | null = null;
+            let currentId: string | null = null;
+            let currentTopicId: string | null = null;
+            const rawMessage = (() => {
                 return {
                     toMessage(): string {
                         return JSON.stringify(payload);
@@ -299,6 +299,8 @@ export class GlobalEventsWriterBlock {
                 userId: user.userId,
                 interception: null,
             });
+
+            ref.log(`Publish to global topic ${currentTopicId} was successfully.`);
         } catch (err) {
             ref.error(`Publish to global topic failed: ${PolicyUtils.getErrorMessage(err)}`);
             throw new BlockActionError('Publish to global topic failed', ref.blockType, ref.uuid);
