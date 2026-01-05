@@ -325,6 +325,8 @@ Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/poli
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/1887](https://github.com/hashgraph/guardian/issues/1887)
 
+Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/policies/tamper-resistant-policy](https://guardian.hedera.com/guardian/standard-registry/policies/tamper-resistant-policy)
+
 **Data Entry Updatability**
 
 An ability to make schema data that is non-material to calculations updatable, while not changing the token issuance in flight.
