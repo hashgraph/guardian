@@ -89,7 +89,7 @@ On the Policy page, it is now possible to filter the policies list by policy nam
 
 Users can select and delete policies from the Policies table in Guardian UI and also through the API.
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note:
