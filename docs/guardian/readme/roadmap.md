@@ -315,6 +315,8 @@ Guardian should be able to inject machine-readable product data and process them
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5018](https://github.com/hashgraph/guardian/issues/5018)
 
+Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/policies/multi-workflow-engine](https://guardian.hedera.com/guardian/standard-registry/policies/multi-workflow-engine)
+
 **Tamper-resistant Policy and Module export/import**
 
 * Introduce the signing of Policies and Policy Modules such that on import their authenticity is evaluated - which proves that they have not been tampered with.
