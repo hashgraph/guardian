@@ -17,7 +17,7 @@ At its core, this feature provides:
 
 It is available inside the "View Formula" dialog as the "Diagram" tab and is designed to help policy authors understand how formulas, variables, schema fields, and linked document values are connected.
 
-<figure><img src="../../../../.gitbook/assets/unknown.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (4).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Purpose
 
@@ -39,7 +39,7 @@ After a VC document has been created, the Formulas Diagram view can be accessed 
 3. Click the formula (fx) icon next to this field.
 4.  In the View Formula dialog that opens, switch to the Diagram tab.
 
-    <figure><img src="../../../../.gitbook/assets/unknown (1).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../../.gitbook/assets/unknown (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 4. Graphical view
 
@@ -51,7 +51,7 @@ Key characteristics:
 * Nodes are connected based on the underlying navigation tree to reflect component hierarchy.
 * Nodes are styled according to the value status of their linked field (Missing, Default, Suggested, Not null), except for constants, which are never highlighted.
 
-<figure><img src="../../../../.gitbook/assets/unknown (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 5. Value Status
 
@@ -64,7 +64,7 @@ For nodes that are linked to an input field, the system calculates a value statu
 | Suggested | Orange | The linked value equals the schema suggested value.                         |
 | Not null  | Green  | The linked value is present and does not match default or suggested values. |
 
-<figure><img src="../../../../.gitbook/assets/unknown (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 6. Side Panel – Node Details
 
@@ -83,7 +83,7 @@ The panel includes the following sections (when data is available):
 * **Parent schemas** – all parent schema titles in the chain, if any.
 * **Technical details** – collapsible section with “Field value type” and “Field path”.
 
-<figure><img src="../../../../.gitbook/assets/unknown (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 7. Value – JSON Rendering
 

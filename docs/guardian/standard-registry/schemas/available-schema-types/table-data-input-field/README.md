@@ -30,9 +30,9 @@ Available options:
 * Edit: open the table in a dialog and update cells.
 * Create manually: start with an empty table and fill it by hand.
 
-<figure><img src="../../../../../.gitbook/assets/unknown (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/unknown (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3. Run calculations (inside a table and with other fields)
 
@@ -45,9 +45,9 @@ Options:
 * AutoCalculate field (automatic calculation)
 * Custom Logic Block (custom rules/logic)
 
-<figure><img src="../../../../../.gitbook/assets/unknown (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/unknown (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../../.gitbook/assets/unknown (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
