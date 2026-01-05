@@ -968,14 +968,11 @@ class GlobalEventsReaderBlock {
             const user = await PolicyComponentsUtils.GetPolicyUserByDID(stream.userDid, null, ref, stream.userId);
 
             await this.pollStream(ref, user, stream);
-
-            stream.status = GlobalEventsStreamStatus.Free;
-            await ref.databaseServer.updateGlobalEventsStream(stream);
         } catch (error) {
+            ref.error(`GlobalEventsReader: runByStream failed: ${PolicyUtils.getErrorMessage(error)}`);
+        } finally {
             stream.status = GlobalEventsStreamStatus.Free;
             await ref.databaseServer.updateGlobalEventsStream(stream);
-
-            ref.error(`GlobalEventsReader: runByStream failed: ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 
