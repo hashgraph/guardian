@@ -83,9 +83,14 @@ export class DocumentGenerator {
             return rowPresets[subSchema.name];
         }
         const json: any = {};
-        // json.type = 'Point';
         json['@context'] = context;
-        // json.coordinates = [0.0, 0.0];
+        json.layers = "NATURAL-COLOR";
+        json.format = "image/jpeg";
+        json.maxcc = 10;
+        json.width = 10;
+        json.height = 10;
+        json.bbox = '1111,2222,3333,4444';
+        json.time = '2000-01-01/2000-02-01';
         return json;
     }
 
@@ -155,6 +160,8 @@ export class DocumentGenerator {
                         }
                     case 'hederaAccount':
                         return '0.0.1';
+                    case 'table':
+                        return '{"type":"table", "cid":"bafkreid4gf3bh7guxtvjbby7ayzcz3xe475n7rfrhprpvenqt3lsqfqoxu"}';
                     default:
                         break;
                 }
