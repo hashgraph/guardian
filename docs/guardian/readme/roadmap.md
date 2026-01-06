@@ -8,7 +8,7 @@
 {% tab title="Upcoming Releases" %}
 **--— August 2025 ----**
 
-**Payload Shapefile Ingestion**
+#### **Payload Shapefile Ingestion**
 
 Make the payload ingest shapefiles, KML etc.
 
@@ -16,13 +16,13 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5046](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/how-to-handle-large-location-files](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/how-to-handle-large-location-files)
 
-**Improvement in the error handling for excel schema imports​**
+#### **Improvement in the error handling for excel schema imports​**
 
 To have better validation when excel is imported into guardian which will help prevent all the points I mentioned above and some more that I probably missed while working on methodology digitization
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4755](https://github.com/hashgraph/guardian/issues/4755)
 
-**Dry-run savepoint\[s] to survive exit and policy editing**
+#### **Dry-run savepoint\[s] to survive exit and policy editing**
 
 1. Make savepoints 'survive' multiple "exit dry-run -> edit policy -> execute dry-run" cycles such that policy authors would not have to enter values in fields again on subsequent dry-runs.
 2. Enable to existence of multiple 'savepoints' per policy
@@ -33,7 +33,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5056](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/policies/savepoints/demo-using-ui](https://docs.hedera.com/guardian/guardian/standard-registry/policies/savepoints/demo-using-ui)
 
-**Locations Data Field enhancement**
+#### **Locations Data Field enhancement**
 
 Validation Check: Implement a validation step to confirm that location data being passed to the policy is in polygon format (e.g., Polygon or MultiPolygon in GeoJSON).
 
@@ -43,7 +43,7 @@ GeoJSON Handling (Optional Enhancement): Explore and, if feasible, implement a c
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5061](https://github.com/hashgraph/guardian/issues/5061)
 
-**SLA Ticket Import and Policy Publish Performance in Guardian**
+#### **SLA Ticket Import and Policy Publish Performance in Guardian**
 
 Investigate bottlenecks in the SLA Ticket Import process:
 
@@ -72,9 +72,9 @@ Add backend logs/metrics to measure:
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5120](https://github.com/hashgraph/guardian/issues/5120)
 
-**--— September ----**
+**--— September 2025----**
 
-**Validation for project data submission**
+#### **Validation for project data submission**
 
 Validation Rules Enhancement\
 Implement robust validation for schema fields in both UI-level form inputs and backend processing logic for key field types:
@@ -97,7 +97,7 @@ Unit and Integration Tests
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5060](https://github.com/hashgraph/guardian/issues/5060)
 
-**Add an option to hide some buttons in case the policy is discontinued**
+#### **Add an option to hide some buttons in case the policy is discontinued**
 
 * Policy developers can flag a button as available only if the policy is not discontinued.
 * Buttons flagged as _hide/WhenDiscontinued_ won't be displayed in the webUI when the policy is discontinued
@@ -125,7 +125,7 @@ There should be a way to test the sub-flows similar to unit test paradigm we hav
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5045](https://github.com/hashgraph/guardian/issues/5045)
 
-**--— October ----**
+**--— October 2025----**
 
 #### **Complex iterative review and approval workflows​**
 
@@ -222,7 +222,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4753](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/deleting-schema#id-2.3-deleting-all-schemas](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/deleting-schema#id-2.3-deleting-all-schemas)
 
-**Import Excel to check for duplicates by schema name​**
+#### **Import Excel to check for duplicates by schema name​**
 
 But I believe there is one more check which the guardian can do when the excel is imported and that is to check for duplicates and provide the user with an option to either replace the schema or keep both the files.
 
@@ -254,7 +254,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4754](https://githu
 Referral Link: [https://github.com/hashgraph/guardian/issues/5344](https://github.com/hashgraph/guardian/issues/5344)\
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/creating-system-schema-using-ui#id-4.-define-schema-fields](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/creating-system-schema-using-ui#id-4.-define-schema-fields)
 
-**---November---**
+**---November 2025---**
 
 #### **Implementing Artifacts such as Schemas/Policies/tokens Deletion all at once​**
 
@@ -299,7 +299,7 @@ Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/poli
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4952](https://github.com/hashgraph/guardian/issues/4952)
 
-**---December---**
+**---December 2025---**
 
 #### **Guardian as a multi-workflow engine for independent data streams**
 
@@ -333,7 +333,7 @@ An ability to make schema data that is non-material to calculations updatable, w
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4743](https://github.com/hashgraph/guardian/issues/4743)
 
-**---January---**
+**---January 2026---**
 
 #### **Fine grained Policy workflow certification labels**
 
