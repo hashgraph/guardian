@@ -83,7 +83,6 @@ Promise.all([
 
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
-    Environment.setNetwork(process.env.HEDERA_NET);
 
     const jwtServiceName = 'POLICY_SERVICE';
     JwtServicesValidator.setServiceName(jwtServiceName);
@@ -123,6 +122,7 @@ Promise.all([
             console.warn(error);
         }
     }
+    Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
 
     const channel = new MessageBrokerChannel(cn, policyServiceName);

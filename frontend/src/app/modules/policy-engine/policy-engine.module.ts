@@ -79,6 +79,7 @@ import { TagsManagerBlockComponent } from './policy-viewer/blocks/tags-manager-b
 import { MessagesReportBlockComponent } from './policy-viewer/blocks/messages-report-block/messages-report-block.component';
 import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-topic-block/external-topic-block.component';
 import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
+
 //Helpers
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
 import { SavePolicyDialog } from './dialogs/save-policy-dialog/save-policy-dialog.component';
@@ -166,6 +167,12 @@ import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-c
 import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
+import { GlobalEventsWriterBlockComponent} from "./policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
+import { GlobalEventsReaderBlockComponent } from "./policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component";
+import { GlobalEventsReaderFiltersDialogComponent } from "./policy-viewer/dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component";
+import { AddGlobalEventTopicDialogComponent } from "./policy-viewer/dialogs/add-global-event-topic/add-global-event-topic-dialog.component";
+import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
+import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
 
 @NgModule({
     declarations: [
@@ -289,7 +296,13 @@ import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialo
         IgnoreRulesDialog,
         OnLoadSavepointDialog,
         PolicyRepositoryComponent,
-        UserPolicyDialog
+        UserPolicyDialog,
+        GlobalEventsReaderBlockComponent,
+        GlobalEventsReaderFiltersDialogComponent,
+        GlobalEventsWriterBlockComponent,
+        AddGlobalEventTopicDialogComponent,
+        ChangeBlockSettingsDialog,
+        ApproveUpdateVcDocumentDialogComponent
     ],
     imports: [
         CommonModule,

@@ -2,9 +2,9 @@
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@filebase/client": "^0.0.5",
-        "@guardian/common": "3.4.0",
-        "@guardian/interfaces": "3.4.0",
-        "@hashgraph/sdk": "2.72.0",
+        "@guardian/common": "3.4.1",
+        "@guardian/interfaces": "3.4.1",
+        "@hiero-ledger/sdk": "2.78.0",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
@@ -54,5 +54,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.4.0"
+    "version": "3.4.1"
 }

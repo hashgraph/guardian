@@ -1,8 +1,17 @@
 <div class="content">
     <div *ngIf="policy1 && policy2" class="list">
 
-        <div class="total-info" [attr.total]="total">
-            Policies are <span>{{ total }}%</span> the same.
+        <div class="toolbar">
+            <div class="total-info" [attr.total]="total">
+                Policies are <span>{{ total }}%</span> the same.
+            </div>
+
+            <div class="colorblind-toggle">
+                <label class="toggle-label">
+                    <input type="checkbox" [checked]="colorBlindMode" (change)="toggleColorBlindMode()">
+                    <span class="toggle-text">Color-blind mode</span>
+                </label>
+            </div>
         </div>
         <p-accordion [multiple]="true">
             <p-accordionTab header="Description" [selected]="true">
@@ -114,19 +123,19 @@
                         <div class="legend-item" (click)="type2=!type2">
                             <div class="legend-icon legend-l2"></div>
                             <div class="legend-text">
-                                blocks are equal, but their child blocks are different.
+                                Blocks are equal, but their child blocks are different. ([≠])
                             </div>
                         </div>
                         <div class="legend-item" (click)="type3=!type3">
                             <div class="legend-icon legend-l3"></div>
                             <div class="legend-text">
-                                blocks are of the same type and are partially equal.
+                                Blocks are of the same type and are partially equal. (≈)
                             </div>
                         </div>
                         <div class="legend-item" (click)="type4=!type4">
                             <div class="legend-icon legend-l4"></div>
                             <div class="legend-text">
-                                Blocks are absent in the other Policy.
+                                Blocks are absent in the other Policy. (+ / -)
                             </div>
                         </div>
                     </div>
@@ -155,7 +164,7 @@
                                     </div>
                                 </div>
                                 <div *ngIf="!item.right_type" [attr.offset]="item.lvl"
-                                     [style.padding-left.px]="_pOffset*item.lvl"
+                                     [style.padding-left.px]="_pOffset*2*item.lvl"
                                      class="right-tree fantom-tree hidden-item">
                                     <div class="block-tree">
                                         <div class="block-index" [attr.index-rate]="item.index_rate">
@@ -170,7 +179,7 @@
                             </ng-container>
 
                             <ng-container *ngIf="item.right_type">
-                                <div [attr.offset]="item.lvl" [style.padding-left.px]="_pOffset*item.lvl"
+                                <div [attr.offset]="item.lvl" [style.padding-left.px]="_pOffset*2*item.lvl"
                                      class="right-tree hidden-item">
                                     <div class="block-tree" (click)="item._open = !item._open">
                                         <div class="block-index" [attr.index-rate]="item.index_rate">
@@ -197,12 +206,20 @@
                                 </div>
                             </ng-container>
                             <div class="middle-tree">
+                                <span class="type-indicator left-indicator" *ngIf="(item.type === 'PARTLY' || (item.type === 'FULL' && item.total_rate !== '100%')) && item._collapse">[≠]</span>
+                                <span class="type-indicator left-indicator" *ngIf="(item.type === 'PARTLY' || (item.type === 'FULL' && item.total_rate !== '100%')) && !item._collapse">≈</span>
+                                <span class="type-indicator left-indicator" *ngIf="item.type === 'LEFT'">+</span>
+                                <span class="type-indicator left-indicator" *ngIf="item.type === 'RIGHT'">-</span>
                                 <div class="compare-btn" (click)="item._open = !item._open">
                                     <i *ngIf="!item._open"
                                        class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
                                     <i *ngIf="item._open"
                                        class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
                                 </div>
+                                <span class="type-indicator right-indicator" *ngIf="(item.type === 'PARTLY' || (item.type === 'FULL' && item.total_rate !== '100%')) && item._collapse">[≠]</span>
+                                <span class="type-indicator right-indicator" *ngIf="(item.type === 'PARTLY' || (item.type === 'FULL' && item.total_rate !== '100%')) && !item._collapse">≈</span>
+                                <span class="type-indicator right-indicator" *ngIf="item.type === 'LEFT'">-</span>
+                                <span class="type-indicator right-indicator" *ngIf="item.type === 'RIGHT'">+</span>
                             </div>
 
                             <ng-container *ngIf="item._open">

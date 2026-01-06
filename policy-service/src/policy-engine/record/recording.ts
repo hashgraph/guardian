@@ -1,32 +1,49 @@
-import { DatabaseServer, HederaDidDocument, IPFS, Record, RecordImportExport } from '@guardian/common';
-import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
+import {
+    DatabaseServer,
+    HederaDidDocument,
+    Record,
+} from '@guardian/common';
+import { GenerateUUIDv4, ISignOptions, PolicyEvents, RecordMethod } from '@guardian/interfaces';
 import { BlockTreeGenerator } from '../block-tree-generator.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { RecordingStatus } from './status.type.js';
 import { RecordAction } from './action.type.js';
-import { RecordMethod } from './method.type.js';
 import { RecordItem } from './record-item.js';
 import { FilterObject } from '@mikro-orm/core';
 import { PopulatePath } from '@mikro-orm/mongodb';
 
-/**
- * Recording controller
- */
 export interface RecordingOptions {
     /**
      * Recording mode
      */
     mode?: 'manual' | 'auto';
     /**
-     * Enable or disable recording entirely
-     */
-    enabled?: boolean;
-    /**
      * Upload each step to IPFS
      */
     uploadToIpfs?: boolean;
+
+    /**
+     * messageId of the published policy (Hedera message id)
+     */
+    policyMessageId?: string | null;
+
+    /**
+     * Hedera parameters for sending each record step as a message.
+     */
+    hederaOptions?: {
+        topicId: string;
+        submitKey?: string | null;
+        operatorId: string;
+        operatorKey: string;
+        signOptions?: ISignOptions;
+        dryRun?: string | null;
+    };
 }
+
+/**
+ * Recording controller
+ */
 
 export class Recording {
     /**
@@ -58,13 +75,17 @@ export class Recording {
      */
     private readonly mode: 'manual' | 'auto';
     /**
-     * Recording enabled flag
-     */
-    private readonly enabled: boolean;
-    /**
      * Upload flag
      */
     private readonly uploadToIpfs: boolean;
+    /**
+     * Hedera options for record messages
+     */
+    private hederaOptions?: RecordingOptions['hederaOptions'];
+    /**
+     * Source policy message id to link steps
+     */
+    private policyMessageId?: string | null;
 
     constructor(policyId: string, owner: string, options: RecordingOptions = {}) {
         this.policyId = policyId;
@@ -72,9 +93,10 @@ export class Recording {
         this.uuid = GenerateUUIDv4();
         this.tree = new BlockTreeGenerator();
         this.mode = options.mode || 'manual';
-        this.enabled = options.enabled !== false;
         this.uploadToIpfs = options.uploadToIpfs ?? (this.mode === 'auto');
-        this._status = (this.mode === 'auto' && this.enabled)
+        this.hederaOptions = options.hederaOptions;
+        this.policyMessageId = options.policyMessageId ?? null;
+        this._status = this.mode === 'auto'
             ? RecordingStatus.Recording
             : RecordingStatus.New;
     }
@@ -84,7 +106,7 @@ export class Recording {
      * @private
      */
     private isActive(): boolean {
-        return this.enabled && (this.mode === 'auto' || this._status === RecordingStatus.Recording);
+        return this.mode === 'auto' || this._status === RecordingStatus.Recording;
     }
 
     /**
@@ -97,7 +119,10 @@ export class Recording {
         action: RecordAction | null,
         user: string,
         target: string,
-        document: any
+        document: any,
+        recordActionId?: string,
+        actionTimestemp?: number,
+        userFull?: PolicyUser
     }): Promise<void> {
         if (!this.isActive()) {
             return;
@@ -107,97 +132,29 @@ export class Recording {
             policyId: this.policyId,
             method: entry.method,
             action: entry.action,
-            time: Date.now(),
+            time: entry?.actionTimestemp || Date.now(),
             user: entry.user ?? null,
             target: entry.target ?? null,
-            document: entry.document ?? null
+            document: entry.document ?? null,
+            recordActionId: entry.recordActionId ?? null,
         } as FilterObject<Record>;
-        const documentSnapshot = this.cloneDocument(entry.document);
-        const savedRecord = await DatabaseServer.createRecord(payload);
+        if (!this.uploadToIpfs) {
+            await DatabaseServer.createRecord(payload);
+        }
+        if (this.uploadToIpfs) {
+            this.tree.sendMessage(PolicyEvents.RECORD_PERSIST_STEP, {
+                policyId: this.policyId,
+                policyMessageId: this.policyMessageId ?? null,
+                recordingUuid: this.uuid,
+                payload,
+                actionTimestemp: entry.actionTimestemp,
+                hederaOptions: this.hederaOptions ?? null,
+                uploadToIpfs: this.uploadToIpfs,
+                userFull: entry.userFull,
+            });
+        }
+
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
-        await this.persistStepToIpfs(savedRecord, payload, documentSnapshot);
-    }
-
-    /**
-     * Clone document
-     * @param document
-     * @private
-     */
-    private cloneDocument<T>(document: T): T {
-        if (document === undefined || document === null) {
-            return document;
-        }
-        try {
-            return JSON.parse(JSON.stringify(document));
-        } catch (error) {
-            return document;
-        }
-    }
-
-    /**
-     * Build result payload for step
-     * @param documentSnapshot
-     * @param payload
-     * @param recordId
-     * @private
-     */
-    private buildStepResults(
-        documentSnapshot: any,
-        payload: FilterObject<Record>,
-        recordId: any
-    ): { id: string, type: 'vc' | 'vp' | 'schema', document: any }[] {
-        if (!documentSnapshot) {
-            return [];
-        }
-        return [{
-            id: this.extractResultId(documentSnapshot, payload, recordId),
-            type: this.detectResultType(documentSnapshot),
-            document: documentSnapshot
-        }];
-    }
-
-    /**
-     * Extract result identifier
-     * @private
-     */
-    private extractResultId(
-        documentSnapshot: any,
-        payload: FilterObject<Record>,
-        recordId: any
-    ): string {
-        if (typeof documentSnapshot?.id === 'string') {
-            return documentSnapshot.id;
-        }
-        if (typeof documentSnapshot?.document?.id === 'string') {
-            return documentSnapshot.document.id;
-        }
-        if (typeof payload.target === 'string' && payload.target) {
-            return payload.target;
-        }
-        if (typeof payload.action === 'string' && payload.action) {
-            return `${payload.action}-${recordId?.toString?.() || this.uuid}`;
-        }
-        return recordId?.toString?.() || this.uuid;
-    }
-
-    /**
-     * Determine result type
-     * @private
-     */
-    private detectResultType(documentSnapshot: any): 'vc' | 'vp' | 'schema' {
-        const rawTypes = documentSnapshot?.type;
-        const types = Array.isArray(rawTypes)
-            ? rawTypes
-            : rawTypes
-                ? [rawTypes]
-                : [];
-        if (types.some((t: any) => typeof t === 'string' && /presentation/i.test(t))) {
-            return 'vp';
-        }
-        if (types.some((t: any) => typeof t === 'string' && /credential/i.test(t))) {
-            return 'vc';
-        }
-        return 'schema';
     }
 
     /**
@@ -205,9 +162,6 @@ export class Recording {
      * @public
      */
     public async start(): Promise<boolean> {
-        if (!this.enabled) {
-            return false;
-        }
         if (this.mode === 'auto') {
             return true;
         }
@@ -234,9 +188,6 @@ export class Recording {
      * @public
      */
     public async stop(): Promise<boolean> {
-        if (!this.enabled) {
-            return false;
-        }
         if (this.mode === 'auto') {
             return true;
         }
@@ -279,6 +230,7 @@ export class Recording {
             method: RecordMethod.Action,
             action: RecordAction.SelectGroup,
             user: user?.did,
+            userFull: user,
             target: null,
             document: { uuid }
         });
@@ -291,7 +243,7 @@ export class Recording {
      * @param data
      * @public
      */
-    public async setBlockData(user: PolicyUser, block: AnyBlockType, data: any): Promise<void> {
+    public async setBlockData(user: PolicyUser, block: AnyBlockType, data: any, recordActionId: string, actionTimestemp: number): Promise<void> {
         if (!this.isActive()) {
             return;
         }
@@ -300,8 +252,11 @@ export class Recording {
             method: RecordMethod.Action,
             action: RecordAction.SetBlockData,
             user: user?.did,
+            userFull: user,
             target: block?.tag,
-            document: data
+            document: data,
+            actionTimestemp,
+            recordActionId,
         });
     }
 
@@ -356,7 +311,7 @@ export class Recording {
      * @param uuid
      * @public
      */
-    public async generateUUID(uuid: string): Promise<void> {
+    public async generateUUID(uuid: string, recordActionId?: string): Promise<void> {
         if (!this.isActive()) {
             return;
         }
@@ -365,7 +320,8 @@ export class Recording {
             action: RecordAction.GenerateUUID,
             user: null,
             target: null,
-            document: { uuid }
+            document: { uuid },
+            recordActionId,
         });
     }
 
@@ -374,7 +330,7 @@ export class Recording {
      * @param didDocument
      * @public
      */
-    public async generateDidDocument(didDocument: HederaDidDocument): Promise<void> {
+    public async generateDidDocument(didDocument: HederaDidDocument, recordActionId?: string): Promise<void> {
         if (!this.isActive()) {
             return;
         }
@@ -384,7 +340,8 @@ export class Recording {
             action: RecordAction.GenerateDID,
             user: null,
             target: null,
-            document: { did }
+            document: { did },
+            recordActionId,
         });
     }
 
@@ -449,6 +406,18 @@ export class Recording {
     }
 
     /**
+     * Update Hedera options and policy message link
+     * @param options
+     * @param policyMessageId
+     */
+    public setHederaOptions(options: RecordingOptions['hederaOptions'], policyMessageId?: string | null): void {
+        this.hederaOptions = options;
+        if (policyMessageId !== undefined) {
+            this.policyMessageId = policyMessageId;
+        }
+    }
+
+    /**
      * Add uuid in document
      * @param data
      * @public
@@ -457,88 +426,20 @@ export class Recording {
         //multi-sign-block
         if (block.blockType === 'multiSignBlock') {
             if (data?.document?.id && !data?.document?.uuid) {
-                const doc = await (new DatabaseServer(this.policyId)).getVcDocument(data.document.id);
+                const doc = await (new DatabaseServer(this.uploadToIpfs ? null : this.policyId)).getVcDocument(data.document.id);
                 if (doc) {
                     data.document.uuid = doc.document?.id;
                 }
             }
         }
-    }
-
-    /**
-     * Persist record step to IPFS
-     * @param savedRecord
-     * @param payload
-     * @param documentSnapshot
-     * @private
-     */
-    private async persistStepToIpfs(
-        savedRecord: Record,
-        payload: FilterObject<Record>,
-        documentSnapshot: any
-    ): Promise<void> {
-        if (!this.uploadToIpfs) {
-            return;
-        }
-        try {
-            const recordId: any = (savedRecord as any)?.id || (savedRecord as any)?._id;
-            if (!recordId) {
-                return;
+        //button-block-addon
+        if (block.blockType === 'buttonBlockAddon') {
+            if (data.documentId) {
+                const doc = await (new DatabaseServer(this.uploadToIpfs ? null : this.policyId)).getVcDocument(data.documentId);
+                if (doc) {
+                    data.uuid = doc.document?.id;
+                }
             }
-            const resultDocuments = this.buildStepResults(documentSnapshot, payload, recordId);
-            const zip = await RecordImportExport.generateSingleRecordZip({
-                ...savedRecord,
-                document: documentSnapshot ?? null
-            } as Record, resultDocuments);
-            const buffer = await zip.generateAsync({
-                type: 'nodebuffer',
-                compression: 'DEFLATE',
-                compressionOptions: { level: 3 }
-            });
-            const { cid, url } = await IPFS.addFile(buffer);
-            await DatabaseServer.setRecordIpfsMeta(recordId, {
-                cid,
-                url
-            });
-        } catch (error) {
-            console.error(`Recording: unable to persist step for policy ${this.policyId}`, error);
         }
     }
-
-    public async ensureStartRecordForPublishedPolicy(): Promise<void> {
-        if (this.mode === 'auto' && this.enabled) {
-            await this.createStartRecordIfNeeded();
-        }
-    }
-
-    private async createStartRecordIfNeeded(): Promise<void> {
-        try {
-            const existing = await DatabaseServer.getRecord(
-                {
-                    policyId: this.policyId,
-                    copiedRecordId: null,
-                    fromPolicyId: null
-                } as any,
-                { limit: 1, fields: ['_id', 'uuid'] } as any
-            );
-            if (Array.isArray(existing) && existing.length) {
-                return;
-            }
-            const payload: FilterObject<Record> = {
-                uuid: this.uuid,
-                policyId: this.policyId,
-                method: RecordMethod.Start,
-                action: null,
-                time: Date.now(),
-                user: this.owner,
-                target: null,
-                document: null
-            } as FilterObject<Record>;
-            const saved = await DatabaseServer.createRecord(payload);
-            await this.persistStepToIpfs(saved, payload, null);
-        } catch (error) {
-            console.error(`Recording: unable to ensure start record for policy ${this.policyId}`, error);
-        }
-    }
-
 }

@@ -10,6 +10,8 @@ import { PolicyUser } from './policy-user.js';
 import { RecordUtils } from './record-utils.js';
 import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
 import { PolicyActionsService } from './actions-service.js';
+import { RecordActionStep } from './record-action-step.js';
+import { PolicyVcDocumentsUtils } from './policy-vc-documents-utils.js';
 
 /**
  * Block tree generator
@@ -191,10 +193,6 @@ export class BlockTreeGenerator extends NatsService {
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
-            // <-- Record
-            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
-            // Record -->
-
             // <-- Available
             const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
             if (error) {
@@ -202,7 +200,13 @@ export class BlockTreeGenerator extends NatsService {
             }
             // Available -->
 
-            return await PolicyComponentsUtils.blockSetData(block, userFull, data);
+            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp));
+
+            const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
+
+            actionstep.finish();
+
+            return res;
         });
 
         this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, async (msg: any) => {
@@ -210,10 +214,6 @@ export class BlockTreeGenerator extends NatsService {
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
 
-            // <-- Record
-            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
-            // Record -->
-
             // <-- Available
             const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
             if (error) {
@@ -221,7 +221,13 @@ export class BlockTreeGenerator extends NatsService {
             }
             // Available -->
 
-            return await PolicyComponentsUtils.blockSetData(block, userFull, data);
+            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp));
+
+            const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
+
+            actionstep.finish();
+
+            return res
         });
 
         this.getPolicyMessages(PolicyEvents.SELECT_POLICY_GROUP, policyId, async (msg: any) => {
@@ -247,6 +253,7 @@ export class BlockTreeGenerator extends NatsService {
                     await PolicyComponentsUtils.blockReceiveData(block, data);
                 }
             }
+
             return new MessageResponse({});
         });
 
@@ -371,6 +378,27 @@ export class BlockTreeGenerator extends NatsService {
                 return new MessageError(error, 500);
             }
         });
+
+        this.getPolicyMessages(
+            PolicyEvents.CREATE_NEW_VERSION_VC_DOCUMENT,
+            policyId,
+            async (msg: any) => {
+                const { user, data } = msg;
+                const userFull = await this.getUser(policyInstance, user);
+                await PolicyVcDocumentsUtils.createNewVersionVcDocuments(userFull, policyId, data);
+                return new MessageResponse({ ok: true });
+            }
+        );
+
+        this.getPolicyMessages(
+            PolicyEvents.GET_ALL_NEW_VERSION_VC_DOCUMENTS,
+            policyId,
+            async (msg: any) => {
+                const { documentId } = msg;
+                const docs = await PolicyVcDocumentsUtils.getAllVersionVcDocuments(documentId);
+                return new MessageResponse(docs);
+            }
+        );
     }
 
     /**
@@ -516,7 +544,7 @@ export class BlockTreeGenerator extends NatsService {
             await components.registerRoot(rootInstance);
 
             if (!skipRegistration) {
-                await PolicyComponentsUtils.RegisterPolicyInstance(policyId, policy, components);
+                await PolicyComponentsUtils.RegisterPolicyInstance(policyId, policy, components, allInstances);
                 await PolicyComponentsUtils.RegisterBlockTree(allInstances);
                 this.models.set(policyId, rootInstance);
             }

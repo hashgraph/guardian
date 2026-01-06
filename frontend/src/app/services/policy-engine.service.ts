@@ -59,6 +59,11 @@ export class PolicyEngineService {
         return this.http.get<any[]>(`${this.url}`, header) as any;
     }
 
+    public allWithImportedRecords(policyId: string): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/with-imported-records/${policyId}`);
+    }
+    
+
     public create(policy: any): Observable<void> {
         return this.http.post<any>(`${this.url}/`, policy);
     }
@@ -100,7 +105,7 @@ export class PolicyEngineService {
 
     public pushPublish(
         policyId: string,
-        options: { policyVersion: string, policyAvailability: PolicyAvailability }
+        options: { policyVersion: string, policyAvailability: PolicyAvailability, recordingEnabled: boolean }
     ): Observable<{ taskId: string, expectation: number }> {
         return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/publish`, options);
     }
@@ -178,7 +183,8 @@ export class PolicyEngineService {
         messageId: string,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ): Observable<{ taskId: string; expectation: number }> {
         let params = new HttpParams();
         if (versionOfTopicId) {
@@ -186,6 +192,9 @@ export class PolicyEngineService {
         }
         if (demo) {
             params = params.set('demo', demo);
+        }
+        if (originalTracking) {
+            params = params.set('originalTracking', originalTracking);
         }
         return this.http.post<{ taskId: string; expectation: number }>(
             `${this.url}/push/import/message`,
@@ -198,7 +207,8 @@ export class PolicyEngineService {
         policyFile: any,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ): Observable<{ taskId: string; expectation: number }> {
         let params = new HttpParams();
         if (versionOfTopicId) {
@@ -206,6 +216,10 @@ export class PolicyEngineService {
         }
         if (demo) {
             params = params.set('demo', demo);
+        }
+
+        if(originalTracking) {
+            params = params.set('originalTracking', originalTracking);
         }
 
         const formData = new FormData();
@@ -599,5 +613,13 @@ export class PolicyEngineService {
             default:
                 throw new Error(`Invalid request type ${type}`);
         }
+    }
+
+    public createNewVersionVcDocument(policyId?: string, data?: any): Observable<any> {
+        return this.http.post<void>(`${this.url}/${policyId}/create-new-version-vc-document/`, data);
+    }
+
+    public getAllVersionVcDocuments(policyId?: string, documentId?: string): Observable<any> {
+        return this.http.get<void>(`${this.url}/${policyId}/get-all-version-vc-documents/${documentId}`);
     }
 }

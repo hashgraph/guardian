@@ -32,6 +32,7 @@ export class PreviewPolicyDialog {
     public toolForm!: UntypedFormGroup;
     public isFile?: boolean;
     public mode: string = 'new';
+    public originalTracking: boolean = false;
     public formulas!: string;
     public title!: string;
     public validTool: {
@@ -242,7 +243,8 @@ export class PreviewPolicyDialog {
             versionOfTopicId: this.versionOfTopicId,
             tools: this.toolForm?.value,
             demo: this.mode === 'demo',
-            importRecords: this.canImportRecords ? this.importRecords : false
+            importRecords: this.canImportRecords ? this.importRecords : false,
+            originalTracking: this.originalTracking
         });
     }
 

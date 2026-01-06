@@ -21,6 +21,7 @@ import {
     PoliciesValidationDTO,
     PolicyCategoryDTO,
     PolicyDTO,
+    BasePolicyDTO,
     PolicyPreviewDTO,
     PolicyTestDTO,
     PolicyValidationDTO,
@@ -202,6 +203,59 @@ export class PolicyApi {
             const owner = new EntityOwner(user);
             const { policies, count } = await engineService.getPoliciesV2(options, owner);
             return res.header('X-Total-Count', count).send(policies);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Return a list of all policies with imported records
+     */
+    @Get('/with-imported-records/:policyId')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+        Permissions.POLICIES_POLICY_AUDIT,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all policies with imported records.',
+        description: 'Returns all policies with imported records.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: BasePolicyDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(BasePolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPoliciesWithImportedRecords(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('policyId') policyId: string,
+    ): Promise<any> {
+        if (!user.did && user.role !== UserRole.AUDITOR) {
+            return res.header('X-Total-Count', 0).send([]);
+        }
+        try {
+            const engineService = new PolicyEngine();
+            const policies = await engineService.getPoliciesWithImportedRecords(policyId);
+            return res.header('X-Total-Count', policies.length).send(policies);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -2433,6 +2487,13 @@ export class PolicyApi {
         required: false,
         example: true
     })
+    @ApiQuery({
+        name: 'originalTracking',
+        type: Boolean,
+        description: 'Save original state of the policy',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'Message.',
         type: ImportMessageDTO,
@@ -2452,7 +2513,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO,
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean
+        @Query('demo') demo?: boolean,
+        @Query('originalTracking') originalTracking?: boolean
     ): Promise<PolicyDTO[]> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -2465,7 +2527,8 @@ export class PolicyApi {
                 new EntityOwner(user),
                 versionOfTopicId,
                 body.metadata,
-                demo
+                demo,
+                originalTracking
             );
             return await getOldResult(user);
         } catch (error) {
@@ -2499,6 +2562,13 @@ export class PolicyApi {
         required: false,
         example: true
     })
+    @ApiQuery({
+        name: 'originalTracking',
+        type: Boolean,
+        description: 'Save original state of the policy',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'Message.',
         type: ImportMessageDTO,
@@ -2517,7 +2587,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO,
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean
+        @Query('demo') demo?: boolean,
+        @Query('originalTracking') originalTracking?: boolean
     ): Promise<any> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -2534,7 +2605,8 @@ export class PolicyApi {
                     task,
                     versionOfTopicId,
                     body.metadata,
-                    demo
+                    demo,
+                    originalTracking
                 );
             },
             async (error) => {
@@ -2807,6 +2879,13 @@ export class PolicyApi {
         required: false,
         example: true
     })
+    @ApiQuery({
+        name: 'originalTracking',
+        type: Boolean,
+        description: 'Save original state of the policy',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'A zip file containing policy config.',
         required: true,
@@ -2826,13 +2905,14 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() file: any,
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean
+        @Query('demo') demo?: boolean,
+        @Query('originalTracking') originalTracking?: boolean
     ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.importFileAsync(file, new EntityOwner(user), task, versionOfTopicId, null, demo);
+            await engineService.importFileAsync(file, new EntityOwner(user), task, versionOfTopicId, null, demo, originalTracking);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
@@ -2863,6 +2943,13 @@ export class PolicyApi {
         name: 'demo',
         type: Boolean,
         description: 'Import policy in demo mode.',
+        required: false,
+        example: true
+    })
+    @ApiQuery({
+        name: 'originalTracking',
+        type: Boolean,
+        description: 'Save original state of the policy',
         required: false,
         example: true
     })
@@ -2899,7 +2986,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any[],
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean
+        @Query('demo') demo?: boolean,
+        @Query('originalTracking') originalTracking?: boolean
     ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
@@ -2918,7 +3006,8 @@ export class PolicyApi {
                     task,
                     versionOfTopicId,
                     metadata,
-                    demo
+                    demo,
+                    originalTracking
                 );
             },
             async (error) => {
@@ -4385,5 +4474,101 @@ export class PolicyApi {
         }
     }
 
+    //#endregion
+
+    //#region VC Docs
+
+    /**
+     * Create new version VC document
+     */
+    @Post('/:policyId/create-new-version-vc-document')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Create new version vc document.',
+        description: 'Create new version vc document.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Data',
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async createNewVersionVcDocument(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.createNewVersionVcDocument(user, policyId, body);
+        } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get all version VC documents
+     */
+    @Get('/:policyId/get-all-version-vc-documents/:documentId')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Get all version VC documents.',
+        description: 'Get all version VC documents.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Document Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getAllVersionVcDocuments(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('documentId') documentId: string
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getAllVersionVcDocuments(user, policyId, documentId);
+        } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
     //#endregion
 }

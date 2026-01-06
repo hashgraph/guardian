@@ -475,8 +475,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
         event.preventDefault();
         event.stopPropagation();
         const links = [];
-        const serials = this.getArray(row, field);
-        if (serials) {
+        let serials = this.getArray(row, field);
+        if (Array.isArray(serials)) {
+            serials = serials.sort((a: any, b: any) => a.serial > b.serial ? 1 : -1);
             for (const serial of serials) {
                 links.push({
                     type: "tokens",

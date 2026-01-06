@@ -262,6 +262,18 @@ export class Policy extends BaseEntity {
     actionsTopicId?: string;
 
     /**
+     * RecordsTopicId
+     */
+    @Property({ nullable: true })
+    recordsTopicId?: string;
+
+    /**
+     * Automatically record policy steps
+     */
+    @Property({ nullable: true })
+    autoRecordSteps?: boolean;
+
+    /**
      * old file id
      */
     @Property({ persist: false, nullable: true })
@@ -273,6 +285,17 @@ export class Policy extends BaseEntity {
     @Property({ persist: false, nullable: true })
     _hashMapFileId?: ObjectId;
 
+    @Property({ nullable: true })
+    originalZipId?: ObjectId;
+
+    @Property({ nullable: true })
+    originalChanged?: boolean;
+
+    @Property({ nullable: true })
+    originalHash?: string;
+
+    @Property({ nullable: true })
+    originalMessageId?: string;
     /**
      * Set policy defaults
      */

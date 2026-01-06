@@ -1093,7 +1093,7 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.errors.length === 0;
     }
 
-    private publishPolicy(options: { policyVersion: string, policyAvailability: PolicyAvailability }) {
+    private publishPolicy(options: { policyVersion: string, policyAvailability: PolicyAvailability, recordingEnabled: boolean }) {
         this.loading = true;
         this.policyEngineService.pushPublish(this.policyId, options).pipe(takeUntil(this._destroy$)).subscribe((result) => {
             const { taskId, expectation } = result;
@@ -1123,6 +1123,18 @@ export class PolicyConfigurationComponent implements OnInit {
         this.indexedDb
             .delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, this.policyId)
             .then(() => { this.ignoreRules = []; })
+            .catch(() => {
+                //
+            });
+
+        this.ensureStore(DB_NAME.HIDE_EVENTS_UI_STATE, STORES_NAME.POLICY_HIDE_EVENTS_STORE, { keyPath: 'key' })
+            .then(() => {
+                return this.indexedDb.clearByKeyPrefixAcrossStores(
+                    DB_NAME.HIDE_EVENTS_UI_STATE,
+                    [STORES_NAME.POLICY_HIDE_EVENTS_STORE],
+                    `${this.policyId}`
+                );
+            })
             .catch(() => {
                 //
             });
@@ -1777,6 +1789,18 @@ export class PolicyConfigurationComponent implements OnInit {
             storeNames,
             keyPrefix
         );
+
+        this.ensureStore(DB_NAME.HIDE_EVENTS_UI_STATE, STORES_NAME.POLICY_HIDE_EVENTS_STORE, { keyPath: 'key' })
+            .then(() => {
+                return this.indexedDb.clearByKeyPrefixAcrossStores(
+                    DB_NAME.HIDE_EVENTS_UI_STATE,
+                    [STORES_NAME.POLICY_HIDE_EVENTS_STORE],
+                    `${this.policyId}`
+                );
+            })
+            .catch(() => {
+                //
+            });
     }
 
     public async tryPublishPolicy() {

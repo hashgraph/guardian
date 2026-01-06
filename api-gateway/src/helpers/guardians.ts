@@ -1336,6 +1336,38 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Compare policy with origincal version
+     * @param user
+     * @param type
+     * @param ids
+     * @param eventsLvl
+     * @param propLvl
+     * @param childrenLvl
+     * @param idLvl
+     */
+    public async compareOriginalPolicies(
+        user: IOwner,
+        type: string,
+        policyId: string,
+        eventsLvl: string | number,
+        propLvl: string | number,
+        childrenLvl: string | number,
+        idLvl: string | number
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.COMPARE_ORIGINAL_POLICIES, {
+            user,
+            type,
+            policyId,
+            options: {
+                propLvl,
+                childrenLvl,
+                eventsLvl,
+                idLvl
+            }
+        });
+    }
+
+    /**
      * Compare two modules
      * @param user
      * @param type

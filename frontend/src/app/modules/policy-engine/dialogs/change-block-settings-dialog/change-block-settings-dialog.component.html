@@ -1,0 +1,62 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+
+        <div class="confirmation-text">
+            {{action}}
+        </div>
+
+        <div *ngIf="list?.length" class="dialog-grid-container">
+            <div class="dialog-grid-header">
+                <div class="col-44"></div>
+                <div class="col-200">Type</div>
+                <div class="col-auto">Tag</div>
+            </div>
+            <div class="dialog-grid-body">
+                <ng-container *ngFor="let item of list" >
+                    <div class="dialog-grid-row row-52" (click)="onSelect(item)">
+                        <div class="col-44 col-button">
+                            <div>
+                                <p-checkbox
+                                    class="guardian-checkbox checkbox-24"
+                                    [ngModel]="item.selected"
+                                    [binary]="true"></p-checkbox>
+                            </div>
+                        </div>
+                        <div class="col-200">
+                            {{item.type}}
+                        </div>
+                        <div class="col-auto">
+                            {{item.name}}
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button">
+            <button 
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary">Apply</button>
+        </div>
+    </div>
+</div>

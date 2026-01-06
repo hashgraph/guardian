@@ -8,7 +8,7 @@ This block is to validate documents, including linked documents. This block retu
 
 <table><thead><tr><th width="208">Block Property</th><th>Definition</th><th>Example Input</th><th>Status</th></tr></thead><tbody><tr><td>tag</td><td>Unique name for the logic block.</td><td><strong>documentValidatorBlock</strong></td><td></td></tr><tr><td>permissions</td><td>Which entity has rights to interact at this part of the workflow.</td><td>VVB</td><td></td></tr><tr><td>defaultActive</td><td>Shows whether this block is active at this time and whether it needs to be shown.</td><td>Checked or unchecked.</td><td></td></tr><tr><td>On errors</td><td>Called if the system error has occurs in the Block</td><td><ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul></td><td></td></tr><tr><td>stop Propagation</td><td>End processing here, don't pass control to the next block.</td><td>Checked or unchecked.</td><td></td></tr><tr><td>DocumentType</td><td>Type of the documents to be validated.</td><td><p>· VC Document</p><p>· VP Document</p><p>· Related VC<br>Document</p><p>. Related VP Document</p></td><td></td></tr><tr><td>Check Schema</td><td>Validates schema documents.</td><td>Schema</td><td></td></tr><tr><td>Check Own Document</td><td>If ‘true’ validates document owners.</td><td>True / False</td><td></td></tr><tr><td>Check Assign Document</td><td>If ‘true’ validates document owners.</td><td>True / False</td><td></td></tr><tr><td>Conditions</td><td>Array containing conditions for validation.</td><td>Array</td><td></td></tr></tbody></table>
 
-![](<../../../../../.gitbook/assets/image (23) (5).png>)
+![](<../../../../../.gitbook/assets/image (23) (5) (1).png>)
 
 ### Document Type
 
