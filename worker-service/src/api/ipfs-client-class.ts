@@ -5,7 +5,6 @@ import { StoreMemory } from '@storacha/client/stores/memory';
 import * as Proof from '@storacha/client/proof';
 import { Signer } from '@storacha/client/principal/ed25519';
 import * as Client from '@storacha/client';
-import * as url from 'url';
 import CID from 'cids';
 
 /**
@@ -35,7 +34,7 @@ export class IpfsClientClass {
     private readonly IPFS_PUBLIC_GATEWAY = process.env.IPFS_PUBLIC_GATEWAY || 'https://ipfs.io/ipfs/${cid}';
 
     /**
-     * Web3storage instance
+     * IPFS client instance
      * @private
      */
     private client: any;
@@ -99,7 +98,7 @@ export class IpfsClientClass {
                 if (!this.options.nodeAddress) {
                     throw new Error('IPFS_NODE_ADDRESS variable is not set');
                 }
-                const { protocol, hostname, port } = url.parse(this.options.nodeAddress);
+                const { protocol, hostname, port } = new URL(this.options.nodeAddress);
                 client = create({
                     protocol,
                     host: hostname,
@@ -124,14 +123,14 @@ export class IpfsClientClass {
         let cid: string;
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.WEB3STORAGE: {
-                const result = await this.client.uploadFile(new Blob([file]));
+                const result = await this.client.uploadFile(new Blob([new Uint8Array(file)]));
 
                 cid = result.toString()
                 break;
             }
 
             case IpfsProvider.FILEBASE: {
-                cid = await this.client.storeBlob(new Blob([file]))
+                cid = await this.client.storeBlob(new Blob([new Uint8Array(file)]))
                 break;
             }
 
