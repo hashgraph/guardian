@@ -4,6 +4,7 @@ import {
     ContractType,
     IUser,
     LocationType,
+    ModelHelper,
     PolicyAvailability,
     PolicyHelper,
     PolicyStatus,
@@ -932,14 +933,21 @@ export class PoliciesComponent implements OnInit {
     }
 
     private setVersion(element: any) {
-        const item = this.policies?.find((e) => e.id === element?.id);
+        const selectedPolicy = this.policies?.find((e) => e.id === element?.id);
+        const relatedPolicies = this.policies?.filter((policy) =>
+            policy.uuid === element.uuid && policy.version !== ''
+        ) || [];
+        const lastVersion = relatedPolicies
+            .sort((a, b) => ModelHelper.versionCompare(a.toString(), b.toString()))
+            .pop();
+        selectedPolicy.previousVersion = lastVersion?.version || '';
         const dialogRef = this.dialogService.open(PublishPolicyDialog, {
             showHeader: false,
             header: 'Publish Policy',
             width: '600px',
             styleClass: 'guardian-dialog',
             data: {
-                policy: item
+                policy: selectedPolicy
             }
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
@@ -1480,7 +1488,7 @@ export class PoliciesComponent implements OnInit {
             }
         });
     }
-    
+
     public async comparePolicyOrigin(policy: any) {
         this.router.navigate(['/compare'], {
             queryParams: {
