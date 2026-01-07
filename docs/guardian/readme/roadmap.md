@@ -333,6 +333,8 @@ An ability to make schema data that is non-material to calculations updatable, w
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4743](https://github.com/hashgraph/guardian/issues/4743)
 
+Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/data-entry-updatability](https://guardian.hedera.com/guardian/standard-registry/data-entry-updatability)
+
 **---January 2026---**
 
 #### **Fine grained Policy workflow certification labels**
