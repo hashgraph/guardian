@@ -1917,11 +1917,7 @@ export class PolicyUtils {
             entity: TagType.PolicyBlock,
             linkedItems: { $in: [ref.uuid] }
         }
-        const options: any = {
-            fields: ['name', 'description', 'owner', 'target', 'topicId', 'messageId', 'inheritTags']
-        }
-
-        const tags = await ref.databaseServer.getTags(filter, options);
+        const tags = await ref.databaseServer.getTags(filter);
         return tags.map(({ _id, ...rest }) => rest);
     }
     /**
@@ -1941,7 +1937,16 @@ export class PolicyUtils {
             if (document.document.tags.some(item => item.messageId === tag.messageId)) {
                 continue;
             }
-            document.document.tags.push(tag);
+            const shortTag = {
+                name: tag.name,
+                description: tag.description,
+                owner: tag.owner,
+                target: tag.target,
+                topicId: tag.topicId,
+                messageId: tag.messageId,
+                inheritTags: tag.inheritTags || false
+            }
+            document.document.tags.push(shortTag);
         }
     }
 }

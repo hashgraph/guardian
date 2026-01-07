@@ -112,7 +112,7 @@ export class Tag extends RestoreEntity {
      * Inherit tags
      */
     @Property({ nullable: true })
-    inheritTags: boolean;
+    inheritTags?: boolean;
 
     /**
      * Create document
