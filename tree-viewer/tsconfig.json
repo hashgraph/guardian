@@ -9,6 +9,8 @@
         ],
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
+        "noUnusedLocals": true,
+        "noUnusedParameters": false,
         "outDir": "dist/",
         "sourceMap": true,
         "strict": true,
