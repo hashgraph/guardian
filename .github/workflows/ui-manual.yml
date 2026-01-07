@@ -14,8 +14,8 @@ jobs:
           - 6379:6379
     strategy:
       matrix:
-        node-version: [20.19.5]
-        mongodb-version: [7.0.21]
+        node-version: [ 24.12.0 ]
+        mongodb-version: [ 7.0.21 ]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
