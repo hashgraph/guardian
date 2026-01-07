@@ -366,9 +366,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
                             return syncRes;
                         } else {
-                            const res = link.run(user, data, status);
-
-                            return res;
+                            link.run(user, data, status);
                         }
                     }
                 }
@@ -423,7 +421,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
                 const parent = this.parent as any;
                 if (parent && (typeof parent.changeStep === 'function')) {
-                    await parent.changeStep(event.user, event.data, this);
+                    await parent.changeStep(event.user, event.data, this, event.actionStatus);
                 }
                 let result: any;
                 if (typeof super.runAction === 'function') {

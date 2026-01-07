@@ -528,7 +528,7 @@ export interface IPolicyContainerBlock extends IPolicyBlock {
      * @param data
      * @param target
      */
-    changeStep(user: PolicyUser, data: any, target: IPolicyBlock): Promise<void>;
+    changeStep(user: PolicyUser, data: any, target: IPolicyBlock, actionStatus: RecordActionStep): Promise<void>;
 
     /**
      * Is last block active

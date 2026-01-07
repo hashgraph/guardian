@@ -152,7 +152,7 @@ export class PolicyEngineService {
     }
 
     public setBlockData(blockId: string, policyId: string, data: any): Observable<any> {
-        return this.http.post<void>(`${this.url}/${policyId}/blocks/${blockId}`, data);
+        return this.http.post<void>(`${this.url}/${policyId}/blocks/${blockId}?syncEvents=true`, data);
     }
 
     public getGetIdByName(blockName: string, policyId: string): Observable<any> {
