@@ -98,8 +98,8 @@
             </div>
 
             <div *ngIf="step === 'step_1'" class="step-container">
-                <div *ngIf="scope.variables.length" class="formulas-container">
-                    <ng-container *ngFor="let item of scope.variables">
+                <div *ngIf="group.variables.length" class="formulas-container">
+                    <ng-container *ngFor="let item of group.variables">
                         <div class="rows-container" [attr.error]="item.invalid && item.validated">
                             <div class="formula-reorder">
                                 <svg-icon
@@ -183,7 +183,7 @@
                         </button>
                     </div>
                 </div>
-                <div *ngIf="!scope.variables.length" class="formulas-container-empty">
+                <div *ngIf="!group.variables.length" class="formulas-container-empty">
                     <svg-icon 
                         class="svg-icon-32" 
                         src="/assets/images/icons/32/list.svg" 
@@ -215,8 +215,8 @@
                         </p-tabPanel>
                     </p-tabView>
                 </div>
-                <div *ngIf="codeTab === 'general' && scope.formulas.length" class="formulas-container">
-                    <ng-container *ngFor="let item of scope.formulas">
+                <div *ngIf="codeTab === 'general' && group.formulas.length" class="formulas-container">
+                    <ng-container *ngFor="let item of group.formulas">
                         <div class="rows-container" [attr.error]="item.invalid && item.validated">
                             <div class="formula-reorder">
                                 <svg-icon
@@ -281,7 +281,7 @@
                         </button>
                     </div>
                 </div>
-                <div *ngIf="codeTab === 'general' && !scope.formulas.length" class="formulas-container-empty">
+                <div *ngIf="codeTab === 'general' && !group.formulas.length" class="formulas-container-empty">
                     <svg-icon 
                         class="svg-icon-32" 
                         src="/assets/images/icons/32/list.svg" 
@@ -356,8 +356,8 @@
                 </div>
             </div>
             <div *ngIf="step === 'step_3'" class="step-container">
-                <div *ngIf="scope.outputs.length" class="formulas-container">
-                    <ng-container *ngFor="let item of scope.outputs">
+                <div *ngIf="group.outputs.length" class="formulas-container">
+                    <ng-container *ngFor="let item of group.outputs">
                         <div class="rows-container" [attr.error]="item.invalid && item.validated">
                             <div class="formula-reorder">
                                 <svg-icon
@@ -441,7 +441,7 @@
                         </button>
                     </div>
                 </div>
-                <div *ngIf="!scope.outputs.length" class="formulas-container-empty">
+                <div *ngIf="!group.outputs.length" class="formulas-container-empty">
                     <svg-icon 
                         class="svg-icon-32" 
                         src="/assets/images/icons/32/list.svg" 

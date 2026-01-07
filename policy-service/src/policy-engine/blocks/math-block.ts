@@ -1,4 +1,4 @@
-import { IVC, LocationType, SchemaHelper } from '@guardian/interfaces';
+import { ArtifactType, IVC, LocationType, Schema, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
@@ -12,6 +12,11 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+
+import { fileURLToPath } from 'url';
+import { Worker } from 'node:worker_threads';
+import path from 'path'
+const filename = fileURLToPath(import.meta.url);
 
 interface IMetadata {
     owner: PolicyUser;
@@ -68,24 +73,68 @@ interface IMetadata {
     ]
 })
 export class MathBlock {
+    private async createWorker(workerData: {
+        expression: string,
+        user: PolicyUser,
+        artifacts: any[],
+        document: any,
+        schema: Schema
+    }): Promise<IPolicyDocument> {
+        return new Promise<IPolicyDocument>(async (resolve, reject) => {
+            const workerFile = path.join(path.dirname(filename), '..', 'helpers', 'workers', 'math-worker.js');
+            const worker = new Worker(workerFile, { workerData });
+            worker.on('error', (error) => {
+                reject(error);
+            });
+            worker.on('message', async (data) => {
+                try {
+                    if (data?.type === 'done') {
+                        resolve(data.result)
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        });
+    }
+
     /**
      * Calculate data
-     * @param documents
-     * @param ref
-     * @param parents
-     * @param userId
+     * @param ref 
+     * @param document
+     * @param user
      * @private
      */
     private async calculate(
         ref: IPolicyCalculateBlock,
         credentialSubject: any,
-        docOwner: PolicyUser
+        user: PolicyUser
     ): Promise<any> {
+        console.debug('TEST')
 
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
+        const schema = new Schema(outputSchema);
 
+        // Artifacts
+        const files = Array.isArray(ref.options.artifacts) ? ref.options.artifacts : [];
+        const artifacts = [];
+        const jsonArtifacts = files.filter((file: any) => file.type === ArtifactType.JSON);
+        for (const jsonArtifact of jsonArtifacts) {
+            const artifactFile = await PolicyUtils.getArtifactFile(ref, jsonArtifact.uuid);
+            artifacts.push(JSON.parse(artifactFile));
+        }
 
+        // Run
+        const expression = ref.options.expression || '';
+        const result = await this.createWorker({
+            expression: `${expression}`,
+            document: credentialSubject,
+            artifacts,
+            user,
+            schema
+        })
 
-        return null;
+        return result;
     }
 
     /**
@@ -281,9 +330,9 @@ export class MathBlock {
             event.data.data = await this.process(event.data.data, ref, event?.user?.userId);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             documents: ExternalDocuments(event.data?.data)
         }));

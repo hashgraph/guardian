@@ -1,8 +1,9 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { convertValue } from './models';
+import { convertValue } from './utils';
+import { MathItemType } from './math-Item-type';
 
 export class FieldLink {
-    public readonly type = 'link';
+    public readonly type = MathItemType.LINK;
 
     public readonly id: string;
     public variableNameText: string = '';
@@ -37,9 +38,11 @@ export class FieldLink {
         return !this.valid;
     }
 
-    constructor() {
+    constructor(name?: string, path?: string) {
         this.id = GenerateUUIDv4();
         this.empty = true;
+        this.variableNameText = name || '';
+        this.field = path || '';
     }
 
     private _update() {
@@ -102,5 +105,26 @@ export class FieldLink {
             return null;
         }
         return convertValue(this.value);
+    }
+
+    public toJson() {
+        return {
+            name: this.variableName,
+            field: this.field,
+            schema: this.schema
+        }
+    }
+
+    public static from(json: any): FieldLink | null {
+        if (!json || typeof json !== 'object') {
+            return null;
+        }
+        try {
+            const link = new FieldLink(json.name, json.field);
+            link.schema = json.schema;
+            return link;
+        } catch (error) {
+            return null;
+        }
     }
 }

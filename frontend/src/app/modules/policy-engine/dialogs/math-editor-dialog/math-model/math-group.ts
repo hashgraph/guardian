@@ -1,68 +1,57 @@
-import { Formula } from './formula';
-import { FieldLink } from './link';
-import { Context } from './context';
+import { MathFormula } from './math-formula';
+import { FieldLink } from './field-link';
+import { MathContext } from './math-context';
+import { MathItemType } from './math-Item-type';
 
-export class Group {
-    public items: (Formula | FieldLink)[] = [];
+export class MathGroup {
+    public items: (MathFormula | FieldLink)[] = [];
 
     public variables: FieldLink[] = [];
-    public formulas: Formula[] = [];
+    public formulas: MathFormula[] = [];
     public outputs: FieldLink[] = [];
 
     private valid: boolean = false;
 
-    private list: (Formula | FieldLink)[] = [];
+    private list: (MathFormula | FieldLink)[] = [];
 
     public addFormula(name?: string, body?: string) {
-        const formula = new Formula(name, body);
-        // formula.update();
-        // formula.subscribe(this.onChange.bind(this));
+        const formula = new MathFormula(name, body);
         this.formulas.push(formula);
         this.items.push(formula);
-        // this.update();
+        return formula;
     }
 
-    public addVariable() {
-        const variable = new FieldLink();
-        // variable.subscribe(this.onChange.bind(this));
+    public addVariable(name?: string, path?: string) {
+        const variable = new FieldLink(name, path);
         this.variables.push(variable);
         this.items.push(variable);
-        // this.update();
+        return variable;
     }
 
     public addOutput() {
         const output = new FieldLink();
-        // output.subscribe(this.onChange.bind(this));
         this.outputs.push(output);
         this.items.push(output);
-        // this.update();
+        return output;
     }
 
-
-    public deleteFormula(formula: Formula) {
+    public deleteFormula(formula: MathFormula) {
         this.formulas = this.formulas.filter((item) => item !== formula);
         this.items = this.items.filter((item) => item !== formula);
         formula.destroy();
-        // this.update();
     }
 
     public deleteVariable(variable: FieldLink) {
         this.variables = this.variables.filter((item) => item !== variable);
         this.items = this.items.filter((item) => item !== variable);
         variable.destroy();
-        // this.update();
     }
 
     public deleteOutput(output: FieldLink) {
         this.outputs = this.outputs.filter((item) => item !== output);
         this.items = this.items.filter((item) => item !== output);
         output.destroy();
-        // this.update();
     }
-
-    // public update() {
-    //     this.onChange();
-    // }
 
     public validate() {
         for (const item of this.items) {
@@ -95,7 +84,7 @@ export class Group {
         }
 
         // Variables
-        const list = new Map<string, Formula | FieldLink>();
+        const list = new Map<string, MathFormula | FieldLink>();
         for (const variable of variables) {
             const old = list.get(variable.name);
             if (old) {
@@ -129,7 +118,7 @@ export class Group {
         for (const output of outputs) {
             const old = list.get(output.name);
             if (old) {
-                if (old.type === 'function') {
+                if (old.type === MathItemType.FUNCTION) {
                     output.error = `Invalid value`;
                     output.validName = false;
                     this.valid = false;
@@ -145,7 +134,7 @@ export class Group {
             }
         }
 
-        const dependencies = new Map<string, Formula>();
+        const dependencies = new Map<string, MathFormula>();
         for (const formula of formulas) {
             formula.updateUnknowns();
             if (this.checkUnknowns(list, formula.functionUnknowns)) {
@@ -190,7 +179,7 @@ export class Group {
         }
     }
 
-    private checkUnknowns(list: Map<string, Formula | FieldLink>, unknowns: string[]): boolean {
+    private checkUnknowns(list: Map<string, MathFormula | FieldLink>, unknowns: string[]): boolean {
         if (unknowns.length === 0) {
             return true;
         }
@@ -202,11 +191,62 @@ export class Group {
         return true;
     }
 
-    public createContext(): Context | null {
+    public createContext(): MathContext | null {
         this.validate();
         if (this.valid) {
-            return new Context([...this.variables, ...this.formulas]);
+            return new MathContext([...this.variables, ...this.formulas]);
         } else {
+            return null;
+        }
+    }
+
+    public toJson() {
+        return {
+            variables: this.variables.map((v) => v.toJson()),
+            formulas: this.formulas.map((v) => v.toJson()),
+            outputs: this.outputs.map((v) => v.toJson()),
+        }
+    }
+
+    public static from(json: any): MathGroup | null {
+        if (!json) {
+            return null;
+        }
+
+        try {
+            const group = new MathGroup();
+            if (Array.isArray(json.variables)) {
+                for (const config of json.variables) {
+                    const variable = FieldLink.from(config);
+                    if (!variable) {
+                        return null;
+                    }
+                    group.variables.push(variable);
+                    group.items.push(variable);
+                }
+            }
+            if (Array.isArray(json.formulas)) {
+                for (const config of json.formulas) {
+                    const formula = MathFormula.from(config);
+                    if (!formula) {
+                        return null;
+                    }
+                    group.formulas.push(formula);
+                    group.items.push(formula);
+                }
+            }
+            if (Array.isArray(json.outputs)) {
+                for (const config of json.outputs) {
+                    const output = FieldLink.from(config);
+                    if (!output) {
+                        return null;
+                    }
+                    group.outputs.push(output);
+                    group.items.push(output);
+                }
+            }
+            return group;
+        } catch (error) {
             return null;
         }
     }

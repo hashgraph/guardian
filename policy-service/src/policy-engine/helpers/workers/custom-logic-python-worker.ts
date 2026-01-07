@@ -1,6 +1,6 @@
 import { workerData, parentPort } from 'node:worker_threads';
 import { loadPyodide } from 'pyodide'
-import { buildTableHelper } from '../helpers/table-field-core.js';
+import { buildTableHelper } from '../table-field-core.js';
 
 /**
  * Execute function

@@ -1,9 +1,9 @@
-import { ComputeEngine } from '@cortex-js/compute-engine';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { MathItemType } from './math-Item-type.js';
+import { createComputeEngine } from './utils.js';
 
-
-export class Formula {
-    public type: 'function' | 'variable' = 'variable';
+export class MathFormula {
+    public type: MathItemType.FUNCTION | MathItemType.VARIABLE = MathItemType.VARIABLE;
 
     public readonly id: string;
 
@@ -42,16 +42,12 @@ export class Formula {
     constructor(name?: string, body?: string) {
         this.id = GenerateUUIDv4();
         this.empty = !name && !body;
-        const validator = ComputeEngine.getStandardLibrary().find((t) => !!t.At)?.At;
-        if (validator) {
-            validator.signature = "(value: list|tuple|string, indexes: ...(number | string)) -> unknown";
-        }
         this.functionNameText = name || '';
         this.functionBodyText = body || '';
     }
 
     private _setErrorName() {
-        this.type = 'variable';
+        this.type = MathItemType.VARIABLE;
         this.functionName = '';
         this.functionParams = [];
         this.validName = false;
@@ -75,7 +71,7 @@ export class Formula {
             }
 
             if (fParams.length === 0) {
-                this.type = 'variable';
+                this.type = MathItemType.VARIABLE;
                 this.functionName = fName;
                 this.functionParams = [];
                 this.validName = true;
@@ -88,7 +84,7 @@ export class Formula {
             }
 
             const latex = text.replace(/(\b\w+\b)/g, '\\operatorname{$1}') + ' := 0';
-            const ce = new ComputeEngine();
+            const ce = createComputeEngine();
             const f = ce.parse(latex);
             if (!f.isValid) {
                 this._setErrorName();
@@ -118,7 +114,7 @@ export class Formula {
                 }
             }
 
-            this.type = 'function';
+            this.type = MathItemType.FUNCTION;
             this.functionName = fName;
             this.functionParams = fParams;
             this.validName = true;
@@ -142,7 +138,7 @@ export class Formula {
                 this.error = 'Invalid function';
                 return;
             }
-            const ce = new ComputeEngine();
+            const ce = createComputeEngine();
             const p = ce.parse(text, { canonical: false });
             this.bodyUnknowns = p.unknowns as string[];
             this.validBody = p.isValid;
@@ -223,10 +219,10 @@ export class Formula {
         if (this.invalid) {
             return null;
         }
-        if (this.type === 'variable') {
+        if (this.type === MathItemType.VARIABLE) {
             return this.__evaluateValue(this.functionBody);
         }
-        if (this.type === 'function') {
+        if (this.type === MathItemType.FUNCTION) {
             return this.__evaluateFunction(this.functionParams, this.functionBody);
         }
         return null;
@@ -238,5 +234,24 @@ export class Formula {
 
     private __evaluateFunction(params: string[], body: string): string {
         return `(${params.join(',')}) \\mapsto ${body}`;
+    }
+
+    public toJson() {
+        return {
+            name: this.functionNameText,
+            body: this.functionBodyText,
+        }
+    }
+
+    public static from(json: any): MathFormula | null {
+        if (!json || typeof json !== 'object') {
+            return null;
+        }
+        try {
+            const item = new MathFormula(json.name, json.body);
+            return item;
+        } catch (error) {
+            return null;
+        }
     }
 }

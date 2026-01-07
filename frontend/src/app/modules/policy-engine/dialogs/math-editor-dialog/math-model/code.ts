@@ -1,12 +1,12 @@
-
+import { IContext } from './context.interface.js';
 
 export class Code {
     public text: string = '';
     public context: any = {};
     public function: () => any;
 
-    constructor() {
-        this.text = '';
+    constructor(code?: string) {
+        this.text = code || '';
     }
 
     public build() {
@@ -45,7 +45,22 @@ export class Code {
         return this.function;
     }
 
-    public setContext(context: any) {
+    public setContext(context: IContext) {
         this.context = context || {};
+    }
+
+    public toJson() {
+        return this.text;
+    }
+
+    public static from(json: any): Code | null {
+        if (!json || typeof json !== 'string') {
+            return null;
+        }
+        try {
+            return new Code(json);
+        } catch (error) {
+            return null;
+        }
     }
 }

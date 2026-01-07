@@ -1,8 +1,7 @@
 import { workerData, parentPort } from 'node:worker_threads';
 import * as mathjs from 'mathjs';
 import * as formulajs from '@formulajs/formulajs'
-
-import { buildTableHelper } from '../helpers/table-field-core.js';
+import { buildTableHelper } from '../table-field-core.js';
 
 /**
  * Execute function

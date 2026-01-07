@@ -1,10 +1,11 @@
-import { ComputeEngine } from '@cortex-js/compute-engine';
-import { Formula } from './formula';
-import { FieldLink } from './link';
-import { getValueByPath, convertValue } from './models';
+import { MathFormula } from './math-formula.js';
+import { FieldLink } from './field-link.js';
+import { getValueByPath, convertValue, createComputeEngine, getDocumentValueByPath } from './utils.js';
+import { MathItemType } from './math-Item-type.js';
+import { IContext } from './context.interface.js';
 
-export class Context {
-    private readonly list: (Formula | FieldLink)[];
+export class MathContext {
+    private readonly list: (MathFormula | FieldLink)[];
 
     public valid: boolean = false;
 
@@ -14,9 +15,7 @@ export class Context {
     private scope: any = {};
     private document: any | null = null;
 
-    private ce: ComputeEngine;
-
-    constructor(list: (Formula | FieldLink)[]) {
+    constructor(list: (MathFormula | FieldLink)[]) {
         this.list = list;
         this.document = null;
         this.variables = {};
@@ -25,34 +24,36 @@ export class Context {
         this.getField = this.__get.bind({});
     }
 
-    public setDocument(doc: any) {
+    public setDocument(doc: any): IContext {
         this.valid = true;
         try {
             for (const item of this.list) {
-                if (item.type === 'link') {
-                    item.value = this.getValueByPath(doc, item.path);
+                if (item.type === MathItemType.LINK) {
+                    item.value = getDocumentValueByPath(doc, item.path);
                 }
             }
         } catch (error) {
             this.valid = false;
         }
-        this.update(doc);
+        this.calculate(doc);
         return {
             variables: this.variables,
             formulas: this.formulas,
             scope: this.scope,
             document: this.document,
             getField: this.getField,
+            user: null
         }
     }
 
-    public getContext() {
+    public getContext(): IContext {
         return {
             variables: this.variables,
             formulas: this.formulas,
             scope: this.scope,
             document: this.document,
             getField: this.getField,
+            user: null
         }
     }
 
@@ -61,24 +62,24 @@ export class Context {
         const variableComponents: any[] = [];
         const functionComponents: any[] = [];
         for (const item of this.list) {
-            if (item.type === 'link') {
+            if (item.type === MathItemType.LINK) {
                 variableComponents.push({
-                    type: 'link',
+                    type: MathItemType.LINK,
                     name: item.name,
                     value: `variables[${item.name}]`
                 });
             }
-            if (item.type === 'variable') {
+            if (item.type === MathItemType.VARIABLE) {
                 variableComponents.push({
-                    type: 'variable',
+                    type: MathItemType.VARIABLE,
                     name: item.functionName,
                     value: `variables['${item.functionName}']`
                 });
             }
-            if (item.type === 'function') {
+            if (item.type === MathItemType.FUNCTION) {
                 const paramsNames = item.functionParams.map((name) => `_ /*${name}*/`).join(',');
                 functionComponents.push({
-                    type: 'function',
+                    type: MathItemType.FUNCTION,
                     name: `${item.functionName}(${item.functionParams.join(',')})`,
                     value: `formulas['${item.functionName}'](${paramsNames})`
                 });
@@ -102,28 +103,16 @@ export class Context {
         return components;
     }
 
-    private getValueByPath(doc: any, path: string): any {
-        try {
-            if (!doc || !path) {
-                return null;
-            }
-            const keys = path.split('.');
-            return getValueByPath(doc, keys, 0);
-        } catch (error) {
-            return null;
-        }
-    }
-
-    private update(doc: any) {
+    private calculate(doc: any) {
         this.document = doc;
         this.variables = {};
         this.formulas = {};
         this.scope = {};
         this.getField = this.__get.bind(doc);
         try {
-            const ce = new ComputeEngine();
+            const ce = createComputeEngine();
             for (const item of this.list) {
-                if (item.type === 'link') {
+                if (item.type === MathItemType.LINK) {
                     const latex = item.getLatex();
                     if (latex) {
                         ce.assign(item.name, latex);
@@ -131,7 +120,7 @@ export class Context {
                     this.variables[item.name] = item.value;
                     this.scope[item.name] = item.value;
                 }
-                if (item.type === 'variable') {
+                if (item.type === MathItemType.VARIABLE) {
                     const latex = item.getLatex();
                     if (latex) {
                         const result = ce.parse(latex).evaluate();
@@ -143,7 +132,7 @@ export class Context {
                         }
                     }
                 }
-                if (item.type === 'function') {
+                if (item.type === MathItemType.FUNCTION) {
                     const latex = item.getLatex();
                     if (latex) {
                         ce.assign(item.functionName, ce.parse(latex));
@@ -156,7 +145,6 @@ export class Context {
                     }
                 }
             }
-            this.ce = ce;
         } catch (error) {
             this.valid = false;
         }

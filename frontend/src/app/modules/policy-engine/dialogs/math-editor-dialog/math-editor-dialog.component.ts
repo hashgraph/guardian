@@ -3,15 +3,11 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
 import { Schema, SchemaField } from '@guardian/interfaces';
 import { MathLiveComponent } from 'src/app/modules/common/mathlive/mathlive.component';
 import { FieldLinkDialog } from '../field-link-dialog/field-link-dialog.component';
-import { Context } from './model/context';
-import { Group } from './model/group';
-import { FieldLink } from './model/link';
-import { Formula } from './model/formula';
 import { SchemaVariables } from '../../structures';
-import { Code } from './model/code';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { TreeListData, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 import { FieldData } from 'src/app/modules/common/models/schema-node';
+import { Code, FieldLink, MathContext, MathFormula, MathGroup, setDocumentValueByPath } from './math-model/index';
 
 class Tooltip {
     public visible: boolean;
@@ -114,7 +110,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public properties: any;
     public policyId: string;
 
-    public scope: Group;
+    public group: MathGroup;
 
     public keyboard: boolean = false;
 
@@ -144,7 +140,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         readonly: false,
         autoFocus: true,
     };
-    context: Context | null;
+    context: MathContext | null;
     private codeEditor: any;
 
     public dataType: string = 'schema';
@@ -184,7 +180,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         private fb: UntypedFormBuilder,
     ) {
         this.data = this.config.data;
-        this.scope = new Group();
+        this.group = new MathGroup();
         this.code = new Code();
         this.tooltip = new Tooltip({
             container: window.document.body,
@@ -285,28 +281,28 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         // });
     }
 
-    public deleteFormula(formula: Formula) {
-        this.scope.deleteFormula(formula);
+    public deleteFormula(formula: MathFormula) {
+        this.group.deleteFormula(formula);
     }
 
     public deleteVariable(variable: FieldLink) {
-        this.scope.deleteVariable(variable);
+        this.group.deleteVariable(variable);
     }
 
     public deleteOutput(output: FieldLink) {
-        this.scope.deleteOutput(output);
+        this.group.deleteOutput(output);
     }
 
     public addFormula() {
-        this.scope.addFormula();
+        this.group.addFormula();
     }
 
     public addVariable() {
-        this.scope.addVariable();
+        this.group.addVariable();
     }
 
     public addOutput() {
-        this.scope.addOutput();
+        this.group.addOutput();
     }
 
     private updateSchema() {
@@ -466,8 +462,8 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     public onValidate() {
-        if (this.scope) {
-            this.scope.validate();
+        if (this.group) {
+            this.group.validate();
         }
     }
 
@@ -522,11 +518,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     private createComponentView() {
-        if (!this.scope) {
+        if (!this.group) {
             return;
         }
-        this.scope.validate();
-        const context = this.scope.createContext();
+        this.group.validate();
+        const context = this.group.createContext();
         const components = context?.getComponents() || [];
         const data = TreeListData.fromObject<any>({ components }, 'components', (item) => {
             if (item.data) {
@@ -648,29 +644,29 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             this.result = null;
             const doc = this.getValue();
 
-            if (!this.scope) {
+            if (!this.group) {
                 this.loading = false;
                 this.error = 'Invalid config';
                 return;
             }
 
-            this.context = this.scope.createContext();
+            this.context = this.group.createContext();
             if (!this.context) {
                 this.loading = false;
                 this.error = 'Invalid config';
-                for (const element of this.scope.variables) {
+                for (const element of this.group.variables) {
                     if (element.invalid && !element.empty) {
                         this.onStep('step_1');
                         return;
                     }
                 }
-                for (const element of this.scope.formulas) {
+                for (const element of this.group.formulas) {
                     if (element.invalid && !element.empty) {
                         this.onStep('step_2');
                         return;
                     }
                 }
-                for (const element of this.scope.outputs) {
+                for (const element of this.group.outputs) {
                     if (element.invalid && !element.empty) {
                         this.onStep('step_3');
                         return;
@@ -681,12 +677,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
             this.context.setDocument(doc);
             const context = this.context.getContext();
-            context.document = doc;
 
-            const variables = this.scope.variables;
-            const formulas = this.scope.formulas;
-            const outputs = this.scope.outputs;
-            for (const item of this.scope.items) {
+            const variables = this.group.variables;
+            const formulas = this.group.formulas;
+            const outputs = this.group.outputs;
+            for (const item of this.group.items) {
                 item.value = context.scope[item.name];
             }
 
@@ -697,8 +692,14 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 input = '';
             }
 
+            for (const link of this.group.outputs) {
+                setDocumentValueByPath(this.schema, doc, link.path, context.scope[link.name]);
+            }
+
             let builtCode: Function;
             try {
+                context.document = doc;
+                context.user = {};
                 this.code.setContext(context);
                 builtCode = this.code.build();
                 const output = builtCode();
