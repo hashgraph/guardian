@@ -9,6 +9,8 @@
         ],
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
         "outDir": "dist/",
         "paths": {
             "@analytics": [

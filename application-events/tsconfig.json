@@ -6,6 +6,8 @@
         "isolatedModules": true,
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
+        "noUnusedLocals": true,
+        "noUnusedParameters": false,
         "outDir": "./dist",
         "paths": {
             "#constants": [
