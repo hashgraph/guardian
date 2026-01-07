@@ -296,6 +296,36 @@
     }
 }
 
+::ng-deep .create-topic-custom-confirm-dialog .p-dialog-content {
+    border-radius: 10px
+}
+
+::ng-deep .create-topic-custom-confirm-dialog .dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0 0 0;
+}
+
+::ng-deep .create-topic-custom-confirm-dialog .header-text {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 24px;
+}
+
+::ng-deep .create-topic-custom-confirm-dialog .dialog-body {
+    padding: 12px 0 0 0;
+    min-height: auto;
+}
+
+::ng-deep .create-topic-custom-confirm-dialog .confirmation-text {
+    margin-top: 12px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+    white-space: pre-line;
+}
+
 .loading {
     position: fixed;
     inset: 0;
