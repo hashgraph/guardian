@@ -280,7 +280,7 @@ export class PolicyImportExport {
                 zip.file('proof.json', JSON.stringify(vc.getDocument()));
             }
         }
-        
+
         zip.file(PolicyImportExport.policyFileName, JSON.stringify(preparedComponents.policy));
         return zip;
     }
