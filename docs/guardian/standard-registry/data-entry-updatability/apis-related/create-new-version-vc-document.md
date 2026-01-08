@@ -1,6 +1,6 @@
 # Create new version vc document
 
-<mark style="color:green;">`POST`</mark> /policies/{policyId}/create-new-version-vc-document
+<mark style="color:green;">`POST`</mark> `/policies/{policyId}/create-new-version-vc-document`
 
 Create new version VC document
 
