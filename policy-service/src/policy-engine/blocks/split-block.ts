@@ -313,5 +313,7 @@ export class SplitBlock {
         }
 
         ref.backup();
+
+        return event.data;
     }
 }

@@ -202,5 +202,7 @@ export class RevokeBlock {
         );
 
         ref.backup();
+
+        return event.data;
     }
 }

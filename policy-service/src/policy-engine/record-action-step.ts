@@ -6,6 +6,7 @@ export class RecordActionStep {
     public readonly id: string;
     public readonly timestemp: number;
     public readonly syncActions: boolean;
+    private results: any[] = [];
     public counter: number;
     private callbackFired = false;
     private timer: ReturnType<typeof setTimeout> | null = null;
@@ -18,6 +19,14 @@ export class RecordActionStep {
         this.counter = initialCounter;
         this.callbackFired = false;
         this.syncActions = syncActions;
+    }
+
+    public pushResult(res: any) {
+        this.results.push(res);
+    }
+
+    public getResults() {
+        return this.results;
     }
 
     public inc(): void {

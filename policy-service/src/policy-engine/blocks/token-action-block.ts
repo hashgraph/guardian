@@ -210,5 +210,7 @@ export class TokenActionBlock {
         }));
 
         ref.backup();
+
+        return event.data;
     }
 }

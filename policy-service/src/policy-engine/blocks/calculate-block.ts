@@ -330,5 +330,7 @@ export class CalculateContainerBlock {
             documents: ExternalDocuments(event.data?.data)
         }));
         ref.backup();
+
+        return event.data;
     }
 }

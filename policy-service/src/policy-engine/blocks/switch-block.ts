@@ -179,5 +179,7 @@ export class SwitchBlock {
         }));
 
         ref.backup();
+
+        return event.data;
     }
 }

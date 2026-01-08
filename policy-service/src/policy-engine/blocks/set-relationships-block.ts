@@ -133,5 +133,7 @@ export class SetRelationshipsBlock {
         }));
 
         ref.backup();
+
+        return event.data;
     }
 }

@@ -354,5 +354,7 @@ export class CreateTokenBlock {
             new ExternalEvent(ExternalEventType.Run, ref, user, null)
         );
         ref.backup();
+
+        return event.data;
     }
 }

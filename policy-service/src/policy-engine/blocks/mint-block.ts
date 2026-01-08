@@ -480,6 +480,8 @@ export class MintBlock {
         }
 
         await this.run(ref, event, docOwner, docs, null, event?.user?.userId);
+
+        return event.data;
     }
 
     /**

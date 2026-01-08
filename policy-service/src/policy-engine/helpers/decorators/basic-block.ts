@@ -364,6 +364,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                         if (actionStatus.syncActions) {
                             const syncRes = await link.run(user, data, status);
 
+                            actionStatus.pushResult(syncRes);
                             return syncRes;
                         } else {
                             link.run(user, data, status);

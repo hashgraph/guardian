@@ -653,5 +653,7 @@ export class SendToGuardianBlock {
         }));
 
         ref.backup();
+
+        return event.data;
     }
 }

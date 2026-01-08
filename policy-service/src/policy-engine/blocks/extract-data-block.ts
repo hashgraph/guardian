@@ -266,5 +266,7 @@ export class ExtractDataBlock {
             })
         );
         ref.backup();
+
+        return event.data;
     }
 }

@@ -397,5 +397,7 @@ export class RetirementBlock {
         }));
 
         ref.backup();
+
+        return event.data;
     }
 }

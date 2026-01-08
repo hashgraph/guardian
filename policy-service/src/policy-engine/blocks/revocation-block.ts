@@ -217,5 +217,7 @@ export class RevocationBlock {
         );
 
         ref.backup();
+
+        return event.data;
     }
 }

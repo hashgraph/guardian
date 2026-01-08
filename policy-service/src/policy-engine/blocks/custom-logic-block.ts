@@ -131,6 +131,8 @@ export class CustomLogicBlock {
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
         }
+
+        return event.data;
     }
 
     /**

@@ -288,5 +288,7 @@ export class TokenConfirmationBlock {
         }
 
         ref.backup();
+
+        return event.data;
     }
 }

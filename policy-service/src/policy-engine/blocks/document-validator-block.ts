@@ -198,7 +198,7 @@ export class DocumentValidatorBlock {
         ]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<void> {
+    async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
         ref.log(`runAction`);
 
@@ -214,5 +214,7 @@ export class DocumentValidatorBlock {
             documents: ExternalDocuments(event?.data?.data)
         }));
         ref.backup();
+
+        return event.data;
     }
 }

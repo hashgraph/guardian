@@ -359,5 +359,7 @@ export class AggregateBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             documents: ExternalDocuments(docs)
         }));
+
+        return event.data;
     }
 }

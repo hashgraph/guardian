@@ -18,7 +18,7 @@ export function CatchErrors() {
                 const data = argArray[0].data;
                 const f = async () => {
                     try {
-                        await target.apply(thisArg, argArray);
+                        return await target.apply(thisArg, argArray);
                     } catch (error) {
                         switch (thisArg.options.onErrorAction) {
                             case BlockErrorActions.RETRY: {
@@ -71,7 +71,7 @@ export function CatchErrors() {
                     }
                 }
 
-                await f();
+                return await f();
             }
         })
     }

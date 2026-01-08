@@ -179,5 +179,7 @@ export class HttpRequestBlock {
             })
         );
         ref.backup();
+
+        return event.data;
     }
 }

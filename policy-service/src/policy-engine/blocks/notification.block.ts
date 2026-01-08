@@ -333,5 +333,7 @@ export class NotificationBlock {
             })
         );
         ref.backup();
+
+        return event.data;
     }
 }

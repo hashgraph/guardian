@@ -251,6 +251,8 @@ export class TimerBlock {
         await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
         ref.backup();
+
+        return event.data;
     }
 
     /**

@@ -159,5 +159,7 @@ export class ReassigningBlock {
             documents: ExternalDocuments(result)
         }));
         ref.backup();
+
+        return event.data;
     }
 }
