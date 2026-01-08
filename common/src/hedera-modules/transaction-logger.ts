@@ -4,7 +4,7 @@ import { PinoLogger, RunFunctionAsync, Workers } from '../helpers/index.js';
 import { MessageResponse } from '../models/index.js';
 import { Singleton } from '../decorators/singleton.js';
 import { NatsService } from '../mq/index.js';
-import { SecretManager, SecretManagerBase } from '../secret-manager/index.js';
+import { SecretManager } from '../secret-manager/index.js';
 
 /**
  * Transaction log level
