@@ -3,7 +3,7 @@ import { IValidatorStep } from './interfaces/step.js';
 import { ValidateScore } from './score.js';
 import { ValidateNamespace } from './namespace.js';
 import { GroupItemValidator } from './item-group-validator.js';
-import { GroupType, ILabelItemConfig, INavImportsConfig, INavItemConfig, IPolicyLabelConfig, NavItemType } from '../../interface/index.js';
+import { GroupType, ILabelItemConfig, INavItemConfig, IPolicyLabelConfig, NavItemType } from '../../interface/index.js';
 import { IStepDocument } from './interfaces/step-document.js';
 
 export class LabelItemValidator {
@@ -23,9 +23,6 @@ export class LabelItemValidator {
     private scope: ValidateScore;
     private valid: IValidateStatus | undefined;
 
-    // tslint:disable-next-line:no-unused-variable
-    private readonly imports: INavImportsConfig[];
-    // tslint:disable-next-line:no-unused-variable
     private readonly children: INavItemConfig[];
 
     public prefix: string;
@@ -38,7 +35,6 @@ export class LabelItemValidator {
         this.isRoot = false;
 
         const label: IPolicyLabelConfig = item.config || {};
-        this.imports = label.imports || [];
         this.children = label.children || [];
         this.schema = item.schemaId || label.schemaId || '';
 
