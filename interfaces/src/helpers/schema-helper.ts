@@ -393,11 +393,7 @@ export class SchemaHelper {
             }
             const field = SchemaHelper.parseField(name, property, !!required[name], contextURL);
             if (field.isRef) {
-                if (schemaCache.has(field.type)) {
-                    const schema = schemaCache.get(field.type);
-                    field.fields = schema.fields;
-                    field.conditions = schema.conditions;
-                } else {
+                if (!schemaCache.has(field.type)) {
                     const subSchemas = defs || document.$defs;
                     const subDocument = subSchemas[field.type];
                     const subFields = SchemaHelper.parseFields(
@@ -406,20 +402,22 @@ export class SchemaHelper {
                         schemaCache,
                         subSchemas
                     );
-                    const conditions = SchemaHelper.parseConditions(
+                    const subConditions = SchemaHelper.parseConditions(
                         subDocument,
                         contextURL,
                         subFields,
                         schemaCache,
                         subSchemas
                     );
-                    field.fields = subFields;
-                    field.conditions = conditions;
                     schemaCache.set(field.type, {
-                        fields: field.fields,
-                        conditions: field.conditions,
+                        fields: subFields,
+                        conditions: subConditions,
                     });
                 }
+                const subSchema = schemaCache.get(field.type);
+                const clone = JSON.parse(JSON.stringify(subSchema));
+                field.fields = clone.fields;
+                field.conditions = clone.conditions;
             }
             if (field.order === -1) {
                 fields.push(field);

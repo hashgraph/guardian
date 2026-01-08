@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { VcDocumentDefinition, VcHelper } from '@guardian/common';
+import { ContextHelper, VcDocumentDefinition, VcHelper } from '@guardian/common';
 // tslint:disable-next-line:no-duplicate-imports
 import { VcDocument as VcDocumentCollection } from '@guardian/common';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
@@ -78,7 +78,8 @@ export class MathBlock {
         user: PolicyUser,
         artifacts: any[],
         document: any,
-        schema: Schema
+        schema: Schema,
+        copy: boolean
     }): Promise<IPolicyDocument> {
         return new Promise<IPolicyDocument>(async (resolve, reject) => {
             const workerFile = path.join(path.dirname(filename), '..', 'helpers', 'workers', 'math-worker.js');
@@ -110,8 +111,6 @@ export class MathBlock {
         credentialSubject: any,
         user: PolicyUser
     ): Promise<any> {
-        console.debug('TEST')
-
         const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
         const schema = new Schema(outputSchema);
 
@@ -125,13 +124,13 @@ export class MathBlock {
         }
 
         // Run
-        const expression = ref.options.expression || '';
         const result = await this.createWorker({
-            expression: `${expression}`,
+            expression: ref.options.expression,
             document: credentialSubject,
             artifacts,
             user,
-            schema
+            schema,
+            copy: !ref.options.outputSchema || ref.options.outputSchema === ref.options.inputSchema
         })
 
         return result;
@@ -252,6 +251,7 @@ export class MathBlock {
         const VCHelper = new VcHelper();
 
         const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
+
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
             ...json
@@ -267,6 +267,10 @@ export class MathBlock {
         if (ref.dryRun) {
             VCHelper.addDryRunContext(vcSubject);
         }
+
+        const schema = new Schema(outputSchema);
+        ContextHelper.setContext(vcSubject, schema);
+        ContextHelper.clearEmptyProperties(vcSubject);
 
         const uuid = await ref.components.generateUUID();
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);

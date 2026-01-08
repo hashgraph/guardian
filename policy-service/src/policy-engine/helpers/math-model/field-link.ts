@@ -122,6 +122,7 @@ export class FieldLink {
         try {
             const link = new FieldLink(json.name, json.field);
             link.schema = json.schema;
+            link.empty = false;
             return link;
         } catch (error) {
             return null;

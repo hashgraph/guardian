@@ -5,7 +5,7 @@ import { Code, MathGroup, setDocumentValueByPath } from '../math-model/index.js'
  * Execute function
  */
 function execute(): void {
-    const { expression, user, document, schema } = workerData;
+    const { expression, user, document, schema, copy } = workerData;
     const group = MathGroup.from(expression);
     if (!group) {
         throw new Error('Invalid block config');
@@ -19,17 +19,24 @@ function execute(): void {
     groupContext.setDocument(document);
     const context = groupContext.getContext();
 
+    let result: any;
+    if (copy) {
+        result = document;
+    } else {
+        result = {};
+    }
+
     //Output
-    let result = document;
     for (const link of group.outputs) {
         setDocumentValueByPath(schema, result, link.path, context.scope[link.name]);
     }
 
     //Code
-    if (expression.code) {
-        context.document = result;
+    const code = Code.from(expression);
+    if (code) {
+        context.document = document;
+        context.result = result;
         context.user = user;
-        const code = Code.from(expression.code);
         code.setContext(context);
         result = code.run();
     }

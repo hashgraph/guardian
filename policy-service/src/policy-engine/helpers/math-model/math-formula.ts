@@ -249,6 +249,7 @@ export class MathFormula {
         }
         try {
             const item = new MathFormula(json.name, json.body);
+            item.empty = false;
             return item;
         } catch (error) {
             return null;

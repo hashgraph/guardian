@@ -4,22 +4,54 @@ import 'codemirror/mode/meta';
 import CodeMirror, { Mode } from 'codemirror';
 
 CodeMirror.defineMode('block-code-lang', function (config, parserConfig) {
-    const fields = (config as any).links || [];
+    const inputFields = (config as any).inputLinks || [];
+    const outputFields = (config as any).outputLinks || [];
+
     const keywords = [
         'user',
         'document',
+        'result',
         'formulas',
         'variables',
+        'mathjs',
+        'formulajs',
         'getField'
     ];
 
-    // const links: string[] = [];
-    // if (Array.isArray(fields)) {
-    //     for (const path of fields) {
-    //         links.push(`${path}`);
-    //     }
-    // }
-    // links.sort((a, b) => a.length > b.length ? -1 : 1);
+    const getIndex = function (text: string, pos: number) {
+        let i1 = text.lastIndexOf('document.', pos - 1) + 9;
+        if (i1 < 9 || i1 > pos) {
+            i1 = -1;
+        }
+        let i2 = text.lastIndexOf('result.', pos - 1) + 7;
+        if (i2 < 7 || i2 > pos) {
+            i2 = -1;
+        }
+        let i3 = text.lastIndexOf('\'', pos - 1) + 1;
+        if (i3 < 1 || i3 > pos) {
+            i3 = -1;
+        }
+        if (i1 < 0 && i2 < 0 && i3 < 0) {
+            return null;
+        }
+        const max = Math.max(i1, i2, i3);
+        if (max === i1) {
+            return {
+                type: 'document',
+                index: i1
+            }
+        } else if (max === i2) {
+            return {
+                type: 'result',
+                index: i2
+            }
+        } else {
+            return {
+                type: 'link',
+                index: i3
+            }
+        }
+    }
 
     const syntaxOverlay: Mode<any> = {
         token: function (stream) {
@@ -41,59 +73,53 @@ CodeMirror.defineMode('block-code-lang', function (config, parserConfig) {
                 return null;
             }
 
-            let startIndexA = stream.string.lastIndexOf('document.', pos - 1) + 9;
-            let startIndexB = stream.string.lastIndexOf('\'', pos - 1) + 1;
-            if (startIndexA > pos) {
-                startIndexA = 8 //-1;
-            }
-            if (startIndexB > pos) {
-                startIndexA = 0 //-1;
-            }
-            if (startIndexA === 8 && startIndexB === 0) {
+            const index = getIndex(stream.string, pos);
+            if (!index) {
                 stream.next();
                 return null;
             }
 
-            const isA = startIndexA > startIndexB;
-            const startIndex = isA ? startIndexA : startIndexB;
-            const fullText = stream.string.slice(startIndex);
-
-            for (const field of fields) {
-                if (field.pattern.test(fullText)) {
-                    const endIndex = startIndex + field.path.length;
-                    if (endIndex > pos) {
-                        const next = stream.string[endIndex];
-                        if (isA) {
+            const fullText = stream.string.slice(index.index);
+            if (index.type === 'document') {
+                for (const field of inputFields) {
+                    if (field.pattern.test(fullText)) {
+                        const endIndex = index.index + field.path.length;
+                        if (endIndex > pos) {
+                            const next = stream.string[endIndex];
                             if (!next || next === '.' || /[^\w]/.test(next)) {
                                 stream.pos = endIndex;
-                                return `block-code-link-highlight path-${field.path}`;
+                                return `block-code-link-highlight path-${field.path} type-document`;
                             }
-                        } else {
+                        }
+                    }
+                }
+            } else if (index.type === 'result') {
+                for (const field of outputFields) {
+                    if (field.pattern.test(fullText)) {
+                        const endIndex = index.index + field.path.length;
+                        if (endIndex > pos) {
+                            const next = stream.string[endIndex];
+                            if (!next || next === '.' || /[^\w]/.test(next)) {
+                                stream.pos = endIndex;
+                                return `block-code-link-highlight path-${field.path} type-result`;
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (const field of inputFields) {
+                    if (field.pattern.test(fullText)) {
+                        const endIndex = index.index + field.path.length;
+                        if (endIndex > pos) {
+                            const next = stream.string[endIndex];
                             if (next === '\'' || next === '.') {
                                 stream.pos = endIndex;
-                                return `block-code-link-highlight path-${field.path}`;
+                                return `block-code-link-highlight path-${field.path} type-link`;
                             }
                         }
                     }
                 }
             }
-            // for (const link of links) {
-            //     if (text.startsWith(link)) {
-            //         const pre = stream.string[pos - 1];
-            //         const next = stream.string[pos + link.length];
-            //         if (pre === '\'' && next === '\'') {
-            //             stream.pos += link.length;
-            //             return `block-code-link-highlight path-${link}`;
-            //         }
-            //         const preObject = stream.string.substring(pos - 9, 9);
-            //         if (preObject === 'document.') {
-            //             if ((!next || /[^\w]/.test(next))) {
-            //                 stream.pos += link.length;
-            //                 return `block-code-link-highlight path-${link}`;
-            //             }
-            //         }
-            //     }
-            // }
             stream.next();
             return null;
         }

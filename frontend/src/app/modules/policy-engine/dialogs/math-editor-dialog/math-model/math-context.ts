@@ -42,7 +42,8 @@ export class MathContext {
             scope: this.scope,
             document: this.document,
             getField: this.getField,
-            user: null
+            user: null,
+            result: null
         }
     }
 
@@ -53,7 +54,8 @@ export class MathContext {
             scope: this.scope,
             document: this.document,
             getField: this.getField,
-            user: null
+            user: null,
+            result: null
         }
     }
 

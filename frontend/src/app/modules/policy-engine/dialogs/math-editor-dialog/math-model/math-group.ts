@@ -112,6 +112,9 @@ export class MathGroup {
                 this.list = [];
                 return;
             }
+            if (formula.type === MathItemType.VARIABLE) {
+                list.set(formula.name, formula);
+            }
         }
 
         // Outputs
@@ -202,9 +205,52 @@ export class MathGroup {
 
     public toJson() {
         return {
-            variables: this.variables.map((v) => v.toJson()),
-            formulas: this.formulas.map((v) => v.toJson()),
-            outputs: this.outputs.map((v) => v.toJson()),
+            variables: this.variables.filter((v) => !v.empty).map((v) => v.toJson()),
+            formulas: this.formulas.filter((v) => !v.empty).map((v) => v.toJson()),
+            outputs: this.outputs.filter((v) => !v.empty).map((v) => v.toJson()),
+        }
+    }
+
+    public from(json: any): MathGroup | null {
+        if (!json) {
+            return this;
+        }
+        try {
+            this.variables = [];
+            this.formulas = [];
+            this.outputs = [];
+            this.items = [];
+            if (Array.isArray(json.variables)) {
+                for (const config of json.variables) {
+                    const variable = FieldLink.from(config);
+                    if (variable) {
+                        this.variables.push(variable);
+                        this.items.push(variable);
+                    }
+                }
+            }
+            if (Array.isArray(json.formulas)) {
+                for (const config of json.formulas) {
+                    const formula = MathFormula.from(config);
+                    if (formula) {
+                        this.formulas.push(formula);
+                        this.items.push(formula);
+                    }
+
+                }
+            }
+            if (Array.isArray(json.outputs)) {
+                for (const config of json.outputs) {
+                    const output = FieldLink.from(config);
+                    if (output) {
+                        this.outputs.push(output);
+                        this.items.push(output);
+                    }
+                }
+            }
+            return this;
+        } catch (error) {
+            return null;
         }
     }
 

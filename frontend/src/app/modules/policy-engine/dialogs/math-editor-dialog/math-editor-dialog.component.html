@@ -124,10 +124,10 @@
                                 <div class="formula-body" [attr.error]="!item.validField">
                                     <div class="guardian-input-container">
                                         <label class="form-label"></label>
-                                        <div class="formula-link" (click)="onLink(item)">
+                                        <div class="formula-link" (click)="onLink(item, inputSchema)">
                                             <div *ngIf="item.field" class="formula-link-value">
-                                                <div class="formula-link-value__entity">{{getEntityName(item.field)}}:</div>
-                                                <div class="formula-link-value__item">{{getFieldName(item.field)}}</div>
+                                                <div class="formula-link-value__entity">{{getEntityName('input', item.field)}}:</div>
+                                                <div class="formula-link-value__item">{{getFieldName('input', item.field)}}</div>
                                             </div>
                                             <div *ngIf="item.field" class="formula-link-remove">
                                                 <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
@@ -143,7 +143,7 @@
                                     <label class="form-label">Type</label>
                                     <div class="readonly-input">
                                         <div *ngIf="item.field" class="formula-link-value">
-                                            <div class="formula-link-value__item">{{getFieldType(item.field)}}</div>
+                                            <div class="formula-link-value__item">{{getFieldType('input', item.field)}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -151,7 +151,7 @@
                                     <label class="form-label">Path</label>
                                     <div class="readonly-input">
                                         <div *ngIf="item.field" class="formula-link-value">
-                                            <div class="formula-link-value__item">{{getFieldPath(item.field)}}</div>
+                                            <div class="formula-link-value__item">{{getFieldPath('input', item.field)}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -314,7 +314,12 @@
                         <div class="code-variable">
                             <span class="code-variable-type">PolicyDocument</span>
                             <span class="code-variable-name">document</span>
-                            <span class="code-variable-description">- Ingress VC document.</span>
+                            <span class="code-variable-description">- Input VC document.</span>
+                        </div>
+                        <div class="code-variable">
+                            <span class="code-variable-type">PolicyDocument</span>
+                            <span class="code-variable-name">result</span>
+                            <span class="code-variable-description">- Output VC document.</span>
                         </div>
                         <div class="code-variable">
                             <span class="code-variable-type">Map</span>
@@ -370,10 +375,10 @@
                                 <div class="formula-body" [attr.error]="!item.validField">
                                     <div class="guardian-input-container">
                                         <label class="form-label">Output</label>
-                                        <div class="formula-link" (click)="onLink(item)">
+                                        <div class="formula-link" (click)="onLink(item, outputSchema)">
                                             <div *ngIf="item.field" class="formula-link-value">
-                                                <div class="formula-link-value__entity">{{getEntityName(item.field)}}:</div>
-                                                <div class="formula-link-value__item">{{getFieldName(item.field)}}</div>
+                                                <div class="formula-link-value__entity">{{getEntityName('output', item.field)}}:</div>
+                                                <div class="formula-link-value__item">{{getFieldName('output', item.field)}}</div>
                                             </div>
                                             <div *ngIf="item.field" class="formula-link-remove">
                                                 <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
@@ -401,7 +406,7 @@
                                     <label class="form-label">Type</label>
                                     <div class="readonly-input">
                                         <div *ngIf="item.field" class="formula-link-value">
-                                            <div class="formula-link-value__item">{{getFieldType(item.field)}}</div>
+                                            <div class="formula-link-value__item">{{getFieldType('output', item.field)}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -409,7 +414,7 @@
                                     <label class="form-label">Path</label>
                                     <div class="readonly-input">
                                         <div *ngIf="item.field" class="formula-link-value">
-                                            <div class="formula-link-value__item">{{getFieldPath(item.field)}}</div>
+                                            <div class="formula-link-value__item">{{getFieldPath('output', item.field)}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -503,10 +508,10 @@
                 <div class="type-container">
                     <div *ngIf="error" class="error-message">{{error}}</div>
                     <ng-container *ngIf="dataType==='schema'">
-                        <div *ngIf="schema" class="schema-body">
+                        <div *ngIf="inputSchema" class="schema-body">
                             <form [formGroup]="schemaValue" class="schema-form">
                                 <app-schema-form-root
-                                    [schema]="schema"
+                                    [schema]="inputSchema"
                                     [preset]="_value"
                                     [policyId]="policyId"
                                     [comesFromDialog]="true"
@@ -558,8 +563,8 @@
                                         <label class="form-label"></label>
                                         <div class="formula-link">
                                             <div *ngIf="item.field" class="formula-link-value">
-                                                <div class="formula-link-value__entity">{{getEntityName(item.field)}}:</div>
-                                                <div class="formula-link-value__item">{{getFieldName(item.field)}}</div>
+                                                <div class="formula-link-value__entity">{{getEntityName('input', item.field)}}:</div>
+                                                <div class="formula-link-value__item">{{getFieldName('input', item.field)}}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -578,7 +583,7 @@
                                     <label class="form-label">Path</label>
                                     <div class="readonly-input">
                                         <div *ngIf="item.field" class="formula-link-value">
-                                            <div class="formula-link-value__item">{{getFieldPath(item.field)}}</div>
+                                            <div class="formula-link-value__item">{{getFieldPath('input', item.field)}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -652,8 +657,8 @@
                                         <label class="form-label">Output</label>
                                         <div class="formula-link">
                                             <div *ngIf="item.field" class="formula-link-value">
-                                                <div class="formula-link-value__entity">{{getEntityName(item.field)}}:</div>
-                                                <div class="formula-link-value__item">{{getFieldName(item.field)}}</div>
+                                                <div class="formula-link-value__entity">{{getEntityName('output', item.field)}}:</div>
+                                                <div class="formula-link-value__item">{{getFieldName('output', item.field)}}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -683,7 +688,7 @@
                                     <label class="form-label">Path</label>
                                     <div class="readonly-input">
                                         <div *ngIf="item.field" class="formula-link-value">
-                                            <div class="formula-link-value__item">{{getFieldPath(item.field)}}</div>
+                                            <div class="formula-link-value__item">{{getFieldPath('output', item.field)}}</div>
                                         </div>
                                     </div>
                                 </div>

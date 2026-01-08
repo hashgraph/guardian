@@ -28,7 +28,7 @@ export class Code {
                 return code.bind(sandbox)(sandboxProxy)
             }
         }
-        const body = `const __result = (() => { ${this.text} })(); if(__result) { return __result; } else { return document; }`;
+        const body = `const __result = (() => { ${this.text} })(); if(__result) { return __result; } else { return result; }`;
         const context = {
             ...this.context,
             String: String,
@@ -50,15 +50,29 @@ export class Code {
     }
 
     public toJson() {
-        return this.text;
+        return {
+            code: this.text
+        };
+    }
+
+    public from(json: any): Code | null {
+        if (!json || typeof json !== 'object') {
+            return this;
+        }
+        try {
+            this.text = json.code || '';
+            return this;
+        } catch (error) {
+            return this;
+        }
     }
 
     public static from(json: any): Code | null {
-        if (!json || typeof json !== 'string') {
+        if (!json || typeof json !== 'object') {
             return null;
         }
         try {
-            return new Code(json);
+            return new Code(json.code);
         } catch (error) {
             return null;
         }
