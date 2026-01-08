@@ -84,8 +84,8 @@ export class DocumentGenerator {
         }
         const json: any = {};
         json['@context'] = context;
-        json.layers = "NATURAL-COLOR";
-        json.format = "image/jpeg";
+        json.layers = 'NATURAL-COLOR';
+        json.format = 'image/jpeg';
         json.maxcc = 10;
         json.width = 10;
         json.height = 10;

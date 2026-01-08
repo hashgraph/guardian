@@ -8,8 +8,9 @@ import { firstValueFrom } from 'rxjs';
 import { IndexedDbRegistryService } from '../../../services/indexed-db-registry.service';
 import { GzipService } from '../../../services/gzip.service';
 import { DB_NAME, STORES_NAME } from '../../../constants';
+import { IPFSService } from 'src/app/services/ipfs.service';
 
-type TableRefLike = { type?: string; fileId?: string } | string | null | undefined;
+type TableRefLike = { type?: string; fileId?: string; cid?: string } | string | null | undefined;
 
 @Component({
     selector: 'table-viewer',
@@ -46,15 +47,20 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
         private readonly cdr: ChangeDetectorRef,
         private readonly zone: NgZone,
         private readonly idb: IndexedDbRegistryService,
-        private readonly gzip: GzipService
+        private readonly gzip: GzipService,
+        private readonly ipfsService: IPFSService
     ) {}
 
     public get fileId(): string | null {
         return this.getFileIdFromValue(this.value);
     }
 
+    public get cid(): string | null {
+        return this.getCidFromValue(this.value);
+    }
+
     public get hasData(): boolean {
-        return !!this.fileId;
+        return !!this.fileId || !!this.cid;
     }
 
     public get previewHeaderKeysLimited(): string[] {
@@ -271,6 +277,8 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
 
     private handlePreviewLimit(byteLength: number): boolean {
         if (byteLength <= this.PREVIEW_LIMIT) {
+            this.tooLargeMessage = undefined;
+            this.canOpenPreview = true;
             return true;
         }
 
@@ -283,6 +291,7 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
 
     private async initPreview(): Promise<void> {
         const fileId = this.fileId;
+        const cid = this.cid;
 
         this.tooLargeMessage = undefined;
         this.loadError = undefined;
@@ -291,62 +300,10 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
         this.previewRowData = [];
         this.mark();
 
-        if (!fileId) {
-            return;
-        }
-
-        try {
-            let cached = await this.getFromIdb(fileId);
-
-            if (!cached) {
-                const resp = await firstValueFrom(this.artifactService.getFileBlob(fileId));
-                const gz: Blob | undefined = resp instanceof Blob ? resp : (resp as any)?.body;
-                if (!gz) {
-                    throw new Error('No blob');
-                }
-                await this.putToIdb(fileId, gz);
-                cached = await this.getFromIdb(fileId);
-            }
-
-            if (!cached) {
-                throw new Error('No cached file');
-            }
-
-            const csvText = await this.gzip.gunzipToText(cached.gz);
-
-            const byteLength = new TextEncoder().encode(csvText).length;
-            if (byteLength > this.PREVIEW_LIMIT) {
-                const mb = (byteLength / (1024 * 1024)).toFixed(1);
-                this.tooLargeMessage = `File is too large for preview (${mb} MB). Use "Download CSV".`;
-                this.canOpenPreview = false;
-            } else {
-                this.tooLargeMessage = undefined;
-                this.canOpenPreview = true;
-            }
-
-            const parsed = this.csvService.parseCsvToTable(csvText, ',');
-
-            const preview = this.makePreview(
-                parsed.columnKeys,
-                parsed.rows,
-                this.PREVIEW_COLUMNS_LIMIT,
-                this.PREVIEW_ROWS_LIMIT
-            );
-
-            this.previewColumnDefs = preview.columns.map((key: string, index: number) => ({
-                field: key,
-                headerName: this.buildColumnHeader(index),
-                editable: false,
-                minWidth: 100,
-                resizable: true,
-            }));
-
-            this.previewRowData = preview.rows;
-
-            this.mark();
-        } catch (error: any) {
-            this.loadError = error?.message ?? 'Failed to prepare preview';
-            this.mark();
+        if (fileId) {
+            await this.getFileByFileId(fileId);
+        } else if (cid) {
+            this.getFileByCid(cid);
         }
     }
 
@@ -355,8 +312,8 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
     }
 
     public async openDialog(): Promise<void> {
-        const fileId = this.fileId;
-        if (!fileId || this.isLoading) {
+        const idbId = this.fileId || this.cid;
+        if (!idbId || this.isLoading) {
             return;
         }
 
@@ -365,18 +322,17 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
         this.mark();
 
         try {
-            let cached = await this.getFromIdb(fileId);
+            let cached = await this.getFromIdb(idbId);
 
-            if (!cached) {
-                const resp = await firstValueFrom(this.artifactService.getFileBlob(fileId));
-                const gzBlob: Blob | undefined = resp instanceof Blob ? resp : (resp as any)?.body;
-                if (!gzBlob) {
-                    throw new Error('No blob');
+             if (!cached) {
+                if(this.fileId) {
+                    await this.restoreDataByFileId(idbId);
+                } else {
+                    await this.restoreDataByCid(idbId);
                 }
-
-                await this.putToIdb(fileId, gzBlob);
-                cached = await this.getFromIdb(fileId);
+                cached = await this.getFromIdb(idbId);
             }
+
             if (!cached) {
                 throw new Error('No cached file');
             }
@@ -426,9 +382,9 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
     }
 
     public downloadCsv(): void {
-        const fileId = this.fileId;
+        const idbId = this.fileId || this.cid;
 
-        if (!fileId || this.isDownloading) {
+        if (!idbId || this.isDownloading) {
             return;
         }
 
@@ -436,19 +392,15 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
         this.mark();
 
         (async () => {
-            let cached = await this.getFromIdb(fileId);
+            let cached = await this.getFromIdb(idbId);
 
             if (!cached) {
-                const blobResponse = await firstValueFrom(this.artifactService.getFileBlob(fileId));
-                const gzBlob: Blob | undefined =
-                    blobResponse instanceof Blob ? blobResponse : (blobResponse as any)?.body;
-
-                if (!gzBlob) {
-                    throw new Error('No blob');
+                if(this.fileId) {
+                    await this.restoreDataByFileId(idbId);
+                } else {
+                    await this.restoreDataByCid(idbId);
                 }
-
-                await this.putToIdb(fileId, gzBlob);
-                cached = await this.getFromIdb(fileId);
+                cached = await this.getFromIdb(idbId);
             }
 
             if (!cached) {
@@ -462,7 +414,7 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
 
             const link = document.createElement('a');
             link.href = objectUrl;
-            link.download = `${fileId}.csv`.replace(/"/g, '');
+            link.download = `${idbId}.csv`.replace(/"/g, '');
 
             document.body.appendChild(link);
             link.click();
@@ -517,5 +469,156 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
         }
 
         return null;
+    }
+    
+    private getCidFromValue(input: TableRefLike): string | null {
+        if (!input) {
+            return null;
+        }
+
+        if (typeof input === 'string') {
+            const trimmed = input.trim();
+
+            if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    return this.getCidFromValue(parsed);
+                } catch {
+                    return null;
+                }
+            }
+
+            return null;
+        }
+
+        if (typeof input === 'object') {
+            const obj = input as Record<string, unknown>;
+
+            const isTableType =
+                typeof obj.type === 'string' &&
+                obj.type.toLowerCase() === 'table';
+
+            const hasCid =
+                typeof obj.cid === 'string' &&
+                obj.cid.trim().length > 0;
+
+            if (isTableType && hasCid) {
+                const id = (obj.cid as string).trim();
+                return id || null;
+            }
+        }
+
+        return null;
+    }
+
+    private async getFileByFileId(fileId: any){
+        try {
+            let cached = await this.getFromIdb(fileId);
+
+            if (!cached) {
+                await this.restoreDataByFileId(fileId);
+                cached = await this.getFromIdb(fileId);
+            }
+
+            if (!cached) {
+                throw new Error('No cached file');
+            }
+
+            const csvText = await this.gzip.gunzipToText(cached.gz);
+            this.previewCSV(csvText);
+
+        } catch (error: any) {
+            this.loadError = error?.message ?? 'Failed to prepare preview';
+            this.mark();
+        }
+    }
+
+    private async restoreDataByFileId(fileId: any){
+        const resp = await firstValueFrom(this.artifactService.getFileBlob(fileId));
+        const gz: Blob | undefined = resp instanceof Blob ? resp : (resp as any)?.body;
+        if (!gz) {
+            throw new Error('No blob');
+        }
+        await this.putToIdb(fileId, gz);
+    }
+
+    private async getFileByCid(cid: any){
+        try {
+            let cached = await this.getFromIdb(cid);
+
+            if(!cached) {
+                await this.restoreDataByCid(cid);
+                cached = await this.getFromIdb(cid);
+            }
+
+            if (!cached) {
+                throw new Error('No cached file');
+            }
+            
+            const csvText = await this.gzip.gunzipToText(cached.gz);
+            await this.previewCSV(csvText);
+        } catch (e) {
+            console.error('error', e);
+        }
+    }
+
+    private async restoreDataByCid(cid: any) {
+        const data = await firstValueFrom(this.ipfsService.getFile(cid));
+        const decoder = new TextDecoder('utf-8');
+        const csvText = decoder.decode(data);
+        const parsed = this.csvService.parseCsvToTable(csvText, ',');
+
+        const csvFile = this.buildCsvFile(parsed.columnKeys, parsed.rows);
+        const gzippedFile = await this.gzip.gzip(csvFile);
+
+        await this.idb.put(DB_NAME.TABLES, STORES_NAME.FILES_VIEW_STORE, {
+            id: cid,
+            blob: gzippedFile,
+            originalName: csvFile.name,
+            originalSize: csvFile.size,
+            gzSize: gzippedFile.size,
+            delimiter: this.delimiter,
+            createdAt: Date.now(),
+        });
+    }
+
+    private async previewCSV(csvText: any) {
+        const byteLength = new TextEncoder().encode(csvText).length;
+        if (!this.handlePreviewLimit(byteLength)) {
+            return
+        }
+
+        const parsed = this.csvService.parseCsvToTable(csvText, ',');
+
+        const preview = this.makePreview(
+            parsed.columnKeys,
+            parsed.rows,
+            this.PREVIEW_COLUMNS_LIMIT,
+            this.PREVIEW_ROWS_LIMIT
+        );
+
+        this.previewColumnDefs = preview.columns.map((key: string, index: number) => ({
+            field: key,
+            headerName: this.buildColumnHeader(index),
+            editable: false,
+            minWidth: 100,
+            resizable: true,
+        }));
+
+        this.previewRowData = preview.rows;
+
+        this.mark();
+    }
+
+    private buildCsvFile(
+        columnKeys: string[],
+        rows: Record<string, string>[],
+        filename: string = 'table.csv'
+    ): File {
+        return this.csvService.toCsvFile(columnKeys, rows, filename, {
+            delimiter: this.delimiter,
+            bom: false,
+            mime: 'text/csv;charset=utf-8',
+        });
     }
 }

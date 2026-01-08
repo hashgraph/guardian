@@ -3,7 +3,7 @@
         <p-button
             (click)="openDialog()"
             class="primary-btn"
-            [disabled]="!fileId || isLoading || !!tooLargeMessage">
+            [disabled]="!hasData || isLoading || !!tooLargeMessage">
             <span>{{ isLoading ? 'Loading…' : 'Open Table' }}</span>
         </p-button>
 
