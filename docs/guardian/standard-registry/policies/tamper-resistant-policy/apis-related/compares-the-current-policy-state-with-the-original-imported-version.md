@@ -14,10 +14,9 @@ Registry role are allowed to make the request.
 
 **Body**
 
-| Name     | Type   | Description     |
-| -------- | ------ | --------------- |
-| policyId | string | Policy ID       |
-| `age`    | number | Age of the user |
+| Name     | Type   | Description |
+| -------- | ------ | ----------- |
+| policyId | string | Policy ID   |
 
 **Response**
 

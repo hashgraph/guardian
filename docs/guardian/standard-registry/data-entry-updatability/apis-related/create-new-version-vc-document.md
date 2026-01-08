@@ -13,9 +13,9 @@ Create new version VC document
 
 **Body**
 
-| Name     | Type   | Description |
-| -------- | ------ | ----------- |
-| policyId | string | Policy ID   |
+| Name       | Type   | Description |
+| ---------- | ------ | ----------- |
+| policyId\* | string | Policy ID   |
 
 **Response**
 
