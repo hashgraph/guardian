@@ -1023,6 +1023,15 @@ export interface IPolicyDBDocument<T> {
     relayerAccount?: string;
 
     recordActionId?: string | null;
+
+    /**
+     * Last VC Version
+     */
+    oldVersion?: boolean;
+    /**
+     * Parent message
+     */
+    initId?: string;
 }
 
 /**

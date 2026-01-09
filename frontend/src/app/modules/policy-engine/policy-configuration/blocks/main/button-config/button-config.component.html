@@ -127,6 +127,85 @@
             </td>
         </tr>
 
+        <tr class="propRow subRow-2"
+            [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+            <td class="propRowCol cellCollapse"
+                (click)="onHide(propHidden.buttons[i], 'hideEventsGroup')"
+                [attr.collapse]="propHidden.buttons[i].hideEventsGroup">
+                <i class="pi pi-caret-down"></i>
+            </td>
+            <td class="propRowCell cellName"
+                pTooltip="Configure read/write hide-events state in localStorage"
+                tooltipPosition="top"
+                [tooltipOptions]="{showDelay: 300}">
+                Hide events
+            </td>
+            <td class="propRowCell not-editable-text">
+                <span></span>
+            </td>
+        </tr>
+
+        <tr class="propRow subRow-3"
+            [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].hideEventsGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName"
+                pTooltip="Allow reading hide-events state from localStorage"
+                tooltipPosition="top"
+                [tooltipOptions]="{showDelay: 300}">
+                Incoming hide events
+            </td>
+            <td class="propRowCell">
+                <p-checkbox
+                    [(ngModel)]="button.incomingHideEventsEnabled"
+                    [binary]="true"
+                    [readonly]="readonly"
+                    (onChange)="onSave()"
+                    [style]="{marginLeft: '8px'}"
+                ></p-checkbox>
+            </td>
+        </tr>
+
+        <tr class="propRow subRow-3"
+            [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].hideEventsGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName"
+                pTooltip="Allow writing hide-events state to localStorage when this button is clicked"
+                tooltipPosition="top"
+                [tooltipOptions]="{showDelay: 300}">
+                Outgoing hide events
+            </td>
+            <td class="propRowCell">
+                <p-checkbox
+                    [(ngModel)]="button.outgoingHideEventsEnabled"
+                    [binary]="true"
+                    [readonly]="readonly"
+                    (onChange)="onSave()"
+                    [style]="{marginLeft: '8px'}"
+                ></p-checkbox>
+            </td>
+        </tr>
+
+        <tr class="propRow subRow-3"
+            *ngIf="button.outgoingHideEventsEnabled === true"
+            [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].hideEventsGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName"
+                pTooltip="Button names that should remain visible after writing hide-events state (comma-separated)"
+                tooltipPosition="top"
+                [tooltipOptions]="{showDelay: 300}">
+                Visible buttons
+            </td>
+            <td class="propRowCell">
+                <input
+                    class="prop-input"
+                    [(ngModel)]="button.visibleButtons"
+                    [readonly]="readonly"
+                    (blur)="onSave()"
+                    placeholder="Button A, Button B"
+                >
+            </td>
+        </tr>
+
         <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], 'filtersGroup')"
                 [attr.collapse]="propHidden.buttons[i].filtersGroup">

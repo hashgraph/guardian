@@ -770,7 +770,8 @@ export class SchemaConfigurationComponent implements OnInit {
             suggest,
             example,
             autocalculate,
-            expression
+            expression,
+            isUpdatable
         } = metadata;
         const type = this.schemaTypeMap[typeIndex];
         let suggestValue;
@@ -862,6 +863,7 @@ export class SchemaConfigurationComponent implements OnInit {
             default: defaultValue,
             suggest: suggestValue,
             examples: this.isNotEmpty(exampleValue) ? [exampleValue] : undefined,
+            isUpdatable: isUpdatable || false,
         };
     }
 
@@ -904,7 +906,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 customType: fieldConfig.customType,
                 readOnly: true,
                 isPrivate: fieldConfig.isPrivate,
-                property: fieldConfig.property
+                property: fieldConfig.property,
+                isUpdatable: fieldConfig.isUpdatable,
             };
             fields.push(schemaField);
             allFieldsByName.set(fieldConfig.name, schemaField);

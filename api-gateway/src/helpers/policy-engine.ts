@@ -452,11 +452,12 @@ export class PolicyEngine extends NatsService {
         task: NewTask,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC,
-            { zip, owner, task, versionOfTopicId, metadata, demo }
+            { zip, owner, task, versionOfTopicId, metadata, demo, originalTracking }
         );
     }
 
@@ -473,11 +474,12 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ): Promise<boolean> {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE,
-            { messageId, owner, versionOfTopicId, metadata, demo }
+            { messageId, owner, versionOfTopicId, metadata, demo, originalTracking }
         );
     }
 
@@ -496,11 +498,12 @@ export class PolicyEngine extends NatsService {
         task: NewTask,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC,
-            { messageId, owner, versionOfTopicId, task, metadata, demo }
+            { messageId, owner, versionOfTopicId, task, metadata, demo, originalTracking }
         );
     }
 
@@ -1575,5 +1578,33 @@ export class PolicyEngine extends NatsService {
         }
     ): Promise<{ documents: any[], count: number }> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_REPOSITORY_DOCUMENTS, { user, policyId, filters });
+    }
+
+    /**
+     * Create new version policy document
+     * @param user
+     * @param policyId
+     * @param data
+     */
+    public async createNewVersionVcDocument(
+        user: IAuthUser,
+        policyId: string,
+        data: any
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_NEW_VERSION_VC_DOCUMENT, { user, policyId, data });
+    }
+
+    /**
+     * Get all new version policy documents
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getAllVersionVcDocuments(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_All_NEW_VERSION_VC_DOCUMENTS, { user, policyId, documentId });
     }
 }

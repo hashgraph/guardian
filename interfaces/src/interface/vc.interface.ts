@@ -30,6 +30,11 @@ export interface IVC {
          * Issuer
          */
         id: did
+
+        /**
+         * Group
+         */
+        group?: string;
     };
     /**
      * Issuance Date

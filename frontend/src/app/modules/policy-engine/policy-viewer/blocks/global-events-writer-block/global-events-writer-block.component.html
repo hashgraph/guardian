@@ -1,0 +1,137 @@
+<div class="ger-card">
+    <div class="ger-header">
+        <div class="ger-title">
+            Global Events Writer
+        </div>
+    </div>
+
+    <div class="ger-toolbar">
+        <div class="ger-toolbar-left"></div>
+
+        <div class="ger-header-actions">
+            <button
+                type="button"
+                pButton
+                class="button ger-header-btn"
+                label="Add Event Topic"
+                (click)="openAddTopicModal()"
+                [disabled]="readonly || loading"
+            >
+            </button>
+
+            <button
+                type="button"
+                pButton
+                class="button ger-header-btn"
+                label="Create Topic"
+                (click)="openCreateTopicModal()"
+                [disabled]="readonly || loading"
+            >
+            </button>
+        </div>
+    </div>
+
+    <div class="ger-table">
+        <div class="ger-row ger-row-head">
+            <div class="ger-cell ger-col-topic">
+                TOPIC ID
+            </div>
+
+            <div class="ger-cell ger-col-active">
+                ACTIVE
+            </div>
+
+            <div class="ger-cell ger-col-type">
+                TYPE
+            </div>
+
+            <div class="ger-cell ger-col-actions"></div>
+        </div>
+
+        <div
+            class="ger-row"
+            *ngFor="let row of streams; trackBy: trackByTopicId"
+        >
+            <div class="ger-cell ger-col-topic">
+                <div class="ger-topic-value" [title]="row.topicId">
+                    {{ row.topicId }}
+                </div>
+
+                <span class="ger-default-pill" *ngIf="isDefaultTopic(row.topicId)">
+                    DEFAULT TOPIC
+                </span>
+            </div>
+
+            <div class="ger-cell ger-col-active">
+                <p-checkbox
+                    class="ger-checkbox"
+                    [(ngModel)]="row.active"
+                    [binary]="true"
+                    [disabled]="loading"
+                    (onChange)="onActiveChanged(row, $event.checked)"
+                ></p-checkbox>
+            </div>
+
+            <div class="ger-cell ger-col-type">
+                <select
+                    class="ger-select"
+                    [ngModel]="row.documentType"
+                    (ngModelChange)="onStreamDocumentTypeChange(row, $event)"
+                    [disabled]="loading || !documentTypeOptions.length"
+                >
+                    <option
+                        *ngFor="let opt of documentTypeOptions"
+                        [ngValue]="opt.value"
+                    >
+                        {{ opt.label }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="ger-cell ger-col-actions">
+                <button
+                    type="button"
+                    class="ger-icon-btn ger-icon-btn-danger"
+                    (click)="deleteStream(row)"
+                    [disabled]="loading || isDefaultTopic(row.topicId)"
+                    aria-label="Delete topic"
+                    title="Delete"
+                >
+                    <i class="pi pi-trash"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="ger-empty" *ngIf="!streams || streams.length === 0">
+            No topics configured yet.
+        </div>
+    </div>
+</div>
+
+<app-add-global-event-topic
+    [visible]="addTopicModalOpen"
+    [loading]="loading"
+    (cancel)="closeAddTopicModal()"
+    (add)="confirmAddTopicModal($event)"
+>
+</app-add-global-event-topic>
+
+<div class="progress-footer" id="block-progress-footer" *ngIf="showNextButton">
+    <div></div>
+    <div>
+        <button
+            type="button"
+            pButton
+            class="p-button"
+            label="Next"
+            (click)="onNext()"
+            [disabled]="loading"
+            form="roles-form"
+        >
+        </button>
+    </div>
+</div>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

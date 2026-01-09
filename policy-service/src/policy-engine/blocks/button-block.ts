@@ -46,7 +46,11 @@ export class ButtonBlock {
             ),
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData,
-            user: ref.options.user
+            user: ref.options.user,
+
+            userId: user ? user.userId : null,
+            userDid: user ? user.did : null,
+
         }
         return data;
     }
