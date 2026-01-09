@@ -67,7 +67,6 @@ import {
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import { ISerializedErrors } from './policy-validation-results-container.js';
 import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
-import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import { createHederaToken } from '../api/token.service.js';
 import { GuardiansService } from '../helpers/guardians.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
@@ -1602,7 +1601,7 @@ export class PolicyEngine extends NatsService {
         if (policy.tools?.length > 0) {
             const toolMessageIds = policy.tools.map((toolData: any) => toolData.messageId);
             const tools = await DatabaseServer.getTools({
-                messageId: { $in: toolMessageIds}
+                messageId: { $in: toolMessageIds }
             });
             const toolNotPublished = tools.find(tool => tool.status !== ModuleStatus.PUBLISHED);
 
@@ -1839,7 +1838,11 @@ export class PolicyEngine extends NatsService {
      * @param isDruRun
      * @param ignoreRules
      */
-    public async validateModel(policy: Policy | string, isDruRun: boolean = false, ignoreRules?: ReadonlyArray<IgnoreRule>): Promise<ISerializedErrors> {
+    public async validateModel(
+        policy: Policy | string,
+        isDruRun: boolean = false,
+        ignoreRules?: ReadonlyArray<IgnoreRule>
+    ): Promise<ISerializedErrors> {
         let policyId: string;
         if (typeof policy === 'string') {
             policyId = policy
@@ -1850,10 +1853,13 @@ export class PolicyEngine extends NatsService {
             }
             policyId = policy.id.toString();
         }
-        const policyValidator = new PolicyValidator(policy, isDruRun, ignoreRules);
-        await policyValidator.build(policy);
-        await policyValidator.validate();
-        return policyValidator.getSerializedErrors();
+        const result = await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
+            policy,
+            isDruRun,
+            ignoreRules,
+            reachability: true
+        });
+        return result;
     }
 
     /**

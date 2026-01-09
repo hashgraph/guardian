@@ -119,10 +119,10 @@
         bottom: 0;
         background: #EFF3F7;
         width: 32px;
-        pointer-events: none;
         display: flex;
         justify-content: center;
         align-items: center;
+        cursor: move;
     }
 
     .row-container {
@@ -560,4 +560,8 @@ math-live {
     .guardian-input-container input:enabled:hover {
         border-color: var(--guardian-grey-color-2, #E1E7EF) !important;
     }
+}
+
+.rows-container.cdk-drag-placeholder {
+    opacity: 0.5;
 }

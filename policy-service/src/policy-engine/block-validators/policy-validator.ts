@@ -1,10 +1,11 @@
 import { DatabaseServer, Policy } from '@guardian/common';
-import {ISchema, ModuleStatus, SchemaEntity, IgnoreRule, buildMessagesForValidator} from '@guardian/interfaces';
+import { ISchema, ModuleStatus, SchemaEntity, IgnoreRule, computeReachability, buildMessagesForValidator } from '@guardian/interfaces';
 import { BlockValidator } from './block-validator.js';
 import { ModuleValidator } from './module-validator.js';
 import { ISerializedErrors } from './interfaces/serialized-errors.interface.js';
 import { ToolValidator } from './tool-validator.js';
 import { SchemaValidator } from './schema-validator.js';
+import { BlockAbout } from '../block-about.js';
 
 /**
  * Policy Validator
@@ -75,14 +76,23 @@ export class PolicyValidator {
      * @private
      */
     private readonly isDryRunMode: boolean;
-
     /**
      * Ignore Rules
      * @private
      */
     private readonly ignoreRules?: ReadonlyArray<IgnoreRule>;
+    /**
+     * Is Dry Run Mode
+     * @private
+     */
+    private readonly reachability: boolean;
 
-    constructor(policy: Policy, isDruRun: boolean = false, ignoreRules?: ReadonlyArray<IgnoreRule>) {
+    constructor(
+        policy: Policy,
+        isDruRun: boolean = false,
+        ignoreRules?: ReadonlyArray<IgnoreRule>,
+        reachability?: boolean
+    ) {
         this.blocks = new Map();
         this.modules = new Map();
         this.tools = new Map();
@@ -97,6 +107,7 @@ export class PolicyValidator {
         this.schemasByEntity = new Map();
         this.isDryRunMode = isDruRun;
         this.ignoreRules = ignoreRules;
+        this.reachability = !!reachability;
     }
 
     /**
@@ -118,16 +129,21 @@ export class PolicyValidator {
             this.addPermissions(policy.policyRoles);
             await this.registerBlock(policy.config);
 
+            const reachabilityPerBlock = this.getReachability();
+
             for (const block of this.blocks.values()) {
+                const blockId = block.getId();
                 const blockType = block.getBlockType();
 
                 const raw = block.getRawConfig?.();
                 const usedProps = (raw ?? {}) as unknown as Record<string, unknown>;
 
-                const {warningsText, infosText} = buildMessagesForValidator(
+                const { warningsText, infosText } = buildMessagesForValidator(
                     blockType,
                     usedProps,
                     this.ignoreRules,
+                    reachabilityPerBlock,
+                    blockId
                 );
 
                 block.addPrecomputedMessagesAsText(warningsText, 'warning');
@@ -136,6 +152,19 @@ export class PolicyValidator {
 
             await this.registerSchemas();
             return true;
+        }
+    }
+
+    private getReachability() {
+        if (this.reachability) {
+            const ctx = {
+                sources: Array.from(this.blocks.values()),
+                blockAboutRegistry: BlockAbout
+            };
+            const reachabilityPerBlock = computeReachability(ctx);
+            return reachabilityPerBlock;
+        } else {
+            return undefined;
         }
     }
 
@@ -196,7 +225,7 @@ export class PolicyValidator {
         } else if (block.blockType === 'tool') {
             const tool = new ToolValidator(block);
             const policyTool = await DatabaseServer.getTool({
-                status: ModuleStatus.PUBLISHED,
+                status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN]},
                 messageId: block.messageId,
                 hash: block.hash
             });

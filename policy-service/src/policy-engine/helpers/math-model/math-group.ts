@@ -53,7 +53,13 @@ export class MathGroup {
         output.destroy();
     }
 
-    public validate() {
+    private setError(type: string) {
+        this.valid = false;
+        this.list = [];
+        return type;
+    }
+
+    public validate(): string | null {
         for (const item of this.items) {
             if (!item.empty) {
                 item.validate();
@@ -69,17 +75,13 @@ export class MathGroup {
 
         for (const variable of variables) {
             if (!variable.valid) {
-                this.valid = false;
-                this.list = [];
-                return;
+                return this.setError('variables');
             }
         }
 
         for (const formula of formulas) {
             if (!formula.valid) {
-                this.valid = false;
-                this.list = [];
-                return;
+                return this.setError('formulas');
             }
         }
 
@@ -92,9 +94,7 @@ export class MathGroup {
                 variable.validName = false;
                 old.error = `Duplicate name`;
                 variable.error = `Duplicate name`;
-                this.valid = false;
-                this.list = [];
-                return;
+                return this.setError('variables');
             }
             list.set(variable.name, variable);
             this.list.push(variable);
@@ -108,35 +108,11 @@ export class MathGroup {
                 formula.validName = false;
                 old.error = `Duplicate name`;
                 formula.error = `Duplicate name`;
-                this.valid = false;
-                this.list = [];
-                return;
-            }
-            if (formula.type === MathItemType.VARIABLE) {
-                list.set(formula.name, formula);
+                return this.setError('formulas');
             }
         }
 
-        // Outputs
-        for (const output of outputs) {
-            const old = list.get(output.name);
-            if (old) {
-                if (old.type === MathItemType.FUNCTION) {
-                    output.error = `Invalid value`;
-                    output.validName = false;
-                    this.valid = false;
-                    this.list = [];
-                    return;
-                }
-            } else {
-                output.error = `Unknown variable: ${output.name}`;
-                output.validName = false;
-                this.valid = false;
-                this.list = [];
-                return;
-            }
-        }
-
+        // Dependencies
         const dependencies = new Map<string, MathFormula>();
         for (const formula of formulas) {
             formula.updateUnknowns();
@@ -176,10 +152,26 @@ export class MathGroup {
                     }
                 }
             }
-            this.valid = false;
-            this.list = [];
-            return;
+            return this.setError('formulas');
         }
+
+        // Outputs
+        for (const output of outputs) {
+            const old = list.get(output.name);
+            if (old) {
+                if (old.type === MathItemType.FUNCTION) {
+                    output.error = `Invalid value`;
+                    output.validName = false;
+                    return this.setError('outputs');
+                }
+            } else {
+                output.error = `Unknown variable: ${output.name}`;
+                output.validName = false;
+                return this.setError('outputs');
+            }
+        }
+
+        return null;
     }
 
     private checkUnknowns(list: Map<string, MathFormula | FieldLink>, unknowns: string[]): boolean {

@@ -63,7 +63,6 @@ import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
 import { GuardiansService } from '../helpers/guardians.js';
-import { BlockAboutString } from './block-about.js';
 import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 import { PolicyDataLoader, VcDocumentLoader, VpDocumentLoader } from './helpers/policy-data/loaders/index.js';
 import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import-export.js';
@@ -286,12 +285,12 @@ export class PolicyEngineService {
 
         this.channel.getMessages(PolicyEvents.RECORD_PERSIST_STEP,
             async (msg: PersistStepPayload) => {
-            const {
-                policyMessageId,
-                payload,
-                hederaOptions,
-                userFull
-            } = msg;
+                const {
+                    policyMessageId,
+                    payload,
+                    hederaOptions,
+                    userFull
+                } = msg;
                 try {
                     await RecordPersistService.persistStep({
                         policyMessageId,
@@ -748,7 +747,9 @@ export class PolicyEngineService {
             user: IAuthUser
         }) => {
             try {
-                return new MessageResponse(BlockAboutString);
+                const blockAboutString = await new GuardiansService()
+                    .sendMessageWithTimeout(PolicyEvents.GET_BLOCK_ABOUT, 60 * 1000, null);
+                return new MessageResponse(blockAboutString);
             } catch (error) {
                 return new MessageError(error);
             }
@@ -4406,7 +4407,7 @@ export class PolicyEngineService {
                     const { user, policyId, data } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
-                    const status =await new GuardiansService()
+                    const status = await new GuardiansService()
                         .sendBlockMessage(PolicyEvents.CREATE_NEW_VERSION_VC_DOCUMENT, policyId, {
                             user,
                             data
@@ -4418,8 +4419,8 @@ export class PolicyEngineService {
                 }
             })
 
-         this.channel.getMessages(PolicyEngineEvents.GET_All_NEW_VERSION_VC_DOCUMENTS,
-             async (msg: { user: IAuthUser, policyId: string, documentId: string }) => {
+        this.channel.getMessages(PolicyEngineEvents.GET_All_NEW_VERSION_VC_DOCUMENTS,
+            async (msg: { user: IAuthUser, policyId: string, documentId: string }) => {
                 try {
                     const { user, policyId: policyId, documentId: documentId } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);

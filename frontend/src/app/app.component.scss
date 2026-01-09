@@ -408,6 +408,12 @@ body {
             max-width: 120px;
         }
 
+        .cell-64 {
+            min-width: 64px;
+            width: 64px;
+            max-width: 64px;
+        }
+
         .text-truncate {
             overflow: hidden;
             text-overflow: ellipsis;

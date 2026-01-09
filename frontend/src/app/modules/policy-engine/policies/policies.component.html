@@ -182,9 +182,10 @@
                             <tr class="grid-table-header">
                                 <th
                                     *ngIf="canDisplayColumn('select')"
-                                    class="header-cell-text cell-150"
+                                    class="header-cell-text cell-64"
                                     pFrozenColumn>
                                         <p-checkbox
+                                            class="guardian-checkbox checkbox-24"
                                             (onChange)="onSelectAllItems($event)"
                                             [disabled]="isAnyDeleteDisabled()"
                                             [ngModel]="isAllSelected"
@@ -258,9 +259,11 @@
                             <tr class="grid-table-row">
                                 <td
                                     *ngIf="canDisplayColumn('select')"
+                                    class="cell-64"
                                     pFrozenColumn
                                 >
                                     <p-checkbox
+                                        class="guardian-checkbox checkbox-24"
                                         (onChange)="onSelectItem(policy)"
                                         [disabled]="isDeleteDisabled(policy)"
                                         [ngModel]="isSelected(policy)"

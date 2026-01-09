@@ -11,7 +11,7 @@
     <div *ngIf="loading" class="guardian-loading">
         <div class="guardian-loading-image"></div>
     </div>
-    <div class="context">
+    <div *ngIf="inputSchema" class="context">
         <div class="left-context">
 
             <div class="guardian-step-container">
@@ -99,9 +99,22 @@
 
             <div *ngIf="step === 'step_1'" class="step-container">
                 <div *ngIf="group.variables.length" class="formulas-container">
-                    <ng-container *ngFor="let item of group.variables">
-                        <div class="rows-container" [attr.error]="item.invalid && item.validated">
-                            <div class="formula-reorder">
+                    <div 
+                        class="reorder-rows-container"
+                        cdkDropList
+                        [cdkDropListData]="group.variables"
+                        (cdkDropListDropped)="reorder('variables', $event)"
+                        cdkScrollable
+                    >
+                        <div 
+                            *ngFor="let item of group.variables" 
+                            class="rows-container" 
+                            [attr.error]="item.invalid && item.validated"
+                            cdkDrag
+                            cdkDragLockAxis="y"
+                            [cdkDragDisabled]="readonly"
+                        >
+                            <div cdkDragHandle class="formula-reorder">
                                 <svg-icon
                                     class="icon-btn svg-icon"
                                     src="/assets/images/icons/equal.svg"
@@ -171,7 +184,7 @@
                                 {{item.error}}
                             </div>
                         </div>
-                    </ng-container>
+                    </div>
                     <div class="formula-toolbar">
                         <button (click)="addVariable()" class="guardian-button guardian-button-secondary add-formula-btn">
                             <div class="guardian-button-icon">
@@ -216,9 +229,22 @@
                     </p-tabView>
                 </div>
                 <div *ngIf="codeTab === 'general' && group.formulas.length" class="formulas-container">
-                    <ng-container *ngFor="let item of group.formulas">
-                        <div class="rows-container" [attr.error]="item.invalid && item.validated">
-                            <div class="formula-reorder">
+                    <div 
+                        class="reorder-rows-container"
+                        cdkDropList
+                        [cdkDropListData]="group.formulas"
+                        (cdkDropListDropped)="reorder('formulas', $event)"
+                        cdkScrollable
+                    >
+                        <div 
+                            *ngFor="let item of group.formulas" 
+                            class="rows-container" 
+                            [attr.error]="item.invalid && item.validated"
+                            cdkDrag
+                            cdkDragLockAxis="y"
+                            [cdkDragDisabled]="readonly"
+                        >
+                            <div cdkDragHandle class="formula-reorder">
                                 <svg-icon
                                     class="icon-btn svg-icon"
                                     src="/assets/images/icons/equal.svg"
@@ -269,7 +295,7 @@
                                 {{item.error}}
                             </div>
                         </div>
-                    </ng-container>
+                    </div>
                     <div class="formula-toolbar">
                         <button (click)="addFormula()" class="guardian-button guardian-button-secondary add-formula-btn">
                             <div class="guardian-button-icon">
@@ -362,9 +388,22 @@
             </div>
             <div *ngIf="step === 'step_3'" class="step-container">
                 <div *ngIf="group.outputs.length" class="formulas-container">
-                    <ng-container *ngFor="let item of group.outputs">
-                        <div class="rows-container" [attr.error]="item.invalid && item.validated">
-                            <div class="formula-reorder">
+                    <div 
+                        class="reorder-rows-container"
+                        cdkDropList
+                        [cdkDropListData]="group.outputs"
+                        (cdkDropListDropped)="reorder('outputs', $event)"
+                        cdkScrollable
+                    >
+                        <div 
+                            *ngFor="let item of group.outputs" 
+                            class="rows-container" 
+                            [attr.error]="item.invalid && item.validated"
+                            cdkDrag
+                            cdkDragLockAxis="y"
+                            [cdkDragDisabled]="readonly"
+                        >
+                            <div cdkDragHandle class="formula-reorder">
                                 <svg-icon
                                     class="icon-btn svg-icon"
                                     src="/assets/images/icons/equal.svg"
@@ -434,7 +473,7 @@
                                 {{item.error}}
                             </div>
                         </div>
-                    </ng-container>
+                    </div>
                     <div class="formula-toolbar">
                         <button (click)="addOutput()" class="guardian-button guardian-button-secondary add-formula-btn">
                             <div class="guardian-button-icon">
@@ -756,19 +795,27 @@
                     </div>
                 </div>
             </div>
-
         </div>
-
+    </div>
+    <div *ngIf="!inputSchema" class="context">
+        <div class="formulas-container-empty">
+            <svg-icon 
+                class="svg-icon-32" 
+                src="/assets/images/icons/32/list.svg" 
+                svgClass="icon-color-disabled">
+            </svg-icon> 
+            <span class="info-text">Input schema has't been chosen yet</span>
+        </div>
     </div>
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
-        <div *ngIf="step === 'step_1' || step === 'step_2' || step === 'step_3'" class="dialog-button">
+        <div *ngIf="inputSchema && (step === 'step_1' || step === 'step_2' || step === 'step_3')" class="dialog-button">
             <button
                 (click)="onValidate()"
                 class="guardian-button guardian-button-secondary left-btn">Validate</button>
         </div>
-        <div *ngIf="step === 'step_4'" class="dialog-button">
+        <div *ngIf="inputSchema && (step === 'step_4')" class="dialog-button">
             <button
                 (click)="onTest()"
                 class="guardian-button guardian-button-secondary left-btn">Test</button>

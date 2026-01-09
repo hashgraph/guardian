@@ -1,9 +1,9 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleImportExport, ModuleMessage, NewNotifier, PinoLogger, PolicyModule, TagMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
-import { GenerateUUIDv4, IOwner, MessageAPI, ModuleStatus, SchemaCategory, TagType, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, MessageAPI, ModuleStatus, PolicyEvents, SchemaCategory, TagType, TopicType } from '@guardian/interfaces';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
-import { ModuleValidator } from '../policy-engine/block-validators/module-validator.js';
 import { importTag } from '../helpers/import-helpers/index.js';
+import { GuardiansService } from '../helpers/guardians.js';
 
 /**
  * Check and update config file
@@ -144,10 +144,11 @@ export async function validateAndPublish(
  * @param module
  */
 export async function validateModel(module: PolicyModule): Promise<ISerializedErrors> {
-    const moduleValidator = new ModuleValidator(module.config);
-    await moduleValidator.build(module.config);
-    await moduleValidator.validate();
-    return moduleValidator.getSerializedErrors();
+    const result = await (new GuardiansService())
+        .sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_MODULE, 60 * 1000, {
+            module
+        });
+    return result;
 }
 
 /**

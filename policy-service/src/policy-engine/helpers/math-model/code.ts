@@ -25,6 +25,16 @@ export class Code {
         ]);
     }
 
+    public validate() {
+        try {
+            const code = `const [user, document, result, variables, formulas, scope, getField, mathjs, formulajs] = arguments;\r\n const __result = (() => { ${this.text} })();\r\n if(__result) { return __result; } else { return result; }`;
+            Function(code);
+            return null;
+        } catch (error) {
+            return String(error);
+        }
+    }
+
     public setContext(context: any) {
         this.context = context || {};
     }

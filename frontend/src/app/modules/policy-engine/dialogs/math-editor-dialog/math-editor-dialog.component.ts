@@ -8,6 +8,7 @@ import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { TreeListData, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 import { FieldData } from 'src/app/modules/common/models/schema-node';
 import { Code, FieldLink, MathContext, MathFormula, MathGroup, setDocumentValueByPath } from './math-model/index';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
 class Tooltip {
     public visible: boolean;
@@ -176,12 +177,14 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         autoFocus: true
     };
     public tooltip: Tooltip;
+    public readonly: boolean = false;
 
     constructor(
         private dialogRef: DynamicDialogRef,
         private dialogService: DialogService,
         private config: DynamicDialogConfig,
         private fb: UntypedFormBuilder,
+        private el: ElementRef,
     ) {
         this.data = this.config.data;
         this.group = new MathGroup();
@@ -381,6 +384,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
+            focusOnClose: false,
             data: {
                 title: schema?.name || 'Set Link',
                 value: item.field,
@@ -446,7 +450,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         item.field = null;
     }
 
-    public onStep(step: string) {
+    public onStep(step: string, target?: string) {
         this.error = null;
         this.loading = false;
         try {
@@ -461,6 +465,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.loading = true;
         setTimeout(() => {
             this.loading = false;
+            if (target) {
+                this.el.nativeElement
+                    ?.querySelector(target)
+                    ?.scrollIntoView();
+            }
         }, 500);
     }
 
@@ -488,7 +497,14 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public onValidate() {
         if (this.group) {
-            this.group.validate();
+            const error = this.group.validate();
+            if (error === 'variables') {
+                this.onStep('step_1', '.rows-container[error="true"]');
+            } else if (error === 'formulas') {
+                this.onStep('step_2', '.rows-container[error="true"]');
+            } else if (error === 'outputs') {
+                this.onStep('step_3', '.rows-container[error="true"]');
+            }
         }
     }
 
@@ -521,6 +537,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
+            focusOnClose: false,
             data: {
                 title: this.inputSchema?.name || 'Set Link',
                 view: this.createSchemaView(this.inputSchema),
@@ -567,6 +584,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
+            focusOnClose: false,
             data: {
                 title: 'Select components',
                 view: this.createComponentView(),
@@ -785,5 +803,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             return;
         }
         this.tooltip.hover($event.target);
+    }
+
+    public reorder(type: 'variables' | 'formulas' | 'outputs', event: CdkDragDrop<any[]>) {
+        this.group.reorder(type, event.previousIndex, event.currentIndex);
     }
 }
