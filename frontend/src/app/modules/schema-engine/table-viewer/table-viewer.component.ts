@@ -290,22 +290,27 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
     }
 
     private async initPreview(): Promise<void> {
-        this.isLoading = true;
-        const fileId = this.fileId;
-        const cid = this.cid;
+        try{
+            this.isLoading = true;
+            const fileId = this.fileId;
+            const cid = this.cid;
 
-        this.tooLargeMessage = undefined;
-        this.loadError = undefined;
-        this.canOpenPreview = false;
-        this.previewColumnDefs = [];
-        this.previewRowData = [];
-        this.mark();
+            this.tooLargeMessage = undefined;
+            this.loadError = undefined;
+            this.canOpenPreview = false;
+            this.previewColumnDefs = [];
+            this.previewRowData = [];
+            this.mark();
 
-        if (fileId) {
-            await this.getFileByFileId(fileId);
-        } else if (cid) {
-            this.getFileByCid(cid);
-        } else {
+            if (fileId) {
+                await this.getFileByFileId(fileId);
+            } else if (cid) {
+                this.getFileByCid(cid);
+            } else {
+                this.isLoading = false;
+            }
+        }
+        catch{
             this.isLoading = false;
         }
     }
