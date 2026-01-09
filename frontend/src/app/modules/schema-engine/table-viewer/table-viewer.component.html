@@ -33,7 +33,7 @@
         </div>
     </div>
 
-    <div *ngIf="hasData" class="table-viewer__preview">
+    <div *ngIf="hasData && !isLoading" class="table-viewer__preview">
         <div class="table-viewer__preview-title">Preview</div>
 
         <div class="table-viewer__grid" role="table" aria-label="CSV preview 8x4">

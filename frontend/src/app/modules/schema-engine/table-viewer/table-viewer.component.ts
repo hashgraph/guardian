@@ -290,6 +290,7 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
     }
 
     private async initPreview(): Promise<void> {
+        this.isLoading = true;
         const fileId = this.fileId;
         const cid = this.cid;
 
@@ -304,6 +305,8 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
             await this.getFileByFileId(fileId);
         } else if (cid) {
             this.getFileByCid(cid);
+        } else {
+            this.isLoading = false;
         }
     }
 
@@ -606,7 +609,7 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
         }));
 
         this.previewRowData = preview.rows;
-
+        this.isLoading = false;
         this.mark();
     }
 
