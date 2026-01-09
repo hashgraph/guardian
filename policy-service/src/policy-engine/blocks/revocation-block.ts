@@ -207,6 +207,7 @@ export class RevocationBlock {
             data: documents
         };
 
+        // event.actionStatus.saveResult(state);
         await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
 

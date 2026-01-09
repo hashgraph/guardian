@@ -1,4 +1,5 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { AnyBlockType } from './policy-engine.interface';
 
 type Callback = (id: string, timestamp: number) => void;
 
@@ -6,23 +7,39 @@ export class RecordActionStep {
     public readonly id: string;
     public readonly timestemp: number;
     public readonly syncActions: boolean;
+    public readonly withHistory: boolean;
     private results: any[] = [];
+    private actionsMap: Set<string> = new Set();
     public counter: number;
     private callbackFired = false;
     private timer: ReturnType<typeof setTimeout> | null = null;
     private readonly callback: Callback;
 
-    constructor(callback: Callback, initialCounter = 0, syncActions = false) {
+    constructor(callback: Callback, initialCounter = 0, syncActions = false, withHistory = false) {
         this.id = GenerateUUIDv4();
         this.timestemp = Date.now();
         this.callback = callback;
         this.counter = initialCounter;
         this.callbackFired = false;
         this.syncActions = syncActions;
+        this.withHistory = withHistory;
     }
 
-    public pushResult(res: any) {
-        this.results.push(res);
+    public checkCycle(source: AnyBlockType, target: AnyBlockType) {
+        if (this.actionsMap.has(target.uuid)) {
+            throw new Error(
+                `Cycle detected: target "${target.tag}" was already used, circular reference is not allowed.`
+            );
+        }
+
+        this.actionsMap.add(source.uuid);
+        this.actionsMap.add(target.uuid);
+    }
+
+    public saveResult(res: any) {
+        if (this.withHistory && this.syncActions) {
+            this.results.push(structuredClone(res));
+        }
     }
 
     public getResults() {

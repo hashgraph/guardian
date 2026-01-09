@@ -384,6 +384,7 @@ export class RetirementBlock {
             event.actionStatus
         );
 
+        // event.actionStatus.saveResult(event.data);
         await ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data, event.actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, docOwner, null, event.actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data, event.actionStatus);

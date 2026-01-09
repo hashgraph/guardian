@@ -188,7 +188,7 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA, policyId, async (msg: any) => {
-            const { user, blockId, data, syncEvents } = msg;
+            const { user, blockId, data, syncEvents, history } = msg;
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
@@ -199,17 +199,30 @@ export class BlockTreeGenerator extends NatsService {
             }
             // Available -->
 
-            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents);
+            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents, history);
 
             const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
 
             actionstep.finish();
 
-            return res;
+            if (syncEvents) {
+                const results = actionstep.getResults();
+                if (res instanceof MessageError) {
+                    return res;
+                } else {
+                    return new MessageResponse({
+                        response: res.body,
+                        result: results.at(-1),
+                        steps: history ? results : [],
+                    }, res.code);
+                }
+            } else {
+                return res;
+            }
         });
 
         this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, async (msg: any) => {
-            const { user, tag, data, syncEvents } = msg;
+            const { user, tag, data, syncEvents, history } = msg;
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
 
@@ -220,13 +233,27 @@ export class BlockTreeGenerator extends NatsService {
             }
             // Available -->
 
-            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents);
+            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents, history);
 
             const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
 
             actionstep.finish();
 
-            return res
+            if (syncEvents) {
+                const results = actionstep.getResults();
+
+                if (res instanceof MessageError) {
+                    return res;
+                } else {
+                    return new MessageResponse({
+                        response: res.body,
+                        result: results.at(-1),
+                        steps: history ? results : [],
+                    }, res.code);
+                }
+            } else {
+                return res;
+            }
         });
 
         this.getPolicyMessages(PolicyEvents.SELECT_POLICY_GROUP, policyId, async (msg: any) => {
@@ -243,33 +270,53 @@ export class BlockTreeGenerator extends NatsService {
         this.getPolicyMessages(PolicyEvents.MRV_DATA, policyId, async (msg: any) => {
             const { data } = msg;
 
-            // <-- Record
-            await RecordUtils.RecordExternalData(policyId, data);
-            // Record -->
+            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordExternalData(policyId, data.data, recordActionId, actionTimestemp), 0, data.syncEvents, data.history);
 
             for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
                 if (PolicyComponentsUtils.isAvailableReceiveData(block, policyId)) {
-                    await PolicyComponentsUtils.blockReceiveData(block, data);
+                    await PolicyComponentsUtils.blockReceiveData(block, data, actionstep);
                 }
             }
 
-            return new MessageResponse({});
+            actionstep.finish();
+
+            if (data.syncEvents) {
+                const results = actionstep.getResults();
+
+                return new MessageResponse({
+                    response: {},
+                    result: results.at(-1),
+                    steps: data.history ? results : [],
+                });
+            } else {
+                return new MessageResponse({});
+            }
         });
 
         this.getPolicyMessages(PolicyEvents.MRV_DATA_CUSTOM, policyId, async (msg: any) => {
             const { data } = msg;
 
-            // <-- Record
-            await RecordUtils.RecordExternalData(policyId, data.data);
-            // Record -->
-
             const block = PolicyComponentsUtils.GetBlockByTag(policyId, data.blockTag);
 
-            if (PolicyComponentsUtils.isAvailableReceiveData(block, policyId)) {
-                await PolicyComponentsUtils.blockReceiveData(block, data.data);
-            }
+            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordExternalData(policyId, data.data, recordActionId, actionTimestemp), 0, data.syncEvents, data.history);
 
-            return new MessageResponse({});
+            if (PolicyComponentsUtils.isAvailableReceiveData(block, policyId)) {
+                await PolicyComponentsUtils.blockReceiveData(block, data.data, actionstep);
+            }
+            
+            actionstep.finish();
+
+            if (data.syncEvents) {
+                const results = actionstep.getResults();
+
+                return new MessageResponse({
+                    response: {},
+                    result: results.at(-1),
+                    steps: data.history ? results : [],
+                });
+            } else {
+                return new MessageResponse({});
+            }
         });
 
         this.getPolicyMessages(PolicyEvents.GET_POLICY_NAVIGATION, policyId, async (msg: any) => {

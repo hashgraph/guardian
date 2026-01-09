@@ -155,6 +155,7 @@ export class InterfaceDocumentActionBlock {
         }
 
         if (ref.options.type === 'transformation') {
+            // actionStatus.saveResult(state);
             await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
         }
 

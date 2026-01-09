@@ -14,6 +14,7 @@ import {
     VcHelper,
 } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * External data block
@@ -144,7 +145,7 @@ export class ExternalDataBlock {
         ]
     })
     @CatchErrors()
-    async receiveData(data: IPolicyDocument) {
+    async receiveData(data: IPolicyDocument, actionStatus?: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         let verify: boolean;
         try {
@@ -188,10 +189,11 @@ export class ExternalDataBlock {
         if (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
+        // actionStatus.saveResult(state);
 
-        await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, null);
-        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, null);
-        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, null);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(doc)
         }));

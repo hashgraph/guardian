@@ -524,9 +524,10 @@ export class PolicyEngineService {
                 policyId: string,
                 data: any,
                 syncEvents?: boolean,
+                history?: boolean,
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, blockId, policyId, data, syncEvents } = msg;
+                    const { user, blockId, policyId, data, syncEvents, history } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
@@ -535,7 +536,8 @@ export class PolicyEngineService {
                             blockId,
                             policyId,
                             data,
-                            syncEvents
+                            syncEvents,
+                            history
                         }) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -551,9 +553,10 @@ export class PolicyEngineService {
                 policyId: string,
                 data: any,
                 syncEvents?: boolean,
+                history?: boolean,
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, tag, policyId, data, syncEvents } = msg;
+                    const { user, tag, policyId, data, syncEvents, history } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
@@ -562,7 +565,8 @@ export class PolicyEngineService {
                             tag,
                             policyId,
                             data,
-                            syncEvents
+                            syncEvents,
+                            history,
                         }) as any
                     return new MessageResponse(blockData);
                 } catch (error) {

@@ -206,6 +206,7 @@ export class DocumentValidatorBlock {
         if (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
+        // event.actionStatus.saveResult(event.data);
 
         await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);

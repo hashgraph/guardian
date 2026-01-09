@@ -246,6 +246,7 @@ export class TimerBlock {
         }
         await ref.saveState();
 
+        // event.actionStatus.saveResult(event.data);
         await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);

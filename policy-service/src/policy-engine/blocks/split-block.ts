@@ -278,6 +278,8 @@ export class SplitBlock {
                     return c.document;
                 })
             };
+
+            // actionStatus.saveResult(state);
             await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Chunk, ref, user, {
                 documents: ExternalDocuments(state.data)

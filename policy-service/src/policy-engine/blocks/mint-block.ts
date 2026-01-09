@@ -522,6 +522,7 @@ export class MintBlock {
 
         const state: IPolicyEventState = event.data;
         state.result = vp;
+        // event.actionStatus.saveResult(state);
         await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, event.actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, event.actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, event.actionStatus);

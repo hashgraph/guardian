@@ -271,6 +271,7 @@ export class RequestVcDocumentBlock {
             if (draft) {
                 await ref.triggerEvents(PolicyOutputEventType.DraftEvent, user, state, actionStatus);
             } else {
+                // actionStatus.saveResult(state);
                 await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
             }
             if (draft || editType === 'edit') {

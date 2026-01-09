@@ -152,6 +152,7 @@ export class CreateTokenBlock {
         docs: IPolicyDocument | IPolicyDocument[],
         userId: string | null,
         actionStatus: RecordActionStep,
+        saveStep = false,
     ) {
         if (!template) {
             throw new BlockActionError(
@@ -222,6 +223,11 @@ export class CreateTokenBlock {
         // #endregion
 
         const state = { data: docs };
+
+        if (saveStep) {
+            // actionStatus.saveResult(state);
+        }
+
         await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
@@ -336,7 +342,8 @@ export class CreateTokenBlock {
                 ),
                 eventData.data,
                 event?.user?.userId,
-                event.actionStatus
+                event.actionStatus,
+                true,
             );
         } else {
             if (!this.state.hasOwnProperty(user.id)) {

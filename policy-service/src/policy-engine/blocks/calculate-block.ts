@@ -323,6 +323,8 @@ export class CalculateContainerBlock {
             event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus);
         }
 
+        // event.actionStatus.saveResult(event.data);
+
         await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);

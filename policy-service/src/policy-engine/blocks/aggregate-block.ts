@@ -285,6 +285,7 @@ export class AggregateBlock {
             const user = await PolicyUtils.getDocumentOwner(ref, document, userId);
             rawEntities = await this.removeDocuments(ref, rawEntities);
             const state: IPolicyEventState = { data: rawEntities };
+            // actionStatus.saveResult(state);
             await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
             await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickAggregate, ref, user, {

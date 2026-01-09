@@ -202,6 +202,7 @@ export class ExtractDataBlock {
             }
         }
         const state = { data: sources };
+        // event.actionStatus.saveResult(state);
         await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
     }
 
@@ -234,6 +235,7 @@ export class ExtractDataBlock {
             source: docs,
             data: result
         };
+        // event.actionStatus.saveResult(state);
         await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
     }
 

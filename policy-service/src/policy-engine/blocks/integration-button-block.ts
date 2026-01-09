@@ -136,6 +136,7 @@ export class IntegrationButtonBlock {
 
         const state: IPolicyEventState = { data: mintVcDocument };
 
+        // actionStatus.saveResult(state);
         await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);

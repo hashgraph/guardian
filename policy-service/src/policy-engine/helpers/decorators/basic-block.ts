@@ -359,15 +359,25 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             ): Promise<void> {
                 const status = actionStatus;
 
+                if (output === PolicyOutputEventType.RunEvent) {
+                    actionStatus.saveResult(data);
+                }
+
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
+                        if (output === PolicyOutputEventType.RunEvent) {
+                           actionStatus.checkCycle(link.source, link.target);
+                        }
+
                         if (actionStatus.syncActions) {
                             const syncRes = await link.run(user, data, status);
 
-                            actionStatus.pushResult(syncRes);
+                            // actionStatus.saveResult(syncRes);
                             return syncRes;
                         } else {
-                            link.run(user, data, status);
+                            const res = link.run(user, data, status);
+
+                            // return res;
                         }
                     }
                 }
