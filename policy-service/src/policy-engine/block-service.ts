@@ -2,8 +2,8 @@ import { MessageError, MessageResponse, NatsService, Singleton } from '@guardian
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { BlockEngine } from './block-engine/index.js';
 import { PolicyUser } from './policy-user.js';
-import { BlockAboutString } from './block-about.js';
 import { PolicyValidator, ModuleValidator, ToolValidator } from './block-validators/index.js';
+import { GetBlockAbout } from './blocks/index.js';
 
 /**
  * Policy container
@@ -20,6 +20,8 @@ export class BlockService extends NatsService {
      * @private
      */
     public replySubject = 'block-service-queue-reply-' + GenerateUUIDv4();
+
+    public readonly BlockAboutString = JSON.stringify(GetBlockAbout());
 
     constructor() {
         super();
@@ -52,7 +54,7 @@ export class BlockService extends NatsService {
 
         this.getMessages(PolicyEvents.GET_BLOCK_ABOUT, async (msg: any) => {
             try {
-                return new MessageResponse(BlockAboutString);
+                return new MessageResponse(this.BlockAboutString);
             } catch (error) {
                 return new MessageError(error);
             }

@@ -26,7 +26,16 @@ import { RecordActionStep } from '../record-action-step.js';
         get: true,
         children: ChildrenType.Special,
         control: ControlType.UI,
-
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.RefreshEvent,
+            PolicyInputEventType.RestoreEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ],
+        defaultEvent: true,
         properties: [
             {
                 name: 'uiMetaData',
@@ -94,17 +103,7 @@ import { RecordActionStep } from '../record-action-step.js';
                     }
                 ]
             }
-        ],
-        input: [
-            PolicyInputEventType.RunEvent,
-            PolicyInputEventType.RefreshEvent,
-            PolicyInputEventType.RestoreEvent
-        ],
-        output: [
-            PolicyOutputEventType.RunEvent,
-            PolicyOutputEventType.RefreshEvent
-        ],
-        defaultEvent: true
+        ]
     },
     variables: [
         { path: 'options.schema', alias: 'schema', type: 'Schema' }

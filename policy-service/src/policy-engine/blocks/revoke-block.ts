@@ -32,7 +32,8 @@ export const RevokedStatus = 'Revoked';
             PolicyOutputEventType.RunEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true
+        defaultEvent: true,
+        deprecated: true
     }
 })
 export class RevokeBlock {

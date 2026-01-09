@@ -5,7 +5,7 @@ import { ModuleValidator } from './module-validator.js';
 import { ISerializedErrors } from './interfaces/serialized-errors.interface.js';
 import { ToolValidator } from './tool-validator.js';
 import { SchemaValidator } from './schema-validator.js';
-import { BlockAbout } from '../block-about.js';
+import { GetBlockAbout } from '../blocks/index.js';
 
 /**
  * Policy Validator
@@ -159,7 +159,7 @@ export class PolicyValidator {
         if (this.reachability) {
             const ctx = {
                 sources: Array.from(this.blocks.values()),
-                blockAboutRegistry: BlockAbout
+                blockAboutRegistry: GetBlockAbout()
             };
             const reachabilityPerBlock = computeReachability(ctx);
             return reachabilityPerBlock;
@@ -225,7 +225,7 @@ export class PolicyValidator {
         } else if (block.blockType === 'tool') {
             const tool = new ToolValidator(block);
             const policyTool = await DatabaseServer.getTool({
-                status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN]},
+                status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN] },
                 messageId: block.messageId,
                 hash: block.hash
             });

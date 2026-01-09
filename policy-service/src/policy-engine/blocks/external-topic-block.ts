@@ -103,7 +103,7 @@ interface SchemaItem {
         title: `Add 'External Topic' Block`,
         post: true,
         get: true,
-        children: ChildrenType.Special,
+        children: ChildrenType.None,
         control: ControlType.UI,
         input: [
             PolicyInputEventType.TimerEvent

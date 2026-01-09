@@ -134,7 +134,7 @@ import {
                 title: 'Role',
                 type: PropertyType.Select,
                 items: SelectItemType.Roles,
-                visible: 'user === "role"',
+                visible: 'user === "ROLE"',
                 required: true,
             },
             {
@@ -142,7 +142,7 @@ import {
                 label: 'Only for current user group',
                 title: 'Only for current user group',
                 type: PropertyType.Checkbox,
-                visible: 'user === "role"',
+                visible: 'user === "ROLE"',
             },
         ],
     },
