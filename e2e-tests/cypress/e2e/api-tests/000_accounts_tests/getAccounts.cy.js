@@ -7,7 +7,7 @@ context("Get accounts", { tags: ['accounts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
-    it("Get list of users", () => {       
+    it("Get list of users", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -17,7 +17,27 @@ context("Get accounts", { tags: ['accounts', 'firstPool', 'all'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body.at(0)).to.have.property("username");
+                expect(response.body.map(v => {
+                    delete v.did;
+                    delete v.parent;
+                    return v;
+                })).eql([
+                    {
+                        username: 'Installer'
+                    },
+                    {
+                        username: 'Installer2'
+                    },
+                    {
+                        username: 'Registrant'
+                    },
+                    {
+                        username: 'VVB'
+                    },
+                    {
+                        username: 'ProjectProponent'
+                    }
+                ]);
             });
         })
     });

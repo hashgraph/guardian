@@ -264,20 +264,21 @@ export class PolicyImportExport {
         }
 
         const policySchema = await DatabaseServer.getSchemaByType(preparedComponents.policy.topicId, SchemaEntity.POLICY_EXPORT_PROOF);
-        credentialSubject = SchemaHelper.updateObjectContext(new InterfaceSchema(policySchema), credentialSubject);
+        if(policySchema) {
+            credentialSubject = SchemaHelper.updateObjectContext(new InterfaceSchema(policySchema), credentialSubject);
+            const vcHelper = new VcHelper();
+            const didDocument = await vcHelper.loadDidDocument(preparedComponents.policy?.owner, preparedComponents.policy?.ownerId);
 
-        const vcHelper = new VcHelper();
-        const didDocument = await vcHelper.loadDidDocument(preparedComponents.policy?.owner, preparedComponents.policy?.ownerId);
+            if(didDocument) {
+                const vc = await vcHelper.createVerifiableCredential(
+                    credentialSubject,
+                    didDocument,
+                    null,
+                    null
+                );
 
-        if(didDocument) {
-            const vc = await vcHelper.createVerifiableCredential(
-                credentialSubject,
-                didDocument,
-                null,
-                null
-            );
-
-            zip.file('proof.json', JSON.stringify(vc.getDocument()));
+                zip.file('proof.json', JSON.stringify(vc.getDocument()));
+            }
         }
 
         zip.file(PolicyImportExport.policyFileName, JSON.stringify(preparedComponents.policy));

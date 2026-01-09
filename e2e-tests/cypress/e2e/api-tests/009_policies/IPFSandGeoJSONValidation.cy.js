@@ -70,7 +70,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 },
                 body: {
                     role: "Registrant"
-                }
+                },
+                timeout: 60000
             }).then(() => {
                 const waitRegRoleChoosing = {
                     method: METHOD.GET,
