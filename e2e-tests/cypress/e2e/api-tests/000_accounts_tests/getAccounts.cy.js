@@ -7,71 +7,61 @@ context("Get accounts", { tags: ['accounts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
-    it("Get list of users", () => {       
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Accounts,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body.at(0)).to.have.property("username");
-            });
-        })
-    });
+    const accountsUrl = `${API.ApiServer}${API.Accounts}`;
 
-    it("Get list of users without auth - Negative", () => {
+    const getAccounts = ({authorization, failOnStatusCode = true} = {}) =>
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.Accounts,
-            headers: {
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+            url: accountsUrl,
+            headers: authorization ? { authorization } : {},
+            failOnStatusCode,
+        });
+
+    it("Get list of users as SR", () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            getAccounts({ authorization }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.OK);
+                expect(response.body)
+                    .to.be.an('array')
+                    .and.not.be.empty;
+                expect(response.body[0]).to.have.property('username');
+            });
         });
     });
 
-    it("Get list of users with incorrect auth - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Accounts,
-            headers: {
-                authorization: "bearer 11111111111111111111@#$",
-            },
+    it("Get list of users without auth - Negative", () => {
+        getAccounts({ failOnStatusCode: false }).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get list of users with invalid auth - Negative", () => {
+        getAccounts({
+            authorization: 'bearer 11111111111111111111@#$',
             failOnStatusCode: false,
         }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+            expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Get list of users with empty auth - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Accounts,
-            headers: {
-                authorization: "",
-            },
+        getAccounts({
+            authorization: '',
             failOnStatusCode: false,
         }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+            expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get list of users as User - Negative", () => {
+    it("Get list of users as regular User - Forbidden", () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Accounts,
-                headers: {
-                    authorization
-                },
+            getAccounts({
+                authorization,
                 failOnStatusCode: false,
             }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.FORBIDDEN);
+                expect(response.status).to.eq(STATUS_CODE.FORBIDDEN);
             });
         });
     });
+    
 });
