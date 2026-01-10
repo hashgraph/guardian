@@ -16,6 +16,7 @@ import { EntitiesService } from '@services/entities.service';
 import { FiltersService } from '@services/filters.service';
 import { LandingService } from '@services/landing.service';
 import { SettingsService } from '@services/settings.service';
+import { DialogService } from 'primeng/dynamicdialog';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -26,6 +27,7 @@ export const appConfig: ApplicationConfig = {
         FiltersService,
         LandingService,
         SettingsService,
+        DialogService,
         provideHttpClient(),
         provideRouter(routes),
         provideAnimationsAsync(),

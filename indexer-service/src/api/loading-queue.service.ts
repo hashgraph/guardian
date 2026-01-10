@@ -313,7 +313,7 @@ export class LoadingQueueService {
 
         const topicResult = await em.nativeUpdate(TopicCache, {
             topicId: topicId,
-            priorityDate: { $eq: null }
+            priorityTimestamp: { $ne: priorityTimestamp }
         },
             {
                 priorityDate: new Date(),
@@ -325,7 +325,7 @@ export class LoadingQueueService {
 
         const messageResult = await em.nativeUpdate(MessageCache, {
             topicId: topicId,
-            priorityDate: { $eq: null }
+            priorityTimestamp: { $ne: priorityTimestamp }
         },
             {
                 priorityDate: new Date(),
@@ -343,7 +343,7 @@ export class LoadingQueueService {
 
         const result = await em.nativeUpdate(TokenCache, {
             tokenId,
-            priorityDate: { $eq: null }
+            priorityTimestamp: { $ne: priorityTimestamp }
         },
             {
                 priorityDate: new Date(),
@@ -419,14 +419,14 @@ export class LoadingQueueService {
             }
         });
 
-        const topicResult = await em.nativeUpdate(TopicCache, { topicId: { $in: Array.from(topicIds) }, priorityDate: { $eq: null } }, {
+        const topicResult = await em.nativeUpdate(TopicCache, { topicId: { $in: Array.from(topicIds) }, priorityTimestamp: { $ne: priorityTimestamp } }, {
             priorityDate: priorityDate,
             priorityStatus: PriorityStatus.SCHEDULED,
             priorityStatusDate: priorityDate,
             priorityTimestamp
         });
 
-        const tokenResult = await em.nativeUpdate(TokenCache, { tokenId: { $in: Array.from(tokenIds) }, priorityDate: { $eq: null } }, {
+        const tokenResult = await em.nativeUpdate(TokenCache, { tokenId: { $in: Array.from(tokenIds) }, priorityTimestamp: { $ne: priorityTimestamp } }, {
             priorityDate: priorityDate,
             priorityStatus: PriorityStatus.SCHEDULED,
             priorityStatusDate: priorityDate,
@@ -435,7 +435,7 @@ export class LoadingQueueService {
 
         const messageResult = await em.nativeUpdate(MessageCache, {
             topicId: { $in: Array.from(topicIds) },
-            priorityDate: { $eq: null }
+            priorityTimestamp: { $ne: priorityTimestamp }
         },
             {
                 priorityDate: new Date(),
