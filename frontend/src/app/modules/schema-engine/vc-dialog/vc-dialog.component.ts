@@ -1,11 +1,12 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Schema, UserPermissions, IntegrationDataTypes } from '@guardian/interfaces';
 import { SchemaService } from '../../../services/schema.service';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-dialog.component';
 
 /**
  * Dialog for display json
@@ -41,6 +42,7 @@ export class VCViewerDialog {
     public documentId?: string;
     public schemaId?: string;
     public messageId?: string;
+    public tags?: any[] = [];
     public user: UserPermissions = new UserPermissions();
     public additionalOptionsData?: {
         type: string;
@@ -58,6 +60,7 @@ export class VCViewerDialog {
     constructor(
         public dialogRef: DynamicDialogRef,
         public dialogConfig: DynamicDialogConfig,
+        private dialogService: DialogService,
         private schemaService: SchemaService,
         private profileService: ProfileService,
         private route: ActivatedRoute,
@@ -108,6 +111,7 @@ export class VCViewerDialog {
         this.title = title;
         this.json = document ? JSON.stringify((document), null, 4) : '';
         this.text = document || '';
+        this.tags = document?.tags;
 
         const fileSizeBytes = new Blob([typeof document === 'string' ? document : JSON.stringify(document)]).size;
         this.fileSize = Math.round((fileSizeBytes / (1024 * 1024)));
@@ -251,6 +255,7 @@ export class VCViewerDialog {
         this.loading = true;
         this.document = document;
         this.setJson();
+        this.tags = document.tags;
         setTimeout(() => {
             this.loading = false;
             this.ref.markForCheck(); 
@@ -270,5 +275,18 @@ export class VCViewerDialog {
             this.toggle = false;
             this.json = '';
         }
+    }
+
+    public onOpenTag(tag: any) {
+        this.dialogService.open(ViewerDialog, {
+            showHeader: false,
+            width: '850px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Tag',
+                type: 'JSON',
+                value: tag,
+            }
+        });
     }
 }

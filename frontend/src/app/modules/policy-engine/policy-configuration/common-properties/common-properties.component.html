@@ -85,9 +85,20 @@
                 <!-- Meta Data  -->
                 <tr class="propRow" [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Tag</td>
+                    <td class="propRowCell cellName">Key</td>
                     <td class="propRowCell">
                         <input class="prop-input" [(ngModel)]="block.localTag" [readonly]="readonly" (blur)="onSave()">
+                    </td>
+                </tr>
+                <tr *ngIf="!block.isRoot && canEditTags()" class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Tags</td>
+                    <td class="propRowCell">
+                        <div class="tags-display">
+                            <span *ngIf="getTagsAmount() > 0" class="tags-display-count">{{ getTagsAmount() | pluralize: 'tag' : 'tags' }} attached</span>
+                            <span *ngIf="getTagsAmount() <= 0" class="tags-display-count">No tags</span>
+                            <button (click)="editTags()" pButton class="p-button p-component p-button-primary" icon="pi pi-pen-to-square"></button>
+                        </div>
                     </td>
                 </tr>
                 <tr class="propRow" [attr.collapse]="propHidden.metaData">

@@ -829,6 +829,7 @@ export async function createDefaultRoles({
             Permissions.ANALYTIC_TOOL_READ,
             Permissions.ANALYTIC_SCHEMA_READ,
             Permissions.POLICIES_POLICY_REVIEW,
+            Permissions.POLICIES_POLICY_TAG,
             Permissions.SCHEMAS_SCHEMA_READ,
             Permissions.MODULES_MODULE_READ,
             Permissions.TOOLS_TOOL_READ,

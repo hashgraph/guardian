@@ -319,6 +319,7 @@ const routes: Routes = [
                 Permissions.POLICIES_POLICY_READ,
                 Permissions.POLICIES_POLICY_EXECUTE,
                 Permissions.POLICIES_POLICY_MANAGE,
+                Permissions.POLICIES_POLICY_TAG,
             ]
         }
     },
@@ -331,6 +332,7 @@ const routes: Routes = [
             permissions: [
                 Permissions.POLICIES_POLICY_EXECUTE,
                 Permissions.POLICIES_POLICY_MANAGE,
+                Permissions.POLICIES_POLICY_TAG,
             ]
         }
     },
@@ -344,7 +346,8 @@ const routes: Routes = [
                 UserRole.USER
             ],
             permissions: [
-                Permissions.POLICIES_POLICY_UPDATE
+                Permissions.POLICIES_POLICY_UPDATE,
+                Permissions.POLICIES_POLICY_TAG,
             ]
         }
     },

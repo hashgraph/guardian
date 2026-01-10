@@ -265,12 +265,11 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
 
     constructor(
         entitiesService: EntitiesService,
-        private dialogService: DialogService,
+        dialogService: DialogService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(entitiesService, route, router);
-        console.log(1)
+        super(entitiesService, dialogService, route, router);
     }
 
     protected override setResult(result?: any) {

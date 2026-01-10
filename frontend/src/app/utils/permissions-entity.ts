@@ -388,7 +388,7 @@ export class EntityPolicy implements IEntity {
             this.actions = new Array(1);
         } else {
             this.type = 'checkbox';
-            this.actions = new Array(8);
+            this.actions = new Array(9);
         }
     }
 
