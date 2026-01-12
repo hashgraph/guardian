@@ -1,5 +1,5 @@
 import { Worker } from 'node:worker_threads';
-import path from 'path'
+import path from 'node:path';
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -11,7 +11,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { BlockActionError } from '../errors/index.js';
 import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { connect, headers, NatsConnection, StringCodec, Subscription } from 'nats';
 import { IMessageResponse, MessageError } from '../models/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';

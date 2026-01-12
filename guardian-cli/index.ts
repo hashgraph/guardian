@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { spawnSync } from 'child_process';
+import { spawnSync } from 'node:child_process';
 import { Command } from 'commander';
 
 import { PolicyPublisher } from './helpers/policy-publisher.helper.js';

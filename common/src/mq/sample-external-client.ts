@@ -1,7 +1,7 @@
 import { ExternalMessageEvents } from '@guardian/interfaces';
 import { connect, headers, JSONCodec, StringCodec } from 'nats';
-import zlib from 'zlib';
-import crypto from 'crypto';
+import zlib from 'node:zlib';
+import crypto from 'node:crypto';
 import { JwtServicesValidator } from '../security/index.js';
 
 const ENABLE_IPFS_ENCRYPTION = false;

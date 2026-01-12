@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 
 @Module({
     imports: [

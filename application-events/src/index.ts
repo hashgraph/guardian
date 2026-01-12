@@ -1,8 +1,8 @@
 import express, { NextFunction, Request, Response } from 'express';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import * as yaml from 'js-yaml';
 import morgan from 'morgan';
-import path from 'path';
+import path from 'node:path';
 import swaggerUi from 'swagger-ui-express';
 import eventRoutes from './routes/events.js';
 import webhookRoutes from './routes/webooks.js';

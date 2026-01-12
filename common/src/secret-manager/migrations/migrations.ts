@@ -3,11 +3,11 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { DataBaseHelper, DataBaseNamingStrategy } from '../../helpers/index.js';
 import { WalletAccount } from './vault-account.js';
 import * as dotenv from 'dotenv';
-import * as path from 'path';
+import * as path from 'node:path';
 import { SecretManager } from '../secret-manager.js';
 import { Wallet } from '../../wallet/index.js';
 import { SecretManagerType } from '../secret-manager-config.js';
-import { exit } from 'process';
+import { exit } from 'node:process';
 import { DatabaseServer } from '../../database-modules/database-server.js';
 
 const globalEnvPath = path.join(process.cwd(), '../.env')

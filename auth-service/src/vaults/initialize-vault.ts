@@ -1,6 +1,6 @@
 import { IVault } from './vault.interface.js';
 import * as vaultProviders from './vault-providers/index.js'
-import assert from 'assert';
+import assert from 'node:assert';
 
 /**
  * Vault service factory

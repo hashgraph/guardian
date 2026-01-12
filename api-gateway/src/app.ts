@@ -9,7 +9,7 @@ import { TaskManager } from './helpers/task-manager.js';
 import { AppModule } from './app.module.js';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 import { HttpStatus, ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';

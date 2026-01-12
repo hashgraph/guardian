@@ -7,7 +7,7 @@ import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { Examples, ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, pageHeader, SchemaDTO, SystemSchemaDTO, SchemaDeletionPreviewDTO, TaskDTO, VersionSchemaDTO } from '#middlewares';
 import { CACHE, PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
 import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache, FilenameSanitizer } from '#helpers';
-import process from 'process';
+import process from 'node:process';
 
 @Controller('schema')
 @ApiTags('schema')

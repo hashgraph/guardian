@@ -52,7 +52,7 @@ import { Environment } from './environment.js';
 import { ContractParamType, FireblocksCreds, GenerateUUIDv4, HederaResponseCode, ISignOptions, SignType } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
-import process from 'process';
+import process from 'node:process';
 import { FireblocksHelper } from './fireblocks-helper.js';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;

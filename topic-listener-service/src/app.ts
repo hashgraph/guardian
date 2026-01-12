@@ -16,7 +16,7 @@ import {
 } from '@guardian/common';
 import { ListenerService } from './api/listener-service.js';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
-import * as process from 'process';
+import * as process from 'node:process';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { MikroORM } from '@mikro-orm/core';

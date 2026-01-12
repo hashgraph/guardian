@@ -1,5 +1,5 @@
 import { execSync, spawn } from 'child_process';
-import fs from 'fs';
+import fs from 'node:fs';
 
 (async () => {
     await execSync(`yarn`, { stdio: 'inherit', shell: true });

@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import 'reflect-metadata'
-import fs from 'fs';
+import fs from 'node:fs';
 
 dotenv.config();
 

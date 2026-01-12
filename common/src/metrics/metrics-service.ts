@@ -1,6 +1,6 @@
 import express, { Express } from 'express'
 import client, { Registry } from 'prom-client';
-import process from 'process';
+import process from 'node:process';
 import { PinoLogger } from '../helpers/index.js';
 
 export class MetricsService {

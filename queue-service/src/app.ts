@@ -2,7 +2,7 @@ import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLS
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import * as process from 'process';
+import * as process from 'node:process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';

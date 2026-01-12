@@ -20,9 +20,9 @@ import {
     updateToolConfig
 } from '../helpers/import-helpers/index.js'
 import { getPageOptions } from './helpers/index.js';
-import { readFile } from 'fs/promises';
-import path from 'path';
-import process from 'process';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import process from 'node:process';
 import { FilterObject } from '@mikro-orm/core';
 
 @Controller()

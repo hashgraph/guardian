@@ -4,7 +4,7 @@ import { IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyStatu
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 import { FilterObject } from '@mikro-orm/core';
 import { deleteSchema, findAndDryRunSchema, importToolByFile, importToolByMessage, importToolErrors, PolicyImportExportHelper, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
 import { escapeRegExp } from './helpers/api-helper.js';

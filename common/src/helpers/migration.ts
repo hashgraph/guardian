@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { Migrator } from '@mikro-orm/migrations-mongodb';
-import process from 'process';
+import process from 'node:process';
 
 const DEFAULT_MIN_POOL_SIZE = '1';
 const DEFAULT_MAX_POOL_SIZE = '5';

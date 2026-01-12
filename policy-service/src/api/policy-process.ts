@@ -25,7 +25,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
-import process from 'process';
+import process from 'node:process';
 import { CommonVariables } from '../helpers/common-variables.js';
 import { PolicyEvents } from '@guardian/interfaces';
 import { SynchronizationService } from '../policy-engine/multi-policy-service/index.js';

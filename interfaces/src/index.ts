@@ -1,5 +1,5 @@
-import EventEmitter from 'events';
-import fs, { WatchOptions } from 'fs';
+import EventEmitter from 'node:events';
+import fs, { WatchOptions } from 'node:fs';
 import 'reflect-metadata';
 
 declare class FSWatcher extends EventEmitter implements fs.FSWatcher {

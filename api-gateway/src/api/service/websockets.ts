@@ -1,5 +1,5 @@
 import WebSocket, { WebSocketServer } from 'ws'
-import { IncomingMessage, Server } from 'http';
+import { IncomingMessage, Server } from 'node:http';
 import { ExternalProviders, GenerateUUIDv4, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
 import { generateNumberFromString, IAuthUser, MeecoApprovedSubmission, MessageResponse, NatsService, NotificationHelper, PinoLogger, Singleton } from '@guardian/common';
 import { NatsConnection } from 'nats';

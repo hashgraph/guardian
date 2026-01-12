@@ -21,7 +21,7 @@ import { TaskApi } from './api/service/task.js';
 import { TokensApi } from './api/service/tokens.js';
 import { TrustChainsApi } from './api/service/trust-chains.js';
 import { WizardApi } from './api/service/wizard.js';
-import process from 'process';
+import process from 'node:process';
 import hpp from 'hpp';
 import { ThemesApi } from './api/service/themes.js';
 import { BrandingApi } from './api/service/branding.js';

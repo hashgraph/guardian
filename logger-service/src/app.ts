@@ -2,7 +2,7 @@ import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLS
 import { ApplicationStates } from '@guardian/interfaces';
 import { NestFactory } from '@nestjs/core';
 import { Deserializer, IncomingRequest, MicroserviceOptions, Serializer, Transport } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 import { AppModule } from './app.module.js';
 
 export class LoggerSerializer implements Serializer {

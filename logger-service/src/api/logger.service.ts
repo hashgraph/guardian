@@ -10,7 +10,7 @@ import {
 import { MessageAPI } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 import { FilterObject } from '@mikro-orm/core';
 import { APP_GUARD } from '@nestjs/core';
 

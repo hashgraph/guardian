@@ -56,7 +56,7 @@ import { wizardAPI } from './api/wizard.service.js';
 import { startMetricsServer } from './utils/metrics.js';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 import { AppModule } from './app.module.js';
 import { analyticsAPI } from './api/analytics.service.js';
 import { suggestionsAPI } from './api/suggestions.service.js';
