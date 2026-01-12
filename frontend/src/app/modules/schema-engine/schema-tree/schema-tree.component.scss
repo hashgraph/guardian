@@ -149,15 +149,17 @@
     }
 
     .node-header {
-        width: 100%;
-        padding: 9px 8px 9px 16px;
-        background: var(--guardian-grey-background, #F9FAFC);
-        font-family: Inter;
-        font-size: 12px;
-        font-weight: 600;
-        line-height: 14px;
-        text-align: left;
-        color: #23252E;
+		width: 100%;
+		padding: 9px 8px 9px 16px;
+		background: var(--guardian-grey-background, #F9FAFC);
+		font-family: Inter;
+		font-size: 12px;
+		font-weight: 600;
+		line-height: 14px;
+		text-align: left;
+		color: #23252E;
+		text-wrap: wrap;
+		word-wrap: break-word;
     }
 
     .node-fields {
