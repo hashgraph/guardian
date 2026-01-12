@@ -343,6 +343,48 @@ paths:
       summary: Compare policies.
       tags:
         - analytics
+  /analytics/compare/policy/original/{policyId}:
+    post:
+      description: >-
+        Compare policies with original state. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: AnalyticsApi_compareOriginalPolicy
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterPoliciesDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparePoliciesDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Compare policies with original state.
+      tags:
+        - analytics
   /analytics/compare/modules:
     post:
       description: >-
@@ -6854,6 +6896,13 @@ paths:
           schema:
             example: true
             type: boolean
+        - name: originalTracking
+          required: false
+          in: query
+          description: Save original state of the policy
+          schema:
+            example: true
+            type: boolean
       requestBody:
         required: true
         description: Message.
@@ -6904,6 +6953,13 @@ paths:
           required: false
           in: query
           description: Import policy in demo mode.
+          schema:
+            example: true
+            type: boolean
+        - name: originalTracking
+          required: false
+          in: query
+          description: Save original state of the policy
           schema:
             example: true
             type: boolean
@@ -7143,6 +7199,13 @@ paths:
           schema:
             example: true
             type: boolean
+        - name: originalTracking
+          required: false
+          in: query
+          description: Save original state of the policy
+          schema:
+            example: true
+            type: boolean
       requestBody:
         required: true
         description: A zip file containing policy config.
@@ -7191,6 +7254,13 @@ paths:
           required: false
           in: query
           description: Import policy in demo mode.
+          schema:
+            example: true
+            type: boolean
+        - name: originalTracking
+          required: false
+          in: query
+          description: Save original state of the policy
           schema:
             example: true
             type: boolean
@@ -8430,6 +8500,80 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       summary: Get filtered policies
+      tags:
+        - policies
+  /policies/{policyId}/create-new-version-vc-document:
+    post:
+      description: Create new version vc document.
+      operationId: PolicyApi_createNewVersionVcDocument
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Create new version vc document.
+      tags:
+        - policies
+  /policies/{policyId}/get-all-version-vc-documents/{documentId}:
+    get:
+      description: Get all version VC documents.
+      operationId: PolicyApi_getAllVersionVcDocuments
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get all version VC documents.
       tags:
         - policies
   /schema/{schemaId}:
@@ -18170,6 +18314,8 @@ components:
         version:
           type: string
           example: 1.0.0
+        originalChanged:
+          type: string
         config:
           type: object
           additionalProperties: true
@@ -19335,6 +19481,7 @@ components:
             - USER_PERMISSIONS
             - POLICY_DISCUSSION_V2
             - POLICY_COMMENT
+            - POLICY_EXPORT_PROOF
           example: POLICY
         iri:
           type: string

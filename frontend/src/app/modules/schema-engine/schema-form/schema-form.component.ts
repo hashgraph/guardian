@@ -89,12 +89,14 @@ export class SchemaFormComponent implements OnInit {
     @Input() isFormForFinishSetup: boolean = false;
     @Input() isFormForRequestBlock: boolean = false;
     @Input() lastSavedAt?: Date;
+    @Input() isEditMode: boolean = false;
 
     @Output() change = new EventEmitter<Schema | null>();
     @Output() destroy = new EventEmitter<void>();
     @Output() cancelBtnEvent = new EventEmitter<boolean>();
     @Output() submitBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() saveBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
+    @Output() updatableBtnEvent = new EventEmitter();
     @Output() buttons = new EventEmitter<any>();
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
@@ -103,6 +105,7 @@ export class SchemaFormComponent implements OnInit {
     public isShown: boolean[] = [true];
     public currentIndex: number = 0;
     public buttonsConfig: IButton[] = [];
+    public editButtonConfig: IButton;
 
     constructor(
         private ipfs: IPFSService,
@@ -135,7 +138,11 @@ export class SchemaFormComponent implements OnInit {
 
             }
         }
-        this.createButtons();
+        if (!this.isEditMode) {
+            this.createButtons();
+        } else {
+            this.createEditModeButton()
+        }
     }
 
     ngOnDestroy() {
@@ -231,6 +238,29 @@ export class SchemaFormComponent implements OnInit {
         }]
         this.buttons.emit(this.buttonsConfig);
     }
+
+    public createEditModeButton() {
+        this.editButtonConfig = {
+            id: 'submit',
+            visible: () => {
+                if (!this.formModel?.controls) {
+                    return false;
+                }
+                return true;
+            },
+            disabled: () => {
+                return false;
+            },
+            text: 'Save Changes',
+            class: 'p-button',
+            type: 'primary',
+            fn: () => {
+                this.onUpdatableBtnEvent();
+            },
+        };
+        this.buttons.emit(this.editButtonConfig);
+    }
+
 
     public addGroup(item: IFieldControl<any>) {
         this.formModel?.addGroup(item);
@@ -637,6 +667,10 @@ export class SchemaFormComponent implements OnInit {
 
     public onSaveBtnClick(fields: IFieldControl<any>[] | undefined | null) {
         this.saveBtnEvent.emit(fields);
+    }
+
+    public onUpdatableBtnEvent() {
+        this.updatableBtnEvent.emit()
     }
 
     public showPage(item: IFieldControl<any>, index: number): boolean {

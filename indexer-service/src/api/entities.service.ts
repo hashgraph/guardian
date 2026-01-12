@@ -1957,6 +1957,12 @@ export class EntityService {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
             filters.type = MessageType.VC_DOCUMENT;
+            filters.$or = [
+                { "options.initId": { $exists: false } },
+                { "options.initId": null },
+                { "options.initId": undefined },
+                { "options.initId": "" },
+            ];
             const em = DataBaseHelper.getEntityManager();
             const [rows, count] = (await em.findAndCount(
                 Message,
@@ -1997,10 +2003,27 @@ export class EntityService {
                 consensusTimestamp: messageId,
             });
 
+            const versions = await em.find(Message, {
+                type: MessageType.VC_DOCUMENT,
+                $or: [
+                    { consensusTimestamp: messageId },
+                    { "options.initId": messageId }
+                ]
+            } as any, {
+                orderBy: {
+                    consensusTimestamp: 'DESC'
+                }
+            });
+
+            for (let i = 0; i < versions.length; i++) {
+                versions[i] = await loadDocuments(versions[i], false);
+            }
+
             if (!item) {
                 return new MessageResponse<VCDetails>({
                     id: messageId,
                     row,
+                    versions
                 });
             }
 
@@ -2047,7 +2070,8 @@ export class EntityService {
                 history,
                 row,
                 schema,
-                formulasData
+                formulasData,
+                versions
             });
         } catch (error) {
             return new MessageError(error, getErrorCode(error.code));

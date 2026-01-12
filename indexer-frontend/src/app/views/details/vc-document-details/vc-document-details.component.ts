@@ -29,6 +29,8 @@ import { VCFullscreenDialog } from '../../../dialogs/vc-fullscreen-dialog/vc-ful
 import { InputTextModule } from 'primeng/inputtext';
 import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
+import CID from 'cids';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
     selector: 'vc-document-details',
@@ -59,7 +61,8 @@ import { IconFieldModule } from 'primeng/iconfield';
         IconFieldModule,
         InputIconModule,
         InputTextModule,
-        VCFullscreenDialog
+        VCFullscreenDialog,
+        DropdownModule
     ],
     providers: [DialogService],
 })
@@ -224,6 +227,11 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     formulasResults?: any | null;
     analytics: any | null
 
+    showDocumentVersionsTab: boolean = false;
+    versions: any[] = [];
+    versionsIndex: number = 0;
+    versionOptions: { label: string; value: number }[] = [];
+    
     mapTabs: any[] = ['json', 'table'];
     mapTabIndex: number = 0;
     mapPoints: any[] = [];
@@ -267,7 +275,6 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
 
     protected override setResult(result?: any) {
         super.setResult(result);
-
         try {
             if (result?.schema) {
                 this.schema = new Schema(result?.schema, '');
@@ -308,6 +315,11 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
             }
         } catch (error) {
             console.log(error);
+        }
+
+        if (result?.versions) {
+            this.showDocumentVersionsTab = result?.versions.length > 1;
+            this.createVersionOptionSet(result.versions);
         }
     }
 
@@ -728,6 +740,70 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
             default:
                 break;
         }
+    }
+
+    private createVersionOptionSet(versions: any[]) {
+        for (let index = 0; index < versions.length; index++) {
+            let version = versions[index];
+            if (version) {
+                this.createVersionValue(version, index);
+            }
+        }
+    }
+
+    private createVersionValue(version: any, index: number) {
+        if (Array.isArray(version.files)) {
+            version._ipfs = [];
+            version._ipfsStatus = true;
+            for (let i = 0; i < version.files.length; i++) {
+                const url = version.files[i];
+                const document = version.documents?.[i];
+                const json = this.getDocument(document);
+                const documentObject = this.getDocumentObject(document);
+                const credentialSubject = this.getCredentialSubject(documentObject);
+                const verifiableCredential = this.getVerifiableCredential(documentObject);
+                const cid = new CID(url);
+                const ipfs = {
+                    version: cid.version,
+                    cid: url,
+                    global: cid.toV1().toString('base32'),
+                    document,
+                    json,
+                    documentObject,
+                    credentialSubject,
+                    verifiableCredential
+                }
+                if (!document) {
+                    version._ipfsStatus = false;
+                }
+                version._ipfs.push(ipfs);
+                this.versions?.push(version);
+                this.addOptionName(version.consensusTimestamp, index + i)
+            }
+        }
+    }
+
+    private addOptionName(timestamp: any, index: number) {
+        const date = new Date(timestamp * 1000).toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true,
+        });
+
+        if (index === 0) {
+            this.versionOptions.push({ label: date + ' (Latest)', value: index });
+        }
+        else {
+            this.versionOptions.push({label: date, value: index})
+        }
+    }
+
+    public onVersionChange(event: any) {
+        this.versionsIndex = event.value;
     }
 
     protected readonly document = document;

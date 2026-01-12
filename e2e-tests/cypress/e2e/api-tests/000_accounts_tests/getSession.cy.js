@@ -18,10 +18,10 @@ context('Get session', { tags: ['accounts', 'firstPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK)
                 expect(response.body).to.have.property('id')
-                expect(response.body).to.have.property('username', SRUsername)
                 expect(response.body).to.have.property('did')
                 expect(response.body).to.have.property('hederaAccountId')
-                expect(response.body).to.have.property('role')
+                expect(response.body.username).eq(SRUsername)
+                expect(response.body.role).eq('STANDARD_REGISTRY')
             })
         })
     })
@@ -37,6 +37,7 @@ context('Get session', { tags: ['accounts', 'firstPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK)
                 expect(response.body).to.have.property('id')
+                expect(response.body.username).eq(UserUsername)
                 expect(response.body.role).eq('USER')
             })
         })

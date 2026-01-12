@@ -61,5 +61,6 @@ export type VCDetails = DetailsHistory<VC> & {
         formulas: any[],
         relationships: any[],
         schemas: any[]
-    }
+    },
+    versions?: any[]
 };

@@ -1269,7 +1269,8 @@ export const BlockAbout = {
         'children': 'None',
         'control': 'Server',
         'input': [
-            'RunEvent'
+            'RunEvent',
+            'TimerEvent'
         ],
         'output': [
             'RunEvent'
@@ -1525,6 +1526,158 @@ export const BlockAbout = {
                 'label': 'Expression',
                 'title': 'Expression',
                 'type': 'Code'
+            }
+        ]
+    },
+    'globalEventsWriterBlock': {
+        'label': 'Global Events Writer',
+        'title': 'Global Events Writer',
+        'post': true,
+        'get': true,
+        'children': 'None',
+        'control': 'UI',
+        'input': [
+            'RunEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent',
+            'ErrorEvent',
+            'ReleaseEvent'
+        ],
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'showNextButton',
+                'label': 'Show Next button',
+                'title': 'Show button to move to next block with cached payload',
+                'type': 'Checkbox',
+                'default': false,
+            },
+            {
+                'name': 'topicIds',
+                'label': 'Global topics',
+                'title': 'One or more Hedera topics where notifications are published',
+                'type': 'Array',
+                'items': {
+                    'label': 'Topic',
+                    'value': '@topicId',
+                    'properties': [
+                        {
+                            'name': 'topicId',
+                            'label': 'Topic id',
+                            'title': 'Hedera topic id',
+                            'type': 'Input'
+                        },
+                        {
+                            'name': 'active',
+                            'label': 'Active by default',
+                            'title': 'Add this topic stream as active for new users',
+                            'type': 'Checkbox',
+                            'default': true,
+                        },
+                        {
+                            'name': 'documentType',
+                            'label': 'Document type',
+                            'title': 'Type written to the global topic for reader-side filtering',
+                            'type': 'Select',
+                            'items': [
+                                { 'label': 'VC',   'value': 'vc' },
+                                { 'label': 'JSON', 'value': 'json' },
+                                { 'label': 'CSV',  'value': 'csv' },
+                                { 'label': 'Text', 'value': 'text' },
+                                { 'label': 'Any',  'value': 'any' }
+                            ],
+                            'default': 'vc'
+                        },
+                    ]
+                }
+            },
+        ]
+    },
+    'globalEventsReaderBlock': {
+        'label': 'Global Events Reader',
+        'title': `Global Events Reader`,
+        'post': true,
+        'get': true,
+        'children': 'Special',
+        'control': 'UI',
+        'input': [
+            'RunEvent',
+            'TimerEvent'
+        ],
+        'output': null,
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'showNextButton',
+                'label': 'Show Next button',
+                'title': 'Show button to move to next block with cached payload',
+                'type': 'Checkbox',
+                'default': true,
+            },
+            {
+                'name': 'eventTopics',
+                'label': 'Event topics',
+                'title': 'Hedera topic ids to listen',
+                'type': 'Array',
+                'items': {
+                    'label': 'Event topic',
+                    'value': '@topicId',
+                    'properties': [
+                        {
+                            'name': 'topicId',
+                            'label': 'Topic ID',
+                            'title': 'Hedera topic id (0.0.x)',
+                            'type': 'Input'
+                        },
+                        {
+                            'name': 'active',
+                            'label': 'Active by default',
+                            'title': 'Add this topic stream as active for new users',
+                            'type': 'Checkbox',
+                            'default': true,
+                        },
+                    ]
+                }
+            },
+            {
+                'name': 'branches',
+                'label': 'Branches',
+                'title': 'Branch outputs',
+                'type': 'Array',
+                'items': {
+                    'label': 'Branch',
+                    'value': '@branchEvent',
+                    'properties': [
+                        {
+                            'name': 'branchEvent',
+                            'label': 'Branch event',
+                            'title': 'Output event name',
+                            'type': 'Input'
+                        },
+                        {
+                            'name': 'documentType',
+                            'label': 'Document type',
+                            'title': 'Expected message type for this branch (reader-side filtering)',
+                            'type': 'Select',
+                            'items': [
+                                { 'label': 'VC',   'value': 'vc' },
+                                { 'label': 'JSON', 'value': 'json' },
+                                { 'label': 'CSV',  'value': 'csv' },
+                                { 'label': 'Text', 'value': 'text' },
+                                { 'label': 'Any',  'value': 'any' }
+                            ],
+                            'default': 'vc'
+                        },
+                        {
+                            'name': 'schema',
+                            'label': 'Schema',
+                            'title': 'VC schema',
+                            'type': 'Schemas'
+                        }
+                    ]
+                }
             }
         ]
     },
