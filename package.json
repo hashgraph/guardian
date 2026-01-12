@@ -37,6 +37,7 @@
         "indexer-common",
         "indexer-api-gateway",
         "indexer-service",
-        "indexer-worker-service"
+        "indexer-worker-service",
+        "contracts"
     ]
 }
