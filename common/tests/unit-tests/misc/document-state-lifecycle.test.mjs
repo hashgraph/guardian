@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import { DidDocument } from '../../../dist/entity/did-document.js';
 import { DocumentState } from '../../../dist/entity/document-state.js';
 import { ExternalPolicy } from '../../../dist/entity/external-policy.js';

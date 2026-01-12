@@ -8,9 +8,9 @@
  * verification of existing BbsBlsSignature2020 credentials.
  */
 import { assert } from 'chai';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { BLS12381_2020_V1_CONTEXT } from '../../../../dist/hedera-modules/document-loader/contexts/bls12381-2020-v1.js';
 
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), '../../../fixtures/credentials');

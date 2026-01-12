@@ -1,7 +1,7 @@
 import axios from 'axios';
-import fs from 'fs';
+import fs from 'node:fs';
 import WebSocket from 'ws';
-import Path from 'path';
+import path from 'node:path';
 
 interface Task {
     action: string; options?: any; resolve: Function

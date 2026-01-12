@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 import { streamToBuffer } from '../dist/helpers/stream-to-buffer.js';
 
 describe('streamToBuffer', () => {

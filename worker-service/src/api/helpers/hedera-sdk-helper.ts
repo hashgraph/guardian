@@ -51,7 +51,7 @@ import axios, { AxiosResponse } from 'axios';
 import { ContractParamType, FireblocksCreds, GenerateUUIDv4, HederaResponseCode, ISignOptions, SignType } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
-import process from 'process';
+import process from 'node:process';
 import { FireblocksHelper } from './fireblocks-helper.js';
 import { Environment, MockEntityType, MockService, MockType, MockHelper } from '@guardian/common';
 

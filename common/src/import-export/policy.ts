@@ -4,7 +4,7 @@ import { DatabaseServer } from '../database-modules/index.js';
 import { ImportExportUtils } from './utils.js';
 import { PolicyCategoryExport, SchemaCategory, SchemaHelper, Schema as InterfaceSchema, SchemaEntity, GenerateUUIDv4 } from '@guardian/interfaces';
 import stringify from 'fast-json-stable-stringify';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import { VcHelper } from '../helpers/vc-helper.js';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from 'bson';

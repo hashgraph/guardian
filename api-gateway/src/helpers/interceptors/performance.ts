@@ -1,7 +1,7 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 
 import { Observable, tap } from 'rxjs';
-import { performance } from 'perf_hooks';
+import { performance } from 'node:perf_hooks';
 
 @Injectable()
 export class PerformanceInterceptor implements NestInterceptor {

@@ -8,9 +8,9 @@
  * Schema-context output is baked into published credentials, so silent drift would be permanent.
  */
 import { assert } from 'chai';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { schemasToContext } from '../../../dist/helpers/schemas-to-context.js';
 import { schemasToContext as schemasToContextImpl } from '../../../dist/helpers/jsonld-schema/index.js';
 
