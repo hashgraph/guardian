@@ -5,9 +5,8 @@ import { TreeGraphComponent } from '../../common/tree-graph/tree-graph.component
 import { TreeSource } from '../../common/tree-graph/tree-source';
 import { TreeNode } from '../../common/tree-graph/tree-node';
 import { forkJoin, Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { InformService } from 'src/app/services/inform.service';
-import { TagsService } from 'src/app/services/tag.service';
 
 interface SchemaTreeNode extends TreeNode<{ name: string; isTagged?: boolean }> {
     searchHighlighted?: boolean;
@@ -18,6 +17,7 @@ interface TagItem {
     localTarget: string;
     name?: string;
     id: string;
+    tagSchemaId?: string;
     document?: {
         credentialSubject?: Array<{
             type?: string;
@@ -52,8 +52,7 @@ export class SchemaTreeComponent implements OnInit {
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private schemaService: SchemaService,
-        private informService: InformService,
-        private tagsService: TagsService
+        private informService: InformService
     ) {
         this.header = this.config.header || '';
         this.schema = this.config.data;
@@ -62,64 +61,23 @@ export class SchemaTreeComponent implements OnInit {
     ngOnInit(): void {
         this.loading = true;
         this.fetchedSchemaIds.clear();
-
-        const taggedSchemaTypes = this.getTaggedSchemaTypes();
         const mainSchemaType = this.schema.iri?.replace(/^#/, '') || '';
         this.fetchedSchemaIds.add(mainSchemaType);
 
-        const uniqueTaggedTypes = taggedSchemaTypes.filter((type: string) => {
-            if (this.fetchedSchemaIds.has(type)) {
+        const taggedSchemaIds = this.getTaggedSchemaIds().filter((id: string) => {
+            if (this.fetchedSchemaIds.has(id)) {
                 return false;
             }
-            this.fetchedSchemaIds.add(type);
+            this.fetchedSchemaIds.add(id);
             return true;
         });
 
         const mainSchemaRequest = this.createSchemaTreeRequest(this.schema.id, this.schema.name);
-
-        if (uniqueTaggedTypes.length > 0) {
-            this.loadTaggedSchemas(mainSchemaRequest, uniqueTaggedTypes);
-        } else {
-            this.executeTreeRequests([mainSchemaRequest]);
-        }
-    }
-
-    private createSchemaTreeRequest(schemaId: string, schemaName: string): Observable<any> {
-        return this.schemaService.getSchemaTree(schemaId).pipe(
-            catchError(() => {
-                this.informService.errorShortMessage(`Failed to load schema tree: ${schemaName}`, 'Schema Tree Error');
-                return of(null);
-            })
+        const taggedSchemaRequests = taggedSchemaIds.map((schemaId: string) =>
+            this.createSchemaTreeRequest(schemaId, `Tag Schema ${schemaId}`)
         );
-    }
 
-    private loadTaggedSchemas(mainSchemaRequest: Observable<any>, uniqueTaggedTypes: string[]): void {
-        this.tagsService
-            .getSchemas({ pageIndex: 0, pageSize: 1000 })
-            .pipe(
-                map((response) => response.body || []),
-                catchError(() => {
-                    this.informService.errorShortMessage('Failed to load tag schemas', 'Schema Tree Error');
-                    return of([]);
-                })
-            )
-            .subscribe((tagSchemas: any[]) => {
-                const taggedSchemaRequests = uniqueTaggedTypes.map((type: string) => {
-                    const iri = `#${type}`;
-                    const matchedSchema = tagSchemas.find((s) => s.iri === iri);
-
-                    if (matchedSchema?._id) {
-                        return this.createSchemaTreeRequest(matchedSchema._id, matchedSchema.name);
-                    }
-                    return of(null);
-                });
-
-                this.executeTreeRequests([mainSchemaRequest, ...taggedSchemaRequests]);
-            });
-    }
-
-    private executeTreeRequests(requests: Observable<any>[]): void {
-        forkJoin(requests).subscribe((results) => {
+        forkJoin([mainSchemaRequest, ...taggedSchemaRequests]).subscribe((results) => {
             const allNodes: SchemaTreeNode[] = [];
 
             results.forEach((result, index) => {
@@ -143,19 +101,27 @@ export class SchemaTreeComponent implements OnInit {
         });
     }
 
-    private getTaggedSchemaTypes(): string[] {
+    private createSchemaTreeRequest(schemaId: string, schemaName: string): Observable<any> {
+        return this.schemaService.getSchemaTree(schemaId).pipe(
+            catchError(() => {
+                this.informService.errorShortMessage(`Failed to load schema tree: ${schemaName}`, 'Schema Tree Error');
+                return of(null);
+            })
+        );
+    }
+
+    private getTaggedSchemaIds(): string[] {
         const tags: TagItem[] = this.schema?._tags?.tags || [];
-        return tags
-            .filter((tag) => tag.entity === 'Schema' && tag.document?.credentialSubject?.[0]?.type)
-            .map((tag) => tag.document!.credentialSubject![0].type!);
+        return tags.filter((tag) => tag.entity === 'Schema' && tag.tagSchemaId).map((tag) => tag.tagSchemaId!);
     }
 
     private traverse(
         node: { name: string; children: any[] },
-        { isRoot = false, isTagged = false }: { isRoot?: boolean; isTagged?: boolean } = {}
+        { isRoot = false, isTagged = false, parentPath = '' }: { isRoot?: boolean; isTagged?: boolean; parentPath?: string } = {}
     ): SchemaTreeNode[] {
         const nodeType = isRoot ? 'root' : 'sub';
-        const treeNode: SchemaTreeNode = new TreeNode<{ name: string; isTagged?: boolean }>(node.name, nodeType, {
+        const nodeId = parentPath ? `${parentPath}/${node.name}` : node.name;
+        const treeNode: SchemaTreeNode = new TreeNode<{ name: string; isTagged?: boolean }>(nodeId, nodeType, {
             name: node.name,
             isTagged,
         }) as SchemaTreeNode;
@@ -168,8 +134,9 @@ export class SchemaTreeComponent implements OnInit {
         return [
             treeNode,
             ...(node.children || []).flatMap((child) => {
-                treeNode.addId(child.name);
-                return this.traverse(child, { isTagged });
+                const childId = `${nodeId}/${child.name}`;
+                treeNode.addId(childId);
+                return this.traverse(child, { isTagged, parentPath: nodeId });
             }),
         ];
     }

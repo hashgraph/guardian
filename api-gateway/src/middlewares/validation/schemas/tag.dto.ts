@@ -111,6 +111,14 @@ export class TagDTO {
         additionalProperties: true
     })
     document?: any;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        description: 'Tag schema database ID (for tags created with a tag schema)',
+        example: Examples.DB_ID
+    })
+    tagSchemaId?: string;
 }
 
 @ApiExtraModels(TagDTO)

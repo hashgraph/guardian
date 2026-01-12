@@ -247,6 +247,41 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                     entity
                 }
                 const items = await DatabaseServer.getTags(filter);
+
+                // Extract unique tag schema IRIs from tags that have documents with credentialSubject
+                const tagSchemaTypes = new Set<string>();
+                for (const item of items) {
+                    const type = item.document?.credentialSubject?.[0]?.type;
+                    if (type) {
+                        tagSchemaTypes.add(`#${type}`); // IRI format includes # prefix
+                    }
+                }
+
+                // Batch fetch tag schemas by their IRIs and enrich tags with tagSchemaId
+                if (tagSchemaTypes.size > 0) {
+                    const tagSchemas = await DatabaseServer.getSchemas({
+                        iri: { $in: Array.from(tagSchemaTypes) },
+                        category: SchemaCategory.TAG
+                    });
+                    const tagSchemaMap = new Map<string, string>();
+                    for (const schema of tagSchemas) {
+                        if (schema.iri && schema.id) {
+                            tagSchemaMap.set(schema.iri, schema.id.toString());
+                        }
+                    }
+
+                    for (const item of items) {
+                        const type = item.document?.credentialSubject?.[0]?.type;
+                        if (type) {
+                            const iri = `#${type}`;
+                            const tagSchemaId = tagSchemaMap.get(iri);
+                            if (tagSchemaId) {
+                                (item as any).tagSchemaId = tagSchemaId;
+                            }
+                        }
+                    }
+                }
+
                 return new MessageResponse(items);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
