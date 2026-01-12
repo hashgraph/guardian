@@ -10,625 +10,293 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
     let contractIdR, contractUuidR, tokenId, policyId, hederaId, poolId, retireRequestId;
 
     before("Create contracts, policy and register new user", () => {
-        //Create retire contract and save id
         Authorization.getAccessToken(SRUsername).then((authorization) => {
+            // Get Retire Contract
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.ListOfContracts,
-                headers: {
-                    authorization,
-                },
-                qs: {
-                    "type": "RETIRE",
-                },
+                headers: { authorization },
+                qs: { "type": "RETIRE" },
                 timeout: 180000
             }).then((response) => {
                 contractIdR = response.body.at(0).id;
                 contractUuidR = response.body.at(0).contractId;
-            })
+            });
 
+            // Get Policy and Token
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
+                headers: { authorization },
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == "iRec_4") {
-                        policyId = element.id
-                    }
-                })
-                //Get token(Irec token) draft id to update it
+                policyId = response.body.find(el => el.name === "iRec_4")?.id;
+
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + API.ListOfTokens,
-                    headers: {
-                        authorization,
-                    },
+                    headers: { authorization },
                 }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    response.body.forEach(element => {
-                        if (element.policyIds.at(0) == policyId) {
-                            tokenId = element.tokenId
-                        }
-                    });
-                })
-            })
-            Authorization.getAccessToken(UserUsername).then((authorization) => {
+                    tokenId = response.body.find(el => el.policyIds.at(0) === policyId)?.tokenId;
+                });
+            });
+
+            // Get User Profile
+            Authorization.getAccessToken(UserUsername).then((userAuth) => {
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + 'profiles/' + UserUsername,
-                    headers: {
-                        authorization,
-                    }
-                }).should((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.OK)
+                    headers: { authorization: userAuth }
+                }).then((response) => {
                     hederaId = response.body.hederaAccountId;
-                })
-            })
-        })
-    })
+                });
+            });
+        });
+    });
 
     describe("Create and cancel retire request", () => {
-
         it("Create retire request", () => {
-            Authorization.getAccessToken(UserUsername).then((authorization) => {
+            Authorization.getAccessToken(UserUsername).then((userAuth) => {
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + API.RetirePools,
-                    headers: {
-                        authorization
-                    }
+                    headers: { authorization: userAuth }
                 }).then((response) => {
                     poolId = response.body.at(0).id;
-                    cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
-                        headers: {
-                            authorization,
-                            "Content-Type": "application/json"
-                        },
-                        body: [{
-                            token: tokenId,
-                            count: 1,
-                            serials: [1]
-                        }]
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.OK);
+                    cy.createRetireAction(userAuth, poolId, tokenId, 1, [1]).then((res) => {
+                        expect(res.status).eql(STATUS_CODE.OK);
                     });
-                })
-            })
-
-            Authorization.getAccessToken(SRUsername).then((authorization) => {
-
-                Checks.whileRetireRRequestCreating(contractUuidR, authorization, 0)
-
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetireRequests,
-                    headers: {
-                        authorization,
-                    },
-                    qs: {
-                        contractId: contractUuidR
-                    }
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    retireRequestId = response.body.at(0).id;
-                    expect(response.body.at(0).contractId).eql(contractUuidR)
-                    expect(response.body.at(0).tokens.at(0).token).eql(tokenId)
-                    expect(response.body.at(0).tokens.at(0).count).eql(1)
-                    expect(response.body.at(0).user).eql(hederaId)
                 });
-            })
+            });
+
+            Authorization.getAccessToken(SRUsername).then((srAuth) => {
+                Checks.whileRetireRRequestCreating(contractUuidR, srAuth, 0);
+                cy.getRetireRequests(srAuth, contractUuidR).then((response) => {
+                    retireRequestId = response.body.at(0).id;
+                    expect(response.body.at(0).user).eql(hederaId);
+                });
+            });
         });
 
         it("Cancel retire request without auth token - Negative", () => {
-            cy.request({
-                method: METHOD.DELETE,
-                url: API.ApiServer + API.RetireRequests + retireRequestId,
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.deleteRetireRequest(null, retireRequestId).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
-        })
+        });
 
         it("Cancel retire request with invalid auth token - Negative", () => {
-            cy.request({
-                method: METHOD.DELETE,
-                url: API.ApiServer + API.RetireRequests + retireRequestId,
-                headers: {
-                    authorization: "Bearer wqe",
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.deleteRetireRequest("Bearer wqe", retireRequestId).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Cancel retire request with empty auth token - Negative", () => {
-            cy.request({
-                method: METHOD.DELETE,
-                url: API.ApiServer + API.RetireRequests + retireRequestId,
-                headers: {
-                    authorization: "",
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.deleteRetireRequest("", retireRequestId).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Cancel retire request", () => {
-            Authorization.getAccessToken(UserUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.DELETE,
-                    url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Cancel,
-                    headers: {
-                        authorization
-                    },
-                }).then((response) => {
+            Authorization.getAccessToken(UserUsername).then((userAuth) => {
+                cy.deleteRetireRequest(userAuth, retireRequestId, API.Cancel).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                 });
-            })
-        })
-    })
+            });
+        });
+    });
 
     describe("Create and unset retire request", () => {
-
         it("Create retire request", () => {
-
-            Authorization.getAccessToken(UserUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetirePools,
-                    headers: {
-                        authorization
-                    }
-                }).then((response) => {
-                    poolId = response.body.at(0).id;
-                    cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
-                        headers: {
-                            authorization,
-                            "Content-Type": "application/json"
-                        },
-                        body: [{
-                            token: tokenId,
-                            count: 1,
-                            serials: [1]
-                        }]
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.OK);
-                    });
-                })
-            })
-
-            Authorization.getAccessToken(SRUsername).then((authorization) => {
-
-                Checks.whileRetireRRequestCreating(contractUuidR, authorization, 0)
-
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetireRequests,
-                    headers: {
-                        authorization,
-                    },
-                    qs: {
-                        contractId: contractUuidR
-                    }
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    retireRequestId = response.body.at(0).id;
-                    expect(response.body.at(0).contractId).eql(contractUuidR)
-                    expect(response.body.at(0).tokens.at(0).token).eql(tokenId)
-                    expect(response.body.at(0).tokens.at(0).count).eql(1)
-                    expect(response.body.at(0).user).eql(hederaId)
+            Authorization.getAccessToken(UserUsername).then((userAuth) => {
+                cy.createRetireAction(userAuth, poolId, tokenId, 1, [1]).then((res) => {
+                    expect(res.status).eql(STATUS_CODE.OK);
                 });
-            })
+            });
+
+            Authorization.getAccessToken(SRUsername).then((srAuth) => {
+                Checks.whileRetireRRequestCreating(contractUuidR, srAuth, 0);
+                cy.getRetireRequests(srAuth, contractUuidR).then((response) => {
+                    retireRequestId = response.body.at(0).id;
+                });
+            });
         });
 
         it("Unset retire request without auth token - Negative", () => {
-            cy.request({
-                method: METHOD.DELETE,
-                url: API.ApiServer + API.RetireRequests + retireRequestId,
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.deleteRetireRequest(null, retireRequestId).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Unset retire request with invalid auth token - Negative", () => {
-            cy.request({
-                method: METHOD.DELETE,
-                url: API.ApiServer + API.RetireRequests + retireRequestId,
-                headers: {
-                    authorization: "Bearer wqe",
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.deleteRetireRequest("Bearer wqe", retireRequestId).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Unset retire request with empty auth token - Negative", () => {
-            cy.request({
-                method: METHOD.DELETE,
-                url: API.ApiServer + API.RetireRequests + retireRequestId,
-                headers: {
-                    authorization: "",
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.deleteRetireRequest("", retireRequestId).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Unset retire request", () => {
-            Authorization.getAccessToken(SRUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.DELETE,
-                    url: API.ApiServer + API.RetireRequests + retireRequestId,
-                    headers: {
-                        authorization,
-                    },
-                }).then((response) => {
+            Authorization.getAccessToken(SRUsername).then((srAuth) => {
+                cy.deleteRetireRequest(srAuth, retireRequestId).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                 });
-            })
-        })
-    })
+            });
+        });
+    });
 
     describe("Get retire request", () => {
-
         it("Create retire request", () => {
-            Authorization.getAccessToken(UserUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetirePools,
-                    headers: {
-                        authorization
-                    }
-                }).then((response) => {
-                    poolId = response.body.at(0).id;
-                    cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
-                        headers: {
-                            authorization,
-                            "Content-Type": "application/json"
-                        },
-                        body: [{
-                            token: tokenId,
-                            count: 1,
-                            serials: [1]
-                        }]
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.OK);
-                    });
-                })
-            })
-
-            Authorization.getAccessToken(SRUsername).then((authorization) => {
-
-                Checks.whileRetireRRequestCreating(contractUuidR, authorization, 0)
-
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetireRequests,
-                    headers: {
-                        authorization,
-                    },
-                    qs: {
-                        contractId: contractUuidR
-                    }
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
+            Authorization.getAccessToken(UserUsername).then((userAuth) => {
+                cy.createRetireAction(userAuth, poolId, tokenId, 1, [1]);
+            });
+            Authorization.getAccessToken(SRUsername).then((srAuth) => {
+                Checks.whileRetireRRequestCreating(contractUuidR, srAuth, 0);
+                cy.getRetireRequests(srAuth, contractUuidR).then((response) => {
                     retireRequestId = response.body.at(0).id;
-                    expect(response.body.at(0).contractId).eql(contractUuidR)
-                    expect(response.body.at(0).tokens.at(0).token).eql(tokenId)
-                    expect(response.body.at(0).tokens.at(0).count).eql(1)
-                    expect(response.body.at(0).user).eql(hederaId)
                 });
-            })
+            });
         });
 
         it("Get retire request", () => {
-            Authorization.getAccessToken(SRUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetireRequests,
-                    headers: {
-                        authorization,
-                    },
-                    qs: {
-                        contractId: contractUuidR
-                    }
-                }).then((response) => {
+            Authorization.getAccessToken(SRUsername).then((srAuth) => {
+                cy.getRetireRequests(srAuth, contractUuidR).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
-                    expect(response.body.at(0).contractId).eql(contractUuidR)
-                    expect(response.body.at(0).tokens.at(0).token).eql(tokenId)
-                    expect(response.body.at(0).tokens.at(0).count).eql(1)
-                    expect(response.body.at(0).user).eql(hederaId)
+                    expect(response.body.at(0).contractId).eql(contractUuidR);
+                    expect(response.body.at(0).user).eql(hederaId);
                 });
-            })
+            });
         });
 
         it("Get all retire contracts requests", () => {
-            Authorization.getAccessToken(SRUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetireRequests,
-                    headers: {
-                        authorization,
-                    },
-                }).then((response) => {
+            Authorization.getAccessToken(SRUsername).then((srAuth) => {
+                cy.getRetireRequests(srAuth).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                 });
-            })
+            });
         });
 
         it("Get all retire contracts requests without auth token - Negative", () => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.RetireRequests,
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.getRetireRequests(null).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Get all retire contracts requests with invalid auth token - Negative", () => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.RetireRequests,
-                headers: {
-                    authorization: "Bearer wqe",
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.getRetireRequests("Bearer wqe").then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Get all retire contracts requests with empty auth token - Negative", () => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.RetireRequests,
-                headers: {
-                    authorization: "",
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.getRetireRequests("").then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Get retire request without auth token - Negative", () => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.RetireRequests,
-                qs: {
-                    contractId: contractIdR
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.getRetireRequests(null, contractUuidR).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Get retire request with invalid auth token - Negative", () => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.RetireRequests,
-                headers: {
-                    authorization: "Bearer wqe",
-                },
-                qs: {
-                    contractId: contractIdR
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.getRetireRequests("Bearer wqe", contractUuidR).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Get retire request with empty auth token - Negative", () => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.RetireRequests,
-                headers: {
-                    authorization: "",
-                },
-                qs: {
-                    contractId: contractIdR
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.getRetireRequests("", contractUuidR).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
-    })
+    });
 
     describe("Approve retire request", () => {
-
         it("Approve retire request without auth token - Negative", () => {
-            Authorization.getAccessToken(SRUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetireRequests,
-                    headers: {
-                        authorization,
-                    },
-                    qs: {
-                        contractId: contractUuidR
-                    }
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    retireRequestId = response.body.at(0).id;
-                })
-            })
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.postRetireRequestAction(null, retireRequestId, API.Approve).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Approve retire request with invalid auth token - Negative", () => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
-                headers: {
-                    authorization: "Bearer wqe",
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.postRetireRequestAction("Bearer wqe", retireRequestId, API.Approve).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Approve retire request with empty auth token - Negative", () => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
-                headers: {
-                    authorization: "",
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.postRetireRequestAction("", retireRequestId, API.Approve).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Approve retire request", () => {
-            Authorization.getAccessToken(SRUsername).then((authorization) => {
+            Authorization.getAccessToken(SRUsername).then((srAuth) => {
+                cy.postRetireRequestAction(srAuth, retireRequestId, API.Approve).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
+                });
+            });
+        });
+    });
+
+    describe("Create and approve retire request without approve", () => {
+        before("Set pool", () => {
+            Authorization.getAccessToken(SRUsername).then((srAuth) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
-                    headers: {
-                        authorization,
-                    },
+                    url: `${API.ApiServer}${API.RetireContract}${contractIdR}/${API.PoolContract}`,
+                    headers: { authorization: srAuth },
+                    body: { tokens: [{ token: tokenId, count: 2 }], immediately: true }
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                 });
-            })
-        });
-    })
-
-    describe("Create and approve retire request without approve", () => {
-
-        before("Set pool", () => {
-            //Set pool to retire contract and wait while it in progress
-            Authorization.getAccessToken(SRUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
-                    headers: {
-                        authorization,
-                    },
-                    body: {
-                        tokens: [
-                            {
-                                token: tokenId,
-                                count: 2
-                            }
-                        ],
-                        immediately: true
-                    }
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                })
-            })
+            });
         });
 
         it("Create retire request", () => {
-            Authorization.getAccessToken(UserUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetirePools,
-                    headers: {
-                        authorization
-                    }
-                }).then((response) => {
-                    poolId = response.body.at(0).id;
-                    cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
-                        headers: {
-                            authorization,
-                            "Content-Type": "application/json"
-                        },
-                        body: [{
-                            token: tokenId,
-                            count: 2,
-                            serials: [2, 3]
-                        }]
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.OK);
-                    });
-                })
-            })
+            Authorization.getAccessToken(UserUsername).then((userAuth) => {
+                cy.createRetireAction(userAuth, poolId, tokenId, 2, [2, 3]).then((res) => {
+                    expect(res.status).eql(STATUS_CODE.OK);
+                });
+            });
         });
 
         it("Create retire request without auth token - Negative", () => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.createRetireAction(null, poolId).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Create retire request with invalid auth token - Negative", () => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
-                headers: {
-                    authorization: "Bearer wqe",
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.createRetireAction("Bearer wqe", poolId).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Create retire request with empty auth token - Negative", () => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
-                headers: {
-                    authorization: "",
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+            cy.createRetireAction("", poolId).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
         it("Verify balance decreased", () => {
-            Authorization.getAccessToken(SRUsername).then((authorization) => {
+            Authorization.getAccessToken(SRUsername).then((srAuth) => {
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + API.ListOfTokens,
-                    headers: {
-                        authorization,
-                    },
+                    headers: { authorization: srAuth },
                 }).then((response) => {
-                    for (let i = 0; i < response.body.length; i++) {
-                        if (response.body.tokenId == tokenId)
-                            expect(response.body.balance === "7")
-                    }
-                })
-            })
-            //TBD Checking retirement end
-        })
+                    const token = response.body.find(t => t.tokenId === tokenId);
+                    expect(token.balance).to.eq("7");
+                });
+            });
+        });
     });
-})
+    
+});
