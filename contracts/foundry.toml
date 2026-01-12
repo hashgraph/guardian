@@ -1,0 +1,23 @@
+[profile.default]
+src = 'src'
+out = 'out'
+cache = true
+cache_path = 'cache-foundry'
+
+solc_version = '0.8.28'
+evm_version = 'cancun'
+
+optimizer = true
+optimizer_runs = 200
+
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = true
+int_types = 'long'
+multiline_func_header = 'attributes_first'
+quote_style = 'double'
+number_underscore = 'thousands'
+
+[rpc_endpoints]
+hedera = "${HEDERA_RPC_URL}"
