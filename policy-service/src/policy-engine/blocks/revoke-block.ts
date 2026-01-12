@@ -123,7 +123,6 @@ export class RevokeBlock {
         const doc = Array.isArray(data) ? data[0] : data;
 
         const policyTopics = await ref.databaseServer.getTopics({ policyId: ref.policyId });
-
         const policyTopicsMessages = [];
         for (const topic of policyTopics) {
             const topicMessages = await MessageServer.getMessages({
@@ -133,6 +132,7 @@ export class RevokeBlock {
             });
             policyTopicsMessages.push(...topicMessages);
         }
+
         const messagesToFind = policyTopicsMessages
             .filter((item) => !item.isRevoked());
         const topicMessage = policyTopicsMessages
@@ -144,7 +144,11 @@ export class RevokeBlock {
         for (const policyTopicMessage of policyTopicsMessages) {
             const relatedMessage = relatedMessages.find((item) => item.id === policyTopicMessage.id);
             if (relatedMessage) {
-                policyTopicMessage.revoke(doc.comment, relatedMessage.parentIds);
+                policyTopicMessage.revoke(
+                    doc.comment,
+                    event.user.did,
+                    relatedMessage.parentIds
+                );
                 needUpdate.push(policyTopicMessage);
             }
         }
@@ -154,7 +158,7 @@ export class RevokeBlock {
         await PolicyActionsUtils.sendMessages({
             ref,
             messages: needUpdate,
-            owner: event.user.did,
+            owner: doc.owner,
             relayerAccount,
             updateIpfs: false,
             userId

@@ -36,6 +36,10 @@ export interface MessageBody {
      */
     revokeMessage?: string;
     /**
+     * Revoke owner
+     */
+    revokeOwner?: string;
+    /**
      * Message reason
      */
     reason?: string;

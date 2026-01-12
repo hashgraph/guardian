@@ -29,6 +29,7 @@ export class Parser {
 
             if (message.status === 'REVOKE') {
                 message.statusMessage = json.revokeMessage;
+                message.statusOwner = json.revokeOwner;
             } else if (message.status === 'DELETED') {
                 message.statusMessage = json.deleteMessage;
             } else {
