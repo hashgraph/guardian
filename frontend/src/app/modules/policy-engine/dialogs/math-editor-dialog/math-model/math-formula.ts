@@ -240,6 +240,8 @@ export class MathFormula {
         return {
             name: this.functionNameText,
             body: this.functionBodyText,
+            params: this.functionParams || [],
+            relationships: this.functionUnknowns || [],
         }
     }
 

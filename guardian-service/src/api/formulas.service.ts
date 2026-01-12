@@ -12,7 +12,7 @@ import {
     NewNotifier
 } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyStatus, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
-import { getFormulasData, publishFormula } from './helpers/formulas-helpers.js';
+import { generateFormula, getFormulasData, publishFormula } from './helpers/formulas-helpers.js';
 
 /**
  * Connect to the message broker methods of working with formula.
@@ -388,25 +388,34 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 const { policyId } = options;
 
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
+                if (!policy) {
                     return new MessageResponse(null);
                 }
-
                 const formulas = await DatabaseServer.getFormulas({ policyTopicId: policy.topicId });
-
                 if (!formulas.length) {
                     return new MessageResponse(null);
                 }
 
-                const { document, relationships } = await getFormulasData(options, owner);
-                const { schemas, toolSchemas } = await PolicyImportExport.fastLoadSchemas(policy);
-                const all = [].concat(schemas, toolSchemas).filter((s) => s.status === SchemaStatus.PUBLISHED);
-                return new MessageResponse({
-                    formulas,
-                    document,
-                    relationships,
-                    schemas: all
-                });
+                const policyFormula = generateFormula(policy);
+                if (policyFormula) {
+                    formulas.push(policyFormula);
+                }
+
+                if (policy.status === PolicyStatus.PUBLISH || policy.status === PolicyStatus.DRY_RUN) {
+                    const { document, relationships } = await getFormulasData(policy, options, owner);
+                    const { schemas, toolSchemas } = await PolicyImportExport.fastLoadSchemas(policy);
+                    let all = [].concat(schemas, toolSchemas);
+                    if (policy.status === PolicyStatus.PUBLISH) {
+                        all = all.filter((s) => s.status === SchemaStatus.PUBLISHED);
+                    }
+                    return new MessageResponse({
+                        formulas,
+                        document,
+                        relationships,
+                        schemas: all
+                    });
+                }
+                return new MessageResponse(null);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);

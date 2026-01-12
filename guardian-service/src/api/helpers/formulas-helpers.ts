@@ -1,5 +1,5 @@
-import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, INotificationStep, MessageAction, MessageServer, TopicConfig, VcDocument, VpDocument } from '@guardian/common';
-import { EntityStatus, IOwner, IRootConfig } from '@guardian/interfaces';
+import { DatabaseServer, findBlocks, Formula, FormulaImportExport, FormulaMessage, INotificationStep, MessageAction, MessageServer, Policy, TopicConfig, VcDocument, VpDocument } from '@guardian/common';
+import { EntityStatus, GenerateUUIDv4, IOwner, IRootConfig, PolicyStatus } from '@guardian/interfaces';
 
 type IDocument = VcDocument | VpDocument;
 
@@ -38,6 +38,7 @@ function checkDocument(document: any, policyId: string, owner: IOwner): boolean 
 }
 
 export async function getFormulasData(
+    policy: Policy,
     option: {
         policyId: string,
         schemaId: string,
@@ -56,13 +57,15 @@ export async function getFormulasData(
         relationships: []
     }
 
+    const db = new DatabaseServer(policy.status === PolicyStatus.DRY_RUN ? policy.id : null);
+
     if (documentId) {
-        const vc = await DatabaseServer.getVCById(documentId);
+        const vc = await db.getVcDocument(documentId);
         if (vc) {
             result.document = vc;
             result.relationships = await findRelationships(vc);
         } else {
-            const vp = await DatabaseServer.getVPById(documentId);
+            const vp = await db.getVpDocument(documentId);
             if (vp) {
                 result.document = vp;
                 result.relationships = await findRelationships(vp);
@@ -71,7 +74,7 @@ export async function getFormulasData(
     }
 
     if (parentId) {
-        const doc = await DatabaseServer.getVCById(parentId);
+        const doc = await db.getVcDocument(parentId);
         if (doc) {
             result.relationships = await findRelationships(doc);
         }
@@ -141,4 +144,111 @@ export async function publishFormula(
     const result = await DatabaseServer.updateFormula(item);
     notifier.completeStep(STEP_PUBLISH_FORMULA);
     return result;
+}
+
+export function generateFormula(policy: Policy): any | null {
+    const blocks = findBlocks(policy.config, (b) => b.blockType === 'mathBlock');
+    const formulas: any[] = [];
+    for (const block of blocks) {
+        generateFormulaByBlock(block, formulas);
+    }
+    if (formulas.length) {
+        return {
+            policyId: policy.id,
+            policyInstanceTopicId: policy.instanceTopicId,
+            policyTopicId: policy.topicId,
+            status: policy.status,
+            config: {
+                files: [],
+                formulas
+            }
+        }
+    } else {
+        return null;
+    }
+}
+
+function generateFormulaByBlock(block: any, result: any[]) {
+    console.log(JSON.stringify(block, null, 4))
+
+    try {
+        const inputSchema = block.inputSchema;
+        const outputSchema = block.outputSchema || inputSchema;
+        const expression = block.expression;
+
+        const items: any[] = [];
+        // Variables
+        if (Array.isArray(expression?.variables)) {
+            for (const item of expression.variables) {
+                items.push({
+                    name: item.name,
+                    type: 'variable',
+                    uuid: GenerateUUIDv4(),
+                    value: '',
+                    description: block.tag,
+                    link: {
+                        entityId: inputSchema,
+                        item: item.field,
+                        type: 'schema'
+                    }
+                })
+            }
+        }
+        // Formulas
+        if (Array.isArray(expression?.formulas)) {
+            for (const item of expression.formulas) {
+                items.push({
+                    description: block.tag,
+                    name: item.name,
+                    type: 'formula',
+                    uuid: GenerateUUIDv4(),
+                    value: item.body,
+                    relationships: item.relationships
+                })
+            }
+        }
+        // Relationships
+        for (const item of items) {
+            const relationships: string[] = [];
+            if (Array.isArray(item.relationships)) {
+                for (const name of item.relationships) {
+                    const link = items.find((e) => e.name === name);
+                    if (link) {
+                        relationships.push(link.uuid);
+                    }
+                }
+            }
+            item.relationships = relationships;
+        }
+        // Outputs
+        if (Array.isArray(expression?.outputs)) {
+            for (const item of expression.outputs) {
+                let link = items.find((e) => e.name === item.name);
+                if (link.type === 'variable') {
+                    const relationships = [link.uuid];
+                    link = {
+                        description: block.tag,
+                        name: item.name,
+                        type: 'formula',
+                        uuid: GenerateUUIDv4(),
+                        value: item.name,
+                        relationships
+                    }
+                    items.push(link);
+                }
+                link.link = {
+                    entityId: outputSchema,
+                    item: item.field,
+                    type: 'schema'
+                }
+            }
+        }
+
+        for (const item of items) {
+            result.push(item);
+        }
+        return result;
+    } catch (error) {
+        return;
+    }
 }

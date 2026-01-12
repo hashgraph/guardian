@@ -100,7 +100,7 @@ class Tooltip {
     styleUrls: ['./math-editor-dialog.component.scss']
 })
 export class MathEditorDialogComponent implements OnInit, AfterContentInit {
-    @ViewChild('contextBody', { static: true }) contextBodyRef: ElementRef;
+    @ViewChild('contextBody', { static: false }) contextBodyRef: ElementRef;
 
     public expression!: any;
     public initDialog = false;
@@ -394,6 +394,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 item.field = result.value;
+                item.schema = schema?.iri || null;
                 item.update();
             }
         });
