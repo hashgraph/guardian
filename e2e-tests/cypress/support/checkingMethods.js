@@ -12,11 +12,12 @@ export const whileRequestProccessing = (request, dataToCompare, source, attempts
             source.split('.').forEach(part => {
                 start = start?.[part]
             })
-            cy.log(start);
-            cy.log(start !== dataToCompare);
             if (start !== dataToCompare)
                 whileRequestProccessing(request, dataToCompare, source, attempts)
         })
+    }
+    else {
+        throw new Error(`Failed after ${attempts}`)
     }
 }
 

@@ -423,7 +423,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                 failOnStatusCode: false
             }
             Checks.whileRequestProccessing(waitProjectValidated, "approved_project", "data.0.type")
-            cy.request(waitProjectValidated).then((response) => { 
+            cy.request(waitProjectValidated).then((response) => {
                 cy.task('log', response.body.data.length)
             });
             cy.request({
@@ -666,4 +666,127 @@ context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
             })
         })
     })
+
+    it("Create one more project for revoke", () => {
+        Authorization.getAccessToken(PPUser).then((authorization) => {
+            cy.fixture("payload.json").then((payload) => {
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectBtn,
+                    headers: {
+                        authorization
+                    },
+                    body: {
+                        document: payload.document,
+                        ref: null
+                    },
+                    timeout: 600000
+                }).then(() => {
+                    const waitProjectAddStatus = {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectGridPP2,
+                        headers: {
+                            authorization
+                        },
+                        failOnStatusCode: false,
+                        timeout: 60000
+                    }
+                    Checks.whileRequestProccessing(waitProjectAddStatus, "Waiting to be Added", "data.0.option.status")
+                })
+            })
+        })
+    })
+
+    it("Reject project", () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies + policyId + "/" + API.ProjGridVVB,
+                headers: {
+                    authorization
+                }
+            }).then((response) => {
+                let projData = response.body.data[0];
+                projData.option.status = {
+                    "status": "REJECTED",
+                    "comment": [
+                        "testRevoke"
+                    ]
+                }
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.AddProj,
+                    headers: {
+                        authorization
+                    },
+                    body: {
+                        document: projData,
+                        tag: "Option_1"
+                    }
+                }).then(() => {
+                    const waitProjValidate = {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + "/" + API.ProjGridVVB,
+                        headers: {
+                            authorization
+                        },
+                        failOnStatusCode: false,
+                        timeout: 60000
+                    }
+                    Checks.whileRequestProccessing(waitProjValidate, "Revoked", "data.1.option.status")
+                })
+            })
+        })
+
+        Authorization.getAccessToken(PPUser).then((authorization) => {
+            const waitProjValidate = {
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectGridPP2,
+                headers: {
+                    authorization
+                },
+                failOnStatusCode: false,
+                timeout: 60000
+            }
+            Checks.whileRequestProccessing(waitProjValidate, "Revoked", "data.2.option.status")
+        })
+    })
+
+    it("Revoke project", () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectGridPP2,
+                headers: {
+                    authorization
+                }
+            }).then((response) => {
+                let projData = response.body.data[1];
+                projData.option.comment = ["testRevoke"];
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.RevokeProjectPP,
+                    headers: {
+                        authorization
+                    },
+                    body: {
+                        document: projData,
+                        tag: "Button_0"
+                    }
+                }).then(() => {
+                    const waitProjValidate = {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectGridPP2,
+                        headers: {
+                            authorization
+                        },
+                        failOnStatusCode: false,
+                        timeout: 60000
+                    }
+                    Checks.whileRequestProccessing(waitProjValidate, "Revoked", "data.0.option.status")
+                })
+            })
+        })
+    })
+
 })

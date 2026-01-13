@@ -85,7 +85,7 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
                     authorization,
                 },
             }).then((response) => {
-                if (response.body.confirmed === false) {
+                if (!response.body.confirmed) {
                     cy.request({
                         method: METHOD.GET,
                         url: API.ApiServer + API.RandomKey,
@@ -144,7 +144,7 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
                     authorization,
                 },
             }).then((response) => {
-                if (response.body.confirmed === false) {
+                if (!response.body.confirmed) {
                     cy.request({
                         method: METHOD.GET,
                         url: API.ApiServer + API.RandomKey,
@@ -202,7 +202,7 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
                     authorization,
                 },
             }).then((response) => {
-                if (response.body.confirmed === false) {
+                if (!response.body.confirmed) {
                     cy.request({
                         method: METHOD.GET,
                         url: API.ApiServer + 'accounts/standard-registries/aggregated',
