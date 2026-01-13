@@ -51,15 +51,15 @@
         </div>
 
         <div>
-            <div class="recording-container">
+            <div class="recording-container" (click)="recordingEnabled=!recordingEnabled">
                 <p-checkbox
                     class="guardian-checkbox checkbox-24"
                     name="recordingEnabled"
                     binary="true"
-                    [(ngModel)]="recordingEnabled"
+                    [ngModel]="recordingEnabled"
                     inputId="recordingEnabled">
                 </p-checkbox>
-                <label class="form-label recording-label" htmlFor="recordingEnabled">
+                <label class="form-label recording-label" for="recordingEnabled">
                     Record policy actions
                 </label>
             </div>

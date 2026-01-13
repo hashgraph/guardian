@@ -94,12 +94,15 @@ export async function getFormulasData(
 }
 
 export async function publishFormula(
+    policy: Policy,
     item: Formula,
     owner: IOwner,
     root: IRootConfig,
     notifier: INotificationStep,
 ): Promise<Formula> {
     item.status = EntityStatus.PUBLISHED;
+    item.policyTopicId = policy.topicId;
+    item.policyInstanceTopicId = policy.instanceTopicId;
 
     // <-- Steps
     const STEP_RESOLVE_TOPIC = 'Resolve topic';
@@ -141,114 +144,13 @@ export async function publishFormula(
 
     item.messageId = statMessageResult.getId();
 
-    const result = await DatabaseServer.updateFormula(item);
+    let result: Formula;
+    if (item.id) {
+        result = await DatabaseServer.updateFormula(item);
+    } else {
+        result = await DatabaseServer.createFormula(item);
+    }
+
     notifier.completeStep(STEP_PUBLISH_FORMULA);
     return result;
-}
-
-export function generateFormula(policy: Policy): any | null {
-    const blocks = findBlocks(policy.config, (b) => b.blockType === 'mathBlock');
-    const formulas: any[] = [];
-    for (const block of blocks) {
-        generateFormulaByBlock(block, formulas);
-    }
-    if (formulas.length) {
-        return {
-            policyId: policy.id,
-            policyInstanceTopicId: policy.instanceTopicId,
-            policyTopicId: policy.topicId,
-            status: policy.status,
-            config: {
-                files: [],
-                formulas
-            }
-        }
-    } else {
-        return null;
-    }
-}
-
-function generateFormulaByBlock(block: any, result: any[]) {
-    console.log(JSON.stringify(block, null, 4))
-
-    try {
-        const inputSchema = block.inputSchema;
-        const outputSchema = block.outputSchema || inputSchema;
-        const expression = block.expression;
-
-        const items: any[] = [];
-        // Variables
-        if (Array.isArray(expression?.variables)) {
-            for (const item of expression.variables) {
-                items.push({
-                    name: item.name,
-                    type: 'variable',
-                    uuid: GenerateUUIDv4(),
-                    value: '',
-                    description: block.tag,
-                    link: {
-                        entityId: inputSchema,
-                        item: item.field,
-                        type: 'schema'
-                    }
-                })
-            }
-        }
-        // Formulas
-        if (Array.isArray(expression?.formulas)) {
-            for (const item of expression.formulas) {
-                items.push({
-                    description: block.tag,
-                    name: item.name,
-                    type: 'formula',
-                    uuid: GenerateUUIDv4(),
-                    value: item.body,
-                    relationships: item.relationships
-                })
-            }
-        }
-        // Relationships
-        for (const item of items) {
-            const relationships: string[] = [];
-            if (Array.isArray(item.relationships)) {
-                for (const name of item.relationships) {
-                    const link = items.find((e) => e.name === name);
-                    if (link) {
-                        relationships.push(link.uuid);
-                    }
-                }
-            }
-            item.relationships = relationships;
-        }
-        // Outputs
-        if (Array.isArray(expression?.outputs)) {
-            for (const item of expression.outputs) {
-                let link = items.find((e) => e.name === item.name);
-                if (link.type === 'variable') {
-                    const relationships = [link.uuid];
-                    link = {
-                        description: block.tag,
-                        name: item.name,
-                        type: 'formula',
-                        uuid: GenerateUUIDv4(),
-                        value: item.name,
-                        relationships
-                    }
-                    items.push(link);
-                }
-                link.link = {
-                    entityId: outputSchema,
-                    item: item.field,
-                    type: 'schema'
-                }
-            }
-        }
-
-        for (const item of items) {
-            result.push(item);
-        }
-        return result;
-    } catch (error) {
-        return;
-    }
 }

@@ -12,7 +12,7 @@ import {
     NewNotifier
 } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyStatus, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
-import { generateFormula, getFormulasData, publishFormula } from './helpers/formulas-helpers.js';
+import { getFormulasData, publishFormula } from './helpers/formulas-helpers.js';
 
 /**
  * Connect to the message broker methods of working with formula.
@@ -391,21 +391,40 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 if (!policy) {
                     return new MessageResponse(null);
                 }
-                const formulas = await DatabaseServer.getFormulas({ policyTopicId: policy.topicId });
+
+                const formulaFilters: any = {
+                    policyId: policy.id
+                }
+                if ([
+                    PolicyStatus.PUBLISH,
+                    PolicyStatus.DEMO,
+                    PolicyStatus.VIEW
+                ].includes(policy.status)) {
+                    formulaFilters.status = EntityStatus.PUBLISHED;
+                }
+
+                const formulas = await DatabaseServer.getFormulas(formulaFilters);
+                if (policy.status === PolicyStatus.DRY_RUN) {
+                    const policyFormula = FormulaImportExport.generateByPolicy(policy);
+                    if (policyFormula) {
+                        formulas.push(policyFormula);
+                    }
+                }
+
                 if (!formulas.length) {
                     return new MessageResponse(null);
                 }
 
-                const policyFormula = generateFormula(policy);
-                if (policyFormula) {
-                    formulas.push(policyFormula);
-                }
-
-                if (policy.status === PolicyStatus.PUBLISH || policy.status === PolicyStatus.DRY_RUN) {
+                if ([
+                    PolicyStatus.PUBLISH,
+                    PolicyStatus.DEMO,
+                    PolicyStatus.VIEW,
+                    PolicyStatus.DRY_RUN
+                ].includes(policy.status)) {
                     const { document, relationships } = await getFormulasData(policy, options, owner);
                     const { schemas, toolSchemas } = await PolicyImportExport.fastLoadSchemas(policy);
                     let all = [].concat(schemas, toolSchemas);
-                    if (policy.status === PolicyStatus.PUBLISH) {
+                    if (policy.status !== PolicyStatus.DRY_RUN) {
                         all = all.filter((s) => s.status === SchemaStatus.PUBLISHED);
                     }
                     return new MessageResponse({
@@ -453,7 +472,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const root = await (new Users()).getHederaAccount(owner.creator, userId);
-                const result = await publishFormula(item, owner, root, NewNotifier.empty());
+                const result = await publishFormula(policy, item, owner, root, NewNotifier.empty());
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
