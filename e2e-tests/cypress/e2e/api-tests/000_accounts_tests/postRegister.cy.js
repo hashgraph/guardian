@@ -80,5 +80,23 @@ context("Register", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             expect(response.body.message).to.eql(['Passwords must match']);
         });
     });
-    
+
+    // password validation sets to easy + 4 length for CICD, so we cannot get weak password
+    it.skip('Register user with weak password - Negative', () => {
+        postRegister({
+            username: name + 'test',
+            password: "tt",
+            password_confirmation: "tt",
+            role: "USER"
+        },
+            false,
+        ).then(response => {
+            cy.log(response)
+            expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
+            expect(response.body.message).eql(
+                "Password must be at least 4 characters long."
+            );
+        });
+    });
+
 });
