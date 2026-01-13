@@ -269,7 +269,8 @@ export async function publishTool(
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3
-            }
+            },
+            platform: 'UNIX',
         });
         tool.hash = sha256(buffer);
         notifier.completeStep(STEP_GENERATE_FILE);
@@ -546,7 +547,8 @@ export async function dryRunTool(
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3
-            }
+            },
+            platform: 'UNIX',
         });
         tool.hash = sha256(buffer);
 
@@ -961,6 +963,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     compressionOptions: {
                         level: 3,
                     },
+                    platform: 'UNIX'
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {

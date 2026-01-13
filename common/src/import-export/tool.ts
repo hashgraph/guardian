@@ -78,18 +78,20 @@ export class ToolImportExport {
 
         const zip = new JSZip();
 
-        zip.file(ToolImportExport.toolFileName, JSON.stringify(toolObject));
+        const ZIP_FILE_OPTIONS = ImportExportUtils.getDeterministicZipFileOptions();
 
-        zip.folder('tags');
+        zip.file(ToolImportExport.toolFileName, JSON.stringify(toolObject), ZIP_FILE_OPTIONS);
+
+        ImportExportUtils.addDeterministicZipDir(zip, 'tags');
         for (let index = 0; index < components.tags.length; index++) {
             const tag = { ...components.tags[index] };
             delete tag.id;
             delete tag._id;
             tag.status = 'History';
-            zip.file(`tags/${index}.json`, JSON.stringify(tag));
+            zip.file(`tags/${index}.json`, JSON.stringify(tag), ZIP_FILE_OPTIONS);
         }
 
-        zip.folder('schemas');
+        ImportExportUtils.addDeterministicZipDir(zip, 'schemas');
         for (const schema of components.schemas) {
             const item = { ...schema };
             delete item._id;
@@ -97,10 +99,10 @@ export class ToolImportExport {
             delete item.status;
             delete item.readonly;
             item.id = schema.id.toString();
-            zip.file(`schemas/${item.iri}.json`, JSON.stringify(item));
+            zip.file(`schemas/${item.iri}.json`, JSON.stringify(item), ZIP_FILE_OPTIONS);
         }
 
-        zip.folder('tools');
+        ImportExportUtils.addDeterministicZipDir(zip, 'tools');
         for (const tool of components.tools) {
             const item = {
                 name: tool.name,
@@ -109,7 +111,7 @@ export class ToolImportExport {
                 owner: tool.creator,
                 hash: tool.hash
             };
-            zip.file(`tools/${tool.hash}.json`, JSON.stringify(item));
+            zip.file(`tools/${tool.hash}.json`, JSON.stringify(item), ZIP_FILE_OPTIONS);
         }
 
         return zip;
