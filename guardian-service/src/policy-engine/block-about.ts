@@ -1477,6 +1477,13 @@ export const BlockAbout = {
                 'default': ''
             },
             {
+                'name': 'authenticationClientId',
+                'label': 'Authentication ClientId',
+                'title': 'Authentication ClientId',
+                'type': 'Input',
+                'default': ''
+            },
+            {
                 'name': 'authenticationURL',
                 'label': 'Authentication Url',
                 'title': 'Authentication Url',
