@@ -423,7 +423,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                 failOnStatusCode: false
             }
             Checks.whileRequestProccessing(waitProjectValidated, "approved_project", "data.0.type")
-            cy.request(waitProjectValidated).then((response) => {
+            cy.request(waitProjectValidated).then((response) => { 
                 cy.task('log', response.body.data.length)
             });
             cy.request({
