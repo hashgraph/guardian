@@ -689,8 +689,15 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         this.ipfsService.getFile(cid).subscribe(
                 async (data: ArrayBuffer) => {
                     try {
-                        const decoder = new TextDecoder('utf-8');
-                        const csvText = decoder.decode(data);
+                        const uint8 = new Uint8Array(data);
+                        let csvText: string;
+
+                        if (uint8.length >= 2 && uint8[0] === 0x1F && uint8[1] === 0x8B) {
+                            csvText = await this.gzip.gunzipToText(data);
+                        } else {
+                            const decoder = new TextDecoder('utf-8');
+                            csvText = decoder.decode(uint8);
+                        }
 
                         const parsed = this.csvService.parseCsvToTable(
                             csvText,
