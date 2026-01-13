@@ -18,7 +18,7 @@ export class UserKeysDialog {
         private fb: UntypedFormBuilder,
     ) {
         this.type = this.config.data?.type || 'create';
-    
+
         if (this.type === 'create') {
             this.dataForm = this.fb.group({
                 messageId: ['', Validators.required]
@@ -65,8 +65,8 @@ export class UserKeysDialog {
                 key
             } = this.dataForm.value;
             this.ref.close({
-                messageId,
-                key
+                messageId: (messageId || '').trim(),
+                key: (key || '').trim(),
             });
         }
     }
