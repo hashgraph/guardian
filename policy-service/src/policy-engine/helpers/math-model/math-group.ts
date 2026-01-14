@@ -85,8 +85,14 @@ export class MathGroup {
             }
         }
 
-        // Variables
+        // System
         const list = new Map<string, MathFormula | FieldLink>();
+        const systemFunctions = MathFormula.createSystemFunctions();
+        for (const systemFunction of systemFunctions) {
+            list.set(systemFunction.name, systemFunction);
+        }
+
+        // Variables
         for (const variable of variables) {
             const old = list.get(variable.name);
             if (old) {

@@ -13,6 +13,7 @@ export class FieldLink {
 
     public schema: string | null = '';
     public field: string | null = '';
+    public description: string | null = '';
 
     public value: any;
 
@@ -110,6 +111,7 @@ export class FieldLink {
     public toJson() {
         return {
             name: this.variableName,
+            description: this.description,
             field: this.field,
             schema: this.schema
         }
@@ -122,6 +124,7 @@ export class FieldLink {
         try {
             const link = new FieldLink(json.name, json.field);
             link.schema = json.schema;
+            link.description = json.description || '';
             link.empty = false;
             return link;
         } catch (error) {

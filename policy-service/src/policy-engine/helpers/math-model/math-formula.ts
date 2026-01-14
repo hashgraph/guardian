@@ -16,6 +16,7 @@ export class MathFormula {
     public functionBody: string = '';
     public validName: boolean = false;
     public validBody: boolean = false;
+    public description: string | null = '';
 
     public error: string = '';
     public empty: boolean = true;
@@ -233,13 +234,16 @@ export class MathFormula {
     }
 
     private __evaluateFunction(params: string[], body: string): string {
-        return `(${params.join(',')}) \\mapsto ${body}`;
+        return `(${params.map((p => `\\operatorname{${p}}`)).join(',')}) \\mapsto ${body}`;
     }
 
     public toJson() {
         return {
             name: this.functionNameText,
             body: this.functionBodyText,
+            params: this.functionParams || [],
+            relationships: this.functionUnknowns || [],
+            description: this.description,
         }
     }
 
@@ -249,10 +253,20 @@ export class MathFormula {
         }
         try {
             const item = new MathFormula(json.name, json.body);
+            item.description = json.description || '';
             item.empty = false;
             return item;
         } catch (error) {
             return null;
         }
+    }
+
+    public static createSystemFunctions(): MathFormula[] {
+        const result: MathFormula[] = [];
+        result.push(new MathFormula('size(array)', '\\operatorname{Round}(\\operatorname{Length}(\\operatorname{array}))'));
+        for (const item of result) {
+            item.update();
+        }
+        return result;
     }
 }

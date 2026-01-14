@@ -43,7 +43,6 @@ export function getValueByPath(value: any, keys: string[], index: number): any {
     }
 }
 
-
 export function getDocumentValueByPath(doc: any, path: string): any {
     try {
         if (!doc || !path) {
@@ -57,9 +56,32 @@ export function getDocumentValueByPath(doc: any, path: string): any {
 }
 
 export function createComputeEngine() {
-    const validator = ComputeEngine.getStandardLibrary().find((t) => !!t.At)?.At;
-    if (validator) {
-        validator.signature = '(value: list|tuple|string, indexes: ...(number | string)) -> unknown';
+    const lib: any = ComputeEngine;
+    if (!lib.__updated) {
+        const At = lib.getStandardLibrary().find((t: any) => !!t.At)?.At;
+        if (At) {
+            At.signature = '(value: list|tuple|string, indexes: ...(number | string)) -> unknown';
+        }
+        const Sum = lib.getStandardLibrary().find((t: any) => !!t.Sum)?.Sum;
+        if (Sum) {
+            Sum.signature = '(collection|function, ...(tuple<symbol>|tuple<symbol, integer>|tuple<symbol, integer, integer>|tuple<symbol, integer, (...any) -> integer>)) -> number';
+            const evaluate = Sum.evaluate;
+            Sum.evaluate = function () {
+                const e = arguments[0];
+                if (e && e[1]) {
+                    const op3 = e[1].op3;
+                    if (op3 && op3.type === 'any') {
+                        Object.defineProperty(op3, "re", {
+                            get: function re() {
+                                return this._valueN?.value?.re || NaN;
+                            }
+                        });
+                    }
+                }
+                return evaluate.apply(this, arguments);
+            }
+        }
+        lib.__updated = true;
     }
     return new ComputeEngine();
 }

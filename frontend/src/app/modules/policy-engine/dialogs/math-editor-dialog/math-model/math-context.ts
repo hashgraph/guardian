@@ -113,6 +113,19 @@ export class MathContext {
         this.getField = this.__get.bind(doc);
         try {
             const ce = createComputeEngine();
+            const systemFunctions = MathFormula.createSystemFunctions();
+            for (const systemFunction of systemFunctions) {
+                const latex = systemFunction.getLatex();
+                if (latex) {
+                    ce.assign(systemFunction.functionName, ce.parse(latex));
+                    this.formulas[systemFunction.functionName] = this.__evaluate.bind({
+                        ce,
+                        name: systemFunction.functionName,
+                        params: systemFunction.functionParams
+                    });
+                    this.scope[systemFunction.functionName] = 'Function';
+                }
+            }
             for (const item of this.list) {
                 if (item.type === MathItemType.LINK) {
                     const latex = item.getLatex();
@@ -172,9 +185,19 @@ export class MathContext {
                 return NaN;
             }
             const list = new Array(arg.length);
+            const __getValue = function (value: any): any {
+                if (Array.isArray(value)) {
+                    const items = value.map((v) => __getValue(v));
+                    return context.ce.box(['List', ...items]);
+                } else if (typeof value === 'string') {
+                    return context.ce.box(['String', value]);
+                } else {
+                    return value;
+                }
+            }
             for (let i = 0; i < arg.length; i++) {
                 const pName = `evaluateFunctionParameter${i}`;
-                context.ce.assign(pName, arg[i]);
+                context.ce.assign(pName, __getValue(arg[i]));
                 list[i] = `\\operatorname{${pName}}`;
             }
             const latex = `\\operatorname{${context.name}}(${list.join(',')})`;

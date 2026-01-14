@@ -151,7 +151,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="row-container" style="gap: 16px">
+                            <div class="row-container row-container-last" style="gap: 16px">
                                 <div class="guardian-input-container">
                                     <label class="form-label">Type</label>
                                     <div class="readonly-input">
@@ -278,6 +278,17 @@
                                             (change)="item.updateBody()"
                                         ></math-live>
                                     </div>
+                                </div>
+                            </div>
+                            <div class="row-container row-container-last">
+                                <div class="guardian-textarea-container">
+                                    <label class="form-label">Notes</label>
+                                    <textarea 
+                                        [(ngModel)]="item.description" 
+                                        placeholder="Please enter here notes"
+                                        pTextarea 
+                                        rows="2" 
+                                        [readonly]="readonly"></textarea>
                                 </div>
                             </div>
                             <div class="formula-del">
@@ -440,7 +451,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="row-container" style="gap: 16px">
+                            <div class="row-container row-container-last" style="gap: 16px">
                                 <div class="guardian-input-container">
                                     <label class="form-label">Type</label>
                                     <div class="readonly-input">
