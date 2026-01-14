@@ -1,4 +1,6 @@
 import { PolicyEngineService } from "src/app/services/policy-engine.service";
+import { DynamicMsalAuthService } from "../../services/dynamic-msal-auth.service";
+import { ToastrService } from "ngx-toastr";
 
 export class HttpRequestUIAddonCode {
     private readonly url: string;
@@ -6,18 +8,28 @@ export class HttpRequestUIAddonCode {
     private readonly headers: any;
     private readonly authentication: any;
     private readonly authenticationURL: any;
+    private readonly authenticationClientId: any;
+    private readonly authenticationScopes: any;
     private readonly policyEngineService: PolicyEngineService;
+    private readonly dynamicMsalAuthService: DynamicMsalAuthService;
+    private readonly toastr: ToastrService;
 
     constructor(
         config: any,
         policyEngineService: PolicyEngineService,
+        dynamicMsalAuthService: DynamicMsalAuthService,
+        toastr: ToastrService
     ) {
         this.url = config.url;
         this.type = config.method;
         this.headers = config.headers;
         this.authentication = config.authentication;
+        this.authenticationClientId = config.authenticationClientId;
         this.authenticationURL = config.authenticationURL;
+        this.authenticationScopes = config.authenticationScopes;
         this.policyEngineService = policyEngineService;
+        this.dynamicMsalAuthService = dynamicMsalAuthService;
+        this.toastr = toastr;
     }
 
     public async run(
@@ -34,6 +46,12 @@ export class HttpRequestUIAddonCode {
                 .customRequest(this.type, url, data.document, headers)
                 .subscribe((response: any) => {
                     data.document = response;
+                    this.toastr.success('Document was sent successfully', '', {
+                        timeOut: 3000,
+                        closeButton: true,
+                        positionClass: 'toast-bottom-right',
+                        enableHtml: true,
+                    });
                     resolve(data);
                 }, (e) => {
                     reject(e);
@@ -67,7 +85,7 @@ export class HttpRequestUIAddonCode {
                 headers = {};
             }
             let token = localStorage.getItem('accessToken') as string;
-            if(this.authenticationURL) {
+            if(this.authenticationURL && this.authenticationClientId) {
                 token = await this.getRemoteAuthToken();
             }
             headers.Authorization = `Bearer ${token}`;
@@ -83,18 +101,15 @@ export class HttpRequestUIAddonCode {
         return headers;
     }
 
-    private getRemoteAuthToken(): Promise<string> {
-        return new Promise((resolve, reject) => {
-            function handler(event: any) {
-                if (event.data && event.data.type === "MSAL_TOKEN") {
-                    window.removeEventListener("message", handler);
-                    resolve(event.data.token);
-                }
-            }
+    private async getRemoteAuthToken(): Promise<string> {
+        const config: any = {
+            clientId: this.authenticationClientId,
+            authority: this.authenticationURL,
+            knownAuthorities: [new URL(this.authenticationURL).hostname],
+            scopes: this.authenticationScopes.split(','),
+        };
 
-            window.addEventListener("message", handler, false);
-
-            const popup = window.open(this.authenticationURL, "authPopup", "width=950,height=950");
-        });
+        const token = await this.dynamicMsalAuthService.getRemoteAuthToken(config);
+        return token;
     }
 }

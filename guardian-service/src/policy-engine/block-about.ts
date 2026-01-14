@@ -1481,12 +1481,21 @@ export const BlockAbout = {
                 'label': 'Authentication ClientId',
                 'title': 'Authentication ClientId',
                 'type': 'Input',
+                'visible': 'authentication === "bearerToken"',
                 'default': ''
             },
             {
                 'name': 'authenticationURL',
                 'label': 'Authentication Url',
                 'title': 'Authentication Url',
+                'type': 'Input',
+                'visible': 'authentication === "bearerToken"',
+                'default': ''
+            },
+            {
+                'name': 'authenticationScopes',
+                'label': 'Authentication Scopes',
+                'title': 'Authentication Scopes',
                 'type': 'Input',
                 'visible': 'authentication === "bearerToken"',
                 'default': ''
