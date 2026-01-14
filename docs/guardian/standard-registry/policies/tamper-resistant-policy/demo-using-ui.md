@@ -13,7 +13,7 @@ Once enabled:
 &#x20;If the checkbox is not selected, the policy will behave as a standard imported policy with no tamper-tracking enabled.
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Data Model Enhancements
 
@@ -42,7 +42,7 @@ A new **“Modified”** column is added to the Policies grid to surface tamper 
 * **No Changes** – The policy matches its original imported state
 * **Status Unavailable** – Original state is not available (e.g., tracking was not enabled)
 
-<figure><img src="../../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3.2 Compare Action
 
@@ -53,4 +53,4 @@ A new **“Modified”** column is added to the Policies grid to surface tamper 
 
 This helps users quickly understand _what_ changed and _where_.
 
-<figure><img src="../../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>

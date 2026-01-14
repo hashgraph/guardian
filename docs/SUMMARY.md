@@ -710,6 +710,7 @@
       * [Assigns policies to a user (for ordinary users)](guardian/standard-registry/roles-and-permissions/apis-related-to-roles-and-permissions/assigns-policies-to-a-user-for-ordinary-users.md)
   * [Data Entry Updatability](guardian/standard-registry/data-entry-updatability/README.md)
     * [Demo using UI](guardian/standard-registry/data-entry-updatability/demo-using-ui.md)
+    * [Demo using VM0042](guardian/standard-registry/data-entry-updatability/demo-using-vm0042.md)
     * [APIs related](guardian/standard-registry/data-entry-updatability/apis-related/README.md)
       * [Create new version vc document](guardian/standard-registry/data-entry-updatability/apis-related/create-new-version-vc-document.md)
       * [Get all version VC documents](guardian/standard-registry/data-entry-updatability/apis-related/get-all-version-vc-documents.md)

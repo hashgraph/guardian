@@ -9,7 +9,7 @@
 
 Blocks of similar configuration can be searched by clicking on search icon with respect to the block as shown below:
 
-<figure><img src="../../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Search Result
 
@@ -21,7 +21,7 @@ Search result displays all the policies and its blocks, which have same flow wit
 
 The search finds and displays the ranked list (most similar on top) of longest continuous matching sequences of blocks surrounding the target block (highlighted). The search considers all dimensions - next/previous, parent/child - to be of equal weight and thus ranks results by the number of blocks in the found ‘similar’ sequence.
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Additionally, the system compares the configuration of the blocks individually, and displays the %% of similarity to the right of each block in comparison with the corresponding blocks in the base policy.
 
@@ -35,7 +35,7 @@ Clicking “Apply” button will transfer (or apply) the configuration of the fo
 **Note:** Original settings of the base policy block will be lost if ‘Apply’ action is executed.
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 ### 2.3 Search Results Layout Display
 

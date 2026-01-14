@@ -84,7 +84,7 @@ Now, the Project Developer must go into their screen and "Submit a PDD" and fill
 
 The Verifier must now go into their Policy screen and view the PDD by click on the "Review button" and filling out the review form.
 
-<figure><img src="../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 After that, the Verifer can select a Review ID and "Finalise review."
 
@@ -100,7 +100,7 @@ Once the PDD has been verified, the Project Developer can "Request registration.
 
 The Standard Registry can log into their Policy screen, view the incoming Project Registration, and approve it.
 
-<figure><img src="../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once the Standard Registry approved the Project Developer's Project Registration, the Project Developer can submit the report by clicking on the "Submit MR" button and filling out the form.
 

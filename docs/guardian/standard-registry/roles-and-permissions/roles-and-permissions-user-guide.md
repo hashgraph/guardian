@@ -93,7 +93,7 @@ The Standard Registry (SR) can assign three levels of access to logs for its use
 • System – Allows the user to view logs from their SR account as well as system logs.\
 • Users – Allows the user to view logs of other users under the same SR.
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## **3. Messages**
 
