@@ -1,6 +1,7 @@
 import {Component, Inject} from '@angular/core';
 import {UntypedFormControl, Validators} from '@angular/forms';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+import { ModelHelper } from '@guardian/interfaces';
 
 /**
  * Dialog allowing you to select a file and load schemas.
@@ -15,12 +16,13 @@ export class SetVersionDialog {
         Validators.required,
         Validators.pattern(/^[\d]+([\\.][\d]+){0,2}$/),
     ]);
+    schema: any;
 
     constructor(
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig
     ) {
-        console.log(3);
+        this.schema = config.data?.schema;
     }
 
     onNoClick(): void {
@@ -34,6 +36,8 @@ export class SetVersionDialog {
     }
 
     get isPublishDisabled(): boolean {
-        return !this.versionControl.valid;
+        const isFormInvalid = !this.versionControl.valid;
+        const isVersionNotNewer = this.schema?.version && ModelHelper.versionCompare(this.schema.version, this.versionControl.value) >= 0;
+        return isFormInvalid || isVersionNotNewer;
     }
 }

@@ -1279,7 +1279,7 @@ export class SchemaConfigComponent implements OnInit {
         delete newDocument.uuid;
         delete newDocument.creator;
         delete newDocument.owner;
-        delete newDocument.version;
+        // delete newDocument.version;
         delete newDocument.previousVersion;
         const dialogRef = this.dialog.open(CopySchemaDialog, {
             width: '860px',
@@ -1319,6 +1319,9 @@ export class SchemaConfigComponent implements OnInit {
             width: '350px',
             modal: true,
             closable: false,
+            data: {
+                schema: element
+            }
         });
         dialogRef.onClose.subscribe(async (version) => {
             if (version) {

@@ -268,7 +268,7 @@ export async function copySchemaAsync(
     item.status = SchemaStatus.DRAFT;
     item.topicId = topicId;
 
-    SchemaHelper.setVersion(item, null, null);
+    SchemaHelper.setVersion(item, item.version || null, null);
     SchemaHelper.updateIRI(item);
     item.iri = item.iri || item.uuid;
 
@@ -342,7 +342,7 @@ export async function createSchemaAndArtifacts(
         newSchema.contextURL = `schema:${newSchema.uuid}`;
     }
 
-    SchemaHelper.setVersion(newSchema, null, previousVersion);
+    SchemaHelper.setVersion(newSchema, newSchema.version || null, previousVersion);
     const row = await createSchema(newSchema, user, notifier);
 
     if (old) {

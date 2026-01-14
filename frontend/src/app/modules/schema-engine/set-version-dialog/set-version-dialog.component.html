@@ -4,6 +4,9 @@
         <div class="form-input-container">
             <label class="form-label" htmlFor="version">* Version</label>
             <input [formControl]="versionControl" id="version" pInputText type="text"/>
+            <div *ngIf="schema?.version" class="form-label" style="font-size: 12px; margin-top: 5px;">
+                Previous version: {{schema.version}}
+            </div>
         </div>
     </div>
     <div class="content dialog-actions">
