@@ -548,7 +548,6 @@ export class SchemaConfigComponent implements OnInit {
 
                 //Compare
                 const list: any[] = listResponse || [];
-                console.log('SchemaList:',list);
                 for (const schema of list) {
                     schema.policy = this.policyNameByTopic[schema.topicId];
                     schema.module = this.moduleNameByTopic[schema.topicId];
