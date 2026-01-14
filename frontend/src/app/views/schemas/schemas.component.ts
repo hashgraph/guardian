@@ -11,7 +11,8 @@ import {
     SchemaHelper,
     SchemaStatus,
     TagType,
-    UserPermissions
+    UserPermissions,
+    ModelHelper
 } from '@guardian/interfaces';
 import { forkJoin, Observable, Subject, takeUntil } from 'rxjs';
 //services
@@ -37,6 +38,7 @@ import { ProjectComparisonService } from 'src/app/services/project-comparison.se
 import { SchemaDeleteWarningDialogComponent } from 'src/app/modules/schema-engine/schema-delete-warning-dialog/schema-delete-warning-dialog.component';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
 import { ReplaceSchemasDialogComponent } from '../../modules/policy-engine/dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
+import { TreeNode } from 'primeng/api';
 
 enum SchemaType {
     System = 'system',
@@ -140,6 +142,7 @@ export class SchemaConfigComponent implements OnInit {
     public isAllSelected: boolean = false;
     public selectedItems: any[] = [];
     public selectedItemIds: string[] = [];
+    public treeData: TreeNode[] = [];
 
     public onMenuClick(event: MouseEvent, overlayPanel: any, menuData: any): void {
         this.element = menuData;
@@ -332,7 +335,7 @@ export class SchemaConfigComponent implements OnInit {
     public ifDraft(element: Schema): boolean {
         return (element.status === 'DRAFT' || element.status === 'ERROR');
     }
-        
+
     private _destroy$ = new Subject<void>();
 
     ngOnInit() {
@@ -545,6 +548,7 @@ export class SchemaConfigComponent implements OnInit {
 
                 //Compare
                 const list: any[] = listResponse || [];
+                console.log('SchemaList:',list);
                 for (const schema of list) {
                     schema.policy = this.policyNameByTopic[schema.topicId];
                     schema.module = this.moduleNameByTopic[schema.topicId];
@@ -583,6 +587,7 @@ export class SchemaConfigComponent implements OnInit {
     private loadSchemas() {
         this.loading = true;
         this.page = [];
+        this.treeData = [];
         this.columns = this.getColumns();
         this.currentTopic = this.getTopicId();
         let loader: Observable<HttpResponse<ISchema[]>>;
@@ -607,7 +612,7 @@ export class SchemaConfigComponent implements OnInit {
             default: {
                 const category = this.getCategory();
                 loader = this.schemaService.getSchemasByPage({
-                    category: category,
+                    category,
                     topicId: this.currentTopic || '',
                     search: this.textSearch,
                     pageIndex: this.pageIndex,
@@ -625,11 +630,64 @@ export class SchemaConfigComponent implements OnInit {
                 element.__toolName = this.toolNameByTopic[element.topicId] || ' - ';
             }
             this.count = (schemasResponse.headers.get('X-Total-Count') || this.page.length) as number;
+            this.treeData = this.groupSchemas(this.page);
             this.checkIsAllSelected();
             this.loadTagsData();
         }, (e) => {
             this.loadError(e);
         });
+    }
+
+    private groupSchemas(schemas: ISchema[]): TreeNode[] {
+        if (this.type === SchemaType.System || this.type === SchemaType.Tag) {
+            return [];
+        }
+
+        const groups = new Map<string, ISchema[]>();
+        for (const schema of schemas) {
+            const topicId = schema.topicId || 'no-topic';
+            if (!groups.has(topicId)) {
+                groups.set(topicId, []);
+            }
+            groups.get(topicId)!.push(schema);
+        }
+
+        const result: TreeNode[] = [];
+        groups.forEach((groupSchemas, topicId) => {
+            const sortedSchemas = groupSchemas.sort((a, b) => {
+                return ModelHelper.versionCompare(b.version || b.sourceVersion || '', a.version || a.sourceVersion || '');
+            });
+
+            let parentName = '';
+            let parentId = '';
+            if (this.type === SchemaType.Policy) {
+                parentName = this.policyNameByTopic[topicId] || '';
+                parentId = this.policyIdByTopic[topicId];
+            } else if (this.type === SchemaType.Module) {
+                parentName = this.moduleNameByTopic[topicId] || '';
+            } else if (this.type === SchemaType.Tool) {
+                parentName = this.toolNameByTopic[topicId] || '';
+                parentId = this.toolIdByTopic[topicId];
+            }
+
+            const parentNode: TreeNode = {
+                data: {
+                    name: parentName,
+                    topicId,
+                    isParent: true,
+                    policyId: parentId,
+                    toolId: parentId
+                },
+                expanded: true,
+                children: sortedSchemas.map(schema => ({
+                    data: schema,
+                    leaf: true
+                }))
+            };
+            result.push(parentNode);
+        });
+
+        return result;
     }
 
     private loadTagsData() {
@@ -638,6 +696,13 @@ export class SchemaConfigComponent implements OnInit {
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 for (const schema of this.page) {
                     (schema as any)._tags = data[String(schema.id)];
+                }
+                for (const node of this.treeData) {
+                    if (node.children) {
+                        for (const child of node.children) {
+                            child.data._tags = data[String(child.data.id)];
+                        }
+                    }
                 }
                 setTimeout(() => {
                     this.loading = false;
@@ -1518,12 +1583,12 @@ export class SchemaConfigComponent implements OnInit {
                         this.user.SCHEMAS_SCHEMA_DELETE
                     );
                 }
-        
+
             default:
                 return true;
         }
     }
-    
+
     public onSelectAllItems(event: any) {
         if (event.checked) {
             this.selectedItems = [...this.selectedItems, ...this.page.filter((item: any) => this.ifCanDelete(item) && !this.selectedItemIds.includes(item.id))];

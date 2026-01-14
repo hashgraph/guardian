@@ -754,10 +754,87 @@ a {
     }
 }
 
+.p-treetable .p-treetable-thead > tr > th {
+    padding: 0;
+}
+
 .guardian-grid-container {
+    //&::before {
+    //    content: "";
+    //    display: block;
+    //    position: absolute;
+    //    left: -1px;
+    //    right: -1px;
+    //    top: 47px;
+    //    bottom: -1px;
+    //    pointer-events: none;
+    //    border: 1px solid var(--guardian-shadow, #00000014);
+    //    border-radius: 8px;
+    //    z-index: 2;
+    //}
+
+    .guardian-grid-header th {
+        padding: 0.5rem 1rem;
+    }
+
+
     ::ng-deep .guardian-grid-table {
         .p-datatable-wrapper {
             max-height: calc(-385px + 100vh);
+        }
+
+        .grey-row.parent {
+            &:first-child {
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+            }
+        }
+
+        .grey-row {
+            height: 24px;
+            background-color: var(--color-grey-white, #FFF);
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            &:first-child {
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+            }
+            &:last-child {
+                border-top-right-radius: 8px;
+            }
+        }
+
+        //.guardian-grid-row.parent {
+        //    &:first-child {
+        //        border-top-left-radius: 8px;
+        //    }
+        //    &:last-child {
+        //        border-top-right-radius: 8px;
+        //    }
+        //}
+        .guardian-grid-row {
+            background-color: var(--color-grey-white, #FFF);
+            //&:first-child {
+            //    border-top-left-radius: 8px;
+            //}
+            //&:last-child {
+            //    border-top-right-radius: 8px;
+            //}
+        }
+
+        //.parent-row-cell.parent {
+        //    &:first-child {
+        //        border-top-left-radius: 8px;
+        //    }
+        //    &:last-child {
+        //        border-top-right-radius: 8px;
+        //    }
+        //}
+
+        .parent-row-cell {
+            font-weight: 600;
+            color: var(--color-grey-black-1);
+            background-color: var(--color-grey-3, #E1E7EF);
         }
     }
 }

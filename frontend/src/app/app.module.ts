@@ -138,6 +138,7 @@ import { GeoJsonService } from './services/geo-json.service';
 import { PolicyRepositoryService } from './services/policy-repository.service';
 import { RelayerAccountsService } from './services/relayer-accounts.service';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
+import { TreeTableModule } from 'primeng/treetable'
 
 @NgModule({
     declarations: [
@@ -229,7 +230,9 @@ import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accou
         ProjectComparisonModule,
         DndModule,
         CheckboxModule,
-        AngularSvgIconModule.forRoot()],
+        AngularSvgIconModule.forRoot(),
+        TreeTableModule
+    ],
     providers: [
         WebSocketService,
         AuthService,
