@@ -759,24 +759,10 @@ a {
 }
 
 .guardian-grid-container {
-    //&::before {
-    //    content: "";
-    //    display: block;
-    //    position: absolute;
-    //    left: -1px;
-    //    right: -1px;
-    //    top: 47px;
-    //    bottom: -1px;
-    //    pointer-events: none;
-    //    border: 1px solid var(--guardian-shadow, #00000014);
-    //    border-radius: 8px;
-    //    z-index: 2;
-    //}
 
     .guardian-grid-header th {
         padding: 0.5rem 1rem;
     }
-
 
     ::ng-deep .guardian-grid-table {
         .p-datatable-wrapper {
@@ -804,32 +790,9 @@ a {
             }
         }
 
-        //.guardian-grid-row.parent {
-        //    &:first-child {
-        //        border-top-left-radius: 8px;
-        //    }
-        //    &:last-child {
-        //        border-top-right-radius: 8px;
-        //    }
-        //}
         .guardian-grid-row {
             background-color: var(--color-grey-white, #FFF);
-            //&:first-child {
-            //    border-top-left-radius: 8px;
-            //}
-            //&:last-child {
-            //    border-top-right-radius: 8px;
-            //}
         }
-
-        //.parent-row-cell.parent {
-        //    &:first-child {
-        //        border-top-left-radius: 8px;
-        //    }
-        //    &:last-child {
-        //        border-top-right-radius: 8px;
-        //    }
-        //}
 
         .parent-row-cell {
             font-weight: 600;
