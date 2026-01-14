@@ -57,9 +57,9 @@ export class DocumentGenerator {
         if (DocumentGenerator._isPlainObject(rowPresets?.[subSchema.name])) {
             return rowPresets[subSchema.name];
         }
-    
+
         // Generate default GeoJSON based on type
-        const getDefaultCoordinates = (type) => {
+        const getDefaultCoordinates = (geoType) => {
             const defaults = {
                 'Point': [0.0, 0.0],
                 'Polygon': [
@@ -145,11 +145,11 @@ export class DocumentGenerator {
                     ]
                 ],
             };
-            return defaults[type] || defaults['Point']; 
+            return defaults[geoType] || defaults.Point;
         };
-    
-         const type = (subSchema.availableOptions && subSchema.availableOptions.length > 0) 
-            ? subSchema.availableOptions[0] 
+
+        const type = (subSchema.availableOptions && subSchema.availableOptions.length > 0)
+            ? subSchema.availableOptions[0]
             : 'Point';
 
         const geometry = {
