@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 import { Tag } from '../entity/index.js';
 import { ISchema } from '@guardian/interfaces';
+import { ImportExportUtils } from "./utils.js";
 
 /**
  * Schema components
@@ -22,14 +23,17 @@ export class SchemaImportExport {
      */
     public static async generateZipFile(components: ISchemaComponents): Promise<JSZip> {
         const zip = new JSZip();
+
+        const ZIP_FILE_OPTIONS = ImportExportUtils.getDeterministicZipFileOptions();
+
         for (const schema of components.schemas) {
-            zip.file(`${schema.iri}.json`, JSON.stringify(schema));
+            zip.file(`${schema.iri}.json`, JSON.stringify(schema), ZIP_FILE_OPTIONS);
         }
         if (Array.isArray(components.tags)) {
-            zip.folder('tags')
+            ImportExportUtils.addDeterministicZipDir(zip, 'tags');
             for (let index = 0; index < components.tags.length; index++) {
                 const tag = components.tags[index];
-                zip.file(`tags/${index}.json`, JSON.stringify(tag));
+                zip.file(`tags/${index}.json`, JSON.stringify(tag), ZIP_FILE_OPTIONS);
             }
         }
         return zip;

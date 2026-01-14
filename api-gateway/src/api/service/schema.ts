@@ -1890,7 +1890,8 @@ export class SchemaApi {
                 compression: 'DEFLATE',
                 compressionOptions: {
                     level: 3
-                }
+                },
+                platform: 'UNIX',
             });
             res.header('Content-disposition', `attachment; filename=${name}`);
             res.header('Content-type', 'application/zip');
