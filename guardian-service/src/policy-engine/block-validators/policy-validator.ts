@@ -123,6 +123,13 @@ export class PolicyValidator {
             this.addError('Invalid policy config');
             return false;
         }
+
+        const cycle = this.detectCycleEvent(policy.config);
+
+        if (cycle) {
+            this.addError(`Cycle detected ${cycle.sourceTag} -> ${cycle.targetTag}`);
+            return false;
+        }
         // TODO: Add default categories or remove
         // if (!policy.categories?.filter((e) => e).length) {
         //     this.addError('The policy categories are empty');
@@ -159,6 +166,169 @@ export class PolicyValidator {
 
         await this.registerSchemas();
         return true;
+    }
+
+    detectCycleEvent(root: any) {
+        const idToBlock = new Map<string, any>();
+        const tagToId = new Map<string, string>();
+
+        const collectMaps = (block: any) => {
+            idToBlock.set(block.id, block);
+
+            if (block.tag && !tagToId.has(block.tag)) {
+                tagToId.set(block.tag, block.id);
+            }
+
+            for (const child of block.children ?? []) {
+                collectMaps(child);
+            }
+        };
+
+        collectMaps(root);
+
+        const edges = new Map<string, Set<string>>();
+
+        const addEdge = (from: string, to: string) => {
+            if (!from || !to) {
+                return;
+            }
+
+            let outs = edges.get(from);
+            if (!outs) {
+                outs = new Set<string>();
+                edges.set(from, outs);
+            }
+
+            outs.add(to);
+        };
+
+        const isInterfaceBlock = (block?: any) => {
+            return (block?.blockType ?? "").startsWith("interface");
+        };
+
+        const hasPath = (from: string, to: string): boolean => {
+            if (from === to) {
+                return true;
+            }
+
+            const visited = new Set<string>([from]);
+            const stack: string[] = [from];
+
+            while (stack.length > 0) {
+                const node = stack.pop()!;
+                const outs = edges.get(node);
+
+                if (!outs) {
+                    continue;
+                }
+
+                for (const next of outs) {
+                    if (next === to) {
+                        return true;
+                    }
+
+                    if (!visited.has(next)) {
+                        visited.add(next);
+                        stack.push(next);
+                    }
+                }
+            }
+
+            return false;
+        };
+
+        const addSequentialEdges = (parent: any) => {
+            const children = parent.children ?? [];
+
+            for (let i = 0; i < children.length - 1; i++) {
+                const current = children[i];
+                const next = children[i + 1];
+
+                if (current.stopPropagation === true) {
+                    continue;
+                }
+
+                if (isInterfaceBlock(current)) {
+                    continue;
+                }
+
+                addEdge(current.id, next.id);
+            }
+
+            for (const child of children) {
+                addSequentialEdges(child);
+            }
+        };
+
+        addSequentialEdges(root);
+
+        const orderedBlocks: any[] = [];
+
+        const flattenPreorder = (block: any) => {
+            orderedBlocks.push(block);
+
+            for (const child of block.children ?? []) {
+                flattenPreorder(child);
+            }
+        };
+
+        flattenPreorder(root);
+
+        const resolveTargetId = (ref: string) => {
+            const byTag = tagToId.get(ref);
+            if (byTag) {
+                return byTag;
+            }
+
+            if (idToBlock.has(ref)) {
+                return ref;
+            }
+
+            return "";
+        };
+
+        for (const block of orderedBlocks) {
+            if (block.stopPropagation === true) {
+                continue;
+            }
+
+            for (const ev of block.events ?? []) {
+                if (ev.disabled) {
+                    continue;
+                }
+
+                if (ev.input !== "RunEvent") {
+                    continue;
+                }
+
+                const targetRef = (ev.target ?? "").trim();
+                if (!targetRef) {
+                    continue;
+                }
+
+                const targetId = resolveTargetId(targetRef);
+                if (!targetId) {
+                    continue;
+                }
+
+                if (hasPath(targetId, block.id)) {
+                    return {
+                        sourceId: block.id,
+                        sourceTag: block.tag,
+                        targetRef,
+                        targetId,
+                        targetTag: idToBlock.get(targetId)?.tag,
+                        input: ev.input,
+                        output: ev.output,
+                        actor: ev.actor,
+                    };
+                }
+
+                addEdge(block.id, targetId);
+            }
+        }
+
+        return null;
     }
 
     /**
