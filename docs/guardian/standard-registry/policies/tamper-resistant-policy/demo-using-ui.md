@@ -1,5 +1,11 @@
 # Demo using UI
 
+[Step by Step](demo-using-ui.md#step-by-step)
+
+[Demo Video](demo-using-ui.md#demo-video)
+
+## Step By Step
+
 ## 1. Import-Time Configuration
 
 When importing a policy (via file or message), users can enable tamper-resistance by selecting a dedicated “Track policy changes” checkbox during the import process.
@@ -54,3 +60,7 @@ A new **“Modified”** column is added to the Policies grid to surface tamper 
 This helps users quickly understand _what_ changed and _where_.
 
 <figure><img src="../../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+
+## Demo Video
+
+[Youtube](https://youtu.be/kEQ5V1aMFQ4)

@@ -4,6 +4,12 @@ icon: computer
 
 # Demo using UI
 
+[Step by Step](demo-using-ui.md#step-by-step)
+
+[Demo Video](demo-using-ui.md#demo-video)
+
+## Step By Step
+
 ## 1. Purpose
 
 Allow users to edit documents and view all their versions.
@@ -73,3 +79,7 @@ Documents with multiple versions have a drop-down list with all versions. By def
 When you select any version, information about the selected version is displayed.
 
 <figure><img src="../../../.gitbook/assets/unknown (12).png" alt=""><figcaption></figcaption></figure>
+
+## Demo Video
+
+[Youtube](https://youtu.be/YMeY_bEOl_U)
