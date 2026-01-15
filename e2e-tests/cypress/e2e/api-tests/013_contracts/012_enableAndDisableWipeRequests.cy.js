@@ -55,6 +55,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				response.body.forEach(element => {
 					if (element.name == "iRec_4") {
 						policyId = element.id
+						cy.task('log', element)
 					}
 				})
 				//Get token(Irec token) draft id to update it
