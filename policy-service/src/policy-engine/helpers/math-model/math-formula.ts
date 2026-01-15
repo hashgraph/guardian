@@ -1,6 +1,6 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { MathItemType } from './math-Item-type.js';
-import { createComputeEngine } from './utils.js';
+import { createComputeEngine, findCommand } from './utils.js';
 
 export class MathFormula {
     public type: MathItemType.FUNCTION | MathItemType.VARIABLE = MathItemType.VARIABLE;
@@ -130,29 +130,35 @@ export class MathFormula {
             if (!text) {
                 this.bodyUnknowns = [];
                 this.validBody = false;
-                this.error = 'Invalid function';
+                this.error = 'Invalid function: empty';
                 return;
             }
             if (text.includes('\\placeholder')) {
                 this.bodyUnknowns = [];
                 this.validBody = false;
-                this.error = 'Invalid function';
+                this.error = 'Invalid function: placeholder';
                 return;
             }
             const ce = createComputeEngine();
             const p = ce.parse(text, { canonical: false });
+            const commands = findCommand(p.json, 'Tuple');
+            const indexes: string[] = [];
+            for (const command of commands) {
+                indexes.push(command[1]);
+            }
             this.bodyUnknowns = p.unknowns as string[];
+            this.bodyUnknowns = this.bodyUnknowns.filter((u) => !indexes.includes(u));
             this.validBody = p.isValid;
             if (this.validBody) {
                 this.functionBody = this.functionBodyText;
                 this.error = '';
             } else {
-                this.error = 'Invalid function';
+                this.error = 'Invalid function: ' + p.value;
             }
         } catch (error) {
             this.bodyUnknowns = [];
             this.validBody = false;
-            this.error = 'Invalid function';
+            this.error = 'Invalid function: ' + error;
         }
     }
 

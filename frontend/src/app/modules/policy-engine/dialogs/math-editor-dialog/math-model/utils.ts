@@ -69,12 +69,31 @@ export function createComputeEngine() {
             Sum.evaluate = function () {
                 const e = arguments[0];
                 if (e && e[1]) {
+                    const op2 = e[1].op2;
                     const op3 = e[1].op3;
-                    if (op3 && op3.type === 'any') {
+                    if (op2 || op3) {
+                        let start = op2.value;
+                        let end = op3.value;
+                        if (!start || start < 1 || isNaN(start) || !isFinite(start)) {
+                            start = 1;
+                        }
+                        if (!end || end < 1 || isNaN(end) || !isFinite(end)) {
+                            end = start + 1;
+                        }
+                        if (!(end > start)) {
+                            end = start + 1;
+                        }
+                        Object.defineProperty(op2, "re", {
+                            get: function re() {
+                                return start;
+                            },
+                            configurable: true
+                        });
                         Object.defineProperty(op3, "re", {
                             get: function re() {
-                                return this._valueN?.value?.re || NaN;
-                            }
+                                return end;
+                            },
+                            configurable: true
                         });
                     }
                 }
@@ -143,4 +162,26 @@ export function setDocumentValueByPath(
         throw Error('Invalid path');
     }
     return doc;
+}
+
+export function findCommand(json: any, command: string): any[] {
+    return _findCommand(json, command, null, []);
+}
+
+function _findCommand(json: any, command: string, parent: any, result: any[]): any[] {
+    if (Array.isArray(json)) {
+        if (json[0] === command) {
+            result.push(json);
+        }
+        for (let i = 1; i < json.length; i++) {
+            _findCommand(json[i], command, json, result);
+        }
+    } else if (json === command) {
+        if (parent) {
+            result.push(parent);
+        } else {
+            result.push([json]);
+        }
+    }
+    return result;
 }

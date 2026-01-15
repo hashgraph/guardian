@@ -280,7 +280,7 @@ export class Schema implements ISchema {
     private setTypes(fields: SchemaField[], parent: SchemaField | null): void {
         for (const f of fields) {
             f.arrayLvl = (parent ? parent.arrayLvl : 0) + (f.isArray ? 1 : 0);
-            f.fullType = (f.isRef ? 'object' : f.type) + '[]'.repeat(f.arrayLvl);
+            f.fullType = (f.isRef ? 'object' : (f.type || 'Help Text')) + '[]'.repeat(f.arrayLvl);
             if (Array.isArray(f.fields)) {
                 this.setTypes(f.fields, f);
             }

@@ -79,6 +79,10 @@
         overflow: auto;
         padding: 0px;
     }
+
+    &.keyboard .step-container {
+        bottom: 274px;
+    }
 }
 
 .rows-container {

@@ -56,13 +56,22 @@ export const evaluateKeyboard = {
             "#@_{#?}",
             "|#0|",
             "\\sqrt[#0]{#0}",
-            "\\left(#0\\right)",
+            {
+                class: "small",
+                latex: "\\mathrm{Len}\\left(#0\\right)",
+                insert: "\\mathrm{Length}\\left(#0\\right)",
+            },
             {
                 class: "small",
                 latex: "\\sum_{#0}^{#0}#0",
                 variants: [
                     { class: "small", latex: "\\sum_{#0}^{#0}#0" },
                     { class: "small", latex: "\\sum #0" },
+                    {
+                        class: "small",
+                        latex: "\\sum_{i=1}^{N}#0",
+                        insert: "\\sum_{#0=1}^{\\mathrm{Length}\\left(#0\\right)}#0"
+                    },
                 ]
             },
             {

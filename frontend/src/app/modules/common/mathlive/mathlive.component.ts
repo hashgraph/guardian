@@ -23,6 +23,7 @@ export class MathLiveComponent implements OnInit, OnDestroy {
     @Output('focus') focus = new EventEmitter<MathLiveComponent>();
 
     private readonly mfe: MathfieldElement;
+    private mathVirtualKeyboard: any;
 
     constructor() {
         MathfieldElement.keypressSound = null;
@@ -33,6 +34,7 @@ export class MathLiveComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         const mathVirtualKeyboard: any = window.mathVirtualKeyboard;
         mathVirtualKeyboard.layouts = this.createLayouts();
+        this.mathVirtualKeyboard = mathVirtualKeyboard;
         this.mfe.mathVirtualKeyboardPolicy = "manual";
         this.mfe.onInlineShortcut = (_mf, s) => {
             if (/^[a-zA-Z][a-zA-Z0-9]*'?(_[a-zA-Z0-9]+'?)?$/.test(s)) {
@@ -55,6 +57,9 @@ export class MathLiveComponent implements OnInit, OnDestroy {
             }
             this.keyboard.emit(true);
             this.focus.emit(this);
+            if (mathVirtualKeyboard.container) {
+                mathVirtualKeyboard.container.classList.toggle('keyboard', true);
+            }
             return mathVirtualKeyboard.show();
         });
         this.mfe.addEventListener("focusout", () => {
@@ -64,6 +69,9 @@ export class MathLiveComponent implements OnInit, OnDestroy {
 
             this.keyboard.emit(false);
             this.focus.emit(this);
+            if (mathVirtualKeyboard.container) {
+                mathVirtualKeyboard.container.classList.toggle('keyboard', false);
+            }
             return mathVirtualKeyboard.hide();
         });
         this.mfe.addEventListener('input', (ev: any) => {
@@ -86,6 +94,9 @@ export class MathLiveComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.mfe.remove();
+        if (this.mathVirtualKeyboard.container) {
+            this.mathVirtualKeyboard.container.classList.toggle('keyboard', false);
+        }
     }
 
     public getElement(): ElementRef {
