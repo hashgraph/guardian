@@ -123,7 +123,8 @@ export async function publishFormula(
         compression: 'DEFLATE',
         compressionOptions: {
             level: 3
-        }
+        },
+        platform: 'UNIX',
     });
 
     const publishMessage = new FormulaMessage(MessageAction.PublishFormula);

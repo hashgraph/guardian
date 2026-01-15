@@ -226,7 +226,8 @@ export async function publishModule(
         compression: 'DEFLATE',
         compressionOptions: {
             level: 3
-        }
+        },
+        platform: 'UNIX',
     });
     notifier.completeStep(STEP_GENERATE_FILE);
 
@@ -483,6 +484,7 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                     compressionOptions: {
                         level: 3,
                     },
+                    platform: 'UNIX',
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {

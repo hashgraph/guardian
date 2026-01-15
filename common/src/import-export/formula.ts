@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 import { Formula, Policy } from '../entity/index.js';
 import { IFormulaConfig } from '@guardian/interfaces';
 import { DatabaseServer } from '../database-modules/index.js';
+import { ImportExportUtils } from "./utils.js";
 
 interface ISchemaComponents {
     iri: string;
@@ -90,8 +91,11 @@ export class FormulaImportExport {
         delete formulas.updateDate;
         const schemas = components.schemas;
         const zip = new JSZip();
-        zip.file(FormulaImportExport.schemasFileName, JSON.stringify(schemas));
-        zip.file(FormulaImportExport.formulaFileName, JSON.stringify(formulas));
+
+        const ZIP_FILE_OPTIONS = ImportExportUtils.getDeterministicZipFileOptions();
+
+        zip.file(FormulaImportExport.schemasFileName, JSON.stringify(schemas), ZIP_FILE_OPTIONS);
+        zip.file(FormulaImportExport.formulaFileName, JSON.stringify(formulas), ZIP_FILE_OPTIONS);
         return zip;
     }
 

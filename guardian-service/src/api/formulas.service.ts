@@ -241,6 +241,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     compressionOptions: {
                         level: 3,
                     },
+                    platform: 'UNIX',
                 });
 
                 return new BinaryMessageResponse(file);
