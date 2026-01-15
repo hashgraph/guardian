@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { Formula, Policy } from '../entity/index.js';
 import { IFormulaConfig } from '@guardian/interfaces';
 import { DatabaseServer } from '../database-modules/index.js';
-import { ImportExportUtils } from "./utils.js";
+import { ImportExportUtils } from './utils.js';
 
 interface ISchemaComponents {
     iri: string;

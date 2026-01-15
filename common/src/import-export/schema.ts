@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 import { Tag } from '../entity/index.js';
 import { ISchema } from '@guardian/interfaces';
-import { ImportExportUtils } from "./utils.js";
+import { ImportExportUtils } from './utils.js';
 
 /**
  * Schema components
