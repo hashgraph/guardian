@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "devDependencies": {
-    "@hashgraph/sdk": "^2.78.0",
+    "@hiero-ledger/sdk": "^2.79.0",
     "@nomicfoundation/hardhat-foundry": "^1.2.1",
     "@nomicfoundation/hardhat-toolbox": "^6.1.2",
     "@types/chai": "^4.3.0",

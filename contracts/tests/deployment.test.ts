@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {ContractCallQuery, ContractFunctionParameters, PrivateKey} from '@hashgraph/sdk';
+import {ContractCallQuery, ContractFunctionParameters, PrivateKey} from '@hiero-ledger/sdk';
 import {deployWipeContract, initializeClient, sharedState} from './shared-setup';
 import {createAccount, executeContract, parseLogs} from './helpers';
 

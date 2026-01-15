@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {ContractFunctionParameters, TokenAssociateTransaction} from '@hashgraph/sdk';
+import {ContractFunctionParameters, TokenAssociateTransaction} from '@hiero-ledger/sdk';
 import {deployRetireSingleContract, deployWipeContract, initializeClient, sharedState} from './shared-setup';
 import {createAccount, createNFT, executeContract, executeContractRaw, getClient, mintNFT, transferNFTs} from './helpers';
 

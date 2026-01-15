@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {ContractFunctionParameters, TokenAssociateTransaction, TransferTransaction} from '@hashgraph/sdk';
+import {ContractFunctionParameters, TokenAssociateTransaction, TransferTransaction} from '@hiero-ledger/sdk';
 import {deployWipeContract, initializeClient, sharedState} from './shared-setup';
 import {accountIdToSolidityAddress, createAccount, createFungibleToken, executeContract, getTokenBalance} from './helpers';
 
@@ -58,6 +58,7 @@ describe('Wipe Contract - Fungible Token Operations', function () {
             const transferResponse = await new TransferTransaction()
                 .addTokenTransfer(tokenId, sharedState.operatorId, -200000000)
                 .addTokenTransfer(tokenId, user.accountId, 200000000)
+                .freezeWith(sharedState.client!)
                 .execute(sharedState.client!);
             await transferResponse.getReceipt(sharedState.client!);
 

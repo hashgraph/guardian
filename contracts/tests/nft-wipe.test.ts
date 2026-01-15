@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {ContractFunctionParameters, TokenAssociateTransaction, TransferTransaction} from '@hashgraph/sdk';
+import {ContractFunctionParameters, TokenAssociateTransaction, TransferTransaction} from '@hiero-ledger/sdk';
 import {deployWipeContract, initializeClient, sharedState} from './shared-setup';
 import {accountIdToSolidityAddress, createAccount, createNFT, executeContract, mintNFT} from './helpers';
 
@@ -67,6 +67,7 @@ describe('Wipe Contract - NFT Operations', function () {
             const transferResponse = await new TransferTransaction()
                 .addNftTransfer(nftTokenId, serialsToWipe[0], sharedState.operatorId, user.accountId)
                 .addNftTransfer(nftTokenId, serialsToWipe[1], sharedState.operatorId, user.accountId)
+                .freezeWith(sharedState.client!)
                 .execute(sharedState.client!);
             await transferResponse.getReceipt(sharedState.client!);
 

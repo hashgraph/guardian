@@ -1,7 +1,7 @@
 import {expect} from 'chai';
-import {ContractFunctionParameters, TokenAssociateTransaction, TransferTransaction} from '@hashgraph/sdk';
+import {ContractFunctionParameters, TokenAssociateTransaction, TransferTransaction} from '@hiero-ledger/sdk';
 import {deployRetireSingleContract, deployWipeContract, initializeClient, sharedState} from './shared-setup';
-import {assertBalanceChange, createAccount, createFungibleToken, executeContract, executeContractRaw, getClient, getTokenBalance, parseLogs} from './helpers';
+import {assertBalanceChange, createAccount, createFungibleToken, executeContract, executeContractRaw, getClient} from './helpers';
 
 describe('RetireSingleToken - Request Flow', function () {
     this.timeout(300000);
@@ -63,6 +63,7 @@ describe('RetireSingleToken - Request Flow', function () {
         const transferResponse = await new TransferTransaction()
             .addTokenTransfer(tokenId, sharedState.operatorId, -500)
             .addTokenTransfer(tokenId, user.accountId, 500)
+            .freezeWith(sharedState.client!)
             .execute(sharedState.client!);
         await transferResponse.getReceipt(sharedState.client!);
     });
@@ -144,7 +145,7 @@ describe('RetireSingleToken - Request Flow', function () {
             );
             expect.fail('Should have reverted due to hash mismatch');
         } catch (error: any) {
-            expect(error.message).to.satisfy((msg: string) => 
+            expect(error.message).to.satisfy((msg: string) =>
                 msg.includes('CONTRACT_REVERT_EXECUTED') || msg.includes('RETIRE_CHECK')
             );
         }
@@ -169,7 +170,7 @@ describe('RetireSingleToken - Request Flow', function () {
             );
             expect.fail('Should have reverted with NO_PERMISSIONS');
         } catch (error: any) {
-            expect(error.message).to.satisfy((msg: string) => 
+            expect(error.message).to.satisfy((msg: string) =>
                 msg.includes('CONTRACT_REVERT_EXECUTED') || msg.includes('NO_PERMISSIONS')
             );
         }
@@ -199,7 +200,7 @@ describe('RetireSingleToken - Request Flow', function () {
             );
             expect.fail('Should have reverted because request was already removed');
         } catch (error: any) {
-            expect(error.message).to.satisfy((msg: string) => 
+            expect(error.message).to.satisfy((msg: string) =>
                 msg.includes('CONTRACT_REVERT_EXECUTED')
             );
         }

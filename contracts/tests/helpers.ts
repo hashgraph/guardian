@@ -1,7 +1,7 @@
-import {AccountBalanceQuery, AccountCreateTransaction, AccountId, Client, ContractCreateFlow, ContractExecuteTransaction, ContractFunctionParameters, ContractId, Hbar, PrivateKey, TokenCreateTransaction, TokenMintTransaction, TokenSupplyType, TokenType, TransactionRecordQuery, TransferTransaction} from '@hashgraph/sdk';
+import {AccountBalanceQuery, AccountCreateTransaction, AccountId, Client, ContractCreateFlow, ContractExecuteTransaction, ContractFunctionParameters, ContractId, Hbar, PrivateKey, TokenCreateTransaction, TokenMintTransaction, TokenSupplyType, TokenType, TransactionRecordQuery, TransferTransaction} from '@hiero-ledger/sdk';
 import * as dotenv from 'dotenv';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import {ethers} from 'ethers';
 
 dotenv.config();
@@ -71,7 +71,7 @@ export async function deployContract(
     const receipt = await txResponse.getReceipt(client);
     const contractId = receipt.contractId!.toString();
     const solidityAddress = contractId.split('.')[2];
-    const hexAddress = parseInt(solidityAddress).toString(16);
+    const hexAddress = parseInt(solidityAddress, 10).toString(16);
     const paddedAddress = hexAddress.padStart(40, '0');
     const address = `0x${paddedAddress}`;
 
@@ -104,11 +104,11 @@ export async function createFungibleToken(
         }
     }
 
-    const txResponse = await tx.execute(client);
+    const txResponse = await tx.freezeWith(client).execute(client);
     const receipt = await txResponse.getReceipt(client);
     const tokenId = receipt.tokenId!.toString();
     const solidityAddress = tokenId.split('.')[2];
-    const hexAddress = parseInt(solidityAddress).toString(16);
+    const hexAddress = parseInt(solidityAddress, 10).toString(16);
     const paddedAddress = hexAddress.padStart(40, '0');
     const address = `0x${paddedAddress}`;
 
@@ -141,11 +141,11 @@ export async function createNFT(
         }
     }
 
-    const txResponse = await tx.execute(client);
+    const txResponse = await tx.freezeWith(client).execute(client);
     const receipt = await txResponse.getReceipt(client);
     const tokenId = receipt.tokenId!.toString();
     const solidityAddress = tokenId.split('.')[2];
-    const hexAddress = parseInt(solidityAddress).toString(16);
+    const hexAddress = parseInt(solidityAddress, 10).toString(16);
     const paddedAddress = hexAddress.padStart(40, '0');
     const address = `0x${paddedAddress}`;
 
@@ -166,6 +166,7 @@ export async function mintNFT(
         const tx = await new TokenMintTransaction()
             .setTokenId(tokenId)
             .setMetadata(metadata)
+            .freezeWith(client)
             .execute(client);
 
         const receipt = await tx.getReceipt(client);
@@ -189,7 +190,7 @@ export async function transferNFTs(
         for (const serial of batch) {
             transferTx.addNftTransfer(tokenId, serial, from, to);
         }
-        await (await transferTx.execute(client)).getReceipt(client);
+        await (await transferTx.freezeWith(client).execute(client)).getReceipt(client);
     }
 }
 
@@ -204,6 +205,7 @@ export async function executeContract(
         .setContractId(contractId)
         .setGas(gas)
         .setFunction(functionName, params)
+        .freezeWith(client)
         .execute(client);
 
     const receipt = await tx.getReceipt(client);
@@ -230,6 +232,7 @@ export async function executeContractRaw(
         .setContractId(contractId)
         .setGas(gas)
         .setFunctionParameters(params)
+        .freezeWith(client)
         .execute(client);
 
     const receipt = await tx.getReceipt(client);
@@ -261,7 +264,7 @@ export function solidityAddressToTokenId(address: string): string {
 
 export function accountIdToSolidityAddress(accountId: string): string {
     const num = accountId.split('.')[2];
-    const hexNum = parseInt(num).toString(16);
+    const hexNum = parseInt(num, 10).toString(16);
     const paddedAddress = hexNum.padStart(40, '0');
     return `0x${paddedAddress}`;
 }
@@ -276,6 +279,7 @@ export async function createAccount(
     const tx = await new AccountCreateTransaction()
         .setKey(newPublicKey)
         .setInitialBalance(new Hbar(initialBalance))
+        .freezeWith(client)
         .execute(client);
 
     const receipt = await tx.getReceipt(client);

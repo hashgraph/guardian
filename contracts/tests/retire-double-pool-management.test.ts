@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {ContractFunctionParameters} from '@hashgraph/sdk';
+import {ContractFunctionParameters} from '@hiero-ledger/sdk';
 import {deployRetireDoubleContract, deployWipeContract, initializeClient, sharedState} from './shared-setup';
 import {createFungibleToken, executeContract, executeContractRaw} from './helpers';
 

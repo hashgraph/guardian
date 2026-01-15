@@ -1,5 +1,5 @@
-import { Client } from '@hashgraph/sdk';
-import { getClient, deployContract } from './helpers';
+import {Client} from '@hiero-ledger/sdk';
+import {deployContract, getClient} from './helpers';
 
 export const sharedState = {
     client: null as Client | null,

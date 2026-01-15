@@ -1,7 +1,7 @@
 import {expect} from 'chai';
-import {ContractFunctionParameters} from '@hashgraph/sdk';
-import {sharedState, initializeClient, deployWipeContract, deployRetireSingleContract} from './shared-setup';
-import {createAccount, createFungibleToken, executeContract, executeContractRaw, getClient, parseLogs} from './helpers';
+import {ContractFunctionParameters} from '@hiero-ledger/sdk';
+import {deployRetireSingleContract, deployWipeContract, initializeClient, sharedState} from './shared-setup';
+import {createAccount, createFungibleToken, executeContract, executeContractRaw, getClient} from './helpers';
 
 describe('RetireSingleToken - Pool Management', function () {
     this.timeout(300000);
@@ -87,7 +87,7 @@ describe('RetireSingleToken - Pool Management', function () {
                 );
                 expect.fail('Should have reverted with NO_PERMISSIONS');
             } catch (error: any) {
-                expect(error.message).to.satisfy((msg: string) => 
+                expect(error.message).to.satisfy((msg: string) =>
                     msg.includes('CONTRACT_REVERT_EXECUTED') || msg.includes('NO_PERMISSIONS')
                 );
             } finally {

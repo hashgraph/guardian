@@ -1,7 +1,7 @@
 import {expect} from 'chai';
-import {PrivateKey, ContractFunctionParameters, ContractCallQuery} from '@hashgraph/sdk';
-import {sharedState, initializeClient, deployWipeContract} from './shared-setup';
-import {createAccount, createFungibleToken, executeContract, accountIdToSolidityAddress} from './helpers';
+import {ContractCallQuery, ContractFunctionParameters, PrivateKey} from '@hiero-ledger/sdk';
+import {deployWipeContract, initializeClient, sharedState} from './shared-setup';
+import {createAccount, createFungibleToken, executeContract} from './helpers';
 
 describe('Wipe Contract - Request System', function () {
     this.timeout(300000);

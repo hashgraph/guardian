@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {ContractFunctionParameters, TokenAssociateTransaction, TransferTransaction} from '@hashgraph/sdk';
+import {ContractFunctionParameters, TokenAssociateTransaction, TransferTransaction} from '@hiero-ledger/sdk';
 import {deployRetireDoubleContract, deployWipeContract, initializeClient, sharedState} from './shared-setup';
 import {createAccount, createFungibleToken, executeContract, executeContractRaw, getClient, getTokenBalance} from './helpers';
 
@@ -98,6 +98,7 @@ describe('RetireDoubleToken - Retire Operations', function () {
                 .addTokenTransfer(token1Id, user.accountId, 1000)
                 .addTokenTransfer(token2Id, sharedState.operatorId, -1000)
                 .addTokenTransfer(token2Id, user.accountId, 1000)
+                .freezeWith(sharedState.client!)
                 .execute(sharedState.client!);
             await transferResponse.getReceipt(sharedState.client!);
         });
@@ -225,6 +226,7 @@ describe('RetireDoubleToken - Retire Operations', function () {
                 .addTokenTransfer(token1Id, user.accountId, 2000)
                 .addTokenTransfer(token2Id, sharedState.operatorId, -2000)
                 .addTokenTransfer(token2Id, user.accountId, 2000)
+                .freezeWith(sharedState.client!)
                 .execute(sharedState.client!);
             await transferResponse.getReceipt(sharedState.client!);
         });
