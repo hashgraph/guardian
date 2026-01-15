@@ -15,10 +15,51 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
     let depUserData, tenantId;
 
+    const setupMGSTenantAndUser = (adminAuth, tenantName, username, password, role) => {
+        return cy.request({
+            method: METHOD.PUT,
+            url: `${API.ApiMGS}${API.TenantsUser}`,
+            headers: { authorization: adminAuth },
+            body: {
+                tenantName,
+                network: "testnet",
+                ipfsSettings: { provider: "local" }
+            }
+        }).then((tenantRes) => {
+            const tenantId = tenantRes.body.id;
+
+            return cy.request({
+                method: METHOD.POST,
+                url: `${API.ApiMGS}${API.TenantsInvite}`,
+                headers: { authorization: adminAuth },
+                body: {
+                    tenantId,
+                    email: email,
+                    returnInviteCode: true,
+                    role
+                }
+            }).then((inviteRes) => {
+                return cy.request({
+                    method: METHOD.POST,
+                    url: `${API.ApiMGS}${API.AccountRegister}`,
+                    headers: { authorization: adminAuth },
+                    body: {
+                        username,
+                        password,
+                        password_confirmation: password,
+                        role,
+                        inviteId: inviteRes.body.inviteId,
+                        terms: { name: "MGS.v2", accepted: true }
+                    }
+                }).then(() => cy.wrap({ tenantId }));
+            });
+        });
+    };
+
     it("Create dependent users (Local Server)", () => {
         // 1. Ensure Local Users exist
-        cy.registerIfMissing(DepSRUsername, password, 'STANDARD_REGISTRY');
-        cy.registerIfMissing(DepUserUsername, password, 'USER');
+        cy.registerUserIfNeededOrMissing(DepSRUsername, password, 'STANDARD_REGISTRY');
+        cy.registerUserIfNeededOrMissing(DepUserUsername, password, 'USER');
 
         // 2. Setup DepSR Profile
         Authorization.getAccessToken(DepSRUsername).then((auth) => {
@@ -58,7 +99,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
     it("Create main users (MGS Tenant Flow)", () => {
         // 1. Setup Tenant and SR User
         Authorization.getAccessTokenMGS(MGSAdminUsername, null).then((adminAuth) => {
-            cy.setupMGSTenantAndUser(adminAuth, tenantName, MainSRUsername, password, "STANDARD_REGISTRY")
+            setupMGSTenantAndUser(adminAuth, tenantName, MainSRUsername, password, "STANDARD_REGISTRY")
                 .then(({ tenantId: id }) => {
                     tenantId = id;
 
@@ -89,7 +130,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
         // 3. Setup Main User and Link as REMOTE
         Authorization.getAccessTokenMGS(MGSAdminUsername, null).then((adminAuth) => {
-            cy.setupMGSTenantAndUser(adminAuth, tenantName, MainUserUsername, password, "USER").then(() => {
+            setupMGSTenantAndUser(adminAuth, tenantName, MainUserUsername, password, "USER").then(() => {
                 Authorization.getAccessTokenMGS(MainUserUsername, tenantId).then((userAuth) => {
                     // Accept Terms
                     cy.request({
@@ -106,7 +147,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                         headers: { authorization: userAuth }
                     }).then((res) => {
                         const mainSRDid = res.body.find(u => u.username === MainSRUsername)?.did;
-                        
+
                         cy.request({
                             method: METHOD.PUT,
                             url: API.ApiMGS + API.Profiles + MainUserUsername,
@@ -125,5 +166,5 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
             });
         });
     });
-    
+
 });

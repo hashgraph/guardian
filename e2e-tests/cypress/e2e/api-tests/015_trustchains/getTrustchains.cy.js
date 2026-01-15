@@ -6,46 +6,53 @@ context("Trustchains", { tags: ['trustchains', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let policyId;
 
+    const getTrustChain = (headers = {}, policyId) =>
+        cy.request({
+            method: METHOD.GET,
+            url: `${API.ApiServer}${API.Policies}${policyId}/${API.TrustChainBlock}`,
+            headers,
+            failOnStatusCode: false,
+        });
+
     before("Get policy id for trustchain", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies,
-                headers: { authorization }
+                headers: { authorization },
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                // Optimized search for the specific policy
-                const targetPolicy = response.body.find(p => p.name === "iRec_4");
+                // Prefer the named policy "iRec_4"; fallback to the first one
+                const targetPolicy = response.body.find((p) => p.name === "iRec_4");
                 policyId = targetPolicy ? targetPolicy.id : response.body.at(0).id;
             });
         });
     });
 
-    it('Get all VP documents and hash', () => {
+    it("Get all VP documents and hash", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.getTrustChain(authorization, policyId).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
+            getTrustChain({ authorization }, policyId).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.OK);
                 expect(response.body).to.have.property("hash");
             });
         });
     });
 
     it("Get all VP documents and hash without auth token - Negative", () => {
-        cy.getTrustChain(null, policyId).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        getTrustChain({}, policyId).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Get all VP documents and hash with invalid auth token - Negative", () => {
-        cy.getTrustChain("Bearer wqe", policyId).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        getTrustChain({ authorization: "Bearer wqe" }, policyId).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Get all VP documents and hash with empty auth token - Negative", () => {
-        cy.getTrustChain("", policyId).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        getTrustChain({ authorization: "" }, policyId).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
-
 });
