@@ -40,7 +40,7 @@ contract RetireSingleTokenPoolStorage is RetirePoolStorage {
             tokenAddresses[0] = base;
             unsetPool(tokenAddresses);
         }
-        pools.push(Pool({base: base, baseCount: baseCount, immediately: immediately}));
+        pools.push(Pool({ base: base, baseCount: baseCount, immediately: immediately }));
         poolPos[base] = pools.length;
     }
 
@@ -48,7 +48,7 @@ contract RetireSingleTokenPoolStorage is RetirePoolStorage {
         address base = tokens[0];
         Pool storage pool = pools[poolPos[base] - 1];
         RetireTokenPool[] memory tokenOptions = new RetireTokenPool[](1);
-        tokenOptions[0] = RetireTokenPool({token: pool.base, count: pool.baseCount});
+        tokenOptions[0] = RetireTokenPool({ token: pool.base, count: pool.baseCount });
         return (tokenOptions, pool.immediately);
     }
 }

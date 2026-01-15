@@ -37,11 +37,15 @@ contract RetireDoubleTokenRequestStorage is RetireRequestStorage {
         bool inverted = base == request.opposite;
         RetireTokenRequest[] memory tokenOptions = new RetireTokenRequest[](2);
         tokenOptions[0] = inverted
-            ? RetireTokenRequest({token: request.opposite, count: request.oppositeCount, serials: request.oppositeSerials})
-            : RetireTokenRequest({token: request.base, count: request.baseCount, serials: request.baseSerials});
+            ? RetireTokenRequest({
+                token: request.opposite, count: request.oppositeCount, serials: request.oppositeSerials
+            })
+            : RetireTokenRequest({ token: request.base, count: request.baseCount, serials: request.baseSerials });
         tokenOptions[1] = inverted
-            ? RetireTokenRequest({token: request.base, count: request.baseCount, serials: request.baseSerials})
-            : RetireTokenRequest({token: request.opposite, count: request.oppositeCount, serials: request.oppositeSerials});
+            ? RetireTokenRequest({ token: request.base, count: request.baseCount, serials: request.baseSerials })
+            : RetireTokenRequest({
+                token: request.opposite, count: request.oppositeCount, serials: request.oppositeSerials
+            });
         return tokenOptions;
     }
 
@@ -76,15 +80,17 @@ contract RetireDoubleTokenRequestStorage is RetireRequestStorage {
             tokenAddresses[1] = opposite;
             unsetRequest(account, tokenAddresses);
         }
-        requests.push(Request({
-            usr: account,
-            base: base,
-            opposite: opposite,
-            baseCount: baseCount,
-            oppositeCount: oppositeCount,
-            baseSerials: baseSerials,
-            oppositeSerials: oppositeSerials
-        }));
+        requests.push(
+            Request({
+                usr: account,
+                base: base,
+                opposite: opposite,
+                baseCount: baseCount,
+                oppositeCount: oppositeCount,
+                baseSerials: baseSerials,
+                oppositeSerials: oppositeSerials
+            })
+        );
         requestPos[account][base][opposite] = requests.length;
         requestPos[account][opposite][base] = requests.length;
     }

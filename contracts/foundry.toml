@@ -18,6 +18,14 @@ int_types = 'long'
 multiline_func_header = 'attributes_first'
 quote_style = 'double'
 number_underscore = 'thousands'
+ignore = ['src/hts-precompile/*', 'src/safe-hts-precompile/*']
+
+[lint]
+exclude_lints = ['unaliased-plain-import']
+ignore = [
+    'src/hts-precompile/*',
+    'src/safe-hts-precompile/*',
+]
 
 [rpc_endpoints]
 hedera = "${HEDERA_RPC_URL}"

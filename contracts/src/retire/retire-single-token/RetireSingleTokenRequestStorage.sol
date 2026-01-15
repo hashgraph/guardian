@@ -31,7 +31,8 @@ contract RetireSingleTokenRequestStorage is RetireRequestStorage {
 
         Request storage request = requests[requestPos[account][base] - 1];
         RetireTokenRequest[] memory tokenOptions = new RetireTokenRequest[](1);
-        tokenOptions[0] = RetireTokenRequest({token: request.base, count: request.baseCount, serials: request.baseSerials});
+        tokenOptions[0] =
+            RetireTokenRequest({ token: request.base, count: request.baseCount, serials: request.baseSerials });
         return tokenOptions;
     }
 
@@ -58,7 +59,7 @@ contract RetireSingleTokenRequestStorage is RetireRequestStorage {
             tokenAddresses[0] = base;
             unsetRequest(account, tokenAddresses);
         }
-        requests.push(Request({usr: account, base: base, baseCount: baseCount, baseSerials: baseSerials}));
+        requests.push(Request({ usr: account, base: base, baseCount: baseCount, baseSerials: baseSerials }));
         requestPos[account][base] = requests.length;
     }
 }

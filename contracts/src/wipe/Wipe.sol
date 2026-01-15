@@ -213,6 +213,7 @@ contract Wipe is Version, SafeHTS, Access {
         safeWipeTokenAccount(token, account, amount);
     }
 
+    /// forge-lint: disable-next-item(mixed-case-function)
     function wipeNFT(address token, address account, int64[] memory serialNumbers)
         public
         isTokenWiper(token)

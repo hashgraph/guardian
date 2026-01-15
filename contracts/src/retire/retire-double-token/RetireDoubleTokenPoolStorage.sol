@@ -68,11 +68,11 @@ contract RetireDoubleTokenPoolStorage is RetirePoolStorage {
         RetireTokenPool[] memory tokenOptions = new RetireTokenPool[](2);
         bool inverted = base == pool.opposite;
         tokenOptions[0] = inverted
-            ? RetireTokenPool({token: pool.opposite, count: pool.oppositeCount})
-            : RetireTokenPool({token: pool.base, count: pool.baseCount});
+            ? RetireTokenPool({ token: pool.opposite, count: pool.oppositeCount })
+            : RetireTokenPool({ token: pool.base, count: pool.baseCount });
         tokenOptions[1] = inverted
-            ? RetireTokenPool({token: pool.base, count: pool.baseCount})
-            : RetireTokenPool({token: pool.opposite, count: pool.oppositeCount});
+            ? RetireTokenPool({ token: pool.base, count: pool.baseCount })
+            : RetireTokenPool({ token: pool.opposite, count: pool.oppositeCount });
         return (tokenOptions, pool.immediately);
     }
 }
