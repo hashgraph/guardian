@@ -753,7 +753,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
     })
 
     it("Revoke project", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
+        Authorization.getAccessToken(PPUser).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectGridPP2,
@@ -786,6 +786,19 @@ context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                     Checks.whileRequestProccessing(waitProjValidate, "Revoked", "data.0.option.status")
                 })
             })
+        })
+
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            const waitProjValidate = {
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies + policyId + "/" + API.ProjGridVVB,
+                headers: {
+                    authorization
+                },
+                failOnStatusCode: false,
+                timeout: 60000
+            }
+            Checks.whileRequestProccessing(waitProjValidate, "Revoked", "data.0.option.status")
         })
     })
 
