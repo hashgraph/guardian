@@ -87,7 +87,7 @@ export class HttpRequestUIAddonCode {
             }
             let token = localStorage.getItem('accessToken') as string;
 
-            if(environment.isAuthorizePopup) {
+            if (environment.requireAuthorizationPopup) {
                 if(this.authenticationURL && this.authenticationClientId) {
                     token = await this.getRemoteAuthToken();
                 }
