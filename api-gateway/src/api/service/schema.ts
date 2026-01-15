@@ -1,4 +1,4 @@
-import { ISchema, Permissions, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction } from '@guardian/interfaces';
+import { DocumentGenerator, ISchema, Permissions, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
@@ -165,6 +165,47 @@ export class SingleSchemaApi {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
             return await guardians.getSchemaTree(schemaId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Returns a sample payload for the schema by schema Id.
+     */
+    @Get('/:schemaId/sample-payload')
+    @Auth()
+    @ApiOperation({
+        summary: 'Returns a sample payload for the schema by schema Id.',
+        description: 'Returns a sample payload for the schema by schema Id.',
+    })
+    @ApiParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getSampleSchemaPayload(
+        @AuthUser() user: IAuthUser,
+        @Param('schemaId') schemaId: string,
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            const iSchema = await guardians.getSchemaById(user, schemaId);
+            if (!iSchema) {
+                throw new HttpException(`Schema not found.`, HttpStatus.NOT_FOUND);
+            }
+            const schema = new Schema(iSchema)
+            return DocumentGenerator.generateDocument(schema);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
