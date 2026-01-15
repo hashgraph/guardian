@@ -182,3 +182,8 @@ jobs:
         if: always()
         with:
           files: e2e-tests/cypress/test_results/**/*.xml
+
+      - name: Upload tests results
+        uses: actions/upload-artifact@v4
+        with:
+          path: e2e-tests/cypress/reports
