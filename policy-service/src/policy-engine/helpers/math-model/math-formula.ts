@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { MathItemType } from './math-Item-type.js';
+import { MathItemType } from './math-item-type.js';
 import { createComputeEngine, findCommand } from './utils.js';
 
 export class MathFormula {

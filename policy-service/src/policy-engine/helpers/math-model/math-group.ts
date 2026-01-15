@@ -1,7 +1,7 @@
 import { MathFormula } from './math-formula.js';
 import { FieldLink } from './field-link.js';
 import { MathContext } from './math-context.js';
-import { MathItemType } from './math-Item-type.js';
+import { MathItemType } from './math-item-type.js';
 
 export class MathGroup {
     public items: (MathFormula | FieldLink)[] = [];
@@ -134,8 +134,8 @@ export class MathGroup {
         while (dependencies.size > 0 && dependencies.size !== lastSize) {
             lastSize = dependencies.size;
 
-            const formulas = dependencies.values();
-            for (const formula of formulas) {
+            const items = dependencies.values();
+            for (const formula of items) {
                 if (this.checkUnknowns(list, formula.functionUnknowns)) {
                     list.set(formula.functionName, formula);
                     this.list.push(formula);
@@ -145,8 +145,8 @@ export class MathGroup {
         }
 
         if (dependencies.size > 0) {
-            const formulas = dependencies.values();
-            for (const formula of formulas) {
+            const items = dependencies.values();
+            for (const formula of items) {
                 formula.validBody = false;
                 for (const unknown of formula.functionUnknowns) {
                     if (!list.has(unknown)) {

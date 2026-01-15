@@ -32,7 +32,6 @@ export class MathBlock {
                 return;
             }
 
-
             if (ref.options.outputSchema) {
                 const outputSchemaError = validator.validateSchemaVariable('outputSchema', ref.options.outputSchema, true);
                 if (outputSchemaError) {

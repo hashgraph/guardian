@@ -1,7 +1,7 @@
 import { MathFormula } from './math-formula';
 import { FieldLink } from './field-link';
 import { getValueByPath, convertValue, createComputeEngine, getDocumentValueByPath } from './utils';
-import { MathItemType } from './math-Item-type';
+import { MathItemType } from './math-item-type';
 import { IContext } from './context.interface';
 
 export class MathContext {
@@ -185,7 +185,7 @@ export class MathContext {
                 return NaN;
             }
             const list = new Array(arg.length);
-            const __getValue = function (value: any): any {
+            const __getValue = (value: any): any => {
                 if (Array.isArray(value)) {
                     const items = value.map((v) => __getValue(v));
                     return context.ce.box(['List', ...items]);

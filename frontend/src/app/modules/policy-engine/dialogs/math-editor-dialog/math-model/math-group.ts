@@ -1,7 +1,7 @@
 import { MathFormula } from './math-formula';
 import { FieldLink } from './field-link';
 import { MathContext } from './math-context';
-import { MathItemType } from './math-Item-type';
+import { MathItemType } from './math-item-type';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 
 export class MathGroup {
@@ -135,8 +135,8 @@ export class MathGroup {
         while (dependencies.size > 0 && dependencies.size !== lastSize) {
             lastSize = dependencies.size;
 
-            const formulas = dependencies.values();
-            for (const formula of formulas) {
+            const items = dependencies.values();
+            for (const formula of items) {
                 if (this.checkUnknowns(list, formula.functionUnknowns)) {
                     list.set(formula.functionName, formula);
                     this.list.push(formula);
@@ -146,8 +146,8 @@ export class MathGroup {
         }
 
         if (dependencies.size > 0) {
-            const formulas = dependencies.values();
-            for (const formula of formulas) {
+            const items = dependencies.values();
+            for (const formula of items) {
                 formula.validBody = false;
                 for (const unknown of formula.functionUnknowns) {
                     if (!list.has(unknown)) {

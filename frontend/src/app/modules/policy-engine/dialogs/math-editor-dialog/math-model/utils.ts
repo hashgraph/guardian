@@ -83,13 +83,13 @@ export function createComputeEngine() {
                         if (!(end > start)) {
                             end = start + 1;
                         }
-                        Object.defineProperty(op2, "re", {
+                        Object.defineProperty(op2, 're', {
                             get: function re() {
                                 return start;
                             },
                             configurable: true
                         });
-                        Object.defineProperty(op3, "re", {
+                        Object.defineProperty(op3, 're', {
                             get: function re() {
                                 return end;
                             },

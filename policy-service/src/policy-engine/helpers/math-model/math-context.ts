@@ -1,7 +1,7 @@
 import { MathFormula } from './math-formula.js';
 import { FieldLink } from './field-link.js';
 import { getValueByPath, convertValue, createComputeEngine, getDocumentValueByPath } from './utils.js';
-import { MathItemType } from './math-Item-type.js';
+import { MathItemType } from './math-item-type.js';
 import { IContext } from './context.interface.js';
 
 export class MathContext {
@@ -185,7 +185,8 @@ export class MathContext {
                 return NaN;
             }
             const list = new Array(arg.length);
-            const __getValue = function (value: any): any {
+            // tslint:disable-next-line: variable-name
+            const __getValue = (value: any): any => {
                 if (Array.isArray(value)) {
                     const items = value.map((v) => __getValue(v));
                     return context.ce.box(['List', ...items]);

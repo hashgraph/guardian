@@ -1,12 +1,10 @@
-import { ArtifactType, IVC, LocationType, Schema, SchemaHelper } from '@guardian/interfaces';
+import { ArtifactType, LocationType, Schema, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { ContextHelper, VcDocumentDefinition, VcHelper } from '@guardian/common';
-// tslint:disable-next-line:no-duplicate-imports
-import { VcDocument as VcDocumentCollection } from '@guardian/common';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -101,7 +99,7 @@ export class MathBlock {
 
     /**
      * Calculate data
-     * @param ref 
+     * @param ref
      * @param document
      * @param user
      * @private
