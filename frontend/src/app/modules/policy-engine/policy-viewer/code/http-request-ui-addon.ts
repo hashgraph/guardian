@@ -1,6 +1,7 @@
 import { PolicyEngineService } from "src/app/services/policy-engine.service";
 import { DynamicMsalAuthService } from "../../services/dynamic-msal-auth.service";
 import { ToastrService } from "ngx-toastr";
+import { environment } from "src/environments/environment";
 
 export class HttpRequestUIAddonCode {
     private readonly url: string;
@@ -46,7 +47,7 @@ export class HttpRequestUIAddonCode {
                 .customRequest(this.type, url, data.document, headers)
                 .subscribe((response: any) => {
                     data.document = response;
-                    this.toastr.success('Document was sent successfully', '', {
+                    this.toastr.success('Document was submitted successfully.', '', {
                         timeOut: 3000,
                         closeButton: true,
                         positionClass: 'toast-bottom-right',
@@ -85,9 +86,13 @@ export class HttpRequestUIAddonCode {
                 headers = {};
             }
             let token = localStorage.getItem('accessToken') as string;
-            if(this.authenticationURL && this.authenticationClientId) {
-                token = await this.getRemoteAuthToken();
+
+            if(environment.isAuthorizePopup) {
+                if(this.authenticationURL && this.authenticationClientId) {
+                    token = await this.getRemoteAuthToken();
+                }
             }
+
             headers.Authorization = `Bearer ${token}`;
         }
         if (Array.isArray(this.headers) && this.headers.length) {
