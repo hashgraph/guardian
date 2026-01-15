@@ -53,6 +53,16 @@ CodeMirror.defineMode('block-code-lang', function (config, parserConfig) {
         }
     }
 
+    const getLength = function (text: string, field: any) {
+        if (text && field && field.pattern) {
+            const result = text.match(field.pattern);
+            if (result && result[0]) {
+                return result[0].length;
+            }
+        }
+        return 0;
+    }
+
     const syntaxOverlay: Mode<any> = {
         token: function (stream) {
             const pos = stream.pos;
@@ -83,7 +93,8 @@ CodeMirror.defineMode('block-code-lang', function (config, parserConfig) {
             if (index.type === 'document') {
                 for (const field of inputFields) {
                     if (field.pattern.test(fullText)) {
-                        const endIndex = index.index + field.path.length;
+                        const length = getLength(fullText, field);
+                        const endIndex = index.index + length;
                         if (endIndex > pos) {
                             const next = stream.string[endIndex];
                             if (!next || next === '.' || /[^\w]/.test(next)) {
@@ -96,7 +107,8 @@ CodeMirror.defineMode('block-code-lang', function (config, parserConfig) {
             } else if (index.type === 'result') {
                 for (const field of outputFields) {
                     if (field.pattern.test(fullText)) {
-                        const endIndex = index.index + field.path.length;
+                        const length = getLength(fullText, field);
+                        const endIndex = index.index + length;
                         if (endIndex > pos) {
                             const next = stream.string[endIndex];
                             if (!next || next === '.' || /[^\w]/.test(next)) {
@@ -109,7 +121,8 @@ CodeMirror.defineMode('block-code-lang', function (config, parserConfig) {
             } else {
                 for (const field of inputFields) {
                     if (field.pattern.test(fullText)) {
-                        const endIndex = index.index + field.path.length;
+                        const length = getLength(fullText, field);
+                        const endIndex = index.index + length;
                         if (endIndex > pos) {
                             const next = stream.string[endIndex];
                             if (next === '\'' || next === '.') {

@@ -78,10 +78,10 @@ export function createComputeEngine() {
                             start = 1;
                         }
                         if (!end || end < 1 || isNaN(end) || !isFinite(end)) {
-                            end = start + 1;
+                            end = start;
                         }
-                        if (!(end > start)) {
-                            end = start + 1;
+                        if (end < start) {
+                            end = start;
                         }
                         Object.defineProperty(op2, 're', {
                             get: function re() {

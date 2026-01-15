@@ -76,6 +76,6 @@ export class FieldLinkDialog {
 
     public onFilter() {
         const search = (this.search || '').toLowerCase();
-        this.items?.searchItems(search, 0);
+        this.items?.searchItems(search, [0, 1]);
     }
 }

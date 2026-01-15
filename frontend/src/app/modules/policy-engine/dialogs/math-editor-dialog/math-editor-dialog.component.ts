@@ -357,9 +357,14 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 }
                 links.push({
                     path: field.path,
-                    // pattern: new RegExp('^' + field.path)
                     pattern: new RegExp('^' + pattern)
-                })
+                });
+                if (field.isArray) {
+                    links.push({
+                        path: field.path,
+                        pattern: new RegExp('^' + pattern + '\\[\\w+\\]')
+                    });
+                }
                 this._createLinks(field.fields, links, field, pattern);
             }
         }
@@ -372,7 +377,10 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             return item;
         });
         const items = TreeListView.createView(fields, (s) => { return !s.parent });
-        items.setSearchRules((item) => [`(${item.description || ''})`.toLocaleLowerCase()]);
+        items.setSearchRules((item) => [
+            `(${item.description || ''})`.toLocaleLowerCase(),
+            `(${item.path || ''})`.toLocaleLowerCase()
+        ]);
         return items;
     }
 

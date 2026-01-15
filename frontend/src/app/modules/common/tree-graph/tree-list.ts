@@ -182,13 +182,26 @@ export class TreeListData<T> {
         }
     }
 
-    public searchItems(text: string, ruleIndex: number): void {
+    private testSearchRule(search: string[], text: string, ruleIndex: number | number[]): boolean {
+        if (Array.isArray(ruleIndex)) {
+            for (const index of ruleIndex) {
+                if (search[index].includes(text)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return search[ruleIndex].includes(text);
+        }
+    }
+
+    public searchItems(text: string, ruleIndex: number | number[]): void {
         if (text) {
             for (const item of this.list) {
-                if (item.search[ruleIndex].includes(text)) {
+                if (this.testSearchRule(item.search, text, ruleIndex)) {
                     item.searchHighlighted = 'highlighted';
                 } else {
-                    if (item.searchChildren[ruleIndex].includes(text)) {
+                    if (this.testSearchRule(item.searchChildren, text, ruleIndex)) {
                         item.searchHighlighted = 'sub';
                         item.collapsed = false;
                     } else {
@@ -342,7 +355,7 @@ export class TreeListView<T> {
         }
     }
 
-    public searchItems(text: string, ruleIndex: number): void {
+    public searchItems(text: string, ruleIndex: number | number[]): void {
         const value = (text || '').trim().toLocaleLowerCase();
         this._data.searchItems(value, ruleIndex);
     }
