@@ -10,9 +10,7 @@ contract SafeViewOperations is SafeViewHTS {
     event IsApprovedForAll(bool);
     event IsFrozen(bool);
     event IsKyc(bool);
-    event GetTokenCustomFees(
-        IHederaTokenService.FixedFee[], IHederaTokenService.FractionalFee[], IHederaTokenService.RoyaltyFee[]
-    );
+    event GetTokenCustomFees(IHederaTokenService.FixedFee[], IHederaTokenService.FractionalFee[], IHederaTokenService.RoyaltyFee[]);
     event GetTokenDefaultFreezeStatus(bool);
     event GetTokenDefaultKycStatus(bool);
     event GetTokenExpiryInfo(IHederaTokenService.Expiry);
@@ -33,10 +31,7 @@ contract SafeViewOperations is SafeViewHTS {
         emit GetApproved(approved);
     }
 
-    function safeIsApprovedForAllPublic(address token, address owner, address operator)
-        external
-        returns (bool approved)
-    {
+    function safeIsApprovedForAllPublic(address token, address owner, address operator) external returns (bool approved) {
         approved = safeIsApprovedForAll(token, owner, operator);
         emit IsApprovedForAll(approved);
     }
@@ -51,14 +46,7 @@ contract SafeViewOperations is SafeViewHTS {
         emit IsKyc(kycGranted);
     }
 
-    function safeGetTokenCustomFeesPublic(address token)
-        external
-        returns (
-            IHederaTokenService.FixedFee[] memory fixedFees,
-            IHederaTokenService.FractionalFee[] memory fractionalFees,
-            IHederaTokenService.RoyaltyFee[] memory royaltyFees
-        )
-    {
+    function safeGetTokenCustomFeesPublic(address token) external returns (IHederaTokenService.FixedFee[] memory fixedFees, IHederaTokenService.FractionalFee[] memory fractionalFees, IHederaTokenService.RoyaltyFee[] memory royaltyFees) {
         (fixedFees, fractionalFees, royaltyFees) = safeGetTokenCustomFees(token);
         emit GetTokenCustomFees(fixedFees, fractionalFees, royaltyFees);
     }
@@ -78,10 +66,7 @@ contract SafeViewOperations is SafeViewHTS {
         emit GetTokenExpiryInfo(expiry);
     }
 
-    function safeGetFungibleTokenInfoPublic(address token)
-        external
-        returns (IHederaTokenService.FungibleTokenInfo memory fungibleTokenInfo)
-    {
+    function safeGetFungibleTokenInfoPublic(address token) external returns (IHederaTokenService.FungibleTokenInfo memory fungibleTokenInfo) {
         fungibleTokenInfo = safeGetFungibleTokenInfo(token);
         emit GetFungibleTokenInfo(fungibleTokenInfo);
     }
@@ -91,18 +76,12 @@ contract SafeViewOperations is SafeViewHTS {
         emit GetTokenInfo(tokenInfo);
     }
 
-    function safeGetTokenKeyPublic(address token, uint256 keyType)
-        external
-        returns (IHederaTokenService.KeyValue memory key)
-    {
+    function safeGetTokenKeyPublic(address token, uint keyType) external returns (IHederaTokenService.KeyValue memory key) {
         key = safeGetTokenKey(token, keyType);
         emit GetTokenKey(key);
     }
 
-    function safeGetNonFungibleTokenInfoPublic(address token, int64 serialNumber)
-        external
-        returns (IHederaTokenService.NonFungibleTokenInfo memory nonFungibleTokenInfo)
-    {
+    function safeGetNonFungibleTokenInfoPublic(address token, int64 serialNumber) external returns (IHederaTokenService.NonFungibleTokenInfo memory nonFungibleTokenInfo) {
         nonFungibleTokenInfo = safeGetNonFungibleTokenInfo(token, serialNumber);
         emit GetNonFungibleTokenInfo(nonFungibleTokenInfo);
     }

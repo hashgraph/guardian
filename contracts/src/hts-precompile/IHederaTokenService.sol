@@ -3,6 +3,7 @@ pragma solidity >=0.4.9 <0.9.0;
 pragma experimental ABIEncoderV2;
 
 interface IHederaTokenService {
+
     /// Transfers cryptocurrency among two or more accounts by making the desired adjustments to their
     /// balances. Each transfer list can specify up to 10 adjustments. Each negative amount is withdrawn
     /// from the corresponding account (a sender), and each positive one is added to the corresponding
@@ -90,7 +91,6 @@ interface IHederaTokenService {
     /// Exactly one of the possible values should be populated in order for the Key to be valid.
     struct KeyValue {
 
-
         // if set to true, the key of the calling Hedera account will be inherited as the token key
         bool inheritAccountKey;
 
@@ -115,7 +115,6 @@ interface IHederaTokenService {
     /// A list of token key types the key should be applied to and the value of the key
     struct TokenKey {
 
-
         // bit field representing the key type. Keys of all types that have corresponding bits set to 1
         // will be created for the token.
         // 0th bit: adminKey
@@ -126,7 +125,7 @@ interface IHederaTokenService {
         // 5th bit: feeScheduleKey
         // 6th bit: pauseKey
         // 7th bit: ignored
-        uint256 keyType;
+        uint keyType;
 
         // the value that will be set to the key type
         KeyValue key;
@@ -236,7 +235,6 @@ interface IHederaTokenService {
     /// useCurrentTokenForPayment. Exactly one of the values should be set.
     struct FixedFee {
 
-
         int64 amount;
 
         // Specifies ID of token that should be used for fixed fee denomination
@@ -321,9 +319,17 @@ interface IHederaTokenService {
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return newTotalSupply The new supply of tokens. For NFTs it is the total count of NFTs
     /// @return serialNumbers If the token is an NFT the newly generate serial numbers, othersise empty.
-    function mintToken(address token, int64 amount, bytes[] memory metadata)
+    function mintToken(
+        address token,
+        int64 amount,
+        bytes[] memory metadata
+    )
         external
-        returns (int64 responseCode, int64 newTotalSupply, int64[] memory serialNumbers);
+        returns (
+            int64 responseCode,
+            int64 newTotalSupply,
+            int64[] memory serialNumbers
+        );
 
     /// Burns an amount of the token from the defined treasury account
     /// @param token The token for which to burn tokens. If token does not exist, transaction results in
@@ -334,9 +340,11 @@ interface IHederaTokenService {
     /// @param serialNumbers Applicable to tokens of type NON_FUNGIBLE_UNIQUE. The list of serial numbers to be burned.
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return newTotalSupply The new supply of tokens. For NFTs it is the total count of NFTs
-    function burnToken(address token, int64 amount, int64[] memory serialNumbers)
-        external
-        returns (int64 responseCode, int64 newTotalSupply);
+    function burnToken(
+        address token,
+        int64 amount,
+        int64[] memory serialNumbers
+    ) external returns (int64 responseCode, int64 newTotalSupply);
 
     ///  Associates the provided account with the provided tokens. Must be signed by the provided
     ///  Account's key or called from the accounts contract key
@@ -355,12 +363,16 @@ interface IHederaTokenService {
     ///               Type, once an account is associated, it can hold any number of NFTs (serial numbers) of that
     ///               token type
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function associateTokens(address account, address[] memory tokens) external returns (int64 responseCode);
+    function associateTokens(address account, address[] memory tokens)
+        external
+        returns (int64 responseCode);
 
     /// Single-token variant of associateTokens. Will be mapped to a single entry array call of associateTokens
     /// @param account The account to be associated with the provided token
     /// @param token The token to be associated with the provided account
-    function associateToken(address account, address token) external returns (int64 responseCode);
+    function associateToken(address account, address token)
+        external
+        returns (int64 responseCode);
 
     /// Dissociates the provided account with the provided tokens. Must be signed by the provided
     /// Account's key.
@@ -380,12 +392,16 @@ interface IHederaTokenService {
     /// @param account The account to be dissociated from the provided tokens
     /// @param tokens The tokens to be dissociated from the provided account.
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function dissociateTokens(address account, address[] memory tokens) external returns (int64 responseCode);
+    function dissociateTokens(address account, address[] memory tokens)
+        external
+        returns (int64 responseCode);
 
     /// Single-token variant of dissociateTokens. Will be mapped to a single entry array call of dissociateTokens
     /// @param account The account to be associated with the provided token
     /// @param token The token to be associated with the provided account
-    function dissociateToken(address account, address token) external returns (int64 responseCode);
+    function dissociateToken(address account, address token)
+        external
+        returns (int64 responseCode);
 
     /// Creates a Fungible Token with the specified properties
     /// @param token the basic properties of the token being created
@@ -394,10 +410,11 @@ interface IHederaTokenService {
     /// @param decimals the number of decimal places a token is divisible by
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return tokenAddress the created token's address
-    function createFungibleToken(HederaToken memory token, int64 initialTotalSupply, int32 decimals)
-        external
-        payable
-        returns (int64 responseCode, address tokenAddress);
+    function createFungibleToken(
+        HederaToken memory token,
+        int64 initialTotalSupply,
+        int32 decimals
+    ) external payable returns (int64 responseCode, address tokenAddress);
 
     /// Creates a Fungible Token with the specified properties
     /// @param token the basic properties of the token being created
@@ -445,9 +462,11 @@ interface IHederaTokenService {
     /// @param token The ID of the token as a solidity address
     /// @param accountId account to do a transfer to/from
     /// @param amount The amount from the accountId at the same index
-    function transferTokens(address token, address[] memory accountId, int64[] memory amount)
-        external
-        returns (int64 responseCode);
+    function transferTokens(
+        address token,
+        address[] memory accountId,
+        int64[] memory amount
+    ) external returns (int64 responseCode);
 
     /// Initiates a Non-Fungable Token Transfer
     /// @param token The ID of the token as a solidity address
@@ -468,9 +487,12 @@ interface IHederaTokenService {
     /// @param sender The sender for the transaction
     /// @param recipient The receiver of the transaction
     /// @param amount Non-negative value to send. a negative value will result in a failure.
-    function transferToken(address token, address sender, address recipient, int64 amount)
-        external
-        returns (int64 responseCode);
+    function transferToken(
+        address token,
+        address sender,
+        address recipient,
+        int64 amount
+    ) external returns (int64 responseCode);
 
     /// Transfers tokens where the calling account/contract is implicitly the first entry in the token transfer list,
     /// where the amount is the value needed to zero balance the transfers. Regular signing rules apply for sending
@@ -479,9 +501,12 @@ interface IHederaTokenService {
     /// @param sender The sender for the transaction
     /// @param recipient The receiver of the transaction
     /// @param serialNumber The serial number of the NFT to transfer.
-    function transferNFT(address token, address sender, address recipient, int64 serialNumber)
-        external
-        returns (int64 responseCode);
+    function transferNFT(
+        address token,
+        address sender,
+        address recipient,
+        int64 serialNumber
+    ) external returns (int64 responseCode);
 
     /// Allows spender to withdraw from your account multiple times, up to the value amount. If this function is called
     /// again it overwrites the current allowance with value.
@@ -490,7 +515,11 @@ interface IHederaTokenService {
     /// @param spender the account address authorized to spend
     /// @param amount the amount of tokens authorized to spend.
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function approve(address token, address spender, uint256 amount) external returns (int64 responseCode);
+    function approve(
+        address token,
+        address spender,
+        uint256 amount
+    ) external returns (int64 responseCode);
 
     /// Transfers `amount` tokens from `from` to `to` using the
     //  allowance mechanism. `amount` is then deducted from the caller's allowance.
@@ -509,9 +538,11 @@ interface IHederaTokenService {
     /// @param spender the spender of the tokens
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return allowance The amount which spender is still allowed to withdraw from owner.
-    function allowance(address token, address owner, address spender)
-        external
-        returns (int64 responseCode, uint256 allowance);
+    function allowance(
+        address token,
+        address owner,
+        address spender
+    ) external returns (int64 responseCode, uint256 allowance);
 
     /// Allow or reaffirm the approved address to transfer an NFT the approved address does not own.
     /// Only Applicable to NFT Tokens
@@ -519,7 +550,11 @@ interface IHederaTokenService {
     /// @param approved The new approved NFT controller.  To revoke approvals pass in the zero address.
     /// @param serialNumber The NFT serial number  to approve
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function approveNFT(address token, address approved, uint256 serialNumber) external returns (int64 responseCode);
+    function approveNFT(
+        address token,
+        address approved,
+        uint256 serialNumber
+    ) external returns (int64 responseCode);
 
     /// Transfers `serialNumber` of `token` from `from` to `to` using the allowance mechanism.
     /// Only applicable to NFT tokens
@@ -528,9 +563,7 @@ interface IHederaTokenService {
     /// @param to The account address of the receiver of `serialNumber`
     /// @param serialNumber The NFT serial number to transfer
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function transferFromNFT(address token, address from, address to, uint256 serialNumber)
-        external
-        returns (int64 responseCode);
+    function transferFromNFT(address token, address from, address to, uint256 serialNumber) external returns (int64 responseCode);
 
     /// Get the approved address for a single NFT
     /// Only Applicable to NFT Tokens
@@ -538,7 +571,9 @@ interface IHederaTokenService {
     /// @param serialNumber The NFT to find the approved address for
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return approved The approved address for this NFT, or the zero address if there is none
-    function getApproved(address token, uint256 serialNumber) external returns (int64 responseCode, address approved);
+    function getApproved(address token, uint256 serialNumber)
+        external
+        returns (int64 responseCode, address approved);
 
     /// Enable or disable approval for a third party ("operator") to manage
     ///  all of `msg.sender`'s assets
@@ -546,7 +581,11 @@ interface IHederaTokenService {
     /// @param operator Address to add to the set of authorized operators
     /// @param approved True if the operator is approved, false to revoke approval
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function setApprovalForAll(address token, address operator, bool approved) external returns (int64 responseCode);
+    function setApprovalForAll(
+        address token,
+        address operator,
+        bool approved
+    ) external returns (int64 responseCode);
 
     /// Query if an address is an authorized operator for another address
     /// Only Applicable to NFT Tokens
@@ -555,23 +594,29 @@ interface IHederaTokenService {
     /// @param operator The address that acts on behalf of the owner
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return approved True if `operator` is an approved operator for `owner`, false otherwise
-    function isApprovedForAll(address token, address owner, address operator)
-        external
-        returns (int64 responseCode, bool approved);
+    function isApprovedForAll(
+        address token,
+        address owner,
+        address operator
+    ) external returns (int64 responseCode, bool approved);
 
     /// Query if token account is frozen
     /// @param token The token address to check
     /// @param account The account address associated with the token
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return frozen True if `account` is frozen for `token`
-    function isFrozen(address token, address account) external returns (int64 responseCode, bool frozen);
+    function isFrozen(address token, address account)
+        external
+        returns (int64 responseCode, bool frozen);
 
     /// Query if token account has kyc granted
     /// @param token The token address to check
     /// @param account The account address associated with the token
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return kycGranted True if `account` has kyc granted for `token`
-    function isKyc(address token, address account) external returns (int64 responseCode, bool kycGranted);
+    function isKyc(address token, address account)
+        external
+        returns (int64 responseCode, bool kycGranted);
 
     /// Operation to delete token
     /// @param token The token address to be deleted
@@ -586,30 +631,31 @@ interface IHederaTokenService {
     /// @return royaltyFees Set of royalty fees for `token`
     function getTokenCustomFees(address token)
         external
-        returns (
-            int64 responseCode,
-            FixedFee[] memory fixedFees,
-            FractionalFee[] memory fractionalFees,
-            RoyaltyFee[] memory royaltyFees
-        );
+        returns (int64 responseCode, FixedFee[] memory fixedFees, FractionalFee[] memory fractionalFees, RoyaltyFee[] memory royaltyFees);
 
     /// Query token default freeze status
     /// @param token The token address to check
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return defaultFreezeStatus True if `token` default freeze status is frozen.
-    function getTokenDefaultFreezeStatus(address token) external returns (int64 responseCode, bool defaultFreezeStatus);
+    function getTokenDefaultFreezeStatus(address token)
+        external
+        returns (int64 responseCode, bool defaultFreezeStatus);
 
     /// Query token default kyc status
     /// @param token The token address to check
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return defaultKycStatus True if `token` default kyc status is KycNotApplicable and false if Revoked.
-    function getTokenDefaultKycStatus(address token) external returns (int64 responseCode, bool defaultKycStatus);
+    function getTokenDefaultKycStatus(address token)
+        external
+        returns (int64 responseCode, bool defaultKycStatus);
 
     /// Query token expiry info
     /// @param token The token address to check
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return expiry Expiry info for `token`
-    function getTokenExpiryInfo(address token) external returns (int64 responseCode, Expiry memory expiry);
+    function getTokenExpiryInfo(address token)
+        external
+        returns (int64 responseCode, Expiry memory expiry);
 
     /// Query fungible token info
     /// @param token The token address to check
@@ -623,14 +669,18 @@ interface IHederaTokenService {
     /// @param token The token address to check
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return tokenInfo TokenInfo info for `token`
-    function getTokenInfo(address token) external returns (int64 responseCode, TokenInfo memory tokenInfo);
+    function getTokenInfo(address token)
+        external
+        returns (int64 responseCode, TokenInfo memory tokenInfo);
 
     /// Query token KeyValue
     /// @param token The token address to check
     /// @param keyType The keyType of the desired KeyValue
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return key KeyValue info for key of type `keyType`
-    function getTokenKey(address token, uint256 keyType) external returns (int64 responseCode, KeyValue memory key);
+    function getTokenKey(address token, uint keyType)
+        external
+        returns (int64 responseCode, KeyValue memory key);
 
     /// Query non fungible token info
     /// @param token The token address to check
@@ -645,25 +695,33 @@ interface IHederaTokenService {
     /// @param token The token address
     /// @param account The account address to be frozen
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function freezeToken(address token, address account) external returns (int64 responseCode);
+    function freezeToken(address token, address account)
+        external
+        returns (int64 responseCode);
 
     /// Operation to unfreeze token account
     /// @param token The token address
     /// @param account The account address to be unfrozen
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function unfreezeToken(address token, address account) external returns (int64 responseCode);
+    function unfreezeToken(address token, address account)
+        external
+        returns (int64 responseCode);
 
     /// Operation to grant kyc to token account
     /// @param token The token address
     /// @param account The account address to grant kyc
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function grantTokenKyc(address token, address account) external returns (int64 responseCode);
+    function grantTokenKyc(address token, address account)
+        external
+        returns (int64 responseCode);
 
     /// Operation to revoke kyc to token account
     /// @param token The token address
     /// @param account The account address to revoke kyc
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function revokeTokenKyc(address token, address account) external returns (int64 responseCode);
+    function revokeTokenKyc(address token, address account)
+        external
+        returns (int64 responseCode);
 
     /// Operation to pause token
     /// @param token The token address to be paused
@@ -680,46 +738,62 @@ interface IHederaTokenService {
     /// @param account The account address to revoke kyc
     /// @param amount The number of tokens to wipe
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function wipeTokenAccount(address token, address account, int64 amount) external returns (int64 responseCode);
+    function wipeTokenAccount(
+        address token,
+        address account,
+        int64 amount
+    ) external returns (int64 responseCode);
 
     /// Operation to wipe non fungible tokens from account
     /// @param token The token address
     /// @param account The account address to revoke kyc
     /// @param  serialNumbers The serial numbers of token to wipe
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function wipeTokenAccountNFT(address token, address account, int64[] memory serialNumbers)
-        external
-        returns (int64 responseCode);
+    function wipeTokenAccountNFT(
+        address token,
+        address account,
+        int64[] memory serialNumbers
+    ) external returns (int64 responseCode);
 
     /// Operation to update token info
     /// @param token The token address
     /// @param tokenInfo The hedera token info to update token with
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function updateTokenInfo(address token, HederaToken memory tokenInfo) external returns (int64 responseCode);
+    function updateTokenInfo(address token, HederaToken memory tokenInfo)
+        external
+        returns (int64 responseCode);
 
     /// Operation to update token expiry info
     /// @param token The token address
     /// @param expiryInfo The hedera token expiry info
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function updateTokenExpiryInfo(address token, Expiry memory expiryInfo) external returns (int64 responseCode);
+    function updateTokenExpiryInfo(address token, Expiry memory expiryInfo)
+        external
+        returns (int64 responseCode);
 
     /// Operation to update token expiry info
     /// @param token The token address
     /// @param keys The token keys
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
-    function updateTokenKeys(address token, TokenKey[] memory keys) external returns (int64 responseCode);
+    function updateTokenKeys(address token, TokenKey[] memory keys)
+        external
+        returns (int64 responseCode);
 
     /// Query if valid token found for the given address
     /// @param token The token address
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return isToken True if valid token found for the given address
-    function isToken(address token) external returns (int64 responseCode, bool isToken);
+    function isToken(address token)
+        external returns
+        (int64 responseCode, bool isToken);
 
     /// Query to return the token type for a given address
     /// @param token The token address
     /// @return responseCode The response code for the status of the request. SUCCESS is 22.
     /// @return tokenType the token type. 0 is FUNGIBLE_COMMON, 1 is NON_FUNGIBLE_UNIQUE, -1 is UNRECOGNIZED
-    function getTokenType(address token) external returns (int64 responseCode, int32 tokenType);
+    function getTokenType(address token)
+        external returns
+        (int64 responseCode, int32 tokenType);
 
     /// Initiates a Redirect For Token
     /// @param encodedFunctionSelector The function selector from the ERC20 interface + the bytes input for the function called

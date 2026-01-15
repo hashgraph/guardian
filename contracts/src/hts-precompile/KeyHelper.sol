@@ -39,9 +39,10 @@ abstract contract KeyHelper {
 
     function getDefaultKeys() internal view returns (IHederaTokenService.TokenKey[] memory keys) {
         keys = new IHederaTokenService.TokenKey[](2);
-        keys[0] = getSingleKey(KeyType.KYC, KeyValueType.CONTRACT_ID, "");
+        keys[0] = getSingleKey(KeyType.KYC, KeyValueType.CONTRACT_ID, '');
         keys[1] = IHederaTokenService.TokenKey(
-            getDuplexKeyType(KeyType.SUPPLY, KeyType.PAUSE), getKeyValueType(KeyValueType.CONTRACT_ID, "")
+            getDuplexKeyType(KeyType.SUPPLY, KeyType.PAUSE),
+            getKeyValueType(KeyValueType.CONTRACT_ID, '')
         );
     }
 
@@ -54,48 +55,53 @@ abstract contract KeyHelper {
         keys[0] = IHederaTokenService.TokenKey(getAllKeyTypes(), getKeyValueType(keyValueType, key));
     }
 
-    function getCustomSingleTypeKeys(KeyType keyType, KeyValueType keyValueType, bytes memory key)
-        internal
-        view
-        returns (IHederaTokenService.TokenKey[] memory keys)
-    {
+    function getCustomSingleTypeKeys(
+        KeyType keyType,
+        KeyValueType keyValueType,
+        bytes memory key
+    ) internal view returns (IHederaTokenService.TokenKey[] memory keys) {
         keys = new IHederaTokenService.TokenKey[](1);
         keys[0] = IHederaTokenService.TokenKey(getKeyType(keyType), getKeyValueType(keyValueType, key));
     }
 
-    function getCustomDuplexTypeKeys(KeyType firstType, KeyType secondType, KeyValueType keyValueType, bytes memory key)
-        internal
-        view
-        returns (IHederaTokenService.TokenKey[] memory keys)
-    {
+    function getCustomDuplexTypeKeys(
+        KeyType firstType,
+        KeyType secondType,
+        KeyValueType keyValueType,
+        bytes memory key
+    ) internal view returns (IHederaTokenService.TokenKey[] memory keys) {
         keys = new IHederaTokenService.TokenKey[](1);
-        keys[0] =
-            IHederaTokenService.TokenKey(getDuplexKeyType(firstType, secondType), getKeyValueType(keyValueType, key));
+        keys[0] = IHederaTokenService.TokenKey(
+            getDuplexKeyType(firstType, secondType),
+            getKeyValueType(keyValueType, key)
+        );
     }
 
-    function getSingleKey(KeyType keyType, KeyValueType keyValueType, bytes memory key)
-        internal
-        view
-        returns (IHederaTokenService.TokenKey memory tokenKey)
-    {
+    function getSingleKey(
+        KeyType keyType,
+        KeyValueType keyValueType,
+        bytes memory key
+    ) internal view returns (IHederaTokenService.TokenKey memory tokenKey) {
         tokenKey = IHederaTokenService.TokenKey(getKeyType(keyType), getKeyValueType(keyValueType, key));
     }
 
-    function getSingleKey(KeyType keyType, KeyValueType keyValueType, address key)
-        internal
-        view
-        returns (IHederaTokenService.TokenKey memory tokenKey)
-    {
+    function getSingleKey(
+        KeyType keyType,
+        KeyValueType keyValueType,
+        address key
+    ) internal view returns (IHederaTokenService.TokenKey memory tokenKey) {
         tokenKey = IHederaTokenService.TokenKey(getKeyType(keyType), getKeyValueType(keyValueType, key));
     }
 
-    function getSingleKey(KeyType firstType, KeyType secondType, KeyValueType keyValueType, bytes memory key)
-        internal
-        view
-        returns (IHederaTokenService.TokenKey memory tokenKey)
-    {
+    function getSingleKey(
+        KeyType firstType,
+        KeyType secondType,
+        KeyValueType keyValueType,
+        bytes memory key
+    ) internal view returns (IHederaTokenService.TokenKey memory tokenKey) {
         tokenKey = IHederaTokenService.TokenKey(
-            getDuplexKeyType(firstType, secondType), getKeyValueType(keyValueType, key)
+            getDuplexKeyType(firstType, secondType),
+            getKeyValueType(keyValueType, key)
         );
     }
 

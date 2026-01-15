@@ -15,11 +15,11 @@ abstract contract FeeHelper {
         fixedFee.feeCollector = feeCollector;
     }
 
-    function createFixedTokenFee(int64 amount, address tokenId, address feeCollector)
-        internal
-        pure
-        returns (IHederaTokenService.FixedFee memory fixedFee)
-    {
+    function createFixedTokenFee(
+        int64 amount,
+        address tokenId,
+        address feeCollector
+    ) internal pure returns (IHederaTokenService.FixedFee memory fixedFee) {
         fixedFee.amount = amount;
         fixedFee.tokenId = tokenId;
         fixedFee.feeCollector = feeCollector;
@@ -35,7 +35,12 @@ abstract contract FeeHelper {
         fixedFee.feeCollector = feeCollector;
     }
 
-    function createFractionalFee(int64 numerator, int64 denominator, bool netOfTransfers, address feeCollector)
+    function createFractionalFee(
+        int64 numerator,
+        int64 denominator,
+        bool netOfTransfers,
+        address feeCollector
+    )
         internal
         pure
         returns (IHederaTokenService.FractionalFee memory fractionalFee)
@@ -53,7 +58,11 @@ abstract contract FeeHelper {
         int64 maximumAmount,
         bool netOfTransfers,
         address feeCollector
-    ) internal pure returns (IHederaTokenService.FractionalFee memory fractionalFee) {
+    )
+        internal
+        pure
+        returns (IHederaTokenService.FractionalFee memory fractionalFee)
+    {
         fractionalFee.numerator = numerator;
         fractionalFee.denominator = denominator;
         fractionalFee.minimumAmount = minimumAmount;
@@ -69,7 +78,11 @@ abstract contract FeeHelper {
         int64 maximumAmount,
         bool netOfTransfers,
         address feeCollector
-    ) internal pure returns (IHederaTokenService.FractionalFee memory fractionalFee) {
+    )
+        internal
+        pure
+        returns (IHederaTokenService.FractionalFee memory fractionalFee)
+    {
         fractionalFee.numerator = numerator;
         fractionalFee.denominator = denominator;
         fractionalFee.minimumAmount = minimumAmount;
@@ -78,21 +91,22 @@ abstract contract FeeHelper {
         fractionalFee.feeCollector = feeCollector;
     }
 
-    function createRoyaltyFeeWithoutFallback(int64 numerator, int64 denominator, address feeCollector)
-        internal
-        pure
-        returns (IHederaTokenService.RoyaltyFee memory royaltyFee)
-    {
+    function createRoyaltyFeeWithoutFallback(
+        int64 numerator,
+        int64 denominator,
+        address feeCollector
+    ) internal pure returns (IHederaTokenService.RoyaltyFee memory royaltyFee) {
         royaltyFee.numerator = numerator;
         royaltyFee.denominator = denominator;
         royaltyFee.feeCollector = feeCollector;
     }
 
-    function createRoyaltyFeeWithHbarFallbackFee(int64 numerator, int64 denominator, int64 amount, address feeCollector)
-        internal
-        pure
-        returns (IHederaTokenService.RoyaltyFee memory royaltyFee)
-    {
+    function createRoyaltyFeeWithHbarFallbackFee(
+        int64 numerator,
+        int64 denominator,
+        int64 amount,
+        address feeCollector
+    ) internal pure returns (IHederaTokenService.RoyaltyFee memory royaltyFee) {
         royaltyFee.numerator = numerator;
         royaltyFee.denominator = denominator;
         royaltyFee.amount = amount;
@@ -114,26 +128,31 @@ abstract contract FeeHelper {
         royaltyFee.feeCollector = feeCollector;
     }
 
-    function createNAmountFixedFeesForHbars(uint8 numberOfFees, int64 amount, address feeCollector)
-        internal
-        pure
-        returns (IHederaTokenService.FixedFee[] memory fixedFees)
-    {
+    function createNAmountFixedFeesForHbars(
+        uint8 numberOfFees,
+        int64 amount,
+        address feeCollector
+    ) internal pure returns (IHederaTokenService.FixedFee[] memory fixedFees) {
         fixedFees = new IHederaTokenService.FixedFee[](numberOfFees);
 
         for (uint8 i = 0; i < numberOfFees; i++) {
-            IHederaTokenService.FixedFee memory fixedFee = createFixedFeeForHbars(amount, feeCollector);
+            IHederaTokenService.FixedFee
+                memory fixedFee = createFixedFeeForHbars(amount, feeCollector);
             fixedFees[i] = fixedFee;
         }
     }
 
-    function createSingleFixedFeeForToken(int64 amount, address tokenId, address feeCollector)
-        internal
-        pure
-        returns (IHederaTokenService.FixedFee[] memory fixedFees)
-    {
+    function createSingleFixedFeeForToken(
+        int64 amount,
+        address tokenId,
+        address feeCollector
+    ) internal pure returns (IHederaTokenService.FixedFee[] memory fixedFees) {
         fixedFees = new IHederaTokenService.FixedFee[](1);
-        IHederaTokenService.FixedFee memory fixedFee = createFixedFeeForToken(amount, tokenId, feeCollector);
+        IHederaTokenService.FixedFee memory fixedFee = createFixedFeeForToken(
+            amount,
+            tokenId,
+            feeCollector
+        );
         fixedFees[0] = fixedFee;
     }
 
@@ -144,8 +163,16 @@ abstract contract FeeHelper {
         address secondFeeCollector
     ) internal pure returns (IHederaTokenService.FixedFee[] memory fixedFees) {
         fixedFees = new IHederaTokenService.FixedFee[](1);
-        IHederaTokenService.FixedFee memory fixedFee1 = createFixedFeeForToken(amount, tokenId, firstFeeCollector);
-        IHederaTokenService.FixedFee memory fixedFee2 = createFixedFeeForToken(2 * amount, tokenId, secondFeeCollector);
+        IHederaTokenService.FixedFee memory fixedFee1 = createFixedFeeForToken(
+            amount,
+            tokenId,
+            firstFeeCollector
+        );
+        IHederaTokenService.FixedFee memory fixedFee2 = createFixedFeeForToken(
+            2 * amount,
+            tokenId,
+            secondFeeCollector
+        );
         fixedFees[0] = fixedFee1;
         fixedFees[0] = fixedFee2;
     }
@@ -156,60 +183,86 @@ abstract contract FeeHelper {
         returns (IHederaTokenService.FixedFee[] memory fixedFees)
     {
         fixedFees = new IHederaTokenService.FixedFee[](1);
-        IHederaTokenService.FixedFee memory fixedFee = createFixedFeeForHbars(amount, feeCollector);
+        IHederaTokenService.FixedFee memory fixedFee = createFixedFeeForHbars(
+            amount,
+            feeCollector
+        );
         fixedFees[0] = fixedFee;
     }
 
-    function createSingleFixedFeeForCurrentToken(int64 amount, address feeCollector)
-        internal
-        pure
-        returns (IHederaTokenService.FixedFee[] memory fixedFees)
-    {
+    function createSingleFixedFeeForCurrentToken(
+        int64 amount,
+        address feeCollector
+    ) internal pure returns (IHederaTokenService.FixedFee[] memory fixedFees) {
         fixedFees = new IHederaTokenService.FixedFee[](1);
-        IHederaTokenService.FixedFee memory fixedFee = createFixedFeeForCurrentToken(amount, feeCollector);
+        IHederaTokenService.FixedFee
+            memory fixedFee = createFixedFeeForCurrentToken(
+                amount,
+                feeCollector
+            );
         fixedFees[0] = fixedFee;
     }
 
-    function createSingleFixedFeeWithInvalidFlags(int64 amount, address feeCollector)
-        internal
-        pure
-        returns (IHederaTokenService.FixedFee[] memory fixedFees)
-    {
+    function createSingleFixedFeeWithInvalidFlags(
+        int64 amount,
+        address feeCollector
+    ) internal pure returns (IHederaTokenService.FixedFee[] memory fixedFees) {
         fixedFees = new IHederaTokenService.FixedFee[](1);
-        IHederaTokenService.FixedFee memory fixedFee = createFixedFeeWithInvalidFlags(amount, feeCollector);
+        IHederaTokenService.FixedFee
+            memory fixedFee = createFixedFeeWithInvalidFlags(
+                amount,
+                feeCollector
+            );
         fixedFees[0] = fixedFee;
     }
 
-    function createSingleFixedFeeWithTokenIdAndHbars(int64 amount, address tokenId, address feeCollector)
-        internal
-        pure
-        returns (IHederaTokenService.FixedFee[] memory fixedFees)
-    {
+    function createSingleFixedFeeWithTokenIdAndHbars(
+        int64 amount,
+        address tokenId,
+        address feeCollector
+    ) internal pure returns (IHederaTokenService.FixedFee[] memory fixedFees) {
         fixedFees = new IHederaTokenService.FixedFee[](1);
-        IHederaTokenService.FixedFee memory fixedFee = createFixedFeeWithTokenIdAndHbars(amount, tokenId, feeCollector);
+        IHederaTokenService.FixedFee
+            memory fixedFee = createFixedFeeWithTokenIdAndHbars(
+                amount,
+                tokenId,
+                feeCollector
+            );
         fixedFees[0] = fixedFee;
     }
 
-    function createFixedFeesWithAllTypes(int64 amount, address tokenId, address feeCollector)
-        internal
-        pure
-        returns (IHederaTokenService.FixedFee[] memory fixedFees)
-    {
+    function createFixedFeesWithAllTypes(
+        int64 amount,
+        address tokenId,
+        address feeCollector
+    ) internal pure returns (IHederaTokenService.FixedFee[] memory fixedFees) {
         fixedFees = new IHederaTokenService.FixedFee[](3);
-        IHederaTokenService.FixedFee memory fixedFeeForToken = createFixedFeeForToken(amount, tokenId, feeCollector);
-        IHederaTokenService.FixedFee memory fixedFeeForHbars = createFixedFeeForHbars(amount * 2, feeCollector);
-        IHederaTokenService.FixedFee memory fixedFeeForCurrentToken =
-            createFixedFeeForCurrentToken(amount * 4, feeCollector);
+        IHederaTokenService.FixedFee
+            memory fixedFeeForToken = createFixedFeeForToken(
+                amount,
+                tokenId,
+                feeCollector
+            );
+        IHederaTokenService.FixedFee
+            memory fixedFeeForHbars = createFixedFeeForHbars(
+                amount * 2,
+                feeCollector
+            );
+        IHederaTokenService.FixedFee
+            memory fixedFeeForCurrentToken = createFixedFeeForCurrentToken(
+                amount * 4,
+                feeCollector
+            );
         fixedFees[0] = fixedFeeForToken;
         fixedFees[1] = fixedFeeForHbars;
         fixedFees[2] = fixedFeeForCurrentToken;
     }
 
-    function createFixedFeeForToken(int64 amount, address tokenId, address feeCollector)
-        internal
-        pure
-        returns (IHederaTokenService.FixedFee memory fixedFee)
-    {
+    function createFixedFeeForToken(
+        int64 amount,
+        address tokenId,
+        address feeCollector
+    ) internal pure returns (IHederaTokenService.FixedFee memory fixedFee) {
         fixedFee.amount = amount;
         fixedFee.tokenId = tokenId;
         fixedFee.feeCollector = feeCollector;
@@ -248,18 +301,22 @@ abstract contract FeeHelper {
     }
 
     //Used for negative scenarios
-    function createFixedFeeWithTokenIdAndHbars(int64 amount, address tokenId, address feeCollector)
-        internal
-        pure
-        returns (IHederaTokenService.FixedFee memory fixedFee)
-    {
+    function createFixedFeeWithTokenIdAndHbars(
+        int64 amount,
+        address tokenId,
+        address feeCollector
+    ) internal pure returns (IHederaTokenService.FixedFee memory fixedFee) {
         fixedFee.amount = amount;
         fixedFee.tokenId = tokenId;
         fixedFee.useHbarsForPayment = true;
         fixedFee.feeCollector = feeCollector;
     }
 
-    function getEmptyFixedFees() internal pure returns (IHederaTokenService.FixedFee[] memory fixedFees) { }
+    function getEmptyFixedFees()
+        internal
+        pure
+        returns (IHederaTokenService.FixedFee[] memory fixedFees)
+    {}
 
     function createNAmountFractionalFees(
         uint8 numberOfFees,
@@ -267,24 +324,43 @@ abstract contract FeeHelper {
         int64 denominator,
         bool netOfTransfers,
         address feeCollector
-    ) internal pure returns (IHederaTokenService.FractionalFee[] memory fractionalFees) {
+    )
+        internal
+        pure
+        returns (IHederaTokenService.FractionalFee[] memory fractionalFees)
+    {
         fractionalFees = new IHederaTokenService.FractionalFee[](numberOfFees);
 
         for (uint8 i = 0; i < numberOfFees; i++) {
-            IHederaTokenService.FractionalFee memory fractionalFee =
-                createFractionalFee(numerator, denominator, netOfTransfers, feeCollector);
+            IHederaTokenService.FractionalFee
+                memory fractionalFee = createFractionalFee(
+                    numerator,
+                    denominator,
+                    netOfTransfers,
+                    feeCollector
+                );
             fractionalFees[i] = fractionalFee;
         }
     }
 
-    function createSingleFractionalFee(int64 numerator, int64 denominator, bool netOfTransfers, address feeCollector)
+    function createSingleFractionalFee(
+        int64 numerator,
+        int64 denominator,
+        bool netOfTransfers,
+        address feeCollector
+    )
         internal
         pure
         returns (IHederaTokenService.FractionalFee[] memory fractionalFees)
     {
         fractionalFees = new IHederaTokenService.FractionalFee[](1);
-        IHederaTokenService.FractionalFee memory fractionalFee =
-            createFractionalFee(numerator, denominator, netOfTransfers, feeCollector);
+        IHederaTokenService.FractionalFee
+            memory fractionalFee = createFractionalFee(
+                numerator,
+                denominator,
+                netOfTransfers,
+                feeCollector
+            );
         fractionalFees[0] = fractionalFee;
     }
 
@@ -295,11 +371,21 @@ abstract contract FeeHelper {
         int64 maximumAmount,
         bool netOfTransfers,
         address feeCollector
-    ) internal pure returns (IHederaTokenService.FractionalFee[] memory fractionalFees) {
+    )
+        internal
+        pure
+        returns (IHederaTokenService.FractionalFee[] memory fractionalFees)
+    {
         fractionalFees = new IHederaTokenService.FractionalFee[](1);
-        IHederaTokenService.FractionalFee memory fractionalFee = createFractionalFeeWithLimits(
-            numerator, denominator, minimumAmount, maximumAmount, netOfTransfers, feeCollector
-        );
+        IHederaTokenService.FractionalFee
+            memory fractionalFee = createFractionalFeeWithLimits(
+                numerator,
+                denominator,
+                minimumAmount,
+                maximumAmount,
+                netOfTransfers,
+                feeCollector
+            );
         fractionalFees[0] = fractionalFee;
     }
 
@@ -311,7 +397,12 @@ abstract contract FeeHelper {
         fractionalFees = new IHederaTokenService.FractionalFee[](0);
     }
 
-    function createNAmountRoyaltyFees(uint8 numberOfFees, int64 numerator, int64 denominator, address feeCollector)
+    function createNAmountRoyaltyFees(
+        uint8 numberOfFees,
+        int64 numerator,
+        int64 denominator,
+        address feeCollector
+    )
         internal
         pure
         returns (IHederaTokenService.RoyaltyFee[] memory royaltyFees)
@@ -319,23 +410,39 @@ abstract contract FeeHelper {
         royaltyFees = new IHederaTokenService.RoyaltyFee[](numberOfFees);
 
         for (uint8 i = 0; i < numberOfFees; i++) {
-            IHederaTokenService.RoyaltyFee memory royaltyFee = createRoyaltyFee(numerator, denominator, feeCollector);
+            IHederaTokenService.RoyaltyFee memory royaltyFee = createRoyaltyFee(
+                numerator,
+                denominator,
+                feeCollector
+            );
             royaltyFees[i] = royaltyFee;
         }
     }
 
-    function getEmptyRoyaltyFees() internal pure returns (IHederaTokenService.RoyaltyFee[] memory royaltyFees) {
+    function getEmptyRoyaltyFees()
+        internal
+        pure
+        returns (IHederaTokenService.RoyaltyFee[] memory royaltyFees)
+    {
         royaltyFees = new IHederaTokenService.RoyaltyFee[](0);
     }
 
-    function createSingleRoyaltyFee(int64 numerator, int64 denominator, address feeCollector)
+    function createSingleRoyaltyFee(
+        int64 numerator,
+        int64 denominator,
+        address feeCollector
+    )
         internal
         pure
         returns (IHederaTokenService.RoyaltyFee[] memory royaltyFees)
     {
         royaltyFees = new IHederaTokenService.RoyaltyFee[](1);
 
-        IHederaTokenService.RoyaltyFee memory royaltyFee = createRoyaltyFee(numerator, denominator, feeCollector);
+        IHederaTokenService.RoyaltyFee memory royaltyFee = createRoyaltyFee(
+            numerator,
+            denominator,
+            feeCollector
+        );
         royaltyFees[0] = royaltyFee;
     }
 
@@ -346,12 +453,22 @@ abstract contract FeeHelper {
         address tokenId,
         bool useHbarsForPayment,
         address feeCollector
-    ) internal pure returns (IHederaTokenService.RoyaltyFee[] memory royaltyFees) {
+    )
+        internal
+        pure
+        returns (IHederaTokenService.RoyaltyFee[] memory royaltyFees)
+    {
         royaltyFees = new IHederaTokenService.RoyaltyFee[](1);
 
-        IHederaTokenService.RoyaltyFee memory royaltyFee = createRoyaltyFeeWithFallbackFee(
-            numerator, denominator, amount, tokenId, useHbarsForPayment, feeCollector
-        );
+        IHederaTokenService.RoyaltyFee
+            memory royaltyFee = createRoyaltyFeeWithFallbackFee(
+                numerator,
+                denominator,
+                amount,
+                tokenId,
+                useHbarsForPayment,
+                feeCollector
+            );
         royaltyFees[0] = royaltyFee;
     }
 
@@ -361,24 +478,46 @@ abstract contract FeeHelper {
         int64 amount,
         address tokenId,
         address feeCollector
-    ) internal pure returns (IHederaTokenService.RoyaltyFee[] memory royaltyFees) {
+    )
+        internal
+        pure
+        returns (IHederaTokenService.RoyaltyFee[] memory royaltyFees)
+    {
         royaltyFees = new IHederaTokenService.RoyaltyFee[](3);
-        IHederaTokenService.RoyaltyFee memory royaltyFeeWithoutFallback =
-            createRoyaltyFee(numerator, denominator, feeCollector);
-        IHederaTokenService.RoyaltyFee memory royaltyFeeWithFallbackHbar =
-            createRoyaltyFeeWithFallbackFee(numerator, denominator, amount, address(0x0), true, feeCollector);
-        IHederaTokenService.RoyaltyFee memory royaltyFeeWithFallbackToken =
-            createRoyaltyFeeWithFallbackFee(numerator, denominator, amount, tokenId, false, feeCollector);
+        IHederaTokenService.RoyaltyFee
+            memory royaltyFeeWithoutFallback = createRoyaltyFee(
+                numerator,
+                denominator,
+                feeCollector
+            );
+        IHederaTokenService.RoyaltyFee
+            memory royaltyFeeWithFallbackHbar = createRoyaltyFeeWithFallbackFee(
+                numerator,
+                denominator,
+                amount,
+                address(0x0),
+                true,
+                feeCollector
+            );
+        IHederaTokenService.RoyaltyFee
+            memory royaltyFeeWithFallbackToken = createRoyaltyFeeWithFallbackFee(
+                numerator,
+                denominator,
+                amount,
+                tokenId,
+                false,
+                feeCollector
+            );
         royaltyFees[0] = royaltyFeeWithoutFallback;
         royaltyFees[1] = royaltyFeeWithFallbackHbar;
         royaltyFees[2] = royaltyFeeWithFallbackToken;
     }
 
-    function createRoyaltyFee(int64 numerator, int64 denominator, address feeCollector)
-        internal
-        pure
-        returns (IHederaTokenService.RoyaltyFee memory royaltyFee)
-    {
+    function createRoyaltyFee(
+        int64 numerator,
+        int64 denominator,
+        address feeCollector
+    ) internal pure returns (IHederaTokenService.RoyaltyFee memory royaltyFee) {
         royaltyFee.numerator = numerator;
         royaltyFee.denominator = denominator;
         royaltyFee.feeCollector = feeCollector;
