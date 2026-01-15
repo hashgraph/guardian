@@ -143,7 +143,8 @@ export class ImportExportUtils {
         return {
             createFolders: false,
             date: ImportExportUtils.DETERMINISTIC_ZIP_DATE,
-            unixPermissions: 0o644,
+            unixPermissions: 0o100644,
+            dosPermissions: 0x20,
         };
     }
 
