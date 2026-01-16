@@ -193,12 +193,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          path: e2e-tests/cypress/reports/**
-          retention-days: 1
-
-      - name: Upload tests results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          path: e2e-tests/cypress/test_results/
+          path: e2e-tests/cypress/reports/html/.jsons/**
+          include-hidden-files: true
           retention-days: 1
