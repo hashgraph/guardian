@@ -171,6 +171,7 @@ jobs:
         if: always()
         run: |
           docker cp cypress-test-run:/e2e/cypress/test_results ./e2e-tests/cypress/test_results || true
+          docker cp cypress-test-run:/e2e/cypress/reports ./e2e-tests/cypress/reports || true
 
       - name: Cleanup Docker resources
         if: always()
@@ -186,5 +187,5 @@ jobs:
       - name: Upload tests results
         uses: actions/upload-artifact@v4
         with:
-          path: e2e/cypress/reports/
+          path: e2e-tests/cypress/reports/
           retention-days: 1
