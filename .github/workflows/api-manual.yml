@@ -193,3 +193,9 @@ jobs:
         with:
           path: e2e-tests/cypress/reports/
           retention-days: 1
+
+      - name: Upload tests results
+        uses: actions/upload-artifact@v4
+        with:
+          path: e2e-tests/cypress/test_results/
+          retention-days: 1
