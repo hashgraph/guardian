@@ -167,6 +167,14 @@ jobs:
             cypress-runner \
             --browser chrome
 
+
+      - name: Debug reports inside container
+        if: always()
+        run: |
+          docker exec cypress-test-run ls -la /e2e/cypress
+          docker exec cypress-test-run ls -la /e2e/cypress/reports || true
+          docker exec cypress-test-run find /e2e/cypress/reports -type f || true
+
       - name: Copy test results from Docker container
         if: always()
         run: |
@@ -175,7 +183,7 @@ jobs:
       - name: Copy cypress reports from Docker container
         if: always()
         run: |
-          docker cp cypress-test-run:/e2e/cypress/reports ./e2e-tests/cypress/reports || true
+          docker cp cypress-test-run:/e2e/cypress/reports/** ./e2e-tests/cypress/reports || true
 
       - name: Cleanup Docker resources
         if: always()
@@ -190,12 +198,14 @@ jobs:
 
       - name: Upload tests results
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           path: e2e-tests/cypress/reports/
           retention-days: 1
 
       - name: Upload tests results
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           path: e2e-tests/cypress/test_results/
           retention-days: 1
