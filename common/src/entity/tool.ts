@@ -112,6 +112,12 @@ export class PolicyTool extends BaseEntity {
     _configFileId?: ObjectId;
 
     /**
+     * File id of the original tool zip (imported from IPFS or publish flow).
+     */
+    @Property({ nullable: true })
+    contentFileId?: ObjectId;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()
@@ -183,6 +189,18 @@ export class PolicyTool extends BaseEntity {
                 .catch((reason) => {
                     console.error(`AfterDelete: PolicyTool, ${this._id}, configFileId`)
                     console.error(reason)
+                });
+        }
+    }
+
+    @AfterDelete()
+    deleteContentFile() {
+        if (this.contentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.contentFileId)
+                .catch((reason) => {
+                    console.error('AfterDelete: PolicyTool, contentFileId');
+                    console.error(reason);
                 });
         }
     }

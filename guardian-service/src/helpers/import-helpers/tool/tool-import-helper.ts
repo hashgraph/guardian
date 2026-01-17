@@ -123,6 +123,7 @@ export async function importToolByMessage(
     if (!message.document) {
         throw new Error('File in body is empty');
     }
+
     const oldTool = await DatabaseServer.getTool({ messageId });
     if (oldTool) {
         if (
@@ -157,6 +158,10 @@ export async function importToolByMessage(
     }
     notifier.completeStep(STEP_LOAD_FILE);
 
+    const zipBuffer = Buffer.from(message.document);
+    const fileName = `${message.name || 'tool'}_ipfs_zip_${Date.now()}`;
+    const contentFileId = await DatabaseServer.saveFile(fileName, zipBuffer);
+
     notifier.startStep(STEP_PARSE_FILE);
     const components = await ToolImportExport.parseZipFile(message.document);
 
@@ -175,6 +180,7 @@ export async function importToolByMessage(
     components.tool.status = ModuleStatus.PUBLISHED;
 
     await updateToolConfig(components.tool);
+    components.tool.contentFileId = contentFileId;
     const result = await DatabaseServer.createTool(components.tool);
     notifier.completeStep(STEP_PARSE_FILE);
 

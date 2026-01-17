@@ -955,6 +955,13 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Invalid tool');
                 }
 
+                if (item.status === ModuleStatus.PUBLISHED && item.contentFileId) {
+                    const buffer = await DatabaseServer.loadFile(item.contentFileId);
+                    const arrayBuffer = Uint8Array.from(buffer).buffer
+
+                    return new BinaryMessageResponse(arrayBuffer);
+                }
+
                 await updateToolConfig(item);
                 const zip = await ToolImportExport.generate(item);
                 const file = await zip.generateAsync({
