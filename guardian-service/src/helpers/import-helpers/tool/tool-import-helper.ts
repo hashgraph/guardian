@@ -82,12 +82,14 @@ export async function importToolByMessage(
 ): Promise<ImportToolResult> {
     // <-- Steps
     const STEP_LOAD_FILE = 'Load tool file';
+    const STEP_SAVE_FILE_IN_DB = 'Save file in database';
     const STEP_PARSE_FILE = 'Parse tool file';
     const STEP_IMPORT_SCHEMAS = 'Import tool schemas';
     const STEP_IMPORT_TAGS = 'Import tool tags';
     // Steps -->
 
     notifier.addStep(STEP_LOAD_FILE);
+    notifier.addStep(STEP_SAVE_FILE_IN_DB);
     notifier.addStep(STEP_PARSE_FILE);
     notifier.addStep(STEP_IMPORT_SCHEMAS);
     notifier.addStep(STEP_IMPORT_TAGS);
@@ -158,9 +160,10 @@ export async function importToolByMessage(
     }
     notifier.completeStep(STEP_LOAD_FILE);
 
-    const zipBuffer = Buffer.from(message.document);
-    const fileName = `${message.name || 'tool'}_ipfs_zip_${Date.now()}`;
-    const contentFileId = await DatabaseServer.saveFile(fileName, zipBuffer);
+    notifier.startStep(STEP_SAVE_FILE_IN_DB);
+    const buffer = Buffer.from(message.document);
+    const contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), buffer);
+    notifier.completeStep(STEP_SAVE_FILE_IN_DB);
 
     notifier.startStep(STEP_PARSE_FILE);
     const components = await ToolImportExport.parseZipFile(message.document);
