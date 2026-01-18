@@ -169,6 +169,7 @@ export async function publishModule(
     const STEP_RESOLVE_TOPIC = 'Find topic';
     const STEP_CREATE_TOPIC = 'Create module topic';
     const STEP_GENERATE_FILE = 'Generate file';
+    const STEP_SAVE_FILE_IN_DB = 'Save file in database';
     const STEP_PUBLISH_MODULE = 'Publish module';
     const STEP_LINK_TOPIC = 'Link topic and module';
     const STEP_SAVE = 'Save';
@@ -178,6 +179,7 @@ export async function publishModule(
     notifier.addStep(STEP_RESOLVE_TOPIC);
     notifier.addStep(STEP_CREATE_TOPIC);
     notifier.addStep(STEP_GENERATE_FILE);
+    notifier.addStep(STEP_SAVE_FILE_IN_DB);
     notifier.addStep(STEP_PUBLISH_MODULE);
     notifier.addStep(STEP_LINK_TOPIC);
     notifier.addStep(STEP_SAVE);
@@ -230,6 +232,10 @@ export async function publishModule(
         platform: 'UNIX',
     });
     notifier.completeStep(STEP_GENERATE_FILE);
+
+    notifier.startStep(STEP_SAVE_FILE_IN_DB);
+    model.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
+    notifier.completeStep(STEP_SAVE_FILE_IN_DB);
 
     notifier.startStep(STEP_PUBLISH_MODULE);
     const message = new ModuleMessage(MessageType.Module, MessageAction.PublishModule);
@@ -474,6 +480,13 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 const item = await DatabaseServer.getModuleByUUID(uuid);
                 if (!item || item.owner !== owner.owner) {
                     throw new Error('Invalid module');
+                }
+
+                if (item.status === ModuleStatus.PUBLISHED && item.contentFileId) {
+                    const buffer = await DatabaseServer.loadFile(item.contentFileId);
+                    const arrayBuffer = Uint8Array.from(buffer).buffer;
+
+                    return new BinaryMessageResponse(arrayBuffer);
                 }
 
                 updateModuleConfig(item);

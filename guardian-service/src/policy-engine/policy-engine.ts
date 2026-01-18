@@ -1017,8 +1017,8 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_CREATE_RESTORE_TOPIC, 2);
         notifier.addStep(STEP_CREATE_ACTION_TOPIC, 2);
         notifier.addStep(STEP_CREATE_COMMENTS_TOPIC, 2);
-        notifier.addStep(STEP_SAVE_FILE_IN_DB);
-        notifier.addStep(STEP_PUBLISH_POLICY, 20);
+        notifier.addStep(STEP_SAVE_FILE_IN_DB, 2);
+        notifier.addStep(STEP_PUBLISH_POLICY, 18);
         notifier.addStep(STEP_PUBLISH_MESSAGE, 4);
         notifier.addStep(STEP_PUBLISH_TAGS, 4);
         notifier.addStep(STEP_SAVE, 2);

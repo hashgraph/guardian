@@ -234,6 +234,13 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
+                if (item.status === EntityStatus.PUBLISHED && item.contentFileId) {
+                    const buffer = await DatabaseServer.loadFile(item.contentFileId);
+                    const arrayBuffer = Uint8Array.from(buffer).buffer;
+
+                    return new BinaryMessageResponse(arrayBuffer);
+                }
+
                 const zip = await FormulaImportExport.generate(item);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
