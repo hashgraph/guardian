@@ -1000,6 +1000,7 @@ export class PolicyEngine extends NatsService {
         const STEP_CREATE_RESTORE_TOPIC = 'Create restore topic';
         const STEP_CREATE_ACTION_TOPIC = 'Create actions topic';
         const STEP_CREATE_COMMENTS_TOPIC = 'Create comments topic';
+        const STEP_SAVE_FILE_IN_DB = 'Save file in database';
         const STEP_PUBLISH_POLICY = 'Publish policy';
         const STEP_PUBLISH_MESSAGE = 'Publish message';
         const STEP_PUBLISH_TAGS = 'Publish tags';
@@ -1016,6 +1017,7 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_CREATE_RESTORE_TOPIC, 2);
         notifier.addStep(STEP_CREATE_ACTION_TOPIC, 2);
         notifier.addStep(STEP_CREATE_COMMENTS_TOPIC, 2);
+        notifier.addStep(STEP_SAVE_FILE_IN_DB);
         notifier.addStep(STEP_PUBLISH_POLICY, 20);
         notifier.addStep(STEP_PUBLISH_MESSAGE, 4);
         notifier.addStep(STEP_PUBLISH_TAGS, 4);
@@ -1303,6 +1305,10 @@ export class PolicyEngine extends NatsService {
                     level: 3
                 }
             });
+
+            notifier.startStep(STEP_SAVE_FILE_IN_DB);
+            model.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
+            notifier.completeStep(STEP_SAVE_FILE_IN_DB);
 
             notifier.startStep(STEP_PUBLISH_POLICY);
 

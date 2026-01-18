@@ -23,7 +23,7 @@ import {
     NotificationStep,
     PinoLogger,
     Policy,
-    PolicyAction,
+    PolicyAction, PolicyComment,
     PolicyDiscussion,
     PolicyImportExport,
     PolicyMessage,
@@ -1453,6 +1453,14 @@ export class PolicyEngineService {
                     const { policyId, owner } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
+
+                    if (policy.status === PolicyStatus.PUBLISH && policy.contentFileId) {
+                        const buffer = await DatabaseServer.loadFile(policy.contentFileId);
+                        const arrayBuffer = Uint8Array.from(buffer).buffer;
+
+                        return new BinaryMessageResponse(arrayBuffer);
+                    }
+
                     const zip = await PolicyImportExport.generate(policy);
                     const file = await zip.generateAsync({
                         type: 'arraybuffer',
@@ -3922,7 +3930,7 @@ export class PolicyEngineService {
                         cid: string;
                     }[];
                 },
-            }): Promise<IMessageResponse<Policy>> => {
+            }): Promise<IMessageResponse<Policy | PolicyComment>> => {
                 try {
                     const { user, documentId, policyId, discussionId, data } = msg;
 
