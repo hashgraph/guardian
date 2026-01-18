@@ -1,4 +1,15 @@
-import { GeoJsonContext, IOwner, IRootConfig, ISchemaDocument, ModuleStatus, Schema, SchemaHelper, SchemaStatus, SentinelHubContext } from '@guardian/interfaces';
+import {
+    GenerateUUIDv4,
+    GeoJsonContext,
+    IOwner,
+    IRootConfig,
+    ISchemaDocument,
+    ModuleStatus,
+    Schema,
+    SchemaHelper,
+    SchemaStatus,
+    SentinelHubContext
+} from '@guardian/interfaces';
 import { DatabaseServer, INotificationStep, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, SchemaPackageMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { checkForCircularDependency } from '../common/load-helper.js';
 import { incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper.js';
@@ -158,6 +169,12 @@ export async function publishSchema(
     item.context = generateSchemaContext(item);
 
     const relationships = await SchemaImportExportHelper.exportSchemas([item.id]);
+
+    const documentBuffer = Buffer.from(JSON.stringify(item.document));
+    const contextBuffer = Buffer.from(JSON.stringify(item.context));
+
+    item.contentDocumentFileId = (await DatabaseServer.saveFile(GenerateUUIDv4(), documentBuffer)).toString();
+    item.contentContextFileId = (await DatabaseServer.saveFile(GenerateUUIDv4(), contextBuffer)).toString();
 
     const message = new SchemaMessage(type || MessageAction.PublishSchema);
     message.setDocument(item);
