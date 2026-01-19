@@ -56,11 +56,7 @@ export const evaluateKeyboard = {
             "#@_{#?}",
             "|#0|",
             "\\sqrt[#0]{#0}",
-            {
-                class: "small",
-                latex: "\\mathrm{Len}\\left(#0\\right)",
-                insert: "\\mathrm{Length}\\left(#0\\right)",
-            },
+            "\\left(#0\\right)",
             {
                 class: "small",
                 latex: "\\sum_{#0}^{#0}#0",
@@ -170,6 +166,33 @@ export const evaluateKeyboard = {
                     { latex: "\\imaginaryI" },
                 ]
             }
+        ],
+        [
+            {
+                class: "small",
+                latex: "\\mathrm{Len}\\left(#0\\right)",
+                insert: "\\mathrm{Length}\\left(#0\\right)",
+            },
+            {
+                class: "small",
+                latex: "\\mathrm{Range}\\left(#0\\right)",
+                insert: "#0..#0",
+            },
+            {
+                class: "small",
+                latex: "\\mathrm{Map}\\left(#0\\right)",
+                insert: "\\mathrm{Map}\\left(#0, #0\\right)",
+            },
+            {
+                class: "small",
+                latex: "\\mathrm{Take}\\left(#0\\right)",
+                insert: "\\mathrm{Take}\\left(#0, #0\\right)",
+            },
+            {
+                class: "small",
+                latex: "\\operatorname{element}",
+                insert: "\\operatorname{\\_}",
+            },
         ]
     ]
 };

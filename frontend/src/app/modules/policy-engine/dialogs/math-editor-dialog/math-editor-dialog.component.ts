@@ -242,6 +242,20 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     public onSave(): void {
+        if (this.group) {
+            const error = this.group.validate();
+            if (error === 'variables') {
+                this.onStep('step_1', '.rows-container[error="true"]');
+                return;
+            } else if (error === 'formulas') {
+                this.onStep('step_2', '.rows-container[error="true"]');
+                return;
+            } else if (error === 'outputs') {
+                this.onStep('step_3', '.rows-container[error="true"]');
+                return;
+            }
+        }
+
         this.expression = {
             ...this.group.toJson(),
             ...this.code.toJson()
@@ -573,8 +587,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             return;
         }
         this.group.validate();
-        const context = this.group.createContext();
-        const components = context?.getComponents() || [];
+        const components = this.group.getComponents();
         const data = TreeListData.fromObject<any>({ components }, 'components', (item) => {
             if (item.data) {
                 item.id = item.data.value;
@@ -753,7 +766,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             }
 
             for (const link of this.group.outputs) {
-                setDocumentValueByPath(this.outputSchema, outputDocument, link.path, context.scope[link.name]);
+                try {
+                    setDocumentValueByPath(this.outputSchema, outputDocument, link.path, context.scope[link.name]);
+                    link.value = context.scope[link.name];
+                } catch (error) {
+                    console.log(error);
+                }
             }
 
             let builtCode: Function;
@@ -816,5 +834,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public reorder(type: 'variables' | 'formulas' | 'outputs', event: CdkDragDrop<any[]>) {
         this.group.reorder(type, event.previousIndex, event.currentIndex);
+    }
+
+    public onChangeView(item: MathFormula, $event: any) {
+        item.view = $event;
     }
 }

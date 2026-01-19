@@ -254,7 +254,7 @@
                             <div class="row-container">
                                 <div class="formula-name" [attr.error]="!item.validName">
                                     <div class="guardian-input-container">
-                                        <label class="form-label">Formula</label>
+                                        <label class="form-label">Name</label>
                                         <input 
                                             [(ngModel)]="item.functionNameText" 
                                             pInputText 
@@ -264,9 +264,24 @@
                                     </div>
                                 </div>
                                 <div class="formula-eq">=</div>
-                                <div class="formula-body" [attr.error]="!item.validBody">
-                                    <div class="guardian-input-container">
-                                        <label class="form-label"></label>
+                                <div class="guardian-selector">
+                                    <div
+                                        class="guardian-selector-item"
+                                        [attr.selected]="item.view === 'formula'"
+                                        (click)="onChangeView(item, 'formula')">Formula</div>
+                                    <div
+                                        class="guardian-selector-item"
+                                        [attr.selected]="item.view === 'latex'"
+                                        (click)="onChangeView(item, 'latex')">LaTeX</div>
+                                    <div
+                                        class="guardian-selector-item"
+                                        [attr.selected]="item.view === 'json'"
+                                        (click)="onChangeView(item, 'json')">MathJSON</div>
+                                </div>
+                            </div>
+                            <div class="row-container vertical">
+                                <div *ngIf="item.view === 'formula'" class="formula-tab-body" [attr.error]="!item.validBody">
+                                    <div class="guardian-textarea-container">
                                         <math-live 
                                             [(value)]="item.functionBodyText" 
                                             [readonly]="false"
@@ -277,6 +292,25 @@
                                             (focus)="onKeyboardFocus($event)"
                                             (change)="item.updateBody()"
                                         ></math-live>
+                                    </div>
+                                </div>
+                                <div *ngIf="item.view === 'latex'" class="formula-tab-body" [attr.error]="!item.validBody">
+                                    <div class="guardian-input-container">
+                                        <input 
+                                            [(ngModel)]="item.functionBodyText" 
+                                            pInputText 
+                                            type="text"
+                                            (change)="item.updateBody()"/>
+                                    </div>
+                                </div>
+                                <div *ngIf="item.view === 'json'" class="formula-tab-body" [attr.error]="!item.validBody">
+                                    <div class="guardian-textarea-container">
+                                        <textarea 
+                                            [(ngModel)]="item.functionBodyJson" 
+                                            pTextarea 
+                                            [readonly]="readonly"
+                                            rows="8" 
+                                            (blur)="item.updateBody()"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -656,7 +690,7 @@
                             <div class="row-container">
                                 <div class="formula-name">
                                     <div class="guardian-input-container">
-                                        <label class="form-label">Formula</label>
+                                        <label class="form-label">Name</label>
                                         <input 
                                             [ngModel]="item.functionNameText" 
                                             pInputText 
@@ -665,9 +699,11 @@
                                     </div>
                                 </div>
                                 <div class="formula-eq">=</div>
-                                <div class="formula-body">
-                                    <div class="guardian-input-container">
-                                        <label class="form-label"></label>
+                            </div>
+                            <div class="row-container">
+                                <div class="formula-tab-body">
+                                    <div class="guardian-textarea-container">
+                                        <label class="form-label">Formula</label>
                                         <math-live 
                                             [value]="item.functionBodyText" 
                                             [readonly]="true"
@@ -800,7 +836,7 @@
                         </div>
                         <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'errors'">
                             <ngx-codemirror 
-                                [(ngModel)]="result.errors" 
+                                [(ngModel)]="result.error" 
                                 [options]="codeMirrorOptions2"></ngx-codemirror>
                         </div>
                     </div>

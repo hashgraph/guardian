@@ -81,7 +81,7 @@
     }
 
     &.keyboard .step-container {
-        bottom: 274px;
+        bottom: 320px;
     }
 }
 
@@ -113,6 +113,10 @@
             math-live::ng-deep math-field {
                 border: 1px solid var(--guardian-failure-color);
             }
+
+            math-live::ng-deep .mathlive-content {
+                width: fit-content;
+            }
         }
     }
 
@@ -134,6 +138,11 @@
         flex-direction: row;
         align-items: center;
         margin-bottom: 16px;
+        position: relative;
+
+        &.vertical {
+            flex-direction: column;
+        }
 
         .guardian-input-container {
             height: auto;
@@ -163,7 +172,7 @@
         }
 
         &-last {
-             margin-bottom: 8px;
+            margin-bottom: 8px;
         }
     }
 
@@ -180,6 +189,10 @@
             height: 32px;
             margin: 6px 6px 6px 14px;
         }
+    }
+
+    .formula-tab-body {
+        width: 100%;
     }
 }
 
@@ -316,6 +329,18 @@
 
 math-live {
     cursor: text;
+    overflow: auto;
+    border-radius: 8px;
+    outline: none;
+    border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+    max-width: 100%;
+    background: #fff;
+
+    &::ng-deep {
+        math-field {
+            border: none !important;
+        }
+    }
 }
 
 .code-help {
@@ -488,6 +513,10 @@ math-live {
     left: 0;
     bottom: 0;
     right: 0;
+
+    .guardian-textarea-container {
+        height: calc(100% - 60px);
+    }
 }
 
 .guardian-textarea-container {
@@ -572,4 +601,9 @@ math-live {
 
 .rows-container.cdk-drag-placeholder {
     opacity: 0.5;
+}
+
+.guardian-selector {
+    margin-top: 20px;
+    max-width: 300px;
 }

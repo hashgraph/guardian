@@ -9,6 +9,7 @@ export class MathFormula {
 
     public functionNameText: string = '';
     public functionBodyText: string = '';
+    public functionBodyJson: string = '';
 
     public functionName: string = '';
     public functionParams: string[] = [];
@@ -45,6 +46,7 @@ export class MathFormula {
         this.empty = !name && !body;
         this.functionNameText = name || '';
         this.functionBodyText = body || '';
+        this.functionBodyJson = '';
     }
 
     private _setErrorName() {
@@ -126,6 +128,7 @@ export class MathFormula {
 
     private _updateBody() {
         try {
+            this.functionBodyJson = '';
             const text = this.functionBodyText.trim();
             if (!text) {
                 this.bodyUnknowns = [];
@@ -146,6 +149,7 @@ export class MathFormula {
             for (const command of commands) {
                 indexes.push(command[1]);
             }
+            this.functionBodyJson = JSON.stringify(p.json, null, 4);
             this.bodyUnknowns = p.unknowns as string[];
             this.bodyUnknowns = this.bodyUnknowns.filter((u) => !indexes.includes(u));
             this.validBody = p.isValid;

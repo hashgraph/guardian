@@ -191,6 +191,19 @@
         .field-name {
             padding-left: 8px;
             min-width: 125px;
+            pointer-events: none;
+        }
+
+
+        .field-id {
+            padding-left: 8px;
+            min-width: 125px;
+            pointer-events: none;
+            color: var(--guardian-grey-color-3, #AAB7C4);
+            font-size: 12px;
+        }
+
+        .field-names {
             cursor: pointer;
 
             &[readonly="true"] {

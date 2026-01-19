@@ -44,8 +44,9 @@
                         [value]="item.id" 
                         [ngModel]="value"></p-radioButton>
                 </div>
-                <div class="field-name" (click)="onSelectItem(item)">
-                    {{item.name}}
+                <div class="field-names" (click)="onSelectItem(item)">
+                    <div class="field-name">{{item.name}}</div>
+                    <div class="field-id">{{item.id}}</div>
                 </div>
             </div>
         </div>

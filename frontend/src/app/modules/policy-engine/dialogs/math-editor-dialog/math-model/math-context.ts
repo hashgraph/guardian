@@ -162,6 +162,7 @@ export class MathContext {
             }
         } catch (error) {
             this.valid = false;
+            console.log(error);
         }
     }
 
@@ -205,6 +206,7 @@ export class MathContext {
             return result?.value;
         } catch (error) {
             return NaN;
+            console.log(error);
         }
     }
 }

@@ -100,6 +100,43 @@ export function createComputeEngine() {
                 return evaluate.apply(this, arguments);
             }
         }
+        const Range = lib.getStandardLibrary().find((t: any) => !!t.Range)?.Range;
+        if (Range) {
+            const size = Range.collection.size;
+            Range.collection.size = function () {
+                const e = arguments[0];
+                if (e) {
+                    const op1 = e.op1;
+                    const op2 = e.op2;
+                    if (op1 && op2 && op2.type != 'nothing') {
+                        let start = op1.value;
+                        let end = op2.value;
+                        if (!start || start < 1 || isNaN(start) || !isFinite(start)) {
+                            start = 1;
+                        }
+                        if (!end || end < 1 || isNaN(end) || !isFinite(end)) {
+                            end = start;
+                        }
+                        if (end < start) {
+                            end = start;
+                        }
+                        Object.defineProperty(op1, 're', {
+                            get: function re() {
+                                return start;
+                            },
+                            configurable: true
+                        });
+                        Object.defineProperty(op2, 're', {
+                            get: function re() {
+                                return end;
+                            },
+                            configurable: true
+                        });
+                    }
+                }
+                return size.apply(this, arguments);
+            }
+        }
         lib.__updated = true;
     }
     return new ComputeEngine();

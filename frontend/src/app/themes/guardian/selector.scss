@@ -1,0 +1,32 @@
+.guardian-selector {
+    border-radius: 6px;
+    display: flex;
+    flex-direction: row;
+    border: 1px solid #C4D0E1;
+    background: #F9FAFC;
+    width: 100%;
+
+    .guardian-selector-item {
+        padding: 5px;
+        border-radius: 6px;
+        margin: 3px;
+        cursor: pointer;
+        user-select: none;
+        flex: 1;
+        text-align: center;
+        color: #AAB7C4;
+        font-family: Inter;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 24px;
+
+        &[selected="true"] {
+            background: var(--color-primary) !important;
+            color: var(--color-grey-white) !important;
+        }
+
+        &:hover {
+            background: #E1E7EF;
+        }
+    }
+}

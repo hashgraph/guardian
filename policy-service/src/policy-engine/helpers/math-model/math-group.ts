@@ -92,6 +92,8 @@ export class MathGroup {
             list.set(systemFunction.name, systemFunction);
         }
 
+        list.set('_', new FieldLink('_'));
+
         // Variables
         for (const variable of variables) {
             const old = list.get(variable.name);
@@ -199,6 +201,55 @@ export class MathGroup {
         } else {
             return null;
         }
+    }
+
+    public getComponents() {
+        const components = [];
+        const variableComponents: any[] = [];
+        const functionComponents: any[] = [];
+        for (const item of this.variables) {
+            item.validate();
+            if (item.valid && item.type === MathItemType.LINK) {
+                variableComponents.push({
+                    type: MathItemType.LINK,
+                    name: item.name,
+                    value: `variables['${item.name}']`
+                });
+            }
+        }
+        for (const item of this.formulas) {
+            item.validate();
+            if (item.valid && item.type === MathItemType.VARIABLE) {
+                variableComponents.push({
+                    type: MathItemType.VARIABLE,
+                    name: item.functionName,
+                    value: `variables['${item.functionName}']`
+                });
+            }
+            if (item.valid && item.type === MathItemType.FUNCTION) {
+                const paramsNames = item.functionParams.map((name) => `_ /*${name}*/`).join(',');
+                functionComponents.push({
+                    type: MathItemType.FUNCTION,
+                    name: `${item.functionName}(${item.functionParams.join(',')})`,
+                    value: `formulas['${item.functionName}'](${paramsNames})`
+                });
+            }
+        }
+        if (variableComponents.length) {
+            components.push({
+                id: 'variables',
+                name: 'Variables',
+                components: variableComponents
+            });
+        }
+        if (functionComponents.length) {
+            components.push({
+                id: 'formulas',
+                name: 'Formulas',
+                components: functionComponents
+            });
+        }
+        return components;
     }
 
     public toJson() {
