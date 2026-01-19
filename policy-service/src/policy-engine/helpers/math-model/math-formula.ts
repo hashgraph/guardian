@@ -249,7 +249,8 @@ export class MathFormula {
 
     public toJson() {
         return {
-            name: this.functionNameText,
+            type: this.type,
+            name: this.functionName,
             body: this.functionBodyText,
             params: this.functionParams || [],
             relationships: this.functionUnknowns || [],
@@ -262,10 +263,19 @@ export class MathFormula {
             return null;
         }
         try {
-            const item = new MathFormula(json.name, json.body);
-            item.description = json.description || '';
-            item.empty = false;
-            return item;
+            if (json.type === MathItemType.VARIABLE) {
+                const item = new MathFormula(json.name, json.body);
+                item.description = json.description || '';
+                item.empty = false;
+                return item;
+            } else {
+                const params = (json.params || []).join(',');
+                const name = `${json.name}(${params})`;
+                const item = new MathFormula(name, json.body);
+                item.description = json.description || '';
+                item.empty = false;
+                return item;
+            }
         } catch (error) {
             return null;
         }

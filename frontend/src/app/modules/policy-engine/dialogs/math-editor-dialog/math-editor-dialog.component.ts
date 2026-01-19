@@ -771,6 +771,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                     link.value = context.scope[link.name];
                 } catch (error) {
                     console.log(error);
+                    link.value = String(error);
                 }
             }
 

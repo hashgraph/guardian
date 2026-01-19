@@ -110,7 +110,7 @@ export class MathGroup {
 
         // Formulas
         for (const formula of formulas) {
-            const old = list.get(formula.functionName);
+            const old = list.get(formula.name);
             if (old) {
                 old.validName = false;
                 formula.validName = false;
@@ -125,10 +125,10 @@ export class MathGroup {
         for (const formula of formulas) {
             formula.updateUnknowns();
             if (this.checkUnknowns(list, formula.functionUnknowns)) {
-                list.set(formula.functionName, formula);
+                list.set(formula.name, formula);
                 this.list.push(formula);
             } else {
-                dependencies.set(formula.functionName, formula);
+                dependencies.set(formula.name, formula);
             }
         }
 
@@ -139,9 +139,9 @@ export class MathGroup {
             const items = dependencies.values();
             for (const formula of items) {
                 if (this.checkUnknowns(list, formula.functionUnknowns)) {
-                    list.set(formula.functionName, formula);
+                    list.set(formula.name, formula);
                     this.list.push(formula);
-                    dependencies.delete(formula.functionName);
+                    dependencies.delete(formula.name);
                 }
             }
         }
@@ -230,8 +230,8 @@ export class MathGroup {
                 const paramsNames = item.functionParams.map((name) => `_ /*${name}*/`).join(',');
                 functionComponents.push({
                     type: MathItemType.FUNCTION,
-                    name: `${item.functionName}(${item.functionParams.join(',')})`,
-                    value: `formulas['${item.functionName}'](${paramsNames})`
+                    name: `${item.name}(${item.functionParams.join(',')})`,
+                    value: `formulas['${item.name}'](${paramsNames})`
                 });
             }
         }
