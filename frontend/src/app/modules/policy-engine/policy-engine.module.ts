@@ -140,6 +140,7 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { PasswordModule } from 'primeng/password';
+import { DynamicMsalAuthService } from './services/dynamic-msal-auth.service';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
 import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
@@ -347,6 +348,7 @@ import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update
         WizardService,
         DialogService,
         PolicyProgressService,
+        DynamicMsalAuthService,
         DatePipe,
         {
             provide: CONFIGURATION_ERRORS,

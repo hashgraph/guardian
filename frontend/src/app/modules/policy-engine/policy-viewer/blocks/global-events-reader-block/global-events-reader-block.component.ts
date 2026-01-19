@@ -233,7 +233,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return {
                 globalTopicId: topicId,
                 active: s.active,
-                status: s.status || 'FREE',
+                status: 'FREE',
                 lastMessageCursor: s.lastMessageCursor || '',
                 isDefault: s.isDefault || defaultSet.has(topicId),
                 filterFieldsByBranch: s.filterFieldsByBranch || {},

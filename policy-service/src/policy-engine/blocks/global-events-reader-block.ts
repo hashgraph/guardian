@@ -163,6 +163,8 @@ class GlobalEventsReaderBlock {
     private readonly schemasCache: Map<string, Schema | null> = new Map();
     private job: CronJob | null = null;
 
+    private isRunning: boolean = false;
+
     private validateTopicId(topicId: string, ref: AnyBlockType): void {
         try {
             TopicId.fromString(topicId);
@@ -240,19 +242,29 @@ class GlobalEventsReaderBlock {
      * cron tick calls run(null) and processes DB-bound active streams.
      */
     protected async afterInit(): Promise<void> {
-        const cronMask = process.env.GLOBAL_EVENT_TOPIC_SCHEDULER || '*/5 * * * *';
+        const cronMask = process.env.GLOBAL_EVENT_TOPIC_SCHEDULER || '*/30 * * * *';
 
-        this.job = new CronJob(cronMask, () => {
-            this.run().then();
-        }, null, false, 'UTC');
+        this.job = new CronJob(
+            cronMask,
+            async () => {
+                if (this.isRunning) {
+                    return;
+                }
+
+                this.isRunning = true;
+
+                try {
+                    await this.run();
+                } finally {
+                    this.isRunning = false;
+                }
+            },
+            null,
+            false,
+            'UTC'
+        );
+
         this.job.start();
-    }
-
-    protected destroy(): void {
-        if (this.job) {
-            this.job.stop();
-            this.job = null;
-        }
     }
 
     private async fetchEvents(topicId: string, fromCursor: string, userId: string): Promise<GlobalTopicMessage[]> {
@@ -949,21 +961,18 @@ class GlobalEventsReaderBlock {
         stream: GlobalEventsReaderStream,
     ): Promise<void> {
 
-        // stream.status = GlobalEventsStreamStatus.Processing;
-        // await ref.databaseServer.updateGlobalEventsStream(stream);
+        stream.status = GlobalEventsStreamStatus.Processing;
+        await ref.databaseServer.updateGlobalEventsStream(stream);
 
         try {
             const user = await PolicyComponentsUtils.GetPolicyUserByDID(stream.userDid, null, ref, stream.userId);
 
             await this.pollStream(ref, user, stream);
-
-            // stream.status = GlobalEventsStreamStatus.Free;
-            // await ref.databaseServer.updateGlobalEventsStream(stream);
         } catch (error) {
-            // stream.status = GlobalEventsStreamStatus.Free;
-            // await ref.databaseServer.updateGlobalEventsStream(stream);
-
             ref.error(`GlobalEventsReader: runByStream failed: ${PolicyUtils.getErrorMessage(error)}`);
+        } finally {
+            stream.status = GlobalEventsStreamStatus.Free;
+            await ref.databaseServer.updateGlobalEventsStream(stream);
         }
     }
 

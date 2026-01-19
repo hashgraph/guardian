@@ -19,7 +19,8 @@ import {
     ToolModel,
     ToolLoader,
     DocumentLoader,
-    SchemaLoader
+    SchemaLoader,
+    IAnyPolicy
 } from '../analytics/index.js';
 import {
     DatabaseServer,
@@ -289,7 +290,59 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError(error);
             }
         });
+    ApiResponse<any>(MessageAPI.COMPARE_ORIGINAL_POLICIES,
+        async (msg: {
+            user: IOwner,
+            type: string,
+            policyId: string,
+            options: {
+                propLvl: string | number,
+                childrenLvl: string | number,
+                eventsLvl: string | number,
+                idLvl: string | number
+            },
+        }) => {
+            try {
+                const { user, type, policyId, options } = msg;
+                const compareOptions = CompareOptions.from(options);
 
+                const compareModels: PolicyModel[] = [];
+                const policyData = await PolicyLoader.load(policyId);
+                const compareModel = await PolicyLoader.create(policyData, compareOptions);
+                compareModels.push(compareModel);
+
+                let originalPolicyData = null;
+                if(policyData.policy.originalMessageId) {
+                    const originalAnyPolicy: IAnyPolicy = {
+                        type: 'message',
+                        value: policyData.policy.originalMessageId
+                    }
+                    originalPolicyData = await PolicyLoader.load(originalAnyPolicy, user);
+                } else if(policyData.policy.originalZipId) {
+                    const originalAnyPolicy: IAnyPolicy = {
+                        type: 'file',
+                        value: {
+                            id:'',
+                            name: '',
+                            value: (await DatabaseServer.loadFile(policyData.policy.originalZipId)).toString('base64')
+                        }
+                    }
+                    originalPolicyData = await PolicyLoader.load(originalAnyPolicy, user);
+                }
+
+                const originalCompareModel = await PolicyLoader.create(originalPolicyData, compareOptions);
+                compareModels.push(originalCompareModel);
+
+                const comparator = new PolicyComparator(compareOptions);
+                const results = comparator.compare(compareModels);
+                const result = comparator.to(results, type);
+
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                return new MessageError(error);
+            }
+        });
     ApiResponse<any>(MessageAPI.COMPARE_MODULES,
         async (msg: {
             user: IAuthUser,

@@ -183,7 +183,8 @@ export class PolicyEngineService {
         messageId: string,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ): Observable<{ taskId: string; expectation: number }> {
         let params = new HttpParams();
         if (versionOfTopicId) {
@@ -191,6 +192,9 @@ export class PolicyEngineService {
         }
         if (demo) {
             params = params.set('demo', demo);
+        }
+        if (originalTracking) {
+            params = params.set('originalTracking', originalTracking);
         }
         return this.http.post<{ taskId: string; expectation: number }>(
             `${this.url}/push/import/message`,
@@ -203,7 +207,8 @@ export class PolicyEngineService {
         policyFile: any,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ): Observable<{ taskId: string; expectation: number }> {
         let params = new HttpParams();
         if (versionOfTopicId) {
@@ -211,6 +216,10 @@ export class PolicyEngineService {
         }
         if (demo) {
             params = params.set('demo', demo);
+        }
+
+        if(originalTracking) {
+            params = params.set('originalTracking', originalTracking);
         }
 
         const formData = new FormData();

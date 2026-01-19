@@ -25,6 +25,10 @@ export class AnalyticsService {
         return this.http.post<any>(`${this.url}/compare/policies`, options);
     }
 
+    public comparePolicyOriginal(policyId: string, options: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/compare/policy/original/${policyId}`, options);
+    }
+
     public compareModule(options: any): Observable<any> {
         return this.http.post<any>(`${this.url}/compare/modules`, options);
     }

@@ -218,10 +218,10 @@ export class TagsExplorerDialog {
                 row: item,
                 dryRun: !!item.dryRunId,
                 document: item.document,
-                title: title,
-                type: 'Document',
-                viewDocument: false,
-                toggle: false
+                title,
+                type: 'VC',
+                viewDocument: true,
+                toggle: true
             }
         });
         dialogRef.onClose.subscribe(async (result) => { });

@@ -141,7 +141,7 @@ export class VCFullscreenDialog {
     }
 
     get vcDocStatusEqRejectOrRevoke(): any {
-        return this.currentSelectedVcDoc?.option?.status === 'Revoked' || this.currentSelectedVcDoc?.option?.status === 'Rejected';
+        return this.allVcDocs.some(doc => doc?.option?.status === 'Rejected' || doc?.option?.status === 'Revoked') ?? false;
     }
 
     ngOnInit() {

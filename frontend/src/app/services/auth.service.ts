@@ -127,6 +127,10 @@ export class AuthService {
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        if (req.headers.has('Authorization')) {
+            return next.handle(req);
+        }
+
         const token = localStorage.getItem('accessToken');
         if (!token) {
             return next.handle(req);

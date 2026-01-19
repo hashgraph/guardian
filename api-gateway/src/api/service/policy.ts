@@ -2488,6 +2488,13 @@ export class PolicyApi {
         required: false,
         example: true
     })
+    @ApiQuery({
+        name: 'originalTracking',
+        type: Boolean,
+        description: 'Save original state of the policy',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'Message.',
         type: ImportMessageDTO,
@@ -2507,7 +2514,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO,
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean
+        @Query('demo') demo?: boolean,
+        @Query('originalTracking') originalTracking?: boolean
     ): Promise<PolicyDTO[]> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -2520,7 +2528,8 @@ export class PolicyApi {
                 new EntityOwner(user),
                 versionOfTopicId,
                 body.metadata,
-                demo
+                demo,
+                originalTracking
             );
             return await getOldResult(user);
         } catch (error) {
@@ -2554,6 +2563,13 @@ export class PolicyApi {
         required: false,
         example: true
     })
+    @ApiQuery({
+        name: 'originalTracking',
+        type: Boolean,
+        description: 'Save original state of the policy',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'Message.',
         type: ImportMessageDTO,
@@ -2572,7 +2588,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO,
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean
+        @Query('demo') demo?: boolean,
+        @Query('originalTracking') originalTracking?: boolean
     ): Promise<any> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -2589,7 +2606,8 @@ export class PolicyApi {
                     task,
                     versionOfTopicId,
                     body.metadata,
-                    demo
+                    demo,
+                    originalTracking
                 );
             },
             async (error) => {
@@ -2862,6 +2880,13 @@ export class PolicyApi {
         required: false,
         example: true
     })
+    @ApiQuery({
+        name: 'originalTracking',
+        type: Boolean,
+        description: 'Save original state of the policy',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'A zip file containing policy config.',
         required: true,
@@ -2881,13 +2906,14 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() file: any,
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean
+        @Query('demo') demo?: boolean,
+        @Query('originalTracking') originalTracking?: boolean
     ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.importFileAsync(file, new EntityOwner(user), task, versionOfTopicId, null, demo);
+            await engineService.importFileAsync(file, new EntityOwner(user), task, versionOfTopicId, null, demo, originalTracking);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
@@ -2918,6 +2944,13 @@ export class PolicyApi {
         name: 'demo',
         type: Boolean,
         description: 'Import policy in demo mode.',
+        required: false,
+        example: true
+    })
+    @ApiQuery({
+        name: 'originalTracking',
+        type: Boolean,
+        description: 'Save original state of the policy',
         required: false,
         example: true
     })
@@ -2954,7 +2987,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any[],
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean
+        @Query('demo') demo?: boolean,
+        @Query('originalTracking') originalTracking?: boolean
     ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
@@ -2973,7 +3007,8 @@ export class PolicyApi {
                     task,
                     versionOfTopicId,
                     metadata,
-                    demo
+                    demo,
+                    originalTracking
                 );
             },
             async (error) => {
