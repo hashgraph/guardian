@@ -1,104 +1,120 @@
+# This file is linted and formatted using Docker Compose Linter (https://github.com/zavoloklom/docker-compose-linter):
+# npx dclint . --fix=true
+
+# Please note variables defined in the "environment" section will override the same variables defined in the "env_file"
+# See # https://docs.docker.com/compose/environment-variables/envvars-precedence/ for more details
+
 # YAML anchor that contains common configuration elements for our services
 x-service-template: &service-template
   init: true
   env_file:
     - ./configs/.env.${GUARDIAN_ENV}.indexer.system
   environment:
-    - GUARDIAN_ENV=${GUARDIAN_ENV}
+    GUARDIAN_ENV: ${GUARDIAN_ENV}
+
+name: guardian-indexer
 
 services:
-  mongo:
-    image: mongo:6.0.26
-    command: "--setParameter allowDiskUseByDefault=true"
-    restart: always
-    expose:
-      - 27017
-
-  mongo-express:
-    image: mongo-express:1.0.2-20
-    expose:
-      - 8081
-    environment:
-      ME_CONFIG_MONGODB_SERVER: mongo
-      ME_CONFIG_MONGODB_PORT: 27017
-      ME_CONFIG_SITE_BASEURL: /mongo-admin # default credentials: admin/pass
-    depends_on:
-      - mongo
-
-  ipfs-node:
-    image: ipfs/kubo:v0.38.2
-
-  ipfs-check:
-    image: ghcr.io/ipfs/ipfs-check:main-latest
-    expose:
-      - 3333
-    ports:
-      - 3333:3333
-
-  message-broker:
-    image: nats:2.9.25
-    expose:
-      - 4222
-    ports:
-      - '8222:8222'
-    command: '-c /etc/nats/nats.conf --http_port 8222'
-    volumes:
-      - ./configs/nats.conf:/etc/nats/nats.conf
-
-  indexer-worker-service:
-    <<: *service-template
-    build:
-      context: .
-      dockerfile: ./indexer-worker-service/Dockerfile
-    depends_on:
-      - mongo
-      - message-broker
-      - indexer-service
-    expose:
-      - 6555
-    volumes:
-      - ./indexer-worker-service/tls:/usr/local/app/tls:ro
-      - ./indexer-worker-service/configs:/usr/local/app/configs:ro
-    deploy:
-      replicas: 3
-
   indexer-api-gateway:
-    <<: *service-template
     build:
       context: .
       dockerfile: ./indexer-api-gateway/Dockerfile
-    expose:
-      - 3021
-      - 6555
     depends_on:
-      - mongo
-      - message-broker
       - indexer-service
+      - message-broker
+      - mongo
     volumes:
       - ./indexer-api-gateway/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '3021'
+      - '6555'
 
   indexer-service:
-    <<: *service-template
     build:
       context: .
       dockerfile: ./indexer-service/Dockerfile
+    depends_on:
+      - message-broker
+      - mongo
     volumes:
       - ./indexer-service/tls:/usr/local/app/tls:ro
       - ./indexer-service/configs:/usr/local/app/configs:ro
-    depends_on:
-      - mongo
-      - message-broker
+    <<: *service-template
     expose:
-      - 6555
-      - 5007
+      - '6555'
+      - '5007'
 
   indexer-web-proxy:
     build:
       context: .
       dockerfile: ./indexer-web-proxy/Dockerfile
-    init: true
-    ports:
-      - "3005:80"
     depends_on:
       - indexer-api-gateway
       - indexer-service
+    ports:
+      - '127.0.0.1:3005:80'
+    init: true
+
+  indexer-worker-service:
+    build:
+      context: .
+      dockerfile: ./indexer-worker-service/Dockerfile
+    depends_on:
+      - indexer-service
+      - message-broker
+      - mongo
+    volumes:
+      - ./indexer-worker-service/tls:/usr/local/app/tls:ro
+      - ./indexer-worker-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    deploy:
+      replicas: 3
+    expose:
+      - '6555'
+
+  ipfs-check:
+    image: ghcr.io/ipfs/ipfs-check:main-latest
+    ports:
+      - '127.0.0.1:3333:3333'
+    expose:
+      - '3333'
+
+  ipfs-node:
+    image: ipfs/kubo:v0.39.0
+    environment:
+      IPFS_TELEMETRY: off # valid options: 'on' (default), 'off', 'auto' (https://github.com/ipfs/kubo/blob/master/docs/telemetry.md)
+    init: true
+
+  message-broker:
+    image: nats:2.9.25
+    volumes:
+      - ./configs/nats.conf:/etc/nats/nats.conf
+    ports:
+      - '127.0.0.1:8222:8222'
+    command: "-c /etc/nats/nats.conf --http_port 8222"
+    expose:
+      - '4222'
+    init: true
+
+  mongo:
+    image: mongo:6.0.26
+    command: "--setParameter allowDiskUseByDefault=true"
+    # command: "--setParameter allowDiskUseByDefault=true --quiet --logpath /dev/null" # use this command to reduce log noise
+    restart: always
+    expose:
+      - '27017'
+    init: true
+
+  mongo-express:
+    image: mongo-express:1.0.2-20
+    depends_on:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017
+      ME_CONFIG_SITE_BASEURL: /mongo-admin
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: pass
+    expose:
+      - '8081'
+    init: true
