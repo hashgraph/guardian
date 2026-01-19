@@ -58,17 +58,10 @@ export class SearchPolicyDialog {
         return this.filtersForm.value.type === 'Global';
     }
 
-    tools: ToolOption[] = [];
-    query = '';
-    page = 0;
-    pageSize = 50;
-    total = 0;
-    loadingms = false;             // вместо loadingms
-    private search$ = new Subject<string>();
+    public tools: ToolOption[] = [];
+    public toolSearchControl = new UntypedFormControl('');
+
     private destroy$ = new Subject<void>();
-    private loadingMore = false;
-    private loadMore$ = new Subject<void>();
-    searchCtrl = new FormControl<string>('', { nonNullable: true });
 
     constructor(
         public ref: DynamicDialogRef,
@@ -80,45 +73,16 @@ export class SearchPolicyDialog {
     ) {
         this.policy = this.config.data.policy;
 
-        const searchStream$ = this.search$.pipe(
+        this.toolSearchControl.valueChanges.pipe(
+            map(v => (v ?? '').trim()),
             debounceTime(250),
             distinctUntilChanged(),
-            map(q => (q ?? '').trim()),
-            startWith('') // первая загрузка
-        );
-        
-        this.searchCtrl.valueChanges
-            .pipe(debounceTime(250), distinctUntilChanged())
-            .subscribe(q => this.onSearchChange(q));
-
-        searchStream$
-            .pipe(
-            switchMap(query => {
-                return this.fetchPage(query, 0).pipe(
-                tap((first: any) => {
-                    this.tools = this.getToolOptions(first?.items);
-                    this.total = first.total;
-                    this.page = 0;
-                }),
-                switchMap(() =>
-                    this.loadMore$.pipe(
-                    scan(acc => acc + 1, 0),
-                    concatMap(nextPage =>
-                        this.fetchPage(query, nextPage).pipe(
-                        tap(res => {
-                            this.tools = this.getToolOptions([...this.tools, ...res.items]);
-                            this.page = nextPage;
-                        })
-                        )
-                    ),
-                    takeWhile(() => this.tools.length < this.total, true)
-                    )
-                )
-                );
-            }),
+            startWith(''),
+            switchMap(query => this.fetchTools(query)),
             takeUntil(this.destroy$)
-            )
-            .subscribe();
+        ).subscribe(items => {
+            this.tools = this.getToolOptions(items);
+        });
     }
 
     private getToolOptions(tools: any) {
@@ -131,36 +95,13 @@ export class SearchPolicyDialog {
         return [];
     }
 
-    onSearchChange(value: string) {
-        this.search$.next(value);
-    }
-
-    onLazyLoad(e: any) {
-        const nearEnd = e?.last >= this.tools.length - 10;
-        const hasMore = this.tools.length < this.total;
-        if (nearEnd && hasMore && !this.loadingMore) this.loadMore$.next();
-    }
-
-    private fetchPage(query: string, page: number) {
-        const firstPage = page === 0;
-        this.loading = firstPage;
-        this.loadingMore = !firstPage;
-
-        return this.toolsService.page(page, this.pageSize, query).pipe(
-            map((resp: any) => {
-            const items = resp.body || [];
-            const total =
-                Number(resp.headers?.get?.('X-Total-Count')) ?? this.total ?? items.length;
-            return { items, total };
-            }),
-            finalize(() => {
-            this.loading = false;
-            this.loadingMore = false;
-            })
+    private fetchTools(query: string) {
+        this.loading = true;
+        return this.toolsService.page(0, 100, query).pipe(
+            map((data: any) => data?.body ?? []),
+            finalize(() => this.loading = false)
         );
     }
-
-
 
     ngOnInit() {
         this.load();
@@ -168,7 +109,7 @@ export class SearchPolicyDialog {
 
     ngOnDestroy() {
         this.destroy$.next();
-        this.destroy$.complete();
+        this.destroy$.unsubscribe();
     }
 
     public load() {
@@ -305,7 +246,8 @@ export class SearchPolicyDialog {
             vpDocuments: false,
             tokensCount: 1,
             vcDocumentsCount: 1,
-            vpDocumentsCount: 1
+            vpDocumentsCount: 1,
+            toolMessageIds: []
         })
         this.select();
         this.load();
