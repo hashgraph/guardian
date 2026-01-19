@@ -1,6 +1,6 @@
 import { MathFormula } from './math-formula.js';
 import { FieldLink } from './field-link.js';
-import { getValueByPath, convertValue, createComputeEngine, getDocumentValueByPath } from './utils.js';
+import { getValueByPath, convertValue, createComputeEngine, getDocumentValueByPath, parseValue } from './utils.js';
 import { MathItemType } from './math-item-type.js';
 import { IContext } from './context.interface.js';
 
@@ -139,7 +139,7 @@ export class MathContext {
                     const latex = item.getLatex();
                     if (latex) {
                         const result = ce.parse(latex).evaluate();
-                        item.value = result?.value;
+                        item.value = parseValue(result);
                         this.variables[item.functionName] = item.value;
                         this.scope[item.functionName] = item.value;
                         if (item.value) {
@@ -196,6 +196,27 @@ export class MathContext {
                     return value;
                 }
             }
+            const __parseValue = (value: any): any => {
+                if (value && value.type) {
+                    if (value.type.kind === 'list') {
+                        const iter = value.each();
+                        const result = [];
+                        if (iter) {
+                            let next = iter.next();
+                            while (next && !next.done) {
+                                const itemValue = __parseValue(next.value);
+                                result.push(itemValue);
+                                next = iter.next();
+                            }
+                            return result;
+                        } else {
+                            return [];
+                        }
+                    }
+                    return value.value;
+                }
+                return value;
+            }
             for (let i = 0; i < arg.length; i++) {
                 const pName = `evaluateFunctionParameter${i}`;
                 context.ce.assign(pName, __getValue(arg[i]));
@@ -203,7 +224,7 @@ export class MathContext {
             }
             const latex = `\\operatorname{${context.name}}(${list.join(',')})`;
             const result = context.ce.parse(latex).evaluate();
-            return result?.value;
+            return __parseValue(result);
         } catch (error) {
             return NaN;
         }
