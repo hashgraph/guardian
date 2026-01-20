@@ -746,6 +746,10 @@ svg-icon.svg-icon-32 {
         .MLK__shift {
             display: none;
         }
+
+        .MLK__keycap>.ML__latex {
+            font-size: 13px;
+        }
     }
 }
 
@@ -753,6 +757,10 @@ svg-icon.svg-icon-32 {
     .ML__keyboard {
         .MLK__shift {
             display: none;
+        }
+
+        .MLK__keycap>.ML__latex {
+            font-size: 13px;
         }
     }
 }
