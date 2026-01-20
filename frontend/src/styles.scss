@@ -774,5 +774,10 @@ svg-icon.svg-icon-32 {
 
     .MLK__keycap {
         background: #f0f0f0 !important;
+        cursor: pointer;
+    }
+
+    .MLK__keycap:hover {
+        background: #f5f5f7 !important;
     }
 }
