@@ -50,7 +50,6 @@ import {
     NFT,
     SchemaTree,
     Relationships as IRelationships,
-    IPFS_CID_PATTERN,
     Statistic,
     StatisticDetails,
     Label,
@@ -829,7 +828,7 @@ export class EntityService {
 
             const tags = await em.find(Message, {
                 type: MessageType.TAG,
-                "options.entity": TagType.Policy,
+                'options.entity': TagType.Policy,
                 topicId: item.topicId,
             } as any);
 
@@ -1108,7 +1107,7 @@ export class EntityService {
 
             const tags = await em.find(Message, {
                 type: MessageType.TAG,
-                "options.entity": TagType.Schema,
+                'options.entity': TagType.Schema,
                 topicId: item.topicId,
             } as any);
 
@@ -1273,7 +1272,7 @@ export class EntityService {
                     topicId,
                 } as any, {
                     ...options,
-                    fields: ["options"],
+                    fields: ['options'],
                 });
 
                 filters.tokenId = {
@@ -1973,10 +1972,10 @@ export class EntityService {
             const filters = parsePageFilters(msg);
             filters.type = MessageType.VC_DOCUMENT;
             filters.$or = [
-                { "options.initId": { $exists: false } },
-                { "options.initId": null },
-                { "options.initId": undefined },
-                { "options.initId": "" },
+                { 'options.initId': { $exists: false } },
+                { 'options.initId': null },
+                { 'options.initId': undefined },
+                { 'options.initId': '' },
             ];
             const em = DataBaseHelper.getEntityManager();
             const [rows, count] = (await em.findAndCount(
@@ -2022,7 +2021,7 @@ export class EntityService {
                 type: MessageType.VC_DOCUMENT,
                 $or: [
                     { consensusTimestamp: messageId },
-                    { "options.initId": messageId }
+                    { 'options.initId': messageId }
                 ]
             } as any, {
                 orderBy: {

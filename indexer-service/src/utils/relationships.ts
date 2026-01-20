@@ -41,9 +41,9 @@ class RelationshipItem {
         this.ids = new Set<string>();
         this.ids.add(this.id);
         this._id = this.id;
-        this._tagsCount = tagsCount || 0;
         this._setCategory();
         this._setName(item);
+        this._setTagsCount(tagsCount);
     }
 
     private _setName(item: Message) {
@@ -72,6 +72,10 @@ class RelationshipItem {
         this._category = categories.findIndex(
             (item) => this.item.type === item
         );
+    }
+
+    private _setTagsCount(tagsCount: number) {
+        this._tagsCount = tagsCount || 0;
     }
 
     public setHistory(items: Message[]) {
@@ -179,7 +183,7 @@ export class Relationships {
             case MessageType.INSTANCE_POLICY: {
                 tagsCount = await this.em.count(Message, {
                     type: MessageType.TAG,
-                    "options.entity": TagType.Policy,
+                    'options.entity': TagType.Policy,
                     topicId: item.topicId,
                 } as any);
                 await this.findRelationships(
@@ -191,7 +195,7 @@ export class Relationships {
             case MessageType.SCHEMA: {
                 tagsCount = await this.em.count(Message, {
                     type: MessageType.TAG,
-                    "options.entity": TagType.Schema,
+                    'options.entity': TagType.Schema,
                     topicId: item.topicId,
                 } as any);
                 if (item.analytics?.policyIds) {
@@ -207,7 +211,7 @@ export class Relationships {
             case MessageType.TOKEN: {
                 tagsCount = await this.em.count(Message, {
                     type: MessageType.TAG,
-                    "options.entity": TagType.Token,
+                    'options.entity': TagType.Token,
                     topicId: item.topicId,
                 } as any);
                 break;
@@ -215,7 +219,7 @@ export class Relationships {
             case MessageType.MODULE: {
                 tagsCount = await this.em.count(Message, {
                     type: MessageType.TAG,
-                    "options.entity": TagType.Module,
+                    'options.entity': TagType.Module,
                     topicId: item.topicId,
                 } as any);
                 break;
@@ -223,7 +227,7 @@ export class Relationships {
             case MessageType.VC_DOCUMENT: {
                 tagsCount = await this.em.count(Message, {
                     type: MessageType.TAG,
-                    "options.entity": TagType.PolicyDocument,
+                    'options.entity': TagType.PolicyDocument,
                     topicId: item.topicId,
                 } as any);
                 if (item.options?.relationships) {
@@ -254,7 +258,7 @@ export class Relationships {
             case MessageType.VP_DOCUMENT: {
                 tagsCount = await this.em.count(Message, {
                     type: MessageType.TAG,
-                    "options.entity": TagType.PolicyDocument,
+                    'options.entity': TagType.PolicyDocument,
                     topicId: item.topicId,
                 } as any);
                 if (item.options?.relationships) {
@@ -276,7 +280,7 @@ export class Relationships {
                 for (const policy of policyMessages) {
                     const policyTagsCount = await this.em.count(Message, {
                         type: MessageType.TAG,
-                        "options.entity": TagType.Policy,
+                        'options.entity': TagType.Policy,
                         topicId: policy.topicId,
                     } as any);
                     this.messages.set(policy.consensusTimestamp, new RelationshipItem(policy.consensusTimestamp, policy, policyTagsCount));
@@ -290,7 +294,7 @@ export class Relationships {
             case MessageType.CONTRACT: {
                 tagsCount = await this.em.count(Message, {
                     type: MessageType.TAG,
-                    "options.entity": TagType.Contract,
+                    'options.entity': TagType.Contract,
                     topicId: item.topicId,
                 } as any);
                 break;
@@ -298,7 +302,7 @@ export class Relationships {
             case MessageType.TOOL: {
                 tagsCount = await this.em.count(Message, {
                     type: MessageType.TAG,
-                    "options.entity": TagType.Tool,
+                    'options.entity': TagType.Tool,
                     topicId: item.topicId,
                 } as any);
                 break;

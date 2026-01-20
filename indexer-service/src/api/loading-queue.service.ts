@@ -245,13 +245,13 @@ export class LoadingQueueService {
                 AnalyticsTask.onAddEvent(priorityTimestamp);
 
                 await em.nativeUpdate(PriorityQueue, {
-                    priorityTimestamp: priorityTimestamp,
+                    priorityTimestamp,
                 }, {
                     priorityStatus: PriorityStatus.ANALYTICS
                 });
             } else {
                 await em.nativeUpdate(PriorityQueue, {
-                    priorityTimestamp: priorityTimestamp,
+                    priorityTimestamp,
                 }, {
                     priorityStatus: status
                 });
@@ -282,7 +282,7 @@ export class LoadingQueueService {
 
                 if (isFinished) {
                     await em.nativeUpdate(PriorityQueue, {
-                        priorityTimestamp: priorityTimestamp,
+                        priorityTimestamp,
                     }, {
                         priorityStatus: PriorityStatus.ANALYTICS
                     });
@@ -290,13 +290,13 @@ export class LoadingQueueService {
                     if ((Date.now() - priorityQueueItem.priorityTimestamp) > 24 * 60 * 60 * 1000) {
                         await this.addEntity(priorityQueueItem.entityId, priorityTimestamp);
                         await em.nativeUpdate(PriorityQueue, {
-                            priorityTimestamp: priorityTimestamp,
+                            priorityTimestamp,
                         }, {
                             priorityStatus: PriorityStatus.SCHEDULED
                         });
                     } else {
                         await em.nativeUpdate(PriorityQueue, {
-                            priorityTimestamp: priorityTimestamp,
+                            priorityTimestamp,
                         }, {
                             priorityStatus: status
                         });
@@ -312,7 +312,7 @@ export class LoadingQueueService {
         const em = DataBaseHelper.getEntityManager();
 
         const topicResult = await em.nativeUpdate(TopicCache, {
-            topicId: topicId,
+            topicId,
             priorityTimestamp: { $ne: priorityTimestamp }
         },
             {
@@ -324,7 +324,7 @@ export class LoadingQueueService {
         );
 
         const messageResult = await em.nativeUpdate(MessageCache, {
-            topicId: topicId,
+            topicId,
             priorityTimestamp: { $ne: priorityTimestamp }
         },
             {
@@ -353,7 +353,7 @@ export class LoadingQueueService {
             }
         );
 
-        return result != 0;
+        return result !== 0;
     }
 
     private async addPolicy(policyId: string, priorityTimestamp: number = Date.now()) {
@@ -420,14 +420,14 @@ export class LoadingQueueService {
         });
 
         const topicResult = await em.nativeUpdate(TopicCache, { topicId: { $in: Array.from(topicIds) }, priorityTimestamp: { $ne: priorityTimestamp } }, {
-            priorityDate: priorityDate,
+            priorityDate,
             priorityStatus: PriorityStatus.SCHEDULED,
             priorityStatusDate: priorityDate,
             priorityTimestamp
         });
 
         const tokenResult = await em.nativeUpdate(TokenCache, { tokenId: { $in: Array.from(tokenIds) }, priorityTimestamp: { $ne: priorityTimestamp } }, {
-            priorityDate: priorityDate,
+            priorityDate,
             priorityStatus: PriorityStatus.SCHEDULED,
             priorityStatusDate: priorityDate,
             priorityTimestamp
@@ -470,12 +470,12 @@ export class LoadingQueueService {
 
     private async trySetPriorityFromHedera(entityId: string, priorityTimestamp: number, parentIds: Set<string> = new Set<string>(), depth: number = 0) {
         if (depth >= 10) {
-            console.log("Recursion limit reached: ", depth);
+            console.log('Recursion limit reached: ', depth);
             return false;
         }
 
         if (parentIds.has(entityId)) {
-            console.log("Recursion already touched: ", entityId);
+            console.log('Recursion already touched: ', entityId);
             return false;
         }
 
@@ -497,7 +497,7 @@ export class LoadingQueueService {
                 for (const data of topicInfo.messages) {
                     const message = this.parseMessage(data);
 
-                    if (message && message.type == 'Topic' && message.parentId) {
+                    if (message && message.type === 'Topic' && message.parentId) {
                         const cacheResult = await this.addEntity(message.parentId, priorityTimestamp);
 
                         if (cacheResult) {
