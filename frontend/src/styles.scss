@@ -774,6 +774,7 @@ svg-icon.svg-icon-32 {
 
     .MLK__keycap {
         background: #f0f0f0 !important;
+        color: #000 !important;
         cursor: pointer;
     }
 
@@ -782,10 +783,21 @@ svg-icon.svg-icon-32 {
     }
 
     .MLK__toolbar>div>div {
-        color: #2c2e2f;
+        color: #2c2e2f !important;
     }
 
     .MLK__toolbar>div>div.selected {
-        color: #4169e2;
+        color: #4169e2 !important;
+    }
+
+    .MLK__rows>.MLK__row .shift,
+    .MLK__rows>.MLK__row .action {
+        color: #060707 !important;
+        background: #a0a9b8 !important;
+    }
+
+    .MLK__rows>.MLK__row .shift:hover,
+    .MLK__rows>.MLK__row .action:hover {
+        background: #7d8795 !important;
     }
 }
