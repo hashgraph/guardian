@@ -1933,7 +1933,7 @@ export class SchemaApi {
                     level: 3
                 }
             });
-            res.header('Content-disposition', `attachment; filename=${name}`);
+            res.header('Content-disposition', `attachment; filename=${name.replace(/[/\\?%*:|"<>,.\s]/g, '_')}`);
             res.header('Content-type', 'application/zip');
             return res.send(arcStream);
         } catch (error) {
@@ -2426,7 +2426,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file: any = await guardians.exportSchemasXlsx(owner, [schemaId]);
             const schema: any = await guardians.getSchemaById(user, schemaId);
-            const filename = (schema.name || '').replace(/[/\\?%*:|"<>,.]/g, '_');
+            const filename = (schema.name || '').replace(/[/\\?%*:|"<>,.\s]/g, '_');
             res.header('Content-disposition', `attachment; filename=${filename}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);

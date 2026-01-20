@@ -397,7 +397,7 @@ export class ArtifactApi {
             res.header('X-Content-Type-Options', 'nosniff');
             res.header(
                 'Content-Disposition',
-                `attachment; filename="${(filename || fileId).replace(/"/g, '')}"`
+                `attachment; filename="${(filename || fileId).replace(/[/\\?%*:|"<>,.\s]/g, '_')}"`
             );
 
             return res.send(Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer));
