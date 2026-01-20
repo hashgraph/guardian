@@ -728,3 +728,39 @@ svg-icon.svg-icon-32 {
         }
     }
 }
+
+@container (max-width: 768px) {
+    .MLK__rows {
+        .MLK__shift {
+            display: none;
+        }
+
+        .MLK__keycap>.ML__latex {
+            font-size: 13px;
+        }
+    }
+}
+
+@media (max-width: 750px) {
+    .ML__keyboard {
+        .MLK__shift {
+            display: none;
+        }
+    }
+}
+
+@media (max-height: 770px) {
+    .ML__keyboard {
+        .MLK__shift {
+            display: none;
+        }
+    }
+}
+
+.MLK__backdrop {
+    background: #cacfd7 !important;
+
+    .MLK__keycap>.ML__latex {
+        color: #000 !important;
+    }
+}

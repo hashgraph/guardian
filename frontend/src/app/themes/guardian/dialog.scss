@@ -1,5 +1,6 @@
 .guardian-dialog {
     border-radius: 16px;
+    max-height: 95%;
 
     .p-dialog-content {
         border-top-left-radius: 16px !important;
@@ -137,6 +138,22 @@
     .dialog-body {
         min-height: 100px;
         padding-bottom: 32px;
+    }
+}
+
+@media (max-height: 1000px) {
+    .guardian-dialog {
+        .dialog-body {
+            max-height: calc(100vh - 250px) !important;
+        }
+    }
+}
+
+@media (max-height: 900px) {
+    .guardian-dialog {
+        .dialog-body {
+            max-height: calc(100vh - 200px) !important;
+        }
     }
 }
 
