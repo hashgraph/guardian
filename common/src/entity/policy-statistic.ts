@@ -1,6 +1,8 @@
-import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
+import {AfterDelete, BeforeCreate, Entity, Property} from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
 import { EntityStatus, GenerateUUIDv4, IStatistic, IStatisticConfig } from '@guardian/interfaces';
+import {ObjectId} from "@mikro-orm/mongodb";
+import { DataBaseHelper } from '../helpers/index.js';
 
 /**
  * PolicyStatistic collection
@@ -101,11 +103,32 @@ export class PolicyStatistic extends BaseEntity implements IStatistic {
     method?: string;
 
     /**
+     * File id of the original Policy Statistic file (publish flow).
+     */
+    @Property({ nullable: true })
+    contentFileId?: ObjectId;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()
     setDefaults() {
         this.uuid = this.uuid || GenerateUUIDv4();
         this.status = this.status || EntityStatus.DRAFT;
+    }
+
+    /**
+     * Delete original Policy Statistic file (publish flow)
+     */
+    @AfterDelete()
+    deleteContentFile() {
+        if (this.contentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.contentFileId)
+                .catch((reason) => {
+                    console.error('AfterDelete: PolicyStatistic, contentFileId');
+                    console.error(reason);
+                });
+        }
     }
 }

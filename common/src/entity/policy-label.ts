@@ -118,7 +118,7 @@ export class PolicyLabel extends BaseEntity implements IPolicyLabel {
     }
 
     /**
-     * Delete original Policy Label file (publish flow)
+     * Delete original Policy Label zip (publish flow)
      */
     @AfterDelete()
     deleteContentFile() {
