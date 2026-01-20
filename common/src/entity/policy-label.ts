@@ -1,6 +1,8 @@
-import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
+import {AfterDelete, BeforeCreate, Entity, Property} from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
 import { EntityStatus, GenerateUUIDv4, IPolicyLabel, IPolicyLabelConfig } from '@guardian/interfaces';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { ObjectId } from "@mikro-orm/mongodb";
 
 /**
  * PolicyLabel collection
@@ -101,11 +103,32 @@ export class PolicyLabel extends BaseEntity implements IPolicyLabel {
     method?: string;
 
     /**
+     * File id of the original Policy Label zip (publish flow).
+     */
+    @Property({ nullable: true })
+    contentFileId?: ObjectId;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()
     setDefaults() {
         this.uuid = this.uuid || GenerateUUIDv4();
         this.status = this.status || EntityStatus.DRAFT;
+    }
+
+    /**
+     * Delete original Policy Label file (publish flow)
+     */
+    @AfterDelete()
+    deleteContentFile() {
+        if (this.contentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.contentFileId)
+                .catch((reason) => {
+                    console.error('AfterDelete: PolicyLabel, contentFileId');
+                    console.error(reason);
+                });
+        }
     }
 }
