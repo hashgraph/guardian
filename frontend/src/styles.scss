@@ -769,7 +769,7 @@ svg-icon.svg-icon-32 {
     background: #cacfd7 !important;
 
     .MLK__keycap>.ML__latex {
-        color: #000 !important;
+        color: #2c2e2f !important;
     }
 
     .MLK__keycap {
@@ -779,5 +779,13 @@ svg-icon.svg-icon-32 {
 
     .MLK__keycap:hover {
         background: #f5f5f7 !important;
+    }
+
+    .MLK__toolbar>div>div {
+        color: #2c2e2f;
+    }
+
+    .MLK__toolbar>div>div.selected {
+        color: #4169e2;
     }
 }

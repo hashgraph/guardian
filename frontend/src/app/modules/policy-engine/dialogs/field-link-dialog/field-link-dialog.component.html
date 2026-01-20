@@ -46,7 +46,7 @@
                 </div>
                 <div class="field-names" (click)="onSelectItem(item)">
                     <div class="field-name">{{item.name}}</div>
-                    <div class="field-id">{{item.id}}</div>
+                    <div *ngIf="viewId" class="field-id">{{item.id}}</div>
                 </div>
             </div>
         </div>

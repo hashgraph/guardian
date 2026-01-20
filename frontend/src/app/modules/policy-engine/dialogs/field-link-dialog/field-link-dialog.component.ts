@@ -14,6 +14,7 @@ export class FieldLinkDialog {
     public title: string;
     public search: string;
     public value: string | null;
+    public viewId: boolean;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -23,6 +24,7 @@ export class FieldLinkDialog {
         this.title = this.config.data?.title;
         this.value = this.config.data?.value;
         this.items = this.config.data?.view;
+        this.viewId = this.config.data?.viewId !== false;
     }
 
     ngOnInit() {

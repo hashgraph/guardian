@@ -610,6 +610,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             data: {
                 title: 'Select components',
                 view: this.createComponentView(),
+                viewId: false
             },
         });
         dialogRef.onClose.subscribe((result: any | null) => {
