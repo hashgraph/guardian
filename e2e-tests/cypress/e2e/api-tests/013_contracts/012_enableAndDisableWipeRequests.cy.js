@@ -1,3 +1,4 @@
+
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Checks from "../../../support/checkingMethods";
@@ -11,6 +12,66 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	let contractIdW, contractIdR, tokenId, policyId, hederaId, contractUuidR, contractUuidW, poolId, wipeRequestId;
 	let waitForApproveApplicationBlockId, deviceGridBlockId, issueRequestGridBlockId;
 
+	const toggleWipeRequests = ({
+		authorization,
+		contractId,
+		action,                  // API.Disable | API.Enable
+		timeout = 180000,
+		failOnStatusCode = true,
+	}) => cy.request({
+		method: METHOD.POST,
+		url: `${API.ApiServer}${API.WipeContract}${contractId}/${API.Requests}${action}`,
+		headers: authorization ? { authorization } : {},
+		timeout,
+		failOnStatusCode,
+	});
+
+	const postPoolContract = ({
+		authorization,
+		contractId,
+		body,
+		failOnStatusCode = true,
+	}) => cy.request({
+		method: METHOD.POST,
+		url: `${API.ApiServer}${API.RetireContract}${contractId}/${API.PoolContract}`,
+		headers: authorization ? { authorization } : {},
+		body,
+		failOnStatusCode,
+	});
+
+	const getWipeRequests = ({
+		authorization,
+		contractId,
+		failOnStatusCode = true,
+	}) => cy.request({
+		method: METHOD.GET,
+		url: `${API.ApiServer}${API.WipeRequests}`,
+		headers: authorization ? { authorization } : {},
+		qs: contractId ? { contractId } : {},
+		failOnStatusCode,
+	});
+
+	const deleteRetirePool = ({
+		authorization,
+		retirePoolId,
+		failOnStatusCode = true,
+	}) => cy.request({
+		method: METHOD.DELETE,
+		url: `${API.ApiServer}${API.RetirePools}${retirePoolId}`,
+		headers: authorization ? { authorization } : {},
+		failOnStatusCode,
+	});
+
+	const approveWipeRequest = ({
+		authorization,
+		requestId,
+		failOnStatusCode = true,
+	}) => cy.request({
+		method: METHOD.POST,
+		url: `${API.ApiServer}${API.WipeRequests}${requestId}/${API.Approve}`,
+		headers: authorization ? { authorization } : {},
+		failOnStatusCode,
+	});
 
 	before("Get contracts, policy and register new user", () => {
 		//Create retire contract and save id
@@ -444,23 +505,21 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
 	it("Disable wipe contract requests", () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
-			cy.request({
-				method: METHOD.POST,
-				url: API.ApiServer + API.WipeContract + contractIdW + "/" + API.Requests + API.Disable,
-				headers: {
-					authorization,
-				},
+			// POST /wipe-contract/{id}/requests/disable
+			toggleWipeRequests({
+				authorization,
+				contractId: contractIdW,
+				action: API.Disable,
 				timeout: 180000,
+				failOnStatusCode: true,
 			}).then((response) => {
 				expect(response.status).eql(STATUS_CODE.OK);
 			})
 
-			cy.request({
-				method: METHOD.POST,
-				url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
-				headers: {
-					authorization,
-				},
+			// POST /retire-contract/{id}/pool-contract
+			postPoolContract({
+				authorization,
+				contractId: contractIdR,
 				body: {
 					tokens: [
 						{
@@ -469,22 +528,19 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 						}
 					],
 					immediately: false
-				}
+				},
+				failOnStatusCode: true,
 			}).then((response) => {
 				expect(response.status).eql(STATUS_CODE.OK);
 			})
 
 			cy.wait(120000)
 
-			cy.request({
-				method: METHOD.GET,
-				url: API.ApiServer + API.WipeRequests,
-				headers: {
-					authorization,
-				},
-				qs: {
-					contractId: contractIdW
-				}
+			// GET /wipe-requests?contractId={contractIdW}
+			getWipeRequests({
+				authorization,
+				contractId: contractIdW,
+				failOnStatusCode: true,
 			}).then((response) => {
 				expect(response.status).eql(STATUS_CODE.OK);
 				expect(response.body).eql([]);
@@ -493,9 +549,10 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	})
 
 	it("Disable wipe contract requests without auth token - Negative", () => {
-		cy.request({
-			method: METHOD.POST,
-			url: API.ApiServer + API.WipeContract + contractIdW + "/" + API.Requests + API.Disable,
+		toggleWipeRequests({
+			authorization: undefined,
+			contractId: contractIdW,
+			action: API.Disable,
 			failOnStatusCode: false,
 		}).then((response) => {
 			expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -503,12 +560,10 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	});
 
 	it("Disable wipe contract requests with invalid auth token - Negative", () => {
-		cy.request({
-			method: METHOD.POST,
-			url: API.ApiServer + API.WipeContract + contractIdW + "/" + API.Requests + API.Disable,
-			headers: {
-				authorization: "Bearer wqe",
-			},
+		toggleWipeRequests({
+			authorization: "Bearer wqe",
+			contractId: contractIdW,
+			action: API.Disable,
 			failOnStatusCode: false,
 		}).then((response) => {
 			expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -516,12 +571,10 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	});
 
 	it("Disable wipe contract requests with empty auth token - Negative", () => {
-		cy.request({
-			method: METHOD.POST,
-			url: API.ApiServer + API.WipeContract + contractIdW + "/" + API.Requests + API.Disable,
-			headers: {
-				authorization: "",
-			},
+		toggleWipeRequests({
+			authorization: "",
+			contractId: contractIdW,
+			action: API.Disable,
 			failOnStatusCode: false,
 		}).then((response) => {
 			expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -543,9 +596,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				expect(response.status).eql(STATUS_CODE.OK);
 				poolId = response.body.at(0).id;
 			}).then(() => {
-				cy.request({
-					method: METHOD.DELETE,
-					url: API.ApiServer + API.RetirePools + poolId,
+				deleteRetirePool({
+					authorization: undefined,
+					retirePoolId: poolId,
 					failOnStatusCode: false,
 				}).then((response) => {
 					expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -555,12 +608,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	});
 
 	it("Unset retire contract pool with invalid auth token - Negative", () => {
-		cy.request({
-			method: METHOD.DELETE,
-			url: API.ApiServer + API.RetirePools + poolId,
-			headers: {
-				authorization: "Bearer wqe",
-			},
+		deleteRetirePool({
+			authorization: "Bearer wqe",
+			retirePoolId: poolId,
 			failOnStatusCode: false,
 		}).then((response) => {
 			expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -568,12 +618,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	});
 
 	it("Unset retire contract pool with empty auth token - Negative", () => {
-		cy.request({
-			method: METHOD.DELETE,
-			url: API.ApiServer + API.RetirePools + poolId,
-			headers: {
-				authorization: "",
-			},
+		deleteRetirePool({
+			authorization: "",
+			retirePoolId: poolId,
 			failOnStatusCode: false,
 		}).then((response) => {
 			expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -582,12 +629,10 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
 	it("Unset retire contract pool", () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
-			cy.request({
-				method: METHOD.DELETE,
-				url: API.ApiServer + API.RetirePools + poolId,
-				headers: {
-					authorization,
-				}
+			deleteRetirePool({
+				authorization,
+				retirePoolId: poolId,
+				failOnStatusCode: true,
 			}).then((response) => {
 				expect(response.status).eql(STATUS_CODE.OK);
 			})
@@ -596,22 +641,18 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
 	it("Enable wipe contract requests", () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
-			cy.request({
-				method: METHOD.POST,
-				url: API.ApiServer + API.WipeContract + contractIdW + "/" + API.Requests + API.Enable,
-				headers: {
-					authorization,
-				}
+			toggleWipeRequests({
+				authorization,
+				contractId: contractIdW,
+				action: API.Enable,
+				failOnStatusCode: true,
 			}).then((response) => {
 				expect(response.status).eql(STATUS_CODE.OK);
 			})
 
-			cy.request({
-				method: METHOD.POST,
-				url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
-				headers: {
-					authorization,
-				},
+			postPoolContract({
+				authorization,
+				contractId: contractIdR,
 				body: {
 					tokens: [
 						{
@@ -620,7 +661,8 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 						}
 					],
 					immediately: false
-				}
+				},
+				failOnStatusCode: true,
 			}).then((response) => {
 				expect(response.status).eql(STATUS_CODE.OK);
 			})
@@ -630,9 +672,10 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	})
 
 	it("Enable wipe contract requests without auth token - Negative", () => {
-		cy.request({
-			method: METHOD.POST,
-			url: API.ApiServer + API.WipeContract + contractIdW + "/" + API.Requests + API.Enable,
+		toggleWipeRequests({
+			authorization: undefined,
+			contractId: contractIdW,
+			action: API.Enable,
 			failOnStatusCode: false,
 		}).then((response) => {
 			expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -640,12 +683,10 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	});
 
 	it("Enable wipe contract requests with invalid auth token - Negative", () => {
-		cy.request({
-			method: METHOD.POST,
-			url: API.ApiServer + API.WipeContract + contractIdW + "/" + API.Requests + API.Enable,
-			headers: {
-				authorization: "Bearer wqe",
-			},
+		toggleWipeRequests({
+			authorization: "Bearer wqe",
+			contractId: contractIdW,
+			action: API.Enable,
 			failOnStatusCode: false,
 		}).then((response) => {
 			expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -653,12 +694,10 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	});
 
 	it("Enable wipe contract requests with empty auth token - Negative", () => {
-		cy.request({
-			method: METHOD.POST,
-			url: API.ApiServer + API.WipeContract + contractIdW + "/" + API.Requests + API.Enable,
-			headers: {
-				authorization: "",
-			},
+		toggleWipeRequests({
+			authorization: "",
+			contractId: contractIdW,
+			action: API.Enable,
 			failOnStatusCode: false,
 		}).then((response) => {
 			expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -666,9 +705,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	});
 
 	it("Approve wipe contract requests without auth token - Negative", () => {
-		cy.request({
-			method: METHOD.POST,
-			url: API.ApiServer + API.WipeRequests + wipeRequestId + "/" + API.Approve,
+		approveWipeRequest({
+			authorization: undefined,
+			requestId: wipeRequestId,
 			failOnStatusCode: false,
 		}).then((response) => {
 			expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -676,12 +715,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	});
 
 	it("Approve wipe contract requests with invalid auth token - Negative", () => {
-		cy.request({
-			method: METHOD.POST,
-			url: API.ApiServer + API.WipeRequests + wipeRequestId + "/" + API.Approve,
-			headers: {
-				authorization: "Bearer wqe",
-			},
+		approveWipeRequest({
+			authorization: "Bearer wqe",
+			requestId: wipeRequestId,
 			failOnStatusCode: false,
 		}).then((response) => {
 			expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -689,12 +725,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	});
 
 	it("Approve wipe contract requests with empty auth token - Negative", () => {
-		cy.request({
-			method: METHOD.POST,
-			url: API.ApiServer + API.WipeRequests + wipeRequestId + "/" + API.Approve,
-			headers: {
-				authorization: "",
-			},
+		approveWipeRequest({
+			authorization: "",
+			requestId: wipeRequestId,
 			failOnStatusCode: false,
 		}).then((response) => {
 			expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -703,24 +736,18 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
 	it("Approve wipe contract requests", () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
-			cy.request({
-				method: METHOD.GET,
-				url: API.ApiServer + API.WipeRequests,
-				headers: {
-					authorization,
-				},
-				qs: {
-					contractId: contractUuidW
-				}
+			getWipeRequests({
+				authorization,
+				contractId: contractUuidW,
+				failOnStatusCode: true,
 			}).then((response) => {
 				expect(response.status).eql(STATUS_CODE.OK);
 				wipeRequestId = response.body.at(0).id;
-				cy.request({
-					method: METHOD.POST,
-					url: API.ApiServer + API.WipeRequests + wipeRequestId + "/" + API.Approve,
-					headers: {
-						authorization,
-					}
+
+				approveWipeRequest({
+					authorization,
+					requestId: wipeRequestId,
+					failOnStatusCode: true,
 				}).then((response) => {
 					expect(response.status).eql(STATUS_CODE.OK);
 				});

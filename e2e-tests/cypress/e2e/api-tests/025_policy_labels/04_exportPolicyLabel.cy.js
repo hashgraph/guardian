@@ -4,80 +4,68 @@ import * as Authorization from "../../../support/authorization";
 
 context("Export policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
     const UserUsername = Cypress.env('User');
-
     let policyLabel;
 
-    before("Get policy label", () => {
-        Authorization.getAccessToken(UserUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.PolicyLabels,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                policyLabel = response.body.at(0);
-            })
+    const getPolicyLabels = (headers = {}) =>
+        cy.request({
+            method: METHOD.GET,
+            url: `${API.ApiServer}${API.PolicyLabels}`,
+            headers,
+            failOnStatusCode: false,
         });
-    })
+
+    const exportPolicyLabel = (labelId, headers = {}) =>
+        cy.request({
+            method: METHOD.GET,
+            url: `${API.ApiServer}${API.PolicyLabels}${labelId}/${API.ExportFile}`,
+            encoding: null,
+            headers,
+            failOnStatusCode: false,
+        });
+
+    before("Get policy label", () => {
+        Authorization.getAccessToken(UserUsername).then((auth) => {
+            getPolicyLabels({ authorization: auth }).then(({ body, status }) => {
+                expect(status).to.eq(STATUS_CODE.OK);
+                expect(body).to.be.an("array").and.not.be.empty;
+
+                // Pick the first label (or adjust selection logic if needed)
+                policyLabel = body.at(0);
+                expect(policyLabel).to.have.property("id");
+            });
+        });
+    });
 
     it("Export policy label", () => {
-        Authorization.getAccessToken(UserUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.ExportFile,
-                encoding: null,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).to.not.be.oneOf([null, ""]);
+        Authorization.getAccessToken(UserUsername).then((auth) => {
+            exportPolicyLabel(policyLabel.id, { authorization: auth }).then(({ body, status }) => {
+                expect(status).to.eq(STATUS_CODE.OK);
+                expect(body).to.not.be.oneOf([null, ""]);
+
                 cy.writeFile(
                     "cypress/fixtures/exportedLabel.label",
-                    Cypress.Blob.arrayBufferToBinaryString(response.body),
+                    Cypress.Blob.arrayBufferToBinaryString(body),
                     "binary"
                 );
             });
-        })
+        });
     });
 
     it("Export policy label without auth - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.ExportFile,
-            headers: {
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        });
+        exportPolicyLabel(policyLabel.id, {})
+            .its("status")
+            .should("eq", STATUS_CODE.UNAUTHORIZED);
     });
 
     it("Export policy label with incorrect auth - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.ExportFile,
-            headers: {
-                authorization: "bearer 11111111111111111111@#$",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        });
+        exportPolicyLabel(policyLabel.id, { authorization: "bearer invalid_token_123" })
+            .its("status")
+            .should("eq", STATUS_CODE.UNAUTHORIZED);
     });
 
     it("Export policy label with empty auth - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.ExportFile,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        });
+        exportPolicyLabel(policyLabel.id, { authorization: "" })
+            .its("status")
+            .should("eq", STATUS_CODE.UNAUTHORIZED);
     });
 });
