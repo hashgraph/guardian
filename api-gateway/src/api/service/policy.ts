@@ -3,7 +3,7 @@ import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson } from '#helpers';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version, Patch } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version, Patch, DefaultValuePipe, ParseBoolPipe } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 import {
     BlockDTO,
@@ -2107,7 +2107,7 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('uuid') uuid: string,
-        @Query('history') history: boolean,
+        @Query('history', new DefaultValuePipe(false), ParseBoolPipe) history: boolean,
         @Body() body: any,
         @Req() req
     ): Promise<any> {
@@ -2247,7 +2247,7 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('tagName') tagName: string,
-        @Query('history') history: boolean,
+        @Query('history', new DefaultValuePipe(false), ParseBoolPipe) history: boolean,
         @Body() body: any,
         @Req() req
     ): Promise<any> {

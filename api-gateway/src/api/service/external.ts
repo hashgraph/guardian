@@ -1,7 +1,7 @@
 import { InternalException, PolicyEngine } from '#helpers';
 import { ExternalDocumentDTO, InternalServerErrorDTO, ResponseDTOWithSyncEvents } from '#middlewares';
 import { PinoLogger } from '@guardian/common';
-import { Body, Controller, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, HttpCode, HttpStatus, Param, ParseBoolPipe, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 @Controller('external')
@@ -111,7 +111,7 @@ export class ExternalApi {
     async receiveExternalDataCustomWithSyncEvents(
         @Param('policyId') policyId: string,
         @Param('blockTag') blockTag: string,
-        @Query('history') history: boolean,
+        @Query('history', new DefaultValuePipe(false), ParseBoolPipe) history: boolean,
         @Body() document: ExternalDocumentDTO
     ): Promise<any> {
         try {
@@ -152,7 +152,7 @@ export class ExternalApi {
     @ApiExtraModels(ExternalDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async receiveExternalDataWithSyncEvents(
-        @Query('history') history: boolean,
+        @Query('history', new DefaultValuePipe(false), ParseBoolPipe) history: boolean,
         @Body() document: ExternalDocumentDTO
     ): Promise<any> {
         try {
