@@ -6,12 +6,13 @@ context("Get accounts", { tags: ['accounts', 'firstPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
+    const accountsUrl = API.ApiServer + API.Accounts;
 
     it("Get list of users", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Accounts,
+                url: accountsUrl,
                 headers: {
                     authorization,
                 },

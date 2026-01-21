@@ -82,7 +82,7 @@ context("Get policy label relationships", { tags: ['policy_labels', 'firstPool',
                 expect(resPolicy.owner).to.eq(policy.owner);
                 expect(resPolicy.status).to.eq(policy.status);
                 expect(resPolicy.topicId).to.eq(policy.topicId);
-                expect(resPolicy.policyRoles).to.eq(policy.userRoles);
+                expect(resPolicy.policyRoles).to.eql(policy.userRoles);
                 expect(resPolicy.uuid).to.eq(policy.uuid);
                 expect(resPolicy.version).to.eq(policy.version);
             });
