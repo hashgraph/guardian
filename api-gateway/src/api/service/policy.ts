@@ -30,6 +30,7 @@ import {
     ServiceUnavailableErrorDTO,
     TaskDTO
 } from '#middlewares';
+import { FilenameSanitizer } from 'helpers/filename-sanitizer';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
     const options: any = {};
@@ -1611,7 +1612,7 @@ export class PolicyApi {
             const downloadResult = await engineService.downloadPolicyData(policyId, owner);
             res.header(
                 'Content-Disposition',
-                `attachment; filename=${policy.name.replace(/[/\\?%*:|"<>,.\s]/g, '_')}.data`
+                `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}.data`
             );
             res.header('Content-Type', 'application/policy-data');
             return res.send(downloadResult);
@@ -1712,7 +1713,7 @@ export class PolicyApi {
             const downloadResult = await engineService.downloadVirtualKeys(policyId, owner);
             res.header(
                 'Content-Disposition',
-                `attachment; filename=${policy.name.replace(/[/\\?%*:|"<>,.\s]/g, '_')}.vk`
+                `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}.vk`
             );
             res.header('Content-Type', 'application/virtual-keys');
             return res.send(downloadResult);
@@ -2358,7 +2359,7 @@ export class PolicyApi {
             const owner = new EntityOwner(user);
             const policy = await engineService.accessPolicy(policyId, owner, 'read');
             const policyFile: any = await engineService.exportFile(policyId, owner);
-            res.header('Content-disposition', `attachment; filename=${policy.name.replace(/[/\\?%*:|"<>,.\s]/g, '_')}`);
+            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}`);
             res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
@@ -2449,7 +2450,7 @@ export class PolicyApi {
             const owner = new EntityOwner(user);
             const policy = await engineService.accessPolicy(policyId, owner, 'read');
             const policyFile: any = await engineService.exportXlsx(policyId, owner);
-            res.header('Content-disposition', `attachment; filename=${policy.name.replace(/[/\\?%*:|"<>,.\s]/g, '_')}`);
+            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}`);
             res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {

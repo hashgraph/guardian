@@ -206,7 +206,7 @@ export class AnalyticsApi {
                     level: 3
                 }
             });
-            res.setHeader('Content-disposition', `attachment; filename=${name.replace(/[/\\?%*:|"<>,.\s]/g, '_')}`);
+            res.setHeader('Content-disposition', `attachment; filename=${name}`);
             res.setHeader('Content-type', 'application/zip');
             arcStream.pipe(res);
             return res;

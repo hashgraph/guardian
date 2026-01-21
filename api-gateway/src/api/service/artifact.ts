@@ -22,6 +22,7 @@ import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, Entit
 import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
 import { ARTIFACT_REQUIRED_PROPS, PREFIXES } from '#constants'
 import { FastifyReply } from 'fastify';
+import { FilenameSanitizer } from 'helpers/filename-sanitizer';
 
 @Controller('artifacts')
 @ApiTags('artifacts')
@@ -397,7 +398,7 @@ export class ArtifactApi {
             res.header('X-Content-Type-Options', 'nosniff');
             res.header(
                 'Content-Disposition',
-                `attachment; filename="${(filename || fileId).replace(/[/\\?%*:|"<>,.\s]/g, '_')}"`
+                `attachment; filename="${FilenameSanitizer.sanitize(filename || fileId)}"`
             );
 
             return res.send(Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer));

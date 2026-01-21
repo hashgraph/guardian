@@ -8,6 +8,7 @@ import { Examples, ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, pa
 import { CACHE, PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
 import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache } from '#helpers';
 import process from 'process';
+import { FilenameSanitizer } from 'helpers/filename-sanitizer';
 
 @Controller('schema')
 @ApiTags('schema')
@@ -1933,7 +1934,7 @@ export class SchemaApi {
                     level: 3
                 }
             });
-            res.header('Content-disposition', `attachment; filename=${name.replace(/[/\\?%*:|"<>,.\s]/g, '_')}`);
+            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(name)}`);
             res.header('Content-type', 'application/zip');
             return res.send(arcStream);
         } catch (error) {
@@ -2426,7 +2427,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file: any = await guardians.exportSchemasXlsx(owner, [schemaId]);
             const schema: any = await guardians.getSchemaById(user, schemaId);
-            const filename = (schema.name || '').replace(/[/\\?%*:|"<>,.\s]/g, '_');
+            const filename = FilenameSanitizer.sanitize(schema.name || '');
             res.header('Content-disposition', `attachment; filename=${filename}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
@@ -2647,7 +2648,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file = await guardians.getFileTemplate(owner, filename);
             const fileBuffer = Buffer.from(file, 'base64');
-            res.header('Content-disposition', `attachment; filename=` + filename);
+            res.header('Content-disposition', `attachment; filename=` + FilenameSanitizer.sanitize(filename));
             res.header('Content-type', 'application/zip');
 
             req.locals = fileBuffer
