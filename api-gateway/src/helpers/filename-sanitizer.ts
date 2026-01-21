@@ -7,11 +7,11 @@ export class FilenameSanitizer {
     private static readonly MULTIPLE_UNDERSCORES_REGEX = /_{2,}/g;
 
     public static sanitize(fileName: string): string {
-        return fileName.replace(this.DANGEROUS_CHARS_REGEX, '_')
-            .replace(this.CONTROL_REGEX, '_')
-            .replace(this.RESERVED_REGEX, '_')
-            .replace(this.WINDOWS_RESERVED_REGEX, '_')
-            .replace(this.WINDOWS_TRAILING_REGEX, '_')
-            .replace(this.MULTIPLE_UNDERSCORES_REGEX, '_');
+        return fileName.replace(FilenameSanitizer.DANGEROUS_CHARS_REGEX, '_')
+            .replace(FilenameSanitizer.CONTROL_REGEX, '_')
+            .replace(FilenameSanitizer.RESERVED_REGEX, '_')
+            .replace(FilenameSanitizer.WINDOWS_RESERVED_REGEX, '_')
+            .replace(FilenameSanitizer.WINDOWS_TRAILING_REGEX, '_')
+            .replace(FilenameSanitizer.MULTIPLE_UNDERSCORES_REGEX, '_');
     }
 }
