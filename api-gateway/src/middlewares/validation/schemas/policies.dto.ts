@@ -240,6 +240,14 @@ export class PolicyDTO {
     version?: string;
 
     @ApiProperty({
+        type: 'string',
+        required: false
+    })
+    @IsOptional()
+    @IsBoolean()
+    originalChanged?: boolean;
+
+    @ApiProperty({
         type: 'object',
         additionalProperties: true,
     })

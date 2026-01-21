@@ -58,5 +58,7 @@ BlockIcons[BlockType.Tool] = 'wrench';
 BlockIcons[BlockType.Module] = 'folder';
 BlockIcons[BlockType.HttpRequestUIAddon] = 'globe';
 BlockIcons[BlockType.TransformationUIAddon] = 'chart-bar';
+BlockIcons[BlockType.GlobalEventsReaderBlock] = 'cloud-download';
+BlockIcons[BlockType.GlobalEventsWriterBlock] = 'cloud-upload';
 
 export default BlockIcons;

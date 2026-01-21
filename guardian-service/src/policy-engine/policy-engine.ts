@@ -1343,8 +1343,14 @@ export class PolicyEngine extends NatsService {
                 }
             });
 
+            let currentHash;
+            if(model.originalHash) {
+                const policyComponents = await PolicyImportExport.loadPolicyComponents(model);
+                currentHash = PolicyImportExport.getPolicyHash(policyComponents);
+            }
+
             const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
-            message.setDocument(model, buffer);
+            message.setDocument(model, buffer, currentHash);
             const result = await messageServer
                 .sendMessage(message, {
                     sendToIPFS: true,

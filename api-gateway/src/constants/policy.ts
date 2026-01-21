@@ -10,7 +10,8 @@ export const REQUIRED_PROPS = {
     OWNER: 'owner',
     MESSAGE_ID: 'messageId',
     DISCONTINUED_DATE: 'discontinuedDate',
-    AVAILABILITY: 'availability'
+    AVAILABILITY: 'availability',
+    ORIGINAL_CHANGED: 'originalChanged'
 };
 
 export const UN_REQUIRED_PROPS = {

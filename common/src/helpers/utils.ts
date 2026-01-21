@@ -113,7 +113,26 @@ export function replaceAllEntities(
                 finder(child, name);
             }
         }
+
+        for (const key in o) {
+            if (!o.hasOwnProperty(key) || key === 'children') {
+                continue;
+            }
+
+            const v = o[key];
+
+            if (Array.isArray(v)) {
+                for (const item of v) {
+                    if (item && typeof item === 'object') {
+                        finder(item, name);
+                    }
+                }
+            } else if (v && typeof v === 'object') {
+                finder(v, name);
+            }
+        }
     }
+
     for (const name of names) {
         finder(obj, name);
     }
