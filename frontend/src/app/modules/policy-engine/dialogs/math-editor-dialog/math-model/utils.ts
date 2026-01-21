@@ -108,7 +108,7 @@ export function createComputeEngine() {
                 if (e) {
                     const op1 = e.op1;
                     const op2 = e.op2;
-                    if (op1 && op2 && op2.type != 'nothing') {
+                    if (op1 && op2 && op2.type !== 'nothing') {
                         let start = op1.value;
                         let end = op2.value;
                         if (!start || start < 1 || isNaN(start) || !isFinite(start)) {

@@ -196,19 +196,20 @@ export class MathContext {
                     return value;
                 }
             }
+            // tslint:disable-next-line: variable-name
             const __parseValue = (value: any): any => {
                 if (value && value.type) {
                     if (value.type.kind === 'list') {
                         const iter = value.each();
-                        const result = [];
+                        const values = [];
                         if (iter) {
                             let next = iter.next();
                             while (next && !next.done) {
                                 const itemValue = __parseValue(next.value);
-                                result.push(itemValue);
+                                values.push(itemValue);
                                 next = iter.next();
                             }
-                            return result;
+                            return values;
                         } else {
                             return [];
                         }
