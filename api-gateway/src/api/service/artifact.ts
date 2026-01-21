@@ -18,11 +18,10 @@ import {
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey } from '#helpers';
+import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey, FilenameSanitizer } from '#helpers';
 import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
 import { ARTIFACT_REQUIRED_PROPS, PREFIXES } from '#constants'
 import { FastifyReply } from 'fastify';
-import { FilenameSanitizer } from 'helpers/filename-sanitizer';
 
 @Controller('artifacts')
 @ApiTags('artifacts')
