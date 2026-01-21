@@ -241,6 +241,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.tooltip.destroy();
     }
 
+    public onFullscreen() {
+        this.el.nativeElement.classList.toggle('fullscreen');
+        this.el.nativeElement.parentElement.parentElement.classList.toggle('fullscreen');
+    }
+
     public onSave(): void {
         if (this.group) {
             const error = this.group.validate();

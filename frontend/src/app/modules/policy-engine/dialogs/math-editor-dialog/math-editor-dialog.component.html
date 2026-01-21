@@ -3,6 +3,9 @@
         <div class="header-text">Editor</div>
         <div *ngIf="block" class="header-item">{{block?.tag}}</div>
     </div>
+    <div class="header-icon" (click)="onFullscreen()">
+        <svg-icon src="/assets/images/icons/fit-to-screen.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
     </div>

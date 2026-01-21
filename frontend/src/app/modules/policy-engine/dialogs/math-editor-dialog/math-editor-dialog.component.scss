@@ -9,6 +9,12 @@
     overflow: hidden;
 }
 
+:host.fullscreen {
+    .context {
+        height: calc(100vh - 166px) !important;
+    }
+}
+
 @media (max-height: 1000px) {
     .context {
         height: calc(100vh - 300px);
