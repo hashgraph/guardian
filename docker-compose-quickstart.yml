@@ -1,208 +1,212 @@
+# This file is linted and formatted using Docker Compose Linter (https://github.com/zavoloklom/docker-compose-linter):
+# npx dclint . --fix=true
+
 # Please note variables defined in the "environment" section will override the same variables defined in the "env_file"
 # See # https://docs.docker.com/compose/environment-variables/envvars-precedence/ for more details
 
 # YAML anchor that contains common configuration elements for our services
 x-service-template: &service-template
-    init: true
-    env_file:
-        - ./configs/.env.quickstart.guardian.system
-    environment:
-        - GUARDIAN_ENV=${GUARDIAN_ENV}
+  init: true
+  env_file:
+    - ./configs/.env.quickstart.guardian.system
+  environment:
+    GUARDIAN_ENV: ${GUARDIAN_ENV}
+
+name: guardian-quickstart
 
 services:
-    mongo:
-        image: mongo:6.0.26
-        #command: "--setParameter allowDiskUseByDefault=true"
-        # This command line options gets rid of mongodb messages in the logs, so you can see more clearly what's happening
-        command: "--setParameter allowDiskUseByDefault=true  --quiet --logpath /dev/null"
-        restart: always
-        expose:
-            - 27017
+  api-gateway:
+    image: gcr.io/hedera-registry/api-gateway-demo:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - auth-service
+      - cache
+      - guardian-service
+      - logger-service
+      - message-broker
+      - mongo
+    volumes:
+      - ./api-gateway/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '3002'
+      - '6555'
 
-    cache:
-        image: registry.redict.io/redict:7.3.6-alpine
-        restart: always
-        expose:
-            - 6379
+  auth-service:
+    image: gcr.io/hedera-registry/auth-service-demo:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - logger-service
+      - message-broker
+      - mongo
+    volumes:
+      - ./auth-service/tls:/usr/local/app/tls:ro
+      - ./auth-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
+      - '5005'
 
-    ipfs-node:
-        image: ipfs/kubo:v0.38.2
-        ports:
-            - "5001:5001"
-            - "4001:4001"
-            - "8080:8080"
-        volumes:
-            - ipfs_data:/data/ipfs:rw
-            - ipfs_export:/export:rw
+  cache:
+    image: registry.redict.io/redict:7.3.6-alpine
+    restart: always
+    expose:
+      - '6379'
+    init: true
 
-    message-broker:
-        image: nats:2.9.25
-        expose:
-            - 4222
-        ports:
-            - "8222:8222"
-        command: "-c /etc/nats/nats.conf --http_port 8222"
-        volumes:
-            - ./configs/nats.conf:/etc/nats/nats.conf
+  guardian-service:
+    image: gcr.io/hedera-registry/guardian-service:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - auth-service
+      - logger-service
+      - message-broker
+      - mongo
+      - policy-service
+      - worker-service
+    volumes:
+      - ./guardian-service/tls:/usr/local/app/tls:ro
+      - ./guardian-service/configs:/usr/local/app/configs:ro
+    environment:
+      OPERATOR_ID: ${OPERATOR_ID}
+      OPERATOR_KEY: ${OPERATOR_KEY}
+    <<: *service-template
+    expose:
+      - '6555'
+      - '5007'
 
-    notification-service:
-        <<: *service-template
-        image: gcr.io/hedera-registry/notification-service:${GUARDIAN_VERSION:-latest}
-        depends_on:
-            - message-broker
-        volumes:
-            - ./notification-service/configs:/usr/local/app/configs:ro
+  ipfs-node:
+    image: ipfs/kubo:v0.39.0
+    volumes:
+      - ipfs_data:/data/ipfs:rw
+      - ipfs_export:/export:rw
+    environment:
+      IPFS_TELEMETRY: off # valid options: 'on' (default), 'off', 'auto' (https://github.com/ipfs/kubo/blob/master/docs/telemetry.md)
+    ports:
+      - '127.0.0.1:4001:4001'
+      - '127.0.0.1:5001:5001'
+      - '127.0.0.1:8080:8080'
+    init: true
 
-    logger-service:
-        <<: *service-template
-        image: gcr.io/hedera-registry/logger-service:${GUARDIAN_VERSION:-latest}
-        depends_on:
-            - message-broker
-        expose:
-            - 6555
-        volumes:
-            - ./logger-service/configs:/usr/local/app/configs:ro
+  logger-service:
+    image: gcr.io/hedera-registry/logger-service:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - message-broker
+    volumes:
+      - ./logger-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
 
-    queue-service:
-        <<: *service-template
-        image: gcr.io/hedera-registry/queue-service:${GUARDIAN_VERSION:-latest}
-        depends_on:
-            - mongo
-            - message-broker
-            - logger-service
-        expose:
-            - 6555
-        volumes:
-            - ./queue-service/configs:/usr/local/app/configs:ro
+  message-broker:
+    image: nats:2.9.25
+    volumes:
+      - ./configs/nats.conf:/etc/nats/nats.conf
+    ports:
+      - '127.0.0.1:8222:8222'
+    command: "-c /etc/nats/nats.conf --http_port 8222"
+    expose:
+      - '4222'
+    init: true
 
-    topic-listener-service:
-        <<: *service-template
-        image: gcr.io/hedera-registry/topic-listener-service:${GUARDIAN_VERSION:-latest}
-        depends_on:
-            - mongo
-            - message-broker
-            - queue-service
-        expose:
-            - 6555
-        volumes:
-            - ./topic-listener-service/configs:/usr/local/app/configs:ro
+  mongo:
+    image: mongo:6.0.26
+    # command: "--setParameter allowDiskUseByDefault=true"
+    command: "--setParameter allowDiskUseByDefault=true --quiet --logpath /dev/null" # use this command to reduce log noise
+    restart: always
+    expose:
+      - '27017'
+    init: true
 
-    worker-service:
-        <<: *service-template
-        image: gcr.io/hedera-registry/worker-service:${GUARDIAN_VERSION:-latest}
-        depends_on:
-            queue-service:
-                condition: service_started
-            ipfs-node:
-                condition: service_healthy
-            auth-service:
-                condition: service_started
-        expose:
-            - 6555
-        volumes:
-            - ./worker-service/tls:/usr/local/app/tls:ro
-            - ./worker-service/configs:/usr/local/app/configs:ro
-        deploy:
-            replicas: 1
-        environment:
-            - OPERATOR_ID=${OPERATOR_ID}
-            - OPERATOR_KEY=${OPERATOR_KEY}
-            - GUARDIAN_ENV=${GUARDIAN_ENV}
+  notification-service:
+    image: gcr.io/hedera-registry/notification-service:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - message-broker
+    volumes:
+      - ./notification-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
 
-    auth-service:
-        <<: *service-template
-        image: gcr.io/hedera-registry/auth-service-demo:${GUARDIAN_VERSION:-latest}
-        volumes:
-            - ./auth-service/tls:/usr/local/app/tls:ro
-            - ./auth-service/configs:/usr/local/app/configs:ro
-        depends_on:
-            - mongo
-            - message-broker
-            - logger-service
-        expose:
-            - 6555
-            - 5005
+  policy-service:
+    image: gcr.io/hedera-registry/policy-service:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - auth-service
+      - logger-service
+      - message-broker
+      - mongo
+    volumes:
+      - ./policy-service/tls:/usr/local/app/tls:ro
+      - ./policy-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '5006'
 
-    api-gateway:
-        <<: *service-template
-        image: gcr.io/hedera-registry/api-gateway-demo:${GUARDIAN_VERSION:-latest}
-        expose:
-            - 3002
-            - 6555
-        depends_on:
-            - mongo
-            - cache
-            - message-broker
-            - guardian-service
-            - auth-service
-            - logger-service
-        volumes:
-            - ./api-gateway/configs:/usr/local/app/configs:ro
+  queue-service:
+    image: gcr.io/hedera-registry/queue-service:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - logger-service
+      - message-broker
+      - mongo
+    volumes:
+      - ./queue-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
 
-    policy-service:
-        <<: *service-template
-        image: gcr.io/hedera-registry/policy-service:${GUARDIAN_VERSION:-latest}
-        depends_on:
-            - mongo
-            - message-broker
-            - auth-service
-            - logger-service
-        expose:
-            - 5006
-        volumes:
-            - ./policy-service/tls:/usr/local/app/tls:ro
-            - ./policy-service/configs:/usr/local/app/configs:ro
+  topic-listener-service:
+    image: gcr.io/hedera-registry/topic-listener-service:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - message-broker
+      - mongo
+      - queue-service
+    volumes:
+      - ./topic-listener-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
 
-    guardian-service:
-        <<: *service-template
-        image: gcr.io/hedera-registry/guardian-service:${GUARDIAN_VERSION:-latest}
-        volumes:
-            - ./guardian-service/tls:/usr/local/app/tls:ro
-            - ./guardian-service/configs:/usr/local/app/configs:ro
-        depends_on:
-            - mongo
-            - message-broker
-            - auth-service
-            - logger-service
-            - worker-service
-            - policy-service
-        expose:
-            - 6555
-            - 5007
-        environment:
-            - OPERATOR_ID=${OPERATOR_ID}
-            - OPERATOR_KEY=${OPERATOR_KEY}
-            - GUARDIAN_ENV=${GUARDIAN_ENV}
+  topic-viewer:
+    image: gcr.io/hedera-registry/topic-viewer:${GUARDIAN_VERSION:-latest}
+    expose:
+      - '3006'
+      - '5009'
+    init: true
 
-    topic-viewer:
-        image: gcr.io/hedera-registry/topic-viewer:${GUARDIAN_VERSION:-latest}
-        init: true
-        expose:
-            - 3006
-            - 5009
+  web-proxy:
+    image: gcr.io/hedera-registry/frontend-demo:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - api-gateway
+      - auth-service
+      - guardian-service
+    environment:
+      GATEWAY_CLIENT_MAX_BODY_SIZE: 1024m
+      GATEWAY_HOST: api-gateway
+      GATEWAY_PORT: 3002
+      MRV_SENDER_HOST: mrv-sender
+      MRV_SENDER_PORT: 3005
+      TOPIC_VIEWER_HOST: topic-viewer
+      TOPIC_VIEWER_PORT: 3006
+    ports:
+      - '127.0.0.1:3000:80'
+    init: true
 
-    web-proxy:
-        image: gcr.io/hedera-registry/frontend-demo:${GUARDIAN_VERSION:-latest}
-        init: true
-        environment:
-            GATEWAY_CLIENT_MAX_BODY_SIZE: 1024m
-            GATEWAY_HOST: api-gateway
-            GATEWAY_PORT: 3002
-            MRV_SENDER_HOST: mrv-sender
-            MRV_SENDER_PORT: 3005
-            TOPIC_VIEWER_HOST: topic-viewer
-            TOPIC_VIEWER_PORT: 3006
-        ports:
-            - "3000:80"
-        depends_on:
-            - guardian-service
-            - auth-service
-            - api-gateway
+  worker-service:
+    image: gcr.io/hedera-registry/worker-service:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      auth-service:
+        condition: service_started
+      ipfs-node:
+        condition: service_healthy
+      queue-service:
+        condition: service_started
+    volumes:
+      - ./worker-service/tls:/usr/local/app/tls:ro
+      - ./worker-service/configs:/usr/local/app/configs:ro
+    environment:
+      OPERATOR_ID: ${OPERATOR_ID}
+      OPERATOR_KEY: ${OPERATOR_KEY}
+    <<: *service-template
+    deploy:
+      replicas: 1
+    expose:
+      - '6555'
 
 volumes:
-    ipfs_data:
-    ipfs_export:
-
-networks:
-    monitoring:
-        driver: bridge
+  ipfs_data:
+  ipfs_export:
