@@ -107,6 +107,8 @@ export interface PolicyAnalytics {
      * Dynamic topics
      */
     dynamicTopics?: string[];
+
+    derivationsCount?: number;
 }
 
 /**

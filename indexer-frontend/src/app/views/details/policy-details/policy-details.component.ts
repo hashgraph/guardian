@@ -17,9 +17,10 @@ import {
 } from '@components/overview-form/overview-form.component';
 import { ActivityComponent } from '@components/activity/activity.component';
 import { InputTextareaModule } from 'primeng/inputtextarea';
-import { ColumnType } from '@components/table/table.component';
 import { createChart } from '../base-details/relationships-chart.config';
 import { EChartsOption } from 'echarts';
+import { CompareComponent } from '@views/compare/compare/compare.component';
+import { DerivationsComponent } from '@views/collections/derivations/derivations.component';
 
 @Component({
     selector: 'policy-details',
@@ -42,13 +43,15 @@ import { EChartsOption } from 'echarts';
         OverviewFormComponent,
         ActivityComponent,
         InputTextareaModule,
+        CompareComponent,
+        DerivationsComponent
     ],
 })
 export class PolicyDetailsComponent extends BaseDetailsComponent {
 
     public chartOption: EChartsOption = createChart();
 
-    tabs: any[] = ['overview', 'activity', 'relationships', 'raw'];
+    tabs: any[] = ['overview', 'activity', 'relationships', 'raw', 'origin', 'derivations'];
     overviewFields: OverviewFormField[] = [
         {
             label: 'details.policy.overview.topic_id',
@@ -93,6 +96,14 @@ export class PolicyDetailsComponent extends BaseDetailsComponent {
         router: Router
     ) {
         super(entitiesService, route, router);
+    }
+
+    get showOriginTab(): boolean {
+        return this.target && this.target?.options?.originalMessageId; 
+    }
+
+    get showDerivationsTab(): boolean {
+        return this.target && this.target?.analytics?.derivationsCount;
     }
 
     protected override loadData(): void {

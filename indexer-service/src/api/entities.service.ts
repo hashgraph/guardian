@@ -50,7 +50,6 @@ import {
     NFT,
     SchemaTree,
     Relationships as IRelationships,
-    IPFS_CID_PATTERN,
     Statistic,
     StatisticDetails,
     Label,
@@ -770,6 +769,15 @@ export class EntityService {
                 type: MessageType.INSTANCE_POLICY,
                 action: MessageAction.PublishPolicy,
             } as any)) as Policy;
+
+            const derivationsCount = await em.count(Message, {
+                'options.originalMessageId': messageId,
+                type: MessageType.INSTANCE_POLICY,
+                action: MessageAction.PublishPolicy,
+            } as any);
+
+            item.analytics.derivationsCount = derivationsCount;
+
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
@@ -1187,7 +1195,6 @@ export class EntityService {
         }
     }
 
-
     @MessagePattern(IndexerMessageAPI.GET_SCHEMAS_PACKAGE)
     async getSchemasPackage(
         @Payload() msg: { messageId: string }
@@ -1213,7 +1220,6 @@ export class EntityService {
                 type: MessageType.SCHEMA,
                 'options.packageMessageId': row.consensusTimestamp,
             } as any);
-
 
             const activity: any = {
                 schemas,
@@ -1258,7 +1264,7 @@ export class EntityService {
                     topicId,
                 } as any, {
                     ...options,
-                    fields: ["options"],
+                    fields: ['options'],
                 });
 
                 filters.tokenId = {
@@ -1958,10 +1964,10 @@ export class EntityService {
             const filters = parsePageFilters(msg);
             filters.type = MessageType.VC_DOCUMENT;
             filters.$or = [
-                { "options.initId": { $exists: false } },
-                { "options.initId": null },
-                { "options.initId": undefined },
-                { "options.initId": "" },
+                { 'options.initId': { $exists: false } },
+                { 'options.initId': null },
+                { 'options.initId': undefined },
+                { 'options.initId': '' },
             ];
             const em = DataBaseHelper.getEntityManager();
             const [rows, count] = (await em.findAndCount(
@@ -2375,7 +2381,7 @@ export class EntityService {
                 sr: message.analytics.issuer,
             }
 
-            var newRow = { ...row, analytics };
+            const newRow = { ...row, analytics };
 
             return new MessageResponse<NFTDetails>({
                 id: tokenId,
