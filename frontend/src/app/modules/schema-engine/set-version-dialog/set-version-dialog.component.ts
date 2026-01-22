@@ -23,6 +23,7 @@ export class SetVersionDialog {
         public config: DynamicDialogConfig
     ) {
         this.schema = config.data?.schema;
+        this.versionControl.setValue(this.schema?.version || this.schema?.sourceVersion || '1.0.0');
     }
 
     onNoClick(): void {
@@ -37,7 +38,7 @@ export class SetVersionDialog {
 
     get isPublishDisabled(): boolean {
         const isFormInvalid = !this.versionControl.valid;
-        const isVersionNotNewer = this.schema?.version && ModelHelper.versionCompare(this.schema.version, this.versionControl.value) >= 0;
+        const isVersionNotNewer = this.schema?.version && ModelHelper.versionCompare(this.schema.version, this.versionControl.value) > 0;
         return isFormInvalid || isVersionNotNewer;
     }
 }

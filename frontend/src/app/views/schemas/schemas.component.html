@@ -162,7 +162,7 @@
                     <tr *ngIf="!rowData.isParent || (rowData.isParent && rowData.name)" [ttRow]="rowNode" class="guardian-grid-row" [class.grey-row]="!rowData.isParent || (rowData.isParent && rowData.name)" [attr.schema-status]="rowData.status">
                         <ng-container *ngIf="rowData.isParent">
                             <td class="row-cell-text parent-row-cell" [attr.colspan]="type === 'policy' ? 8 : (type === 'tool' ? 4 : 3)">
-                                <a *ngIf="type === 'policy'" class="text-truncate"
+                                <a *ngIf="type === 'policy' && rowData.topicId !== ''" class="text-truncate"
                                    [queryParams]="{ policyId: policyIdByTopic[rowData.topicId] }"
                                    [routerLink]="['/policy-configuration']"
                                 >
@@ -173,7 +173,7 @@
                                    [routerLink]="'/tool-configuration'">
                                     {{ toolNameByTopic[rowData.topicId] }}
                                 </a>
-                                <span *ngIf="type === 'module'" class="text-truncate">
+                                <span *ngIf="type === 'module' || rowData.topicId === null" class="text-truncate">
                                     {{ rowData.name }}
                                 </span>
                             </td>
@@ -195,7 +195,7 @@
                                     <span class="text-truncate">{{ rowData.name || '–' }}</span>
                                 </td>
                                 <td class="row-cell-text">
-                                    <ng-container *ngIf="rowData.topicId === 'draft'; else topicExplorer">
+                                        <ng-container *ngIf="rowData.topicId === 'draft'; else topicExplorer">
                                         <span>Draft</span>
                                     </ng-container>
                                     <ng-template #topicExplorer>
@@ -203,8 +203,16 @@
                                         </hedera-explorer>
                                     </ng-template>
                                 </td>
-                                <td class="row-cell-text">
-                                    <span class="text-truncate">{{ rowData.version || rowData.sourceVersion }}</span>
+                                <td class="row-cell-text" [class.text-grey]="rowData.status === 'DRAFT'">
+                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                        <span>{{ rowData.version || rowData.sourceVersion }}</span>
+                                        <div *ngIf="rowData.status === 'DRAFT' && (rowData.version !== '' || rowData.sourceVersion !== '')" class="btn-info"
+                                             pTooltip="Expected version" tooltipStyleClass="guardian-tooltip"
+                                             tooltipPosition="top">
+                                            <svg-icon src="/assets/images/icons/info.svg"
+                                                      svgClass="color-grey-5"></svg-icon>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="row-cell-text">
                                     <span class="text-truncate">{{ rowData.entity }}</span>

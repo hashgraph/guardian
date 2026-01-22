@@ -929,7 +929,7 @@ export class SchemaHelper {
         }
         const index = previousVersion.lastIndexOf('.');
         const max = previousVersion.slice(0, index);
-        return max + '.' + (map[max] + 1);
+        return max + '.' + ((map[max] ?? -1) + 1);
     }
 
     /**

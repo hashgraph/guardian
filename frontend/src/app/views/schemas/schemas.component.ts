@@ -492,7 +492,7 @@ export class SchemaConfigComponent implements OnInit {
                 this.policyNameByTopic = {};
                 this.policyIdByTopic = {};
                 this.allPolicies = [{
-                    name: 'No binding',
+                    name: 'All Policies',
                     topicId: null
                 }];
                 for (const policy of policies) {
@@ -660,7 +660,7 @@ export class SchemaConfigComponent implements OnInit {
             let parentName = '';
             let parentId = '';
             if (this.type === SchemaType.Policy) {
-                parentName = this.policyNameByTopic[topicId] || '';
+                parentName = this.policyNameByTopic[topicId] || 'No Binding';
                 parentId = this.policyIdByTopic[topicId];
             } else if (this.type === SchemaType.Module) {
                 parentName = this.moduleNameByTopic[topicId] || '';
@@ -1248,7 +1248,7 @@ export class SchemaConfigComponent implements OnInit {
         delete newDocument.uuid;
         delete newDocument.creator;
         delete newDocument.owner;
-        delete newDocument.version;
+        // delete newDocument.version;
         delete newDocument.previousVersion;
         const dialogRef = this.dialogService.open(SchemaDialog, {
             showHeader: false,

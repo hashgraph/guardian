@@ -122,7 +122,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 row.document = item.document;
                 row.status = SchemaStatus.DRAFT;
                 row.errors = [];
-                SchemaHelper.setVersion(row, null, row.version);
+                SchemaHelper.setVersion(row, row.version, row.version);
                 SchemaHelper.updateIRI(row);
                 await DatabaseServer.updateSchema(row.id, row);
                 await updateSchemaDefs(row.iri);

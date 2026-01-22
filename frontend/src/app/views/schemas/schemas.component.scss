@@ -54,6 +54,36 @@
     margin-right: 12px;
 }
 
+.btn-info {
+    color: var(--color-grey-5);
+    font-weight: 500;
+    cursor: pointer;
+    padding-top: 2px;
+    position: relative;
+    height: 24px;
+    min-width: 24px;
+    display: inline-block;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.btn-info:hover {
+    text-decoration: underline;
+}
+
+.btn-info i,
+.btn-info svg {
+    height: 20px;
+    position: absolute;
+    left: 0px;
+    top: 2px;
+    font-size: 18px;
+}
+
+.text-grey {
+    color: var(--color-grey-5);
+}
+
 .compare-button {
     ::ng-deep .p-button-outlined {
         color: var(--color-primary);
@@ -464,6 +494,11 @@ a {
 .color-grey {
     fill: var(--color-grey-4);
     color: var(--color-grey-4);
+}
+
+.color-grey-5 {
+    fill: var(--color-grey-5);
+    color: var(--color-grey-5);
 }
 
 ::ng-deep .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
