@@ -97,6 +97,8 @@
         border-radius: 6px;
         transition: all 0.25s ease-in-out;
         cursor: pointer;
+        max-width: 100%;
+        overflow: hidden;
 
         .tag-icon {
             fill: var(--color-primary, #0031ff);
@@ -109,12 +111,16 @@
             font-style: normal;
             font-weight: 400;
             line-height: 16px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            overflow: hidden;
         }
 
         .count {
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
             background: var(--color-accent-red-1);
             border-radius: 50%;
             width: 16px;

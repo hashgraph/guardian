@@ -18,36 +18,36 @@
     height: 31px;
     box-sizing: border-box;
     overflow: hidden;
-    padding: 1px 28px 1px 1px;
+    padding: 1px;
     cursor: pointer;
     border-radius: 8px;
-    width: min-content;
     user-select: none;
     max-width: 215px;
 }
 
-.main-tags:hover {
-    background: #f1f1f1;
-}
-
 .main-tag {
-    width: min-content;
+    width: 100%;
+    max-width: 143px;
     display: flex;
     column-gap: 6px;
     position: relative;
-    height: 26px;
+    height: 30px;
     box-sizing: border-box;
     overflow: hidden;
     border-radius: 8px;
-    padding: 6px 16px 21px 10px;
+    padding: 0 16px 0 10px;
+    align-items: center;
     border: 1px solid var(--color-primary);
     color: var(--color-primary);
 }
 
 .tag-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+    width: 12px;
+    height: 12px;
+    line-height: 12px;
+    font-size: 12px;
+    transform: rotate(90deg);
+    transform-origin: center;
     color: #0031ff;
 }
 
@@ -117,7 +117,7 @@
     text-align: center;
     padding: 0 3px;
     box-sizing: border-box;
-    margin: 1px 0 1px 4px;
+    margin: 1px 0 1px auto;
 }
 
 .main-tags[count="1"] {
