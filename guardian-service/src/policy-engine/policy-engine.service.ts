@@ -425,7 +425,8 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>('mrv-data',
             async (msg: any) => {
                 // await PolicyComponentsUtils.ReceiveExternalData(msg);
-                const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
+                const { data } = msg;
+                const policy = await DatabaseServer.getPolicyByTag(data?.policyTag);
                 if (policy) {
                     const policyId = policy.id.toString();
                     await new GuardiansService()
@@ -687,7 +688,8 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA,
             async (msg: any) => {
                 try {
-                    const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
+                    const { data } = msg;
+                    const policy = await DatabaseServer.getPolicyByTag(data?.policyTag);
                     if (policy) {
                         const policyId = policy.id.toString();
                         new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA, policyId, {
@@ -705,7 +707,9 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM,
             async (msg: any) => {
                 try {
-                    new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA_CUSTOM, msg.policyId, {
+                    const { data } = msg;
+
+                    new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA_CUSTOM, data.policyId, {
                         policyId: msg.policyId,
                         data: msg
                     });
