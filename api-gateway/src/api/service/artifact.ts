@@ -18,7 +18,7 @@ import {
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey } from '#helpers';
+import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey, FilenameSanitizer } from '#helpers';
 import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
 import { ARTIFACT_REQUIRED_PROPS, PREFIXES } from '#constants'
 import { FastifyReply } from 'fastify';
@@ -397,7 +397,7 @@ export class ArtifactApi {
             res.header('X-Content-Type-Options', 'nosniff');
             res.header(
                 'Content-Disposition',
-                `attachment; filename="${(filename || fileId).replace(/"/g, '')}"`
+                `attachment; filename="${FilenameSanitizer.sanitize(filename || fileId)}"`
             );
 
             return res.send(Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer));
