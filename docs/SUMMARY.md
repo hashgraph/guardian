@@ -263,6 +263,7 @@
         * [IntegrationButtonBlock](guardian/standard-registry/policies/policy-creation/introduction/integrationbuttonblock.md)
         * [Global Events Writer Block](guardian/standard-registry/policies/policy-creation/introduction/global-events-writer-block.md)
         * [Global Events Reader Block](guardian/standard-registry/policies/policy-creation/introduction/global-events-reader-block.md)
+        * [mathBlock](guardian/standard-registry/policies/policy-creation/introduction/mathblock.md)
       * [Creating Policy using UI](guardian/standard-registry/policies/policy-creation/policy-demo.md)
       * [Creating a Policy through Policy Configurator](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/README.md)
         * [Getting Started with the Policy Workflows](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows.md)
