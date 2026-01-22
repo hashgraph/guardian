@@ -3108,6 +3108,94 @@ paths:
       summary: Get indexer availability
       tags:
         - analytics
+  /analytics/compare/policy/original/{messageId}:
+    post:
+      operationId: AnalyticsApi_compareOriginalPolicy
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyFiltersDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparePoliciesDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags:
+        - analytics
+  /analytics/derivations/{messageId}:
+    get:
+      operationId: AnalyticsApi_getDerivations
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: pageIndex
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: pageSize
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: orderField
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: orderDir
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: keywords
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: topicId
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: options.owner
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: analytics.tools
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags:
+        - analytics
   /settings/network:
     get:
       description: Returns Hedera network
@@ -8949,3 +9037,68 @@ components:
         - tokensCount
         - rate
         - tags
+    PolicyFiltersDTO:
+      type: object
+      properties:
+        idLvl:
+          oneOf:
+            - type: string
+            - type: number
+          enum:
+            - 0
+            - 1
+          example: 0
+        eventsLvl:
+          oneOf:
+            - type: string
+            - type: number
+          enum:
+            - 0
+            - 1
+          example: 0
+        propLvl:
+          oneOf:
+            - type: string
+            - type: number
+          enum:
+            - 0
+            - 1
+            - 2
+          example: 0
+        childrenLvl:
+          oneOf:
+            - type: string
+            - type: number
+          enum:
+            - 0
+            - 1
+            - 2
+          example: 0
+    ComparePoliciesDTO:
+      type: object
+      properties:
+        blocks:
+          type: object
+        groups:
+          type: object
+        left:
+          type: object
+        right:
+          type: object
+        roles:
+          type: object
+        tokens:
+          type: object
+        topics:
+          type: object
+        total:
+          type: object
+      required:
+        - blocks
+        - groups
+        - left
+        - right
+        - roles
+        - tokens
+        - topics
+        - total
