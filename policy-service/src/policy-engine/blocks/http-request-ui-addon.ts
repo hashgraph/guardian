@@ -78,6 +78,22 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
                 default: ''
             },
             {
+                name: 'authenticationClientId',
+                label: 'Authentication ClientId',
+                title: 'Authentication ClientId',
+                type: PropertyType.Input,
+                visible: 'authentication === "bearerToken"',
+                default: ''
+            },
+            {
+                name: 'authenticationScopes',
+                label: 'Authentication Scopes',
+                title: 'Authentication Scopes',
+                type: PropertyType.Input,
+                visible: 'authentication === "bearerToken"',
+                default: ''
+            },
+            {
                 name: 'headers',
                 label: 'Headers',
                 title: 'Headers',
@@ -122,6 +138,8 @@ export class HttpRequestUIAddon {
             url: options.url,
             headers: options.headers,
             authentication: options.authentication,
+            authenticationClientId: options.authenticationClientId,
+            authenticationScopes: options.authenticationScopes,
             authenticationURL: options.authenticationURL,
             readonly: (
                 ref.actionType === LocationType.REMOTE &&

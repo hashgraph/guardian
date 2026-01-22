@@ -1,6 +1,6 @@
 import { Auth, AuthUser } from '#auth';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
-import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson } from '#helpers';
+import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson, FilenameSanitizer } from '#helpers';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version, Patch, DefaultValuePipe, ParseBoolPipe } from '@nestjs/common';
@@ -1612,7 +1612,7 @@ export class PolicyApi {
             const downloadResult = await engineService.downloadPolicyData(policyId, owner);
             res.header(
                 'Content-Disposition',
-                `attachment; filename=${policy.name}.data`
+                `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}.data`
             );
             res.header('Content-Type', 'application/policy-data');
             return res.send(downloadResult);
@@ -1713,7 +1713,7 @@ export class PolicyApi {
             const downloadResult = await engineService.downloadVirtualKeys(policyId, owner);
             res.header(
                 'Content-Disposition',
-                `attachment; filename=${policy.name}.vk`
+                `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}.vk`
             );
             res.header('Content-Type', 'application/virtual-keys');
             return res.send(downloadResult);
@@ -2507,7 +2507,7 @@ export class PolicyApi {
             const owner = new EntityOwner(user);
             const policy = await engineService.accessPolicy(policyId, owner, 'read');
             const policyFile: any = await engineService.exportFile(policyId, owner);
-            res.header('Content-disposition', `attachment; filename=${policy.name}`);
+            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}`);
             res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
@@ -2598,7 +2598,7 @@ export class PolicyApi {
             const owner = new EntityOwner(user);
             const policy = await engineService.accessPolicy(policyId, owner, 'read');
             const policyFile: any = await engineService.exportXlsx(policyId, owner);
-            res.header('Content-disposition', `attachment; filename=${policy.name}`);
+            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}`);
             res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
