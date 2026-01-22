@@ -1,7 +1,8 @@
-# https://docs.docker.com/compose/environment-variables/envvars-precedence/
-# Environment leverage the gerarchy defined in the docker compose between "env_file" and "environment" attributes
-# ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
-# specific service variables defined by "environment" can override what is defined in the ecosystem file
+# This file is linted and formatted using Docker Compose Linter (https://github.com/zavoloklom/docker-compose-linter):
+# npx dclint . --fix=true
+
+# Please note variables defined in the "environment" section will override the same variables defined in the "env_file"
+# See # https://docs.docker.com/compose/environment-variables/envvars-precedence/ for more details
 
 # YAML anchor that contains common configuration elements for our services
 x-service-template: &service-template
@@ -9,80 +10,187 @@ x-service-template: &service-template
   env_file:
     - ./configs/.env.${GUARDIAN_ENV}.guardian.system
   environment:
-    - GUARDIAN_ENV=${GUARDIAN_ENV}
+    GUARDIAN_ENV: ${GUARDIAN_ENV}
+
+name: guardian-demo
 
 services:
-  mongo:
-    image: mongo:6.0.26
-    command: "--setParameter allowDiskUseByDefault=true"
-    restart: always
-    expose:
-      - 27017
-
-  mongo-express:
-    image: mongo-express:1.0.2-20
-    expose:
-      - 8081
-    environment:
-      ME_CONFIG_MONGODB_SERVER: mongo
-      ME_CONFIG_MONGODB_PORT: 27017
-      ME_CONFIG_SITE_BASEURL: /mongo-admin # default credentials: admin/pass
+  ai-service:
+    build:
+      context: .
+      dockerfile: ./ai-service/Dockerfile
     depends_on:
+      - logger-service
+      - message-broker
       - mongo
+    volumes:
+      - ./ai-service/faiss-vector:/usr/local/app/faiss-vector:rw
+      - ./ai-service/data:/usr/local/app/data:rw
+    environment:
+      VECTOR_STORAGE_PATH: ./faiss-vector
+      DOCS_STORAGE_PATH: ./data/generated-data
+    <<: *service-template
+    expose:
+      - '3013'
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile.demo
+    depends_on:
+      - auth-service
+      - cache
+      - guardian-service
+      - message-broker
+      - mongo
+      # - seq
+    volumes:
+      - ./api-gateway/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '3002'
+      - '6555'
+
+  application-events:
+    build:
+      context: .
+      dockerfile: application-events/Dockerfile
+    depends_on:
+      - auth-service
+      - guardian-service
+      - message-broker
+      - mongo
+    <<: *service-template
+    expose:
+      - '3012'
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: ./auth-service/Dockerfile.demo
+    depends_on:
+      - message-broker
+      - mongo
+      - vault
+    volumes:
+      - ./auth-service/tls:/usr/local/app/tls:ro
+      - ./auth-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
+      - '5005'
 
   cache:
     image: registry.redict.io/redict:7.3.6-alpine
     restart: always
     expose:
-      - 6379
+      - '6379'
+    init: true
 
-#  seq:
-#    image: datalust/seq
-#    restart: unless-stopped
-#    environment:
-#      ACCEPT_EULA: "Y"
-#    ports:
-#      - "5341:80"
-#    volumes:
-#      - seq_data:/data
+  grafana:
+    image: grafana/grafana:10.0.10
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/dashboards
+    environment:
+      GF_AUTH_DISABLE_LOGIN_FORM: true
+      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_SERVER_HTTP_PORT: 9080
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/prometheus-dashboard.json
+    ports:
+      - '127.0.0.1:9080:9080'
+    networks:
+      - monitoring
+    init: true
+
+  guardian-service:
+    build:
+      context: .
+      dockerfile: ./guardian-service/Dockerfile
+    depends_on:
+      - auth-service
+      - message-broker
+      - mongo
+      - policy-service
+      - queue-service
+    volumes:
+      - ./guardian-service/tls:/usr/local/app/tls:ro
+      - ./guardian-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
+      - '5007'
 
   ipfs-node:
-    image: ipfs/kubo:v0.38.2
-    ports:
-      - "5001:5001"
-      - "4001:4001"
-      - "8080:8080"
+    image: ipfs/kubo:v0.39.0
     volumes:
       - ipfs_data:/data/ipfs:rw
       - ipfs_export:/export:rw
+    environment:
+      IPFS_TELEMETRY: off # valid options: 'on' (default), 'off', 'auto' (https://github.com/ipfs/kubo/blob/master/docs/telemetry.md)
+    ports:
+      - '127.0.0.1:4001:4001'
+      - '127.0.0.1:5001:5001'
+      - '127.0.0.1:8080:8080'
+    init: true
+
+  logger-service:
+    build:
+      context: .
+      dockerfile: ./logger-service/Dockerfile
+    depends_on:
+      - message-broker
+    volumes:
+      - ./logger-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
 
   message-broker:
     image: nats:2.9.25
-    expose:
-      - 4222
-    ports:
-      - '8222:8222'
-    command: '-c /etc/nats/nats.conf --http_port 8222'
     volumes:
       - ./configs/nats.conf:/etc/nats/nats.conf
-
-  vault:
-    image: hashicorp/vault:1.12.11
-    expose:
-      - 8200
     ports:
-      - '8200:8200'
+      - '127.0.0.1:8222:8222'
+    command: "-c /etc/nats/nats.conf --http_port 8222"
+    expose:
+      - '4222'
+    init: true
+
+  mongo:
+    image: mongo:6.0.26
+    command: "--setParameter allowDiskUseByDefault=true"
+    # command: "--setParameter allowDiskUseByDefault=true --quiet --logpath /dev/null" # use this command to reduce log noise
+    restart: always
+    expose:
+      - '27017'
+    init: true
+
+  mongo-express:
+    image: mongo-express:1.0.2-20
+    depends_on:
+      - mongo
     environment:
-      VAULT_SERVER: "http://0.0.0.0:8200"
-      VAULT_DEV_ROOT_TOKEN_ID: "1234"
-    cap_add:
-      - IPC_LOCK
-    volumes:
-      - ./file:/vault/file:rw
-      - ./config:/vault/config:rw
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017
+      ME_CONFIG_SITE_BASEURL: /mongo-admin
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: pass
+    expose:
+      - '8081'
+    init: true
+
+  mrv-sender:
+    build:
+      context: .
+      dockerfile: ./mrv-sender/Dockerfile
+    expose:
+      - '3005'
+      - '5008'
+    init: true
 
   notification-service:
-    <<: *service-template
     build:
       context: .
       dockerfile: ./notification-service/Dockerfile
@@ -90,186 +198,115 @@ services:
       - message-broker
     volumes:
       - ./notification-service/configs:/usr/local/app/configs:ro
-
-  logger-service:
     <<: *service-template
-    build:
-      context: .
-      dockerfile: ./logger-service/Dockerfile
-    depends_on:
-      - message-broker
-    expose:
-      - 6555
-    volumes:
-      - ./logger-service/configs:/usr/local/app/configs:ro
-
-  queue-service:
-    <<: *service-template
-    build:
-      context: .
-      dockerfile: ./queue-service/Dockerfile
-    depends_on:
-      - mongo
-      - message-broker
-    expose:
-      - 6555
-    volumes:
-      - ./queue-service/configs:/usr/local/app/configs:ro
-
-  topic-listener-service:
-    <<: *service-template
-    build:
-      context: .
-      dockerfile: ./topic-listener-service/Dockerfile
-    depends_on:
-      - mongo
-      - message-broker
-      - queue-service
-    expose:
-      - 6555
-    volumes:
-      - ./topic-listener-service/configs:/usr/local/app/configs:ro
-
-  worker-service:
-    <<: *service-template
-    build:
-      context: .
-      dockerfile: ./worker-service/Dockerfile
-    depends_on:
-      queue-service:
-        condition: service_started
-      ipfs-node:
-        condition: service_healthy
-      auth-service:
-        condition: service_started
-    expose:
-      - 6555
-    volumes:
-      - ./worker-service/tls:/usr/local/app/tls:ro
-      - ./worker-service/configs:/usr/local/app/configs:ro
-    deploy:
-      replicas: 2
-
-  auth-service:
-    <<: *service-template
-    build:
-      context: .
-      dockerfile: ./auth-service/Dockerfile.demo
-    volumes:
-      - ./auth-service/tls:/usr/local/app/tls:ro
-      - ./auth-service/configs:/usr/local/app/configs:ro
-    depends_on:
-      - mongo
-      - vault
-      - message-broker
-    expose:
-      - 6555
-      - 5005
-
-  api-gateway:
-    <<: *service-template
-    build:
-      context: .
-      dockerfile: ./api-gateway/Dockerfile.demo
-    expose:
-      - 3002
-      - 6555
-    depends_on:
-      - mongo
-      - cache
-#      - seq
-      - message-broker
-      - guardian-service
-      - auth-service
-    volumes:
-      - ./api-gateway/configs:/usr/local/app/configs:ro
-
-  ai-service:
-    <<: *service-template
-    build:
-      context: .
-      dockerfile: ./ai-service/Dockerfile
-    expose:
-      - 3013
-    depends_on:
-      - mongo
-      - message-broker
-    volumes:
-      - ./ai-service/faiss-vector:/usr/local/app/faiss-vector:rw
-      - ./ai-service/data:/usr/local/app/data:rw
-    environment:
-      - VECTOR_STORAGE_PATH=./faiss-vector
-      - DOCS_STORAGE_PATH=./data/generated-data
 
   policy-service:
-    <<: *service-template
     build:
       context: .
       dockerfile: ./policy-service/Dockerfile
     depends_on:
-      - mongo
-      - message-broker
       - auth-service
-    expose:
-      - 5006
+      - message-broker
+      - mongo
     volumes:
       - ./policy-service/tls:/usr/local/app/tls:ro
       - ./policy-service/configs:/usr/local/app/configs:ro
-
-  guardian-service:
     <<: *service-template
-    build:
-      context: .
-      dockerfile: ./guardian-service/Dockerfile
+    expose:
+      - '5006'
+
+  prometheus:
+    image: prom/prometheus:v2.44.0
     volumes:
-      - ./guardian-service/tls:/usr/local/app/tls:ro
-      - ./guardian-service/configs:/usr/local/app/configs:ro
-    depends_on:
-      - mongo
-      - message-broker
-      - auth-service
-      - queue-service
-      - policy-service
-    expose:
-      - 6555
-      - 5007
-
-  application-events:
-    <<: *service-template
-    build:
-      context: .
-      dockerfile: application-events/Dockerfile
-    depends_on:
-      - mongo
-      - message-broker
-      - guardian-service
-      - auth-service
-    expose:
-      - 3012
-
-  mrv-sender:
-    build:
-      context: .
-      dockerfile: ./mrv-sender/Dockerfile
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - '127.0.0.1:9090:9090'
+    networks:
+      - monitoring
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--web.enable-lifecycle"
+    restart: unless-stopped
     init: true
+
+  queue-service:
+    build:
+      context: .
+      dockerfile: ./queue-service/Dockerfile
+    depends_on:
+      - message-broker
+      - mongo
+    volumes:
+      - ./queue-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
     expose:
-      - 3005
-      - 5008
+      - '6555'
+
+  # seq:
+  #   image: datalust/seq:2025.2
+  #   volumes:
+  #     - seq_data:/data
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     SEQ_FIRSTRUN_NOAUTHENTICATION: "true"
+  #   ports:
+  #     - '127.0.0.1:5341:80'
+  #   restart: unless-stopped
+  #   init: true
+
+  topic-listener-service:
+    build:
+      context: .
+      dockerfile: ./topic-listener-service/Dockerfile
+    depends_on:
+      - message-broker
+      - mongo
+      - queue-service
+    volumes:
+      - ./topic-listener-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
 
   topic-viewer:
     build:
       context: .
       dockerfile: ./topic-viewer/Dockerfile
-    init: true
     expose:
-      - 3006
-      - 5009
+      - '3006'
+      - '5009'
+    init: true
+
+  vault:
+    image: hashicorp/vault:1.12.11
+    volumes:
+      - ./file:/vault/file:rw
+      - ./config:/vault/config:rw
+    environment:
+      VAULT_SERVER: "http://0.0.0.0:8200"
+      VAULT_DEV_ROOT_TOKEN_ID: "1234"
+    ports:
+      - '127.0.0.1:8200:8200'
+    cap_add:
+      - IPC_LOCK
+    expose:
+      - '8200'
+    init: true
 
   web-proxy:
     build:
       context: .
       dockerfile: ./web-proxy/Dockerfile.demo
-    init: true
+    depends_on:
+      - api-gateway
+      - auth-service
+      - guardian-service
+      - mongo-express
+      - mrv-sender
     environment:
       GATEWAY_CLIENT_MAX_BODY_SIZE: 1024m
       GATEWAY_HOST: api-gateway
@@ -279,55 +316,36 @@ services:
       TOPIC_VIEWER_HOST: topic-viewer
       TOPIC_VIEWER_PORT: 3006
     ports:
-      - "3000:80"
+      - '127.0.0.1:3000:80'
+    init: true
+
+  worker-service:
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - guardian-service
-      - auth-service
-      - api-gateway
-      - mrv-sender
-      - mongo-express
-
-  prometheus:
-    image: prom/prometheus:v2.44.0
-    restart: unless-stopped
+      auth-service:
+        condition: service_started
+      ipfs-node:
+        condition: service_healthy
+      queue-service:
+        condition: service_started
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--web.enable-lifecycle'
-    ports:
-      - "9090:9090"
-    networks:
-      - monitoring
-
-  grafana:
-    image: grafana/grafana:10.0.10
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning
-      - ./grafana/dashboards:/etc/grafana/dashboards
-    environment:
-      - GF_AUTH_DISABLE_LOGIN_FORM=true
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_SERVER_HTTP_PORT=9080
-      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/dashboards/prometheus-dashboard.json
-    ports:
-      - "9080:9080"
-    networks:
-      - monitoring
-
-volumes:
-  prometheus_data:
-  grafana_data:
-  ipfs_data:
-  ipfs_export:
-#  seq_data:
+      - ./worker-service/tls:/usr/local/app/tls:ro
+      - ./worker-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    deploy:
+      replicas: 2
+    expose:
+      - '6555'
 
 networks:
   monitoring:
     driver: bridge
+
+volumes:
+  # seq_data:
+  prometheus_data:
+  grafana_data:
+  ipfs_data:
+  ipfs_export:

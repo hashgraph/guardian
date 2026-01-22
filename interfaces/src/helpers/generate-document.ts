@@ -58,11 +58,117 @@ export class DocumentGenerator {
             return rowPresets[subSchema.name];
         }
 
-        const json: any = {};
-        json.type = 'Point';
-        json['@context'] = context;
-        json.coordinates = [0.0, 0.0];
-        return json;
+        // Generate default GeoJSON based on type
+        const getDefaultCoordinates = (geoType) => {
+            const defaults = {
+                'Point': [0.0, 0.0],
+                'Polygon': [
+                    [
+                        [
+                            -77.9584065268336,
+                            38.94149862755802
+                        ],
+                        [
+                            -58.9656007714379,
+                            -4.704812233562663
+                        ],
+                        [
+                            -3.7138022102868185,
+                            18.69032118856724
+                        ],
+                        [
+                            -65.87207559158179,
+                            57.60454421011647
+                        ]
+                    ]
+                ],
+                'LineString': [
+                    [
+                        -93.66906474820145,
+                        34.251413057143836
+                    ],
+                    [
+                        -58.705035971223055,
+                        -5.797187576206582
+                    ]
+                ],
+                'MultiLineString': [
+                    [
+                        [
+                            -85.46762589928059,
+                            37.40046937867683
+                        ],
+                        [
+                            -66.04316546762591,
+                            -10.071382254739262
+                        ],
+                        [
+                            -3.453237410071951,
+                            16.823506351445047
+                        ]
+                    ]
+                ],
+                'MultiPoint': [
+                    [
+                        -96.69064748201441,
+                        36.36470021597479
+                    ],
+                    [
+                        -59.13669064748205,
+                        -13.451584861401926
+                    ],
+                    [
+                        -4.748201438848929,
+                        19.692602689862227
+                    ]
+                ],
+                'MultiPolygon': [
+                    [
+                        [
+                            [
+                                -77.9584065268336,
+                                38.94149862755802
+                            ],
+                            [
+                                -58.9656007714379,
+                                -4.704812233562663
+                            ],
+                            [
+                                -3.7138022102868185,
+                                18.69032118856724
+                            ],
+                            [
+                                -65.87207559158179,
+                                57.60454421011647
+                            ]
+                        ]
+                    ]
+                ],
+            };
+            return defaults[geoType] || defaults.Point;
+        };
+
+        const type = (subSchema.availableOptions && subSchema.availableOptions.length > 0)
+            ? subSchema.availableOptions[0]
+            : 'Point';
+
+        const geometry = {
+            type,
+            coordinates: getDefaultCoordinates(type)
+        };
+
+        const feature = {
+            type: 'Feature',
+            properties: {},
+            geometry
+        };
+
+        const geoJSON = {
+            type: 'FeatureCollection',
+            features: [feature]
+        };
+
+        return geoJSON;
     }
 
     /**
@@ -83,9 +189,14 @@ export class DocumentGenerator {
             return rowPresets[subSchema.name];
         }
         const json: any = {};
-        // json.type = 'Point';
         json['@context'] = context;
-        // json.coordinates = [0.0, 0.0];
+        json.layers = 'NATURAL-COLOR';
+        json.format = 'image/jpeg';
+        json.maxcc = 10;
+        json.width = 10;
+        json.height = 10;
+        json.bbox = '1111,2222,3333,4444';
+        json.time = '2000-01-01/2000-02-01';
         return json;
     }
 
@@ -155,6 +266,8 @@ export class DocumentGenerator {
                         }
                     case 'hederaAccount':
                         return '0.0.1';
+                    case 'table':
+                        return '{"type":"table", "cid":"bafkreiaeu4w7oayfsp6oq3tuomb5tk2rkvb2bibhnxxwo4er6mls2jagay"}';
                     default:
                         break;
                 }

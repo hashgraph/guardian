@@ -6,7 +6,6 @@
     user-select: none;
     position: relative;
     padding: 24px;
-    overflow: auto;
     background: #fff;
     border-radius: 6px;
 
@@ -51,6 +50,12 @@
             --checkbox-button-on-first-color: var(--formula-text-color, #19BE47);
             --checkbox-button-on-second-color: var(--formula-text-background, #d7f5e2);
         }
+    }
+
+    .formula-items {
+        overflow: auto;
+        height: calc(100% - 50px);
+        padding-right: 5px;
     }
 
     .formula-item {
