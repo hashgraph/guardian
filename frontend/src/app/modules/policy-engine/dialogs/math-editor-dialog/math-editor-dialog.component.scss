@@ -371,6 +371,21 @@ math-live {
     }
 }
 
+.help-label {
+    color: var(--guardian-primary-color, #4169E2);
+    margin-left: 8px;
+    font-weight: 500;
+
+    svg-icon {
+        svg {
+            fill: var(--guardian-primary-color, #4169E2);
+            color: var(--guardian-primary-color, #4169E2);
+        }
+
+        margin-right: 8px;
+    }
+}
+
 .code-help {
     display: flex;
     flex-direction: column;
@@ -400,6 +415,18 @@ math-live {
                 fill: var(--guardian-grey-color-4, #6C7791);
                 color: var(--guardian-grey-color-4, #6C7791);
             }
+        }
+
+        svg-icon.collapse-btn {
+            left: auto;
+            right: 0px;
+            cursor: pointer;
+        }
+    }
+
+    &[collapsed="true"] {
+        .code-variable {
+            display: none;
         }
     }
 

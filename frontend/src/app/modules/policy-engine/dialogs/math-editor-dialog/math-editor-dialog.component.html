@@ -372,13 +372,25 @@
                     </button>
                 </div>
                 <div *ngIf="codeTab === 'advanced'" class="formulas-container">
-                    <div class="code-help">
+                    <div class="code-help" [attr.collapsed]="collapseHelp">
                         <div class="code-help-header">
                             <svg-icon
                                 class="svg-icon-16 icon-btn"
                                 src="/assets/images/icons/16/info.svg">
                             </svg-icon>
                             Imports
+                            <svg-icon
+                                *ngIf="!collapseHelp"
+                                class="svg-icon-16 collapse-btn"
+                                src="/assets/images/icons/16/collapse-up.svg"
+                                (click)="collapseHelp=true">
+                            </svg-icon>
+                            <svg-icon
+                                *ngIf="collapseHelp"
+                                class="svg-icon-16 collapse-btn"
+                                src="/assets/images/icons/16/collapse-down.svg"
+                                (click)="collapseHelp=false">
+                            </svg-icon>
                         </div>
                         <div class="code-variable">
                             <span class="code-variable-type">PolicyUser</span>
@@ -407,22 +419,34 @@
                         </div>
                     </div>
                     <div class="code-toolbar">
-                        <button (click)="addVariableLink()" class="guardian-button vertical-button guardian-button-secondary">
+                        <button (click)="addVariableLink()" class="guardian-button guardian-button-primary">
                             <div class="guardian-button-icon">
                                 <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/variable.svg"
-                                    svgClass="icon-color-primary">
+                                    svgClass="icon-color-secondary">
                                 </svg-icon>
                             </div>
                             <div class="guardian-button-label">Variables</div>
                         </button>
-                        <button (click)="addComponent()" class="guardian-button vertical-button guardian-button-secondary">
+                        <button (click)="addComponent()" class="guardian-button guardian-button-primary">
                             <div class="guardian-button-icon">
                                 <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/function.svg"
-                                    svgClass="icon-color-primary">
+                                    svgClass="icon-color-secondary">
                                 </svg-icon>
                             </div>
                             <div class="guardian-button-label">Formulas</div>
                         </button>
+                        <div 
+                            class="guardian-label help-label"
+                            pTooltip="To add variable or formula in the code view below, place your cursor where you want to insert a component, then click the button." 
+                            tooltipPosition="top" 
+                            [tooltipOptions]="{showDelay: 300}"
+                        >
+                            <svg-icon
+                                class="svg-icon-16 guardian-label-icon"
+                                src="/assets/images/icons/16/info.svg">
+                            </svg-icon>
+                            Help
+                        </div>
                     </div>
                     <div class="code-body">
                         <ngx-codemirror 
@@ -877,6 +901,7 @@
         </div>
         <div class="dialog-button">
             <button
+                *ngIf="!readonly"
                 (click)="onSave()"
                 class="guardian-button guardian-button-primary">Save</button>
         </div>

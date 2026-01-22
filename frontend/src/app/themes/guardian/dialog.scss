@@ -19,6 +19,10 @@
         .dialog-header {
             padding: 24px 0 24px 0;
             height: 80px;
+
+            .header-container {
+                top: 24px;
+            }
         }
 
         .dialog-body {
@@ -58,13 +62,15 @@
         position: relative;
         padding: 32px 0 24px 0;
         color: var(--guardian-header-color);
+        justify-content: flex-end;
 
         .header-container {
-            width: 100%;
-            position: relative;
-            flex: 1;
             display: flex;
             flex-direction: row;
+            position: absolute;
+            left: 0px;
+            top: 32px;
+            right: 125px;
 
             .header-text {
                 font-family: var(--guardian-font-family);
@@ -73,6 +79,9 @@
                 font-weight: 600;
                 line-height: 32px;
                 height: 32px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
 
             .header-item {

@@ -128,6 +128,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public step: string = 'step_1';
     public codeTab: string = 'general';
+    public collapseHelp: boolean = false;
 
     public codeMirrorOptions: any = {
         theme: 'default',
@@ -209,6 +210,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     ngOnInit() {
         this.initDialog = false;
         this.loading = true;
+        this.readonly = this.data.readonly;
         this.policyId = this.data.policyId;
         this.expression = this.data.expression;
         this.test = this.data.test;
