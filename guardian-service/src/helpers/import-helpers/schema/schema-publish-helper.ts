@@ -312,10 +312,7 @@ export async function searchSchemaDefs(
 
 /**
  * Publish schemas
- * @param schemas
- * @param owner
- * @param messageServer
- * @param type
+ * @param options
  */
 export async function publishSchemasPackage(options: {
     name: string,
@@ -327,6 +324,7 @@ export async function publishSchemasPackage(options: {
     notifier: INotificationStep,
     staticSchemas?: boolean,
     schemaMap?: Map<string, string>,
+    onPackageDocuments?: (docs: { document: Buffer; context: Buffer; metadata: Buffer }) => void
 }): Promise<Map<string, string>> {
     const {
         type,
@@ -433,6 +431,16 @@ export async function publishSchemasPackage(options: {
     const message = new SchemaPackageMessage(type);
     message.setDocument(packageDocuments);
     message.setMetadata(draftSchemas, publishedSchemas);
+
+    const documents = await message.toDocuments();
+    if (documents.length && options.onPackageDocuments) {
+        options.onPackageDocuments({
+            document: documents[0],
+            context: documents[1],
+            metadata: documents[2]
+        });
+    }
+
     const result = await server
         .sendMessage(message, {
             sendToIPFS: true,
