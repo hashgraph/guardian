@@ -162,7 +162,7 @@
                     <tr *ngIf="!rowData.isParent || (rowData.isParent && rowData.name)" [ttRow]="rowNode" class="guardian-grid-row" [class.grey-row]="!rowData.isParent || (rowData.isParent && rowData.name)" [attr.schema-status]="rowData.status">
                         <ng-container *ngIf="rowData.isParent">
                             <td class="row-cell-text parent-row-cell" [attr.colspan]="type === 'policy' ? 8 : (type === 'tool' ? 4 : 3)">
-                                <a *ngIf="type === 'policy' && rowData.topicId !== ''" class="text-truncate"
+                                <a *ngIf="type === 'policy' && rowData.topicId !== NOT_BINDED" class="text-truncate"
                                    [queryParams]="{ policyId: policyIdByTopic[rowData.topicId] }"
                                    [routerLink]="['/policy-configuration']"
                                 >
@@ -173,7 +173,7 @@
                                    [routerLink]="'/tool-configuration'">
                                     {{ toolNameByTopic[rowData.topicId] }}
                                 </a>
-                                <span *ngIf="type === 'module' || rowData.topicId === null" class="text-truncate">
+                                <span *ngIf="type === 'module' || rowData.topicId === NOT_BINDED" class="text-truncate">
                                     {{ rowData.name }}
                                 </span>
                             </td>

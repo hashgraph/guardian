@@ -143,6 +143,7 @@ export class SchemaConfigComponent implements OnInit {
     public selectedItems: any[] = [];
     public selectedItemIds: string[] = [];
     public treeData: TreeNode[] = [];
+    private static readonly NOT_BINDED = 'not-binded';
 
     public onMenuClick(event: MouseEvent, overlayPanel: any, menuData: any): void {
         this.element = menuData;
@@ -336,6 +337,10 @@ export class SchemaConfigComponent implements OnInit {
         return (element.status === 'DRAFT' || element.status === 'ERROR');
     }
 
+    public get NOT_BINDED(): string {
+        return SchemaConfigComponent.NOT_BINDED;
+    }
+
     private _destroy$ = new Subject<void>();
 
     ngOnInit() {
@@ -403,6 +408,10 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private getTopicId(): string | null {
+        // Preserve "No Binding" selection exactly as-is so it reaches the API as topicId=not-binded
+        if (this.currentTopic === SchemaConfigComponent.NOT_BINDED) {
+            return SchemaConfigComponent.NOT_BINDED;
+        }
         switch (this.type) {
             case SchemaType.Tag:
                 return '';
@@ -494,6 +503,10 @@ export class SchemaConfigComponent implements OnInit {
                 this.allPolicies = [{
                     name: 'All Policies',
                     topicId: null
+                },
+                {
+                    name: 'No Binding',
+                    topicId: SchemaConfigComponent.NOT_BINDED
                 }];
                 for (const policy of policies) {
                     if (policy.topicId) {
@@ -643,8 +656,10 @@ export class SchemaConfigComponent implements OnInit {
         }
 
         const groups = new Map<string, ISchema[]>();
+        console.dir(schemas);
         for (const schema of schemas) {
-            const topicId = schema.topicId || 'no-topic';
+            const hasPolicyBinding = Boolean((schema as Record<string, unknown>).__policyId);
+            const topicId = hasPolicyBinding ? schema.topicId ?? SchemaConfigComponent.NOT_BINDED : SchemaConfigComponent.NOT_BINDED;
             if (!groups.has(topicId)) {
                 groups.set(topicId, []);
             }
@@ -652,8 +667,20 @@ export class SchemaConfigComponent implements OnInit {
         }
 
         const result: TreeNode[] = [];
+        console.dir(groups);
         groups.forEach((groupSchemas, topicId) => {
             const sortedSchemas = groupSchemas.sort((a, b) => {
+                // First compare by topicId
+                const topicA = a.topicId || '';
+                const topicB = b.topicId || '';
+                const topicCompare = topicA.localeCompare(topicB);
+
+                // If topicIds are different, return the topic comparison result
+                if (topicCompare !== 0) {
+                    return topicCompare;
+                }
+
+                // If topicIds are the same, compare by version
                 return ModelHelper.versionCompare(b.version || b.sourceVersion || '', a.version || a.sourceVersion || '');
             });
 

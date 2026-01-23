@@ -519,8 +519,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                 }
                 if (options.topicId) {
-                    filter.topicId = options.topicId;
-                    if (filter.category === SchemaCategory.TOOL) {
+                    if (options.topicId === 'not-binded') {
+                        filter.category = SchemaCategory.POLICY;
+                        const policies = await DatabaseServer.getPolicies({}, { fields: ['topicId'] });
+                        const policyTopicIds = policies.map(p => p.topicId).filter(id => !!id);
+                        filter.topicId = { $nin: policyTopicIds };
+                    } else {
+                        filter.topicId = options.topicId;
+                    }
+                    if (filter.category === SchemaCategory.TOOL && options.topicId !== 'not-binded') {
                         const tool = await DatabaseServer.getTool({ topicId: options.topicId });
                         if (tool && tool.status === ModuleStatus.PUBLISHED) {
                             delete filter.owner;
@@ -622,16 +629,23 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 //topicId
                 if (options.topicId) {
-                    filter.topicId = options.topicId;
+                    if (options.topicId === 'not-binded') {
+                        filter.category = SchemaCategory.POLICY;
+                        const policies = await DatabaseServer.getPolicies({}, { fields: ['topicId'] });
+                        const policyTopicIds = policies.map(p => p.topicId).filter(id => !!id);
+                        filter.topicId = { $nin: policyTopicIds };
+                    } else {
+                        filter.topicId = options.topicId;
+                    }
                 }
                 if (filter.category === SchemaCategory.TOOL) {
-                    if (options.topicId) {
+                    if (options.topicId && options.topicId !== 'not-binded') {
                         const tool = await DatabaseServer.getTool({ topicId: options.topicId });
                         if (tool && tool.status === ModuleStatus.PUBLISHED) {
                             delete filter.owner;
                         }
                         filter.topicId = options.topicId;
-                    } else {
+                    } else if (!options.topicId) {
                         const tools = await DatabaseServer.getTools({
                             $or: [{
                                 owner: owner.owner
