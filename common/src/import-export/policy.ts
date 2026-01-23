@@ -282,18 +282,31 @@ export class PolicyImportExport {
             }
         }
 
+        const ZIP_FILE_OPTIONS = ImportExportUtils.getDeterministicZipFileOptions();
+        ImportExportUtils.addDeterministicZipDir(zip, 'ipfs');
+
+        if (preparedComponents.tags.length) {
+            ImportExportUtils.addDeterministicZipDir(zip, 'ipfs/tags');
+
+            for (const tag of preparedComponents.tags) {
+                if (tag.document && tag.uuid) {
+                    const tagDocumentBuffer = Buffer.from(JSON.stringify(tag.document));
+                    zip.file(`ipfs/tags/${tag.uuid}.json`, tagDocumentBuffer, ZIP_FILE_OPTIONS);
+                }
+            }
+        }
+
         if (schemaPackageDocuments) {
-            const ZIP_FILE_OPTIONS = ImportExportUtils.getDeterministicZipFileOptions();
-            ImportExportUtils.addDeterministicZipDir(zip, 'schema-package');
+            ImportExportUtils.addDeterministicZipDir(zip, 'ipfs/schema-package');
 
             if (schemaPackageDocuments.document) {
-                zip.file('schema-package/document.json', schemaPackageDocuments.document, ZIP_FILE_OPTIONS);
+                zip.file('ipfs/schema-package/document.json', schemaPackageDocuments.document, ZIP_FILE_OPTIONS);
             }
             if (schemaPackageDocuments.context) {
-                zip.file('schema-package/context.json', schemaPackageDocuments.context, ZIP_FILE_OPTIONS);
+                zip.file('ipfs/schema-package/context.json', schemaPackageDocuments.context, ZIP_FILE_OPTIONS);
             }
             if (schemaPackageDocuments.metadata) {
-                zip.file('schema-package/metadata.json', schemaPackageDocuments.metadata, ZIP_FILE_OPTIONS);
+                zip.file('ipfs/schema-package/metadata.json', schemaPackageDocuments.metadata, ZIP_FILE_OPTIONS);
             }
         }
 
