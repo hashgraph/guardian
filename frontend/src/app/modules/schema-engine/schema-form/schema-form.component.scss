@@ -456,3 +456,16 @@ form::ng-deep {
         }
     }
 }
+
+.table-header{
+    min-width: 200px;
+}
+
+.table-content{
+    display: flex;
+    gap: 8px;
+
+    .guardian-input-container{
+        height: auto;
+    }
+}

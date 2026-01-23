@@ -725,5 +725,9 @@ export class SchemaFormComponent implements OnInit {
             }
         }
     }
+
+    public canDrawTable(item: IFieldControl<any>): boolean {
+        return item.isArray && item.isRef && !item.fields?.find((s) => s.isArray || s.isRef || s.customType ==='table');
+    }
 }
 
