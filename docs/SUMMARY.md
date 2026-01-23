@@ -154,6 +154,7 @@
       * [Returns all child schemas](guardian/standard-registry/schemas/schema-creation-using-apis/returns-all-child-schemas.md)
       * [Deletes all schemas by topic id. Only users with the Standard Registry are allowed.](guardian/standard-registry/schemas/schema-creation-using-apis/deletes-all-schemas-by-topic-id.-only-users-with-the-standard-registry-are-allowed..md)
       * [Previews list of schemas duplicates](guardian/standard-registry/schemas/schema-creation-using-apis/previews-list-of-schemas-duplicates.md)
+      * [Returns a sample payload for the schema by schema Id.](guardian/standard-registry/schemas/schema-creation-using-apis/returns-a-sample-payload-for-the-schema-by-schema-id..md)
     * [System Schema APIs](guardian/standard-registry/schemas/system-schema-apis/README.md)
       * [Returns Schema by Type](guardian/standard-registry/schemas/system-schema-apis/returns-schema-by-type.md)
       * [Creates New System Schema](guardian/standard-registry/schemas/system-schema-apis/creates-new-system-schema.md)
