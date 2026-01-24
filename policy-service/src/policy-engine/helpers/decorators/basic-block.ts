@@ -366,7 +366,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
                         if (output === PolicyOutputEventType.RunEvent) {
-                           actionStatus.checkCycle(link.source, link.target);
+                           actionStatus.checkCycle(link);
                         }
 
                         if (actionStatus.syncActions) {

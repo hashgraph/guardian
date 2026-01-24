@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { AnyBlockType } from './policy-engine.interface';
+import { PolicyLink } from './interfaces';
 
 type Callback = (id: string, timestamp: number) => void;
 
@@ -25,15 +25,18 @@ export class RecordActionStep {
         this.withHistory = withHistory;
     }
 
-    public checkCycle(source: AnyBlockType, target: AnyBlockType) {
-        if (this.actionsMap.has(target.uuid)) {
+    public checkCycle(link: PolicyLink<any>) {
+        const targetIdWithType = `${link.target.uuid}-${link.type}`;
+        const sourceIdWithType = `${link.source.uuid}-${link.type}`;
+
+        if (this.actionsMap.has(targetIdWithType)) {
             throw new Error(
-                `Cycle detected: target "${target.tag}" was already used, circular reference is not allowed.`
+                `Cycle detected: target "${link.target.tag}" was already used, circular reference is not allowed.`
             );
         }
 
-        this.actionsMap.add(source.uuid);
-        this.actionsMap.add(target.uuid);
+        this.actionsMap.add(sourceIdWithType);
+        this.actionsMap.add(targetIdWithType);
     }
 
     public saveResult(res: any) {
