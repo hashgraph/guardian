@@ -275,7 +275,7 @@ export class BlockTreeGenerator extends NatsService {
 
             for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
                 if (PolicyComponentsUtils.isAvailableReceiveData(block, policyId)) {
-                    await PolicyComponentsUtils.blockReceiveData(block, data, actionstep);
+                    await PolicyComponentsUtils.blockReceiveData(block, data.data, actionstep);
                 }
             }
 
