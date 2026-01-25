@@ -285,17 +285,6 @@ export class PolicyImportExport {
         const ZIP_FILE_OPTIONS = ImportExportUtils.getDeterministicZipFileOptions();
         ImportExportUtils.addDeterministicZipDir(zip, 'ipfs');
 
-        if (preparedComponents.tags.length) {
-            ImportExportUtils.addDeterministicZipDir(zip, 'ipfs/tags');
-
-            for (const tag of preparedComponents.tags) {
-                if (tag.document && tag.uuid) {
-                    const tagDocumentBuffer = Buffer.from(JSON.stringify(tag.document));
-                    zip.file(`ipfs/tags/${tag.uuid}.json`, tagDocumentBuffer, ZIP_FILE_OPTIONS);
-                }
-            }
-        }
-
         if (schemaPackageDocuments) {
             ImportExportUtils.addDeterministicZipDir(zip, 'ipfs/schema-package');
 

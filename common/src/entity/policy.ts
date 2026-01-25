@@ -301,7 +301,7 @@ export class Policy extends BaseEntity {
      * File id of the original policy zip (publish flow).
      */
     @Property({ nullable: true })
-    contentFileId?: ObjectId;
+    contentFileId?: string;
 
     /**
      * Set policy defaults
@@ -422,7 +422,7 @@ export class Policy extends BaseEntity {
     deleteContentFile() {
         if (this.contentFileId) {
             DataBaseHelper.gridFS
-                .delete(this.contentFileId)
+                .delete(new ObjectId(this.contentFileId))
                 .catch((reason) => {
                     console.error('AfterDelete: Policy, contentFileId');
                     console.error(reason);

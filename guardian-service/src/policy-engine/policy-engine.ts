@@ -1314,7 +1314,7 @@ export class PolicyEngine extends NatsService {
             });
 
             notifier.startStep(STEP_SAVE_FILE_IN_DB);
-            model.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
+            model.contentFileId = (await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer))).toString();
             notifier.completeStep(STEP_SAVE_FILE_IN_DB);
 
             notifier.startStep(STEP_PUBLISH_POLICY);

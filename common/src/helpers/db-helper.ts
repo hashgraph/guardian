@@ -887,6 +887,10 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         for (const entity of entities) {
             const id = entity.id || entity._id;
 
+            const filterId = typeof id === 'string'
+                ? (ObjectId.isValid(id) ? new ObjectId(id) : id)
+                : id;
+
             if (!filter && !id) {
                 continue;
             }
@@ -894,7 +898,11 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             let entitiesToUpdate = existingEntityByFilter
 
             if (!entitiesToUpdate) {
-                const existingEntityById = existingEntitiesById.find((existingEntity: T) => existingEntity.id === entity.id)
+                const existingEntityById = existingEntitiesById.find(
+                    (existingEntity: T) =>
+                        String(existingEntity.id || existingEntity._id) === String(entity.id || entity._id)
+                );
+
 
                 if (existingEntityById) {
                     entitiesToUpdate = [existingEntityById]
@@ -914,7 +922,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
 
                 bulkOps.push({
                     updateOne: {
-                        filter: { _id: id },
+                        filter: { _id: filterId },
                         update: { $set: entityToUpdate },
                     }
                 });

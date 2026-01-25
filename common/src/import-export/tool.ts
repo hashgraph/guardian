@@ -93,17 +93,6 @@ export class ToolImportExport {
 
         ImportExportUtils.addDeterministicZipDir(zip, 'ipfs');
 
-        if (components.tags.length) {
-            ImportExportUtils.addDeterministicZipDir(zip, 'ipfs/tags');
-        }
-
-        for (const tag of components.tags) {
-            if (tag.document && tag.uuid) {
-                const tagDocumentBuffer = Buffer.from(JSON.stringify(tag.document));
-                zip.file(`ipfs/tags/${tag.uuid}.json`, tagDocumentBuffer, ZIP_FILE_OPTIONS);
-            }
-        }
-
         ImportExportUtils.addDeterministicZipDir(zip, 'schemas');
         for (const schema of components.schemas) {
             const item = { ...schema };
