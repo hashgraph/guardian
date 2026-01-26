@@ -4,6 +4,21 @@
     height: 60vh;
 }
 
+.dialog-header {
+    .header-container {
+        min-width: 0;
+    }
+
+    .header-text {
+        flex: 1 1 auto;
+        min-width: 0;
+		max-width: 50vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
 .tree-container {
     position: absolute;
     left: 0;

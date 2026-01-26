@@ -79,14 +79,33 @@ export class SchemaTreeComponent implements OnInit {
 
         forkJoin([mainSchemaRequest, ...taggedSchemaRequests]).subscribe((results) => {
             const allNodes: SchemaTreeNode[] = [];
+            let mainRootNode: SchemaTreeNode | undefined;
+            const taggedRootNodes: SchemaTreeNode[] = [];
 
             results.forEach((result, index) => {
                 if (result) {
                     const isTagged = index > 0; // First result is main schema, rest are tagged
                     const nodes = this.traverse(result, { isRoot: true, isTagged });
                     allNodes.push(...nodes);
+
+                    // Track root nodes for linking
+                    const rootNode = nodes.find((n) => n.type === 'root');
+                    if (rootNode) {
+                        if (!isTagged) {
+                            mainRootNode = rootNode;
+                        } else {
+                            taggedRootNodes.push(rootNode);
+                        }
+                    }
                 }
             });
+
+            // Add links from main root to tagged roots
+            if (mainRootNode) {
+                for (const taggedRoot of taggedRootNodes) {
+                    mainRootNode.addLink({ to: taggedRoot.id, variant: 'tag' });
+                }
+            }
 
             if (allNodes.length > 0) {
                 this.source = new TreeSource<SchemaTreeNode>(allNodes);
@@ -149,7 +168,50 @@ export class SchemaTreeComponent implements OnInit {
     }
 
     public createNodes($event: any) {
-        this.tree.move(18, 46);
+        setTimeout(() => this.centerGraph(), 0);
+    }
+
+    private centerGraph(): void {
+        if (!this.tree?.grid || !this.tree?.movedEl || !this.tree?.gridEl) {
+            return;
+        }
+
+        const container = this.tree.movedEl.nativeElement;
+        const gridEl = this.tree.gridEl.nativeElement.querySelector('.tree-grid') as HTMLElement | null;
+        if (!gridEl) {
+            return;
+        }
+
+        const containerRect = container.getBoundingClientRect();
+        const gridRect = gridEl.getBoundingClientRect();
+        if (!containerRect.width || !containerRect.height || !gridRect.width || !gridRect.height) {
+            return;
+        }
+
+        const x = (containerRect.width - gridRect.width) / 2;
+        const y = (containerRect.height - gridRect.height) / 2;
+        this.tree.move(x, y);
+    }
+
+    private centerNode(el: HTMLElement): void {
+        if (!this.tree?.grid || !this.tree?.movedEl) {
+            return;
+        }
+
+        const container = this.tree.movedEl.nativeElement;
+        const nodeRect = el.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        if (!containerRect.width || !containerRect.height) {
+            return;
+        }
+
+        const nodeCenterX = nodeRect.left + nodeRect.width / 2;
+        const nodeCenterY = nodeRect.top + nodeRect.height / 2;
+        const containerCenterX = containerRect.left + containerRect.width / 2;
+        const containerCenterY = containerRect.top + containerRect.height / 2;
+        const nextX = this.tree.grid.x - (nodeCenterX - containerCenterX);
+        const nextY = this.tree.grid.y - (nodeCenterY - containerCenterY);
+        this.tree.move(nextX, nextY);
     }
 
     public getHeader(): string {
@@ -164,7 +226,7 @@ export class SchemaTreeComponent implements OnInit {
         if (this.tree) {
             this.tree.onZoom(d);
             if (d === 0) {
-                this.tree.move(18, 46);
+                setTimeout(() => this.centerGraph(), 0);
             }
         }
     }
@@ -193,13 +255,8 @@ export class SchemaTreeComponent implements OnInit {
 
     public onNavTarget(highlighted: SchemaTreeNode) {
         const el = document.querySelector(`.tree-node[node-id="${highlighted.uuid}"]`);
-        const grid = el?.parentElement?.parentElement;
-        if (el && grid) {
-            const elCoord = el.getBoundingClientRect();
-            const gridCoord = grid.getBoundingClientRect();
-            const x = elCoord.left - gridCoord.left;
-            const y = elCoord.top - gridCoord.top;
-            this.tree?.move(-x + 50, -y + 56);
+        if (el instanceof HTMLElement) {
+            this.centerNode(el);
         }
     }
 }
