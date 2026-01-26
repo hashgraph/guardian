@@ -7,7 +7,7 @@ import { SchemaVariables } from '../../structures';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { TreeListData, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 import { FieldData } from 'src/app/modules/common/models/schema-node';
-import { Code, FieldLink, MathContext, MathFormula, MathEngine, setDocumentValueByPath } from './math-model/index';
+import { Code, FieldLink, MathContext, MathFormula, MathEngine, setDocumentValueByPath, DocumentMap } from './math-model/index';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MathGroups } from './math-model/math-groups';
 import { MathGroup } from './math-model/math-group';
@@ -121,9 +121,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public inputSchema: Schema | undefined;
     public outputSchema: Schema | undefined;
 
-    private schemas: SchemaVariables[];
+    private schemas: Schema[];
     private inputSchemaName: string = '';
     private outputSchemaName: string = '';
+    private schemaNames: Map<string, string> = new Map<string, string>();
+    private schemaFieldMap: Map<string, Map<string, SchemaField>> = new Map<string, Map<string, SchemaField>>();
     private inputSchemaFieldMap: Map<string, SchemaField> = new Map<string, SchemaField>();
     private outputSchemaFieldMap: Map<string, SchemaField> = new Map<string, SchemaField>();
 
@@ -201,7 +203,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 for (const className of el.classList) {
                     if (className.startsWith('cm-path-')) {
                         const type = el.classList.contains('cm-type-result') ? 'output' : 'input';
-                        return this.getFieldName(type, className.substring(8));
+                        return this.getFieldName(type, null, className.substring(8));
                     }
                 }
                 return '';
@@ -218,9 +220,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.test = this.data.test;
         this.block = this.data.block;
         this.properties = this.block.properties;
-        this.schemas = this.data.schemas;
-        this.inputSchema = this.schemas?.find((v) => v.value === this.properties?.inputSchema)?.data;
-        this.outputSchema = this.schemas?.find((v) => v.value === this.properties?.outputSchema)?.data;
+        this.schemas = this.data.schemas?.filter((v: SchemaVariables) => v.data)?.map((v: SchemaVariables) => v.data) || [];
+        this.inputSchema = this.data.schemas?.find((v: SchemaVariables) => v.value === this.properties?.inputSchema)?.data;
+        this.outputSchema = this.data.schemas?.find((v: SchemaVariables) => v.value === this.properties?.outputSchema)?.data;
         if (!this.properties?.outputSchema) {
             this.outputSchema = this.inputSchema;
         }
@@ -340,11 +342,20 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     private updateSchema() {
-        this.inputSchemaName = '';
-        this.outputSchemaName = '';
         this.inputSchemaFieldMap.clear();
         this.outputSchemaFieldMap.clear();
 
+        this.schemaNames.clear();
+        this.schemaFieldMap.clear();
+        for (const schema of this.schemas) {
+            this.schemaNames.set(String(schema.iri || ''), String(schema.name || ''));
+            const fields = schema.getFields();
+            const map = new Map<string, SchemaField>();
+            for (const field of fields) {
+                map.set(String(field.path), field);
+            }
+            this.schemaFieldMap.set(String(schema.iri || ''), map);
+        }
         if (this.inputSchema) {
             this.inputSchemaName = String(this.inputSchema.name || '');
 
@@ -421,7 +432,56 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         return items;
     }
 
-    public onLink(item: FieldLink, schema: Schema | undefined) {
+    public onInputLink(item: FieldLink) {
+        const schema = this.inputSchema;
+        if (!schema) {
+            return;
+        }
+        const view = this.createSchemaView(schema);
+
+        const groups = [];
+        const schemas = this.schemas.filter((s) => s !== this.inputSchema && s.entity !== 'NONE');
+        for (const item of schemas) {
+            groups.push({
+                id: item.iri,
+                name: item.name,
+                view: this.createSchemaView(item),
+                highlighted: false,
+                searchHighlighted: false,
+            })
+        }
+        groups.unshift({
+            id: schema.iri,
+            name: schema.name,
+            view: view,
+            highlighted: true,
+            searchHighlighted: false,
+        })
+
+        const dialogRef = this.dialogService.open(FieldLinkDialog, {
+            showHeader: false,
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            focusOnClose: false,
+            data: {
+                title: schema?.name || 'Set Link',
+                value: item.field,
+                group: item.schema,
+                view,
+                groups
+            },
+        });
+        dialogRef.onClose.subscribe((result: any | null) => {
+            if (result) {
+                item.field = result.value;
+                item.schema = result.group || schema?.iri || null;
+                item.update();
+            }
+        });
+    }
+
+    public onOutputLink(item: FieldLink) {
+        const schema = this.outputSchema;
         if (!schema) {
             return;
         }
@@ -445,36 +505,46 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         });
     }
 
-    public getEntityName(type: 'input' | 'output', link: string): string {
+    public getEntityName(type: 'input' | 'output', schema: string | null): string {
         if (type === 'input') {
-            return this.inputSchemaName || '';
+            if (schema) {
+                return this.schemaNames.get(schema) || '';
+            } else {
+                return this.inputSchemaName;
+            }
         } else {
-            return this.outputSchemaName || '';
+            if (schema) {
+                return this.schemaNames.get(schema) || '';
+            } else {
+                return this.outputSchemaName;
+            }
         }
     }
 
-    public getFieldName(type: 'input' | 'output', link: string): string {
+    private getField(type: 'input' | 'output', schema: string | null, link: string) {
+        if (schema) {
+            return this.schemaFieldMap.get(schema)?.get(link);
+        }
         if (type === 'input') {
-            return this.inputSchemaFieldMap.get(link)?.description || '';
+            return this.inputSchemaFieldMap.get(link);
         } else {
-            return this.outputSchemaFieldMap.get(link)?.description || '';
+            return this.outputSchemaFieldMap.get(link);
         }
     }
 
-    public getFieldType(type: 'input' | 'output', link: string): string {
-        if (type === 'input') {
-            return this.inputSchemaFieldMap.get(link)?.fullType || '';
-        } else {
-            return this.outputSchemaFieldMap.get(link)?.fullType || '';
-        }
+    public getFieldName(type: 'input' | 'output', schema: string | null, link: string): string {
+        const field = this.getField(type, schema, link);
+        return field?.description || '';
     }
 
-    public getFieldPath(type: 'input' | 'output', link: string): string {
-        if (type === 'input') {
-            return this.inputSchemaFieldMap.get(link)?.path || '';
-        } else {
-            return this.outputSchemaFieldMap.get(link)?.path || '';
-        }
+    public getFieldType(type: 'input' | 'output', schema: string | null, link: string): string {
+        const field = this.getField(type, schema, link);
+        return field?.fullType || '';
+    }
+
+    public getFieldPath(type: 'input' | 'output', schema: string | null, link: string): string {
+        const field = this.getField(type, schema, link);
+        return field?.path || '';
     }
 
     public getItemValue(value: any) {
@@ -601,7 +671,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 const cursor = this.getCursor();
-                const type = this.getFieldType('input', result.value);
+                const type = this.getFieldType('input', null, result.value);
                 let text = '';
                 text = text + '\r\n';
                 text = text + `//${result.fullName}` + '\r\n';
@@ -742,6 +812,8 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             this.result = null;
 
             const inputDocument = this.getValue();
+            const documents = new DocumentMap();
+            documents.addDocument(inputDocument);
 
             if (!this.engine) {
                 this.loading = false;
@@ -780,7 +852,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 return;
             }
 
-            this.context.setDocument(inputDocument);
+            this.context.setDocument(documents);
             const context = this.context.getContext();
 
             const variables = this.engine.variables.getItems();
@@ -901,7 +973,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 button: 'Save'
             },
         });
-        dialogRef.onClose.subscribe(async (result:any) => {
+        dialogRef.onClose.subscribe(async (result: any) => {
             if (!result) {
                 return;
             }

@@ -3,6 +3,7 @@ import { FieldLink } from './field-link';
 import { getValueByPath, convertValue, createComputeEngine, getDocumentValueByPath, parseValue } from './utils';
 import { MathItemType } from './math-item-type';
 import { IContext } from './math.interface';
+import { DocumentMap } from './document-map';
 
 export class MathContext {
     private readonly list: (MathFormula | FieldLink)[];
@@ -24,18 +25,20 @@ export class MathContext {
         this.getField = this.__get.bind({});
     }
 
-    public setDocument(doc: any): IContext {
+    public setDocument(documents: DocumentMap): IContext {
         this.valid = true;
         try {
             for (const item of this.list) {
                 if (item.type === MathItemType.LINK) {
-                    item.value = getDocumentValueByPath(doc, item.path);
+                    const document = documents.getDocument(item.schema);
+                    item.value = getDocumentValueByPath(document, item.path);
                 }
             }
         } catch (error) {
             this.valid = false;
         }
-        this.calculate(doc);
+        const current = documents.getCurrent();
+        this.calculate(current);
         return {
             variables: this.variables,
             formulas: this.formulas,

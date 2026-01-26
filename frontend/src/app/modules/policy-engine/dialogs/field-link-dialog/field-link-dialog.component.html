@@ -7,7 +7,7 @@
     </div>
 </div>
 <div class="dialog-body">
-    <div class="context">
+    <div *ngIf="groups && !items" class="context">
         <div class="search">
             <div class="guardian-search">
                 <input 
@@ -19,7 +19,39 @@
                     (change)="onFilter()" />
             </div>
         </div>
-        <div *ngIf="items" class="field-tree">
+        <div class="field-tree">
+            <div 
+                *ngFor="let group of groups" 
+                class="field-item"
+                [attr.highlighted]="group.highlighted"
+                [attr.search-highlighted]="group.searchHighlighted"
+            >
+                <div class="field-select" (click)="onSelectGroup(group)">
+                    <p-radioButton 
+                        class="guardian-radio-button radio-button-24"
+                        [value]="group.id" 
+                        [ngModel]="selectedGroup?.id"></p-radioButton>
+                </div>
+                <div class="field-names" (click)="onSelectGroup(group)">
+                    <div class="field-name">{{group.name}}</div>
+                    <div *ngIf="viewId" class="field-id">{{group.id}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="items" class="context">
+        <div class="search">
+            <div class="guardian-search">
+                <input 
+                    id="search" 
+                    [(ngModel)]="search" 
+                    placeholder="Search" 
+                    pInputText
+                    type="text" 
+                    (change)="onFilter()" />
+            </div>
+        </div>
+        <div class="field-tree">
             <div 
                 *ngFor="let item of items.data.items" 
                 class="field-item"
@@ -59,7 +91,19 @@
                 (click)="onClose()" 
                 class="guardian-button guardian-button-secondary">Close</button>
         </div>
-        <div class="dialog-button">
+        <div *ngIf="groups && !items" class="dialog-button">
+            <button 
+                (click)="onNext()" 
+                class="guardian-button guardian-button-primary"
+                [disabled]="!selectedGroup">Next</button>
+        </div>
+        <div *ngIf="groups && items" class="dialog-button">
+            <button 
+                (click)="onPrev()" 
+                class="guardian-button guardian-button-secondary"
+                >Prev</button>
+        </div>
+        <div *ngIf="items" class="dialog-button">
             <button 
                 (click)="onSubmit()" 
                 class="guardian-button guardian-button-primary"

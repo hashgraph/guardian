@@ -5,3 +5,4 @@ export * from './math-context';
 export * from './math-formula';
 export * from './math-engine';
 export * from './utils';
+export * from './document-map';

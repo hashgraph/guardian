@@ -15,6 +15,14 @@ export class FieldLinkDialog {
     public search: string;
     public value: string | null;
     public viewId: boolean;
+    public groups: {
+        id: string,
+        name: string,
+        view: TreeListView<any>,
+        highlighted: boolean,
+        searchHighlighted: boolean,
+    }[] | null;
+    public selectedGroup: any;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -24,7 +32,20 @@ export class FieldLinkDialog {
         this.title = this.config.data?.title;
         this.value = this.config.data?.value;
         this.items = this.config.data?.view;
+        this.groups = this.config.data?.groups;
         this.viewId = this.config.data?.viewId !== false;
+        if (!this.groups?.length) {
+            this.groups = null;
+        }
+        if (this.groups) {
+            const group = this.config.data?.group;
+            this.items = null;
+            if (group) {
+                this.selectedGroup = this.groups.find((g) => g.id === group) || this.groups[0];
+            } else {
+                this.selectedGroup = this.groups[0];
+            }
+        }
     }
 
     ngOnInit() {
@@ -59,6 +80,7 @@ export class FieldLinkDialog {
             const parents = this.getParents(this.item);
             const fullName = parents.map(e => e.name).join('|');
             this.ref.close({
+                group: this.selectedGroup?.id,
                 fullName: fullName,
                 name: this.item.name,
                 value: this.value
@@ -79,5 +101,19 @@ export class FieldLinkDialog {
     public onFilter() {
         const search = (this.search || '').toLowerCase();
         this.items?.searchItems(search, [0, 1]);
+    }
+
+    public onSelectGroup(group: any) {
+        this.selectedGroup = group;
+    }
+
+    public onNext() {
+        if (this.selectedGroup) {
+            this.items = this.selectedGroup.view;
+        }
+    }
+
+    public onPrev() {
+        this.items = null;
     }
 }
