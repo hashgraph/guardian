@@ -903,7 +903,6 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
                         String(existingEntity.id || existingEntity._id) === String(entity.id || entity._id)
                 );
 
-
                 if (existingEntityById) {
                     entitiesToUpdate = [existingEntityById]
                 } else {

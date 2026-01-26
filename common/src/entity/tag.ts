@@ -3,7 +3,7 @@ import { RestoreEntity } from '../models/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { DataBaseHelper } from '../helpers/db-helper.js';
 import { DeleteCache } from './delete-cache.js';
-import { ObjectId } from "@mikro-orm/mongodb";
+import { ObjectId } from '@mikro-orm/mongodb';
 
 /**
  * Tags collection

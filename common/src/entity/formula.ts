@@ -1,8 +1,8 @@
 import {AfterDelete, BeforeCreate, Entity, Property} from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
 import { EntityStatus, GenerateUUIDv4, IFormula, IFormulaConfig } from '@guardian/interfaces';
-import {ObjectId} from "@mikro-orm/mongodb";
-import {DataBaseHelper} from "../helpers/index.js";
+import {ObjectId} from '@mikro-orm/mongodb';
+import {DataBaseHelper} from '../helpers/index.js';
 
 /**
  * Formula collection
