@@ -617,7 +617,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
-                    url: `${apiBase}${API.ListOfTokens}${tokenId}/${API.RelayerAccounts}${hederaId}/${API.Info}`,
+                    url: `${API.ApiServer}${API.ListOfTokens}${tokenId}/${API.RelayerAccounts}${hederaId}/${API.Info}`,
                     headers: {
                         authorization
                     }
