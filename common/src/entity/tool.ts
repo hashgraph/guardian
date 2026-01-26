@@ -193,6 +193,9 @@ export class PolicyTool extends BaseEntity {
         }
     }
 
+    /**
+     * Delete original policy tool zip (publish flow)
+     */
     @AfterDelete()
     deleteContentFile() {
         if (this.contentFileId) {
