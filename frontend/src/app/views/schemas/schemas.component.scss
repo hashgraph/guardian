@@ -833,6 +833,52 @@ a {
             font-weight: 600;
             color: var(--color-grey-black-1);
             background-color: var(--color-grey-3, #E1E7EF);
+
+            .parent-row-content {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                width: 100%;
+                gap: 20px;
+            }
+
+            .parent-row-name {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                .filter-link {
+                    cursor: pointer;
+                    color: var(--color-primary);
+                    text-decoration: none;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
+                }
+
+                .schemas-count {
+                    font-weight: normal;
+                    font-size: 0.85em;
+                    color: var(--color-grey-5);
+                }
+            }
+
+            .btn-configure {
+                padding: 4px 12px;
+                background: #fff;
+                border: 1px solid var(--color-secondary);
+                border-radius: 4px;
+                color: var(--color-primary);
+                text-decoration: none;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+
+                &:hover {
+                    background: var(--color-grey-1);
+                }
+            }
         }
     }
 }

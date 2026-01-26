@@ -162,20 +162,29 @@
                     <tr *ngIf="!rowData.isParent || (rowData.isParent && rowData.name)" [ttRow]="rowNode" class="guardian-grid-row" [class.grey-row]="!rowData.isParent || (rowData.isParent && rowData.name)" [attr.schema-status]="rowData.status">
                         <ng-container *ngIf="rowData.isParent">
                             <td class="row-cell-text parent-row-cell" [attr.colspan]="type === 'policy' ? 8 : (type === 'tool' ? 4 : 3)">
-                                <a *ngIf="type === 'policy' && rowData.topicId !== NOT_BINDED" class="text-truncate"
-                                   [queryParams]="{ policyId: policyIdByTopic[rowData.topicId] }"
-                                   [routerLink]="['/policy-configuration']"
-                                >
-                                    {{ rowData.name }}
-                                </a>
-                                <a *ngIf="type === 'tool'" class="text-truncate"
-                                   [queryParams]="{toolId: toolIdByTopic[rowData.topicId]}"
-                                   [routerLink]="'/tool-configuration'">
-                                    {{ toolNameByTopic[rowData.topicId] }}
-                                </a>
-                                <span *ngIf="type === 'module' || rowData.topicId === NOT_BINDED" class="text-truncate">
-                                    {{ rowData.name }}
-                                </span>
+                                <div class="parent-row-content">
+                                    <span class="parent-row-name">
+                                        <a (click)="onSelectFilter(rowData.topicId)" class="filter-link">
+                                            {{ rowData.name }}
+                                        </a>
+                                        <a *ngIf="type === 'tool'"
+                                           (click)="onSelectFilter(rowData.topicId)" class="filter-link">
+                                            {{ toolNameByTopic[rowData.topicId] }}
+                                        </a>
+                                        <span class="schemas-count">
+                                            {{ rowData.count }} of {{ rowData.totalCount }} schemas shown
+                                        </span>
+                                    </span>
+                                    <div class="parent-row-actions">
+                                        <a *ngIf="type === 'policy' && rowData.topicId !== NOT_BINDED"
+                                           [queryParams]="{ policyId: policyIdByTopic[rowData.topicId] }"
+                                           [routerLink]="['/policy-configuration']"
+                                           class="btn-configure"
+                                        >
+                                            Configure
+                                        </a>
+                                    </div>
+                                </div>
                             </td>
                             <td class="row-cell-text parent-row-cell" style="min-width: 110px; width: 110px; max-width: 110px;"></td>
                         </ng-container>
@@ -315,7 +324,13 @@
                                 </td>
                             </ng-container>
                             <ng-container *ngIf="type === 'tool'">
-                                <td class="row-cell-text col-200"></td>
+                                <td class="row-cell-text col-200">
+                                    <a [queryParams]="{toolId: toolIdByTopic[rowData.topicId]}"
+                                       [routerLink]="'/tool-configuration'"
+                                       class="btn-configure">
+                                        {{ toolNameByTopic[rowData.topicId] }}
+                                    </a>
+                                </td>
                                 <td [pTooltip]="rowData.name" class="row-cell-text" style="min-width: 140px; max-width: 150px;">
                                     <span class="text-truncate">{{ rowData.name }}</span>
                                 </td>

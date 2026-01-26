@@ -119,4 +119,9 @@ export interface ISchema {
      * Errors
      */
     errors?: any[];
+
+    /**
+     * Topic count
+     */
+    topicCount?: number;
 }

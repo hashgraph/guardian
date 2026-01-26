@@ -107,6 +107,7 @@ export class SchemaConfigComponent implements OnInit {
     public isConfirmed: boolean = false;
     public currentTopic: string | null = null;
     public page: ISchema[] = [];
+    public treeData: TreeNode[] = [];
     public pageIndex: number = 0;
     public pageSize: number = 25;
     public count: number = 0;
@@ -142,7 +143,6 @@ export class SchemaConfigComponent implements OnInit {
     public isAllSelected: boolean = false;
     public selectedItems: any[] = [];
     public selectedItemIds: string[] = [];
-    public treeData: TreeNode[] = [];
     private static readonly NOT_BINDED = 'not-binded';
 
     public onMenuClick(event: MouseEvent, overlayPanel: any, menuData: any): void {
@@ -344,8 +344,8 @@ export class SchemaConfigComponent implements OnInit {
     private _destroy$ = new Subject<void>();
 
     ngOnInit() {
-        const type = this.route.snapshot.queryParams['type'];
-        const topic = this.route.snapshot.queryParams['topic'];
+        const type = this.route.snapshot.queryParams.type;
+        const topic = this.route.snapshot.queryParams.topic;
         this.type = this.getType(type);
         this.currentTopic = topic && topic !== 'all' ? topic : '';
         this.loadProfile();
@@ -634,7 +634,7 @@ export class SchemaConfigComponent implements OnInit {
             }
         }
         loader.subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
-            this.page = SchemaHelper.map(schemasResponse.body || []);
+            this.page = schemasResponse.body || [];
             for (const element of this.page as any[]) {
                 element.__policyId = this.policyIdByTopic[element.topicId];
                 element.__policyName = this.policyNameByTopic[element.topicId] || ' - ';
@@ -656,7 +656,6 @@ export class SchemaConfigComponent implements OnInit {
         }
 
         const groups = new Map<string, ISchema[]>();
-        console.dir(schemas);
         for (const schema of schemas) {
             const hasPolicyBinding = Boolean((schema as Record<string, unknown>).__policyId);
             const topicId = hasPolicyBinding ? schema.topicId ?? SchemaConfigComponent.NOT_BINDED : SchemaConfigComponent.NOT_BINDED;
@@ -667,7 +666,6 @@ export class SchemaConfigComponent implements OnInit {
         }
 
         const result: TreeNode[] = [];
-        console.dir(groups);
         groups.forEach((groupSchemas, topicId) => {
             const sortedSchemas = groupSchemas.sort((a, b) => {
                 // First compare by topicId
@@ -696,13 +694,31 @@ export class SchemaConfigComponent implements OnInit {
                 parentId = this.toolIdByTopic[topicId];
             }
 
+            const topicCountByTopicId = new Map<string, number>();
+            for (const schema of groupSchemas) {
+                if (!schema.topicId) {
+                    continue;
+                }
+                const count = schema.topicCount ?? 0;
+                if (!topicCountByTopicId.has(schema.topicId)) {
+                    topicCountByTopicId.set(schema.topicId, count);
+                }
+            }
+
+            const totalTopicCount = Array.from(topicCountByTopicId.values()).reduce(
+                (sum, count) => sum + count,
+                0
+            );
+
             const parentNode: TreeNode = {
                 data: {
                     name: parentName,
                     topicId,
                     isParent: true,
                     policyId: parentId,
-                    toolId: parentId
+                    toolId: parentId,
+                    count: groupSchemas.length,
+                    totalCount: totalTopicCount
                 },
                 expanded: true,
                 children: sortedSchemas.map(schema => ({
@@ -755,6 +771,11 @@ export class SchemaConfigComponent implements OnInit {
             },
         });
         this.loadSchemas();
+    }
+
+    public onSelectFilter(topicId: string) {
+        this.currentTopic = topicId === SchemaConfigComponent.NOT_BINDED ? SchemaConfigComponent.NOT_BINDED : topicId;
+        this.onFilter();
     }
 
     public onPage(event: any): void {
@@ -1385,8 +1406,8 @@ export class SchemaConfigComponent implements OnInit {
             styleClass: 'guardian-dialog',
             showHeader: false,
             data: {
-                schemas: schemas,
-                errors: errors,
+                schemas,
+                errors,
                 topicId: this.currentTopic,
                 schemaType: this.type,
                 policies: this.policies,
@@ -1455,7 +1476,7 @@ export class SchemaConfigComponent implements OnInit {
             showHeader: false,
             data: {
                 title: 'Schemas for replace',
-                schemasCanBeReplaced: schemasCanBeReplaced,
+                schemasCanBeReplaced,
             },
         });
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
@@ -1474,7 +1495,7 @@ export class SchemaConfigComponent implements OnInit {
             showHeader: false,
             data: {
                 title: 'Schemas for replace',
-                schemasCanBeReplaced: schemasCanBeReplaced,
+                schemasCanBeReplaced,
             },
         });
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
@@ -1493,7 +1514,7 @@ export class SchemaConfigComponent implements OnInit {
             showHeader: false,
             data: {
                 title: 'Schemas for replace',
-                schemasCanBeReplaced: schemasCanBeReplaced,
+                schemasCanBeReplaced,
             },
         });
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
@@ -1511,7 +1532,7 @@ export class SchemaConfigComponent implements OnInit {
                 width: '720px',
                 styleClass: 'custom-dialog',
                 data: {
-                    schema: schema
+                    schema
                 },
             }), (e) => {
                 this.loadError(e);
@@ -1578,7 +1599,7 @@ export class SchemaConfigComponent implements OnInit {
         this.schemaService
             .downloadExcelExample()
             .subscribe((fileBuffer) => {
-                let downloadLink = document.createElement('a');
+                const downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(
                     new Blob([new Uint8Array(fileBuffer)], {
                         type: 'application/guardian-schema',
