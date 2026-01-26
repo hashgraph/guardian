@@ -1,6 +1,6 @@
 import { BlockValidator, IBlockProp } from '../index.js';
 import { CommonBlock } from './common.js';
-import { MathGroup, Code } from '../../helpers/math-model/index.js';
+import { MathEngine, Code } from '../../helpers/math-model/index.js';
 
 /**
  * Math block
@@ -51,7 +51,7 @@ export class MathBlock {
                 return;
             }
 
-            const group = MathGroup.from(ref.options.expression);
+            const group = MathEngine.from(ref.options.expression);
             const groupError = group.validate();
             if (groupError) {
                 validator.addError('Option "expression" is incorrect');

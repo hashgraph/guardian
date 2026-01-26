@@ -100,95 +100,113 @@
                 {{getHeader(step)}}
             </div>
 
-            <div *ngIf="step === 'step_1'" class="step-container">
-                <div *ngIf="group.variables.length" class="formulas-container">
-                    <div 
-                        class="reorder-rows-container"
-                        cdkDropList
-                        [cdkDropListData]="group.variables"
-                        (cdkDropListDropped)="reorder('variables', $event)"
-                        cdkScrollable
-                    >
+            <ng-container *ngIf="step === 'step_1'" >
+                <div class="step-container pages">
+                    <div *ngIf="variables.length" class="formulas-container">
                         <div 
-                            *ngFor="let item of group.variables" 
-                            class="rows-container" 
-                            [attr.error]="item.invalid && item.validated"
-                            cdkDrag
-                            cdkDragLockAxis="y"
-                            [cdkDragDisabled]="readonly"
+                            class="reorder-rows-container"
+                            cdkDropList
+                            [cdkDropListData]="variables"
+                            (cdkDropListDropped)="reorder('variables', $event)"
+                            cdkScrollable
                         >
-                            <div cdkDragHandle class="formula-reorder">
-                                <svg-icon
-                                    class="icon-btn svg-icon"
-                                    src="/assets/images/icons/equal.svg"
-                                    svgClass="icon-color-disabled">
-                                </svg-icon>
-                            </div>
-                            <div class="row-container">
-                                <div class="formula-name" [attr.error]="!item.validName">
-                                    <div class="guardian-input-container">
-                                        <label class="form-label">Variable</label>
-                                        <input 
-                                            [(ngModel)]="item.variableNameText" 
-                                            pInputText 
-                                            type="text"
-                                            placeholder="Name"
-                                            (change)="item.update()"/>
-                                    </div>
-                                </div>
-                                <div class="formula-eq">=</div>
-                                <div class="formula-body" [attr.error]="!item.validField">
-                                    <div class="guardian-input-container">
-                                        <label class="form-label"></label>
-                                        <div class="formula-link" (click)="onLink(item, inputSchema)">
-                                            <div *ngIf="item.field" class="formula-link-value">
-                                                <div class="formula-link-value__entity">{{getEntityName('input', item.field)}}:</div>
-                                                <div class="formula-link-value__item">{{getFieldName('input', item.field)}}</div>
-                                            </div>
-                                            <div *ngIf="item.field" class="formula-link-remove">
-                                                <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
-                                                    <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row-container row-container-last" style="gap: 16px">
-                                <div class="guardian-input-container">
-                                    <label class="form-label">Type</label>
-                                    <div class="readonly-input">
-                                        <div *ngIf="item.field" class="formula-link-value">
-                                            <div class="formula-link-value__item">{{getFieldType('input', item.field)}}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="guardian-input-container">
-                                    <label class="form-label">Path</label>
-                                    <div class="readonly-input">
-                                        <div *ngIf="item.field" class="formula-link-value">
-                                            <div class="formula-link-value__item">{{getFieldPath('input', item.field)}}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="formula-del">
-                                <button 
-                                    class="guardian-icon-button big" 
-                                    (click)="deleteVariable(item)">
+                            <div 
+                                *ngFor="let item of variables" 
+                                class="rows-container" 
+                                [attr.error]="item.invalid && item.validated"
+                                cdkDrag
+                                cdkDragLockAxis="y"
+                                [cdkDragDisabled]="readonly"
+                            >
+                                <div cdkDragHandle class="formula-reorder">
                                     <svg-icon
                                         class="icon-btn svg-icon"
-                                        src="/assets/images/icons/delete.svg"
-                                        svgClass="icon-color-delete">
+                                        src="/assets/images/icons/equal.svg"
+                                        svgClass="icon-color-disabled">
                                     </svg-icon>
-                                </button>
-                            </div>
-                            <div *ngIf="!item.valid  && item.validated && item.error" class="formula-error">
-                                {{item.error}}
+                                </div>
+                                <div class="row-container">
+                                    <div class="formula-name" [attr.error]="!item.validName">
+                                        <div class="guardian-input-container">
+                                            <label class="form-label">Variable</label>
+                                            <input 
+                                                [(ngModel)]="item.variableNameText" 
+                                                pInputText 
+                                                type="text"
+                                                placeholder="Name"
+                                                (change)="item.update()"/>
+                                        </div>
+                                    </div>
+                                    <div class="formula-eq">=</div>
+                                    <div class="formula-body" [attr.error]="!item.validField">
+                                        <div class="guardian-input-container">
+                                            <label class="form-label"></label>
+                                            <div class="formula-link" (click)="onLink(item, inputSchema)">
+                                                <div *ngIf="item.field" class="formula-link-value">
+                                                    <div class="formula-link-value__entity">{{getEntityName('input', item.field)}}:</div>
+                                                    <div class="formula-link-value__item">{{getFieldName('input', item.field)}}</div>
+                                                </div>
+                                                <div *ngIf="item.field" class="formula-link-remove">
+                                                    <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
+                                                        <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row-container row-container-last" style="gap: 16px">
+                                    <div class="guardian-input-container">
+                                        <label class="form-label">Type</label>
+                                        <div class="readonly-input">
+                                            <div *ngIf="item.field" class="formula-link-value">
+                                                <div class="formula-link-value__item">{{getFieldType('input', item.field)}}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="guardian-input-container">
+                                        <label class="form-label">Path</label>
+                                        <div class="readonly-input">
+                                            <div *ngIf="item.field" class="formula-link-value">
+                                                <div class="formula-link-value__item">{{getFieldPath('input', item.field)}}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="formula-del">
+                                    <button 
+                                        class="guardian-icon-button big" 
+                                        (click)="deleteVariable(item)">
+                                        <svg-icon
+                                            class="icon-btn svg-icon"
+                                            src="/assets/images/icons/delete.svg"
+                                            svgClass="icon-color-delete">
+                                        </svg-icon>
+                                    </button>
+                                </div>
+                                <div *ngIf="!item.valid  && item.validated && item.error" class="formula-error">
+                                    {{item.error}}
+                                </div>
                             </div>
                         </div>
+                        <div class="formula-toolbar">
+                            <button (click)="addVariable()" class="guardian-button guardian-button-secondary add-formula-btn">
+                                <div class="guardian-button-icon">
+                                    <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/variable.svg"
+                                        svgClass="icon-color-primary">
+                                    </svg-icon>
+                                </div>
+                                <div class="guardian-button-label">Add Variable</div>
+                            </button>
+                        </div>
                     </div>
-                    <div class="formula-toolbar">
+                    <div *ngIf="!variables.length" class="formulas-container-empty">
+                        <svg-icon 
+                            class="svg-icon-32" 
+                            src="/assets/images/icons/32/list.svg" 
+                            svgClass="icon-color-disabled">
+                        </svg-icon>
+                        <span class="info-text">No variables have been created yet</span>
                         <button (click)="addVariable()" class="guardian-button guardian-button-secondary add-formula-btn">
                             <div class="guardian-button-icon">
                                 <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/variable.svg"
@@ -199,152 +217,164 @@
                         </button>
                     </div>
                 </div>
-                <div *ngIf="!group.variables.length" class="formulas-container-empty">
-                    <svg-icon 
-                        class="svg-icon-32" 
-                        src="/assets/images/icons/32/list.svg" 
-                        svgClass="icon-color-disabled">
-                    </svg-icon>
-                    <span class="info-text">No variables have been created yet</span>
-                    <button (click)="addVariable()" class="guardian-button guardian-button-secondary add-formula-btn">
-                        <div class="guardian-button-icon">
-                            <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/variable.svg"
-                                svgClass="icon-color-primary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Add Variable</div>
-                    </button>
-                </div>
-            </div>
-            <div *ngIf="step === 'step_2'" class="step-container">
-                <div class="tabs-nav">
-                    <p-tabView (onChange)="onCodeChangeTab($event)" class="guardian-header-tabs">
-                        <p-tabPanel [selected]="codeTab === 'general'">
-                            <ng-template pTemplate="header">
-                                <div class="tabview-label">General</div>
-                            </ng-template>
-                        </p-tabPanel>
-                        <p-tabPanel [selected]="codeTab === 'advanced'">
-                            <ng-template pTemplate="header">
-                                <div class="tabview-label">Advanced (Optional)</div>
-                            </ng-template>
-                        </p-tabPanel>
-                    </p-tabView>
-                </div>
-                <div *ngIf="codeTab === 'general' && group.formulas.length" class="formulas-container">
-                    <div 
-                        class="reorder-rows-container"
-                        cdkDropList
-                        [cdkDropListData]="group.formulas"
-                        (cdkDropListDropped)="reorder('formulas', $event)"
-                        cdkScrollable
-                    >
+                <pages-control 
+                    class="pages-control"
+                    [items]="engine.variables.pages"
+                    [current]="engine.variables.current"
+                    (create)="engine.variables.create()"
+                    (select)="engine.variables.select($event)"
+                    (rename)="onRenamePage(engine.variables, $event)"
+                    (delete)="onDeletePage(engine.variables, $event)"
+                ></pages-control>
+            </ng-container>
+
+            <ng-container *ngIf="step === 'step_2'" >
+                <div class="step-container {{codeTab === 'general' ? 'pages' : ''}}">
+                    <div class="tabs-nav">
+                        <p-tabView (onChange)="onCodeChangeTab($event)" class="guardian-header-tabs">
+                            <p-tabPanel [selected]="codeTab === 'general'">
+                                <ng-template pTemplate="header">
+                                    <div class="tabview-label">General</div>
+                                </ng-template>
+                            </p-tabPanel>
+                            <p-tabPanel [selected]="codeTab === 'advanced'">
+                                <ng-template pTemplate="header">
+                                    <div class="tabview-label">Advanced (Optional)</div>
+                                </ng-template>
+                            </p-tabPanel>
+                        </p-tabView>
+                    </div>
+                    <div *ngIf="codeTab === 'general' && formulas.length" class="formulas-container">
                         <div 
-                            *ngFor="let item of group.formulas" 
-                            class="rows-container" 
-                            [attr.error]="item.invalid && item.validated"
-                            cdkDrag
-                            cdkDragLockAxis="y"
-                            [cdkDragDisabled]="readonly"
+                            class="reorder-rows-container"
+                            cdkDropList
+                            [cdkDropListData]="formulas"
+                            (cdkDropListDropped)="reorder('formulas', $event)"
+                            cdkScrollable
                         >
-                            <div cdkDragHandle class="formula-reorder">
-                                <svg-icon
-                                    class="icon-btn svg-icon"
-                                    src="/assets/images/icons/equal.svg"
-                                    svgClass="icon-color-disabled">
-                                </svg-icon>
-                            </div>
-                            <div class="row-container">
-                                <div class="formula-name" [attr.error]="!item.validName">
-                                    <div class="guardian-input-container">
-                                        <label class="form-label">Name</label>
-                                        <input 
-                                            [(ngModel)]="item.functionNameText" 
-                                            pInputText 
-                                            type="text"
-                                            placeholder="Name"
-                                            (change)="item.updateName()"/>
-                                    </div>
-                                </div>
-                                <div class="formula-eq">=</div>
-                                <div class="guardian-selector">
-                                    <div
-                                        class="guardian-selector-item"
-                                        [attr.selected]="item.view === 'formula'"
-                                        (click)="onChangeView(item, 'formula')">Formula</div>
-                                    <div
-                                        class="guardian-selector-item"
-                                        [attr.selected]="item.view === 'latex'"
-                                        (click)="onChangeView(item, 'latex')">LaTeX</div>
-                                    <div
-                                        class="guardian-selector-item"
-                                        [attr.selected]="item.view === 'json'"
-                                        (click)="onChangeView(item, 'json')">MathJSON</div>
-                                </div>
-                            </div>
-                            <div class="row-container vertical">
-                                <div *ngIf="item.view === 'formula'" class="formula-tab-body" [attr.error]="!item.validBody">
-                                    <div class="guardian-textarea-container">
-                                        <math-live 
-                                            [(value)]="item.functionBodyText" 
-                                            [readonly]="false"
-                                            [menu]="false"
-                                            [keyboardType]="'evaluate'"
-                                            [keyboardContainer]="contextBodyRef"
-                                            (keyboard)="onKeyboard($event)"
-                                            (focus)="onKeyboardFocus($event)"
-                                            (change)="item.updateBody()"
-                                        ></math-live>
-                                    </div>
-                                </div>
-                                <div *ngIf="item.view === 'latex'" class="formula-tab-body" [attr.error]="!item.validBody">
-                                    <div class="guardian-input-container">
-                                        <input 
-                                            [(ngModel)]="item.functionBodyText" 
-                                            pInputText 
-                                            type="text"
-                                            (change)="item.updateBody()"/>
-                                    </div>
-                                </div>
-                                <div *ngIf="item.view === 'json'" class="formula-tab-body" [attr.error]="!item.validBody">
-                                    <div class="guardian-textarea-container">
-                                        <textarea 
-                                            [(ngModel)]="item.functionBodyJson" 
-                                            pTextarea 
-                                            [readonly]="readonly"
-                                            rows="8" 
-                                            (blur)="item.updateBody()"></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row-container row-container-last">
-                                <div class="guardian-textarea-container">
-                                    <label class="form-label">Notes</label>
-                                    <textarea 
-                                        [(ngModel)]="item.description" 
-                                        placeholder="Please enter here notes"
-                                        pTextarea 
-                                        rows="2" 
-                                        [readonly]="readonly"></textarea>
-                                </div>
-                            </div>
-                            <div class="formula-del">
-                                <button 
-                                    class="guardian-icon-button big" 
-                                    (click)="deleteFormula(item)">
+                            <div 
+                                *ngFor="let item of formulas" 
+                                class="rows-container" 
+                                [attr.error]="item.invalid && item.validated"
+                                cdkDrag
+                                cdkDragLockAxis="y"
+                                [cdkDragDisabled]="readonly"
+                            >
+                                <div cdkDragHandle class="formula-reorder">
                                     <svg-icon
                                         class="icon-btn svg-icon"
-                                        src="/assets/images/icons/delete.svg"
-                                        svgClass="icon-color-delete">
+                                        src="/assets/images/icons/equal.svg"
+                                        svgClass="icon-color-disabled">
                                     </svg-icon>
-                                </button>
-                            </div>
-                            <div *ngIf="!item.valid && item.error" class="formula-error">
-                                {{item.error}}
+                                </div>
+                                <div class="row-container">
+                                    <div class="formula-name" [attr.error]="!item.validName">
+                                        <div class="guardian-input-container">
+                                            <label class="form-label">Name</label>
+                                            <input 
+                                                [(ngModel)]="item.functionNameText" 
+                                                pInputText 
+                                                type="text"
+                                                placeholder="Name"
+                                                (change)="item.updateName()"/>
+                                        </div>
+                                    </div>
+                                    <div class="formula-eq">=</div>
+                                    <div class="guardian-selector">
+                                        <div
+                                            class="guardian-selector-item"
+                                            [attr.selected]="item.view === 'formula'"
+                                            (click)="onChangeView(item, 'formula')">Formula</div>
+                                        <div
+                                            class="guardian-selector-item"
+                                            [attr.selected]="item.view === 'latex'"
+                                            (click)="onChangeView(item, 'latex')">LaTeX</div>
+                                        <div
+                                            class="guardian-selector-item"
+                                            [attr.selected]="item.view === 'json'"
+                                            (click)="onChangeView(item, 'json')">MathJSON</div>
+                                    </div>
+                                </div>
+                                <div class="row-container vertical">
+                                    <div *ngIf="item.view === 'formula'" class="formula-tab-body" [attr.error]="!item.validBody">
+                                        <div class="guardian-textarea-container">
+                                            <math-live 
+                                                [(value)]="item.functionBodyText" 
+                                                [readonly]="false"
+                                                [menu]="false"
+                                                [keyboardType]="'evaluate'"
+                                                [keyboardContainer]="contextBodyRef"
+                                                (keyboard)="onKeyboard($event)"
+                                                (focus)="onKeyboardFocus($event)"
+                                                (change)="item.updateBody()"
+                                            ></math-live>
+                                        </div>
+                                    </div>
+                                    <div *ngIf="item.view === 'latex'" class="formula-tab-body" [attr.error]="!item.validBody">
+                                        <div class="guardian-input-container">
+                                            <input 
+                                                [(ngModel)]="item.functionBodyText" 
+                                                pInputText 
+                                                type="text"
+                                                (change)="item.updateBody()"/>
+                                        </div>
+                                    </div>
+                                    <div *ngIf="item.view === 'json'" class="formula-tab-body" [attr.error]="!item.validBody">
+                                        <div class="guardian-textarea-container">
+                                            <textarea 
+                                                [(ngModel)]="item.functionBodyJson" 
+                                                pTextarea 
+                                                [readonly]="readonly"
+                                                rows="8" 
+                                                (blur)="item.updateBody()"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row-container row-container-last">
+                                    <div class="guardian-textarea-container">
+                                        <label class="form-label">Notes</label>
+                                        <textarea 
+                                            [(ngModel)]="item.description" 
+                                            placeholder="Please enter here notes"
+                                            pTextarea 
+                                            rows="2" 
+                                            [readonly]="readonly"></textarea>
+                                    </div>
+                                </div>
+                                <div class="formula-del">
+                                    <button 
+                                        class="guardian-icon-button big" 
+                                        (click)="deleteFormula(item)">
+                                        <svg-icon
+                                            class="icon-btn svg-icon"
+                                            src="/assets/images/icons/delete.svg"
+                                            svgClass="icon-color-delete">
+                                        </svg-icon>
+                                    </button>
+                                </div>
+                                <div *ngIf="!item.valid && item.error" class="formula-error">
+                                    {{item.error}}
+                                </div>
                             </div>
                         </div>
+                        <div class="formula-toolbar">
+                            <button (click)="addFormula()" class="guardian-button guardian-button-secondary add-formula-btn">
+                                <div class="guardian-button-icon">
+                                    <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/function.svg"
+                                        svgClass="icon-color-primary">
+                                    </svg-icon>
+                                </div>
+                                <div class="guardian-button-label">Add Formula</div>
+                            </button>
+                        </div>
                     </div>
-                    <div class="formula-toolbar">
+                    <div *ngIf="codeTab === 'general' && !formulas.length" class="formulas-container-empty">
+                        <svg-icon 
+                            class="svg-icon-32" 
+                            src="/assets/images/icons/32/list.svg" 
+                            svgClass="icon-color-disabled">
+                        </svg-icon>
+                        <span class="info-text">No results have been created yet</span>
                         <button (click)="addFormula()" class="guardian-button guardian-button-secondary add-formula-btn">
                             <div class="guardian-button-icon">
                                 <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/function.svg"
@@ -354,199 +384,212 @@
                             <div class="guardian-button-label">Add Formula</div>
                         </button>
                     </div>
-                </div>
-                <div *ngIf="codeTab === 'general' && !group.formulas.length" class="formulas-container-empty">
-                    <svg-icon 
-                        class="svg-icon-32" 
-                        src="/assets/images/icons/32/list.svg" 
-                        svgClass="icon-color-disabled">
-                    </svg-icon>
-                    <span class="info-text">No results have been created yet</span>
-                    <button (click)="addFormula()" class="guardian-button guardian-button-secondary add-formula-btn">
-                        <div class="guardian-button-icon">
-                            <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/function.svg"
-                                svgClass="icon-color-primary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Add Formula</div>
-                    </button>
-                </div>
-                <div *ngIf="codeTab === 'advanced'" class="formulas-container">
-                    <div class="code-help" [attr.collapsed]="collapseHelp">
-                        <div class="code-help-header">
-                            <svg-icon
-                                class="svg-icon-16 icon-btn"
-                                src="/assets/images/icons/16/info.svg">
-                            </svg-icon>
-                            Imports
-                            <svg-icon
-                                *ngIf="!collapseHelp"
-                                class="svg-icon-16 collapse-btn"
-                                src="/assets/images/icons/16/collapse-up.svg"
-                                (click)="collapseHelp=true">
-                            </svg-icon>
-                            <svg-icon
-                                *ngIf="collapseHelp"
-                                class="svg-icon-16 collapse-btn"
-                                src="/assets/images/icons/16/collapse-down.svg"
-                                (click)="collapseHelp=false">
-                            </svg-icon>
-                        </div>
-                        <div class="code-variable">
-                            <span class="code-variable-type">PolicyUser</span>
-                            <span class="code-variable-name">user</span>
-                            <span class="code-variable-description">- Active user object, determines code execution context.</span>
-                        </div>
-                        <div class="code-variable">
-                            <span class="code-variable-type">PolicyDocument</span>
-                            <span class="code-variable-name">document</span>
-                            <span class="code-variable-description">- Input VC document.</span>
-                        </div>
-                        <div class="code-variable">
-                            <span class="code-variable-type">PolicyDocument</span>
-                            <span class="code-variable-name">result</span>
-                            <span class="code-variable-description">- Output VC document.</span>
-                        </div>
-                        <div class="code-variable">
-                            <span class="code-variable-type">Map</span>
-                            <span class="code-variable-name">variables</span>
-                            <span class="code-variable-description">- List of variables.</span>
-                        </div>
-                        <div class="code-variable">
-                            <span class="code-variable-type">Map</span>
-                            <span class="code-variable-name">formulas</span>
-                            <span class="code-variable-description">- List of formulas.</span>
-                        </div>
-                    </div>
-                    <div class="code-toolbar">
-                        <button (click)="addVariableLink()" class="guardian-button guardian-button-primary">
-                            <div class="guardian-button-icon">
-                                <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/variable.svg"
-                                    svgClass="icon-color-secondary">
-                                </svg-icon>
-                            </div>
-                            <div class="guardian-button-label">Variables</div>
-                        </button>
-                        <button (click)="addComponent()" class="guardian-button guardian-button-primary">
-                            <div class="guardian-button-icon">
-                                <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/function.svg"
-                                    svgClass="icon-color-secondary">
-                                </svg-icon>
-                            </div>
-                            <div class="guardian-button-label">Formulas</div>
-                        </button>
-                        <div 
-                            class="guardian-label help-label"
-                            pTooltip="To add variable or formula in the code view below, place your cursor where you want to insert a component, then click the button." 
-                            tooltipPosition="top" 
-                            [tooltipOptions]="{showDelay: 300}"
-                        >
-                            <svg-icon
-                                class="svg-icon-16 guardian-label-icon"
-                                src="/assets/images/icons/16/info.svg">
-                            </svg-icon>
-                            Help
-                        </div>
-                    </div>
-                    <div class="code-body">
-                        <ngx-codemirror 
-                            *ngIf="initDialog" 
-                            [(ngModel)]="code.text" 
-                            [options]="codeMirrorOptions"
-                            (ngModelChange)="onChangeCode()"
-                            (cursorActivity)="cursorActivity($event)"></ngx-codemirror>
-                    </div>  
-                </div>
-            </div>
-            <div *ngIf="step === 'step_3'" class="step-container">
-                <div *ngIf="group.outputs.length" class="formulas-container">
-                    <div 
-                        class="reorder-rows-container"
-                        cdkDropList
-                        [cdkDropListData]="group.outputs"
-                        (cdkDropListDropped)="reorder('outputs', $event)"
-                        cdkScrollable
-                    >
-                        <div 
-                            *ngFor="let item of group.outputs" 
-                            class="rows-container" 
-                            [attr.error]="item.invalid && item.validated"
-                            cdkDrag
-                            cdkDragLockAxis="y"
-                            [cdkDragDisabled]="readonly"
-                        >
-                            <div cdkDragHandle class="formula-reorder">
+                    <div *ngIf="codeTab === 'advanced'" class="formulas-container">
+                        <div class="code-help" [attr.collapsed]="collapseHelp">
+                            <div class="code-help-header">
                                 <svg-icon
-                                    class="icon-btn svg-icon"
-                                    src="/assets/images/icons/equal.svg"
-                                    svgClass="icon-color-disabled">
+                                    class="svg-icon-16 icon-btn"
+                                    src="/assets/images/icons/16/info.svg">
+                                </svg-icon>
+                                Imports
+                                <svg-icon
+                                    *ngIf="!collapseHelp"
+                                    class="svg-icon-16 collapse-btn"
+                                    src="/assets/images/icons/16/collapse-up.svg"
+                                    (click)="collapseHelp=true">
+                                </svg-icon>
+                                <svg-icon
+                                    *ngIf="collapseHelp"
+                                    class="svg-icon-16 collapse-btn"
+                                    src="/assets/images/icons/16/collapse-down.svg"
+                                    (click)="collapseHelp=false">
                                 </svg-icon>
                             </div>
-                            <div class="row-container">
-                                <div class="formula-body" [attr.error]="!item.validField">
-                                    <div class="guardian-input-container">
-                                        <label class="form-label">Output</label>
-                                        <div class="formula-link" (click)="onLink(item, outputSchema)">
-                                            <div *ngIf="item.field" class="formula-link-value">
-                                                <div class="formula-link-value__entity">{{getEntityName('output', item.field)}}:</div>
-                                                <div class="formula-link-value__item">{{getFieldName('output', item.field)}}</div>
-                                            </div>
-                                            <div *ngIf="item.field" class="formula-link-remove">
-                                                <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
-                                                    <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="formula-eq">=</div>
-                                <div class="formula-name" [attr.error]="!item.validName">
-                                    <div class="guardian-input-container">
-                                        <label class="form-label"></label>
-                                        <input 
-                                            [(ngModel)]="item.variableNameText" 
-                                            pInputText 
-                                            type="text"
-                                            placeholder="Name"
-                                            (change)="item.update()"/>
-                                    </div>
-                                </div>
+                            <div class="code-variable">
+                                <span class="code-variable-type">PolicyUser</span>
+                                <span class="code-variable-name">user</span>
+                                <span class="code-variable-description">- Active user object, determines code execution context.</span>
                             </div>
-                            <div class="row-container row-container-last" style="gap: 16px">
-                                <div class="guardian-input-container">
-                                    <label class="form-label">Type</label>
-                                    <div class="readonly-input">
-                                        <div *ngIf="item.field" class="formula-link-value">
-                                            <div class="formula-link-value__item">{{getFieldType('output', item.field)}}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="guardian-input-container">
-                                    <label class="form-label">Path</label>
-                                    <div class="readonly-input">
-                                        <div *ngIf="item.field" class="formula-link-value">
-                                            <div class="formula-link-value__item">{{getFieldPath('output', item.field)}}</div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="code-variable">
+                                <span class="code-variable-type">PolicyDocument</span>
+                                <span class="code-variable-name">document</span>
+                                <span class="code-variable-description">- Input VC document.</span>
                             </div>
-                            <div class="formula-del">
-                                <button 
-                                    class="guardian-icon-button big" 
-                                    (click)="deleteOutput(item)">
+                            <div class="code-variable">
+                                <span class="code-variable-type">PolicyDocument</span>
+                                <span class="code-variable-name">result</span>
+                                <span class="code-variable-description">- Output VC document.</span>
+                            </div>
+                            <div class="code-variable">
+                                <span class="code-variable-type">Map</span>
+                                <span class="code-variable-name">variables</span>
+                                <span class="code-variable-description">- List of variables.</span>
+                            </div>
+                            <div class="code-variable">
+                                <span class="code-variable-type">Map</span>
+                                <span class="code-variable-name">formulas</span>
+                                <span class="code-variable-description">- List of formulas.</span>
+                            </div>
+                        </div>
+                        <div class="code-toolbar">
+                            <button (click)="addVariableLink()" class="guardian-button guardian-button-primary">
+                                <div class="guardian-button-icon">
+                                    <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/variable.svg"
+                                        svgClass="icon-color-secondary">
+                                    </svg-icon>
+                                </div>
+                                <div class="guardian-button-label">Variables</div>
+                            </button>
+                            <button (click)="addComponent()" class="guardian-button guardian-button-primary">
+                                <div class="guardian-button-icon">
+                                    <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/function.svg"
+                                        svgClass="icon-color-secondary">
+                                    </svg-icon>
+                                </div>
+                                <div class="guardian-button-label">Formulas</div>
+                            </button>
+                            <div 
+                                class="guardian-label help-label"
+                                pTooltip="To add variable or formula in the code view below, place your cursor where you want to insert a component, then click the button." 
+                                tooltipPosition="top" 
+                                [tooltipOptions]="{showDelay: 300}"
+                            >
+                                <svg-icon
+                                    class="svg-icon-16 guardian-label-icon"
+                                    src="/assets/images/icons/16/info.svg">
+                                </svg-icon>
+                                Help
+                            </div>
+                        </div>
+                        <div class="code-body">
+                            <ngx-codemirror 
+                                *ngIf="initDialog" 
+                                [(ngModel)]="code.text" 
+                                [options]="codeMirrorOptions"
+                                (ngModelChange)="onChangeCode()"
+                                (cursorActivity)="cursorActivity($event)"></ngx-codemirror>
+                        </div>  
+                    </div>
+                </div>
+                <pages-control 
+                    *ngIf="codeTab === 'general'"
+                    class="pages-control"
+                    [items]="engine.formulas.pages"
+                    [current]="engine.formulas.current"
+                    (create)="engine.formulas.create()"
+                    (select)="engine.formulas.select($event)"
+                    (rename)="onRenamePage(engine.formulas, $event)"
+                    (delete)="onDeletePage(engine.formulas, $event)"
+                ></pages-control>
+            </ng-container>
+
+            <ng-container *ngIf="step === 'step_3'" >
+                <div class="step-container pages">
+                    <div *ngIf="outputs.length" class="formulas-container">
+                        <div 
+                            class="reorder-rows-container"
+                            cdkDropList
+                            [cdkDropListData]="outputs"
+                            (cdkDropListDropped)="reorder('outputs', $event)"
+                            cdkScrollable
+                        >
+                            <div 
+                                *ngFor="let item of outputs" 
+                                class="rows-container" 
+                                [attr.error]="item.invalid && item.validated"
+                                cdkDrag
+                                cdkDragLockAxis="y"
+                                [cdkDragDisabled]="readonly"
+                            >
+                                <div cdkDragHandle class="formula-reorder">
                                     <svg-icon
                                         class="icon-btn svg-icon"
-                                        src="/assets/images/icons/delete.svg"
-                                        svgClass="icon-color-delete">
+                                        src="/assets/images/icons/equal.svg"
+                                        svgClass="icon-color-disabled">
                                     </svg-icon>
-                                </button>
-                            </div>
-                            <div *ngIf="!item.valid  && item.validated && item.error" class="formula-error">
-                                {{item.error}}
+                                </div>
+                                <div class="row-container">
+                                    <div class="formula-body" [attr.error]="!item.validField">
+                                        <div class="guardian-input-container">
+                                            <label class="form-label">Output</label>
+                                            <div class="formula-link" (click)="onLink(item, outputSchema)">
+                                                <div *ngIf="item.field" class="formula-link-value">
+                                                    <div class="formula-link-value__entity">{{getEntityName('output', item.field)}}:</div>
+                                                    <div class="formula-link-value__item">{{getFieldName('output', item.field)}}</div>
+                                                </div>
+                                                <div *ngIf="item.field" class="formula-link-remove">
+                                                    <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
+                                                        <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="formula-eq">=</div>
+                                    <div class="formula-name" [attr.error]="!item.validName">
+                                        <div class="guardian-input-container">
+                                            <label class="form-label"></label>
+                                            <input 
+                                                [(ngModel)]="item.variableNameText" 
+                                                pInputText 
+                                                type="text"
+                                                placeholder="Name"
+                                                (change)="item.update()"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row-container row-container-last" style="gap: 16px">
+                                    <div class="guardian-input-container">
+                                        <label class="form-label">Type</label>
+                                        <div class="readonly-input">
+                                            <div *ngIf="item.field" class="formula-link-value">
+                                                <div class="formula-link-value__item">{{getFieldType('output', item.field)}}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="guardian-input-container">
+                                        <label class="form-label">Path</label>
+                                        <div class="readonly-input">
+                                            <div *ngIf="item.field" class="formula-link-value">
+                                                <div class="formula-link-value__item">{{getFieldPath('output', item.field)}}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="formula-del">
+                                    <button 
+                                        class="guardian-icon-button big" 
+                                        (click)="deleteOutput(item)">
+                                        <svg-icon
+                                            class="icon-btn svg-icon"
+                                            src="/assets/images/icons/delete.svg"
+                                            svgClass="icon-color-delete">
+                                        </svg-icon>
+                                    </button>
+                                </div>
+                                <div *ngIf="!item.valid  && item.validated && item.error" class="formula-error">
+                                    {{item.error}}
+                                </div>
                             </div>
                         </div>
+                        <div class="formula-toolbar">
+                            <button (click)="addOutput()" class="guardian-button guardian-button-secondary add-formula-btn">
+                                <div class="guardian-button-icon">
+                                    <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/variable.svg"
+                                        svgClass="icon-color-primary">
+                                    </svg-icon>
+                                </div>
+                                <div class="guardian-button-label">Add Result</div>
+                            </button>
+                        </div>
                     </div>
-                    <div class="formula-toolbar">
+                    <div *ngIf="!outputs.length" class="formulas-container-empty">
+                        <svg-icon 
+                            class="svg-icon-32" 
+                            src="/assets/images/icons/32/list.svg" 
+                            svgClass="icon-color-disabled">
+                        </svg-icon>
+                        <span class="info-text">No results have been created yet</span>
                         <button (click)="addOutput()" class="guardian-button guardian-button-secondary add-formula-btn">
                             <div class="guardian-button-icon">
                                 <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/variable.svg"
@@ -557,23 +600,17 @@
                         </button>
                     </div>
                 </div>
-                <div *ngIf="!group.outputs.length" class="formulas-container-empty">
-                    <svg-icon 
-                        class="svg-icon-32" 
-                        src="/assets/images/icons/32/list.svg" 
-                        svgClass="icon-color-disabled">
-                    </svg-icon>
-                    <span class="info-text">No results have been created yet</span>
-                    <button (click)="addOutput()" class="guardian-button guardian-button-secondary add-formula-btn">
-                        <div class="guardian-button-icon">
-                            <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/variable.svg"
-                                svgClass="icon-color-primary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Add Result</div>
-                    </button>
-                </div>
-            </div>
+                <pages-control 
+                    class="pages-control"
+                    [items]="engine.outputs.pages"
+                    [current]="engine.outputs.current"
+                    (create)="engine.outputs.create()"
+                    (select)="engine.outputs.select($event)"
+                    (rename)="onRenamePage(engine.outputs, $event)"
+                    (delete)="onDeletePage(engine.outputs, $event)"
+                ></pages-control>
+            </ng-container>
+
             <div *ngIf="step === 'step_4'" class="step-container">
                 <div class="data-type-values">
                     <div class="data-type-value">

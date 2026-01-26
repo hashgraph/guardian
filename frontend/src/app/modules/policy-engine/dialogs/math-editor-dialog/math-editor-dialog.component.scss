@@ -103,9 +103,20 @@
         left: 0;
         right: 0;
         top: 56px;
-        bottom: 24px;
+        bottom: 8px;
         overflow: auto;
         padding: 0px;
+
+        &.pages {
+            bottom: 40px;
+        }
+    }
+
+    .pages-control {
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
     }
 
     &.keyboard .step-container {

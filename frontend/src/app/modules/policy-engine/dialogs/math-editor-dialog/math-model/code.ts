@@ -1,4 +1,4 @@
-import { IContext } from './context.interface.js';
+import { IContext } from './math.interface.js';
 
 export class Code {
     public text: string = '';

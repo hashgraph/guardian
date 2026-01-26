@@ -2,7 +2,7 @@ import { MathFormula } from './math-formula';
 import { FieldLink } from './field-link';
 import { getValueByPath, convertValue, createComputeEngine, getDocumentValueByPath, parseValue } from './utils';
 import { MathItemType } from './math-item-type';
-import { IContext } from './context.interface';
+import { IContext } from './math.interface';
 
 export class MathContext {
     private readonly list: (MathFormula | FieldLink)[];

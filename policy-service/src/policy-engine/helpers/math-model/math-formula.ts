@@ -1,6 +1,7 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { MathItemType } from './math-item-type.js';
 import { createComputeEngine, findCommand } from './utils.js';
+import { IMathFormula } from './math.interface.js';
 
 export class MathFormula {
     public type: MathItemType.FUNCTION | MathItemType.VARIABLE = MathItemType.VARIABLE;
@@ -24,6 +25,7 @@ export class MathFormula {
     public validated: boolean = false;
 
     public value: any;
+    public view: string = 'formula';
 
     private bodyUnknowns: string[] = [];
 
@@ -247,18 +249,18 @@ export class MathFormula {
         return `(${params.map((p => `\\operatorname{${p}}`)).join(',')}) \\mapsto ${body}`;
     }
 
-    public toJson() {
+    public toJson(): IMathFormula {
         return {
             type: this.type,
-            name: this.functionName,
-            body: this.functionBodyText,
+            name: this.functionName || '',
+            body: this.functionBodyText || '',
             params: this.functionParams || [],
             relationships: this.functionUnknowns || [],
-            description: this.description,
+            description: this.description || '',
         }
     }
 
-    public static from(json: any): MathFormula | null {
+    public static from(json: IMathFormula): MathFormula | null {
         if (!json || typeof json !== 'object') {
             return null;
         }

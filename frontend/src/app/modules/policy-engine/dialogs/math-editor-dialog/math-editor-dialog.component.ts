@@ -4,11 +4,15 @@ import { Schema, SchemaField } from '@guardian/interfaces';
 import { MathLiveComponent } from 'src/app/modules/common/mathlive/mathlive.component';
 import { FieldLinkDialog } from '../field-link-dialog/field-link-dialog.component';
 import { SchemaVariables } from '../../structures';
-import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { TreeListData, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 import { FieldData } from 'src/app/modules/common/models/schema-node';
-import { Code, FieldLink, MathContext, MathFormula, MathGroup, setDocumentValueByPath } from './math-model/index';
+import { Code, FieldLink, MathContext, MathFormula, MathEngine, setDocumentValueByPath } from './math-model/index';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { MathGroups } from './math-model/math-groups';
+import { MathGroup } from './math-model/math-group';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { DataInputDialogComponent } from 'src/app/modules/common/data-input-dialog/data-input-dialog.component';
 
 class Tooltip {
     public visible: boolean;
@@ -111,9 +115,8 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public properties: any;
     public policyId: string;
 
-    public group: MathGroup;
-
-    public keyboard: boolean = false;
+    public engine: MathEngine;
+    public code: Code;
 
     public inputSchema: Schema | undefined;
     public outputSchema: Schema | undefined;
@@ -124,8 +127,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     private inputSchemaFieldMap: Map<string, SchemaField> = new Map<string, SchemaField>();
     private outputSchemaFieldMap: Map<string, SchemaField> = new Map<string, SchemaField>();
 
-    public code: Code;
-
+    public keyboard: boolean = false;
     public step: string = 'step_1';
     public codeTab: string = 'general';
     public collapseHelp: boolean = false;
@@ -188,7 +190,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         private el: ElementRef,
     ) {
         this.data = this.config.data;
-        this.group = new MathGroup();
+        this.engine = new MathEngine();
         this.code = new Code();
         this.tooltip = new Tooltip({
             container: window.document.body,
@@ -225,8 +227,8 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.schemaValue = this.fb.group({});
         this.jsonValue = '';
         this.code.from(this.expression);
-        this.group.from(this.expression);
-        this.group.validate();
+        this.engine.from(this.expression);
+        this.engine.validate();
         this.updateSchema();
     }
 
@@ -243,28 +245,42 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.tooltip.destroy();
     }
 
+    public get variables() {
+        return this.engine.variables.view;
+    }
+
+    public get formulas() {
+        return this.engine.formulas.view;
+    }
+
+    public get outputs() {
+        return this.engine.outputs.view;
+    }
+
     public onFullscreen() {
         this.el.nativeElement.classList.toggle('fullscreen');
         this.el.nativeElement.parentElement.parentElement.classList.toggle('fullscreen');
     }
 
     public onSave(): void {
-        if (this.group) {
-            const error = this.group.validate();
-            if (error === 'variables') {
-                this.onStep('step_1', '.rows-container[error="true"]');
-                return;
-            } else if (error === 'formulas') {
-                this.onStep('step_2', '.rows-container[error="true"]');
-                return;
-            } else if (error === 'outputs') {
-                this.onStep('step_3', '.rows-container[error="true"]');
-                return;
+        if (this.engine) {
+            const error = this.engine.validate();
+            if (error) {
+                if (error[0] === 'variables') {
+                    this.onStep('step_1', error[1], '.rows-container[error="true"]');
+                    return;
+                } else if (error[0] === 'formulas') {
+                    this.onStep('step_2', error[1], '.rows-container[error="true"]');
+                    return;
+                } else if (error[0] === 'outputs') {
+                    this.onStep('step_3', error[1], '.rows-container[error="true"]');
+                    return;
+                }
             }
         }
 
         this.expression = {
-            ...this.group.toJson(),
+            ...this.engine.toJson(),
             ...this.code.toJson()
         };
 
@@ -300,27 +316,27 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     public deleteFormula(formula: MathFormula) {
-        this.group.deleteFormula(formula);
+        this.engine.deleteFormula(formula);
     }
 
     public deleteVariable(variable: FieldLink) {
-        this.group.deleteVariable(variable);
+        this.engine.deleteVariable(variable);
     }
 
     public deleteOutput(output: FieldLink) {
-        this.group.deleteOutput(output);
+        this.engine.deleteOutput(output);
     }
 
     public addFormula() {
-        this.group.addFormula();
+        this.engine.addFormula();
     }
 
     public addVariable() {
-        this.group.addVariable();
+        this.engine.addVariable();
     }
 
     public addOutput() {
-        this.group.addOutput();
+        this.engine.addOutput();
     }
 
     private updateSchema() {
@@ -480,7 +496,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         item.field = null;
     }
 
-    public onStep(step: string, target?: string) {
+    public onStep(
+        step: string,
+        page?: string,
+        target?: string
+    ) {
         this.error = null;
         this.loading = false;
         try {
@@ -526,14 +546,19 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     public onValidate() {
-        if (this.group) {
-            const error = this.group.validate();
-            if (error === 'variables') {
-                this.onStep('step_1', '.rows-container[error="true"]');
-            } else if (error === 'formulas') {
-                this.onStep('step_2', '.rows-container[error="true"]');
-            } else if (error === 'outputs') {
-                this.onStep('step_3', '.rows-container[error="true"]');
+        if (this.engine) {
+            const error = this.engine.validate();
+            if (error) {
+                if (error[0] === 'variables') {
+                    this.onStep('step_1', error[1], '.rows-container[error="true"]');
+                    return;
+                } else if (error[0] === 'formulas') {
+                    this.onStep('step_2', error[1], '.rows-container[error="true"]');
+                    return;
+                } else if (error[0] === 'outputs') {
+                    this.onStep('step_3', error[1], '.rows-container[error="true"]');
+                    return;
+                }
             }
         }
     }
@@ -590,11 +615,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     private createComponentView() {
-        if (!this.group) {
+        if (!this.engine) {
             return;
         }
-        this.group.validate();
-        const components = this.group.getComponents();
+        this.engine.validate();
+        const components = this.engine.getComponents();
         const data = TreeListData.fromObject<any>({ components }, 'components', (item) => {
             if (item.data) {
                 item.id = item.data.value;
@@ -718,32 +743,38 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
             const inputDocument = this.getValue();
 
-            if (!this.group) {
+            if (!this.engine) {
                 this.loading = false;
                 this.error = 'Invalid config';
                 return;
             }
 
-            this.context = this.group.createContext();
+            this.context = this.engine.createContext();
             if (!this.context) {
                 this.loading = false;
                 this.error = 'Invalid config';
-                for (const element of this.group.variables) {
-                    if (element.invalid && !element.empty) {
-                        this.onStep('step_1');
-                        return;
+                for (const page of this.engine.variables.pages) {
+                    for (const element of page.items) {
+                        if (element.invalid && !element.empty) {
+                            this.onStep('step_1', page.name);
+                            return;
+                        }
                     }
                 }
-                for (const element of this.group.formulas) {
-                    if (element.invalid && !element.empty) {
-                        this.onStep('step_2');
-                        return;
+                for (const page of this.engine.formulas.pages) {
+                    for (const element of page.items) {
+                        if (element.invalid && !element.empty) {
+                            this.onStep('step_2', page.name);
+                            return;
+                        }
                     }
                 }
-                for (const element of this.group.outputs) {
-                    if (element.invalid && !element.empty) {
-                        this.onStep('step_3');
-                        return;
+                for (const page of this.engine.outputs.pages) {
+                    for (const element of page.items) {
+                        if (element.invalid && !element.empty) {
+                            this.onStep('step_3', page.name);
+                            return;
+                        }
                     }
                 }
                 return;
@@ -752,10 +783,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             this.context.setDocument(inputDocument);
             const context = this.context.getContext();
 
-            const variables = this.group.variables;
-            const formulas = this.group.formulas;
-            const outputs = this.group.outputs;
-            for (const item of this.group.items) {
+            const variables = this.engine.variables.getItems();
+            const formulas = this.engine.formulas.getItems();
+            const outputs = this.engine.outputs.getItems();
+            const all = this.engine.getItems();
+            for (const item of all) {
                 item.value = context.scope[item.name];
             }
 
@@ -773,7 +805,8 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 outputDocument = {};
             }
 
-            for (const link of this.group.outputs) {
+
+            for (const link of outputs) {
                 try {
                     setDocumentValueByPath(this.outputSchema, outputDocument, link.path, context.scope[link.name]);
                     link.value = context.scope[link.name];
@@ -842,10 +875,61 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     public reorder(type: 'variables' | 'formulas' | 'outputs', event: CdkDragDrop<any[]>) {
-        this.group.reorder(type, event.previousIndex, event.currentIndex);
+        this.engine.reorder(type, event.previousIndex, event.currentIndex);
     }
 
     public onChangeView(item: MathFormula, $event: any) {
         item.view = $event;
+    }
+
+    public onRenamePage(pages: MathGroups<any>, $event: MathGroup<any>) {
+        const dialogRef = this.dialogService.open(DataInputDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                fieldsConfig: [
+                    {
+                        name: 'name',
+                        label: 'Name',
+                        placeholder: 'Name',
+                        validators: [Validators.required],
+                        initialValue: $event.name
+                    },
+                ],
+                title: 'Rename',
+                button: 'Save'
+            },
+        });
+        dialogRef.onClose.subscribe(async (result:any) => {
+            if (!result) {
+                return;
+            }
+            $event.name = result.name?.trim();
+        });
+    }
+
+    public onDeletePage(pages: MathGroups<any>, $event: MathGroup<any>) {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete tab',
+                text: 'Are you sure want to delete tab?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                pages.delete($event);
+            }
+        });
     }
 }

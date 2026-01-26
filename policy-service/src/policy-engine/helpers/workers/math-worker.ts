@@ -1,12 +1,12 @@
 import { workerData, parentPort } from 'node:worker_threads';
-import { Code, MathGroup, setDocumentValueByPath } from '../math-model/index.js';
+import { Code, MathEngine, setDocumentValueByPath } from '../math-model/index.js';
 
 /**
  * Execute function
  */
 function execute(): void {
     const { expression, user, document, schema, copy } = workerData;
-    const group = MathGroup.from(expression);
+    const group = MathEngine.from(expression);
     if (!group) {
         throw new Error('Invalid block config');
     }
@@ -27,7 +27,8 @@ function execute(): void {
     }
 
     //Output
-    for (const link of group.outputs) {
+    const outputs = group.outputs.getItems();
+    for (const link of outputs) {
         setDocumentValueByPath(schema, result, link.path, context.scope[link.name]);
     }
 

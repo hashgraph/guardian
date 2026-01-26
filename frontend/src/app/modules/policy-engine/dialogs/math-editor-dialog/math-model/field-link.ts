@@ -1,6 +1,7 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { convertValue } from './utils';
 import { MathItemType } from './math-item-type';
+import { IFieldLink } from './math.interface';
 
 export class FieldLink {
     public readonly type = MathItemType.LINK;
@@ -108,16 +109,17 @@ export class FieldLink {
         return convertValue(this.value);
     }
 
-    public toJson() {
+    public toJson(): IFieldLink {
         return {
-            name: this.variableName,
-            description: this.description,
-            field: this.field,
-            schema: this.schema
+            type: this.type,
+            name: this.variableName || '',
+            description: this.description || '',
+            field: this.field || '',
+            schema: this.schema || ''
         }
     }
 
-    public static from(json: any): FieldLink | null {
+    public static from(json: IFieldLink): FieldLink | null {
         if (!json || typeof json !== 'object') {
             return null;
         }
