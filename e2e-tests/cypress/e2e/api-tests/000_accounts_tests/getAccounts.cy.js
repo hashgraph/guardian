@@ -43,11 +43,11 @@ context("Get accounts", { tags: ['accounts', 'firstPool', 'all'] }, () => {
         })
     });
 
-    const getAccounts = ({authorization, failOnStatusCode = true} = {}) =>
+    const getAccounts = ({ authorization, failOnStatusCode = true } = {}) =>
         cy.request({
             method: METHOD.GET,
             url: accountsUrl,
-            headers: authorization ? { authorization } : {},
+            headers: { authorization },
             failOnStatusCode,
         });
 
@@ -97,5 +97,5 @@ context("Get accounts", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             });
         });
     });
-    
+
 });

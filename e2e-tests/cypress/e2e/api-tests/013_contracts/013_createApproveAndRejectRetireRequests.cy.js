@@ -617,18 +617,15 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.ListOfTokens,
+                    url: `${apiBase}${API.ListOfTokens}${tokenId}/${API.RelayerAccounts}${hederaId}/${API.Info}`,
                     headers: {
-                        authorization,
-                    },
-                }).then((response) => {
-                    for (let i = 0; i < response.body.length; i++) {
-                        if (response.body.tokenId == tokenId)
-                            expect(response.body.balance === "7")
+                        authorization
                     }
-                })
+                }).then((response) => {
+                    expect(response.status).to.eq(STATUS_CODE.OK);
+                    expect(response.body.balance).to.eq("7");
+                });
             })
-            //TBD Checking retirement end
-        })
-    });
+        });
+    })
 })
