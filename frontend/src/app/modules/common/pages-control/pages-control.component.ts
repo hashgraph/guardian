@@ -102,7 +102,7 @@ export class PagesControl {
     onMore($event: MouseEvent, overlayPanel: any, otherPanel: any) {
         $event?.stopPropagation();
         overlayPanel.toggle(event);
-        otherPanel?.toggle(false);
+        otherPanel?.hide();
     }
 
     onRight() {
@@ -118,6 +118,6 @@ export class PagesControl {
         }
         $event?.stopPropagation();
         overlayPanel?.toggle(event);
-        otherPanel?.toggle(false);
+        otherPanel?.hide();
     }
 }
