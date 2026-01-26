@@ -161,5 +161,99 @@ Update your `.env` with Testnet RPC URL and credentials, then:
 npx hardhat run scripts/deploy.ts --network hedera
 ```
 
+## Owner Management
+
+The smart contracts use a two-step ownership transfer pattern for security. This allows safe transfer of ownership without the risk of losing access to the contract.
+
+
+### Guardian CLI Commands
+
+Use the Guardian CLI to manage contract ownership:
+
+#### Propose New Owner
+
+Propose a new owner for the contract. The new owner must call `claim-owner` to complete the transfer.
+
+```bash
+guardian-cli propose-owner <contract-id> <new-owner-address> <account> <key> [options]
+```
+
+**Arguments:**
+- `<contract-id>` - Contract identifier (e.g., `0.0.12345`)
+- `<new-owner-address>` - New owner's Hedera account ID (e.g., `0.0.67890`) or EVM address
+- `<account>` - Your Hedera account ID
+- `<key>` - Your Hedera private key
+
+**Options:**
+- `-g, --gas <gas>` - Gas limit (default: 2000000)
+- `-n, --network <network>` - Network: `mainnet`, `testnet`, `previewnet` (default: `testnet`)
+
+**Example:**
+```bash
+guardian-cli propose-owner 0.0.12345 0.0.67890 0.0.11111 302e020100300506032b657004220420... -n testnet
+```
+
+#### Claim Ownership
+
+Claim ownership of a contract after being proposed as the new owner.
+
+```bash
+guardian-cli claim-owner <contract-id> <account> <key> [options]
+```
+
+**Arguments:**
+- `<contract-id>` - Contract identifier
+- `<account>` - Your Hedera account ID (must be the pending owner)
+- `<key>` - Your Hedera private key
+
+**Options:**
+- `-g, --gas <gas>` - Gas limit (default: 2000000)
+- `-n, --network <network>` - Network: `mainnet`, `testnet`, `previewnet` (default: `testnet`)
+
+**Example:**
+```bash
+guardian-cli claim-owner 0.0.12345 0.0.67890 302e020100300506032b657004220420... -n testnet
+```
+
+#### Remove Owner
+
+Remove an existing owner from the contract. Cannot remove yourself or the contract address.
+
+```bash
+guardian-cli remove-owner <contract-id> <owner-address> <account> <key> [options]
+```
+
+**Arguments:**
+- `<contract-id>` - Contract identifier
+- `<owner-address>` - Owner's Hedera account ID or EVM address to remove
+- `<account>` - Your Hedera account ID
+- `<key>` - Your Hedera private key
+
+**Options:**
+- `-g, --gas <gas>` - Gas limit (default: 2000000)
+- `-n, --network <network>` - Network: `mainnet`, `testnet`, `previewnet` (default: `testnet`)
+
+**Example:**
+```bash
+guardian-cli remove-owner 0.0.12345 0.0.99999 0.0.11111 302e020100300506032b657004220420... -n testnet
+```
+
+### Ownership Transfer Workflow
+
+1. **Current owner proposes new owner:**
+   ```bash
+   guardian-cli propose-owner 0.0.12345 0.0.67890 0.0.11111 <current-owner-key>
+   ```
+
+2. **New owner claims ownership:**
+   ```bash
+   guardian-cli claim-owner 0.0.12345 0.0.67890 <new-owner-key>
+   ```
+
+3. **(Optional) Remove old owner:**
+   ```bash
+   guardian-cli remove-owner 0.0.12345 0.0.11111 0.0.67890 <new-owner-key>
+   ```
+
 ---
 ([back to top](#guardian-smart-contracts))
