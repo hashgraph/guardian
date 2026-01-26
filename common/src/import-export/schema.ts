@@ -54,16 +54,6 @@ export class SchemaImportExport {
                     zip.file(`ipfs/${schema.iri}.context.json`, Buffer.from(ctx.buffer.data), ZIP_FILE_OPTIONS);
                 }
             }
-
-            if (Array.isArray(components.tags)) {
-                ImportExportUtils.addDeterministicZipDir(zip, 'ipfs/tags');
-                for (const tag of components.tags) {
-                    if (tag.contentFileId) {
-                        const doc = await components.helpers.csvGetFile(tag.contentFileId.toString(), components.user);
-                        zip.file(`ipfs/tags/${tag.uuid}.json`, Buffer.from(doc.buffer.data), ZIP_FILE_OPTIONS);
-                    }
-                }
-            }
         }
 
         return zip;
