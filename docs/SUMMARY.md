@@ -451,6 +451,8 @@
         * [Searching Tag](guardian/standard-registry/policies/tagging/tagging-apis/searching-tag.md)
         * [Deleting Tag](guardian/standard-registry/policies/tagging/tagging-apis/deleting-tag.md)
         * [Synchronization of tags](guardian/standard-registry/policies/tagging/tagging-apis/synchronization-of-tags.md)
+    * [Fine-Grained Policy Workflow Certification Labels](guardian/standard-registry/policies/fine-grained-policy-workflow-certification-labels/README.md)
+      * [UI Demo](guardian/standard-registry/policies/fine-grained-policy-workflow-certification-labels/ui-demo.md)
     * [Themes](guardian/standard-registry/policies/themes/README.md)
       * [Themes using UI](guardian/standard-registry/policies/themes/themes-using-ui.md)
       * [Themes APIs](guardian/standard-registry/policies/themes/themes-apis/README.md)
