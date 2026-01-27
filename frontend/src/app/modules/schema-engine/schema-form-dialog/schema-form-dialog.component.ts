@@ -22,6 +22,7 @@ export class SchemaFormDialog {
     public hideFields: any;
     public example: boolean = false;
     public category: string;
+    public readonlyFields: any;
 
     constructor(
         private dialogRef: DynamicDialogRef,
@@ -35,14 +36,14 @@ export class SchemaFormDialog {
         this.example = data.example || false;
         this.dataForm = this.fb.group({});
         this.hideFields = {};
-        this.category = data.category
+        this.category = data.category;
     }
 
     ngOnInit(): void {
         this.getSubSchemes()
     }
 
-    onClose() {
+    public onClose() {
         this.dialogRef.close(null);
     }
 
@@ -55,11 +56,12 @@ export class SchemaFormDialog {
 
         this.schemaService.getSchemaWithSubSchemas(this.category, id, topicId).subscribe((data) => {
             if (this.schema && data.schema) {
-                this.schema = new Schema(data.schema)
+                this.schema = new Schema(data.schema);
             }
 
             if (this.example) {
                 this.presetDocument = DocumentGenerator.generateDocument(this.schema);
+                this.readonlyFields = this.schema.fields;
             } else {
                 this.presetDocument = null
             }
