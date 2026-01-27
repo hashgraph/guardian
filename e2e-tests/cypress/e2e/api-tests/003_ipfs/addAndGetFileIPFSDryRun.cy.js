@@ -1,165 +1,146 @@
+
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+
     let cid, policyId;
+
+    const policiesUrl = `${API.ApiServer}${API.Policies}`;
+    const ipfsFileUrl = `${API.ApiServer}${API.IPFSFile}`;
+    const dryRunUrl = (policyId) => `${ipfsFileUrl}${API.DryRun}${policyId}`;
+    const dryRunGetUrl = (cid) => `${ipfsFileUrl}${cid}/${API.DryRun}`;
+
+    const getPoliciesWithAuth = (authorization) =>
+        cy.request({
+            method: METHOD.GET,
+            url: policiesUrl,
+            headers: { authorization },
+        });
+
+    const putPolicyStateWithAuth = (authorization, policyId, statePath) =>
+        cy.request({
+            method: METHOD.PUT,
+            url: `${policiesUrl}${policyId}/${statePath}`,
+            headers: { authorization },
+        });
+
+    const postIpfsDryRunWithAuth = (authorization, policyId, body, timeout = 200000) =>
+        cy.request({
+            method: METHOD.POST,
+            url: dryRunUrl(policyId),
+            body,
+            headers: {
+                "content-type": "binary/octet-stream",
+                authorization,
+            },
+            timeout,
+        });
+
+    const getIpfsDryRunWithAuth = (authorization, cid) =>
+        cy.request({
+            method: METHOD.GET,
+            url: dryRunGetUrl(cid),
+            headers: { authorization },
+        });
+
+    const postIpfsDryRunWithoutAuth = (policyId, headers = {}) =>
+        cy.request({
+            method: METHOD.POST,
+            url: dryRunUrl(policyId),
+            headers,
+            failOnStatusCode: false,
+        });
+
+    const getIpfsWithoutAuth = (cid, headers = {}) =>
+        cy.request({
+            method: METHOD.GET,
+            url: `${ipfsFileUrl}${cid}`,
+            headers,
+            failOnStatusCode: false,
+        });
 
     before("Import and dry-run policy", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
+            getPoliciesWithAuth(authorization).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 policyId = response.body.at(0).id;
-                cy.request({
-                    method: METHOD.PUT,
-                    url:
-                        API.ApiServer + API.Policies + policyId + "/" + API.DryRun,
-                    headers: {
-                        authorization,
-                    },
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.OK);
+                putPolicyStateWithAuth(authorization, policyId, API.DryRun).then((res) => {
+                    expect(res.status).to.eq(STATUS_CODE.OK);
                 });
             });
-        })
+        });
     });
 
     it("Add file from ipfs for dry run mode", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.fixture("testJsonDR.json").then((file) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.IPFSFile + API.DryRun + policyId,
-                    body: file,
-                    headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization,
-                    },
-                    timeout: 200000
-                }).then((response) => {
+                postIpfsDryRunWithAuth(authorization, policyId, file).then((response) => {
                     expect(response.status).eql(STATUS_CODE.SUCCESS);
-                    cy.writeFile(
-                        "cypress/fixtures/testJsonDRCid",
-                        response.body
-                    );
-
+                    cy.writeFile("cypress/fixtures/testJsonDRCid", response.body);
                 });
-            })
-        })
-    })
+            });
+        });
+    });
 
     it("Add file from ipfs for dry run mode without auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.IPFSFile + API.DryRun + policyId,
-            failOnStatusCode: false,
-        }).then((response) => {
+        postIpfsDryRunWithoutAuth(policyId).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Add file from ipfs for dry run mode with invalid auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.IPFSFile + API.DryRun + policyId,
-            headers: {
-                authorization: "Bearer wqe",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        postIpfsDryRunWithoutAuth(policyId, { authorization: "Bearer wqe" }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Add file from ipfs for dry run mode with empty auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.IPFSFile + API.DryRun + policyId,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        postIpfsDryRunWithoutAuth(policyId, { authorization: "" }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Get file from ipfs for dry run mode", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("testJsonDRCid")
-                .then((cid) => {
-                    cid = cid
-                    cy.request({
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.IPFSFile + cid + "/" + API.DryRun,
-                        headers: {
-                            authorization,
-                        }
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.OK);
-                        let body = JSON.parse(response.body)
-                        expect(body.red).eql("rose");
-                        expect(body.blue).eql("sky");
-                    });
-                })
-        })
+            cy.fixture("testJsonDRCid").then((cidFromFile) => {
+                cid = cidFromFile;
+                getIpfsDryRunWithAuth(authorization, cid).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
+                    let body = JSON.parse(response.body);
+                    expect(body.red).eql("rose");
+                    expect(body.blue).eql("sky");
+                });
+            });
+        });
     });
 
     it("Get file from ipfs for dry run mode without auth token - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.IPFSFile + cid,
-            failOnStatusCode: false,
-        }).then((response) => {
+        getIpfsWithoutAuth(cid).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Get file from ipfs for dry run mode with invalid auth token - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.IPFSFile + cid,
-            headers: {
-                authorization: "Bearer wqe",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        getIpfsWithoutAuth(cid, { authorization: "Bearer wqe" }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Get file from ipfs for dry run mode with empty auth token - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.IPFSFile + cid,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        getIpfsWithoutAuth(cid, { authorization: "" }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        })
-    })
+        });
+    });
 
     after("Stop dry-run policy", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.PUT,
-                url:
-                    API.ApiServer + API.Policies + policyId + "/" + API.Draft,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
+            putPolicyStateWithAuth(authorization, policyId, API.Draft).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
             });
-        })
-    })
-})
+        });
+    });
+
+});

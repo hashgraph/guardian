@@ -242,7 +242,7 @@ services:
       - ./config:/vault/config:rw
     environment:
       VAULT_SERVER: "http://0.0.0.0:8200"
-      VAULT_DEV_ROOT_TOKEN_ID: "1234"
+      VAULT_DEV_ROOT_TOKEN_ID: "hVt34rnXcHnxp520LHYK"
     ports:
       - '127.0.0.1:8200:8200'
     cap_add:
