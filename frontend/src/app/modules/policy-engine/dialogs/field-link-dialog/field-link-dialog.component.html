@@ -1,6 +1,6 @@
 <div class="dialog-header">
     <div class="header-container">
-        <div class="header-text">{{title}}</div>
+        <div class="header-text">{{getTitle()}}</div>
     </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
@@ -12,11 +12,11 @@
             <div class="guardian-search">
                 <input 
                     id="search" 
-                    [(ngModel)]="search" 
+                    [(ngModel)]="searchGroup" 
                     placeholder="Search" 
                     pInputText
                     type="text" 
-                    (change)="onFilter()" />
+                    (change)="onFilterGroup()" />
             </div>
         </div>
         <div class="field-tree">
@@ -25,6 +25,7 @@
                 class="field-item"
                 [attr.highlighted]="group.highlighted"
                 [attr.search-highlighted]="group.searchHighlighted"
+                [attr.hidden]="!group.search"
             >
                 <div class="field-select" (click)="onSelectGroup(group)">
                     <p-radioButton 
@@ -100,8 +101,7 @@
         <div *ngIf="groups && items" class="dialog-button">
             <button 
                 (click)="onPrev()" 
-                class="guardian-button guardian-button-secondary"
-                >Prev</button>
+                class="guardian-button guardian-button-secondary">Prev</button>
         </div>
         <div *ngIf="items" class="dialog-button">
             <button 

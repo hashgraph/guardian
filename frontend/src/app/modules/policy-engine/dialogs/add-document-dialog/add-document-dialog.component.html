@@ -1,0 +1,152 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+    <div *ngIf="schemas && !schema" class="context">
+        <div class="search">
+            <div class="guardian-search">
+                <input 
+                    id="search" 
+                    [(ngModel)]="search" 
+                    placeholder="Search" 
+                    pInputText
+                    type="text" 
+                    (change)="onFilter()" />
+            </div>
+        </div>
+        <div class="field-tree">
+            <div 
+                *ngFor="let item of schemas" 
+                class="field-item"
+                [attr.hidden]="!item.search"
+            >
+                <div class="field-select" (click)="onSelect(item)">
+                    <p-radioButton 
+                        class="guardian-radio-button radio-button-24"
+                        [value]="item.iri" 
+                        [ngModel]="selectedSchema?.iri"></p-radioButton>
+                </div>
+                <div class="field-names" (click)="onSelect(item)">
+                    <div class="field-name">{{item.name}}</div>
+                    <div class="field-id">{{item.iri}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="schema" class="context">
+        <div class="data-type-values">
+            <div class="data-type-value">
+                <div class="data-type-value-select">
+                    <p-radioButton
+                        class="guardian-radio-button radio-button-24"
+                        name="types"
+                        value="schema"
+                        [(ngModel)]="dataType"
+                        inputId="type_1"></p-radioButton>
+                </div>
+                <label class="data-type-value-name" for="type_1">
+                    Schema
+                </label>
+            </div>
+            <div class="data-type-value">
+                <div class="data-type-value-select">
+                    <p-radioButton
+                        class="guardian-radio-button radio-button-24"
+                        name="types"
+                        value="json"
+                        [(ngModel)]="dataType"
+                        inputId="type_2"></p-radioButton>
+                </div>
+                <label class="data-type-value-name" for="type_2">
+                    JSON
+                </label>
+            </div>
+            <div class="data-type-value">
+                <div class="data-type-value-select">
+                    <p-radioButton
+                        class="guardian-radio-button radio-button-24"
+                        name="types"
+                        value="file"
+                        [(ngModel)]="dataType"
+                        inputId="type_3"></p-radioButton>
+                </div>
+                <label class="data-type-value-name" for="type_3">
+                    File
+                </label>
+            </div>
+        </div>
+        <div class="type-container">
+            <div *ngIf="error" class="error-message">{{error}}</div>
+            <ng-container *ngIf="dataType==='schema'">
+                <div *ngIf="schema" class="schema-body">
+                    <form [formGroup]="schemaValue" class="schema-form">
+                        <app-schema-form-root
+                            [schema]="schema"
+                            [preset]="_value"
+                            [policyId]="policyId"
+                            [comesFromDialog]="true"
+                            [showButtons]="false"
+                            [dryRun]="true"
+                            (form)="initForm($event)"
+                        >
+                        </app-schema-form-root>
+                    </form>
+                </div>
+            </ng-container>
+            <ng-container *ngIf="dataType==='json'">
+                <div class="guardian-textarea-container">
+                    <textarea pTextarea [(ngModel)]="jsonValue"></textarea>
+                </div>
+            </ng-container>
+            <ng-container *ngIf="dataType==='file'">
+                <app-file-drag-n-drop 
+                    class="drag-n-drop"
+                    [multiple]="false"
+                    [fileExtension]="fileExtension" 
+                    (onFileLoaded)="importFromFile($event)"
+                    [dropZoneLabel]="fileLabel"></app-file-drag-n-drop>
+                <div *ngIf="fileBuffer" class="guardian-textarea-container textarea-preview">
+                    <textarea pTextarea [ngModel]="fileBuffer"></textarea>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button close-btn">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div *ngIf="schemas && !schema" class="dialog-button">
+            <button 
+                (click)="onNext()" 
+                class="guardian-button guardian-button-primary"
+                [disabled]="!selectedSchema">Next</button>
+        </div>
+        <div *ngIf="schemas && schema" class="dialog-button">
+            <button 
+                (click)="onPrev()" 
+                class="guardian-button guardian-button-secondary">Prev</button>
+        </div>
+        <div *ngIf="schema && edit" class="dialog-button">
+            <button 
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary">Save</button>
+        </div>
+        <div *ngIf="schema && !edit" class="dialog-button">
+            <button 
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary">Add</button>
+        </div>
+    </div>
+</div>

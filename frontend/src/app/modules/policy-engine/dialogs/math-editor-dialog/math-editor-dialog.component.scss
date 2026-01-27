@@ -538,53 +538,6 @@ math-live {
     }
 }
 
-.data-type-values {
-    display: flex;
-    flex-direction: row;
-    width: fit-content;
-
-    .data-type-value {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        height: 40px;
-        padding-bottom: 24px;
-        align-items: center;
-        cursor: pointer;
-        margin-right: 24px;
-
-        .data-type-value-select {
-            width: 24px;
-            height: 24px;
-        }
-
-        .data-type-value-name {
-            padding: 4px 0 4px 8px;
-            height: 24px;
-            font-family: Inter;
-            font-size: 14px;
-            font-weight: 500;
-            line-height: 16px;
-            text-align: left;
-            color: var(--guardian-font-color, #23252E);
-            cursor: pointer;
-        }
-    }
-}
-
-.type-container {
-    position: absolute;
-    overflow: auto;
-    top: 40px;
-    left: 0;
-    bottom: 0;
-    right: 0;
-
-    .guardian-textarea-container {
-        height: calc(100% - 60px);
-    }
-}
-
 .guardian-textarea-container {
     height: 100%;
 
@@ -695,5 +648,84 @@ math-live {
         &.keyboard .step-container {
             bottom: 220px;
         }
+    }
+}
+
+.input-documents {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+    width: 100%;
+
+    .input-documents-title {
+        font-family: Poppins;
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 20px;
+        vertical-align: middle;
+        color: #181818;
+        margin-bottom: 16px;
+    }
+
+    .input-document {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: 40px;
+        align-items: center;
+
+
+        .input-document-name {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .input-document-edit {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: 16px;
+            min-width: 40px;
+
+            button {
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        .input-document-delete {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: 0px;
+            min-width: 40px;
+            margin-right: 4px;
+
+            button {
+                width: 32px;
+                height: 32px;
+            }
+        }
+    }
+
+    .add-doc-btn {
+        width: fit-content;
+        padding: 0px 24px;
+        margin-top: 16px;
+        margin-bottom: 16px;
+    }
+
+    .formulas-container-empty {
+        position: relative;
+        left: 50%;
+        top: 0px;
+        transform: translate(-50%, 0%);
+        height: 100px;
     }
 }

@@ -11,8 +11,9 @@ export class FieldLinkDialog {
     public loading = true;
     public items: TreeListView<any> | null;
     public item: TreeListItem<any> | null;
-    public title: string;
+    public title: string | string[];
     public search: string;
+    public searchGroup: string;
     public value: string | null;
     public viewId: boolean;
     public groups: {
@@ -21,6 +22,7 @@ export class FieldLinkDialog {
         view: TreeListView<any>,
         highlighted: boolean,
         searchHighlighted: boolean,
+        search?: boolean,
     }[] | null;
     public selectedGroup: any;
 
@@ -30,20 +32,28 @@ export class FieldLinkDialog {
         private dialogService: DialogService,
     ) {
         this.title = this.config.data?.title;
-        this.value = this.config.data?.value;
-        this.items = this.config.data?.view;
-        this.groups = this.config.data?.groups;
         this.viewId = this.config.data?.viewId !== false;
+
+
+        this.items = this.config.data?.view;
+        this.value = this.config.data?.value;
+
+        this.groups = this.config.data?.groups;
+        const group = this.config.data?.group;
+
         if (!this.groups?.length) {
             this.groups = null;
         }
         if (this.groups) {
-            const group = this.config.data?.group;
             this.items = null;
             if (group) {
                 this.selectedGroup = this.groups.find((g) => g.id === group) || this.groups[0];
             } else {
                 this.selectedGroup = this.groups[0];
+            }
+            for (const g of this.groups) {
+                g.name = g.name || '';
+                g.search = true;
             }
         }
     }
@@ -53,6 +63,22 @@ export class FieldLinkDialog {
     }
 
     ngOnDestroy(): void {
+    }
+
+    public getTitle(): string {
+        if (Array.isArray(this.title)) {
+            if (this.groups) {
+                if (this.items) {
+                    return this.title[1];
+                } else {
+                    return this.title[0];
+                }
+            } else {
+                return this.title[0];
+            }
+        } else {
+            return this.title;
+        }
     }
 
     public onClose(): void {
@@ -101,6 +127,15 @@ export class FieldLinkDialog {
     public onFilter() {
         const search = (this.search || '').toLowerCase();
         this.items?.searchItems(search, [0, 1]);
+    }
+
+    public onFilterGroup() {
+        if (this.groups) {
+            const search = (this.searchGroup || '').toLowerCase();
+            for (const g of this.groups) {
+                g.search = g.name.toLowerCase().includes(search);
+            }
+        }
     }
 
     public onSelectGroup(group: any) {

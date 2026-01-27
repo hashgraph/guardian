@@ -61,6 +61,9 @@
                 line-height: 15px;
                 text-align: center;
                 min-width: 75px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
 
             .guardian-pages-item-icon {

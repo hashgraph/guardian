@@ -13,6 +13,7 @@ import { MathGroups } from './math-model/math-groups';
 import { MathGroup } from './math-model/math-group';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { DataInputDialogComponent } from 'src/app/modules/common/data-input-dialog/data-input-dialog.component';
+import { AddDocumentDialog } from '../add-document-dialog/add-document-dialog.component';
 
 class Tooltip {
     public visible: boolean;
@@ -152,17 +153,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     };
     private context: MathContext | null;
     private codeEditor: any;
-
-    public dataType: string = 'schema';
-    public fileExtension = 'json';
-    public fileLabel = 'Add json .json file';
-    public fileBuffer: any;
     public error: any;
-    public schemaValue: UntypedFormGroup;
-    public jsonValue: string;
-    public fileValue: any;
-    public _value: any;
-
     public resultStep: string;
     public result: any;
     public codeMirrorOptions2: any = {
@@ -184,11 +175,13 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public tooltip: Tooltip;
     public readonly: boolean = false;
 
+    public inputDocumentValue: any = null;
+    public inputRelationshipsValue: any[] = [];
+
     constructor(
         private dialogRef: DynamicDialogRef,
         private dialogService: DialogService,
         private config: DynamicDialogConfig,
-        private fb: UntypedFormBuilder,
         private el: ElementRef,
     ) {
         this.data = this.config.data;
@@ -226,8 +219,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         if (!this.properties?.outputSchema) {
             this.outputSchema = this.inputSchema;
         }
-        this.schemaValue = this.fb.group({});
-        this.jsonValue = '';
         this.code.from(this.expression);
         this.engine.from(this.expression);
         this.engine.validate();
@@ -298,23 +289,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public onKeyboard($event: boolean) {
         this.keyboard = $event;
-    }
-
-    public onKeyboardFocus($event: MathLiveComponent) {
-        // setTimeout(() => {
-        //     if (this.keyboard) {
-        //         const focus = $event.getElement();
-        //         const scroll = this.contextBodyRef;
-        //         const targetRect = focus.nativeElement.getBoundingClientRect();
-        //         const scrollRect = scroll.nativeElement.getBoundingClientRect();
-        //         const y = targetRect.y - scrollRect.y;
-        //         const height = scrollRect.height;
-        //         const d = y - height + 60;
-        //         if (d > 0) {
-        //             scroll.nativeElement.scrollTop += d;
-        //         }
-        //     }
-        // });
     }
 
     public deleteFormula(formula: MathFormula) {
@@ -464,7 +438,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             styleClass: 'guardian-dialog',
             focusOnClose: false,
             data: {
-                title: schema?.name || 'Set Link',
+                title: ['Select Schema', 'Select Field'],
                 value: item.field,
                 group: item.schema,
                 view,
@@ -491,7 +465,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             styleClass: 'guardian-dialog',
             focusOnClose: false,
             data: {
-                title: schema?.name || 'Set Link',
+                title: 'Select Field',
                 value: item.field,
                 view: this.createSchemaView(schema),
             },
@@ -571,17 +545,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         page?: string,
         target?: string
     ) {
-        this.error = null;
-        this.loading = false;
-        try {
-            this._value = this.getJsonValue();
-        } catch (error) {
-            console.error(error);
-            this.error = error?.toString();
-            return;
-        }
         this.step = step;
-        this.setValue(this._value);
         this.loading = true;
         setTimeout(() => {
             this.loading = false;
@@ -732,88 +696,87 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.codeEditor = $event;
     }
 
-    public importFromFile(event: any) {
-        const reader = new FileReader()
-        reader.readAsText(event);
-        reader.addEventListener('load', (e: any) => {
-            this.fileBuffer = e.target.result;
-            this.fileValue = JSON.parse(this.fileBuffer);
+    public addInputDocument() {
+        const dialogRef = this.dialogService.open(AddDocumentDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
+            focusOnClose: false,
+            data: {
+                schemas: null,
+                schema: this.inputSchema,
+                policyId: this.policyId
+            },
+        });
+        dialogRef.onClose.subscribe((result: any | null) => {
+            if (result) {
+                this.inputDocumentValue = result;
+            }
         });
     }
 
-    public initForm($event: any) {
-        this.schemaValue = $event;
+    public addRelationships() {
+        const schemas = this.schemas.filter((s) => s !== this.inputSchema && s.entity !== 'NONE');
+        const dialogRef = this.dialogService.open(AddDocumentDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
+            focusOnClose: false,
+            data: {
+                schemas: schemas,
+                schema: null,
+                policyId: this.policyId
+            },
+        });
+        dialogRef.onClose.subscribe((result: any | null) => {
+            if (result) {
+                this.inputRelationshipsValue.push(result);
+            }
+        });
     }
 
-    private getJsonValue() {
-        switch (this.dataType) {
-            case 'schema':
-                return this.schemaValue.value;
-            case 'json':
-                const json = JSON.parse(this.jsonValue);
-                return json;
-            case 'file':
-                return this.fileValue;
-            default:
-                return this._value;
-        }
+    public editInputDocument(item: any) {
+        const schema = this.schemas.find((s) => s.iri === item.schema);
+        const dialogRef = this.dialogService.open(AddDocumentDialog, {
+            showHeader: false,
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            focusOnClose: false,
+            data: {
+                schema: schema,
+                policyId: this.policyId,
+                value: item.value
+            },
+        });
+        dialogRef.onClose.subscribe((result: any | null) => {
+            if (result) {
+                item.value = result.value;
+            }
+        });
     }
 
-    private setValue(value: any) {
-        switch (this.dataType) {
-            case 'schema':
-                this._value = value;
-                this.schemaValue.setValue(value);
-                break;
-            case 'json':
-                this._value = value;
-                try {
-                    this.jsonValue = JSON.stringify(value, null, 4);
-                } catch (error) {
-                    console.error(error)
-                }
-                break;
-            case 'file':
-                this._value = value;
-                try {
-                    this.fileValue = JSON.stringify(value, null, 4);
-                } catch (error) {
-                    console.error(error)
-                }
-                break;
-            default:
-                this._value = value;
-                break;
+    public deleteInputDocument(item: any) {
+        if (this.inputDocumentValue === item) {
+            this.inputDocumentValue = null;
         }
+        this.inputRelationshipsValue = this.inputRelationshipsValue.filter((e) => e !== item);
     }
 
     private getValue() {
-        switch (this.dataType) {
-            case 'schema':
-                return this.schemaValue.value;
-            case 'json':
-                try {
-                    const json = JSON.parse(this.jsonValue);
-                    return json;
-                } catch (error) {
-                    console.error(error)
-                    return null;
-                }
-            case 'file':
-                return this.fileValue;
-            default:
-                return null;
-        }
+        const documents = new DocumentMap();
+        documents.addDocument(this.inputDocumentValue);
+        documents.addRelationships(this.inputRelationshipsValue);
+        return documents;
     }
 
     public onTest(): void {
         try {
             this.loading = true;
             this.result = null;
+            this.error = null;
 
-            const inputDocument = this.getValue();
-            const documents = new DocumentMap();
-            documents.addDocument(inputDocument);
+            const inputDocuments = this.getValue();
+            const inputDocument = inputDocuments.getCurrent();
 
             if (!this.engine) {
                 this.loading = false;
@@ -852,7 +815,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 return;
             }
 
-            this.context.setDocument(documents);
+            this.context.setDocument(inputDocuments);
             const context = this.context.getContext();
 
             const variables = this.engine.variables.getItems();
@@ -876,7 +839,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             } else {
                 outputDocument = {};
             }
-
 
             for (const link of outputs) {
                 try {

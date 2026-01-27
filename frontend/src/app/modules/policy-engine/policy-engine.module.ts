@@ -176,6 +176,7 @@ import { MathEditorDialogComponent } from './dialogs/math-editor-dialog/math-edi
 import { FieldLinkDialog } from './dialogs/field-link-dialog/field-link-dialog.component';
 import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
 import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
+import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-dialog.component';
 
 @NgModule({
     declarations: [
@@ -307,6 +308,7 @@ import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update
         AddGlobalEventTopicDialogComponent,
         MathEditorDialogComponent,
         FieldLinkDialog,
+        AddDocumentDialog,
         ChangeBlockSettingsDialog,
         ApproveUpdateVcDocumentDialogComponent
     ],

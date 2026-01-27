@@ -1,3 +1,5 @@
+import { IMathDocument } from "./math.interface";
+
 export class DocumentMap {
     private _current: any;
     private _map: Map<string, any>;
@@ -6,19 +8,15 @@ export class DocumentMap {
         this._map = new Map<string, any>();
     }
 
-    private getSchema(document: any): string {
-        return '';
+    public addDocument(document: IMathDocument) {
+        this._current = document.value;
+        this._map.set(document.schema, document.value);
     }
 
-    public addDocument(document: any) {
-        this._current = document;
-        this._map.set(this.getSchema(document), document);
-    }
-
-    public addRelationships(documents: any[]) {
+    public addRelationships(documents: IMathDocument[]) {
         if (Array.isArray(documents)) {
             for (const document of documents) {
-                this._map.set(this.getSchema(document), document);
+                this._map.set(document.schema, document.value);
             }
         }
     }

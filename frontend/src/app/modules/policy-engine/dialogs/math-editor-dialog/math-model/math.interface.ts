@@ -35,6 +35,12 @@ export interface IMathGroup {
     items: IMathItem[];
 }
 
+export interface IMathDocument {
+    schema: string,
+    name?: string,
+    value: any
+}
+
 export type IMathGroups = IMathGroup[];
 
 export type createMathItem<T> = (config: IMathItem) => T | null;
