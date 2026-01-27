@@ -20,12 +20,23 @@
                         [(ngModel)]="currentTopic"
                         [options]="allPolicies"
                         [showClear]="false"
-                        class="policy-dropdown"
+                        class="guardian-dropdown"
+                        placeholder="Select Policy"
                         optionLabel="name"
                         optionValue="topicId"
-                        placeholder="Policy"
                         [appendTo]="'body'"
-                    ></p-dropdown>
+                        panelStyleClass="guardian-dropdown-panel">
+                        <ng-template pTemplate="selectedItem">
+                            <div *ngIf="currentTopic" class="guardian-dropdown-selected">
+                                <span class="guardian-dropdown-label">Policy</span>
+                                <span class="guardian-dropdown-item">{{ policyNameByTopic[currentTopic] || 'No Binding' }}</span>
+                            </div>
+                            <div *ngIf="!currentTopic" class="guardian-dropdown-selected">
+                                <span class="guardian-dropdown-label">Policy</span>
+                                <span class="guardian-dropdown-item">All Policies</span>
+                            </div>
+                        </ng-template>
+                    </p-dropdown>
                 </div>
                 <div *ngIf="isTool" class="topic-search">
                     <p-dropdown
