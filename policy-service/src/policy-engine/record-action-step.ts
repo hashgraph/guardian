@@ -8,8 +8,8 @@ export class RecordActionStep {
     public readonly timestemp: number;
     public readonly syncActions: boolean;
     public readonly withHistory: boolean;
-    private results: any[] = [];
-    private actionsMap: Set<string> = new Set();
+    private readonly results: any[] = [];
+    private readonly actionsMap: Set<string> = new Set();
     public counter: number;
     private callbackFired = false;
     private timer: ReturnType<typeof setTimeout> | null = null;

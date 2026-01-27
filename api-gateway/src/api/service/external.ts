@@ -78,7 +78,6 @@ export class ExternalApi {
         }
     }
 
-
     /**
      * Sends data from an external source
      */

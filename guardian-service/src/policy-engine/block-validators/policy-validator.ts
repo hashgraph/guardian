@@ -203,7 +203,7 @@ export class PolicyValidator {
         };
 
         const isInterfaceBlock = (block?: any) => {
-            return (block?.blockType ?? "").startsWith("interface");
+            return (block?.blockType ?? '').startsWith('interface');
         };
 
         const hasPath = (from: string, to: string): boolean => {
@@ -284,7 +284,7 @@ export class PolicyValidator {
                 return ref;
             }
 
-            return "";
+            return '';
         };
 
         for (const block of orderedBlocks) {
@@ -297,11 +297,11 @@ export class PolicyValidator {
                     continue;
                 }
 
-                if (ev.input !== "RunEvent") {
+                if (ev.input !== 'RunEvent') {
                     continue;
                 }
 
-                const targetRef = (ev.target ?? "").trim();
+                const targetRef = (ev.target ?? '').trim();
                 if (!targetRef) {
                     continue;
                 }
