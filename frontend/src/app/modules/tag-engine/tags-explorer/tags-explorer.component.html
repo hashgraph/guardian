@@ -12,16 +12,25 @@
             [attr.count]="history.top.count"
             [attr.owner]="history.top.owner"
             class="main-tag"
+            [pTooltip]="history.top.name"
+            [tooltipPosition]="'top'"
         >
-            <i class="pi pi-tag tag-icon"></i>
+            <svg-icon
+                class="svg-icon-16"
+                src="/assets/images/icons/16/label.svg"
+                [svgClass]="'primary-color'"></svg-icon>
             <div class="tag-name">
-                {{ history.top.name }}
+                <span class="tag-name-text">
+                    {{ history.top.name }}
+                </span>
+                <span class="tag-count">
+                    ({{ history.top.count }})
+                </span>
             </div>
-            <div class="tag-count">
-                {{ history.top.count }}
+            <div *ngIf="history.count - 1" class="tag-total-count">
+                +{{ history.count - 1 }}
             </div>
         </div>
-        <i class="pi pi-ellipsis-h"></i>
     </div>
     <div
         *ngIf="compact"
