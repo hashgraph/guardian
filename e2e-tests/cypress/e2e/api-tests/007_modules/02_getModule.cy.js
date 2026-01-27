@@ -1,3 +1,4 @@
+
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -7,42 +8,56 @@ context("Get Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const moduleName = "FirstAPIModule";
 
+    const modulesUrl = `${API.ApiServer}${API.ListOfAllModules}`;
+    const profilesUrl = `${API.ApiServer}${API.Profiles}`;
+
     let lastModule, did;
+
+    const getModulesWithAuth = (authorization) =>
+        cy.request({
+            method: METHOD.GET,
+            url: modulesUrl,
+            headers: { authorization },
+        });
+
+    const getProfileWithAuth = (authorization, username) =>
+        cy.request({
+            method: METHOD.GET,
+            url: profilesUrl + username,
+            headers: { authorization },
+        });
+
+    const getModuleWithAuth = (authorization, uuid) =>
+        cy.request({
+            method: METHOD.GET,
+            url: modulesUrl + uuid,
+            headers: { authorization },
+        });
+
+    const getModuleWithoutAuth = (uuid, headers = {}) =>
+        cy.request({
+            method: METHOD.GET,
+            url: modulesUrl + uuid,
+            headers,
+            failOnStatusCode: false,
+        });
 
     before("Get module id and did", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfAllModules,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
+            getModulesWithAuth(authorization).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 lastModule = response.body.at(0);
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Profiles + SRUsername,
-                    headers: {
-                        authorization,
-                    },
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    did = response.body.did;
-                })
-            })
-        })
+                getProfileWithAuth(authorization, SRUsername).then((profileRes) => {
+                    expect(profileRes.status).eql(STATUS_CODE.OK);
+                    did = profileRes.body.did;
+                });
+            });
+        });
     });
 
     it("Get module", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfAllModules + lastModule.uuid,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
+            getModuleWithAuth(authorization, lastModule.uuid).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
 
                 expect(response.body.config).to.have.property("artifacts");
@@ -68,43 +83,26 @@ context("Get Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 expect(response.body.uuid).eql(lastModule.uuid);
                 expect(response.body.id).eql(lastModule.id);
                 expect(response.body._id).eql(lastModule._id);
-            })
-        })
+            });
+        });
     });
 
     it("Get module without auth token - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.ListOfAllModules + lastModule.uuid,
-            failOnStatusCode: false,
-        }).then((response) => {
+        getModuleWithoutAuth(lastModule.uuid).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        })
+        });
     });
 
     it("Get module with invalid auth token - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.ListOfAllModules + lastModule.uuid,
-            headers: {
-                authorization: "Bearer wqe",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        getModuleWithoutAuth(lastModule.uuid, { authorization: "Bearer wqe" }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        })
+        });
     });
 
     it("Get module with empty auth token - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.ListOfAllModules + lastModule.uuid,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        getModuleWithoutAuth(lastModule.uuid, { authorization: "" }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        })
+        });
     });
+
 });
