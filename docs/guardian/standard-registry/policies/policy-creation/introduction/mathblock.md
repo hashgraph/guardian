@@ -2,7 +2,7 @@
 
 The _mathBlock_ lets you to define calculations on document data in mathematical notation to be performed directly, without the need or optionally with limited use of coding.
 
-<figure><img src="../../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
 
 ## 1.1 Properties
 
@@ -21,15 +21,15 @@ Expression definition is guided by a wizard with in-place test execution, allowi
 
 Use this section to map fields from the input document to short variable names that you can reference in formulas.
 
-<figure><img src="../../../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Formulas
 
 This section provides UI to defined formulas using standard mathematical notation and/or LateX or MathJSON formats.
 
-<figure><img src="../../../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 **2.1 Formula defintion**
 
@@ -38,7 +38,7 @@ To define a formula, complete the following steps:
 * Specify the formula name.
 * Add () after the formula name and list any parameters inside. Separate parameters with a comma (,).
 
-<figure><img src="../../../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 * Create the expression using math notation or an alternative format (LaTeX, MathJSON).
 

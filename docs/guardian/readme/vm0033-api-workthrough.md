@@ -115,7 +115,7 @@ Successful response looks like:
 
 #### 1.3 Policy Publishing
 
-<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **To publish a policy, use the id field from the previous step in the request:**
 
@@ -418,7 +418,7 @@ Successful response looks like:
 
 **Wait for the request to finish processing:**
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <mark style="color:red;">`GET`</mark> `http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/project_grid_pp_2/blocks`
 
@@ -681,9 +681,9 @@ Waiting while `data.option.status` would be equal "Waiting to be Added":
 
 #### 4.2 Choose VVB Role
 
-<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **To choose a role in the policy, send a request with the role name in the body:**
 
@@ -705,7 +705,7 @@ true
 
 **To create a VVB in the policy, send a request with the VVB name in the body:**
 
-<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 `POST http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/create_new_vvb/blocks`
 
@@ -2019,7 +2019,7 @@ Successful response looks like:
 
 #### 6.4 Assign Report
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Get the report reference by saving the response data:**
 
@@ -2226,13 +2226,13 @@ With body:
 
 #### 6.6 Approve Report
 
-<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Wait until the report status changes to “Waiting for Verification”:**
 
 <mark style="color:red;">`GET`</mark> `http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/report_grid_vvb/blocks`
 
-<figure><img src="../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Save the response data as a reference and update the status to “Verified”:
 

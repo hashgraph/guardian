@@ -9,7 +9,7 @@
 
 In the **Publish Policy modal**, highlight **☑ Record policy actions** (enabled by default)
 
-<figure><img src="../../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: By default, Guardian records every action executed by the policy once it’s published.\
@@ -18,7 +18,7 @@ These actions are written to Hedera and stored immutably, with payloads in IPFS.
 
 2. Once the policy is published, submit the Project Registration by logging in as Project Proponent:
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: “Each step you see here—data submission, validation, calculations—is recorded as a discrete step.\
@@ -27,15 +27,15 @@ These steps are timestamped, ordered, and linked to IPFS payloads.”
 
 3. Login as Standard Registry and approve the Project Proponent:
 
-<figure><img src="../../../../.gitbook/assets/image (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 4. Login as VVB and submit VVB Registration:
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 5. Login as Standard Registry and approve the VVB:
 
-<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 6. Submit the Project Data as Project Proponent:
 

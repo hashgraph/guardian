@@ -1,4 +1,4 @@
-# Demo using UI
+# 💻 Demo using UI
 
 [Step by Step](demo-using-ui.md#step-by-step)
 
@@ -25,10 +25,10 @@ Once enabled:
 
 When tamper-resistance is enabled, the following additional fields are stored in the database to preserve the original policy state:
 
-* **originalChanged** – Indicates whether the policy has diverged from its original state
-* **originalHash** – Cryptographic hash of the original policy
-* **originalZipId** – Reference to the stored original policy file
-* **originalMessageId** – Reference to the original message (for message-based imports)
+* originalChanged – Indicates whether the policy has diverged from its original state
+* originalHash – Cryptographic hash of the original policy
+* originalZipId – Reference to the stored original policy file
+* originalMessageId – Reference to the original message (for message-based imports)
 
 #### File-Based Import Behavior
 
@@ -40,15 +40,15 @@ When tamper-resistance is enabled, the following additional fields are stored in
 
 ### 3.1 Policies Grid – Modified Column
 
-A new **“Modified”** column is added to the Policies grid to surface tamper status at a glance.
+A new “Modified” column is added to the Policies grid to surface tamper status at a glance.
 
-**Possible States**
+Possible States
 
-* **Compare** – The policy has been modified and can be compared with the original version
-* **No Changes** – The policy matches its original imported state
-* **Status Unavailable** – Original state is not available (e.g., tracking was not enabled)
+* Compare – The policy has been modified and can be compared with the original version
+* No Changes – The policy matches its original imported state
+* Status Unavailable – Original state is not available (e.g., tracking was not enabled)
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3.2 Compare Action
 
@@ -59,7 +59,29 @@ A new **“Modified”** column is added to the Policies grid to surface tamper 
 
 This helps users quickly understand _what_ changed and _where_.
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+## 4. Indexer
+
+The functionality for displaying policy origin, and relationships between original and derived policies has also been implemented in the Indexer.
+
+In the policy description, new states related to this functionality are available: the Original tab is visible, the Derivations tab is visible, or no additional tab is displayed
+
+<figure><img src="../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
+When the Origin tab is displayed, it means that information about the parent policy is available, allowing the user to check for any differences from the parent policy
+
+<figure><img src="../../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+The comparison functionality remains consistent with the Guardian one, providing multiple comparison options, while the UI design has been updated
+
+Once a policy has been used to create other policies, the Derivations tab is displayed
+
+<figure><img src="../../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+
+The Derivations tab contains a table with all derivations of the current policy
+
+<figure><img src="../../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
 ## Demo Video
 
