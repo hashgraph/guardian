@@ -103,6 +103,12 @@ export class Tag extends RestoreEntity {
     date: string;
 
     /**
+     * Tag schema id
+     */
+    @Property({ persist: false, nullable: true })
+    tagSchemaId?: string;
+
+    /**
      * Create document
      */
     @BeforeCreate()

@@ -2,6 +2,10 @@ import { GenerateUUIDv4 } from "@guardian/interfaces";
 import { SelectType } from "./tree-types";
 import { Line } from './tree-line';
 
+export interface NodeLink {
+    to: string;
+    variant?: string;
+}
 
 export class TreeNode<T> {
     public readonly uuid: string;
@@ -9,6 +13,7 @@ export class TreeNode<T> {
     public id: string;
     public type: 'root' | 'sub';
     public childIds: Set<string>;
+    public linkIds: Set<NodeLink>;
     public children: TreeNode<T>[];
     public size: number;
     public data: T;
@@ -19,6 +24,7 @@ export class TreeNode<T> {
     public minRow: number;
     public maxRow: number;
     public lines: Line[];
+    public linkLine: Line | null;
     public selected: SelectType;
     public parent: TreeNode<T> | null;
     public entity: string;
@@ -33,6 +39,7 @@ export class TreeNode<T> {
         this.id = id || this.uuid;
         this.type = type || 'root';
         this.childIds = new Set<string>();
+        this.linkIds = new Set<NodeLink>();
         this.children = [];
         this.size = 1;
         this.data = data;
@@ -43,6 +50,7 @@ export class TreeNode<T> {
         this.minRow = 0;
         this.maxRow = 0;
         this.lines = [];
+        this.linkLine = null;
         this.selected = SelectType.NONE;
         this.parent = null;
         this.entity = 'default';
@@ -50,6 +58,10 @@ export class TreeNode<T> {
 
     public addId(id: string): void {
         this.childIds.add(id);
+    }
+
+    public addLink(link: NodeLink): void {
+        this.linkIds.add(link);
     }
 
     public addNode(node: TreeNode<T>): void {
@@ -63,6 +75,7 @@ export class TreeNode<T> {
         clone.data = this.data;
         clone.entity = this.entity;
         clone.childIds = new Set(this.childIds);
+        clone.linkIds = new Set(this.linkIds);
         return clone;
     }
 
