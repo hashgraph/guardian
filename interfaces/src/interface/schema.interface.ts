@@ -124,4 +124,14 @@ export interface ISchema {
      * Topic count
      */
     topicCount?: number;
+
+    /**
+     * Document file id of the original schema(publish flow).
+     */
+    contentDocumentFileId?: string;
+
+    /**
+     * Context file id of the original schema(publish flow).
+     */
+    contentContextFileId?: string;
 }
