@@ -78,7 +78,7 @@ export class MathEngine {
 
         // Pages
         for (const page of this.variables.pages) {
-            for (const variable of page.items) {
+            for (const variable of page.validatedItems) {
                 if (!variable.valid) {
                     return this.setError('variables', page.id);
                 }
@@ -86,7 +86,7 @@ export class MathEngine {
         }
 
         for (const page of this.formulas.pages) {
-            for (const formula of page.items) {
+            for (const formula of page.validatedItems) {
                 if (!formula.valid) {
                     return this.setError('formulas', page.id);
                 }
@@ -104,7 +104,7 @@ export class MathEngine {
 
         // Variables
         for (const page of this.variables.pages) {
-            for (const variable of page.items) {
+            for (const variable of page.validatedItems) {
                 const old = list.get(variable.name);
                 if (old) {
                     old.validName = false;
@@ -120,7 +120,7 @@ export class MathEngine {
         // Formulas
         const formulas: [MathGroup<MathFormula>, MathFormula][] = [];
         for (const page of this.formulas.pages) {
-            for (const formula of page.items) {
+            for (const formula of page.validatedItems) {
                 const old = list.get(formula.name);
                 if (old) {
                     old.validName = false;
@@ -183,7 +183,7 @@ export class MathEngine {
 
         // Outputs
         for (const page of this.outputs.pages) {
-            for (const output of page.items) {
+            for (const output of page.validatedItems) {
                 const old = list.get(output.name);
                 if (old) {
                     if (old.type === MathItemType.FUNCTION) {

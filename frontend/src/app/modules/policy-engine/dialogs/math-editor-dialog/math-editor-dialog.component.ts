@@ -553,6 +553,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     ) {
         this.step = step;
         this.loading = true;
+        if (page) {
+            this.engine.variables.selectById(page);
+            this.engine.formulas.selectById(page);
+            this.engine.outputs.selectById(page);
+        }
         setTimeout(() => {
             this.loading = false;
             if (target) {

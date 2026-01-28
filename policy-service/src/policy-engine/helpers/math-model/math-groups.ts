@@ -42,6 +42,13 @@ export class MathGroups<T extends MathFormula | FieldLink> {
         this.current = page;
     }
 
+    public selectById(id: string) {
+        const current = this.pages.find((p) => p.id === id);
+        if (current) {
+            this.current = current;
+        }
+    }
+
     public addItem(item: T) {
         if (this.current) {
             this.current.add(item);

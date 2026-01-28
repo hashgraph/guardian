@@ -11,6 +11,7 @@ export class MathGroup<T extends MathFormula | FieldLink> {
     public name: string;
     public items: T[];
     public valid: boolean;
+    public validatedItems: T[];
 
     constructor(name?: string) {
         this.name = name || '';
@@ -34,6 +35,7 @@ export class MathGroup<T extends MathFormula | FieldLink> {
                 this.valid = this.valid && item.valid;
             }
         }
+        this.validatedItems = this.items.filter((v) => !v.empty);
     }
 
     public reorder(previousIndex: number, currentIndex: number) { 
