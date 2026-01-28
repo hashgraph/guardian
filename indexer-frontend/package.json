@@ -42,7 +42,7 @@
     },
     "devDependencies": {
         "@angular-devkit/build-angular": "^17.3.2",
-        "@angular/cli": "^17.3.2",
+        "@angular/cli": "^21.1.2",
         "@angular/compiler-cli": "^17.3.0",
         "@types/jasmine": "~5.1.0",
         "@types/mapbox-gl": "^3.1.0",
