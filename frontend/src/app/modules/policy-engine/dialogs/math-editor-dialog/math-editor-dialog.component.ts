@@ -762,12 +762,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             data: {
                 schema: schema,
                 policyId: this.policyId,
-                value: item.value
+                value: item.document
             },
         });
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
-                item.value = result.value;
+                item.document = result.document;
             }
         });
     }

@@ -55,6 +55,10 @@ export class AddDocumentDialog {
     }
 
     ngOnInit() {
+        if (this.value) {
+            this.title = 'Edit Document';
+            this.edit = true;
+        }
         setTimeout(() => {
             if (this.value) {
                 this.title = 'Edit Document';

@@ -309,21 +309,29 @@
 }
 
 .readonly-input {
-    height: 44px;
     border-radius: 8px;
     outline: none;
     border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
-    font-family: Inter;
-    font-size: 14px;
-    font-weight: 400;
     color: #000;
-    padding: 12px 16px;
+    padding: 3px 2px;
     position: relative;
     background: #F9FAFC;
     font-family: Inter;
     font-size: 14px;
     font-weight: 400;
     line-height: 16px;
+    min-height: 44px;
+    max-height: 88px;
+    height: auto;
+
+    .formula-link-value {
+        min-height: 36px;
+        max-height: 80px;
+        height: auto;
+        overflow: auto;
+        position: relative;
+        padding: 10px 14px;
+    }
 }
 
 .formula-toolbar {
