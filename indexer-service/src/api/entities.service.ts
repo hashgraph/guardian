@@ -59,7 +59,8 @@ import {
     FormulaDetails,
     FormulaRelationships,
     PolicyActivity,
-    SchemasPackageDetails
+    SchemasPackageDetails,
+    TagType
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -830,9 +831,15 @@ export class EntityService {
                 return new MessageResponse<PolicyDetails>({
                     id: messageId,
                     row,
-                    activity,
+                    activity
                 });
             }
+
+            const tags = await em.find(Message, {
+                type: MessageType.TAG,
+                'options.entity': TagType.Policy,
+                topicId: item.topicId,
+            } as any);
 
             return new MessageResponse<PolicyDetails>({
                 id: messageId,
@@ -840,6 +847,7 @@ export class EntityService {
                 item,
                 row,
                 activity,
+                tags
             });
         } catch (error) {
             return new MessageError(error, getErrorCode(error.code));
@@ -1106,6 +1114,12 @@ export class EntityService {
                 });
             }
 
+            const tags = await em.find(Message, {
+                type: MessageType.TAG,
+                'options.entity': TagType.Schema,
+                topicId: item.topicId,
+            } as any);
+
             item = await loadDocuments(item, true);
 
             return new MessageResponse<SchemaDetails>({
@@ -1114,6 +1128,7 @@ export class EntityService {
                 item,
                 row,
                 activity,
+                tags
             });
         } catch (error) {
             return new MessageError(error, getErrorCode(error.code));
@@ -2013,7 +2028,7 @@ export class EntityService {
                 type: MessageType.VC_DOCUMENT,
                 $or: [
                     { consensusTimestamp: messageId },
-                    { "options.initId": messageId }
+                    { 'options.initId': messageId }
                 ]
             } as any, {
                 orderBy: {
@@ -2498,6 +2513,10 @@ export class EntityService {
                 type: MessageType.CONTRACT,
                 topicId,
             } as any);
+            const tags = await em.find(Message, {
+                type: MessageType.TAG,
+                topicId: row.topicId,
+            } as any);
 
             const activity = {
                 registries,
@@ -2511,7 +2530,7 @@ export class EntityService {
                 dids,
                 vcs,
                 vps,
-                contracts,
+                contracts
             };
 
             if (!item) {
@@ -2519,6 +2538,7 @@ export class EntityService {
                     id: topicId,
                     row,
                     activity,
+                    tags
                 });
             }
             return new MessageResponse<TopicDetails>({
@@ -2527,6 +2547,7 @@ export class EntityService {
                 item,
                 row,
                 activity,
+                tags
             });
         } catch (error) {
             return new MessageError(error, getErrorCode(error.code));

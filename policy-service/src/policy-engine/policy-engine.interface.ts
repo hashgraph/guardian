@@ -182,6 +182,11 @@ export interface IPolicyBlock {
     readonly policyAvailability: PolicyAvailability;
 
     /**
+     * Sync events
+     */
+    readonly syncEvents: boolean;
+
+    /**
      * Policy location
      */
     readonly locationType: LocationType;
@@ -523,7 +528,7 @@ export interface IPolicyContainerBlock extends IPolicyBlock {
      * @param data
      * @param target
      */
-    changeStep(user: PolicyUser, data: any, target: IPolicyBlock): Promise<void>;
+    changeStep(user: PolicyUser, data: any, target: IPolicyBlock, actionStatus: RecordActionStep): Promise<void>;
 
     /**
      * Is last block active

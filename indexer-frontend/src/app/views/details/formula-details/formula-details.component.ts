@@ -20,6 +20,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { OrganizationChartModule } from 'primeng/organizationchart';
 import CID from 'cids';
 import { FormulaViewComponent } from '@components/formula-view/formula-view.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'formula-details',
@@ -78,10 +79,11 @@ export class FormulaDetailsComponent extends BaseDetailsComponent {
 
     constructor(
         entitiesService: EntitiesService,
+        dialogService: DialogService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(entitiesService, route, router);
+        super(entitiesService, dialogService, route, router);
     }
 
     protected override loadData(): void {

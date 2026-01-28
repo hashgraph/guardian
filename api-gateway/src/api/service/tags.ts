@@ -1,6 +1,6 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { Permissions, SchemaCategory, SchemaHelper, TaskAction } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
+import { Permissions, SchemaCategory, SchemaHelper, TagType, TaskAction, UserRole } from '@guardian/interfaces';
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, TaskDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
@@ -50,6 +50,14 @@ export class TagsApi {
         try {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
+            if (body.entity === TagType.PolicyBlock && user.role === UserRole.USER) {
+                const hasPermission = Array.isArray(user?.permissions) && user.permissions.includes(Permissions.POLICIES_POLICY_TAG);
+
+                if (!hasPermission) {
+                    throw new ForbiddenException('Missing permission: POLICIES_POLICY_TAG');
+                }
+            }
 
             const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
@@ -111,7 +119,7 @@ export class TagsApi {
         @Req() req
     ): Promise<{ [localTarget: string]: TagMapDTO }> {
         try {
-            const { entity, target, targets } = body;
+            const { entity, target, targets, linkedItems } = body;
 
             let _targets: string[];
             if (!entity) {
@@ -135,8 +143,8 @@ export class TagsApi {
 
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const items = await guardians.getTags(owner, entity, _targets);
-            const dates = await guardians.getTagCache(owner, entity, _targets);
+            const items = await guardians.getTags(owner, entity, _targets, linkedItems);
+            const dates = await guardians.getTagCache(owner, entity, _targets, linkedItems);
 
             const dateMap = {};
             for (const date of dates) {
@@ -259,7 +267,7 @@ export class TagsApi {
         @Req() req
     ): Promise<TagMapDTO> {
         try {
-            const { entity, target } = body;
+            const { entity, target, linkedItems } = body;
             if (!entity) {
                 throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY);
             }
@@ -269,7 +277,7 @@ export class TagsApi {
 
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const tags = await guardians.synchronizationTags(owner, entity, target);
+            const tags = await guardians.synchronizationTags(owner, entity, target, linkedItems);
 
             const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));

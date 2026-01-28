@@ -249,6 +249,10 @@ export class DocumentGenerator {
             return field.examples[0];
         }
 
+        if (field.default) {
+            return field.default;
+        }
+
         switch (field.type) {
             case 'number':
                 return 1;
@@ -316,9 +320,6 @@ export class DocumentGenerator {
         option: GenerateOption,
         rowPresets?: Record<string, any>,
     ): any {
-        if (!option.enableHiddenFields && field.hidden) {
-            return undefined;
-        }
         if (field.isRef && !field.examples?.[0]) {
             if (field.type === '#GeoJSON') {
                 return DocumentGenerator._generateGeoJSON(field, context, option, rowPresets?.[field.name]);

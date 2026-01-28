@@ -17,6 +17,7 @@ import {
 } from '@components/overview-form/overview-form.component';
 import { ActivityComponent } from '@components/activity/activity.component';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { DialogService } from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'role-details',
@@ -70,10 +71,11 @@ export class RoleDetailsComponent extends BaseDetailsComponent {
 
     constructor(
         entitiesService: EntitiesService,
+        dialogService: DialogService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(entitiesService, route, router);
+        super(entitiesService, dialogService, route, router);
     }
 
     protected override loadData(): void {

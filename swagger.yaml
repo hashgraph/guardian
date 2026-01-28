@@ -2767,6 +2767,86 @@ paths:
       summary: Sends data from an external source.
       tags:
         - external
+  /external/{policyId}/{blockTag}/sync-events:
+    post:
+      description: Sends data from an external source.
+      operationId: ExternalApi_receiveExternalDataCustomWithSyncEvents
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: blockTag
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: history
+          required: false
+          in: query
+          description: History
+          schema:
+            example: true
+            type: boolean
+      requestBody:
+        required: true
+        description: Object that contains a VC Document.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalDocumentDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDTOWithSyncEvents'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Sends data from an external source.
+      tags:
+        - external
+  /external/sync-events:
+    post:
+      description: Sends data from an external source.
+      operationId: ExternalApi_receiveExternalDataWithSyncEvents
+      parameters:
+        - name: history
+          required: false
+          in: query
+          description: History
+          schema:
+            example: true
+            type: boolean
+      requestBody:
+        required: true
+        description: Object that contains a VC Document.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalDocumentDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDTOWithSyncEvents'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Sends data from an external source.
+      tags:
+        - external
   /ipfs/file:
     post:
       description: Add file from ipfs.
@@ -6542,6 +6622,67 @@ paths:
       summary: Sends data to the specified block.
       tags:
         - policies
+  /policies/{policyId}/blocks/{uuid}/sync-events:
+    post:
+      description: Sends data to the specified block.
+      operationId: PolicyApi_setBlockDataWithSyncEvents
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: uuid
+          required: true
+          in: path
+          description: Block Identifier
+          schema:
+            example: 00000000-0000-0000-0000-000000000000
+            type: string
+        - name: history
+          required: false
+          in: query
+          description: History
+          schema:
+            example: true
+            type: boolean
+      requestBody:
+        required: true
+        description: Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDTOWithSyncEvents'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
+      security:
+        - bearer: []
+      summary: Sends data to the specified block.
+      tags:
+        - policies
   /policies/{policyId}/tag/{tagName}/blocks:
     post:
       description: Sends data to the specified block.
@@ -6642,6 +6783,67 @@ paths:
       security:
         - bearer: []
       summary: Requests block data.
+      tags:
+        - policies
+  /policies/{policyId}/tag/{tagName}/blocks/sync-events:
+    post:
+      description: Sends data to the specified block.
+      operationId: PolicyApi_setBlocksByTagNameWithSyncEvents
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: tagName
+          required: true
+          in: path
+          description: Block name (Tag)
+          schema:
+            example: block-tag
+            type: string
+        - name: history
+          required: false
+          in: query
+          description: History
+          schema:
+            example: true
+            type: boolean
+      requestBody:
+        required: true
+        description: Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDTOWithSyncEvents'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
+      security:
+        - bearer: []
+      summary: Sends data to the specified block.
       tags:
         - policies
   /policies/{policyId}/tag/{tagName}:
@@ -19365,6 +19567,41 @@ components:
         - owner
         - policyTag
         - document
+    BlockDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        blockType:
+          type: string
+        blocks:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlockDTO'
+      required:
+        - id
+        - blockType
+        - blocks
+    ResponseDTOWithSyncEvents:
+      type: object
+      properties:
+        response:
+          type: object
+          nullable: true
+          additionalProperties: true
+        result:
+          type: object
+          nullable: true
+          additionalProperties: true
+        steps:
+          additionalProperties: true
+          type: array
+          items:
+            type: object
+      required:
+        - response
+        - result
+        - steps
     LogFilterDTO:
       type: object
       properties:
@@ -19704,21 +19941,6 @@ components:
       required:
         - module
         - results
-    BlockDTO:
-      type: object
-      properties:
-        id:
-          type: string
-        blockType:
-          type: string
-        blocks:
-          type: array
-          items:
-            $ref: '#/components/schemas/BlockDTO'
-      required:
-        - id
-        - blockType
-        - blocks
     ToolDTO:
       type: object
       properties:
@@ -20601,6 +20823,10 @@ components:
         document:
           type: object
           additionalProperties: true
+        inheritTags:
+          type: boolean
+          example: false
+          description: Inherit tags
       required:
         - uuid
         - name
@@ -20629,6 +20855,7 @@ components:
             - Module
             - Contract
             - PolicyDocument
+            - PolicyBlock
           example: PolicyDocument
         target:
           type: string
@@ -20638,10 +20865,17 @@ components:
           type: array
           items:
             type: string
+        linkedItems:
+          example:
+            - '0000000000.000000001'
+          type: array
+          items:
+            type: string
       required:
         - entity
         - target
         - targets
+        - linkedItems
     TagMapDTO:
       type: object
       properties:
@@ -21429,6 +21663,7 @@ components:
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
             - POLICIES_POLICY_AUDIT
+            - POLICIES_POLICY_TAG
             - POLICIES_EXTERNAL_POLICY_READ
             - POLICIES_EXTERNAL_POLICY_CREATE
             - POLICIES_EXTERNAL_POLICY_UPDATE
@@ -21512,6 +21747,7 @@ components:
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
             - POLICIES_POLICY_AUDIT
+            - POLICIES_POLICY_TAG
             - POLICIES_EXTERNAL_POLICY_READ
             - POLICIES_EXTERNAL_POLICY_CREATE
             - POLICIES_EXTERNAL_POLICY_UPDATE
@@ -21635,6 +21871,7 @@ components:
             - UPDATE
             - DELETE
             - REVIEW
+            - TAG
             - AUDIT
             - EXECUTE
             - MANAGE

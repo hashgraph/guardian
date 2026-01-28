@@ -15,7 +15,7 @@ export class ToolsService {
         private http: HttpClient
     ) { }
 
-    public page(pageIndex?: number, pageSize?: number, search?: string, tag?: string): Observable<HttpResponse<any[]>> {
+    public page(pageIndex: number = 0, pageSize: number = 100, search: string = '', tag: string = ''): Observable<HttpResponse<any[]>> {
         if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
             return this.http.get<any>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}&search=${search}&tag=${tag}`, { observe: 'response', headers: headersV2 });
         }

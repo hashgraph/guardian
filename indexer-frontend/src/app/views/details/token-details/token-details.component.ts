@@ -21,6 +21,7 @@ import { ActivityComponent } from '@components/activity/activity.component';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ColumnType, TableComponent } from '@components/table/table.component';
 import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 export enum TokenType {
     FT = 'FUNGIBLE_COMMON',
@@ -120,10 +121,11 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
 
     constructor(
         entitiesService: EntitiesService,
+        dialogService: DialogService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(entitiesService, route, router);
+        super(entitiesService, dialogService, route, router);
     }
 
     protected override loadData(): void {

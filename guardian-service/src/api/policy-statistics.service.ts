@@ -1,6 +1,14 @@
 import { ApiResponse } from './helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, NewNotifier, PinoLogger, PolicyStatistic, PolicyStatisticImportExport, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
-import { EntityStatus, IOwner, MessageAPI, PolicyStatus, Schema, SchemaEntity } from '@guardian/interfaces';
+import {
+    EntityStatus,
+    GenerateUUIDv4,
+    IOwner,
+    MessageAPI,
+    PolicyStatus,
+    Schema,
+    SchemaEntity
+} from '@guardian/interfaces';
 import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, publishConfig, uniqueDocuments } from './helpers/policy-statistics-helpers.js';
 import { publishSchema } from '../helpers/import-helpers/index.js';
 
@@ -290,6 +298,10 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     operatorKey: user.hederaAccountKey,
                     signOptions: user.signOptions
                 });
+
+                const buffer = Buffer.from(JSON.stringify(item.config));
+                item.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), buffer);
+
                 const statMessageResult = await messageServer
                     .setTopicObject(topic)
                     .sendMessage(statMessage, {
@@ -676,6 +688,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     compressionOptions: {
                         level: 3,
                     },
+                    platform: 'UNIX',
                 });
 
                 return new BinaryMessageResponse(file);

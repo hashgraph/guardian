@@ -1,3 +1,4 @@
+
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -6,43 +7,56 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 
+    const modulesUrl = `${API.ApiServer}${API.ListOfAllModules}`;
+    const previewUrl = `${modulesUrl}${API.ImportMessage}${API.Preview}`;
+
     let lastModule;
+
+    const listModulesWithAuth = (authorization) =>
+        cy.request({
+            method: METHOD.GET,
+            url: modulesUrl,
+            headers: { authorization },
+        });
+
+    const getModuleWithAuth = (authorization, uuid) =>
+        cy.request({
+            method: METHOD.GET,
+            url: modulesUrl + uuid,
+            headers: { authorization },
+        });
+
+    const postPreviewWithAuth = (authorization, body) =>
+        cy.request({
+            method: METHOD.POST,
+            url: previewUrl,
+            headers: { authorization },
+            body,
+        });
+
+    const postPreviewWithoutAuth = (headers = {}) =>
+        cy.request({
+            method: METHOD.POST,
+            url: previewUrl,
+            headers,
+            failOnStatusCode: false,
+        });
 
     before("Get module", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfAllModules,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
+            listModulesWithAuth(authorization).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.ListOfAllModules + response.body.at(0).uuid,
-                    headers: {
-                        authorization,
-                    },
-                }).then((response) => {
-                    lastModule = response.body;
-                })
-            })
-        })
+                const uuid = response.body.at(0).uuid;
+                getModuleWithAuth(authorization, uuid).then((res) => {
+                    lastModule = res.body;
+                });
+            });
+        });
     });
 
     it("Preview the module from IPFS", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.ListOfAllModules + API.ImportMessage + API.Preview,
-                headers: {
-                    authorization,
-                },
-                body: {
-                    "messageId": Cypress.env('module_for_import')
-                },
-            }).then((response) => {
+            postPreviewWithAuth(authorization, { messageId: Cypress.env('module_for_import') }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
 
                 expect(response.body.module).to.have.property("configFileId");
@@ -57,41 +71,24 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 expect(response.body.module.type).eql(lastModule.type);
             });
         });
-    })
+    });
 
     it("Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs without auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.ListOfAllModules + API.ImportMessage + API.Preview,
-            failOnStatusCode: false,
-        }).then((response) => {
+        postPreviewWithoutAuth().then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs with invalid auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.ListOfAllModules + API.ImportMessage + API.Preview,
-            headers: {
-                authorization: "Bearer wqe",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        postPreviewWithoutAuth({ authorization: "Bearer wqe" }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        })
+        });
     });
 
     it("Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs with empty auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.ListOfAllModules + API.ImportMessage + API.Preview,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        postPreviewWithoutAuth({ authorization: "" }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        })
-    })
+        });
+    });
+
 });

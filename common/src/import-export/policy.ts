@@ -187,21 +187,22 @@ export class PolicyImportExport {
      * Generate Zip File
      * @param policy policy to pack
      *
+     * @param schemaPackageDocuments
      * @returns Zip file
      */
-    public static async generate(policy: Policy): Promise<JSZip> {
+    public static async generate(policy: Policy, schemaPackageDocuments: { document?: Buffer; context?: Buffer; metadata?: Buffer } | null = null): Promise<JSZip> {
         const components = await PolicyImportExport.loadPolicyComponents(policy);
-        const file = await PolicyImportExport.generateZipFile(components);
-        return file;
+        return await PolicyImportExport.generateZipFile(components, schemaPackageDocuments);
     }
 
     /**
      * Generate Zip File
      * @param components policy components
      *
+     * @param schemaPackageDocuments
      * @returns Zip file
      */
-    public static async generateZipFile(components: IPolicyComponents): Promise<JSZip> {
+    public static async generateZipFile(components: IPolicyComponents, schemaPackageDocuments?: { document?: Buffer; context?: Buffer; metadata?: Buffer } | null): Promise<JSZip> {
         const zip = new JSZip();
         const preparedComponents: IPolicyComponents = PolicyImportExport.preparePolicyComponents(components);
 
@@ -278,6 +279,23 @@ export class PolicyImportExport {
                 );
 
                 zip.file('proof.json', JSON.stringify(vc.getDocument()));
+            }
+        }
+
+        const ZIP_FILE_OPTIONS = ImportExportUtils.getDeterministicZipFileOptions();
+        ImportExportUtils.addDeterministicZipDir(zip, 'ipfs');
+
+        if (schemaPackageDocuments) {
+            ImportExportUtils.addDeterministicZipDir(zip, 'ipfs/schema-package');
+
+            if (schemaPackageDocuments.document) {
+                zip.file('ipfs/schema-package/document.json', schemaPackageDocuments.document, ZIP_FILE_OPTIONS);
+            }
+            if (schemaPackageDocuments.context) {
+                zip.file('ipfs/schema-package/context.json', schemaPackageDocuments.context, ZIP_FILE_OPTIONS);
+            }
+            if (schemaPackageDocuments.metadata) {
+                zip.file('ipfs/schema-package/metadata.json', schemaPackageDocuments.metadata, ZIP_FILE_OPTIONS);
             }
         }
 

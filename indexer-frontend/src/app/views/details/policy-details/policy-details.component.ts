@@ -21,6 +21,7 @@ import { createChart } from '../base-details/relationships-chart.config';
 import { EChartsOption } from 'echarts';
 import { CompareComponent } from '@views/compare/compare/compare.component';
 import { DerivationsComponent } from '@views/collections/derivations/derivations.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'policy-details',
@@ -92,10 +93,11 @@ export class PolicyDetailsComponent extends BaseDetailsComponent {
 
     constructor(
         entitiesService: EntitiesService,
+        dialogService: DialogService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(entitiesService, route, router);
+        super(entitiesService, dialogService, route, router);
     }
 
     get showOriginTab(): boolean {
