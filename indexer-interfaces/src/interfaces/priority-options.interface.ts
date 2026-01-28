@@ -17,7 +17,11 @@ export class PriorityOptions {
      */
     priorityStatusDate?: Date;
     /**
-     * Priority timestamp
+     * Priority Timestamp
      */
     priorityTimestamp?: number;
+    /**
+     * Inherit Priority
+     */
+    inheritPriority?: boolean;
 }
