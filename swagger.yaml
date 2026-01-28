@@ -19553,9 +19553,6 @@ components:
         documentURL:
           type: string
           example: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        topicCount:
-          type: number
-          example: 0
         contextURL:
           type: string
           example: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -19579,7 +19576,6 @@ components:
         - messageId
         - category
         - documentURL
-        - topicCount
         - contextURL
         - document
         - context
