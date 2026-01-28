@@ -707,9 +707,7 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM,
             async (msg: any) => {
                 try {
-                    const { data } = msg;
-
-                    new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA_CUSTOM, data.policyId, {
+                    new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA_CUSTOM, msg.policyId, {
                         policyId: msg.policyId,
                         data: msg
                     });
