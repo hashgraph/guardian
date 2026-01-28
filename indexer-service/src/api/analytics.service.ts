@@ -201,16 +201,16 @@ export class AnalyticsService {
             compareModels.push(compareModel);
             let originalPolicyData = null;
             let originalItem = null;
-            if(policyData.policy.originalMessageId) {
+            if(item.options?.originalMessageId) {
                 originalItem = (await em.findOne(Message, {
-                    consensusTimestamp: policyData.policy.originalMessageId,
+                    consensusTimestamp: item.options.originalMessageId,
                     type: MessageType.INSTANCE_POLICY,
                     action: MessageAction.PublishPolicy,
                 } as any)) as Policy;
             }
-            else if(policyData.policy.originalHash) {
+            else if(item.options?.originalHash) {
                 originalItem = (await em.findOne(Message, {
-                    'options.originalHash': policyData.policy.originalHash,
+                    'options.originalHash': item.options.originalHash,
                     type: MessageType.INSTANCE_POLICY,
                     action: MessageAction.PublishPolicy,
                 } as any,

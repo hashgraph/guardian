@@ -101,7 +101,7 @@ export class PolicyDetailsComponent extends BaseDetailsComponent {
     }
 
     get showOriginTab(): boolean {
-        return this.target && this.target?.options?.originalMessageId; 
+        return this.target && (this.target.options?.originalMessageId || this.target.options?.originalHash); 
     }
 
     get showDerivationsTab(): boolean {

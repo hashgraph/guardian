@@ -53,6 +53,12 @@ export interface PolicyOptions {
      * Discontinued date
      */
     discontinuedDate?: string;
+
+    originalHash?: string;
+
+    currentHash?: string;
+
+    originalMessageId?: string;
 }
 
 /**
