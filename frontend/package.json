@@ -27,7 +27,7 @@
         "cronstrue": "^2.59.0",
         "file-saver": "^2.0.5",
         "idb": "8.0.3",
-        "js-yaml": "^4.1.0",
+        "js-yaml": "^4.1.1",
         "leader-line": "^1.0.7",
         "mathjs": "^14.4.0",
         "mathlive": "^0.103.0",
