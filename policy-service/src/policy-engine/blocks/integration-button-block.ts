@@ -125,6 +125,9 @@ export class IntegrationButtonBlock {
 
         const mintVcDocument = PolicyUtils.createVC(ref, user, integrationVCClass, actionStatus?.id);
 
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(mintVcDocument, tags);
+
         mintVcDocument.type = DocumentCategoryType.INTEGRATION;
         mintVcDocument.schema = `#${integrationVCClass.getSubjectType()}`;
         mintVcDocument.documentFields = Array.from(
@@ -136,9 +139,10 @@ export class IntegrationButtonBlock {
 
         const state: IPolicyEventState = { data: mintVcDocument };
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
+        // actionStatus.saveResult(state);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             documents: ExternalDocuments(mintVcDocument)

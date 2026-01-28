@@ -320,18 +320,20 @@ export class NotificationBlock {
             default:
         }
 
-        ref.triggerEvents(
+        await ref.triggerEvents(
             PolicyOutputEventType.RunEvent,
             event.user,
             event.data,
             event.actionStatus
         );
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
                 documents: ExternalDocuments(event.data?.data),
             })
         );
         ref.backup();
+
+        return event.data;
     }
 }

@@ -76,6 +76,10 @@ export class VCMessage extends Message {
      * InitId
      */
     public initId: string;
+    /**
+     * Tags
+     */
+    public tags: any[];
 
     constructor(
         action: MessageAction,
@@ -113,6 +117,7 @@ export class VCMessage extends Message {
         } else {
             this.guardianVersion = this.document.credentialSubject.guardianVersion;
         }
+        this.tags = document.getTags();
         this.changeType();
     }
 
@@ -238,6 +243,7 @@ export class VCMessage extends Message {
             startMessage: this.startMessage,
             entityType: this.entityType,
             option: this.option,
+            tags: this.tags,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url),
         };
@@ -332,6 +338,7 @@ export class VCMessage extends Message {
         _message.startMessage = json.startMessage;
         _message.entityType = json.entityType;
         _message.option = json.option;
+        _message.tags = json.tags;
         const urls = [
             {
                 cid: json.cid,
@@ -383,6 +390,7 @@ export class VCMessage extends Message {
             startMessage: this.startMessage,
             entityType: this.entityType,
             option: this.option,
+            tags: this.tags,
         }
         const json: string = JSON.stringify(map);
         const hash: Uint8Array = Hashing.sha256.digest(json);
@@ -413,6 +421,7 @@ export class VCMessage extends Message {
         result.startMessage = this.startMessage;
         result.entityType = this.entityType;
         result.option = this.option;
+        result.tags = this.tags;
         return result;
     }
 
@@ -434,6 +443,7 @@ export class VCMessage extends Message {
         result.startMessage = json.startMessage;
         result.entityType = json.entityType;
         result.option = json.option;
+        result.tags = json.tags;
         return result;
     }
 

@@ -1,5 +1,6 @@
 import { BlockType } from '@guardian/interfaces';
 import { SchemaFields, TokenFields } from '../helpers/index.js';
+import JSZip from 'jszip';
 
 interface IBlockConfig {
     blockType: string;
@@ -12,6 +13,8 @@ interface IBlockConfig {
  * Import\Export utils
  */
 export class ImportExportUtils {
+    public static readonly DETERMINISTIC_ZIP_DATE = new Date(Date.UTC(1980, 0, 1, 0, 0, 0));
+
     /**
      * Find all tools
      * @param config
@@ -131,5 +134,33 @@ export class ImportExportUtils {
         }
         const map = finder(obj, new Set<string>());
         return Array.from(map);
+    }
+
+    /**
+     * Get Deterministic Zip File Options
+     */
+    public static getDeterministicZipFileOptions() {
+        return {
+            createFolders: false,
+            date: ImportExportUtils.DETERMINISTIC_ZIP_DATE,
+            unixPermissions: 0o100644,
+            dosPermissions: 0x20,
+        };
+    }
+
+    /**
+     * Add Deterministic Zip Dir
+     * @param zip
+     * @param name
+     */
+    public static addDeterministicZipDir(zip: JSZip, name: string): void {
+        const dirName = `${name}/`;
+
+        zip.file(dirName, '', {
+            dir: true,
+            date: ImportExportUtils.DETERMINISTIC_ZIP_DATE,
+            unixPermissions: 0o040755,
+            dosPermissions: 0x10,
+        });
     }
 }

@@ -3,7 +3,7 @@ import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson, FilenameSanitizer } from '#helpers';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version, Patch } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version, Patch, DefaultValuePipe, ParseBoolPipe } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 import {
     BlockDTO,
@@ -28,7 +28,8 @@ import {
     PolicyVersionDTO,
     RunningDetailsDTO,
     ServiceUnavailableErrorDTO,
-    TaskDTO
+    TaskDTO,
+    ResponseDTOWithSyncEvents
 } from '#middlewares';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
@@ -2052,6 +2053,80 @@ export class PolicyApi {
     /**
      * Sends data to the specified block
      */
+    @Post('/:policyId/blocks/:uuid/sync-events')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Sends data to the specified block.',
+        description: 'Sends data to the specified block.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'uuid',
+        type: 'string',
+        required: true,
+        description: 'Block Identifier',
+        example: Examples.UUID
+    })
+    @ApiQuery({
+        name: 'history',
+        type: Boolean,
+        description: 'History',
+        required: false,
+        example: true
+    })
+    @ApiBody({
+        description: 'Data',
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: ResponseDTOWithSyncEvents
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(ResponseDTOWithSyncEvents, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async setBlockDataWithSyncEvents(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('uuid') uuid: string,
+        @Query('history', new DefaultValuePipe(false), ParseBoolPipe) history: boolean,
+        @Body() body: any,
+        @Req() req
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
+            return await engineService.setBlockData(user, policyId, uuid, body, true, !!history);
+        } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Sends data to the specified block
+     */
     @Post('/:policyId/tag/:tagName/blocks')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
@@ -2109,6 +2184,80 @@ export class PolicyApi {
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return await engineService.setBlockDataByTag(user, policyId, tagName, body);
+        } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Sends data to the specified block
+     */
+    @Post('/:policyId/tag/:tagName/blocks/sync-events')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Sends data to the specified block.',
+        description: 'Sends data to the specified block.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'tagName',
+        type: 'string',
+        required: true,
+        description: 'Block name (Tag)',
+        example: 'block-tag',
+    })
+    @ApiQuery({
+        name: 'history',
+        type: Boolean,
+        description: 'History',
+        required: false,
+        example: true
+    })
+    @ApiBody({
+        description: 'Data',
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: ResponseDTOWithSyncEvents
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(ResponseDTOWithSyncEvents, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async setBlocksByTagNameWithSyncEvents(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('tagName') tagName: string,
+        @Query('history', new DefaultValuePipe(false), ParseBoolPipe) history: boolean,
+        @Body() body: any,
+        @Req() req
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
+            return await engineService.setBlockDataByTag(user, policyId, tagName, body, true, !!history);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger, user.id);
@@ -2283,6 +2432,7 @@ export class PolicyApi {
     @Get('/blocks/about')
     @Auth(
         Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_TAG,
         Permissions.MODULES_MODULE_UPDATE,
         Permissions.TOOLS_TOOL_UPDATE
         // UserRole.STANDARD_REGISTRY,

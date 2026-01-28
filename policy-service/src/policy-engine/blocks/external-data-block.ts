@@ -14,6 +14,7 @@ import {
     VcHelper,
 } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * External data block
@@ -144,7 +145,7 @@ export class ExternalDataBlock {
         ]
     })
     @CatchErrors()
-    async receiveData(data: IPolicyDocument) {
+    async receiveData(data: IPolicyDocument, actionStatus?: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         let verify: boolean;
         try {
@@ -173,6 +174,10 @@ export class ExternalDataBlock {
         const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, schema);
 
         let doc = PolicyUtils.createVC(ref, documentOwner, vc, null);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(doc, tags);
+
         doc.type = ref.options.entityType;
         doc.schema = ref.options.schema;
         doc.accounts = accounts;
@@ -188,10 +193,11 @@ export class ExternalDataBlock {
         if (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
+        // actionStatus.saveResult(state);
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, null);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, null);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(doc)
         }));

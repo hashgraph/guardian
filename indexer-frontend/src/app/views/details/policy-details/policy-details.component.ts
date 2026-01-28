@@ -20,6 +20,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ColumnType } from '@components/table/table.component';
 import { createChart } from '../base-details/relationships-chart.config';
 import { EChartsOption } from 'echarts';
+import { DialogService } from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'policy-details',
@@ -89,10 +90,11 @@ export class PolicyDetailsComponent extends BaseDetailsComponent {
 
     constructor(
         entitiesService: EntitiesService,
+        dialogService: DialogService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(entitiesService, route, router);
+        super(entitiesService, dialogService, route, router);
     }
 
     protected override loadData(): void {

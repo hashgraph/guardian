@@ -317,6 +317,10 @@ export interface VcMessageBody extends MessageBody {
      * InitId
      */
     initId: string;
+    /**
+     * Tags
+     */
+    tags: any[];
 }
 
 /**
@@ -351,6 +355,10 @@ export interface VpMessageBody extends MessageBody {
      * Option
      */
     option: any;
+    /**
+     * Tags
+     */
+    tags: any[];
 }
 
 /**
@@ -515,6 +523,10 @@ export interface TagMessageBody extends MessageBody {
      */
     target: string;
     /**
+     * Linked Items
+     */
+    linkedItems: string[];
+    /**
      * Operation
      */
     operation: 'Create' | 'Delete';
@@ -526,6 +538,10 @@ export interface TagMessageBody extends MessageBody {
      * Date
      */
     date: string;
+    /**
+     * Inherit tags
+     */
+    inheritTags: boolean;
 }
 
 /**

@@ -1,6 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, Hashing, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, NewNotifier, PinoLogger, Policy, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
-import { IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyEvents, PolicyStatus, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyEvents, PolicyStatus, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import * as crypto from 'crypto';
@@ -204,6 +204,7 @@ export async function publishTool(
         const STEP_PUBLISH_SCHEMAS = 'Publish schemas';
         const STEP_CREATE_TAGS_TOPIC = 'Create tags topic';
         const STEP_GENERATE_FILE = 'Generate file';
+        const STEP_SAVE_FILE_IN_DB = 'Save file in database';
         const STEP_PUBLISH_TOOL = 'Publish tool';
         const STEP_PUBLISH_TAGS = 'Publish tags';
         const STEP_SAVE = 'Save';
@@ -214,6 +215,7 @@ export async function publishTool(
         notifier.addStep(STEP_PUBLISH_SCHEMAS);
         notifier.addStep(STEP_CREATE_TAGS_TOPIC);
         notifier.addStep(STEP_GENERATE_FILE);
+        notifier.addStep(STEP_SAVE_FILE_IN_DB);
         notifier.addStep(STEP_PUBLISH_TOOL);
         notifier.addStep(STEP_PUBLISH_TAGS);
         notifier.addStep(STEP_SAVE);
@@ -270,10 +272,15 @@ export async function publishTool(
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3
-            }
+            },
+            platform: 'UNIX',
         });
         tool.hash = sha256(buffer);
         notifier.completeStep(STEP_GENERATE_FILE);
+
+        notifier.startStep(STEP_SAVE_FILE_IN_DB);
+        tool.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
+        notifier.completeStep(STEP_SAVE_FILE_IN_DB);
 
         notifier.startStep(STEP_PUBLISH_TOOL);
         const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
@@ -547,7 +554,8 @@ export async function dryRunTool(
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3
-            }
+            },
+            platform: 'UNIX',
         });
         tool.hash = sha256(buffer);
 
@@ -954,6 +962,13 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Invalid tool');
                 }
 
+                if (item.status === ModuleStatus.PUBLISHED && item.contentFileId) {
+                    const buffer = await DatabaseServer.loadFile(item.contentFileId);
+                    const arrayBuffer = Uint8Array.from(buffer).buffer
+
+                    return new BinaryMessageResponse(arrayBuffer);
+                }
+
                 await updateToolConfig(item);
                 const zip = await ToolImportExport.generate(item);
                 const file = await zip.generateAsync({
@@ -962,6 +977,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     compressionOptions: {
                         level: 3,
                     },
+                    platform: 'UNIX'
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {

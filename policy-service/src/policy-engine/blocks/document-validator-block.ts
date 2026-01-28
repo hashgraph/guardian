@@ -198,7 +198,7 @@ export class DocumentValidatorBlock {
         ]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<void> {
+    async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
         ref.log(`runAction`);
 
@@ -206,13 +206,16 @@ export class DocumentValidatorBlock {
         if (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
+        // event.actionStatus.saveResult(event.data);
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
             documents: ExternalDocuments(event?.data?.data)
         }));
         ref.backup();
+
+        return event.data;
     }
 }

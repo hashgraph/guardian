@@ -351,6 +351,10 @@ export class PolicyRolesBlock {
         });
 
         const vcDocument = PolicyUtils.createVC(ref, user, vc, actionStatusId);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(vcDocument, tags);
+
         vcDocument.type = DocumentCategoryType.USER_ROLE;
         vcDocument.schema = `#${vc.getSubjectType()}`;
         vcDocument.messageId = message.getId();
@@ -435,9 +439,9 @@ export class PolicyRolesBlock {
         const userGroup = await ref.databaseServer.setUserInGroup(group);
         const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref, user.userId);
         if (data.invitation) {
-            ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null, actionStatus);
         } else {
-            ref.triggerEvents(PolicyOutputEventType.CreateGroup, newUser, null, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.CreateGroup, newUser, null, actionStatus);
         }
 
         await PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance);

@@ -269,6 +269,9 @@ export class RequestVcDocumentBlockAddon {
                 });
                 let item = PolicyUtils.createVC(ref, documentOwner, vc, actionStatus?.id);
 
+                const tags = await PolicyUtils.getBlockTags(ref);
+                PolicyUtils.setDocumentTags(item, tags);
+
                 const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, this._schema);
                 const schemaIRI = ref.options.schema;
                 item.type = schemaIRI;

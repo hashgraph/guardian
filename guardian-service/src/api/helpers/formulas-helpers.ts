@@ -1,5 +1,5 @@
 import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, INotificationStep, MessageAction, MessageServer, Policy, TopicConfig, VcDocument, VpDocument } from '@guardian/common';
-import { EntityStatus, IOwner, IRootConfig, PolicyStatus } from '@guardian/interfaces';
+import { EntityStatus, GenerateUUIDv4, IOwner, IRootConfig, PolicyStatus } from '@guardian/interfaces';
 
 type IDocument = VcDocument | VpDocument;
 
@@ -106,11 +106,13 @@ export async function publishFormula(
 
     // <-- Steps
     const STEP_RESOLVE_TOPIC = 'Resolve topic';
+    const STEP_SAVE_FILE_IN_DB = 'Save file in database';
     const STEP_PUBLISH_FORMULA = 'Publish formula';
     // Steps -->
 
-    notifier.addStep(STEP_RESOLVE_TOPIC, 30);
-    notifier.addStep(STEP_PUBLISH_FORMULA, 70);
+    notifier.addStep(STEP_RESOLVE_TOPIC, 25);
+    notifier.addStep(STEP_SAVE_FILE_IN_DB, 10);
+    notifier.addStep(STEP_PUBLISH_FORMULA, 65);
     notifier.start();
 
     notifier.startStep(STEP_RESOLVE_TOPIC);
@@ -122,16 +124,21 @@ export async function publishFormula(
     }).setTopicObject(topic);
     notifier.completeStep(STEP_RESOLVE_TOPIC);
 
-    notifier.startStep(STEP_PUBLISH_FORMULA);
+    notifier.startStep(STEP_SAVE_FILE_IN_DB);
     const zip = await FormulaImportExport.generate(item);
     const buffer = await zip.generateAsync({
         type: 'arraybuffer',
         compression: 'DEFLATE',
         compressionOptions: {
             level: 3
-        }
+        },
+        platform: 'UNIX',
     });
 
+    item.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
+    notifier.completeStep(STEP_SAVE_FILE_IN_DB);
+
+    notifier.startStep(STEP_PUBLISH_FORMULA);
     const publishMessage = new FormulaMessage(MessageAction.PublishFormula);
     publishMessage.setDocument(item, buffer);
     const statMessageResult = await messageServer

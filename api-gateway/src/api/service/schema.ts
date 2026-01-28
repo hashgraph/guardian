@@ -1925,13 +1925,21 @@ export class SchemaApi {
             const ids = schemas.map(s => s.id);
             const tags = await guardians.exportTags(owner, 'Schema', ids);
             const name = `${Date.now()}`;
-            const zip = await SchemaImportExport.generateZipFile({ schemas, tags });
+
+            const zip = await SchemaImportExport.generateZipFile({
+                schemas,
+                tags,
+                helpers: guardians,
+                user
+            });
+
             const arcStream = zip.generateNodeStream({
                 type: 'nodebuffer',
                 compression: 'DEFLATE',
                 compressionOptions: {
                     level: 3
-                }
+                },
+                platform: 'UNIX',
             });
             res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(name)}`);
             res.header('Content-type', 'application/zip');

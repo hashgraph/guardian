@@ -73,7 +73,7 @@ export class ButtonBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const data: IPolicyDocument = blockData.document;
         const state: IPolicyEventState = { data };
-        ref.triggerEvents(blockData.tag, user, state, actionStatus);
+        await ref.triggerEvents(blockData.tag, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             button: blockData.tag,
             documents: ExternalDocuments(blockData.document)
