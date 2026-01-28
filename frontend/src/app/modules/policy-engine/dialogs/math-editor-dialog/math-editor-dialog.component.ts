@@ -330,6 +330,8 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             }
             this.schemaFieldMap.set(String(schema.iri || ''), map);
         }
+        this.schemaNames.set('#GeoJSON', 'GeoJSON');
+
         if (this.inputSchema) {
             this.inputSchemaName = String(this.inputSchema.name || '');
 
@@ -395,7 +397,10 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     private createSchemaView(schema: any) {
         const fields = TreeListData.fromObject<FieldData>(schema, 'fields', (item) => {
             if (item && item.data) {
-                const type = item.data.isRef ? this.schemaNames.get(item.data.type) : item.data.type;
+                let type = item.data.isRef ? this.schemaNames.get(item.data.type) : item.data.type;
+                if (type === null || type === 'null') {
+                    type = 'Help Text';
+                }
                 item.id = item.data.path;
                 item.name = item.data.description;
                 item.subName = `${item.id} (${type})`;
