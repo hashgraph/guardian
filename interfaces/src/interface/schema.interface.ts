@@ -119,4 +119,14 @@ export interface ISchema {
      * Errors
      */
     errors?: any[];
+
+    /**
+     * Document file id of the original schema(publish flow).
+     */
+    contentDocumentFileId?: string;
+
+    /**
+     * Context file id of the original schema(publish flow).
+     */
+    contentContextFileId?: string;
 }

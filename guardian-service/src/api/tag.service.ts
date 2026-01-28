@@ -183,6 +183,20 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const { tag, owner } = msg;
+
+                if (tag.target && tag.entity === 'Policy') {
+                    const isTagExisted = await DatabaseServer.getTags({
+                        localTarget: tag.target,
+                        name: tag.name,
+                        entity: tag.entity,
+                        owner: owner.creator,
+                    });
+
+                    if (isTagExisted?.length) {
+                        throw new Error(`Tag "${tag.name}" already exists`);
+                    }
+                }
+
                 tag.uuid = tag.uuid || GenerateUUIDv4();
                 tag.owner = owner.creator;
                 tag.operation = 'Create';

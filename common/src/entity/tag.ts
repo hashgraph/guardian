@@ -3,6 +3,7 @@ import { RestoreEntity } from '../models/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { DataBaseHelper } from '../helpers/db-helper.js';
 import { DeleteCache } from './delete-cache.js';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 /**
  * Tags collection
@@ -109,6 +110,12 @@ export class Tag extends RestoreEntity {
     date: string;
 
     /**
+     * File id of the original tag (publish flow).
+     */
+    @Property({ nullable: true })
+    contentFileId?: string;
+
+    /**
      * Inherit tags
      */
     @Property({ nullable: true })
@@ -161,6 +168,21 @@ export class Tag extends RestoreEntity {
             })
         } catch (error) {
             console.error(error);
+        }
+    }
+
+    /**
+     * Delete original tag file (publish flow)
+     */
+    @AfterDelete()
+    deleteContentFile() {
+        if (this.contentFileId) {
+            DataBaseHelper.gridFS
+                .delete(new ObjectId(this.contentFileId))
+                .catch((reason) => {
+                    console.error('AfterDelete: Tag, contentFileId');
+                    console.error(reason);
+                });
         }
     }
 }

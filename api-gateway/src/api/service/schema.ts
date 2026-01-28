@@ -6,7 +6,7 @@ import { Auth, AuthUser } from '#auth';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { Examples, ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, pageHeader, SchemaDTO, SystemSchemaDTO, SchemaDeletionPreviewDTO, TaskDTO, VersionSchemaDTO } from '#middlewares';
 import { CACHE, PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
-import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache } from '#helpers';
+import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache, FilenameSanitizer } from '#helpers';
 import process from 'process';
 
 @Controller('schema')
@@ -1925,15 +1925,23 @@ export class SchemaApi {
             const ids = schemas.map(s => s.id);
             const tags = await guardians.exportTags(owner, 'Schema', ids);
             const name = `${Date.now()}`;
-            const zip = await SchemaImportExport.generateZipFile({ schemas, tags });
+
+            const zip = await SchemaImportExport.generateZipFile({
+                schemas,
+                tags,
+                helpers: guardians,
+                user
+            });
+
             const arcStream = zip.generateNodeStream({
                 type: 'nodebuffer',
                 compression: 'DEFLATE',
                 compressionOptions: {
                     level: 3
-                }
+                },
+                platform: 'UNIX',
             });
-            res.header('Content-disposition', `attachment; filename=${name}`);
+            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(name)}`);
             res.header('Content-type', 'application/zip');
             return res.send(arcStream);
         } catch (error) {
@@ -2426,7 +2434,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file: any = await guardians.exportSchemasXlsx(owner, [schemaId]);
             const schema: any = await guardians.getSchemaById(user, schemaId);
-            const filename = (schema.name || '').replace(/[/\\?%*:|"<>,.]/g, '_');
+            const filename = FilenameSanitizer.sanitize(schema.name || '');
             res.header('Content-disposition', `attachment; filename=${filename}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
@@ -2647,7 +2655,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file = await guardians.getFileTemplate(owner, filename);
             const fileBuffer = Buffer.from(file, 'base64');
-            res.header('Content-disposition', `attachment; filename=` + filename);
+            res.header('Content-disposition', `attachment; filename=` + FilenameSanitizer.sanitize(filename));
             res.header('Content-type', 'application/zip');
 
             req.locals = fileBuffer

@@ -828,9 +828,12 @@ export class PolicyEngine extends NatsService {
     /**
      * Policy schemas
      * @param model
-     * @param user
+     * @param owner
      * @param root
+     * @param server
      * @param notifier
+     * @param schemaMap
+     * @param onPackageDocuments
      */
     public async publishSchemas(
         model: Policy,
@@ -839,9 +842,10 @@ export class PolicyEngine extends NatsService {
         server: MessageServer,
         notifier: INotificationStep,
         schemaMap: Map<string, string>,
-        userId: string | null
+        onPackageDocuments: (docs: { document: Buffer; context: Buffer; metadata: Buffer }) => void
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
+
         await publishSchemasPackage({
             name: model.name,
             version: model.version,
@@ -850,7 +854,8 @@ export class PolicyEngine extends NatsService {
             owner,
             server,
             schemaMap,
-            notifier
+            notifier,
+            onPackageDocuments
         })
 
         // notifier.setEstimate(schemas.length);
@@ -1000,6 +1005,7 @@ export class PolicyEngine extends NatsService {
         const STEP_CREATE_RESTORE_TOPIC = 'Create restore topic';
         const STEP_CREATE_ACTION_TOPIC = 'Create actions topic';
         const STEP_CREATE_COMMENTS_TOPIC = 'Create comments topic';
+        const STEP_SAVE_FILE_IN_DB = 'Save file in database';
         const STEP_PUBLISH_POLICY = 'Publish policy';
         const STEP_PUBLISH_MESSAGE = 'Publish message';
         const STEP_PUBLISH_TAGS = 'Publish tags';
@@ -1016,7 +1022,8 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_CREATE_RESTORE_TOPIC, 2);
         notifier.addStep(STEP_CREATE_ACTION_TOPIC, 2);
         notifier.addStep(STEP_CREATE_COMMENTS_TOPIC, 2);
-        notifier.addStep(STEP_PUBLISH_POLICY, 20);
+        notifier.addStep(STEP_SAVE_FILE_IN_DB, 2);
+        notifier.addStep(STEP_PUBLISH_POLICY, 18);
         notifier.addStep(STEP_PUBLISH_MESSAGE, 4);
         notifier.addStep(STEP_PUBLISH_TAGS, 4);
         notifier.addStep(STEP_SAVE, 2);
@@ -1041,6 +1048,7 @@ export class PolicyEngine extends NatsService {
 
         notifier.startStep(STEP_PUBLISH_SCHEMAS);
         const schemaMap = new Map<string, string>();
+        let schemaPackageDocuments: { document?: Buffer; context?: Buffer; metadata?: Buffer } | null = null;
         try {
             model = await this.publishSchemas(
                 model,
@@ -1049,7 +1057,7 @@ export class PolicyEngine extends NatsService {
                 messageServer,
                 notifier.getStep(STEP_PUBLISH_SCHEMAS),
                 schemaMap,
-                userId
+                (docs) => { schemaPackageDocuments = docs }
             );
         } catch (error) {
             model.status = PolicyStatus.PUBLISH_ERROR;
@@ -1295,14 +1303,19 @@ export class PolicyEngine extends NatsService {
             const modelToPublish = Object.assign(Object.create(Object.getPrototypeOf(model)), model);
             modelToPublish.config = configToPublish;
 
-            const zip = await PolicyImportExport.generate(modelToPublish);
+            const zip = await PolicyImportExport.generate(modelToPublish, schemaPackageDocuments);
             const buffer = await zip.generateAsync({
                 type: 'arraybuffer',
                 compression: 'DEFLATE',
                 compressionOptions: {
                     level: 3
-                }
+                },
+                platform: 'UNIX',
             });
+
+            notifier.startStep(STEP_SAVE_FILE_IN_DB);
+            model.contentFileId = (await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer))).toString();
+            notifier.completeStep(STEP_SAVE_FILE_IN_DB);
 
             notifier.startStep(STEP_PUBLISH_POLICY);
 
@@ -1457,7 +1470,8 @@ export class PolicyEngine extends NatsService {
         const buffer = await zip.generateAsync({
             type: 'arraybuffer',
             compression: 'DEFLATE',
-            compressionOptions: { level: 3 }
+            compressionOptions: { level: 3 },
+            platform: 'UNIX',
         });
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
