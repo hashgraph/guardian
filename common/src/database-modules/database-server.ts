@@ -3988,8 +3988,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @returns file ID
      */
-    public static async loadFile(id: ObjectId): Promise<Buffer> {
-        return DataBaseHelper.loadFile(id);
+    public static async loadFile(id: string | ObjectId): Promise<Buffer> {
+        const objectId = typeof id === 'string' ? new ObjectId(id) : id;
+        return DataBaseHelper.loadFile(objectId);
     }
 
     /**
