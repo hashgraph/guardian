@@ -2432,6 +2432,7 @@ export class PolicyApi {
     @Get('/blocks/about')
     @Auth(
         Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_TAG,
         Permissions.MODULES_MODULE_UPDATE,
         Permissions.TOOLS_TOOL_UPDATE
         // UserRole.STANDARD_REGISTRY,

@@ -122,6 +122,8 @@ export class RetirementBlock {
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
+        const tags = await PolicyUtils.getBlockTags(ref);
+
         const policyOwnerDidDocument = await policyOwner.loadDidDocument(ref, userId);
         const policyOwnerHederaCred = await policyOwner.loadHederaCredentials(ref, userId);
         const policyOwnerSignOptions = await policyOwner.loadSignOptions(ref, userId);
@@ -199,6 +201,9 @@ export class RetirementBlock {
         const vcs = [].concat(documents, wipeVC);
         const vp = await this.createVP(policyOwnerDidDocument, uuid, vcs);
 
+        wipeVC.addTags(tags);
+        vp.addTags(tags);
+
         const messageServer = new MessageServer({
             operatorId: policyOwnerHederaCred.hederaAccountId,
             operatorKey: policyOwnerHederaCred.hederaAccountKey,
@@ -231,6 +236,7 @@ export class RetirementBlock {
         vcDocument.topicId = vcMessageResult.getTopicId();
         vcDocument.relationships = relationships;
         vcDocument.relayerAccount = relayerAccount;
+        PolicyUtils.setDocumentTags(vcDocument, tags);
 
         await ref.databaseServer.saveVC(vcDocument);
 
@@ -253,11 +259,14 @@ export class RetirementBlock {
             });
 
         const vpDocument = PolicyUtils.createVP(ref, user, vp, actionStatus?.id);
+        PolicyUtils.setDocumentTags(vpDocument, tags);
         vpDocument.type = DocumentCategoryType.RETIREMENT;
         vpDocument.messageId = vpMessageResult.getId();
         vpDocument.topicId = vpMessageResult.getTopicId();
         vpDocument.relationships = relationships;
         vpDocument.relayerAccount = relayerAccount;
+        PolicyUtils.setDocumentTags(vpDocument, tags);
+
         await ref.databaseServer.saveVP(vpDocument);
 
         await MintService.wipe({

@@ -3719,12 +3719,17 @@ components:
           type: string
           description: Name
           example: Monitoring Report Document
+        tagsCount:
+          type: number
+          description: Tags count
+          example: 1
       required:
         - id
         - uuid
         - type
         - category
         - name
+        - tagsCount
     RelationshipLinkDTO:
       type: object
       properties:

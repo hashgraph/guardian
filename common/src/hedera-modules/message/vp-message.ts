@@ -48,6 +48,10 @@ export class VPMessage extends Message {
      * Option
      */
     public option: any;
+    /**
+     * Tags
+     */
+    public tags: any[];
 
     constructor(action: MessageAction) {
         super(action, MessageType.VPDocument);
@@ -62,6 +66,7 @@ export class VPMessage extends Message {
         this.document = document.getDocument();
         this.hash = document.toCredentialHash();
         this.issuer = document.getIssuerDid();
+        this.tags = document.getTags();
     }
 
     /**
@@ -154,6 +159,7 @@ export class VPMessage extends Message {
             tag: this.tag,
             entityType: this.entityType,
             option: this.option,
+            tags: this.tags,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url),
         };
@@ -229,6 +235,7 @@ export class VPMessage extends Message {
         message.tag = json.tag;
         message.entityType = json.entityType;
         message.option = json.option;
+        message.tags = json.tags;
         const urls = [{
             cid: json.cid,
             url: IPFS.IPFS_PROTOCOL + json.cid
@@ -273,7 +280,8 @@ export class VPMessage extends Message {
             tag: this.tag,
             entityType: this.entityType,
             option: this.option,
-            hash: this.hash
+            tags: this.tags,
+            hash: this.hash,
         }
         const json: string = JSON.stringify(map);
         const hash: Uint8Array = Hashing.sha256.digest(json);
@@ -299,6 +307,7 @@ export class VPMessage extends Message {
         result.entityType = this.entityType;
         result.option = this.option;
         result.document = this.document;
+        result.tags = this.tags;
         return result;
     }
 
@@ -314,6 +323,7 @@ export class VPMessage extends Message {
         result.entityType = json.entityType;
         result.option = json.option;
         result.document = json.document;
+        result.tags = json.tags;
         return result;
     }
 

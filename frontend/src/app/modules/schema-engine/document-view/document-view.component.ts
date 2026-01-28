@@ -250,4 +250,8 @@ export class DocumentViewComponent implements OnInit {
         this.link = path && path.length > 1 ? path[path.length - 1] : undefined;
         this.ref.detectChanges();
     }
+
+    public getTagJson(tag: any): string {
+        return tag ? JSON.stringify(tag, null, 4) : '';
+    }
 }

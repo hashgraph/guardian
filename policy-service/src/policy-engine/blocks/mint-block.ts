@@ -289,7 +289,9 @@ export class MintBlock {
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
-        const uuid: string = await ref.components.generateUUID(actionStatus?.id);
+        const tags = await PolicyUtils.getBlockTags(ref);
+
+        const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
         if (Number.isNaN(amount) || !Number.isFinite(amount) || amount < 0) {
             throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);
@@ -301,6 +303,7 @@ export class MintBlock {
 
         const mintVC = await this.createMintVC(policyOwnerDid, token, tokenAmount, ref, actionStatus?.id);
         const reportVC = await this.createReportVC(ref, policyOwnerCred, user, documents, messages, additionalMessages, userId, actionStatus?.id);
+
         let vp: any;
         if (reportVC && reportVC.length) {
             const vcs = [...reportVC, mintVC];
@@ -309,6 +312,7 @@ export class MintBlock {
             const vcs = [...documents, mintVC];
             vp = await this.createVP(policyOwnerDid, uuid, vcs);
         }
+        vp.addTags(tags);
 
         ref.log(`Topic Id: ${topicId}`);
 
@@ -340,6 +344,9 @@ export class MintBlock {
                 interception: null
             });
         const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC, actionStatus?.id);
+
+        PolicyUtils.setDocumentTags(mintVcDocument, tags);
+
         mintVcDocument.type = DocumentCategoryType.MINT;
         mintVcDocument.schema = `#${mintVC.getSubjectType()}`;
         mintVcDocument.messageId = vcMessageResult.getId();
@@ -373,6 +380,7 @@ export class MintBlock {
             });
         const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp, actionStatus?.id);
+        PolicyUtils.setDocumentTags(vpDocument, tags);
         vpDocument.type = DocumentCategoryType.MINT;
         vpDocument.messageId = vpMessageId;
         vpDocument.topicId = vpMessageResult.getTopicId();

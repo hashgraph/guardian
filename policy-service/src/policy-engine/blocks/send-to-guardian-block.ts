@@ -623,15 +623,19 @@ export class SendToGuardianBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
 
+        const tags = await PolicyUtils.getBlockTags(ref);
+
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
         if (Array.isArray(docs)) {
             const newDocs = [];
             for (const doc of docs) {
+                PolicyUtils.setDocumentTags(doc, tags);
                 const newDoc = await this.documentSender(doc, event?.user?.userId);
                 newDocs.push(newDoc);
             }
             event.data.data = newDocs;
         } else {
+            PolicyUtils.setDocumentTags(docs, tags);
             event.data.data = await this.documentSender(docs, event?.user?.userId);
         }
 

@@ -190,6 +190,10 @@ export class UploadVcDocumentBlock {
                     const vc = VcDocument.fromJsonTree(document);
 
                     const doc = PolicyUtils.createVC(ref, user, vc, actionStatus?.id);
+
+                    const tags = await PolicyUtils.getBlockTags(ref);
+                    PolicyUtils.setDocumentTags(doc, tags);
+
                     doc.type = ref.options.entityType;
                     doc.schema = ref.options.schema;
                     doc.signature = DocumentSignature.VERIFIED;

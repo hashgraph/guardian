@@ -20823,6 +20823,10 @@ components:
         document:
           type: object
           additionalProperties: true
+        inheritTags:
+          type: boolean
+          example: false
+          description: Inherit tags
       required:
         - uuid
         - name
@@ -20851,6 +20855,7 @@ components:
             - Module
             - Contract
             - PolicyDocument
+            - PolicyBlock
           example: PolicyDocument
         target:
           type: string
@@ -20860,10 +20865,17 @@ components:
           type: array
           items:
             type: string
+        linkedItems:
+          example:
+            - '0000000000.000000001'
+          type: array
+          items:
+            type: string
       required:
         - entity
         - target
         - targets
+        - linkedItems
     TagMapDTO:
       type: object
       properties:
@@ -21651,6 +21663,7 @@ components:
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
             - POLICIES_POLICY_AUDIT
+            - POLICIES_POLICY_TAG
             - POLICIES_EXTERNAL_POLICY_READ
             - POLICIES_EXTERNAL_POLICY_CREATE
             - POLICIES_EXTERNAL_POLICY_UPDATE
@@ -21734,6 +21747,7 @@ components:
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
             - POLICIES_POLICY_AUDIT
+            - POLICIES_POLICY_TAG
             - POLICIES_EXTERNAL_POLICY_READ
             - POLICIES_EXTERNAL_POLICY_CREATE
             - POLICIES_EXTERNAL_POLICY_UPDATE
@@ -21857,6 +21871,7 @@ components:
             - UPDATE
             - DELETE
             - REVIEW
+            - TAG
             - AUDIT
             - EXECUTE
             - MANAGE

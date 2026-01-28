@@ -7,6 +7,7 @@ import { IPolicyEvent } from '../interfaces/index.js';
 import { PolicyInputEventType } from '../interfaces/policy-event-type.js';
 import { IPolicyAddonBlock, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { LocationType } from '@guardian/interfaces';
+import { PolicyUtils } from '../helpers/utils.js';
 
 /**
  * Container block with UI
@@ -74,6 +75,18 @@ export class ToolBlock {
     })
     async onAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
+        if (event?.data?.data) {
+            if (Array.isArray(event?.data?.data)) {
+                for (const document of event?.data?.data) {
+                    PolicyUtils.setDocumentTags(document, tags);
+                }
+            } else {
+                PolicyUtils.setDocumentTags(event?.data?.data, tags);
+            }
+        }
+
         for (const e of this.inputEvents) {
             if (e.name === event.inputType) {
                 await ref.triggerEvents(e.name, event.user, event.data, event.actionStatus);

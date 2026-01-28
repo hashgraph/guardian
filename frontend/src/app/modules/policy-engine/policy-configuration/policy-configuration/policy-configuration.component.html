@@ -788,9 +788,26 @@
                                 [nestedBlock]="nestedBlock"
                                 [nextBlock]="nextBlock"
                                 [readonly]="readonly"
-                                [suggestions]="isSuggestionsEnabled">
+                                [suggestions]="isSuggestionsEnabled"
+                                [selectedBlocks]="selectedBlocks"
+                            >
                             </policy-tree>
                         </div>
+
+                        <ng-container *ngIf="canEditTags()">
+                            <ng-container *ngIf="selectedBlocks.size <= 1; else selectedManyBlocksTemplate">
+                                <div class="hint-multiselect">
+                                    <i class="pi pi-info-circle"></i>
+                                    <span>Press “Shift” to select multiple blocks</span>
+                                </div>
+                            </ng-container>
+                            <ng-template #selectedManyBlocksTemplate>
+                                <div class="display-selected-blocks">
+                                    <span>{{ selectedBlocks.size | pluralize: 'block' : 'blocks' }} selected</span>
+                                    <p-button (click)="onAddTagToBlocks()" label="Add tags" icon="pi pi-plus"></p-button>
+                                </div>
+                            </ng-template>
+                        </ng-container>
                     </div>
 
                 </div>
@@ -947,122 +964,137 @@
                     </ng-template>
 
                     <ng-template #propertiesBlock let-id="id" let-size="size">
-                        <div *ngIf="currentBlock && !isRootModule"
-                            cdkDrag
-                            (cdkDragDropped)="onDropSection($event)"
-                            (cdkDragStarted)="onDragSection($event)"
-                            [attr.collapse-bottom]="options.rightBottomMenu"
-                            [attr.collapse-top]="options.rightTopMenu"
-                            [attr.resizing-id]="id"
-                            [cdkDragStartDelay]="100"
-                            [ngStyle]="{ height: size, 'flex-basis': size }"
-                            class="right-bottom-toolbar">
-                            <i *cdkDragPreview class="pi pi-align-left"></i>
-                            <div class="pc-tabs">
-                                <div cdkDragHandle class="pc-tabs-headers">
-                                    <div (click)="select('properties')" [attr.selected]="options.properties"
-                                        class="tab-header">
-                                        Properties
-                                    </div>
-                                    <div (click)="select('events')" [attr.selected]="options.events" class="tab-header">
-                                        Events
-                                    </div>
-                                    <div (click)="select('artifacts')" [attr.selected]="options.artifacts"
-                                        class="tab-header">
-                                        Artifacts
-                                    </div>
-                                    <div (click)="select('json')" [attr.selected]="options.json" class="tab-header">
-                                        Json
-                                    </div>
-                                    <div (click)="collapse('rightBottomMenu')"
-                                        [attr.collapsed]="options.rightBottomMenu" class="tabs-icon">
-                                        <i
-                                            class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
-                                        <i
-                                            class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
-                                    </div>
-                                </div>
-                                <div [attr.readonly]="!isTree" class="pc-tabs-content">
-                                    <div [hidden]="!options.properties" class="prop-container">
-                                        <div *ngIf="errorsMap[currentBlock.id]" class="errors-properties">
-                                            <div *ngFor="let item of errorsMap[currentBlock.id]"
-                                                class="errors-property">
-                                                <span>{{ item }}</span>
-                                            </div>
-                                        </div>
 
-                                        <div *ngIf="warningsListMap[currentBlock.id]" class="warnings-properties">
-                                            <div *ngFor="let item of warningsListMap[currentBlock.id]" class="warnings-property">
-                                                <span>{{ item }}</span>
-                                            </div>
-                                        </div>
+                        <ng-container *ngIf="this.selectedBlocks && this.selectedBlocks.size <= 1; else cantDisplayDetails">
 
-                                        <div *ngIf="infosListMap[currentBlock.id]" class="infos-properties">
-                                            <div *ngFor="let item of infosListMap[currentBlock.id]" class="infos-property">
-                                                <span>{{ item }}</span>
-                                            </div>
+                            <div *ngIf="currentBlock && !isRootModule"
+                                cdkDrag
+                                (cdkDragDropped)="onDropSection($event)"
+                                (cdkDragStarted)="onDragSection($event)"
+                                [attr.collapse-bottom]="options.rightBottomMenu"
+                                [attr.collapse-top]="options.rightTopMenu"
+                                [attr.resizing-id]="id"
+                                [cdkDragStartDelay]="100"
+                                [ngStyle]="{ height: size, 'flex-basis': size }"
+                                class="right-bottom-toolbar">
+                                <i *cdkDragPreview class="pi pi-align-left"></i>
+                                <div class="pc-tabs">
+                                    <div cdkDragHandle class="pc-tabs-headers">
+                                        <div (click)="select('properties')" [attr.selected]="options.properties"
+                                            class="tab-header">
+                                            Properties
                                         </div>
+                                        <div (click)="select('events')" [attr.selected]="options.events" class="tab-header">
+                                            Events
+                                        </div>
+                                        <div (click)="select('artifacts')" [attr.selected]="options.artifacts"
+                                            class="tab-header">
+                                            Artifacts
+                                        </div>
+                                        <div (click)="select('json')" [attr.selected]="options.json" class="tab-header">
+                                            Json
+                                        </div>
+                                        <div (click)="collapse('rightBottomMenu')"
+                                            [attr.collapsed]="options.rightBottomMenu" class="tabs-icon">
+                                            <i
+                                                class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
+                                            <i
+                                                class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
+                                        </div>
+                                    </div>
+                                    <div [attr.readonly]="!isTree" class="pc-tabs-content">
+                                        <div [hidden]="!options.properties" class="prop-container">
+                                            <div *ngIf="errorsMap[currentBlock.id]" class="errors-properties">
+                                                <div *ngFor="let item of errorsMap[currentBlock.id]"
+                                                    class="errors-property">
+                                                    <span>{{ item }}</span>
+                                                </div>
+                                            </div>
 
-                                        <common-properties
-                                            [block]="currentBlock"
-                                            [module]="openFolder"
-                                            [readonly]="readonly"
-                                            class="readonly-status"
-                                            type="Common"></common-properties>
-                                    </div>
-                                    <div [hidden]="!options.events" class="prop-container">
-                                        <common-properties
-                                            [block]="currentBlock"
-                                            [module]="openFolder"
-                                            [readonly]="readonly"
-                                            class="readonly-status"
-                                            type="Events"></common-properties>
-                                    </div>
-                                    <div [hidden]="!options.artifacts" class="prop-container">
-                                        <artifact-properties [block]="currentBlock" [policyId]="policyId"
-                                            [readonly]="readonly" class="readonly-status"></artifact-properties>
-                                    </div>
-                                    <div [hidden]="!options.json" class="prop-container">
-                                        <json-properties *ngIf="options.json" [block]="currentBlock"
-                                            [readonly]="readonly"></json-properties>
+                                            <div *ngIf="warningsListMap[currentBlock.id]" class="warnings-properties">
+                                                <div *ngFor="let item of warningsListMap[currentBlock.id]" class="warnings-property">
+                                                    <span>{{ item }}</span>
+                                                </div>
+                                            </div>
+
+                                            <div *ngIf="infosListMap[currentBlock.id]" class="infos-properties">
+                                                <div *ngFor="let item of infosListMap[currentBlock.id]" class="infos-property">
+                                                    <span>{{ item }}</span>
+                                                </div>
+                                            </div>
+
+                                            <common-properties
+                                                [block]="currentBlock"
+                                                [module]="openFolder"
+                                                [readonly]="readonly"
+                                                (onEditTags)="onAddTag()"
+                                                class="readonly-status"
+                                                type="Common"></common-properties>
+                                        </div>
+                                        <div [hidden]="!options.events" class="prop-container">
+                                            <common-properties
+                                                [block]="currentBlock"
+                                                [module]="openFolder"
+                                                [readonly]="readonly"
+                                                (onEditTags)="onAddTag()"
+                                                class="readonly-status"
+                                                type="Events"></common-properties>
+                                        </div>
+                                        <div [hidden]="!options.artifacts" class="prop-container">
+                                            <artifact-properties [block]="currentBlock" [policyId]="policyId"
+                                                [readonly]="readonly" class="readonly-status"></artifact-properties>
+                                        </div>
+                                        <div [hidden]="!options.json" class="prop-container">
+                                            <json-properties *ngIf="options.json" [block]="currentBlock"
+                                                [readonly]="readonly"></json-properties>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div
-                            *ngIf="currentBlock && isRootModule"
-                            cdkDrag
-                            (cdkDragDropped)="onDropSection($event)"
-                            (cdkDragStarted)="onDragSection($event)"
-                            [attr.collapse-bottom]="options.rightBottomMenu"
-                            [attr.collapse-top]="options.rightTopMenu"
-                            [attr.resizing-id]="id"
-                            [cdkDragStartDelay]="100"
-                            [ngStyle]="{ height: size, 'flex-basis': size }"
-                            class="right-bottom-toolbar">
-                            <div class="pc-tabs">
-                                <div cdkDragHandle class="pc-tabs-headers">
-                                    <div (click)="select('events')" [attr.selected]="true" class="tab-header">
-                                        Events
+                            <div
+                                *ngIf="currentBlock && isRootModule"
+                                cdkDrag
+                                (cdkDragDropped)="onDropSection($event)"
+                                (cdkDragStarted)="onDragSection($event)"
+                                [attr.collapse-bottom]="options.rightBottomMenu"
+                                [attr.collapse-top]="options.rightTopMenu"
+                                [attr.resizing-id]="id"
+                                [cdkDragStartDelay]="100"
+                                [ngStyle]="{ height: size, 'flex-basis': size }"
+                                class="right-bottom-toolbar">
+                                <div class="pc-tabs">
+                                    <div cdkDragHandle class="pc-tabs-headers">
+                                        <div (click)="select('events')" [attr.selected]="true" class="tab-header">
+                                            Events
+                                        </div>
+                                        <div (click)="collapse('rightBottomMenu')"
+                                            [attr.collapsed]="options.rightBottomMenu" class="tabs-icon">
+                                            <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
+                                            <i class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
+                                        </div>
                                     </div>
-                                    <div (click)="collapse('rightBottomMenu')"
-                                        [attr.collapsed]="options.rightBottomMenu" class="tabs-icon">
-                                        <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
-                                        <i class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
-                                    </div>
-                                </div>
-                                <div class="pc-tabs-content">
-                                    <div class="prop-container readonly-status">
-                                        <common-properties
-                                            [block]="currentBlock"
-                                            [module]="openFolder"
-                                            [readonly]="readonly"
-                                            type="Events"></common-properties>
+                                    <div class="pc-tabs-content">
+                                        <div class="prop-container readonly-status">
+                                            <common-properties
+                                                [block]="currentBlock"
+                                                [module]="openFolder"
+                                                [readonly]="readonly"
+                                                (onEditTags)="onAddTag()"
+                                                type="Events"></common-properties>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </ng-container>
+
+                        <ng-template #cantDisplayDetails>
+                            <div
+                                [ngStyle]="{ height: size, 'flex-basis': size }"
+                                class="right-bottom-toolbar cant-display-details">
+                                Please select 1 block to see details
+                            </div>
+                        </ng-template>
                     </ng-template>
                 </div>
             </ng-template>

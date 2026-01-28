@@ -46,6 +46,10 @@ export class VpDocument {
      * Issuance date
      */
     public static readonly ISSUANCE_DATE = 'issuanceDate';
+    /**
+     * Tags
+     */
+    public static readonly TAGS = 'tags';
 
     /**
      * ID
@@ -82,6 +86,11 @@ export class VpDocument {
      * @protected
      */
     protected issuanceDate: Timestamp;
+    /**
+     * Tags
+     * @protected
+     */
+    protected tags: any[];
 
     constructor() {
         this.credentials = [];
@@ -181,6 +190,41 @@ export class VpDocument {
     }
 
     /**
+     * Get tags
+     */
+    public getTags(): any[] {
+        return this.tags;
+    }
+
+    /**
+     * Set tags
+     * @param tags
+     */
+    public setTags(tags: any): void {
+        this.tags = tags;
+    }
+
+    /**
+     * Add tags
+     * @param tags
+     */
+    public addTags(tags: any): void {
+        if (!tags || tags.length <= 0) {
+            return;
+        }
+        this.tags = this.tags || [];
+        for (const tag of tags) {
+            if (!tag.inheritTags) {
+                continue;
+            }
+            if (this.tags.some(item => item.messageId === tag.messageId)) {
+                continue;
+            }
+            this.tags.push(tag);
+        }
+    }
+
+    /**
      * Get verifiable credential
      * @param index
      */
@@ -269,6 +313,10 @@ export class VpDocument {
             rootObject[VpDocument.PROOF] = this.proof;
         }
 
+        if (this.tags) {
+            rootObject[VpDocument.TAGS] = this.tags;
+        }
+
         return rootObject;
     }
 
@@ -348,6 +396,8 @@ export class VpDocument {
         }
 
         result.proof = json[VpDocument.PROOF] || null;
+
+        result.tags = json[VpDocument.TAGS] || null;
 
         return result;
     }
