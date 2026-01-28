@@ -35,7 +35,7 @@
                 </div>
                 <div class="field-names" (click)="onSelectGroup(group)">
                     <div class="field-name">{{group.name}}</div>
-                    <div *ngIf="viewId" class="field-id">{{group.id}}</div>
+                    <div *ngIf="subName" class="field-id">{{group.subName}}</div>
                 </div>
             </div>
         </div>
@@ -62,9 +62,8 @@
                 <div class="field-offset"
                     [style.width.px]="24*item.lvl"
                     [style.min-width.px]="24*item.lvl"></div>
-                <div class="field-collapse">
+                <div *ngIf="item.expandable" class="field-collapse">
                     <div
-                        *ngIf="item.expandable"
                         class="guardian-collapse collapse-24"
                         [attr.collapsed]="item.collapsed"
                         (click)="onCollapseItem(item)"
@@ -79,7 +78,7 @@
                 </div>
                 <div class="field-names" (click)="onSelectItem(item)">
                     <div class="field-name">{{item.name}}</div>
-                    <div *ngIf="viewId" class="field-id">{{item.id}}</div>
+                    <div *ngIf="subName" class="field-id">{{item.subName}}</div>
                 </div>
             </div>
         </div>

@@ -16,6 +16,7 @@ export class TreeListItem<T> {
 
     public id: string;
     public name: string;
+    public subName: string;
 
     constructor(data: T, parent: TreeListItem<T> | null, lvl: number) {
         this.data = data;
@@ -165,6 +166,15 @@ export class TreeListData<T> {
             }
         }
         return result;
+    }
+
+    public findItem(f: (item: TreeListItem<T>) => boolean): TreeListItem<T> | null {
+        for (const item of this.list) {
+            if (f(item)) {
+                return item;
+            }
+        }
+        return null;
     }
 
     public updateHidden() {
@@ -339,6 +349,10 @@ export class TreeListView<T> {
 
     public find(f: (item: T) => boolean): TreeListItem<T>[] {
         return this._data.find(f);
+    }
+
+    public findItem(f: (item: TreeListItem<T>) => boolean): TreeListItem<T> | null {
+        return this._data.findItem(f);
     }
 
     public setSearchRules(f: (item: T) => string[]) {

@@ -15,10 +15,11 @@ export class FieldLinkDialog {
     public search: string;
     public searchGroup: string;
     public value: string | null;
-    public viewId: boolean;
+    public subName: boolean;
     public groups: {
         id: string,
         name: string,
+        subName: string,
         view: TreeListView<any>,
         highlighted: boolean,
         searchHighlighted: boolean,
@@ -32,8 +33,7 @@ export class FieldLinkDialog {
         private dialogService: DialogService,
     ) {
         this.title = this.config.data?.title;
-        this.viewId = this.config.data?.viewId !== false;
-
+        this.subName = this.config.data?.subName !== false;
 
         this.items = this.config.data?.view;
         this.value = this.config.data?.value;
@@ -54,6 +54,11 @@ export class FieldLinkDialog {
             for (const g of this.groups) {
                 g.name = g.name || '';
                 g.search = true;
+            }
+        } else if (this.items) {
+            this.item = this.items?.findOne((e) => e.id === this.value);
+            if (this.item) {
+                this.items.collapsePath(this.item, true);
             }
         }
     }
@@ -145,6 +150,13 @@ export class FieldLinkDialog {
     public onNext() {
         if (this.selectedGroup) {
             this.items = this.selectedGroup.view;
+            if (this.items) {
+                this.item = this.items.findItem((e) => e.id === this.value);
+                if (this.item) {
+                    this.items.collapsePath(this.item, false);
+                    this.items.updateHidden();
+                }
+            }
         }
     }
 

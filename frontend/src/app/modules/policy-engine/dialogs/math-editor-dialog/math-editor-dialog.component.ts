@@ -394,8 +394,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     private createSchemaView(schema: any) {
         const fields = TreeListData.fromObject<FieldData>(schema, 'fields', (item) => {
-            item.id = item.data?.path;
-            item.name = item.data?.description;
+            if (item && item.data) {
+                const type = item.data.isRef ? this.schemaNames.get(item.data.type) : item.data.type;
+                item.id = item.data.path;
+                item.name = item.data.description;
+                item.subName = `${item.id} (${type})`;
+            }
             return item;
         });
         const items = TreeListView.createView(fields, (s) => { return !s.parent });
@@ -419,6 +423,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             groups.push({
                 id: item.iri,
                 name: item.name,
+                subName: item.iri,
                 view: this.createSchemaView(item),
                 highlighted: false,
                 searchHighlighted: false,
@@ -427,6 +432,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         groups.unshift({
             id: schema.iri,
             name: schema.name,
+            subName: schema.iri,
             view: view,
             highlighted: true,
             searchHighlighted: false,
@@ -658,6 +664,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             if (item.data) {
                 item.id = item.data.value;
                 item.name = item.data.name;
+                item.subName = item.data.value;
             }
 
             return item;
@@ -676,7 +683,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             data: {
                 title: 'Select components',
                 view: this.createComponentView(),
-                viewId: false
+                subName: false
             },
         });
         dialogRef.onClose.subscribe((result: any | null) => {
