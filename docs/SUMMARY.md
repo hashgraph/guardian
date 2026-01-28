@@ -310,6 +310,8 @@
         * [Retrieval of Data for Root Policy Block](guardian/standard-registry/policies/policy-creation/creating-a-policy-using-apis/retrieval-of-data-from-root-policy-block.md)
         * [Request Block Data](guardian/standard-registry/policies/policy-creation/creating-a-policy-using-apis/request-block-data.md)
         * [Sends Data to Specified Block](guardian/standard-registry/policies/policy-creation/creating-a-policy-using-apis/sends-data-to-specified-block.md)
+        * [Sends Data to Specified Block Synchronously](guardian/standard-registry/policies/policy-creation/creating-a-policy-using-apis/sends-data-to-specified-block-synchronously.md)
+        * [Sends Data to Specified Block as per Tag](guardian/standard-registry/policies/policy-creation/creating-a-policy-using-apis/sends-data-to-specified-block-as-per-tag.md)
         * [Returns Block ID by tag](guardian/standard-registry/policies/policy-creation/creating-a-policy-using-apis/returns-block-id-by-tag.md)
         * [Exporting Message ID](guardian/standard-registry/policies/policy-creation/creating-a-policy-using-apis/exporting-message-id.md)
         * [Export to zip file](guardian/standard-registry/policies/policy-creation/creating-a-policy-using-apis/export-to-zip-file.md)
