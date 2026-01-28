@@ -1,7 +1,7 @@
 import { FieldLink } from './field-link.js';
 import { MathFormula } from './math-formula.js';
 import { createMathItem, IMathGroup } from './math.interface.js';
-import { MathItemType } from './math-item-type.js';
+import { MathItemType } from './math-item.type.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 export class MathGroup<T extends MathFormula | FieldLink> {

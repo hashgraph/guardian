@@ -2,7 +2,7 @@ import { moveItemInArray } from "@angular/cdk/drag-drop";
 import { FieldLink } from "./field-link";
 import { MathFormula } from "./math-formula";
 import { createMathItem, IMathGroup } from "./math.interface";
-import { MathItemType } from "./math-item-type";
+import { MathItemType } from "./math-item.type";
 import { GenerateUUIDv4 } from "@guardian/interfaces";
 
 export class MathGroup<T extends MathFormula | FieldLink> {

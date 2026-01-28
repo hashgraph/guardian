@@ -1,7 +1,7 @@
 import { MathFormula } from './math-formula';
 import { FieldLink } from './field-link';
 import { MathContext } from './math-context';
-import { MathItemType } from './math-item-type';
+import { MathItemType } from './math-item.type';
 import { MathGroups } from './math-groups';
 import { IFieldLink, IMathItem } from './math.interface';
 import { MathGroup } from './math-group';

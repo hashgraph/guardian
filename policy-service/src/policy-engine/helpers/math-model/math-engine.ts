@@ -1,7 +1,7 @@
 import { MathFormula } from './math-formula.js';
 import { FieldLink } from './field-link.js';
 import { MathContext } from './math-context.js';
-import { MathItemType } from './math-item-type.js';
+import { MathItemType } from './math-item.type.js';
 import { MathGroups } from './math-groups.js';
 import { MathGroup } from './math-group.js';
 import { IFieldLink, IMathItem } from './math.interface.js';

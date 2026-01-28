@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { MathItemType } from './math-item-type';
+import { MathItemType } from './math-item.type';
 import { createComputeEngine, findCommand } from './utils';
 import { IMathFormula } from './math.interface';
 

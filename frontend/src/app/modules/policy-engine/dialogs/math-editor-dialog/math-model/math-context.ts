@@ -1,7 +1,7 @@
 import { MathFormula } from './math-formula';
 import { FieldLink } from './field-link';
 import { getValueByPath, convertValue, createComputeEngine, getDocumentValueByPath, parseValue } from './utils';
-import { MathItemType } from './math-item-type';
+import { MathItemType } from './math-item.type';
 import { IContext } from './math.interface';
 import { DocumentMap } from './document-map';
 

@@ -1,6 +1,6 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { convertValue } from './utils.js';
-import { MathItemType } from './math-item-type.js';
+import { MathItemType } from './math-item.type.js';
 import { IFieldLink } from './math.interface.js';
 
 export class FieldLink {

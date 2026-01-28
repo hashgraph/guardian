@@ -1,4 +1,4 @@
-import { MathItemType } from './math-item-type.js';
+import { MathItemType } from './math-item.type.js';
 
 export interface IContext {
     variables: { [name: string]: any; };

@@ -1,7 +1,7 @@
 import { FieldLink } from "./field-link";
 import { MathFormula } from "./math-formula";
 import { MathGroup } from "./math-group";
-import { MathItemType } from "./math-item-type";
+import { MathItemType } from "./math-item.type";
 import { createMathItem, IMathGroup, IMathGroups, IMathItem } from "./math.interface";
 
 export class MathGroups<T extends MathFormula | FieldLink> {
