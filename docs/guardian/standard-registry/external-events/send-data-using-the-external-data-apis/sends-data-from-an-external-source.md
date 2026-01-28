@@ -4,26 +4,82 @@
 [swagger (2) (2).yaml](<../../../../.gitbook/assets/swagger (2) (2).yaml>)
 {% endopenapi %}
 
-### Sends data from an external source. <a href="#sends-data-from-an-external-source" id="sends-data-from-an-external-source"></a>
+<mark style="color:green;">`POST`</mark> `/external/{policyId}/{blockTag}/sync-events`
 
-`POST` `/external`
+Sends Data from an external source
 
-Sends data from an external source
+**Headers**
 
-**Request Body**
+| Name          | Value              |
+| ------------- | ------------------ |
+| Content-Type  | `application/json` |
+| Authorization | `Bearer <token>`   |
 
-NameTypeDescription
+**Body**
 
-Object\*
+<table><thead><tr><th width="248.7265625">Name</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>policyId</td><td>string</td><td>Policy ID</td></tr><tr><td>blockTag</td><td>string</td><td>Block Tag</td></tr><tr><td>history</td><td>string</td><td>History</td></tr></tbody></table>
 
-String
+**Response**
 
-Object that contains VC Document
-
-200: OK Successful Operation500: Internal Server Error Internal Server ErrorCopy
-
+{% tabs %}
+{% tab title="200" %}
+```json5
+description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDTOWithSyncEvents'
 ```
-{
-    // Response
-}
+{% endtab %}
+
+{% tab title="500" %}
+```json5
+description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
 ```
+{% endtab %}
+{% endtabs %}
+
+<mark style="color:green;">`POST`</mark> `/external/sync-events`
+
+Sends Data from External Source
+
+**Headers**
+
+| Name          | Value              |
+| ------------- | ------------------ |
+| Content-Type  | `application/json` |
+| Authorization | `Bearer <token>`   |
+
+**Body**
+
+| Name      | Type   | Description |
+| --------- | ------ | ----------- |
+| `history` | string | History     |
+
+**Response**
+
+{% tabs %}
+{% tab title="200" %}
+```json5
+description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDTOWithSyncEvents'
+```
+{% endtab %}
+
+{% tab title="500" %}
+```json5
+description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+```
+{% endtab %}
+{% endtabs %}
