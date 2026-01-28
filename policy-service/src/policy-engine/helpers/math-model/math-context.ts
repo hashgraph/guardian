@@ -3,6 +3,7 @@ import { FieldLink } from './field-link.js';
 import { getValueByPath, convertValue, createComputeEngine, getDocumentValueByPath, parseValue } from './utils.js';
 import { MathItemType } from './math-item-type.js';
 import { IContext } from './math.interface.js';
+import { DocumentMap } from './document-map.js';
 
 export class MathContext {
     private readonly list: (MathFormula | FieldLink)[];
@@ -14,6 +15,7 @@ export class MathContext {
     private formulas: any = {};
     private scope: any = {};
     private document: any | null = null;
+    private relationships: any[] = [];
 
     constructor(list: (MathFormula | FieldLink)[]) {
         this.list = list;
@@ -24,23 +26,27 @@ export class MathContext {
         this.getField = this.__get.bind({});
     }
 
-    public setDocument(doc: any): IContext {
+    public setDocument(documents: DocumentMap): IContext {
         this.valid = true;
         try {
             for (const item of this.list) {
                 if (item.type === MathItemType.LINK) {
-                    item.value = getDocumentValueByPath(doc, item.path);
+                    const document = documents.getDocument(item.schema);
+                    item.value = getDocumentValueByPath(document, item.path);
                 }
             }
         } catch (error) {
             this.valid = false;
         }
-        this.calculate(doc);
+        this.document = documents.getCurrent();
+        this.relationships = documents.getRelationships();
+        this.calculate(this.document);
         return {
             variables: this.variables,
             formulas: this.formulas,
             scope: this.scope,
             document: this.document,
+            relationships: this.relationships,
             getField: this.getField,
             user: null,
             result: null
@@ -53,6 +59,7 @@ export class MathContext {
             formulas: this.formulas,
             scope: this.scope,
             document: this.document,
+            relationships: this.relationships,
             getField: this.getField,
             user: null,
             result: null

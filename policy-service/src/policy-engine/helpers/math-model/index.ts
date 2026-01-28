@@ -5,3 +5,5 @@ export * from './math-context.js';
 export * from './math-formula.js';
 export * from './math-engine.js';
 export * from './utils.js';
+export * from './document-map.js';
+export * from './math.interface.js';

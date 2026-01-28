@@ -5,7 +5,7 @@ import { Code, MathEngine, setDocumentValueByPath } from '../math-model/index.js
  * Execute function
  */
 function execute(): void {
-    const { expression, user, document, schema, copy } = workerData;
+    const { expression, user, documents, schema, copy } = workerData;
     const group = MathEngine.from(expression);
     if (!group) {
         throw new Error('Invalid block config');
@@ -16,7 +16,8 @@ function execute(): void {
     }
 
     //Calculate
-    groupContext.setDocument(document);
+    const document = documents.getCurrent();
+    groupContext.setDocument(documents);
     const context = groupContext.getContext();
 
     let result: any;

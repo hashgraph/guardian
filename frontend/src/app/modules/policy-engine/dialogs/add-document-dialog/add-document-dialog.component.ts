@@ -49,6 +49,9 @@ export class AddDocumentDialog {
         }
         this.schemaValue = this.fb.group({});
         this.jsonValue = '';
+        if (this.schema) {
+            this.title = 'Set Document';
+        }
     }
 
     ngOnInit() {
@@ -86,7 +89,7 @@ export class AddDocumentDialog {
         this.ref.close({
             schema: this.schema?.iri,
             name: this.schema?.name,
-            value: this._value
+            document: this._value
         });
     }
 

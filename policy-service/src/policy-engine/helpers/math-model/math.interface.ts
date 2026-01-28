@@ -5,6 +5,7 @@ export interface IContext {
     formulas: { [name: string]: Function; };
     scope: { [name: string]: any; };
     document: any;
+    relationships: any[];
     result: any;
     getField: Function;
     user: any;
@@ -33,6 +34,12 @@ export interface IMathGroup {
     type: MathItemType.GROUP;
     name: string;
     items: IMathItem[];
+}
+
+export interface IMathDocument {
+    schema: string,
+    name?: string,
+    document: any
 }
 
 export type IMathGroups = IMathGroup[];

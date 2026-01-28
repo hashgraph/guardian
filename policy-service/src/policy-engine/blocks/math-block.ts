@@ -10,10 +10,12 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-
+import { DocumentMap } from '../helpers/math-model/index.js';
 import { fileURLToPath } from 'url';
 import { Worker } from 'node:worker_threads';
 import path from 'path'
+import { IMathDocument } from '../helpers/math-model/index.js';
+
 const filename = fileURLToPath(import.meta.url);
 
 interface IMetadata {
@@ -75,7 +77,7 @@ export class MathBlock {
         expression: string,
         user: PolicyUser,
         artifacts: any[],
-        document: any,
+        documents: DocumentMap,
         schema: Schema,
         copy: boolean
     }): Promise<IPolicyDocument> {
@@ -106,7 +108,7 @@ export class MathBlock {
      */
     private async calculate(
         ref: IPolicyCalculateBlock,
-        credentialSubject: any,
+        documents: DocumentMap,
         user: PolicyUser
     ): Promise<any> {
         const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
@@ -124,7 +126,7 @@ export class MathBlock {
         // Run
         const result = await this.createWorker({
             expression: ref.options.expression,
-            document: credentialSubject,
+            documents,
             artifacts,
             user,
             schema,
@@ -132,6 +134,15 @@ export class MathBlock {
         })
 
         return result;
+    }
+
+    private getCredentialSubject(document: IPolicyDocument): IMathDocument {
+        const vc = VcDocumentDefinition.fromJsonTree(document.document);
+        const credentialSubject = vc.getCredentialSubject(0).toJsonTree();
+        return {
+            schema: document.schema,
+            document: credentialSubject
+        }
     }
 
     /**
@@ -146,22 +157,27 @@ export class MathBlock {
         ref: IPolicyCalculateBlock,
         userId: string | null
     ): Promise<IPolicyDocument> {
-        const context = await ref.debugContext({ documents });
-        const contextDocuments = context.documents as IPolicyDocument;
-
-        if (!contextDocuments) {
+        if (!documents) {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
         }
 
-        const vc = VcDocumentDefinition.fromJsonTree(contextDocuments.document);
-        const credentialSubject = vc.getCredentialSubject(0).toJsonTree();
-        const docOwner = await PolicyUtils.getDocumentOwner(ref, contextDocuments, userId);
+        const sources: IPolicyDocument[] = await PolicyUtils.findRelationships(ref, documents);
 
-        const newJson = await this.calculate(ref, credentialSubject, docOwner);
+        const context = await ref.debugContext({ documents, sources });
+        const contextDocument = context.documents as IPolicyDocument;
+        const contextRelationships = context.sources as IPolicyDocument[];
+
+        const docOwner = await PolicyUtils.getDocumentOwner(ref, contextDocument, userId);
+
+        const map = new DocumentMap();
+        map.addDocument(this.getCredentialSubject(contextDocument));
+        map.addRelationships(contextRelationships.map((d) => this.getCredentialSubject(d)));
+
+        const newJson = await this.calculate(ref, map, docOwner);
         if (ref.options.unsigned) {
             return await this.createUnsignedDocument(newJson, ref);
         } else {
-            const metadata = await this.aggregateMetadata(contextDocuments, ref, userId);
+            const metadata = await this.aggregateMetadata(contextDocument, ref, userId);
             return await this.createDocument(newJson, metadata, ref, userId);
         }
     }

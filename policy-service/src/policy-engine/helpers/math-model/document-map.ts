@@ -1,4 +1,4 @@
-import { IMathDocument } from "./math.interface";
+import { IMathDocument } from './math.interface.js';
 
 export class DocumentMap {
     private _current: any;

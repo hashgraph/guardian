@@ -15,6 +15,7 @@ export class MathContext {
     private formulas: any = {};
     private scope: any = {};
     private document: any | null = null;
+    private relationships: any[] = [];
 
     constructor(list: (MathFormula | FieldLink)[]) {
         this.list = list;
@@ -37,13 +38,15 @@ export class MathContext {
         } catch (error) {
             this.valid = false;
         }
-        const current = documents.getCurrent();
-        this.calculate(current);
+        this.document = documents.getCurrent();
+        this.relationships = documents.getRelationships();
+        this.calculate(this.document);
         return {
             variables: this.variables,
             formulas: this.formulas,
             scope: this.scope,
             document: this.document,
+            relationships: this.relationships,
             getField: this.getField,
             user: null,
             result: null
@@ -56,6 +59,7 @@ export class MathContext {
             formulas: this.formulas,
             scope: this.scope,
             document: this.document,
+            relationships: this.relationships,
             getField: this.getField,
             user: null,
             result: null
