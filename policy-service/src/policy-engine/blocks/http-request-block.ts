@@ -170,14 +170,17 @@ export class HttpRequestBlock {
         const item = PolicyUtils.createVC(ref, event.user, doc, event.actionStatus?.id);
 
         const state: IPolicyEventState = { data: item };
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, state, event.actionStatus);
+        // event.actionStatus.saveResult(state);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, state, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
                 documents: ExternalDocuments(item)
             })
         );
         ref.backup();
+
+        return event.data;
     }
 }

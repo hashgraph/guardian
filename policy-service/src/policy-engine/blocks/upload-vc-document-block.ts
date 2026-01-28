@@ -202,9 +202,11 @@ export class UploadVcDocumentBlock {
             }
 
             const state: IPolicyEventState = { data: retArray };
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
+
+            // actionStatus.saveResult(state);
+            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
                 documents: ExternalDocuments(retArray)
             }));

@@ -425,7 +425,8 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>('mrv-data',
             async (msg: any) => {
                 // await PolicyComponentsUtils.ReceiveExternalData(msg);
-                const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
+                const { data } = msg;
+                const policy = await DatabaseServer.getPolicyByTag(data?.policyTag);
                 if (policy) {
                     const policyId = policy.id.toString();
                     await new GuardiansService()
@@ -522,10 +523,12 @@ export class PolicyEngineService {
                 user: IAuthUser,
                 blockId: string,
                 policyId: string,
-                data: any
+                data: any,
+                syncEvents?: boolean,
+                history?: boolean,
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, blockId, policyId, data } = msg;
+                    const { user, blockId, policyId, data, syncEvents, history } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
@@ -533,7 +536,9 @@ export class PolicyEngineService {
                             user,
                             blockId,
                             policyId,
-                            data
+                            data,
+                            syncEvents,
+                            history
                         }) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -547,10 +552,12 @@ export class PolicyEngineService {
                 user: IAuthUser,
                 tag: string,
                 policyId: string,
-                data: any
+                data: any,
+                syncEvents?: boolean,
+                history?: boolean,
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, tag, policyId, data } = msg;
+                    const { user, tag, policyId, data, syncEvents, history } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
@@ -558,7 +565,9 @@ export class PolicyEngineService {
                             user,
                             tag,
                             policyId,
-                            data
+                            data,
+                            syncEvents,
+                            history,
                         }) as any
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -679,7 +688,8 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA,
             async (msg: any) => {
                 try {
-                    const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
+                    const { data } = msg;
+                    const policy = await DatabaseServer.getPolicyByTag(data?.policyTag);
                     if (policy) {
                         const policyId = policy.id.toString();
                         new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA, policyId, {

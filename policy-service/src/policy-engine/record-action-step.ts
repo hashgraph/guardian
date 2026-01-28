@@ -1,21 +1,52 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { PolicyLink } from './interfaces';
 
-type ZeroCallback = (id: string, timestamp: number) => void;
+type Callback = (id: string, timestamp: number) => void;
 
 export class RecordActionStep {
     public readonly id: string;
     public readonly timestemp: number;
+    public readonly syncActions: boolean;
+    public readonly withHistory: boolean;
+    private readonly results: any[] = [];
+    private readonly actionsMap: Set<string> = new Set();
     public counter: number;
     private callbackFired = false;
     private timer: ReturnType<typeof setTimeout> | null = null;
-    private readonly callback: ZeroCallback;
+    private readonly callback: Callback;
 
-    constructor(callback: ZeroCallback, initialCounter = 0) {
+    constructor(callback: Callback, initialCounter = 0, syncActions = false, withHistory = false) {
         this.id = GenerateUUIDv4();
         this.timestemp = Date.now();
         this.callback = callback;
         this.counter = initialCounter;
         this.callbackFired = false;
+        this.syncActions = syncActions;
+        this.withHistory = withHistory;
+    }
+
+    public checkCycle(link: PolicyLink<any>) {
+        const targetIdWithType = `${link.target.uuid}-${link.type}`;
+        const sourceIdWithType = `${link.source.uuid}-${link.type}`;
+
+        if (this.actionsMap.has(targetIdWithType)) {
+            throw new Error(
+                `Cycle detected: target "${link.target.tag}" was already used, circular reference is not allowed.`
+            );
+        }
+
+        this.actionsMap.add(sourceIdWithType);
+        this.actionsMap.add(targetIdWithType);
+    }
+
+    public saveResult(res: any) {
+        if (this.withHistory && this.syncActions) {
+            this.results.push(structuredClone(res));
+        }
+    }
+
+    public getResults() {
+        return this.results;
     }
 
     public inc(): void {

@@ -270,11 +270,13 @@ export class RecordUtils {
      */
     public static async RecordExternalData(
         policyId: string,
-        data: any
+        data: any,
+        recordActionId?: string,
+        actionTimestemp?: number
     ): Promise<void> {
         const record = RecordUtils.GetRecordingController(policyId);
         if (record) {
-            await record.externalData(data);
+            await record.externalData(data, recordActionId, actionTimestemp);
         }
     }
 

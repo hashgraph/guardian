@@ -114,14 +114,16 @@ export class CustomLogicBlock {
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         try {
-            const triggerEvents = (documents: IPolicyDocument | IPolicyDocument[]) => {
+            const triggerEvents = async (documents: IPolicyDocument | IPolicyDocument[]) => {
                 if (!documents) {
                     return;
                 }
                 event.data.data = documents;
-                ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
-                ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
+                // event.actionStatus.saveResult(event.data);
+
+                await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
+                await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+                await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
                 PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
                     documents: ExternalDocuments(event?.data?.data)
                 }));
@@ -131,6 +133,8 @@ export class CustomLogicBlock {
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
         }
+
+        return event.data;
     }
 
     /**
@@ -188,7 +192,7 @@ export class CustomLogicBlock {
                 }
                 const done = async (result: any | any[], final: boolean) => {
                     if (!result) {
-                        triggerEvents(null);
+                        await triggerEvents(null);
                         if (final) {
                             try {
                                 disposeTables();
@@ -215,7 +219,7 @@ export class CustomLogicBlock {
                         for (const r of result) {
                             items.push(await processing(r))
                         }
-                        triggerEvents(items);
+                        await triggerEvents(items);
                         if (final) {
                             try {
                                 disposeTables();
@@ -228,7 +232,7 @@ export class CustomLogicBlock {
                         return;
                     } else {
                         const item = await processing(result);
-                        triggerEvents(item);
+                        await triggerEvents(item);
                         if (final) {
                             try {
                                 disposeTables();

@@ -322,9 +322,11 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         blockId: string,
-        data: any
+        data: any,
+        syncEvents = false,
+        history = false,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data });
+        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data, syncEvents, history });
     }
 
     /**
@@ -338,9 +340,11 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         tag: string,
-        data: any
+        data: any,
+        syncEvents = false,
+        history = false,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data });
+        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data, syncEvents, history });
     }
 
     /**
@@ -588,8 +592,8 @@ export class PolicyEngine extends NatsService {
      * Receive external data
      * @param data
      */
-    public async receiveExternalData(data: any) {
-        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, data);
+    public async receiveExternalData(data: any, syncEvents = false, history = false) {
+        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, { data, syncEvents, history });
     }
 
     /**
@@ -598,8 +602,8 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param blockTag
      */
-    public async receiveExternalDataCustom(data: any, policyId: string, blockTag: string): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM, { data, policyId, blockTag });
+    public async receiveExternalDataCustom(data: any, policyId: string, blockTag: string, syncEvents = false, history = false): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM, { data, policyId, blockTag, syncEvents, history });
     }
 
     /**
