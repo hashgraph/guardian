@@ -1,5 +1,5 @@
 import { workerData, parentPort } from 'node:worker_threads';
-import { Code, MathEngine, setDocumentValueByPath } from '../math-model/index.js';
+import { Code, DocumentMap, MathEngine, setDocumentValueByPath } from '../math-model/index.js';
 
 /**
  * Execute function
@@ -16,8 +16,9 @@ function execute(): void {
     }
 
     //Calculate
-    const document = documents.getCurrent();
-    groupContext.setDocument(documents);
+    const documentMap = DocumentMap.from(documents)
+    const document = documentMap.getCurrent();
+    groupContext.setDocument(documentMap);
     const context = groupContext.getContext();
 
     let result: any;

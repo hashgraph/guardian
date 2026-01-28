@@ -77,7 +77,7 @@ export class MathBlock {
         expression: string,
         user: PolicyUser,
         artifacts: any[],
-        documents: DocumentMap,
+        documents: any,
         schema: Schema,
         copy: boolean
     }): Promise<IPolicyDocument> {
@@ -126,7 +126,7 @@ export class MathBlock {
         // Run
         const result = await this.createWorker({
             expression: ref.options.expression,
-            documents,
+            documents: documents.toJson(),
             artifacts,
             user,
             schema,

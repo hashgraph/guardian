@@ -45,4 +45,27 @@ export class DocumentMap {
         }
         return documents;
     }
+
+    public toJson() {
+        const relationships: any = {};
+        for (const [schema, document] of this._map.entries()) {
+            relationships[schema] = document;
+        }
+        return {
+            target: this._current,
+            relationships
+        }
+    }
+
+    public static from(json: any): DocumentMap {
+        const result = new DocumentMap();
+        result._current = json.target;
+        if (json.relationships) {
+            const schemas = Object.keys(json.relationships);
+            for (const schema of schemas) {
+                result._map.set(schema, json.relationships[schema]);
+            }
+        }
+        return result;
+    }
 }
