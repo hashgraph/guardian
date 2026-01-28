@@ -112,13 +112,6 @@ export class SchemaDTO {
     documentURL?: string;
 
     @ApiProperty({
-        type: 'number',
-        example: 0
-    })
-    @IsOptional()
-    topicCount?: number;
-
-    @ApiProperty({
         type: 'string',
         example: Examples.IPFS
     })
