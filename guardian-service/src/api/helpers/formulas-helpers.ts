@@ -1,5 +1,5 @@
-import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, INotificationStep, MessageAction, MessageServer, TopicConfig, VcDocument, VpDocument } from '@guardian/common';
-import {EntityStatus, GenerateUUIDv4, IOwner, IRootConfig} from '@guardian/interfaces';
+import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, INotificationStep, MessageAction, MessageServer, Policy, TopicConfig, VcDocument, VpDocument } from '@guardian/common';
+import { EntityStatus, GenerateUUIDv4, IOwner, IRootConfig, PolicyStatus } from '@guardian/interfaces';
 
 type IDocument = VcDocument | VpDocument;
 
@@ -38,6 +38,7 @@ function checkDocument(document: any, policyId: string, owner: IOwner): boolean 
 }
 
 export async function getFormulasData(
+    policy: Policy,
     option: {
         policyId: string,
         schemaId: string,
@@ -56,13 +57,15 @@ export async function getFormulasData(
         relationships: []
     }
 
+    const db = new DatabaseServer(policy.status === PolicyStatus.DRY_RUN ? policy.id : null);
+
     if (documentId) {
-        const vc = await DatabaseServer.getVCById(documentId);
+        const vc = await db.getVcDocument(documentId);
         if (vc) {
             result.document = vc;
             result.relationships = await findRelationships(vc);
         } else {
-            const vp = await DatabaseServer.getVPById(documentId);
+            const vp = await db.getVpDocument(documentId);
             if (vp) {
                 result.document = vp;
                 result.relationships = await findRelationships(vp);
@@ -71,7 +74,7 @@ export async function getFormulasData(
     }
 
     if (parentId) {
-        const doc = await DatabaseServer.getVCById(parentId);
+        const doc = await db.getVcDocument(parentId);
         if (doc) {
             result.relationships = await findRelationships(doc);
         }
@@ -91,12 +94,15 @@ export async function getFormulasData(
 }
 
 export async function publishFormula(
+    policy: Policy,
     item: Formula,
     owner: IOwner,
     root: IRootConfig,
     notifier: INotificationStep,
 ): Promise<Formula> {
     item.status = EntityStatus.PUBLISHED;
+    item.policyTopicId = policy.topicId;
+    item.policyInstanceTopicId = policy.instanceTopicId;
 
     // <-- Steps
     const STEP_RESOLVE_TOPIC = 'Resolve topic';
@@ -118,6 +124,7 @@ export async function publishFormula(
     }).setTopicObject(topic);
     notifier.completeStep(STEP_RESOLVE_TOPIC);
 
+    notifier.startStep(STEP_SAVE_FILE_IN_DB);
     const zip = await FormulaImportExport.generate(item);
     const buffer = await zip.generateAsync({
         type: 'arraybuffer',
@@ -128,12 +135,10 @@ export async function publishFormula(
         platform: 'UNIX',
     });
 
-    notifier.startStep(STEP_SAVE_FILE_IN_DB);
     item.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
     notifier.completeStep(STEP_SAVE_FILE_IN_DB);
 
     notifier.startStep(STEP_PUBLISH_FORMULA);
-
     const publishMessage = new FormulaMessage(MessageAction.PublishFormula);
     publishMessage.setDocument(item, buffer);
     const statMessageResult = await messageServer
@@ -146,7 +151,13 @@ export async function publishFormula(
 
     item.messageId = statMessageResult.getId();
 
-    const result = await DatabaseServer.updateFormula(item);
+    let result: Formula;
+    if (item.id) {
+        result = await DatabaseServer.updateFormula(item);
+    } else {
+        result = await DatabaseServer.createFormula(item);
+    }
+
     notifier.completeStep(STEP_PUBLISH_FORMULA);
     return result;
 }

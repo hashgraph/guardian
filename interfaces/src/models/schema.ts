@@ -261,6 +261,7 @@ export class Schema implements ISchema {
         this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
         this.setPaths(this.fields, '', this.iri + '/');
+        this.setTypes(this.fields, null);
     }
 
     /**
@@ -273,6 +274,20 @@ export class Schema implements ISchema {
             f.fullPath = fullPath + f.name;
             if (Array.isArray(f.fields)) {
                 this.setPaths(f.fields, f.path + '.', f.fullPath + '.');
+            }
+        }
+    }
+
+    /**
+     * Parse document
+     * @private
+     */
+    private setTypes(fields: SchemaField[], parent: SchemaField | null): void {
+        for (const f of fields) {
+            f.arrayLvl = (parent ? parent.arrayLvl : 0) + (f.isArray ? 1 : 0);
+            f.fullType = (f.isRef ? 'object' : (f.type || 'Help Text')) + '[]'.repeat(f.arrayLvl);
+            if (Array.isArray(f.fields)) {
+                this.setTypes(f.fields, f);
             }
         }
     }

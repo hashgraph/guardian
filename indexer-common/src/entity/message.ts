@@ -54,6 +54,9 @@ export class Message implements IMessage {
     statusMessage: string;
 
     @Property({ nullable: true })
+    statusOwner: string;
+
+    @Property({ nullable: true })
     options: any;
 
     @Property({ nullable: true })

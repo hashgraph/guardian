@@ -3316,6 +3316,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -3435,6 +3438,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -3629,6 +3633,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -3665,6 +3672,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -3843,6 +3851,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -3962,6 +3973,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -4012,6 +4024,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -4139,6 +4154,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -4365,6 +4381,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -4484,6 +4503,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -4639,6 +4659,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -4758,6 +4781,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -4883,6 +4907,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -5002,6 +5029,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -5120,6 +5148,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -5237,6 +5268,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -5327,6 +5359,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -5459,6 +5494,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -5769,6 +5805,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -5896,6 +5935,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -5997,6 +6037,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -6116,6 +6159,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -6236,6 +6280,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -6355,6 +6402,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -6492,6 +6540,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -6611,6 +6662,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -6715,6 +6767,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -6834,6 +6889,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -6951,6 +7007,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -7068,6 +7127,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -7171,6 +7231,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -7290,6 +7353,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -7425,6 +7489,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -7544,6 +7611,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -7594,6 +7662,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -7721,6 +7792,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -7827,6 +7899,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -7954,6 +8029,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -8252,6 +8328,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -8371,6 +8450,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -8572,6 +8652,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -8691,6 +8774,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens

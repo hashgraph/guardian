@@ -70,17 +70,17 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
                 default: ''
             },
             {
-                name: 'authenticationURL',
-                label: 'Authentication Url',
-                title: 'Authentication Url',
+                name: 'authenticationClientId',
+                label: 'Authentication ClientId',
+                title: 'Authentication ClientId',
                 type: PropertyType.Input,
                 visible: 'authentication === "bearerToken"',
                 default: ''
             },
             {
-                name: 'authenticationClientId',
-                label: 'Authentication ClientId',
-                title: 'Authentication ClientId',
+                name: 'authenticationURL',
+                label: 'Authentication Url',
+                title: 'Authentication Url',
                 type: PropertyType.Input,
                 visible: 'authentication === "bearerToken"',
                 default: ''

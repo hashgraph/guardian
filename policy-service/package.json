@@ -22,6 +22,7 @@
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
+        "@cortex-js/compute-engine": "^0.27.0",
         "cron": "^4.3.0",
         "deep-equal": "^2.0.5",
         "dotenv": "^16.0.0",

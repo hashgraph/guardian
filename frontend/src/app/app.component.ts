@@ -2,6 +2,7 @@ import {Component, ElementRef, HostListener, OnInit, ViewChild} from '@angular/c
 import {AuthStateService} from './services/auth-state.service';
 import {WebSocketService} from './services/web-socket.service';
 import {BrandingService} from './services/branding.service';
+import './modules/policy-engine/policy-lang-modes/block-code-lang.mode';
 import './modules/policy-engine/policy-lang-modes/policy-json-lang.mode';
 import './modules/policy-engine/policy-lang-modes/policy-yaml-lang.mode';
 import './modules/common/models/lang-modes/formula-lang.mode';

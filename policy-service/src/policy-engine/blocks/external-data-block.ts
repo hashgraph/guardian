@@ -28,7 +28,7 @@ import { RecordActionStep } from '../record-action-step.js';
         title: `Add 'External Data' Block`,
         post: true,
         get: false,
-        children: ChildrenType.Special,
+        children: ChildrenType.None,
         control: ControlType.Server,
         input: null,
         output: [

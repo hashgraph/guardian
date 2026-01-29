@@ -1,14 +1,13 @@
 import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import {IPolicyEvent, PolicyInputEventType, PolicyOutputEventType} from '../interfaces/index.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
-import { GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, LocationType, TopicType
-} from '@guardian/interfaces';
-import {GlobalEventsWriterStream, Message, MessageServer, TopicConfig, TopicHelper} from '@guardian/common';
+import { GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, LocationType, TopicType } from '@guardian/interfaces';
+import { GlobalEventsWriterStream, Message, MessageServer, TopicConfig, TopicHelper } from '@guardian/common';
 import { TopicId } from '@hiero-ledger/sdk';
 import { CacheState } from './../interfaces/index.js'
 

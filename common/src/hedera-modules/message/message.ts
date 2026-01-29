@@ -97,6 +97,11 @@ export abstract class Message {
      */
     protected _statusReason: string;
     /**
+     * Revoke owner
+     * @protected
+     */
+    protected _statusOwner: string;
+    /**
      * Message action
      */
     protected _action: MessageAction;
@@ -257,12 +262,17 @@ export abstract class Message {
      * @param message
      * @param parentIds
      */
-    public revoke(message: string, parentIds?: string[]): void {
+    public revoke(
+        message: string,
+        owner: string,
+        parentIds?: string[]
+    ): void {
         this._status = MessageStatus.REVOKE;
         this._statusMessage = message;
         this._statusReason = parentIds
             ? RevokeReason.ParentRevoked
             : RevokeReason.DocumentRevoked;
+        this._statusOwner = owner
         this._parentIds = parentIds;
         this._action = MessageAction.RevokeDocument;
     }
@@ -312,6 +322,7 @@ export abstract class Message {
                 lang: this.lang,
                 account: this.account,
                 revokeMessage: this._statusMessage,
+                revokeOwner: this._statusOwner,
                 reason: this._statusReason,
                 parentIds: this._parentIds
             }

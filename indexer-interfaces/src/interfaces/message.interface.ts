@@ -54,6 +54,10 @@ export interface Message<O = any, A = any> {
      */
     statusMessage: string;
     /**
+     * Status owner
+     */
+    statusOwner: string;
+    /**
      * Options
      */
     options: O;

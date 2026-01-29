@@ -14,6 +14,10 @@ export class TreeListItem<T> {
     public search: string[];
     public searchChildren: string[];
 
+    public id: string;
+    public name: string;
+    public subName: string;
+
     constructor(data: T, parent: TreeListItem<T> | null, lvl: number) {
         this.data = data;
         this.parent = parent;
@@ -27,6 +31,9 @@ export class TreeListItem<T> {
         this.search = [];
         this.searchChildren = [];
         this.searchHighlighted = '';
+
+        this.id = (data as any)?.id || '';
+        this.name = (data as any)?.name || '';
 
         if (this.parent) {
             this.path = [...this.parent.path, this];
@@ -161,6 +168,15 @@ export class TreeListData<T> {
         return result;
     }
 
+    public findItem(f: (item: TreeListItem<T>) => boolean): TreeListItem<T> | null {
+        for (const item of this.list) {
+            if (f(item)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     public updateHidden() {
         const list = this.list;
         for (const item of list) {
@@ -176,13 +192,26 @@ export class TreeListData<T> {
         }
     }
 
-    public searchItems(text: string, ruleIndex: number): void {
+    private testSearchRule(search: string[], text: string, ruleIndex: number | number[]): boolean {
+        if (Array.isArray(ruleIndex)) {
+            for (const index of ruleIndex) {
+                if (search[index].includes(text)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return search[ruleIndex].includes(text);
+        }
+    }
+
+    public searchItems(text: string, ruleIndex: number | number[]): void {
         if (text) {
             for (const item of this.list) {
-                if (item.search[ruleIndex].includes(text)) {
+                if (this.testSearchRule(item.search, text, ruleIndex)) {
                     item.searchHighlighted = 'highlighted';
                 } else {
-                    if (item.searchChildren[ruleIndex].includes(text)) {
+                    if (this.testSearchRule(item.searchChildren, text, ruleIndex)) {
                         item.searchHighlighted = 'sub';
                         item.collapsed = false;
                     } else {
@@ -322,6 +351,10 @@ export class TreeListView<T> {
         return this._data.find(f);
     }
 
+    public findItem(f: (item: TreeListItem<T>) => boolean): TreeListItem<T> | null {
+        return this._data.findItem(f);
+    }
+
     public setSearchRules(f: (item: T) => string[]) {
         this._data.setSearchRules(f);
     }
@@ -336,7 +369,7 @@ export class TreeListView<T> {
         }
     }
 
-    public searchItems(text: string, ruleIndex: number): void {
+    public searchItems(text: string, ruleIndex: number | number[]): void {
         const value = (text || '').trim().toLocaleLowerCase();
         this._data.searchItems(value, ruleIndex);
     }
