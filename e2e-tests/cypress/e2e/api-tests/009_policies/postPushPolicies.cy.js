@@ -1,3 +1,4 @@
+
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -8,89 +9,69 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const nameTag = "EmptyPolicyTagByAsync";
     const policyName = "EmptyPolicyNameByAsync";
 
-    it('Creates a new policy - async', () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.Policies + API.Async,
-                headers: {
-                    authorization
-                },
-                body: {
-                    name: policyName,
-                    policyTag: nameTag,
-                },
-                timeout: 180000
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
-            })
-        })
-    })
+    const policiesAsyncUrl = `${API.ApiServer}${API.Policies}${API.Async}`;
 
-    it("Creates a new policy without auth token - async - Negative", () => {
+    const createPolicyAsyncWithAuth = (authorization, body, opts = {}) =>
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.Policies + API.Async,
+            url: policiesAsyncUrl,
+            headers: { authorization },
+            body,
+            timeout: opts.timeout ?? 180000,
+            failOnStatusCode: opts.failOnStatusCode ?? true,
+        });
+
+    const createPolicyAsyncWithoutAuth = (body, headers = {}) =>
+        cy.request({
+            method: METHOD.POST,
+            url: policiesAsyncUrl,
+            headers,
+            body,
             failOnStatusCode: false,
-            body: {
-                name: policyName,
-                policyTag: nameTag,
-            },
-        }).then((response) => {
+        });
+
+    it('Creates a new policy - async', () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            createPolicyAsyncWithAuth(authorization, { name: policyName, policyTag: nameTag }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
+            });
+        });
+    });
+
+    it("Creates a new policy without auth token - async - Negative", () => {
+        createPolicyAsyncWithoutAuth({ name: policyName, policyTag: nameTag }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Creates a new policy with invalid auth token - async - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.Policies + API.Async,
-            headers: {
-                authorization: "Bearer wqe",
-            },
-            failOnStatusCode: false,
-            body: {
-                name: policyName,
-                policyTag: nameTag,
-            },
-        }).then((response) => {
+        createPolicyAsyncWithoutAuth(
+            { name: policyName, policyTag: nameTag },
+            { authorization: "Bearer wqe" }
+        ).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Creates a new policy with empty auth token - async - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.Policies + API.Async,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-            body: {
-                name: policyName,
-                policyTag: nameTag,
-            },
-        }).then((response) => {
+        createPolicyAsyncWithoutAuth(
+            { name: policyName, policyTag: nameTag },
+            { authorization: "" }
+        ).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Creates a new policy by user - async - Negative", () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.Policies + API.Async,
-                headers: {
-                    authorization,
-                },
-                failOnStatusCode: false,
-                body: {
-                    name: policyName,
-                    policyTag: nameTag,
-                },
-            }).then((response) => {
+            createPolicyAsyncWithAuth(
+                authorization,
+                { name: policyName, policyTag: nameTag },
+                { failOnStatusCode: false }
+            ).then((response) => {
                 expect(response.status).eql(STATUS_CODE.FORBIDDEN);
             });
         });
     });
-})
+
+});

@@ -50,7 +50,6 @@ import {
     NFT,
     SchemaTree,
     Relationships as IRelationships,
-    IPFS_CID_PATTERN,
     Statistic,
     StatisticDetails,
     Label,
@@ -60,7 +59,8 @@ import {
     FormulaDetails,
     FormulaRelationships,
     PolicyActivity,
-    SchemasPackageDetails
+    SchemasPackageDetails,
+    TagType
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -822,9 +822,15 @@ export class EntityService {
                 return new MessageResponse<PolicyDetails>({
                     id: messageId,
                     row,
-                    activity,
+                    activity
                 });
             }
+
+            const tags = await em.find(Message, {
+                type: MessageType.TAG,
+                'options.entity': TagType.Policy,
+                topicId: item.topicId,
+            } as any);
 
             return new MessageResponse<PolicyDetails>({
                 id: messageId,
@@ -832,6 +838,7 @@ export class EntityService {
                 item,
                 row,
                 activity,
+                tags
             });
         } catch (error) {
             return new MessageError(error, getErrorCode(error.code));
@@ -1098,6 +1105,12 @@ export class EntityService {
                 });
             }
 
+            const tags = await em.find(Message, {
+                type: MessageType.TAG,
+                'options.entity': TagType.Schema,
+                topicId: item.topicId,
+            } as any);
+
             item = await loadDocuments(item, true);
 
             return new MessageResponse<SchemaDetails>({
@@ -1106,6 +1119,7 @@ export class EntityService {
                 item,
                 row,
                 activity,
+                tags
             });
         } catch (error) {
             return new MessageError(error, getErrorCode(error.code));
@@ -1258,7 +1272,7 @@ export class EntityService {
                     topicId,
                 } as any, {
                     ...options,
-                    fields: ["options"],
+                    fields: ['options'],
                 });
 
                 filters.tokenId = {
@@ -1958,10 +1972,10 @@ export class EntityService {
             const filters = parsePageFilters(msg);
             filters.type = MessageType.VC_DOCUMENT;
             filters.$or = [
-                { "options.initId": { $exists: false } },
-                { "options.initId": null },
-                { "options.initId": undefined },
-                { "options.initId": "" },
+                { 'options.initId': { $exists: false } },
+                { 'options.initId': null },
+                { 'options.initId': undefined },
+                { 'options.initId': '' },
             ];
             const em = DataBaseHelper.getEntityManager();
             const [rows, count] = (await em.findAndCount(
@@ -2007,7 +2021,7 @@ export class EntityService {
                 type: MessageType.VC_DOCUMENT,
                 $or: [
                     { consensusTimestamp: messageId },
-                    { "options.initId": messageId }
+                    { 'options.initId': messageId }
                 ]
             } as any, {
                 orderBy: {
@@ -2492,6 +2506,10 @@ export class EntityService {
                 type: MessageType.CONTRACT,
                 topicId,
             } as any);
+            const tags = await em.find(Message, {
+                type: MessageType.TAG,
+                topicId: row.topicId,
+            } as any);
 
             const activity = {
                 registries,
@@ -2505,7 +2523,7 @@ export class EntityService {
                 dids,
                 vcs,
                 vps,
-                contracts,
+                contracts
             };
 
             if (!item) {
@@ -2513,6 +2531,7 @@ export class EntityService {
                     id: topicId,
                     row,
                     activity,
+                    tags
                 });
             }
             return new MessageResponse<TopicDetails>({
@@ -2521,6 +2540,7 @@ export class EntityService {
                 item,
                 row,
                 activity,
+                tags
             });
         } catch (error) {
             return new MessageError(error, getErrorCode(error.code));

@@ -207,8 +207,9 @@ export class RevocationBlock {
             data: documents
         };
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+        // event.actionStatus.saveResult(state);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
 
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
@@ -217,5 +218,7 @@ export class RevocationBlock {
         );
 
         ref.backup();
+
+        return event.data;
     }
 }

@@ -5,6 +5,8 @@ import { Activity } from '@components/activity/activity.component';
 import { Relationships } from '@indexer/interfaces';
 import CID from 'cids';
 import { EntitiesService } from '@services/entities.service';
+import { DialogService } from 'primeng/dynamicdialog';
+import { ViewerDialog } from '../../../dialogs/viewer-dialog/viewer-dialog.component';
 
 @Component({
     selector: 'base-details',
@@ -26,6 +28,7 @@ export abstract class BaseDetailsComponent {
     public schema?: any;
     public tab: string = '';
     public tabIndex: number = 0;
+    public tags: any[] = [];
 
     private _queryObserver?: Subscription;
     private _paramsObserver?: Subscription;
@@ -35,6 +38,7 @@ export abstract class BaseDetailsComponent {
 
     constructor(
         protected entitiesService: EntitiesService,
+        protected dialogService: DialogService,
         protected route: ActivatedRoute,
         protected router: Router
     ) { }
@@ -223,9 +227,13 @@ export abstract class BaseDetailsComponent {
         this.target = null;
         this.row = null;
         this.relationships = null;
+        this.tags = [];
         if (result) {
             if (result.activity) {
                 this.handleActivities(result.activity);
+            }
+            if (Array.isArray(result.tags)) {
+                this.tags.push(...result.tags);
             }
             this.row = result.row;
             this.target = result.item;
@@ -270,6 +278,10 @@ export abstract class BaseDetailsComponent {
                         item._ipfsStatus = false;
                     }
                     item._ipfs.push(ipfs);
+
+                    if (documentObject && Array.isArray(documentObject.tags)) {
+                        this.tags.push(...documentObject.tags);
+                    }
                 }
             }
         }
@@ -400,6 +412,20 @@ export abstract class BaseDetailsComponent {
                 break;
             }
         }
+    }
+
+    protected onOpenTag(tag: any) {
+        this.dialogService.open(ViewerDialog, {
+            showHeader: false,
+            focusOnShow: false,
+            width: '850px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Tag',
+                type: 'JSON',
+                value: tag,
+            }
+        });
     }
 
     protected abstract onNavigate(): void;

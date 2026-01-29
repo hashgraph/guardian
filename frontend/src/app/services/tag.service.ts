@@ -43,12 +43,12 @@ export class TagsService {
         return this.http.post<any>(`${this.url}/`, tag);
     }
 
-    public search(entity: string, targets: string[]): Observable<any> {
-        return this.http.post<any>(`${this.url}/search`, { entity, targets });
+    public search(entity: string, targets: string[], linkedItems?: string[]): Observable<any> {
+        return this.http.post<any>(`${this.url}/search`, { entity, targets, linkedItems });
     }
 
-    public synchronization(entity: string, target: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/synchronization`, { entity, target });
+    public synchronization(entity: string, target: string, linkedItems?: string[]): Observable<any> {
+        return this.http.post<any>(`${this.url}/synchronization`, { entity, target, linkedItems });
     }
 
     public delete(uuid: string): Observable<boolean> {

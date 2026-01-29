@@ -112,15 +112,15 @@ export class InterfaceDocumentActionBlock {
                 const newUser = option.user === UserType.CURRENT
                     ? user
                     : await PolicyUtils.getDocumentOwner(ref, document, user.userId);
-                ref.triggerEvents(option.tag, newUser, state, actionStatus);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state, actionStatus);
+                await ref.triggerEvents(option.tag, newUser, state, actionStatus);
+                await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state, actionStatus);
             }
         }
 
         if (ref.options.type === 'dropdown') {
             const newUser = await PolicyUtils.getDocumentOwner(ref, document, user.userId);
-            ref.triggerEvents(PolicyOutputEventType.DropdownEvent, newUser, state, actionStatus);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.DropdownEvent, newUser, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state, actionStatus);
         }
 
         if (ref.options.type === 'download') {
@@ -155,7 +155,8 @@ export class InterfaceDocumentActionBlock {
         }
 
         if (ref.options.type === 'transformation') {
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+            // actionStatus.saveResult(state);
+            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
         }
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {

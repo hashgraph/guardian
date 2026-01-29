@@ -177,6 +177,12 @@ form {
     background: #F9FAFC;
 }
 
+.tags-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 :host ::ng-deep .form-field-table {
     width: 100%;
 }

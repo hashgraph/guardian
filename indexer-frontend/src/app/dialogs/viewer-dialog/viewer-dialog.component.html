@@ -1,0 +1,39 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{ title }}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+            <path clip-rule="evenodd"
+                d="M5.29289 5.29289C5.68342 4.90237 6.31658 4.90237 6.70711 5.29289L12 10.5858L17.2929 5.29289C17.6834 4.90237 18.3166 4.90237 18.7071 5.29289C19.0976 5.68342 19.0976 6.31658 18.7071 6.70711L13.4142 12L18.7071 17.2929C19.0976 17.6835 19.0976 18.3166 18.7071 18.7072C18.3166 19.0977 17.6834 19.0977 17.2929 18.7072L12 13.4142L6.70711 18.7072C6.31658 19.0977 5.68342 19.0977 5.29289 18.7072C4.90237 18.3166 4.90237 17.6835 5.29289 17.2929L10.5858 12L5.29289 6.70711C4.90237 6.31658 4.90237 5.68342 5.29289 5.29289Z"
+                fill-rule="evenodd" />
+        </svg>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="dialog-body-content">
+        <div class="links" *ngIf="type === 'LINK'">
+            <hedera-explorer
+                *ngFor="let link of links"
+                [type]="link.type"
+                [params]="link.params"
+                [subType]="link.subType"
+                [subParams]="link.subParams">{{link.value}}</hedera-explorer>
+        </div>
+        <div class="text" *ngIf="type === 'TEXT'">
+            {{text}}
+        </div>
+        <div class="json" *ngIf="type === 'JSON'">
+            {{json}}
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+    </div>
+</div>

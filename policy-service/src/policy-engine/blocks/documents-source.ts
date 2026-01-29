@@ -93,7 +93,7 @@ export class InterfaceDocumentsSource {
             );
         }
         const state = await handler(document);
-        ref.triggerEvents(tag, user, state, actionStatus);
+        await ref.triggerEvents(tag, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Set, ref, user, {
                 button: ref.tag,
