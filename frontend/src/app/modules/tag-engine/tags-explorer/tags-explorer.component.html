@@ -27,7 +27,7 @@
                     ({{ history.top.count }})
                 </span>
             </div>
-            <div *ngIf="history.count - 1" class="tag-total-count">
+            <div *ngIf="history.count - 1 > 0" class="tag-total-count">
                 +{{ history.count - 1 }}
             </div>
         </div>

@@ -1435,37 +1435,90 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onCompare(element?: Schema) {
-        const dialogRef = this.dialogService.open(CompareSchemaDialog, {
-            header: 'Compare Schemas',
-            width: '650px',
-            styleClass: 'custom-dialog',
-            data: {
-                schema: element,
-                policies: this.policies,
-                schemas: this.compareList
+        let listData: any[] = [];
+        let entityType: string = 'Policy';
+        const category = this.getCategory();
+
+        switch (this.type) {
+            case SchemaType.Tool:
+                listData = this.tools;
+                entityType = 'Tool';
+                break;
+            case SchemaType.Module:
+                listData = this.modules;
+                entityType = 'Module';
+                break;
+            case SchemaType.Policy:
+            default:
+                listData = this.policies;
+                entityType = 'Policy';
+                break;
+        }
+
+        this.loading = true;
+        this.schemaService.getSchemasByPage({
+            category: category,
+            pageIndex: 0,
+            pageSize: 'all'
+        }).subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
+            this.loading = false;
+            const allSchemas = SchemaHelper.map(schemasResponse.body || []);
+
+            for (const schema of allSchemas as any[]) {
+                schema.policy = this.policyNameByTopic[schema.topicId];
+                schema.module = this.moduleNameByTopic[schema.topicId];
+                schema.tool = this.toolNameByTopic[schema.topicId];
+                const name = SchemaHelper.getSchemaName(
+                    schema.name,
+                    schema.version || schema.sourceVersion,
+                    schema.status
+                );
+                if (schema.policy) {
+                    schema.fullName = `${name} (${schema.policy})`;
+                } else if (schema.module) {
+                    schema.fullName = `${name} (${schema.module})`;
+                } else if (schema.tool) {
+                    schema.fullName = `${name} (${schema.tool})`;
+                } else {
+                    schema.fullName = name;
+                }
             }
-        });
-        dialogRef.onClose.subscribe(async (result) => {
-            if (result && result.schemaId1 && result.schemaId2) {
-                const items = btoa(JSON.stringify({
-                    parent: null,
-                    items: [
-                        result.schemaId1,
-                        result.schemaId2
-                    ].map((id) => {
-                        return {
-                            type: 'id',
-                            value: id
+
+            const dialogRef = this.dialogService.open(CompareSchemaDialog, {
+                header: 'Compare Schemas',
+                width: '650px',
+                styleClass: 'custom-dialog',
+                data: {
+                    schema: element,
+                    policies: listData,
+                    schemas: allSchemas,
+                    entityType: entityType
+                }
+            });
+            dialogRef.onClose.subscribe(async (result) => {
+                if (result && result.schemaId1 && result.schemaId2) {
+                    const items = btoa(JSON.stringify({
+                        parent: null,
+                        items: [
+                            result.schemaId1,
+                            result.schemaId2
+                        ].map((id) => {
+                            return {
+                                type: 'id',
+                                value: id
+                            }
+                        })
+                    }));
+                    this.router.navigate(['/compare'], {
+                        queryParams: {
+                            type: 'schema',
+                            items
                         }
-                    })
-                }));
-                this.router.navigate(['/compare'], {
-                    queryParams: {
-                        type: 'schema',
-                        items
-                    }
-                });
-            }
+                    });
+                }
+            });
+        }, (e) => {
+            this.loadError(e);
         });
     }
 
