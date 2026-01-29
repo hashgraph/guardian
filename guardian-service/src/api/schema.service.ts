@@ -1,7 +1,35 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { Controller } from '@nestjs/common';
-import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, IAuthUser, JsonToXlsx, MessageError, MessageResponse, NewNotifier, NotificationStep, PinoLogger, RunFunctionAsync, Schema as SchemaCollection, Users, XlsxToJson } from '@guardian/common';
-import { IOwner, ISchema, IChildSchemaDeletionBlock, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
+import {
+    BinaryMessageResponse,
+    DataBaseHelper,
+    DatabaseServer,
+    GenerateBlocks,
+    IAuthUser,
+    JsonToXlsx,
+    MessageError,
+    MessageResponse,
+    NewNotifier,
+    NotificationStep,
+    PinoLogger,
+    RunFunctionAsync,
+    Schema as SchemaCollection,
+    Users,
+    XlsxToJson
+} from '@guardian/common';
+import {
+    IOwner,
+    ISchema,
+    IChildSchemaDeletionBlock,
+    MessageAPI,
+    ModuleStatus,
+    Schema,
+    SchemaCategory,
+    SchemaHelper,
+    SchemaNode,
+    SchemaStatus,
+    TopicType
+} from '@guardian/interfaces';
 import {
     checkForCircularDependency,
     copySchemaAsync,
@@ -122,7 +150,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 row.document = item.document;
                 row.status = SchemaStatus.DRAFT;
                 row.errors = [];
-                SchemaHelper.setVersion(row, null, row.version);
+                SchemaHelper.setVersion(row, row.version, row.version);
                 SchemaHelper.updateIRI(row);
                 await DatabaseServer.updateSchema(row.id, row);
                 await updateSchemaDefs(row.iri);
@@ -519,8 +547,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                 }
                 if (options.topicId) {
-                    filter.topicId = options.topicId;
-                    if (filter.category === SchemaCategory.TOOL) {
+                    if (options.topicId === 'not-binded') {
+                        filter.category = SchemaCategory.POLICY;
+                        const policies = await DatabaseServer.getPolicies({}, { fields: ['topicId'] });
+                        const policyTopicIds = policies.map(p => p.topicId).filter(id => !!id);
+                        filter.topicId = { $nin: policyTopicIds };
+                    } else {
+                        filter.topicId = options.topicId;
+                    }
+                    if (filter.category === SchemaCategory.TOOL && options.topicId !== 'not-binded') {
                         const tool = await DatabaseServer.getTool({ topicId: options.topicId });
                         if (tool && tool.status === ModuleStatus.PUBLISHED) {
                             delete filter.owner;
@@ -543,6 +578,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                 }
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+                const pipeline = [
+                    {$match: filter},
+                    {$group: {_id: '$topicId', count: {$sum: 1}}}
+                ] as unknown[];
+                const countByTopic = await new DataBaseHelper(SchemaCollection).aggregate(pipeline) as unknown[] as { _id: string, count: number }[];
+                items.forEach((item) => {
+                    const topicId = item.topicId;
+                    item.topicCount = countByTopic.find(t => t._id === topicId)?.count;
+                });
                 return new MessageResponse({ items, count });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -622,16 +666,23 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 //topicId
                 if (options.topicId) {
-                    filter.topicId = options.topicId;
+                    if (options.topicId === 'not-binded') {
+                        filter.category = SchemaCategory.POLICY;
+                        const policies = await DatabaseServer.getPolicies({}, { fields: ['topicId'] });
+                        const policyTopicIds = policies.map(p => p.topicId).filter(id => !!id);
+                        filter.topicId = { $nin: policyTopicIds };
+                    } else {
+                        filter.topicId = options.topicId;
+                    }
                 }
                 if (filter.category === SchemaCategory.TOOL) {
-                    if (options.topicId) {
+                    if (options.topicId && options.topicId !== 'not-binded') {
                         const tool = await DatabaseServer.getTool({ topicId: options.topicId });
                         if (tool && tool.status === ModuleStatus.PUBLISHED) {
                             delete filter.owner;
                         }
                         filter.topicId = options.topicId;
-                    } else {
+                    } else if (!options.topicId) {
                         const tools = await DatabaseServer.getTools({
                             $or: [{
                                 owner: owner.owner
@@ -677,6 +728,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+                const pipeline = [
+                    {$match: filter},
+                    {$group: {_id: '$topicId', count: {$sum: 1}}}
+                ] as unknown[];
+                const countByTopic = await new DataBaseHelper(SchemaCollection).aggregate(pipeline) as unknown[] as { _id: string, count: number }[];
+                items.forEach((item) => {
+                    const topicId = item.topicId;
+                    item.topicCount = countByTopic.find(t => t._id === topicId)?.count;
+                });
                 return new MessageResponse({ items, count });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
