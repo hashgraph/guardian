@@ -525,18 +525,18 @@ math-live {
 
         &::ng-deep {
             svg {
-                fill: #848FA9;
+                fill: #AAB7C4;
             }
         }
     }
 
     .info-text {
         font-family: Inter;
-        font-weight: 600;
-        font-size: 16px;
+        font-weight: 500;
+        font-size: 14px;
         line-height: 100%;
         text-align: center;
-        color: #848FA9;
+        color: #AAB7C4;
         margin-bottom: 16px;
     }
 
@@ -659,29 +659,37 @@ math-live {
     }
 }
 
-.input-documents {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 16px;
-    width: 100%;
+.input-documents-container {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    bottom: 62px;
+    top: 0px;
+    overflow: auto;
 
-    .input-documents-title {
-        font-family: Poppins;
-        font-weight: 600;
-        font-size: 16px;
-        line-height: 20px;
-        vertical-align: middle;
-        color: #181818;
-        margin-bottom: 16px;
-    }
-
-    .input-document {
+    .input-documents {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
+        margin-bottom: 32px;
         width: 100%;
-        height: 40px;
-        align-items: center;
 
+        .input-documents-title {
+            font-family: Poppins;
+            font-weight: 600;
+            font-size: 16px;
+            line-height: 20px;
+            vertical-align: middle;
+            color: #181818;
+            margin-bottom: 16px;
+        }
+
+        .input-document {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 40px;
+            align-items: center;
+        }
 
         .input-document-name {
             width: 100%;
@@ -714,26 +722,45 @@ math-live {
             margin-left: 0px;
             min-width: 40px;
             margin-right: 4px;
+            margin-left: 8px;
 
             button {
                 width: 32px;
                 height: 32px;
             }
         }
-    }
 
-    .add-doc-btn {
-        width: fit-content;
-        padding: 0px 24px;
-        margin-top: 16px;
-        margin-bottom: 16px;
-    }
+        .add-doc-btn {
+            width: fit-content;
+            padding: 0px 24px;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
 
-    .formulas-container-empty {
-        position: relative;
-        left: 50%;
-        top: 0px;
-        transform: translate(-50%, 0%);
-        height: 100px;
+        .formulas-container-empty {
+            position: relative;
+            left: 50%;
+            top: 0px;
+            transform: translate(-50%, 0%);
+            height: 125px;
+
+            .add-doc-btn {
+                min-height: 28px;
+                margin-top: 2px;
+                margin-bottom: 16px;
+            }
+        }
+    }
+}
+
+.input-documents-button {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+
+    button {
+        height: 40px;
+        width: 100%;
     }
 }

@@ -616,93 +616,133 @@
             </ng-container>
 
             <div *ngIf="step === 'step_4'" class="step-container">
-                <div class="input-documents">
-                    <div class="input-documents-title">Input Document</div>
-                    <div *ngIf="inputDocumentValue" class="input-document">
-                        <div class="input-document-name">{{inputDocumentValue.name}}</div>
-                        <div class="input-document-edit">
-                            <button 
-                                class="guardian-icon-button big" 
-                                (click)="editInputDocument(inputDocumentValue)">
-                                <svg-icon
-                                    class="icon-btn svg-icon"
-                                    src="/assets/images/icons/edit.svg"
+                <div class="input-documents-container">
+                    <div class="input-documents">
+                        <div class="input-documents-title">Input Document</div>
+                        <div *ngIf="inputDocumentValue" class="dialog-grid-container">
+                            <div class="dialog-grid-header">
+                                <div class="col-auto">Schema</div>
+                                <div class="col-125"></div>
+                            </div>
+                            <div class="dialog-grid-body">
+                                <div class="dialog-grid-row row-52">
+                                    <div class="col-auto">
+                                        {{inputDocumentValue.name}}
+                                    </div>
+                                    <div class="col-125">
+                                        <div class="input-document-edit">
+                                            <button 
+                                                class="guardian-icon-button big" 
+                                                (click)="editInputDocument(inputDocumentValue)">
+                                                <svg-icon
+                                                    class="icon-btn svg-icon"
+                                                    src="/assets/images/icons/edit.svg"
+                                                    svgClass="icon-color-primary">
+                                                </svg-icon>
+                                            </button>
+                                        </div>
+                                        <div class="input-document-delete">
+                                            <button 
+                                                class="guardian-icon-button big" 
+                                                (click)="deleteInputDocument(inputDocumentValue)">
+                                                <svg-icon
+                                                    class="icon-btn svg-icon"
+                                                    src="/assets/images/icons/delete.svg"
+                                                    svgClass="icon-color-delete">
+                                                </svg-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="!inputDocumentValue" class="formulas-container-empty">
+                            <svg-icon 
+                                class="svg-icon-32" 
+                                src="/assets/images/icons/32/list.svg" 
+                                svgClass="icon-color-disabled">
+                            </svg-icon>
+                            <span class="info-text">Nothing uploaded yet</span>
+                            <button *ngIf="!inputDocumentValue" (click)="addInputDocument()" class="guardian-button guardian-button-secondary add-doc-btn">
+                                <div class="guardian-button-icon">
+                                    <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/add.svg"
+                                        svgClass="icon-color-primary">
+                                    </svg-icon>
+                                </div>
+                                <div class="guardian-button-label">Add Input Document</div>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="input-documents">
+                        <div class="input-documents-title">Relationships</div>
+                        <div *ngIf="inputRelationshipsValue.length" class="dialog-grid-container">
+                            <div class="dialog-grid-header">
+                                <div class="col-auto">Schema</div>
+                                <div class="col-125"></div>
+                            </div>
+                            <div class="dialog-grid-body">
+                                <div *ngFor="let item of inputRelationshipsValue" class="dialog-grid-row row-52">
+                                    <div class="col-auto">
+                                        {{item.name}}
+                                    </div>
+                                    <div class="col-125">
+                                        <div class="input-document-edit">
+                                            <button 
+                                                class="guardian-icon-button big" 
+                                                (click)="editInputDocument(item)">
+                                                <svg-icon
+                                                    class="icon-btn svg-icon"
+                                                    src="/assets/images/icons/edit.svg"
+                                                    svgClass="icon-color-primary">
+                                                </svg-icon>
+                                            </button>
+                                        </div>
+                                        <div class="input-document-delete">
+                                            <button 
+                                                class="guardian-icon-button big" 
+                                                (click)="deleteInputDocument(item)">
+                                                <svg-icon
+                                                    class="icon-btn svg-icon"
+                                                    src="/assets/images/icons/delete.svg"
+                                                    svgClass="icon-color-delete">
+                                                </svg-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="!inputRelationshipsValue.length" class="formulas-container-empty">
+                            <svg-icon 
+                                class="svg-icon-32" 
+                                src="/assets/images/icons/32/list.svg" 
+                                svgClass="icon-color-disabled">
+                            </svg-icon>
+                            <span class="info-text">Nothing uploaded yet</span>
+                            <button (click)="addRelationships()" class="guardian-button guardian-button-secondary add-doc-btn">
+                                <div class="guardian-button-icon">
+                                    <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/add.svg"
+                                        svgClass="icon-color-primary">
+                                    </svg-icon>
+                                </div>
+                                <div class="guardian-button-label">Add Relationships</div>
+                            </button>
+                        </div>
+                        <button *ngIf="inputRelationshipsValue.length" (click)="addRelationships()" class="guardian-button guardian-button-secondary add-doc-btn">
+                            <div class="guardian-button-icon">
+                                <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/add.svg"
                                     svgClass="icon-color-primary">
                                 </svg-icon>
-                            </button>
-                        </div>
-                        <div class="input-document-delete">
-                            <button 
-                                class="guardian-icon-button big" 
-                                (click)="deleteInputDocument(inputDocumentValue)">
-                                <svg-icon
-                                    class="icon-btn svg-icon"
-                                    src="/assets/images/icons/delete.svg"
-                                    svgClass="icon-color-delete">
-                                </svg-icon>
-                            </button>
-                        </div>
+                            </div>
+                            <div class="guardian-button-label">Add Relationships</div>
+                        </button>
                     </div>
-                    <div *ngIf="!inputDocumentValue" class="formulas-container-empty">
-                        <svg-icon 
-                            class="svg-icon-32" 
-                            src="/assets/images/icons/32/list.svg" 
-                            svgClass="icon-color-disabled">
-                        </svg-icon>
-                        <span class="info-text">No Document</span>
-                    </div>
-                    <button *ngIf="!inputDocumentValue" (click)="addInputDocument()" class="guardian-button guardian-button-secondary add-doc-btn">
-                        <div class="guardian-button-icon">
-                            <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/add.svg"
-                                svgClass="icon-color-primary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Add Input Document</div>
-                    </button>
                 </div>
-                <div class="input-documents">
-                    <div class="input-documents-title">Relationships</div>
-                    <div *ngFor="let item of inputRelationshipsValue" class="input-document">
-                        <div class="input-document-name">{{item.name}}</div>
-                        <div class="input-document-edit">
-                            <button 
-                                class="guardian-icon-button big" 
-                                (click)="editInputDocument(item)">
-                                <svg-icon
-                                    class="icon-btn svg-icon"
-                                    src="/assets/images/icons/edit.svg"
-                                    svgClass="icon-color-primary">
-                                </svg-icon>
-                            </button>
-                        </div>
-                        <div class="input-document-delete">
-                            <button 
-                                class="guardian-icon-button big" 
-                                (click)="deleteInputDocument(item)">
-                                <svg-icon
-                                    class="icon-btn svg-icon"
-                                    src="/assets/images/icons/delete.svg"
-                                    svgClass="icon-color-delete">
-                                </svg-icon>
-                            </button>
-                        </div>
-                    </div>
-                    <div *ngIf="!inputRelationshipsValue.length" class="formulas-container-empty">
-                        <svg-icon 
-                            class="svg-icon-32" 
-                            src="/assets/images/icons/32/list.svg" 
-                            svgClass="icon-color-disabled">
-                        </svg-icon>
-                        <span class="info-text">No Documents</span>
-                    </div>
-                    <button (click)="addRelationships()" class="guardian-button guardian-button-secondary add-doc-btn">
-                        <div class="guardian-button-icon">
-                            <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/add.svg"
-                                svgClass="icon-color-primary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Add Relationships</div>
-                    </button>
+                <div class="input-documents-button">
+                    <button
+                        (click)="onTest()"
+                        [disabled]="!inputDocumentValue"
+                        class="guardian-button guardian-button-primary left-btn">Test</button>
                 </div>
             </div>
             <div *ngIf="step === 'step_5'" class="step-container result-container">
@@ -941,12 +981,6 @@
             <button
                 (click)="onValidate()"
                 class="guardian-button guardian-button-secondary left-btn">Validate</button>
-        </div>
-        <div *ngIf="inputSchema && (step === 'step_4')" class="dialog-button">
-            <button
-                (click)="onTest()"
-                [disabled]="!inputDocumentValue"
-                class="guardian-button guardian-button-secondary left-btn">Test</button>
         </div>
         <div class="dialog-button">
             <button
