@@ -4,14 +4,7 @@ import {Schema} from '@guardian/interfaces';
 import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
 import {UntypedFormBuilder, UntypedFormGroup} from '@angular/forms';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
-
-enum SchemaType {
-    System = 'system',
-    Policy = 'policy',
-    Tag = 'tag',
-    Module = 'module',
-    Tool = 'tool'
-}
+import { SchemaType } from '../../policy-engine/structures/types/schema-type.type';
 
 /**
  * Dialog for creating and editing schemas.

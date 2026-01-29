@@ -37,14 +37,7 @@ import { ProjectComparisonService } from 'src/app/services/project-comparison.se
 import { SchemaDeleteWarningDialogComponent } from 'src/app/modules/schema-engine/schema-delete-warning-dialog/schema-delete-warning-dialog.component';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
 import { ReplaceSchemasDialogComponent } from '../../modules/policy-engine/dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
-
-enum SchemaType {
-    System = 'system',
-    Policy = 'policy',
-    Tag = 'tag',
-    Module = 'module',
-    Tool = 'tool'
-}
+import { SchemaType } from 'src/app/modules/policy-engine/structures/types/schema-type.type';
 
 const policySchemaColumns: string[] = [
     'policy',
