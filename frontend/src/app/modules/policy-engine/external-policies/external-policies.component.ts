@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ExternalPolicyStatus, UserPermissions } from '@guardian/interfaces';
+import { ExternalPolicyStatus, UserPermissions, UserRole } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -23,7 +23,9 @@ interface IColumn {
     styleUrls: ['./external-policies.component.scss'],
 })
 export class ExternalPolicyComponent implements OnInit {
-    public readonly title: string = 'Remote Policy';
+    public title: string = 'Remote Policy';
+    public actionButtonLabel: string = 'Request Access';
+    public isStandardRegistry: boolean = false;
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
@@ -125,6 +127,15 @@ export class ExternalPolicyComponent implements OnInit {
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
 
+            this.isStandardRegistry = this.user.role === UserRole.STANDARD_REGISTRY;
+            if (this.isStandardRegistry) {
+                this.title = 'External Policies';
+                this.actionButtonLabel = 'Import External Policy';
+            } else {
+                this.title = 'Remote Policy';
+                this.actionButtonLabel = 'Request Access';
+            }
+
             if (this.user.POLICIES_EXTERNAL_POLICY_UPDATE) {
                 this.columns = [...this._defaultColumns, {
                     id: 'options',
@@ -200,6 +211,9 @@ export class ExternalPolicyComponent implements OnInit {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
+            data: {
+                isStandardRegistry: this.isStandardRegistry
+            }
         });
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {

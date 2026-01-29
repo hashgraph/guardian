@@ -14,13 +14,19 @@ export class SearchExternalPolicyDialog {
     public policy: any;
     public error: string = '';
 
+    public isStandardRegistry: boolean = false;
+
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private dialogService: DialogService,
         private externalPoliciesService: ExternalPoliciesService,
     ) {
-
+        if (this.config.data?.isStandardRegistry) {
+            this.isStandardRegistry = true;
+        } else {
+            this.isStandardRegistry = false;
+        }
     }
 
     ngOnInit() {

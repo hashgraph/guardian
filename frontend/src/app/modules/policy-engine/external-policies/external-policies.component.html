@@ -8,20 +8,6 @@
         <a [routerLink]="['/profile']">here</a>
     </div>
 
-    <div class="guardian-user-back-button">
-        <button
-            (click)="onBack()"
-            class="guardian-button guardian-button-secondary">
-            <div class="guardian-button-icon">
-                <svg-icon class="icon-btn svg-icon"
-                    src="/assets/images/icons/left-arrow.svg"
-                    svgClass="icon-color-primary">
-                </svg-icon>
-            </div>
-            <div class="guardian-button-label">Back to Policies</div>
-        </button>
-    </div>
-
     <div class="guardian-user-page-header">
         <span>{{title}}</span>
     </div>
@@ -49,7 +35,8 @@
                         svgClass="icon-color-secondary">
                     </svg-icon>
                 </div>
-                <div class="guardian-button-label">Request Access</div>
+                <div class="guardian-button-label" *ngIf="isStandardRegistry">Import External Policy</div>
+                <div class="guardian-button-label" *ngIf="!isStandardRegistry">Request Access</div>
             </button>
         </div>
     </div>
@@ -91,7 +78,7 @@
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'topicId'">
                                         <span class="text-truncate">
-                                            <hedera-explorer 
+                                            <hedera-explorer
                                                 [params]="row.topicId"
                                                 type="topics">{{ row.topicId }}</hedera-explorer>
                                         </span>
