@@ -48,7 +48,6 @@ export class SchemaTreeComponent implements OnInit {
     ngOnInit(): void {
         this._ctx = this.canvas.nativeElement.getContext('2d') as any;
         this.loading = true;
-        console.log('this.schema', this.schema)
         this.schemaService
             .getSchemaTree(this.schema.id)
             .subscribe((result: any) => {
