@@ -38,7 +38,12 @@
                     </textarea>
                 </div>
             </p-tabPanel>
-
+            <p-tabPanel *ngIf="showOriginTab" [header]="'details.origin' | transloco">
+                <app-compare [messageId]="id"></app-compare>
+            </p-tabPanel>
+            <p-tabPanel *ngIf="showDerivationsTab" [header]="'details.derivations' | transloco">
+                <app-derivations [messageId]="id"></app-derivations>
+            </p-tabPanel>
         </p-tabView>
         } @else {
         <div>{{ 'details.not_found' | transloco }}</div>
