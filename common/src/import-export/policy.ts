@@ -565,25 +565,25 @@ export class PolicyImportExport {
             schemaIds.set(`schema:${schema.uuid}#${schema.uuid}`, `@${schemaCounter}`);
             schemaCounter++;
         });
-        
+
         schemaCounter = 0;
         components.schemas.forEach(schema => {
             schemaIds.set(`schema:${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
             schemaCounter++;
         });
-        
+
         schemaCounter = 0;
         components.schemas.forEach(schema => {
             schemaIds.set(`schema:${schema.uuid}#`, `#`);
             schemaCounter++;
         });
-        
+
         schemaCounter = 0;
         components.schemas.forEach(schema => {
             schemaIds.set(`schema:${schema.uuid}`, `@${schemaCounter}`);
             schemaCounter++;
         });
-        
+
         schemaCounter = 0;
         components.schemas.forEach(schema => {
             schemaIds.set(`#${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
@@ -595,13 +595,13 @@ export class PolicyImportExport {
             schemaIds.set(`#${schema.uuid}`, `@${schemaCounter}`);
             schemaCounter++;
         });
-        
+
         schemaCounter = 0;
         components.schemas.forEach(schema => {
             schemaIds.set(`${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
             schemaCounter++;
         });
-        
+
         schemaCounter = 0;
         components.schemas.forEach(schema => {
             schemaIds.set(schema.uuid, `@${schemaCounter}`);
@@ -633,7 +633,7 @@ export class PolicyImportExport {
     }
 
     private static removeIpfsFromJson(json: string): string {
-        return json.replace(/ipfs:\/\/[^\s"#&]+/g, "");
+        return json.replace(/ipfs:\/\/[^\s"#&]+/g, '');
     }
 
     private static preparePolicyComponents(components: IPolicyComponents): IPolicyComponents {
