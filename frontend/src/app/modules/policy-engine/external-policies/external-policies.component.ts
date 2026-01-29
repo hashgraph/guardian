@@ -129,10 +129,8 @@ export class ExternalPolicyComponent implements OnInit {
 
             this.isStandardRegistry = this.user.role === UserRole.STANDARD_REGISTRY;
             if (this.isStandardRegistry) {
-                this.title = 'External Policies';
                 this.actionButtonLabel = 'Import External Policy';
             } else {
-                this.title = 'Remote Policy';
                 this.actionButtonLabel = 'Request Access';
             }
 

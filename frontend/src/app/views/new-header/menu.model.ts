@@ -193,7 +193,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             }
             if (user.POLICIES_EXTERNAL_POLICY_READ) {
                 childItems.push({
-                    title: 'External Policies',
+                    title: 'Remote Policies',
                     routerLink: '/external-policies'
                 });
             }
