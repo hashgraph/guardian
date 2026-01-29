@@ -38,7 +38,7 @@ export class MathGroup<T extends MathFormula | FieldLink> {
         this.validatedItems = this.items.filter((v) => !v.empty);
     }
 
-    public reorder(previousIndex: number, currentIndex: number) { 
+    public reorder(previousIndex: number, currentIndex: number) {
         return;
     }
 

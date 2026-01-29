@@ -10,11 +10,10 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { DocumentMap } from '../helpers/math-model/index.js';
+import { DocumentMap, IMathDocument } from '../helpers/math-model/index.js';
 import { fileURLToPath } from 'url';
 import { Worker } from 'node:worker_threads';
 import path from 'path'
-import { IMathDocument } from '../helpers/math-model/index.js';
 
 const filename = fileURLToPath(import.meta.url);
 

@@ -2,7 +2,7 @@ import { IMathDocument } from './math.interface.js';
 
 export class DocumentMap {
     private _current: any;
-    private _map: Map<string, any>;
+    private readonly _map: Map<string, any>;
 
     constructor() {
         this._map = new Map<string, any>();
