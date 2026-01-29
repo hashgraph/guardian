@@ -43,13 +43,24 @@
                         (onChange)="onFilter($event)"
                         [(ngModel)]="currentTopic"
                         [options]="tools"
-                        [showClear]="true"
-                        class="policy-dropdown"
+                        [showClear]="false"
+                        class="guardian-dropdown"
+                        placeholder="Select Tool"
                         optionLabel="name"
                         optionValue="topicId"
-                        placeholder="Tool"
                         [appendTo]="'body'"
-                    ></p-dropdown>
+                        panelStyleClass="guardian-dropdown-panel">
+                        <ng-template pTemplate="selectedItem">
+                            <div *ngIf="currentTopic" class="guardian-dropdown-selected">
+                                <span class="guardian-dropdown-label">Tool</span>
+                                <span class="guardian-dropdown-item">{{ toolNameByTopic[currentTopic] || 'No Binding' }}</span>
+                            </div>
+                            <div *ngIf="!currentTopic" class="guardian-dropdown-selected">
+                                <span class="guardian-dropdown-label">Tool</span>
+                                <span class="guardian-dropdown-item">All Tools</span>
+                            </div>
+                        </ng-template>
+                    </p-dropdown>
                 </div>
                 <div *ngIf="isPolicy || isTool || isModule" class="guardian-input-container text-search">
                     <input
@@ -170,17 +181,13 @@
                     </tr>
                 </ng-template>
                 <ng-template let-rowNode let-rowData="rowData" pTemplate="body">
-                    <tr *ngIf="!rowData.isParent || (rowData.isParent && rowData.name)" [ttRow]="rowNode" class="guardian-grid-row" [class.grey-row]="!rowData.isParent || (rowData.isParent && rowData.name)" [attr.schema-status]="rowData.status">
+                    <tr *ngIf="(!rowData.isParent || (rowData.isParent && rowData.topicId) && !isModule)" [ttRow]="rowNode" class="guardian-grid-row" [class.grey-row]="(!rowData.isParent || (rowData.isParent && rowData.topicId) && !isModule)" [attr.schema-status]="rowData.status">
                         <ng-container *ngIf="rowData.isParent">
                             <td class="row-cell-text parent-row-cell" [attr.colspan]="type === 'policy' ? 8 : (type === 'tool' ? 4 : 3)">
                                 <div class="parent-row-content">
                                     <span class="parent-row-name">
                                         <a (click)="onSelectFilter(rowData.topicId)" class="filter-link">
                                             {{ rowData.name }}
-                                        </a>
-                                        <a *ngIf="type === 'tool'"
-                                           (click)="onSelectFilter(rowData.topicId)" class="filter-link">
-                                            {{ toolNameByTopic[rowData.topicId] }}
                                         </a>
                                         <span class="schemas-count">
                                             {{ rowData.count }} of {{ rowData.totalCount }} schemas shown
@@ -190,6 +197,13 @@
                                         <a *ngIf="type === 'policy' && rowData.topicId !== NOT_BINDED"
                                            [queryParams]="{ policyId: policyIdByTopic[rowData.topicId] }"
                                            [routerLink]="['/policy-configuration']"
+                                           class="btn-configure"
+                                        >
+                                            Configure
+                                        </a>
+                                        <a *ngIf="type === 'tool' && rowData.topicId !== NOT_BINDED"
+                                           [queryParams]="{ toolId: toolIdByTopic[rowData.topicId] }"
+                                           [routerLink]="['/tool-configuration']"
                                            class="btn-configure"
                                         >
                                             Configure
@@ -335,13 +349,7 @@
                                 </td>
                             </ng-container>
                             <ng-container *ngIf="type === 'tool'">
-                                <td class="row-cell-text col-200">
-                                    <a [queryParams]="{toolId: toolIdByTopic[rowData.topicId]}"
-                                       [routerLink]="'/tool-configuration'"
-                                       class="btn-configure">
-                                        {{ toolNameByTopic[rowData.topicId] }}
-                                    </a>
-                                </td>
+                                <td class="row-cell-text col-200"></td>
                                 <td [pTooltip]="rowData.name" class="row-cell-text" style="min-width: 140px; max-width: 150px;">
                                     <span class="text-truncate">{{ rowData.name }}</span>
                                 </td>

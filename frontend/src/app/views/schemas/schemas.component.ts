@@ -540,7 +540,10 @@ export class SchemaConfigComponent implements OnInit {
                 const tools: any[] = toolsResponse?.body || [];
                 this.toolNameByTopic = {};
                 this.toolIdByTopic = {};
-                this.tools = [];
+                this.tools = [{
+                    name: 'All Tools',
+                    topicId: null
+                }];
                 this.draftTools = [];
                 for (const tool of tools) {
                     if (tool.topicId) {
@@ -657,8 +660,8 @@ export class SchemaConfigComponent implements OnInit {
 
         const groups = new Map<string, ISchema[]>();
         for (const schema of schemas) {
-            const hasPolicyBinding = Boolean((schema as Record<string, unknown>).__policyId);
-            const topicId = hasPolicyBinding ? schema.topicId ?? SchemaConfigComponent.NOT_BINDED : SchemaConfigComponent.NOT_BINDED;
+            const hasPolicyOrToolBinding = Boolean((schema as Record<string, unknown>).__policyId) || Boolean((schema as Record<string, unknown>).__toolId);
+            const topicId = hasPolicyOrToolBinding ? schema.topicId ?? SchemaConfigComponent.NOT_BINDED : SchemaConfigComponent.NOT_BINDED;
             if (!groups.has(topicId)) {
                 groups.set(topicId, []);
             }
