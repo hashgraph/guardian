@@ -2,7 +2,7 @@
 
 The _mathBlock_ lets you to define calculations on document data in mathematical notation to be performed directly, without the need or optionally with limited use of coding.
 
-<figure><img src="../../../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 1.1 Properties
 
@@ -21,15 +21,23 @@ Expression definition is guided by a wizard with in-place test execution, allowi
 
 Use this section to map fields from the input document to short variable names that you can reference in formulas.
 
-<figure><img src="../../../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="info" %}
+**Note 1**: A variable in a formula may reference data from any field in any document, not just the input document itself. However, the referenced document must be associated with the input document (i.e. be part of its ‘relationships' chain). If no such relationship exists, the value cannot be resolved at runtime, which may lead to unpredictable or undefined behavior.
+{% endhint %}
+
+{% hint style="info" %}
+**Note 2**: Source documents are located based on schema matching. If multiple related documents match the required schema, the system selects the nearest (most recent) document in the relationships chain as the data source.
+{% endhint %}
 
 ### 2. Formulas
 
 This section provides UI to defined formulas using standard mathematical notation and/or LateX or MathJSON formats.
 
-<figure><img src="../../../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
 **2.1 Formula defintion**
 
@@ -38,15 +46,15 @@ To define a formula, complete the following steps:
 * Specify the formula name.
 * Add () after the formula name and list any parameters inside. Separate parameters with a comma (,).
 
-<figure><img src="../../../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
 * Create the expression using math notation or an alternative format (LaTeX, MathJSON).
 
-<figure><img src="../../../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
 
 In some cases, switching between math notation, LaTeX, and MathJSON can help you verify or correct a formula. You can edit in any format; the system automatically synchronizes changes across formats.
 
-<figure><img src="../../../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
 
 You can reuse defined formulas in other formulas (by name) and in the code on the Advanced tab.
 
@@ -62,73 +70,105 @@ You can reuse defined formulas in other formulas (by name) and in the code on th
 
 When parentheses are not included after the name (e.g., x vs. x()), it is treated as a variable definition. The variable value is calculated at initialization time.&#x20;
 
-<figure><img src="../../../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
 
 **2.3 Code (advanced)**
 
 For complex scenarios where formulas are not sufficient for the required data transformations, use the Advanced (Optional) tab to add logic in JavaScript.
 
-<figure><img src="../../../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
 
 In code, you can reference all defined formulas and variables by name.
+
+<figure><img src="../../../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
-
 ### 3. Outputs
 
 Use this section to configure which document fields receive the results of calculations from the previous sections.
 
-<figure><img src="../../../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
 
 In this section, you can reference input/output fields and variables only. Formulas can be referenced only in the Formulas section.
 
+<figure><img src="../../../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
+
+### 4. Tabs
+
+For convenience Inputs\Formulas\Outputs can be visually partitioned using tabs. This partitioning has not impact on the functionality of the policy, it is used to ease UI navigation by policy authors.  
+
+#### 4.1 Creation
+
 <figure><img src="../../../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
 
-### 4. Test
+#### 4.2 Renaming
+
+Tabs can be renamed as required.
+
+<figure><img src="../../../../../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
+
+#### 4.3 Deletion
+
+Tabs can be deleted.
+
+<figure><img src="../../../../../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
+
+#### 4.4 Navigation
+
+<figure><img src="../../../../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+
+### 5. Test
 
 After you define formulas, you can validate them using the Test section. Complete the following steps:
 
 #### a. Inputs
 
+To begin testing, specify the main Input Document.
+
+<figure><img src="../../../../../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
+
+If required, add additional documents associated with the input document. Make sure these documents are part of the main Input Document’s relationships chain.
+
+<figure><img src="../../../../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
+
 Provide input data in a document using one of the following three options:
 
 * Use a form that matches the input schema.
 
-<figure><img src="../../../../../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
 
 * Provide JSON.
 
-<figure><img src="../../../../../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (20).png" alt=""><figcaption></figcaption></figure>
 
 * Upload a file (the file must contain valid JSON).
 
-<figure><img src="../../../../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
 
 #### b. Select Test
 
-<figure><img src="../../../../../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (22).png" alt=""><figcaption></figcaption></figure>
 
 #### c. Results
 
 Guardian displays test results for each element
 
-<figure><img src="../../../../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (23).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (24).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/image (20).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (25).png" alt=""><figcaption></figcaption></figure>
 
 ## 1.2 Visualization at Policy runtime
 
 Once a policy is published, Guardian generates Formula-Linked Definitions (FLDs) for all mathBlock elements in the policy. You can explore these the same way as standard FLDs.
 
-<figure><img src="../../../../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (21) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/image (22).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (22) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="warning" %}
 **Note:** The _mathBlock_ code section is not used when automatically generating FLDs and is not represented in any way in the resulting visuals.
