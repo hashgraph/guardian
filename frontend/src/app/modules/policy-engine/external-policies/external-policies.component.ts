@@ -23,7 +23,7 @@ interface IColumn {
     styleUrls: ['./external-policies.component.scss'],
 })
 export class ExternalPolicyComponent implements OnInit {
-    public readonly title: string = 'External Policies';
+    public readonly title: string = 'Remote Policy';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
