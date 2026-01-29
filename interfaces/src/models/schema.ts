@@ -140,6 +140,10 @@ export class Schema implements ISchema {
      */
     public codeVersion?: string;
     /**
+     * Topic count
+     */
+    public topicCount?: number;
+    /**
      * Schema constructor
      * @param schema
      * @param includeSystemProperties
@@ -200,6 +204,7 @@ export class Schema implements ISchema {
             this.component = (schema as any).component || (schema as any).__component;
             this.errors = schema.errors;
             this.codeVersion = schema.codeVersion;
+            this.topicCount = schema.topicCount;
         } else {
             this._id = undefined;
             this.id = undefined;
@@ -342,6 +347,7 @@ export class Schema implements ISchema {
         clone.fields = this.fields;
         clone.conditions = this.conditions;
         clone.userDID = this.userDID;
+        clone.topicCount = this.topicCount;
         return clone;
     }
 
