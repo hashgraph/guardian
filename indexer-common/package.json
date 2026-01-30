@@ -5,7 +5,7 @@
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
         "cross-blob": "^2.0.1",
-        "dotenv": "^16.0.0",
+        "dotenv": "^17.2.3",
         "module-alias": "^2.2.2",
         "reflect-metadata": "^0.1.13",
         "nats": "^2.6.1",
