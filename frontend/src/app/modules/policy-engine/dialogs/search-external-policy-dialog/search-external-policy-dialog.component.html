@@ -48,25 +48,25 @@
 <div class="dialog-footer">
     <div class="action-buttons">
         <div class="dialog-button">
-            <button 
-                (click)="onClose()" 
+            <button
+                (click)="onClose()"
                 class="guardian-button guardian-button-secondary">Close</button>
         </div>
         <div *ngIf="step===1" class="dialog-button">
-            <button 
-                (click)="onSearch()" 
+            <button
+                (click)="onSearch()"
                 class="guardian-button guardian-button-primary"
                 [disabled]="!timestamp">Search</button>
         </div>
         <div *ngIf="step===2" class="dialog-button">
-            <button 
-                (click)="onSubmit()" 
+            <button
+                (click)="onSubmit()"
                 class="guardian-button guardian-button-primary"
                 [disabled]="!policy">Import</button>
         </div>
         <div *ngIf="step===0" class="dialog-button">
-            <button 
-                (click)="onPrev()" 
+            <button
+                (click)="onPrev()"
                 class="guardian-button guardian-button-primary">Prev</button>
         </div>
     </div>

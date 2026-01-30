@@ -152,14 +152,7 @@
                         *ngIf="user.POLICIES_EXTERNAL_POLICY_CREATE"
                         (click)="importExternalPolicy()"
                         class="guardian-button guardian-button-primary">
-                        <div class="guardian-button-icon">
-                            <svg-icon
-                                class="icon-btn"
-                                src="/assets/images/icons/add.svg"
-                                svgClass="icon-color-secondary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Request Access</div>
+                        <div class="guardian-button-label">Request Remote Policy</div>
                     </button>
                 </div>
             </div>
@@ -386,10 +379,10 @@
                                     </div>
 
                                     <div *ngIf="policy?.originalChanged === false">
-                                        <button 
-                                            class="button secondary original-status-btn" 
+                                        <button
+                                            class="button secondary original-status-btn"
                                             [disabled]="true"
-                                            label="No changes" 
+                                            label="No changes"
                                             pButton>
                                         </button>
                                     </div>
@@ -399,8 +392,8 @@
                                             pTooltip="Policy modification tracking was likely disabled"
                                             tooltipPosition="bottom"
                                         >
-                                            <button 
-                                                class="button secondary original-status-btn" 
+                                            <button
+                                                class="button secondary original-status-btn"
                                                 [disabled]="true"
                                                 label="Status unavailable"
                                                 pTooltip="Policy modification tracking was likely disabled"

@@ -46,7 +46,7 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/schema-rules'
             },
             {
-                title: 'Remote Policies',
+                title: 'Remote Policy Request',
                 routerLink: '/external-policies'
             },
         ],
@@ -189,7 +189,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             }
             if (user.POLICIES_EXTERNAL_POLICY_READ) {
                 childItems.push({
-                    title: 'External Policies',
+                    title: 'Remote Policy Request',
                     routerLink: '/external-policies'
                 });
             }
