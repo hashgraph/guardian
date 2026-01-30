@@ -104,10 +104,6 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 title: 'Status',
                 routerLink: '/admin/status'
             },
-            {
-                title: 'About',
-                routerLink: '/admin/about'
-            },
         ],
     },
 ];

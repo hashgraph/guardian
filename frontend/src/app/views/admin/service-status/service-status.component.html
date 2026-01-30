@@ -1,6 +1,21 @@
 <div class="container">
     <ng-container [ngTemplateOutlet]="header"></ng-container>
     <ng-container [ngTemplateOutlet]="statusContainer"></ng-container>
+
+    <div *ngIf="guardianVersion" class="guardian-version-card">
+        <div class="guardian-version-content">
+            <svg-icon
+                    class="svg-icon-32"
+                    src="/assets/images/icons/guardian-icon-secondary.svg"
+                    svgClass="guardian-version-icon">
+            </svg-icon>
+
+            <span class="guardian-version-text">
+            Guardian Version {{ guardianVersion }}
+        </span>
+        </div>
+    </div>
+
     <div *ngIf="false" class="loading">
         <div class="preloader-image preloader-image-l-size"></div>
     </div>

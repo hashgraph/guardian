@@ -88,7 +88,6 @@ import { SuggestionsService } from './services/suggestions.service';
 import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
 import { QRCodeModule } from 'angularx-qrcode';
 import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
-import { AboutViewComponent } from './views/admin/about-view/about-view.component';
 import { CompareStorage } from './services/compare-storage.service';
 import { ToolsService } from './services/tools.service';
 import { NewHeaderComponent } from './views/new-header/new-header.component';
@@ -155,7 +154,6 @@ import { TreeTableModule } from 'primeng/treetable'
         TrustChainComponent,
         LogsViewComponent,
         SettingsViewComponent,
-        AboutViewComponent,
         AdminHeaderComponent,
         DetailsLogDialog,
         ServiceStatusComponent,
