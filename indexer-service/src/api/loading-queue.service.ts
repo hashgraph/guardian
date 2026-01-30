@@ -355,8 +355,7 @@ export class LoadingQueueService {
                 priorityDate: new Date(),
                 priorityStatus: PriorityStatus.SCHEDULED,
                 priorityStatusDate: new Date(),
-                priorityTimestamp,
-                inheritPriority
+                priorityTimestamp
             }
         );
 
