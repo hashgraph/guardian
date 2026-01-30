@@ -945,8 +945,13 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
-                this.schemaService.deleteSystemSchema(id).subscribe((data: any) => {
-                    this.loadSchemas();
+                this.schemaService.deleteSystemSchema(id).subscribe((result: any) => {
+                    const { taskId, expectation } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
                 }, (e) => {
                     this.loadError(e);
                 });
