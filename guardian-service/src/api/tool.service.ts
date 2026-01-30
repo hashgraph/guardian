@@ -177,9 +177,7 @@ export async function validateAndPublish(
  */
 export async function validateTool(tool: PolicyTool): Promise<ISerializedErrors> {
     const result = await (new GuardiansService())
-        .sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_TOOL, 60 * 1000, {
-            module
-        });
+        .sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_TOOL, 60 * 1000, { tool });
     return result;
 }
 

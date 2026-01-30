@@ -145,9 +145,7 @@ export async function validateAndPublish(
  */
 export async function validateModel(module: PolicyModule): Promise<ISerializedErrors> {
     const result = await (new GuardiansService())
-        .sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_MODULE, 60 * 1000, {
-            module
-        });
+        .sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_MODULE, 60 * 1000, { module });
     return result;
 }
 

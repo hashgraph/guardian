@@ -1,6 +1,8 @@
 export const REQUIRED_PROPS = {
     DESCRIPTION: 'description',
     NAME: 'name',
+    OWNER: 'owner',
+    CREATOR: 'creator',
     STATUS: 'status',
     UUID: 'uuid',
     _ID: '_id',
