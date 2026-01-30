@@ -1,4 +1,6 @@
-export { PolicyValidator, } from './policy-validator.js';
+export { PolicyValidator } from './policy-validator.js';
+export { ModuleValidator } from './module-validator.js';
+export { ToolValidator } from './tool-validator.js';
 export { BlockValidator } from './block-validator.js';
 export { PropertyValidator } from './property-validator.js';
 export { ISerializedErrors } from './interfaces/serialized-errors.interface.js';

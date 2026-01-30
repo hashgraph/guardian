@@ -490,7 +490,7 @@ export class SendToGuardianBlock {
      */
     private async documentSender(
         document: IPolicyDocument,
-        userId: string | null
+        userId: string | null,
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
@@ -623,15 +623,19 @@ export class SendToGuardianBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
 
+        const tags = await PolicyUtils.getBlockTags(ref);
+
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
         if (Array.isArray(docs)) {
             const newDocs = [];
             for (const doc of docs) {
+                PolicyUtils.setDocumentTags(doc, tags);
                 const newDoc = await this.documentSender(doc, event?.user?.userId);
                 newDocs.push(newDoc);
             }
             event.data.data = newDocs;
         } else {
+            PolicyUtils.setDocumentTags(docs, tags);
             event.data.data = await this.documentSender(docs, event?.user?.userId);
         }
 
@@ -644,14 +648,17 @@ export class SendToGuardianBlock {
             await this.updateVersion(olds, event?.user?.userId);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+        // event.actionStatus.saveResult(event.data);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             type: (ref.options.dataSource || ref.options.dataType),
             documents: ExternalDocuments(event.data?.data),
         }));
 
         ref.backup();
+
+        return event.data;
     }
 }

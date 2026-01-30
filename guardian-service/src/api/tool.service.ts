@@ -1,12 +1,13 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, Hashing, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, NewNotifier, PinoLogger, Policy, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
-import { IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyEvents, PolicyStatus, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
-import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import * as crypto from 'crypto';
 import { FilterObject } from '@mikro-orm/core';
 import { deleteSchema, findAndDryRunSchema, importToolByFile, importToolByMessage, importToolErrors, PolicyImportExportHelper, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
+import { escapeRegExp } from './helpers/api-helper.js';
+import { GuardiansService } from '../helpers/guardians.js';
 
 /**
  * Sha256
@@ -175,10 +176,9 @@ export async function validateAndPublish(
  * @param tool
  */
 export async function validateTool(tool: PolicyTool): Promise<ISerializedErrors> {
-    const toolValidator = new ToolValidator(tool.config);
-    await toolValidator.build(tool);
-    await toolValidator.validate();
-    return toolValidator.getSerializedErrors();
+    const result = await (new GuardiansService())
+        .sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_TOOL, 60 * 1000, { tool });
+    return result;
 }
 
 /**
@@ -202,6 +202,7 @@ export async function publishTool(
         const STEP_PUBLISH_SCHEMAS = 'Publish schemas';
         const STEP_CREATE_TAGS_TOPIC = 'Create tags topic';
         const STEP_GENERATE_FILE = 'Generate file';
+        const STEP_SAVE_FILE_IN_DB = 'Save file in database';
         const STEP_PUBLISH_TOOL = 'Publish tool';
         const STEP_PUBLISH_TAGS = 'Publish tags';
         const STEP_SAVE = 'Save';
@@ -212,6 +213,7 @@ export async function publishTool(
         notifier.addStep(STEP_PUBLISH_SCHEMAS);
         notifier.addStep(STEP_CREATE_TAGS_TOPIC);
         notifier.addStep(STEP_GENERATE_FILE);
+        notifier.addStep(STEP_SAVE_FILE_IN_DB);
         notifier.addStep(STEP_PUBLISH_TOOL);
         notifier.addStep(STEP_PUBLISH_TAGS);
         notifier.addStep(STEP_SAVE);
@@ -268,10 +270,15 @@ export async function publishTool(
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3
-            }
+            },
+            platform: 'UNIX',
         });
         tool.hash = sha256(buffer);
         notifier.completeStep(STEP_GENERATE_FILE);
+
+        notifier.startStep(STEP_SAVE_FILE_IN_DB);
+        tool.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
+        notifier.completeStep(STEP_SAVE_FILE_IN_DB);
 
         notifier.startStep(STEP_PUBLISH_TOOL);
         const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
@@ -545,7 +552,8 @@ export async function dryRunTool(
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3
-            }
+            },
+            platform: 'UNIX',
         });
         tool.hash = sha256(buffer);
 
@@ -580,6 +588,7 @@ export async function dryRunTool(
         tool.status = ModuleStatus.DRY_RUN;
         tool.messageId = result.getId();
         tool.version = version;
+        tool.tagsTopicId = null;
         const retVal = await DatabaseServer.updateTool(tool);
 
         await logger.info('Dry-run mode for tool enabled', ['GUARDIAN_SERVICE'], user.id);
@@ -732,7 +741,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid load tools parameter');
                 }
                 const { fields, filters, owner } = msg;
-                const { pageIndex, pageSize, search } = filters;
+                const { pageIndex, pageSize, search, tag } = filters;
 
                 const otherOptions: any = { fields };
 
@@ -748,7 +757,18 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 if (search) {
-                    filter.name = { $regex: `.*${search.trim()}.*`, $options: 'i' };
+                    const sanitizedSearch = escapeRegExp(search.trim());
+                    filter.name = { $regex: `.*${sanitizedSearch}.*`, $options: 'i' };
+                }
+
+                if (tag) {
+                    const filterTags: any = {
+                        name: tag,
+                        entity: TagType.Tool
+                    }
+                    const tags = await DatabaseServer.getTags(filterTags);
+                    const toolTagIds = tags.map((t) => t.localTarget);
+                    filter.id = { $in: toolTagIds };
                 }
 
                 const _pageSize = parseInt(pageSize, 10);
@@ -940,6 +960,13 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Invalid tool');
                 }
 
+                if (item.status === ModuleStatus.PUBLISHED && item.contentFileId) {
+                    const buffer = await DatabaseServer.loadFile(item.contentFileId);
+                    const arrayBuffer = Uint8Array.from(buffer).buffer
+
+                    return new BinaryMessageResponse(arrayBuffer);
+                }
+
                 await updateToolConfig(item);
                 const zip = await ToolImportExport.generate(item);
                 const file = await zip.generateAsync({
@@ -948,6 +975,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     compressionOptions: {
                         level: 3,
                     },
+                    platform: 'UNIX'
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {
@@ -1258,7 +1286,10 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 model.status = ModuleStatus.DRAFT;
-                model.version = '';
+                model.version = null;
+                model.hash = null;
+                model.messageId = null;
+                model.tagsTopicId = null;
 
                 await DatabaseServer.updateTool(model);
 

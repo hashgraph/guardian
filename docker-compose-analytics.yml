@@ -1,7 +1,8 @@
-# https://docs.docker.com/compose/environment-variables/envvars-precedence/
-# Environment leverage the gerarchy defined in the docker compose between "env_file" and "environment" attributes
-# ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
-# specific service variables defined by "environment" can override what is defined in the ecosystem file
+# This file is linted and formatted using Docker Compose Linter (https://github.com/zavoloklom/docker-compose-linter):
+# npx dclint . --fix=true
+
+# Please note variables defined in the "environment" section will override the same variables defined in the "env_file"
+# See # https://docs.docker.com/compose/environment-variables/envvars-precedence/ for more details
 
 # YAML anchor that contains common configuration elements for our services
 x-service-template: &service-template
@@ -9,89 +10,90 @@ x-service-template: &service-template
   env_file:
     - ./configs/.env.${GUARDIAN_ENV}.guardian.system
   environment:
-    - GUARDIAN_ENV=${GUARDIAN_ENV}
+    GUARDIAN_ENV: ${GUARDIAN_ENV}
+
+name: guardian-analytics
 
 services:
-  mongo:
-    image: mongo:6.0.26
-    command: "--setParameter allowDiskUseByDefault=true"
-    restart: always
-    expose:
-      - 27017
-
-  message-broker:
-    image: nats:2.9.25
-    expose:
-      - 4222
-    ports:
-      - '8222:8222'
-    command: '-c /etc/nats/nats.conf --http_port 8222'
+  analytics-service:
+    image: gcr.io/hedera-registry/analytics-service:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - message-broker
+      - queue-service
     volumes:
-      - ./configs/nats.conf:/etc/nats/nats.conf
+      - ./analytics-service/configs:/usr/local/app/configs:ro
+    ports:
+      - '127.0.0.1:3000:3020'
+    <<: *service-template
+    expose:
+      - '6555'
+
+  auth-service:
+    image: gcr.io/hedera-registry/auth-service:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - logger-service
+      - message-broker
+      - mongo
+    volumes:
+      - ./auth-service/tls:/usr/local/app/tls:ro
+      - ./auth-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
+      - '5005'
 
   logger-service:
-    <<: *service-template
     image: gcr.io/hedera-registry/logger-service:${GUARDIAN_VERSION:-latest}
     depends_on:
       - message-broker
     volumes:
       - ./logger-service/configs:/usr/local/app/configs:ro
-
-  auth-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/auth-service:${GUARDIAN_VERSION:-latest}
+
+  message-broker:
+    image: nats:2.9.25
     volumes:
-      - ./auth-service/tls:/usr/local/app/tls:ro
-      - ./auth-service/configs:/usr/local/app/configs:ro
-    depends_on:
-      - mongo
-      - message-broker
-      - logger-service
+      - ./configs/nats.conf:/etc/nats/nats.conf
+    ports:
+      - '127.0.0.1:8222:8222'
+    command: "-c /etc/nats/nats.conf --http_port 8222"
     expose:
-      - 6555
-      - 5005
+      - '4222'
+    init: true
+
+  mongo:
+    image: mongo:6.0.26
+    command: "--setParameter allowDiskUseByDefault=true"
+    # command: "--setParameter allowDiskUseByDefault=true --quiet --logpath /dev/null" # use this command to reduce log noise
+    restart: always
+    expose:
+      - '27017'
+    init: true
 
   queue-service:
-    <<: *service-template
     image: gcr.io/hedera-registry/queue-service:${GUARDIAN_VERSION:-latest}
     depends_on:
-      - mongo
-      - message-broker
       - logger-service
-    expose:
-      - 6555
+      - message-broker
+      - mongo
     volumes:
       - ./queue-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
 
   worker-service:
-    <<: *service-template
     image: gcr.io/hedera-registry/worker-service:${GUARDIAN_VERSION:-latest}
     depends_on:
-      queue-service:
-        condition: service_started
       auth-service:
         condition: service_started
-    expose:
-      - 6555
+      queue-service:
+        condition: service_started
     volumes:
       - ./worker-service/tls:/usr/local/app/tls:ro
       - ./worker-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
     deploy:
       replicas: 10
-
-  analytics-service:
-    <<: *service-template
-    image: gcr.io/hedera-registry/analytics-service:${GUARDIAN_VERSION:-latest}
-    depends_on:
-      - message-broker
-      - queue-service
     expose:
-      - 6555
-    ports:
-      - "3000:3020"
-    volumes:
-      - ./analytics-service/configs:/usr/local/app/configs:ro
-
-networks:
-  monitoring:
-    driver: bridge
+      - '6555'

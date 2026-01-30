@@ -50,7 +50,6 @@ import {
     NFT,
     SchemaTree,
     Relationships as IRelationships,
-    IPFS_CID_PATTERN,
     Statistic,
     StatisticDetails,
     Label,
@@ -60,7 +59,8 @@ import {
     FormulaDetails,
     FormulaRelationships,
     PolicyActivity,
-    SchemasPackageDetails
+    SchemasPackageDetails,
+    TagType
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -770,6 +770,15 @@ export class EntityService {
                 type: MessageType.INSTANCE_POLICY,
                 action: MessageAction.PublishPolicy,
             } as any)) as Policy;
+
+            const derivationsCount = await em.count(Message, {
+                'options.originalMessageId': messageId,
+                type: MessageType.INSTANCE_POLICY,
+                action: MessageAction.PublishPolicy,
+            } as any);
+
+            item.analytics.derivationsCount = derivationsCount;
+
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
@@ -822,9 +831,15 @@ export class EntityService {
                 return new MessageResponse<PolicyDetails>({
                     id: messageId,
                     row,
-                    activity,
+                    activity
                 });
             }
+
+            const tags = await em.find(Message, {
+                type: MessageType.TAG,
+                'options.entity': TagType.Policy,
+                topicId: item.topicId,
+            } as any);
 
             return new MessageResponse<PolicyDetails>({
                 id: messageId,
@@ -832,6 +847,7 @@ export class EntityService {
                 item,
                 row,
                 activity,
+                tags
             });
         } catch (error) {
             return new MessageError(error, getErrorCode(error.code));
@@ -1098,6 +1114,12 @@ export class EntityService {
                 });
             }
 
+            const tags = await em.find(Message, {
+                type: MessageType.TAG,
+                'options.entity': TagType.Schema,
+                topicId: item.topicId,
+            } as any);
+
             item = await loadDocuments(item, true);
 
             return new MessageResponse<SchemaDetails>({
@@ -1106,6 +1128,7 @@ export class EntityService {
                 item,
                 row,
                 activity,
+                tags
             });
         } catch (error) {
             return new MessageError(error, getErrorCode(error.code));
@@ -1187,7 +1210,6 @@ export class EntityService {
         }
     }
 
-
     @MessagePattern(IndexerMessageAPI.GET_SCHEMAS_PACKAGE)
     async getSchemasPackage(
         @Payload() msg: { messageId: string }
@@ -1213,7 +1235,6 @@ export class EntityService {
                 type: MessageType.SCHEMA,
                 'options.packageMessageId': row.consensusTimestamp,
             } as any);
-
 
             const activity: any = {
                 schemas,
@@ -1258,7 +1279,7 @@ export class EntityService {
                     topicId,
                 } as any, {
                     ...options,
-                    fields: ["options"],
+                    fields: ['options'],
                 });
 
                 filters.tokenId = {
@@ -1957,6 +1978,12 @@ export class EntityService {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
             filters.type = MessageType.VC_DOCUMENT;
+            filters.$or = [
+                { 'options.initId': { $exists: false } },
+                { 'options.initId': null },
+                { 'options.initId': undefined },
+                { 'options.initId': '' },
+            ];
             const em = DataBaseHelper.getEntityManager();
             const [rows, count] = (await em.findAndCount(
                 Message,
@@ -1997,10 +2024,27 @@ export class EntityService {
                 consensusTimestamp: messageId,
             });
 
+            const versions = await em.find(Message, {
+                type: MessageType.VC_DOCUMENT,
+                $or: [
+                    { consensusTimestamp: messageId },
+                    { 'options.initId': messageId }
+                ]
+            } as any, {
+                orderBy: {
+                    consensusTimestamp: 'DESC'
+                }
+            });
+
+            for (let i = 0; i < versions.length; i++) {
+                versions[i] = await loadDocuments(versions[i], false);
+            }
+
             if (!item) {
                 return new MessageResponse<VCDetails>({
                     id: messageId,
                     row,
+                    versions
                 });
             }
 
@@ -2047,7 +2091,8 @@ export class EntityService {
                 history,
                 row,
                 schema,
-                formulasData
+                formulasData,
+                versions
             });
         } catch (error) {
             return new MessageError(error, getErrorCode(error.code));
@@ -2351,7 +2396,7 @@ export class EntityService {
                 sr: message.analytics.issuer,
             }
 
-            var newRow = { ...row, analytics };
+            const newRow = { ...row, analytics };
 
             return new MessageResponse<NFTDetails>({
                 id: tokenId,
@@ -2468,6 +2513,10 @@ export class EntityService {
                 type: MessageType.CONTRACT,
                 topicId,
             } as any);
+            const tags = await em.find(Message, {
+                type: MessageType.TAG,
+                topicId: row.topicId,
+            } as any);
 
             const activity = {
                 registries,
@@ -2481,7 +2530,7 @@ export class EntityService {
                 dids,
                 vcs,
                 vps,
-                contracts,
+                contracts
             };
 
             if (!item) {
@@ -2489,6 +2538,7 @@ export class EntityService {
                     id: topicId,
                     row,
                     activity,
+                    tags
                 });
             }
             return new MessageResponse<TopicDetails>({
@@ -2497,6 +2547,7 @@ export class EntityService {
                 item,
                 row,
                 activity,
+                tags
             });
         } catch (error) {
             return new MessageError(error, getErrorCode(error.code));

@@ -1,0 +1,17 @@
+.priority-footer {
+    margin-top: 20px;
+    padding: 10px 48px;
+    position: fixed;
+    display: flex;
+    justify-content: end;
+    bottom: 0;
+    height: 60px;
+    width: 100%;
+    background-color: var(--color-grey-white, #fff);
+    border-top: 1px solid #E2E8F0;
+
+    button {
+        height: 40px;
+        border-radius: 8px;
+    }
+}

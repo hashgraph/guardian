@@ -56,6 +56,7 @@ context(" Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
 					}
 				}).then((response) => {
 					expect(response.status).to.eq(STATUS_CODE.OK);
+					expect(response.body.results.isValid).to.eq(true);
 				});
 			})
 		});

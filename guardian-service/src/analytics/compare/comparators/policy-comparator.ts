@@ -90,12 +90,14 @@ export class PolicyComparator {
         const groupsTable = new ReportTable(propColumns);
         const topicsTable = new ReportTable(propColumns);
         const tokensTable = new ReportTable(propColumns);
+        const toolsTable = new ReportTable(propColumns);
 
         const tree = ComparePolicyUtils.compareBlocks(policy1.tree, policy2.tree, this.options);
         const roles = ComparePolicyUtils.compareArray(policy1.roles, policy2.roles, this.options);
         const groups = ComparePolicyUtils.compareArray(policy1.groups, policy2.groups, this.options);
         const topics = ComparePolicyUtils.compareArray(policy1.topics, policy2.topics, this.options);
         const tokens = ComparePolicyUtils.compareArray(policy1.tokens, policy2.tokens, this.options);
+        const tools = ComparePolicyUtils.compareArray(policy1.tools, policy2.tools, this.options);
         const blocks = ComparePolicyUtils.treeToArray(tree, []);
 
         this.treeToTable(tree, treeTable, 1);
@@ -103,13 +105,15 @@ export class PolicyComparator {
         this.ratesToTable(groups, groupsTable);
         this.ratesToTable(topics, topicsTable);
         this.ratesToTable(tokens, tokensTable);
+        this.ratesToTable(tools, toolsTable);
 
         const blockRate = CompareUtils.total(blocks);
         const roleRate = CompareUtils.total(roles);
         const groupRate = CompareUtils.total(groups);
         const topicRate = CompareUtils.total(topics);
         const tokenRate = CompareUtils.total(tokens);
-        const otherRate = CompareUtils.calcTotalRate(roleRate, groupRate, topicRate, tokenRate);
+        const toolsRate = CompareUtils.total(tools);
+        const otherRate = CompareUtils.calcTotalRate(roleRate, groupRate, topicRate, tokenRate, toolsRate);
         const total = CompareUtils.calcTotalRate(otherRate, blockRate);
 
         const result: ICompareResult<any> = {
@@ -135,6 +139,10 @@ export class PolicyComparator {
             tokens: {
                 columns: propColumns,
                 report: tokensTable.object(),
+            },
+            tools: {
+                columns: propColumns,
+                report: toolsTable.object(),
             }
         }
         return result;
@@ -151,6 +159,7 @@ export class PolicyComparator {
         const groupsTable = this.mergePropTables(results.map(r => r.groups));
         const topicsTable = this.mergePropTables(results.map(r => r.topics));
         const tokensTable = this.mergePropTables(results.map(r => r.tokens));
+        const toolTable = this.mergePropTables(results.map(r => r.tools));
         const multiResult: IMultiCompareResult<any> = {
             size: results.length + 1,
             left: results[0].left,
@@ -160,7 +169,8 @@ export class PolicyComparator {
             roles: rolesTable,
             groups: groupsTable,
             topics: topicsTable,
-            tokens: tokensTable
+            tokens: tokensTable,
+            tools: toolTable
         };
         return multiResult;
     }
@@ -479,6 +489,10 @@ export class PolicyComparator {
 
             csv.add('Policy Tokens').addLine();
             CompareUtils.tableToCsv(csv, result.tokens);
+            csv.addLine();
+
+            csv.add('Policy Tools').addLine();
+            CompareUtils.tableToCsv(csv, result.tools);
             csv.addLine();
 
             csv.add('Policy Blocks').addLine();

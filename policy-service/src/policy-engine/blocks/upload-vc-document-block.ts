@@ -10,6 +10,7 @@ import { VcHelper, VcDocumentDefinition as VcDocument } from '@guardian/common';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Request VC document block
@@ -25,7 +26,16 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
         get: true,
         children: ChildrenType.Special,
         control: ControlType.UI,
-
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.RefreshEvent,
+            PolicyInputEventType.RestoreEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ],
+        defaultEvent: true,
         properties: [
             {
                 name: 'uiMetaData',
@@ -93,17 +103,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
                     }
                 ]
             }
-        ],
-        input: [
-            PolicyInputEventType.RunEvent,
-            PolicyInputEventType.RefreshEvent,
-            PolicyInputEventType.RestoreEvent
-        ],
-        output: [
-            PolicyOutputEventType.RunEvent,
-            PolicyOutputEventType.RefreshEvent
-        ],
-        defaultEvent: true
+        ]
     },
     variables: [
         { path: 'options.schema', alias: 'schema', type: 'Schema' }
@@ -159,7 +159,7 @@ export class UploadVcDocumentBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async setData(user: PolicyUser, data: any): Promise<any> {
+    async setData(user: PolicyUser, data: any, _, actionStatus: RecordActionStep): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         if (!user.did) {
@@ -188,7 +188,11 @@ export class UploadVcDocumentBlock {
                     ;
                     const vc = VcDocument.fromJsonTree(document);
 
-                    const doc = PolicyUtils.createVC(ref, user, vc);
+                    const doc = PolicyUtils.createVC(ref, user, vc, actionStatus?.id);
+
+                    const tags = await PolicyUtils.getBlockTags(ref);
+                    PolicyUtils.setDocumentTags(doc, tags);
+
                     doc.type = ref.options.entityType;
                     doc.schema = ref.options.schema;
                     doc.signature = DocumentSignature.VERIFIED;
@@ -201,9 +205,11 @@ export class UploadVcDocumentBlock {
             }
 
             const state: IPolicyEventState = { data: retArray };
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+
+            // actionStatus.saveResult(state);
+            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
                 documents: ExternalDocuments(retArray)
             }));

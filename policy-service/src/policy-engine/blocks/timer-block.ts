@@ -224,7 +224,7 @@ export class TimerBlock {
             }
         }
 
-        ref.triggerEvents<string[]>(PolicyOutputEventType.TimerEvent, null, map);
+        await ref.triggerEvents<string[]>(PolicyOutputEventType.TimerEvent, null, map, null);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickCron, ref, null, null));
         ref.backup();
     }
@@ -246,11 +246,14 @@ export class TimerBlock {
         }
         await ref.saveState();
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+        // event.actionStatus.saveResult(event.data);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
         ref.backup();
+
+        return event.data;
     }
 
     /**

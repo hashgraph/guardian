@@ -2,6 +2,7 @@ import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, 
 import { MathfieldElement } from 'mathlive';
 import { matrixKeyboard } from './keyboards/matrix-keyboard';
 import { mathKeyboard } from './keyboards/math-keyboard';
+import { evaluateKeyboard } from './keyboards/evaluate-keyboard';
 
 @Component({
     selector: 'math-live',
@@ -10,13 +11,19 @@ import { mathKeyboard } from './keyboards/math-keyboard';
 })
 export class MathLiveComponent implements OnInit, OnDestroy {
     @ViewChild('mathLiveContent', { static: true }) mathLiveContent: ElementRef;
+
     @Input('readonly') readonly: boolean = false;
     @Input('value') value!: string;
+    @Input('keyboardContainer') keyboardContainer?: ElementRef;
+    @Input('keyboardType') keyboardType!: string;
+    @Input('menu') menu: boolean = false;
+
     @Output('valueChange') valueChange = new EventEmitter<string>();
     @Output('keyboard') keyboard = new EventEmitter<boolean>();
     @Output('focus') focus = new EventEmitter<MathLiveComponent>();
 
     private readonly mfe: MathfieldElement;
+    private mathVirtualKeyboard: any;
 
     constructor() {
         MathfieldElement.keypressSound = null;
@@ -26,22 +33,45 @@ export class MathLiveComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         const mathVirtualKeyboard: any = window.mathVirtualKeyboard;
-        mathVirtualKeyboard.layouts = [
-            mathKeyboard,
-            matrixKeyboard,
-            "numeric",
-            "symbols",
-            "greek"
-        ];
+        mathVirtualKeyboard.layouts = this.createLayouts();
+        this.mathVirtualKeyboard = mathVirtualKeyboard;
         this.mfe.mathVirtualKeyboardPolicy = "manual";
+        this.mfe.onInlineShortcut = (_mf, s) => {
+            if (/^[a-zA-Z][a-zA-Z0-9]*'?(_[a-zA-Z0-9]+'?)?$/.test(s)) {
+                const m = s.match(/^([a-zA-Z]+)([0-9]+)$/);
+                if (m) {
+                    return `\\mathrm{${m[1]}}_{${m[2]}}`;
+                }
+                return `\\mathrm{${s}}`;
+            }
+            return '';
+        };
         this.mfe.addEventListener("focusin", () => {
+            if (this.readonly) {
+                return;
+            }
+            if (mathVirtualKeyboard && this.keyboardContainer) {
+                mathVirtualKeyboard.container = this.keyboardContainer.nativeElement;
+            } else {
+                mathVirtualKeyboard.container = window.document.body;
+            }
             this.keyboard.emit(true);
             this.focus.emit(this);
+            if (mathVirtualKeyboard.container) {
+                mathVirtualKeyboard.container.classList.toggle('keyboard', true);
+            }
             return mathVirtualKeyboard.show();
         });
         this.mfe.addEventListener("focusout", () => {
+            if (this.readonly) {
+                return;
+            }
+
             this.keyboard.emit(false);
             this.focus.emit(this);
+            if (mathVirtualKeyboard.container) {
+                mathVirtualKeyboard.container.classList.toggle('keyboard', false);
+            }
             return mathVirtualKeyboard.hide();
         });
         this.mfe.addEventListener('input', (ev: any) => {
@@ -64,9 +94,28 @@ export class MathLiveComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.mfe.remove();
+        if (this.mathVirtualKeyboard.container) {
+            this.mathVirtualKeyboard.container.classList.toggle('keyboard', false);
+        }
     }
 
     public getElement(): ElementRef {
         return this.mathLiveContent;
+    }
+
+    private createLayouts() {
+        if (this.keyboardType === 'evaluate') {
+            return [
+                evaluateKeyboard,
+                "numeric"
+            ];
+        }
+        return [
+            mathKeyboard,
+            matrixKeyboard,
+            "numeric",
+            "symbols",
+            "greek"
+        ];
     }
 }

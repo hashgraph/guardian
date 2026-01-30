@@ -1,5 +1,4 @@
 import { ContainerBlock } from '../helpers/decorators/container-block.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ActionCallback } from '../helpers/decorators/index.js';
@@ -15,17 +14,6 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'module',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    about: {
-        label: 'Module',
-        title: `Add 'Module' Block`,
-        post: false,
-        get: true,
-        children: ChildrenType.Any,
-        control: ControlType.UI,
-        input: null,
-        output: null,
-        defaultEvent: false
-    },
     variables: []
 })
 export class ModuleBlock {
@@ -76,13 +64,13 @@ export class ModuleBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         for (const e of this.inputEvents) {
             if (e.name === event.inputType) {
-                ref.triggerEvents(e.name, event.user, event.data);
+                await ref.triggerEvents(e.name, event.user, event.data, event.actionStatus);
                 return;
             }
         }
         for (const e of this.outputEvents) {
             if (e.name === event.inputType) {
-                ref.triggerEvents(e.name, event.user, event.data);
+                await ref.triggerEvents(e.name, event.user, event.data, event.actionStatus);
                 return;
             }
         }

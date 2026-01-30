@@ -1,4 +1,4 @@
-import { ExportMessageDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
+import { BasePolicyDTO, ExportMessageDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
@@ -77,6 +77,14 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Get policies with imported records
+     * @param owner
+     */
+    public async getPoliciesWithImportedRecords<T extends BasePolicyDTO[]>(currentPolicyId: string): Promise<T> {
+        return await this.sendMessage<T>(PolicyEngineEvents.GET_POLICIES_WITH_IMPORTED_RECORDS, { currentPolicyId });
+    }
+
+    /**
      * Get Tokens Map
      * @param owner
      * @param status
@@ -142,6 +150,20 @@ export class PolicyEngine extends NatsService {
         task: NewTask
     ): Promise<NewTask> {
         return await this.sendMessage(PolicyEngineEvents.DELETE_POLICY_ASYNC, { policyId, owner, task });
+    }
+
+    /**
+     * Async delete policy
+     * @param policyId Policy identifier
+     * @param owner User
+     * @param task Task
+     */
+    public async deletePoliciesAsync(
+        policyIds: string[],
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(PolicyEngineEvents.DELETE_POLICIES_ASYNC, { policyIds, owner, task });
     }
 
     /**
@@ -300,9 +322,11 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         blockId: string,
-        data: any
+        data: any,
+        syncEvents = false,
+        history = false,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data });
+        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data, syncEvents, history });
     }
 
     /**
@@ -316,9 +340,11 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         tag: string,
-        data: any
+        data: any,
+        syncEvents = false,
+        history = false,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data });
+        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data, syncEvents, history });
     }
 
     /**
@@ -426,11 +452,12 @@ export class PolicyEngine extends NatsService {
         task: NewTask,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC,
-            { zip, owner, task, versionOfTopicId, metadata, demo }
+            { zip, owner, task, versionOfTopicId, metadata, demo, originalTracking }
         );
     }
 
@@ -447,11 +474,12 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ): Promise<boolean> {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE,
-            { messageId, owner, versionOfTopicId, metadata, demo }
+            { messageId, owner, versionOfTopicId, metadata, demo, originalTracking }
         );
     }
 
@@ -470,11 +498,12 @@ export class PolicyEngine extends NatsService {
         task: NewTask,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        demo?: boolean
+        demo?: boolean,
+        originalTracking?: boolean
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC,
-            { messageId, owner, versionOfTopicId, task, metadata, demo }
+            { messageId, owner, versionOfTopicId, task, metadata, demo, originalTracking }
         );
     }
 
@@ -563,8 +592,8 @@ export class PolicyEngine extends NatsService {
      * Receive external data
      * @param data
      */
-    public async receiveExternalData(data: any) {
-        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, data);
+    public async receiveExternalData(data: any, syncEvents = false, history = false) {
+        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, { data, syncEvents, history });
     }
 
     /**
@@ -573,8 +602,8 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param blockTag
      */
-    public async receiveExternalDataCustom(data: any, policyId: string, blockTag: string): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM, { data, policyId, blockTag });
+    public async receiveExternalDataCustom(data: any, policyId: string, blockTag: string, syncEvents = false, history = false): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM, { data, policyId, blockTag, syncEvents, history });
     }
 
     /**
@@ -1549,5 +1578,33 @@ export class PolicyEngine extends NatsService {
         }
     ): Promise<{ documents: any[], count: number }> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_REPOSITORY_DOCUMENTS, { user, policyId, filters });
+    }
+
+    /**
+     * Create new version policy document
+     * @param user
+     * @param policyId
+     * @param data
+     */
+    public async createNewVersionVcDocument(
+        user: IAuthUser,
+        policyId: string,
+        data: any
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_NEW_VERSION_VC_DOCUMENT, { user, policyId, data });
+    }
+
+    /**
+     * Get all new version policy documents
+     * @param user
+     * @param policyId
+     * @param documentId
+     */
+    public async getAllVersionVcDocuments(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_All_NEW_VERSION_VC_DOCUMENTS, { user, policyId, documentId });
     }
 }

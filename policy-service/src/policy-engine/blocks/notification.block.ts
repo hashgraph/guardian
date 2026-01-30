@@ -134,7 +134,7 @@ import {
                 title: 'Role',
                 type: PropertyType.Select,
                 items: SelectItemType.Roles,
-                visible: 'user === "role"',
+                visible: 'user === "ROLE"',
                 required: true,
             },
             {
@@ -142,7 +142,7 @@ import {
                 label: 'Only for current user group',
                 title: 'Only for current user group',
                 type: PropertyType.Checkbox,
-                visible: 'user === "role"',
+                visible: 'user === "ROLE"',
             },
         ],
     },
@@ -320,17 +320,20 @@ export class NotificationBlock {
             default:
         }
 
-        ref.triggerEvents(
+        await ref.triggerEvents(
             PolicyOutputEventType.RunEvent,
             event.user,
-            event.data
+            event.data,
+            event.actionStatus
         );
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
                 documents: ExternalDocuments(event.data?.data),
             })
         );
         ref.backup();
+
+        return event.data;
     }
 }

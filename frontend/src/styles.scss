@@ -160,6 +160,10 @@ p-table {
     &.small-guardian-tooltip {
         font-size: 12px;
     }
+
+    &.wide-guardian-tooltip {
+        min-width: 400px;
+    }
 }
 
 button.mat-raised-button,
@@ -705,5 +709,99 @@ svg-icon.svg-icon-32 {
 
     .MLK__keycap {
         border: 1px solid #cbcbcb;
+    }
+}
+
+.dialog-keyboard {
+    .ML__keyboard {
+        position: absolute !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        height: auto !important;
+        width: auto !important;
+
+        .MLK__backdrop {
+            width: 100% !important;
+            margin-left: 0px !important;
+        }
+
+        &::before {
+            display: none;
+        }
+    }
+}
+
+@container (max-width: 768px) {
+    .MLK__rows {
+        .MLK__shift {
+            display: none;
+        }
+
+        .MLK__keycap>.ML__latex {
+            font-size: 13px;
+        }
+    }
+}
+
+@media (max-width: 750px) {
+    .ML__keyboard {
+        .MLK__shift {
+            display: none;
+        }
+
+        .MLK__keycap>.ML__latex {
+            font-size: 13px;
+        }
+    }
+}
+
+@media (max-height: 770px) {
+    .ML__keyboard {
+        .MLK__shift {
+            display: none;
+        }
+
+        .MLK__keycap>.ML__latex {
+            font-size: 13px;
+        }
+    }
+}
+
+.MLK__backdrop {
+    background: #cacfd7 !important;
+
+    .MLK__keycap>.ML__latex {
+        color: #2c2e2f !important;
+    }
+
+    .MLK__keycap {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+        cursor: pointer;
+    }
+
+    .MLK__keycap:hover {
+        background: #f5f5f7 !important;
+    }
+
+    .MLK__toolbar>div>div {
+        color: #2c2e2f !important;
+    }
+
+    .MLK__toolbar>div>div.selected {
+        color: #4169e2 !important;
+    }
+
+    .MLK__rows>.MLK__row .shift,
+    .MLK__rows>.MLK__row .action {
+        color: #060707 !important;
+        background: #a0a9b8 !important;
+    }
+
+    .MLK__rows>.MLK__row .shift:hover,
+    .MLK__rows>.MLK__row .action:hover {
+        background: #7d8795 !important;
     }
 }

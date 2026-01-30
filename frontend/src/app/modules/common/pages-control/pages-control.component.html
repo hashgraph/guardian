@@ -1,0 +1,86 @@
+<div class="guardian-pages-control">
+    <div class="guardian-pages-nav">
+        <div class="guardian-pages-nav-left guardian-icon-button" (click)="onLeft()">
+            <svg-icon
+                class="icon-btn svg-icon"
+                src="/assets/images/icons/collapse-left.svg"
+                svgClass="icon-color-primary"
+                [svgClass]="isFirst ? 'icon-color-disabled' : 'icon-color-primary'">
+            </svg-icon>
+        </div>
+        <div class="guardian-pages-nav-more guardian-icon-button" (click)="onMore($event, menu, itemMenu)">
+            <svg-icon
+                class="icon-btn svg-icon"
+                src="/assets/images/icons/menu-2.svg"
+                svgClass="icon-color-primary">
+            </svg-icon>
+        </div>
+        <div class="guardian-pages-nav-right guardian-icon-button" (click)="onRight()">
+            <svg-icon
+                class="icon-btn svg-icon"
+                src="/assets/images/icons/collapse-right.svg"
+                [svgClass]="isLast ? 'icon-color-disabled' : 'icon-color-primary'">
+            </svg-icon>
+        </div>
+    </div>
+    <div class="guardian-pages-container">
+        <div 
+            class="guardian-pages-item" 
+            *ngFor="let item of items; let i = index" 
+            [attr.selected]="item === current"
+            [attr.hidden]="i < index"
+            (click)="onSelect(item)"
+        >
+            <div class="guardian-pages-item-name">
+                {{item[labelField]}}
+            </div>
+            <div class="guardian-pages-item-icon guardian-icon-button" (click)="onMenu($event, item, itemMenu, menu)">
+                <svg-icon
+                    class="icon-btn svg-icon-16"
+                    src="/assets/images/icons/16/menu-1.svg"
+                    svgClass="icon-color-primary">
+                </svg-icon>
+            </div>
+        </div>
+    </div>
+    <div class="guardian-pages-new guardian-icon-button" (click)="onAdd()">
+        <svg-icon
+            class="icon-btn svg-icon"
+            src="/assets/images/icons/add.svg"
+            svgClass="icon-color-primary">
+        </svg-icon>
+    </div>
+</div>
+
+<p-overlayPanel #menu styleClass="guardian-menu">
+    <div class="menu-items">
+        <div 
+            *ngFor="let item of items" 
+            class="menu-item" 
+            [attr.selected]="item === current" 
+            (click)="onSelect(item, menu)"
+        >
+            <div class="menu-item-name">
+                {{item[labelField]}}
+            </div>
+        </div>
+    </div>
+</p-overlayPanel>
+
+<p-overlayPanel #itemMenu styleClass="guardian-menu">
+    <div class="menu-container" (click)="itemMenu.hide()">
+        <button 
+            *ngFor="let button of menuData"
+            (click)="button.click(button.item)"
+            class="guardian-button {{button.color}}">
+            <div class="guardian-button-icon">
+                <svg-icon 
+                    class="icon-btn svg-icon-16" 
+                    src="/assets/images/icons/16/{{button.icon}}.svg"
+                    [svgClass]="button.iconColor">
+                </svg-icon>
+            </div>
+            <div class="guardian-button-label">{{button.tooltip}}</div>
+        </button>
+    </div>
+</p-overlayPanel>

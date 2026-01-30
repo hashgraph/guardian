@@ -88,7 +88,6 @@ import { SuggestionsService } from './services/suggestions.service';
 import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
 import { QRCodeModule } from 'angularx-qrcode';
 import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
-import { AboutViewComponent } from './views/admin/about-view/about-view.component';
 import { CompareStorage } from './services/compare-storage.service';
 import { ToolsService } from './services/tools.service';
 import { NewHeaderComponent } from './views/new-header/new-header.component';
@@ -138,6 +137,7 @@ import { GeoJsonService } from './services/geo-json.service';
 import { PolicyRepositoryService } from './services/policy-repository.service';
 import { RelayerAccountsService } from './services/relayer-accounts.service';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
+import { TreeTableModule } from 'primeng/treetable'
 
 @NgModule({
     declarations: [
@@ -154,7 +154,6 @@ import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accou
         TrustChainComponent,
         LogsViewComponent,
         SettingsViewComponent,
-        AboutViewComponent,
         AdminHeaderComponent,
         DetailsLogDialog,
         ServiceStatusComponent,
@@ -229,7 +228,9 @@ import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accou
         ProjectComparisonModule,
         DndModule,
         CheckboxModule,
-        AngularSvgIconModule.forRoot()],
+        AngularSvgIconModule.forRoot(),
+        TreeTableModule
+    ],
     providers: [
         WebSocketService,
         AuthService,

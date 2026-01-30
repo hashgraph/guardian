@@ -12,7 +12,8 @@ import {
     TagType,
     TopicType,
     LocationType,
-    PolicyAvailability
+    PolicyAvailability,
+    RecordMethod,
 } from '@guardian/interfaces';
 import {
     DatabaseServer,
@@ -33,7 +34,9 @@ import {
     Users,
     Formula,
     FormulaImportExport,
-    INotificationStep
+    INotificationStep,
+    PolicyRecordMessage,
+    Record,
 } from '@guardian/common';
 import { ImportMode } from '../common/import.interface.js';
 import { ImportFormulaResult, ImportPolicyError, ImportPolicyOptions, ImportPolicyResult, ImportTestResult } from './policy-import.interface.js';
@@ -48,7 +51,7 @@ import { ImportArtifactResult } from '../artifact/artifact-import.interface.js';
 import { importTokensByFiles } from '../token/token-import-helper.js';
 import { importArtifactsByFiles } from '../artifact/artifact-import-helper.js';
 // import { publishSystemSchemas } from '../schema/schema-publish-helper.js';
-import { ObjectId } from '@mikro-orm/mongodb';
+import { FilterObject, ObjectId } from '@mikro-orm/mongodb';
 import { publishSystemSchemasPackage } from '../schema/schema-publish-helper.js';
 
 export class PolicyImport {
@@ -76,6 +79,7 @@ export class PolicyImport {
     private topicId: string;
     private formulasResult: ImportFormulaResult;
     private formulasMapping: Map<string, string>;
+    private importRecords = false;
 
     constructor(mode: ImportMode, notifier: INotificationStep) {
         this.mode = mode;
@@ -222,6 +226,17 @@ export class PolicyImport {
                 topicId: policy.actionsTopicId
             }, null, null);
             await DatabaseServer.saveTopic(actionsTopic.toObject());
+
+            const recordsTopic = new TopicConfig({
+                type: TopicType.RecordsTopic,
+                name: TopicType.RecordsTopic,
+                description: TopicType.RecordsTopic,
+                owner: user.owner,
+                policyId: policy.id,
+                policyUUID: policy.uuid,
+                topicId: policy.recordsTopicId
+            }, null, null);
+            await DatabaseServer.saveTopic(recordsTopic.toObject());
         } else {
             if (versionOfTopicId) {
                 this.topicRow = await TopicConfig.fromObject(
@@ -692,13 +707,18 @@ export class PolicyImport {
             tags,
             tools,
             tests,
-            formulas
+            formulas,
         } = options.policyComponents;
+
+        const copySchemas = schemas.map((schema) => structuredClone(schema));
+
         const user = options.user;
         const versionOfTopicId = options.versionOfTopicId;
         const additionalPolicyConfig = options.additionalPolicyConfig;
         const metadata = options.metadata;
         const logger = options.logger;
+
+        this.importRecords = !!options.importRecords;
 
         // <-- Steps
         const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
@@ -807,6 +827,8 @@ export class PolicyImport {
 
         await this.updateUUIDs(policy);
 
+        policy.autoRecordSteps = this.importRecords;
+
         const row = await this.savePolicy(policy, step.getStep(STEP_SAVE_POLICY));
         await this.saveTopic(row, step.getStep(STEP_SAVE_TOPIC));
         await this.saveArtifacts(row, step.getStep(STEP_SAVE_ARTIFACTS));
@@ -817,10 +839,163 @@ export class PolicyImport {
         step.complete();
 
         await this.importTags(row, tags, this.notifier.getStep(STEP_IMPORT_TAGS));
+        await this.copyPolicyRecords(row, logger, copySchemas);
 
         this.notifier.complete();
 
         const errors = await this.getErrors();
         return { policy: row, errors };
+    }
+
+    private async copyPolicyRecords(policy: Policy, logger: PinoLogger, copySchemas: Schema[]): Promise<void> {
+        if (!this.importRecords) {
+            return;
+        }
+
+        try {
+            const targetPolicyId = policy?.id?.toString?.();
+            if (!targetPolicyId) {
+                return;
+            }
+
+            const sourceRecordsTopicId = policy.recordsTopicId;
+            if (!sourceRecordsTopicId) {
+                await logger.warn(
+                    `copyPolicyRecords: recordsTopicId is not set for policy ${targetPolicyId}`,
+                    ['POLICY_IMPORT'],
+                    null
+                );
+                return;
+            }
+
+            const messages = await MessageServer.getMessages<PolicyRecordMessage>({
+                topicId: sourceRecordsTopicId,
+                userId: null,
+                type: MessageType.PolicyRecordStep,
+                action: MessageAction.PolicyRecordStep
+            });
+
+            if (!messages || !messages.length) {
+                await logger.info(
+                    `copyPolicyRecords: no PolicyRecordStep messages found in topic ${sourceRecordsTopicId}`,
+                    ['POLICY_IMPORT'],
+                    null
+                );
+                return;
+            }
+
+            let startRecotdTime = 0;
+
+            for (const msg of messages) {
+                try {
+                    await MessageServer.loadDocument(msg);
+                } catch (e: any) {
+                    await logger.error(
+                        `copyPolicyRecords: failed to load record zip from IPFS for recordId=${msg.recordId}: ${e?.message || e}`,
+                        ['POLICY_IMPORT'],
+                        null
+                    );
+                    continue;
+                }
+
+                const zipBuffer = msg.getDocument?.() as Buffer | undefined;
+                if (!zipBuffer) {
+                    await logger.warn(
+                        `copyPolicyRecords: empty document for recordId=${msg.recordId}`,
+                        ['POLICY_IMPORT'],
+                        null
+                    );
+                    continue;
+                }
+
+                let parsed: any;
+                try {
+                    parsed = await RecordImportExport.parseZipFile(zipBuffer);
+                } catch (e: any) {
+                    await logger.error(
+                        `copyPolicyRecords: failed to parse record zip for recordId=${msg.recordId}: ${e?.message || e}`,
+                        ['POLICY_IMPORT'],
+                        null
+                    );
+                    continue;
+                }
+
+                const parsedRecords: any[] = Array.isArray(parsed?.records)
+                    ? parsed.records
+                    : parsed?.record
+                        ? [parsed.record]
+                        : [];
+                const parsedResults: any[] = Array.isArray(parsed?.results) ? parsed.results : [];
+
+                if (!parsedRecords.length) {
+                    await logger.warn(
+                        `copyPolicyRecords: no records found inside zip for recordId=${msg.recordId}`,
+                        ['POLICY_IMPORT'],
+                        null
+                    );
+                    continue;
+                }
+
+                for (const recordFromZip of parsedRecords) {
+                    if (!startRecotdTime) {
+                        startRecotdTime = (Number(msg.time) || Date.now()) - 3000;
+                    }
+                    const clonedRecord = {
+                        uuid: GenerateUUIDv4(),
+                        policyId: targetPolicyId,
+                        method: recordFromZip.method || msg.method,
+                        action: recordFromZip.action || msg.actionName,
+                        time: msg.time,
+                        user: recordFromZip.user || msg.user,
+                        target: recordFromZip.target || msg.target,
+                        document: recordFromZip.document ?? null,
+                        results: parsedResults.length ? parsedResults : null,
+                        userRole: recordFromZip.userRole || null,
+                        importedFrom: 'ipfs',
+                        copiedRecordId: msg.recordId,
+                        recordActionId: msg.recordActionId
+                    } as FilterObject<Record>;
+
+                    await DatabaseServer.createRecord(clonedRecord);
+                }
+            }
+
+            const startRecord = {
+                uuid: GenerateUUIDv4(),
+                policyId: targetPolicyId,
+                method: RecordMethod.Start,
+                action: null,
+                time: startRecotdTime || Date.now(),
+                user: policy.owner,
+                target: null,
+                document: null,
+                importedFrom: 'ipfs',
+                results: copySchemas.map((schema) => {
+                    let id: string;
+
+                    if (schema.contextURL) {
+                        id = schema.contextURL + schema.iri;
+                    } else if (schema.iri) {
+                        id = schema.iri;
+                    } else {
+                        id = schema.uuid;
+                    }
+
+                    return {
+                        id,
+                        type: 'schema',
+                        document: schema.document
+                    }
+                }),
+            } as FilterObject<Record>;
+            await DatabaseServer.createRecord(startRecord);
+        } catch (error: any) {
+            await logger.error(
+                `Failed to copy policy records from Hedera/IPFS: ${error?.message || error}`,
+                ['POLICY_IMPORT'],
+                null
+            );
+            throw error;
+        }
     }
 }

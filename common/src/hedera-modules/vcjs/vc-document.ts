@@ -1,4 +1,4 @@
-import { Timestamp } from '@hashgraph/sdk';
+import { Timestamp } from '@hiero-ledger/sdk';
 import { Hashing } from '../hashing.js';
 import { TimestampUtils } from '../timestamp-utils.js';
 import { IVC, SignatureType } from '@guardian/interfaces';
@@ -59,6 +59,10 @@ export class VcDocument {
      */
     public static readonly EVIDENCE = 'evidence';
     /**
+     * Tags
+     */
+    public static readonly TAGS = 'tags';
+    /**
      * ID
      * @protected
      */
@@ -98,6 +102,16 @@ export class VcDocument {
      * @protected
      */
     protected evidences: any[];
+    /**
+     * InitId
+     * @protected
+     */
+    protected initId: string;
+    /**
+     * Tags
+     * @protected
+     */
+    protected tags: any[];
 
     /**
      * Constructor
@@ -190,6 +204,23 @@ export class VcDocument {
     }
 
     /**
+     * Get initId
+     */
+    public getInitId(): string {
+        if (this.initId) {
+            return this.initId;
+        }
+        return null;
+    }
+
+    /**
+     * Set initId
+     */
+    public setInitId(initId: string) {
+        this.initId = initId;
+    }
+
+    /**
      * Get issuance date
      */
     public getIssuanceDate(): Timestamp {
@@ -274,6 +305,41 @@ export class VcDocument {
      */
     public setProof(proof: any): void {
         this.proof = proof;
+    }
+
+    /**
+     * Get tags
+     */
+    public getTags(): any {
+        return this.tags;
+    }
+
+    /**
+     * Set tags
+     * @param tags
+     */
+    public setTags(tags: any): void {
+        this.tags = tags;
+    }
+
+    /**
+     * Add tags
+     * @param tags
+     */
+    public addTags(tags: any): void {
+        if (!tags || tags.length <= 0) {
+            return;
+        }
+        this.tags = this.tags || [];
+        for (const tag of tags) {
+            if (!tag.inheritTags) {
+                continue;
+            }
+            if (this.tags.some(item => item.messageId === tag.messageId)) {
+                continue;
+            }
+            this.tags.push(tag);
+        }
     }
 
     /**
@@ -364,6 +430,10 @@ export class VcDocument {
             rootObject[VcDocument.PROOF] = this.proof;
         }
 
+        if (this.tags) {
+            rootObject[VcDocument.TAGS] = this.tags;
+        }
+
         return rootObject;
     }
 
@@ -443,6 +513,10 @@ export class VcDocument {
 
         if (json[VcDocument.PROOF]) {
             result.proof = json[VcDocument.PROOF];
+        }
+
+        if (json[VcDocument.TAGS]) {
+            result.tags = json[VcDocument.TAGS];
         }
 
         return result;

@@ -10,7 +10,7 @@ import { BlockActionError } from '../errors/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
-
+import { RecordActionStep } from '../record-action-step.js';
 /**
  * Information block
  */
@@ -143,7 +143,7 @@ export class TokenConfirmationBlock {
 
     async remoteSetData(user: PolicyUser, data: {
         action: 'confirm' | 'skip'
-    }) {
+    }, actionStatus: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`setData`);
 
@@ -156,8 +156,8 @@ export class TokenConfirmationBlock {
             throw new BlockActionError(`Document not found`, ref.blockType, ref.uuid)
         }
 
-        ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data);
+        await ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, blockState.user, {
             userAction: data.action,
             action: ref.options.action
@@ -175,17 +175,18 @@ export class TokenConfirmationBlock {
             action: 'confirm' | 'skip',
             hederaAccountKey: string
         },
-        type?: ActionType
+        type?: ActionType,
+        actionStatus?: RecordActionStep
     ) {
         if (type === ActionType.REMOTE) {
-            await this.remoteSetData(user, data);
+            await this.remoteSetData(user, data, actionStatus);
             return true;
         } else if (type === ActionType.LOCAL) {
             const _data = await this.localSetData(user, data);
             return _data;
         } else {
             const _data = await this.localSetData(user, data);
-            await this.remoteSetData(user, _data);
+            await this.remoteSetData(user, _data, actionStatus);
             return true;
         }
     }
@@ -287,5 +288,7 @@ export class TokenConfirmationBlock {
         }
 
         ref.backup();
+
+        return event.data;
     }
 }

@@ -261,6 +261,15 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Async delete tokens
+     * @param tokenId
+     * @param task
+     */
+    public async deleteTokensAsync(tokenIds: string[], owner: IOwner, task: NewTask): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.DELETE_TOKENS_ASYNC, { tokenIds, owner, task });
+    }
+
+    /**
      * Freeze token
      * @param tokenId
      * @param username
@@ -677,8 +686,8 @@ export class Guardians extends NatsService {
      * @param id Schema identifier
      * @returns Schemas
      */
-    public async getSchemaDeletionPreview(id: string, topicId: string, owner: IOwner): Promise<ISchemaDeletionPreview> {
-        return await this.sendMessage(MessageAPI.GET_SCHEMA_DELETION_PREVIEW, { id, topicId, owner });
+    public async getSchemaDeletionPreview(schemaIds: string[], owner: IOwner): Promise<ISchemaDeletionPreview> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_DELETION_PREVIEW, { schemaIds, owner });
     }
 
     /**
@@ -870,19 +879,30 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async deleteSchema(id: string, owner: IOwner, needResult = false, includeChildren = false): Promise<ISchema[] | boolean> {
-        return await this.sendMessage(MessageAPI.DELETE_SCHEMA, { id, owner, needResult, includeChildren });
+    public async deleteSchema(schemaId: string, owner: IOwner, task: NewTask, includeChildren = false): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMAS, { schemaIds: [schemaId], owner, task, includeChildren });
     }
 
     /**
-     * Deleting a schema.
+     * Deleting a schemas by topic.
      *
      * @param {string} topicId - topic id
      *
      * @returns {any}
      */
-    public async deleteSchemas(topicId: string, owner: IOwner): Promise<ISchema[] | boolean> {
-        return await this.sendMessage(MessageAPI.DELETE_SCHEMAS, { topicId, owner });
+    public async deleteSchemasByTopic(topicId: string, owner: IOwner): Promise<ISchema[] | boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMAS_BY_TOPIC, { topicId, owner });
+    }
+
+    /**
+     * Deleting a schema.
+     *
+     * @param {string[]} schemaIds - schema id
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async deleteSchemasByIds(schemaIds: string[], owner: IOwner, task: NewTask, includeChildren = false): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMAS, { schemaIds, owner, task, includeChildren });
     }
 
     /**
@@ -1306,6 +1326,38 @@ export class Guardians extends NatsService {
             user,
             type,
             policies,
+            options: {
+                propLvl,
+                childrenLvl,
+                eventsLvl,
+                idLvl
+            }
+        });
+    }
+
+    /**
+     * Compare policy with origincal version
+     * @param user
+     * @param type
+     * @param ids
+     * @param eventsLvl
+     * @param propLvl
+     * @param childrenLvl
+     * @param idLvl
+     */
+    public async compareOriginalPolicies(
+        user: IOwner,
+        type: string,
+        policyId: string,
+        eventsLvl: string | number,
+        propLvl: string | number,
+        childrenLvl: string | number,
+        idLvl: string | number
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.COMPARE_ORIGINAL_POLICIES, {
+            user,
+            type,
+            policyId,
             options: {
                 propLvl,
                 childrenLvl,
@@ -2379,8 +2431,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async getTags(owner: IOwner, entity: string, targets: string[]): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.GET_TAGS, { owner, entity, targets });
+    public async getTags(owner: IOwner, entity: string, targets: string[], linkedItems?: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_TAGS, { owner, entity, targets, linkedItems });
     }
 
     /**
@@ -2399,8 +2451,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async exportTags(owner: IOwner, entity: string, targets: string[]): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.EXPORT_TAGS, { owner, entity, targets });
+    public async exportTags(owner: IOwner, entity: string, targets: string[], linkedItems?: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.EXPORT_TAGS, { owner, entity, targets, linkedItems });
     }
 
     /**
@@ -2409,8 +2461,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async getTagCache(owner: IOwner, entity: string, targets: string[]): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.GET_TAG_CACHE, { owner, entity, targets });
+    public async getTagCache(owner: IOwner, entity: string, targets: string[], linkedItems?: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_TAG_CACHE, { owner, entity, targets, linkedItems });
     }
 
     /**
@@ -2419,8 +2471,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async synchronizationTags(owner: IOwner, entity: string, target: string): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { owner, entity, target });
+    public async synchronizationTags(owner: IOwner, entity: string, target: string, linkedItems?: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { owner, entity, target, linkedItems });
     }
 
     /**

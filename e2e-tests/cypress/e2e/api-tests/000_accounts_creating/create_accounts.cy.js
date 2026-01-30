@@ -12,67 +12,43 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
 
     let SRDid;
 
-    it("Verify that default users exist", () => {
-        let SRExist, SR2Exist, UserExist, SR3Exist;
+
+    it('Verify that default users exist', () => {
+        const defaults = [
+            { username: SRUsername, role: 'STANDARD_REGISTRY' },
+            { username: SR2Username, role: 'STANDARD_REGISTRY' },
+            { username: Installer, role: 'STANDARD_REGISTRY' },
+            { username: userUsername, role: 'USER' },
+        ];
+
+        const registerUser = (username, role) => {
+            return cy.request({
+                method: METHOD.POST,
+                url: `${API.ApiServer}${API.AccountRegister}`,
+                body: {
+                    username,
+                    password,
+                    password_confirmation: password,
+                    role,
+                }
+            });
+        };
+
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.RegUsers,
-        }).then((response) => {
-            response.body.forEach(element => {
-                if (element.username == SRUsername)
-                    SRExist = true;
-                else if (element.username == SR2Username)
-                    SR2Exist = true;
-                else if (element.username == Installer)
-                    SR3Exist = true;
-                else if (element.username == userUsername)
-                    UserExist = true;
-            })
-            if (!SRExist)
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.AccountRegister,
-                    body: {
-                        username: SRUsername,
-                        password: password,
-                        password_confirmation: password,
-                        role: 'STANDARD_REGISTRY'
+            url: `${API.ApiServer}${API.RegUsers}`
+        })
+            .its('body')
+            .then((users) => {
+                const existingUsernames = new Set(users.map((u) => u.username));
+
+                // Iterate through each default and register if missing
+                defaults.forEach(({ username, role }) => {
+                    if (!existingUsernames.has(username)) {
+                        registerUser(username, role);
                     }
-                })
-            if (!SR2Exist)
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.AccountRegister,
-                    body: {
-                        username: SR2Username,
-                        password: password,
-                        password_confirmation: password,
-                        role: 'STANDARD_REGISTRY'
-                    }
-                })
-            if (!SR3Exist)
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.AccountRegister,
-                    body: {
-                        username: Installer,
-                        password: password,
-                        password_confirmation: password,
-                        role: 'STANDARD_REGISTRY'
-                    }
-                })
-            if (!UserExist)
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.AccountRegister,
-                    body: {
-                        username: userUsername,
-                        password: password,
-                        password_confirmation: password,
-                        role: 'USER'
-                    }
-                })
-        });
+                });
+            });
     });
 
     //If SR doesn't have hedera credentials, creating them

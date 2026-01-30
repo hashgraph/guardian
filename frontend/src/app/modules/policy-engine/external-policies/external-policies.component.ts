@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ExternalPolicyStatus, UserPermissions } from '@guardian/interfaces';
+import { ExternalPolicyStatus, UserPermissions, UserRole } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -23,7 +23,7 @@ interface IColumn {
     styleUrls: ['./external-policies.component.scss'],
 })
 export class ExternalPolicyComponent implements OnInit {
-    public readonly title: string = 'Remote Policy';
+    public title: string = 'Remote Policy Request';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;

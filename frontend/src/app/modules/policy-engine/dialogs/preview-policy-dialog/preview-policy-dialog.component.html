@@ -12,6 +12,17 @@
     </div>
 
     <div *ngIf="policy">
+        <div class="field-container" *ngIf="canImportRecords">
+            <div class="field-value checkbox-field">
+                <p-checkbox
+                    [(ngModel)]="importRecords"
+                    inputId="import-records"
+                    binary="true"
+                    tabindex="-1"
+                ></p-checkbox>
+                <label for="import-records">Import existing records for this policy</label>
+            </div>
+        </div>
         <div class="group-container">
             <div class="group-header">Import mode</div>
             <div class="field-container">
@@ -289,27 +300,41 @@
     </div>
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="dialog-button cancel-button">
-            <button
-                (click)="onClose()"
-                class="guardian-button guardian-button-secondary">Close</button>
+    <div class="actions">
+        <div class="original-tracking">
+            <p-checkbox
+                class="guardian-checkbox"
+                [(ngModel)]="originalTracking"
+                binary="true"
+                inputId="originalTracking"
+            >
+            </p-checkbox>
+            <label for="originalTracking">
+                Show if the original policy will be modified
+            </label>
         </div>
-        <div class="dialog-button" [ngSwitch]="!!(xlsx && errors?.length)">
-            <button
-                *ngSwitchCase="true"
-                style="min-width: 120px"
-                (click)="onImport()"
-                class="guardian-button guardian-button-primary">Skip & Import</button>
-            <button
-                *ngSwitchCase="false"
-                pTooltip="This policy references inaccessible Tools. Please provide replacements."
-                [tooltipOptions]="{showDelay: 300}"
-                tooltipPosition="top"
-                [tooltipDisabled]="!inValid"
-                [disabled]="inValid"
-                (click)="onImport()"
-                class="guardian-button guardian-button-primary">Import</button>
+        <div class="action-buttons">
+            <div class="dialog-button cancel-button">
+                <button
+                    (click)="onClose()"
+                    class="guardian-button guardian-button-secondary">Close</button>
+            </div>
+            <div class="dialog-button" [ngSwitch]="!!(xlsx && errors?.length)">
+                <button
+                    *ngSwitchCase="true"
+                    style="min-width: 120px"
+                    (click)="onImport()"
+                    class="guardian-button guardian-button-primary">Skip & Import</button>
+                <button
+                    *ngSwitchCase="false"
+                    pTooltip="This policy references inaccessible Tools. Please provide replacements."
+                    [tooltipOptions]="{showDelay: 300}"
+                    tooltipPosition="top"
+                    [tooltipDisabled]="!inValid"
+                    [disabled]="inValid"
+                    (click)="onImport()"
+                    class="guardian-button guardian-button-primary">Import</button>
+            </div>
         </div>
     </div>
 </div>

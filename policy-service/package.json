@@ -15,13 +15,14 @@
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "3.4.1",
-        "@guardian/interfaces": "3.4.1",
+        "@guardian/common": "3.5.0-rc",
+        "@guardian/interfaces": "3.5.0-rc",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
+        "@cortex-js/compute-engine": "^0.27.0",
         "cron": "^4.3.0",
         "deep-equal": "^2.0.5",
         "dotenv": "^16.0.0",
@@ -77,5 +78,5 @@
         "test:stability": "mocha tests/stability.test.js"
     },
     "type": "module",
-    "version": "3.4.1"
+    "version": "3.5.0-rc"
 }

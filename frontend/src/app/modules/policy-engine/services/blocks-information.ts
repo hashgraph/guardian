@@ -57,6 +57,9 @@ import { IntegrationButtonBlockComponent } from '../policy-viewer/blocks/integra
 import { HttpRequestUIAddonCode } from '../policy-viewer/code/http-request-ui-addon';
 import { TransformationUIAddonCode } from '../policy-viewer/code/transformation-ui-addon';
 import { WipeConfigComponent } from '../policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
+import { MathConfigComponent } from '../policy-configuration/blocks/calculate/math-config/math-config.component';
+import { GlobalEventsReaderBlockComponent } from '../policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component';
+import { GlobalEventsWriterBlockComponent } from "../policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -85,6 +88,7 @@ const Container: IBlockSetting = {
         { type: BlockType.TimerBlock },
         { type: BlockType.Mint },
         { type: BlockType.Wipe },
+        { type: BlockType.MathBlock },
         { type: BlockType.Calculate },
         { type: BlockType.CustomLogicBlock },
         { type: BlockType.Report },
@@ -104,6 +108,8 @@ const Container: IBlockSetting = {
         { type: BlockType.MessagesReportBlock },
         { type: BlockType.NotificationBlock },
         { type: BlockType.ExtractDataBlock },
+        { type: BlockType.GlobalEventsReaderBlock },
+        { type: BlockType.GlobalEventsWriterBlock }
     ]
 }
 
@@ -134,6 +140,7 @@ const Step: IBlockSetting = {
         { type: BlockType.TimerBlock },
         { type: BlockType.Mint },
         { type: BlockType.Wipe },
+        { type: BlockType.MathBlock },
         { type: BlockType.Calculate },
         { type: BlockType.CustomLogicBlock },
         { type: BlockType.Report },
@@ -153,6 +160,8 @@ const Step: IBlockSetting = {
         { type: BlockType.MessagesReportBlock },
         { type: BlockType.NotificationBlock },
         { type: BlockType.ExtractDataBlock },
+        { type: BlockType.GlobalEventsReaderBlock },
+        { type: BlockType.GlobalEventsWriterBlock }
     ]
 }
 
@@ -469,6 +478,56 @@ const ExternalTopic: IBlockSetting = {
     }]
 }
 
+const GlobalEventsReaderBlock: IBlockSetting = {
+    type: BlockType.GlobalEventsReaderBlock,
+    icon: BlockIcons[BlockType.GlobalEventsReaderBlock],
+    group: BlockGroup.Documents,
+    header: BlockHeaders.UIComponents,
+    factory: GlobalEventsReaderBlockComponent,
+    property: null,
+    code: null,
+    allowedChildren: [{
+        type: BlockType.DocumentValidatorBlock,
+        group: BlockGroup.UnGrouped
+    }],
+    about: {
+        output: (value: any, block: PolicyBlock) => {
+            const result: string[] = Array.isArray(value) ? value.slice() : [];
+
+            const branches = block.properties?.branches;
+            if (Array.isArray(branches)) {
+                for (const b of branches) {
+                    const ev = String(b?.branchEvent || '').trim();
+                    if (!ev) {
+                        continue;
+                    }
+                    if (!result.includes(ev)) {
+                        result.push(ev);
+                    }
+                }
+            }
+
+            return result;
+        }
+    }
+}
+
+const GlobalEventsWriterBlock: IBlockSetting = {
+    type: BlockType.GlobalEventsWriterBlock,
+    icon: BlockIcons[BlockType.GlobalEventsWriterBlock],
+    group: BlockGroup.Documents,
+    header: BlockHeaders.UIComponents,
+    factory: GlobalEventsWriterBlockComponent,
+    property: null,
+    code: null,
+    allowedChildren: [
+        {
+            type: BlockType.DocumentValidatorBlock,
+            group: BlockGroup.UnGrouped
+        }
+    ],
+};
+
 const AggregateDocument: IBlockSetting = {
     type: BlockType.AggregateDocument,
     icon: BlockIcons[BlockType.AggregateDocument],
@@ -698,6 +757,16 @@ const ImpactAddon: IBlockSetting = {
     code: null,
 }
 
+const MathBlock: IBlockSetting = {
+    type: BlockType.MathBlock,
+    icon: BlockIcons[BlockType.MathBlock],
+    group: BlockGroup.Calculate,
+    header: BlockHeaders.ServerBlocks,
+    factory: null,
+    property: MathConfigComponent,
+    code: null
+}
+
 const Calculate: IBlockSetting = {
     type: BlockType.Calculate,
     icon: BlockIcons[BlockType.Calculate],
@@ -852,6 +921,7 @@ export default [
     TokenActionBlock,
     TokenConfirmationBlock,
     ImpactAddon,
+    MathBlock,
     Calculate,
     CustomLogicBlock,
     CalculateMathAddon,
@@ -862,6 +932,8 @@ export default [
     SelectiveAttributes,
     TagManager,
     ExternalTopic,
+    GlobalEventsReaderBlock,
+    GlobalEventsWriterBlock,
     AutoReport,
     NotificationBlock,
     ExtractData,

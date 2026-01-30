@@ -1,4 +1,7 @@
-import { Component, ContentChild, ElementRef, EventEmitter, NgZone, OnInit, Output, Renderer2, TemplateRef, ViewChild } from '@angular/core';
+import {
+    Component, ContentChild, ElementRef, EventEmitter,
+    Input, NgZone, OnInit, Output, Renderer2, TemplateRef, ViewChild
+} from '@angular/core';
 import { SelectType } from './tree-types';
 import { TreeNode } from './tree-node';
 import { Grid } from './tree-grid';
@@ -19,6 +22,8 @@ export class TreeGraphComponent implements OnInit {
     @Output('render') renderEvent = new EventEmitter<any>();
 
     public grid: Grid;
+
+    @Input()
     public width: number = 200;
     public zoom = 1;
     public toolbar = true;

@@ -1,9 +1,9 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleImportExport, ModuleMessage, NewNotifier, PinoLogger, PolicyModule, TagMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
-import { GenerateUUIDv4, IOwner, MessageAPI, ModuleStatus, SchemaCategory, TagType, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, MessageAPI, ModuleStatus, PolicyEvents, SchemaCategory, TagType, TopicType } from '@guardian/interfaces';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
-import { ModuleValidator } from '../policy-engine/block-validators/module-validator.js';
 import { importTag } from '../helpers/import-helpers/index.js';
+import { GuardiansService } from '../helpers/guardians.js';
 
 /**
  * Check and update config file
@@ -144,10 +144,9 @@ export async function validateAndPublish(
  * @param module
  */
 export async function validateModel(module: PolicyModule): Promise<ISerializedErrors> {
-    const moduleValidator = new ModuleValidator(module.config);
-    await moduleValidator.build(module.config);
-    await moduleValidator.validate();
-    return moduleValidator.getSerializedErrors();
+    const result = await (new GuardiansService())
+        .sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_MODULE, 60 * 1000, { module });
+    return result;
 }
 
 /**
@@ -169,6 +168,7 @@ export async function publishModule(
     const STEP_RESOLVE_TOPIC = 'Find topic';
     const STEP_CREATE_TOPIC = 'Create module topic';
     const STEP_GENERATE_FILE = 'Generate file';
+    const STEP_SAVE_FILE_IN_DB = 'Save file in database';
     const STEP_PUBLISH_MODULE = 'Publish module';
     const STEP_LINK_TOPIC = 'Link topic and module';
     const STEP_SAVE = 'Save';
@@ -178,6 +178,7 @@ export async function publishModule(
     notifier.addStep(STEP_RESOLVE_TOPIC);
     notifier.addStep(STEP_CREATE_TOPIC);
     notifier.addStep(STEP_GENERATE_FILE);
+    notifier.addStep(STEP_SAVE_FILE_IN_DB);
     notifier.addStep(STEP_PUBLISH_MODULE);
     notifier.addStep(STEP_LINK_TOPIC);
     notifier.addStep(STEP_SAVE);
@@ -226,9 +227,14 @@ export async function publishModule(
         compression: 'DEFLATE',
         compressionOptions: {
             level: 3
-        }
+        },
+        platform: 'UNIX',
     });
     notifier.completeStep(STEP_GENERATE_FILE);
+
+    notifier.startStep(STEP_SAVE_FILE_IN_DB);
+    model.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
+    notifier.completeStep(STEP_SAVE_FILE_IN_DB);
 
     notifier.startStep(STEP_PUBLISH_MODULE);
     const message = new ModuleMessage(MessageType.Module, MessageAction.PublishModule);
@@ -475,6 +481,13 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Invalid module');
                 }
 
+                if (item.status === ModuleStatus.PUBLISHED && item.contentFileId) {
+                    const buffer = await DatabaseServer.loadFile(item.contentFileId);
+                    const arrayBuffer = Uint8Array.from(buffer).buffer;
+
+                    return new BinaryMessageResponse(arrayBuffer);
+                }
+
                 updateModuleConfig(item);
                 const zip = await ModuleImportExport.generate(item);
                 const file = await zip.generateAsync({
@@ -483,6 +496,7 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                     compressionOptions: {
                         level: 3,
                     },
+                    platform: 'UNIX',
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {

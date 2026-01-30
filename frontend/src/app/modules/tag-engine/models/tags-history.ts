@@ -10,6 +10,7 @@ export class TagsHistory {
     public readonly target: string;
     public readonly owner: string;
     public readonly location: LocationType;
+    public readonly linkedItems: string[];
 
     private _data: TagItem[] | undefined;
     private _items: TagMapItem[];
@@ -21,12 +22,14 @@ export class TagsHistory {
         entity: string,
         target: string,
         owner: string,
-        location: LocationType
+        location: LocationType,
+        linkedItems?: string[],
     ) {
         this.entity = entity;
         this.target = target;
         this.owner = owner;
         this.location = location;
+        this.linkedItems = linkedItems || [];
         this._items = [];
         this._history = [];
     }
@@ -134,6 +137,7 @@ export class TagsHistory {
     public create(tag: any): TagItem {
         tag.entity = this.entity;
         tag.target = this.target;
+        tag.linkedItems = this.linkedItems;
         return tag;
     }
 

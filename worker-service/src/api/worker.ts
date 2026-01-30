@@ -25,7 +25,7 @@ import {
     ContractId,
     PrivateKey,
     TokenId
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import {HederaUtils} from './helpers/utils.js';
 import axios from 'axios';
 import process from 'process';

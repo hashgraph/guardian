@@ -268,8 +268,6 @@ export class HeaderComponent implements OnInit {
                 return this.activeLinkRoot === '/admin/logs';
             case 'SR_STATUS':
                 return this.activeLinkRoot === '/admin/status';
-            case 'SR_ABOUT':
-                return this.activeLinkRoot === '/admin/about';
             case 'USER_TOKENS':
                 return this.activeLink === '/user-profile?tab=tokens';
             case 'USER_RETIRE':
@@ -350,10 +348,6 @@ export class HeaderComponent implements OnInit {
             case 'SR_STATUS':
                 this.router.navigate(['/admin/status']);
                 return true;
-            case 'SR_ABOUT':
-                this.router.navigate(['/admin/about']);
-                return true;
-
             case 'USER_TOKENS':
                 this.router.navigate(['/user-profile'], {
                     queryParams: {tab: 'tokens'}

@@ -14,7 +14,7 @@
         "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*",
         "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\""
     },
-    "version": "3.4.1",
+    "version": "3.5.0-rc",
     "workspaces": [
         "interfaces",
         "common",
@@ -37,6 +37,7 @@
         "indexer-common",
         "indexer-api-gateway",
         "indexer-service",
-        "indexer-worker-service"
+        "indexer-worker-service",
+        "contracts"
     ]
 }

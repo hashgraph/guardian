@@ -3108,6 +3108,94 @@ paths:
       summary: Get indexer availability
       tags:
         - analytics
+  /analytics/compare/policy/original/{messageId}:
+    post:
+      operationId: AnalyticsApi_compareOriginalPolicy
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyFiltersDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparePoliciesDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags:
+        - analytics
+  /analytics/derivations/{messageId}:
+    get:
+      operationId: AnalyticsApi_getDerivations
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: pageIndex
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: pageSize
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: orderField
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: orderDir
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: keywords
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: topicId
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: options.owner
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: analytics.tools
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags:
+        - analytics
   /settings/network:
     get:
       description: Returns Hedera network
@@ -3176,7 +3264,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 3.4.1
+  version: 3.5.0-rc
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -3316,6 +3404,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -3435,6 +3526,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -3629,6 +3721,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -3665,6 +3760,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -3719,12 +3815,17 @@ components:
           type: string
           description: Name
           example: Monitoring Report Document
+        tagsCount:
+          type: number
+          description: Tags count
+          example: 1
       required:
         - id
         - uuid
         - type
         - category
         - name
+        - tagsCount
     RelationshipLinkDTO:
       type: object
       properties:
@@ -3838,6 +3939,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -3957,6 +4061,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -4007,6 +4112,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -4134,6 +4242,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -4360,6 +4469,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -4479,6 +4591,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -4634,6 +4747,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -4753,6 +4869,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -4878,6 +4995,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -4997,6 +5117,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -5115,6 +5236,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -5232,6 +5356,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -5322,6 +5447,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -5454,6 +5582,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -5764,6 +5893,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -5891,6 +6023,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -5992,6 +6125,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -6111,6 +6247,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -6231,6 +6368,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -6350,6 +6490,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -6487,6 +6628,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -6606,6 +6750,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -6710,6 +6855,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -6829,6 +6977,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -6946,6 +7095,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -7063,6 +7215,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -7166,6 +7319,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -7285,6 +7441,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -7420,6 +7577,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -7539,6 +7699,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -7589,6 +7750,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -7716,6 +7880,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -7822,6 +7987,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -7949,6 +8117,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -8247,6 +8416,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -8366,6 +8538,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -8567,6 +8740,9 @@ components:
         statusMessage:
           type: string
           description: Status message
+        statusOwner:
+          type: string
+          description: Status owner
         files:
           description: Files
           example:
@@ -8686,6 +8862,7 @@ components:
         - lang
         - responseType
         - statusMessage
+        - statusOwner
         - files
         - topics
         - tokens
@@ -8949,3 +9126,68 @@ components:
         - tokensCount
         - rate
         - tags
+    PolicyFiltersDTO:
+      type: object
+      properties:
+        idLvl:
+          oneOf:
+            - type: string
+            - type: number
+          enum:
+            - 0
+            - 1
+          example: 0
+        eventsLvl:
+          oneOf:
+            - type: string
+            - type: number
+          enum:
+            - 0
+            - 1
+          example: 0
+        propLvl:
+          oneOf:
+            - type: string
+            - type: number
+          enum:
+            - 0
+            - 1
+            - 2
+          example: 0
+        childrenLvl:
+          oneOf:
+            - type: string
+            - type: number
+          enum:
+            - 0
+            - 1
+            - 2
+          example: 0
+    ComparePoliciesDTO:
+      type: object
+      properties:
+        blocks:
+          type: object
+        groups:
+          type: object
+        left:
+          type: object
+        right:
+          type: object
+        roles:
+          type: object
+        tokens:
+          type: object
+        topics:
+          type: object
+        total:
+          type: object
+      required:
+        - blocks
+        - groups
+        - left
+        - right
+        - roles
+        - tokens
+        - topics
+        - total

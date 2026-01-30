@@ -10,6 +10,8 @@ import { GzipService } from '../../../services/gzip.service';
 import { ITableField } from '@guardian/interfaces';
 
 import {DB_NAME, STORES_NAME} from "../../../constants";
+import { firstValueFrom } from 'rxjs';
+import { IPFSService } from 'src/app/services/ipfs.service';
 
 export interface ITableFieldRequired extends ITableField {
     columnKeys: string[];
@@ -45,7 +47,8 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         private csvService: CsvService,
         private artifactService: ArtifactService,
         private idb: IndexedDbRegistryService,
-        private gzip: GzipService
+        private gzip: GzipService,
+        private ipfsService: IPFSService
     ) {}
 
     private storesReady?: Promise<void>;
@@ -260,7 +263,8 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         }
 
         this.setPreviewLimitMessage();
-        this.hydrated = true;
+        this.hydrateFromFile()
+        // this.hydrated = true;
     }
 
     ngOnDestroy(): void {
@@ -269,7 +273,6 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
     private async loadCsvTextFromIdb(idbKey: string): Promise<string | null> {
         const record: any = await this.idb.get(DB_NAME.TABLES, STORES_NAME.FILES_STORE, idbKey);
-
 
         if (!record || !record.blob) {
             return null;
@@ -298,12 +301,12 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
         const fileId = (table.fileId || '').trim();
         if (fileId) {
-            return await new Promise<string>((resolve, reject) => {
-                this.artifactService.getFile(fileId).subscribe({
-                    next: (csvText: string) => resolve(csvText),
-                    error: (err) => reject(err),
-                });
-            });
+            const resp = await firstValueFrom(this.artifactService.getFileBlob(fileId));
+            const gzBlob: Blob | undefined = resp instanceof Blob ? resp : (resp as any)?.body;
+            if (!gzBlob) {
+                throw new Error('No blob');
+            }
+            return await this.gzip.gunzipToText(gzBlob);
         }
 
         if (table.columnKeys.length && table.rows.length) {
@@ -583,6 +586,9 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         const fileId =
             (tableValue.fileId ?? '').trim();
 
+        const preset = this.item?.preset ? JSON.parse(this.item.preset) : undefined;
+        const cid = (tableValue.cid ?? '').trim() || preset?.cid?.trim();
+
         if (!hasColumns && !hasRows && fileId) {
             const delimiter = this.delimiter;
 
@@ -627,6 +633,8 @@ export class TableFieldComponent implements OnInit, OnDestroy {
                 });
 
             return;
+        } else if (cid) {
+            this.getFileByCid(cid);
         }
 
         this.hydrated = true;
@@ -642,13 +650,14 @@ export class TableFieldComponent implements OnInit, OnDestroy {
                 csvText = await this.loadCsvTextFromIdb(idbKey);
             }
 
-            if (!csvText && (table.fileId || '').trim()) {
-                csvText = await new Promise<string>((resolve, reject) => {
-                    this.artifactService.getFile(table.fileId!).subscribe({
-                        next: text => resolve(text),
-                        error: error => reject(error)
-                    });
-                });
+            const fileId = (table.fileId || '').trim();
+            if (!csvText && fileId) {
+                const resp = await firstValueFrom(this.artifactService.getFileBlob(fileId));
+                const gzBlob: Blob | undefined = resp instanceof Blob ? resp : (resp as any)?.body;
+                if (!gzBlob) {
+                    throw new Error('No blob');
+                }
+                csvText = await this.gzip.gunzipToText(gzBlob);
             }
 
             if (!csvText) {
@@ -674,5 +683,57 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         } catch (error) {
             this.importError = (error as any)?.message || 'Failed to download CSV';
         }
+    }
+
+    getFileByCid(cid:any){
+        this.ipfsService.getFile(cid).subscribe(
+                async (data: ArrayBuffer) => {
+                    try {
+                        const uint8 = new Uint8Array(data);
+                        let csvText: string;
+
+                        if (uint8.length >= 2 && uint8[0] === 0x1F && uint8[1] === 0x8B) {
+                            csvText = await this.gzip.gunzipToText(data);
+                        } else {
+                            const decoder = new TextDecoder('utf-8');
+                            csvText = decoder.decode(uint8);
+                        }
+
+                        const parsed = this.csvService.parseCsvToTable(
+                            csvText,
+                            this.delimiter
+                        );
+
+                        const csvFile = this.buildCsvFile(parsed.columnKeys, parsed.rows);
+                        const gzippedFile = await this.gzip.gzip(csvFile);
+
+                        const currentValue = this.readTable();
+                        const existingIdbKey = (currentValue.idbKey || '').trim();
+                        const idbKey = existingIdbKey || this.generateFreshIdbKey();
+
+                        await this.idb.put(DB_NAME.TABLES, STORES_NAME.FILES_STORE, {
+                            id: idbKey,
+                            blob: gzippedFile,
+                            originalName: csvFile.name,
+                            originalSize: csvFile.size,
+                            gzSize: gzippedFile.size,
+                            delimiter: this.delimiter,
+                            createdAt: Date.now(),
+                        });
+                        
+                        this.writeTable({
+                            columnKeys: parsed.columnKeys,
+                            rows: parsed.rows,
+                            idbKey,
+                            cid,
+                            sizeBytes: csvFile.size,
+                        });
+
+                        this.hydrated = true;
+                    } catch (e) {
+                        console.error('error', e);
+                        this.hydrated = true;
+                    }
+            });
     }
 }

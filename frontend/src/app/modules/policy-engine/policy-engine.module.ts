@@ -131,7 +131,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { TabViewModule } from 'primeng/tabview';
 import { DialogModule } from 'primeng/dialog';
-import { DeletePolicyDialogComponent } from './dialogs/delete-policy-dialog/delete-policy-dialog.component';
+import { DeleteDialogComponent } from './dialogs/delete-dialog/delete-dialog.component';
 import { ProgressTrackerComponent } from './policy-viewer/progress-tracker/progress-tracker.component';
 import { PolicyProgressService } from './services/policy-progress.service';
 import { InputSwitchModule } from 'primeng/inputswitch';
@@ -139,6 +139,7 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { PasswordModule } from 'primeng/password';
+import { DynamicMsalAuthService } from './services/dynamic-msal-auth.service';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
 import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
@@ -166,7 +167,16 @@ import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-c
 import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
+import { GlobalEventsWriterBlockComponent} from "./policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
+import { GlobalEventsReaderBlockComponent } from "./policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component";
+import { GlobalEventsReaderFiltersDialogComponent } from "./policy-viewer/dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component";
+import { AddGlobalEventTopicDialogComponent } from "./policy-viewer/dialogs/add-global-event-topic/add-global-event-topic-dialog.component";
+import { MathConfigComponent } from './policy-configuration/blocks/calculate/math-config/math-config.component';
+import { MathEditorDialogComponent } from './dialogs/math-editor-dialog/math-editor-dialog.component';
+import { FieldLinkDialog } from './dialogs/field-link-dialog/field-link-dialog.component';
 import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
+import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
+import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-dialog.component';
 
 @NgModule({
     declarations: [
@@ -207,6 +217,7 @@ import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialo
         PreviewPolicyDialog,
         ReplaceSchemasDialogComponent,
         ExportPolicyDialog,
+        MathConfigComponent,
         CalculateConfigComponent,
         CalculateMathConfigComponent,
         JsonPropertiesComponent,
@@ -261,7 +272,7 @@ import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialo
         MessagesReportBlockComponent,
         ViewerDialog,
         SearchBlocksComponent,
-        DeletePolicyDialogComponent,
+        DeleteDialogComponent,
         ProgressTrackerComponent,
         RecordControllerComponent,
         RecordResultDialog,
@@ -291,7 +302,15 @@ import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialo
         OnLoadSavepointDialog,
         PolicyRepositoryComponent,
         UserPolicyDialog,
-        ChangeBlockSettingsDialog
+        GlobalEventsReaderBlockComponent,
+        GlobalEventsReaderFiltersDialogComponent,
+        GlobalEventsWriterBlockComponent,
+        AddGlobalEventTopicDialogComponent,
+        MathEditorDialogComponent,
+        FieldLinkDialog,
+        AddDocumentDialog,
+        ChangeBlockSettingsDialog,
+        ApproveUpdateVcDocumentDialogComponent
     ],
     imports: [
         CommonModule,
@@ -336,6 +355,7 @@ import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialo
         WizardService,
         DialogService,
         PolicyProgressService,
+        DynamicMsalAuthService,
         DatePipe,
         {
             provide: CONFIGURATION_ERRORS,

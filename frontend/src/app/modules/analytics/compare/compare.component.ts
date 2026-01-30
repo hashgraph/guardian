@@ -116,7 +116,6 @@ export class CompareComponent implements OnInit {
         this.route.queryParams.subscribe(queryParams => {
             this.loadData();
         });
-        // this.loadData();
     }
 
     loadData() {
@@ -124,22 +123,28 @@ export class CompareComponent implements OnInit {
         this.loading = true;
         this.type = this.route.snapshot.queryParams['type'] || '';
         const config = this.route.snapshot.queryParams['items'] || '';
-        this.parsConfig(config);
+        const policyId = this.route.snapshot.queryParams['policyId'] || '';
 
-        this.result = null;
-
-        if (this.type === ItemType.Policy) {
-            this.loadPolicy();
-        } else if (this.type === ItemType.Schema) {
-            this.loadSchema();
-        } else if (this.type === ItemType.Module) {
-            this.loadModule();
-        } else if (this.type === ItemType.Document) {
-            this.loadDocument();
-        } else if (this.type === ItemType.Tool) {
-            this.loadTool();
+        if(policyId) {
+            this.loadOriginalPolicy(policyId);
         } else {
-            this.loading = false;
+            this.parsConfig(config);
+
+            this.result = null;
+
+            if (this.type === ItemType.Policy) {
+                this.loadPolicy();
+            } else if (this.type === ItemType.Schema) {
+                this.loadSchema();
+            } else if (this.type === ItemType.Module) {
+                this.loadModule();
+            } else if (this.type === ItemType.Document) {
+                this.loadDocument();
+            } else if (this.type === ItemType.Tool) {
+                this.loadTool();
+            } else {
+                this.loading = false;
+            }
         }
     }
 
@@ -227,6 +232,26 @@ export class CompareComponent implements OnInit {
                 this.downloadObjectAsJson(data, 'report');
             }
             this.loading = false;
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
+    }
+    private loadOriginalPolicy(policyId: string) {
+        this.error = null;
+        const options = {
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl,
+            policies: this.getItems()
+        }
+        this.analyticsService.comparePolicyOriginal(policyId, options).subscribe((value) => {
+            this.result = value;
+            this.total = this.result?.total;
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
         }, ({ message }) => {
             this.loading = false;
             console.error(message);

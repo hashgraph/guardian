@@ -17,8 +17,9 @@
     },
     "dependencies": {
         "@formulajs/formulajs": "4.5.4",
-        "@guardian/common": "3.4.1",
-        "@guardian/interfaces": "3.4.1",
+        "@guardian/common": "3.5.0-rc",
+        "@guardian/interfaces": "3.5.0-rc",
+        "@hiero-ledger/proto": "2.25.0",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
         "@nestjs/common": "^11.0.11",
@@ -28,7 +29,7 @@
         "cron": "^4.3.0",
         "dotenv": "^16.0.0",
         "ethers": "^6.7.1",
-        "express": "^4.21.1",
+        "express": "^4.22.0",
         "fs-extra": "^10.0.0",
         "imurmurhash": "^0.1.4",
         "jszip": "^3.7.1",
@@ -78,5 +79,5 @@
         "test:stability": "mocha tests/stability.test.mjs"
     },
     "type": "module",
-    "version": "3.4.1"
+    "version": "3.5.0-rc"
 }

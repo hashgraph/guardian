@@ -16,6 +16,7 @@ import { OverviewFormComponent, OverviewFormField } from '@components/overview-f
 import { ActivityComponent } from '@components/activity/activity.component';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'registry-user-details',
@@ -70,10 +71,11 @@ export class RegistryUserDetailsComponent extends BaseDetailsComponent {
 
     constructor(
         entitiesService: EntitiesService,
+        dialogService: DialogService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(entitiesService, route, router);
+        super(entitiesService, dialogService, route, router);
     }
 
     protected override loadData(): void {

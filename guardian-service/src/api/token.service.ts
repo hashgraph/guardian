@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { ArrayMessageResponse, DatabaseServer, IAuthUser, INotificationStep, KeyType, MessageError, MessageResponse, NewNotifier, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
+import { ArrayMessageResponse, DatabaseServer, IAuthUser, INotificationStep, KeyType, MessageError, MessageResponse, NewNotifier, NotificationStep, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';
 import { publishTokenTags } from '../helpers/import-helpers/index.js'
@@ -879,6 +879,47 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             return new MessageResponse(task);
         });
 
+    ApiResponse(MessageAPI.DELETE_TOKENS_ASYNC,
+        async (msg: {
+            tokenIds: string[],
+            owner: IOwner,
+            task: any
+        }) => {
+            const { tokenIds, owner, task } = msg;
+            const notifier = await NewNotifier.create(task);
+            RunFunctionAsync(async () => {
+                if (!msg) {
+                    throw new Error('Invalid Params');
+                }
+
+                const items = await dataBaseServer.find(Token, { tokenId: { $in: tokenIds }, owner: owner.owner });
+                if (!items || items?.length <= 0) {
+                    throw new Error('Token not found');
+                }
+
+                const stepMap = new Map<string, NotificationStep>();
+                const results = new Map<string, boolean>();
+
+                for (const item of items) {
+                    const STEP_DELETE_TOKEN = 'DELETE TOKEN (' + item.tokenName + ')';
+                    const deleteTokenStep = notifier.addStep(STEP_DELETE_TOKEN);
+                    stepMap.set(item.tokenId, deleteTokenStep);
+                }
+
+                for (const item of items) {
+                    const deleteTokenStep = stepMap.get(item.tokenId);
+                    const result = await deleteToken(item, owner, dataBaseServer, deleteTokenStep);
+                    results.set(item.tokenId, result);
+                }
+
+                notifier.result(results);
+            }, async (error) => {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                notifier.fail(error);
+            });
+            return new MessageResponse(task);
+        });
+
     ApiResponse(MessageAPI.FREEZE_TOKEN,
         async (msg: {
             tokenId: string,
@@ -1099,7 +1140,25 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             pageSize: number
         }) => {
             try {
-                const { owner, did } = msg;
+                const { owner, did, pageIndex, pageSize } = msg;
+
+                const options =
+                    (
+                        typeof pageIndex === 'number' &&
+                        typeof pageSize === 'number'
+                    ) ?
+                        {
+                            orderBy: {
+                                createDate: OrderDirection.DESC,
+                            },
+                            limit: pageSize,
+                            offset: pageIndex * pageSize,
+                        }
+                        : {
+                            orderBy: {
+                                createDate: OrderDirection.DESC,
+                            },
+                        };
 
                 const users = new Users();
                 const user = await users.getUserById(did, owner?.id);
@@ -1119,7 +1178,8 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                             { owner: { $exists: false } },
                             { owner: null },
                         ]
-                    } as FilterObject<Token> : {}
+                    } as FilterObject<Token> : {},
+                    options
                 );
 
                 const workers = new Workers();

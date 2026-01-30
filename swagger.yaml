@@ -343,6 +343,48 @@ paths:
       summary: Compare policies.
       tags:
         - analytics
+  /analytics/compare/policy/original/{policyId}:
+    post:
+      description: >-
+        Compare policies with original state. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: AnalyticsApi_compareOriginalPolicy
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterPoliciesDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparePoliciesDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Compare policies with original state.
+      tags:
+        - analytics
   /analytics/compare/modules:
     post:
       description: >-
@@ -2725,6 +2767,86 @@ paths:
       summary: Sends data from an external source.
       tags:
         - external
+  /external/{policyId}/{blockTag}/sync-events:
+    post:
+      description: Sends data from an external source.
+      operationId: ExternalApi_receiveExternalDataCustomWithSyncEvents
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: blockTag
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: history
+          required: false
+          in: query
+          description: History
+          schema:
+            example: true
+            type: boolean
+      requestBody:
+        required: true
+        description: Object that contains a VC Document.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalDocumentDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDTOWithSyncEvents'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Sends data from an external source.
+      tags:
+        - external
+  /external/sync-events:
+    post:
+      description: Sends data from an external source.
+      operationId: ExternalApi_receiveExternalDataWithSyncEvents
+      parameters:
+        - name: history
+          required: false
+          in: query
+          description: History
+          schema:
+            example: true
+            type: boolean
+      requestBody:
+        required: true
+        description: Object that contains a VC Document.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalDocumentDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDTOWithSyncEvents'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Sends data from an external source.
+      tags:
+        - external
   /ipfs/file:
     post:
       description: Add file from ipfs.
@@ -3767,6 +3889,13 @@ paths:
           required: false
           in: query
           description: Search
+          schema:
+            example: text
+            type: string
+        - name: tag
+          required: false
+          in: query
+          description: Tag
           schema:
             example: text
             type: string
@@ -5117,6 +5246,47 @@ paths:
       summary: Creates a new policy.
       tags:
         - policies
+  /policies/with-imported-records/{policyId}:
+    get:
+      description: Returns all policies with imported records.
+      operationId: PolicyApi_getPoliciesWithImportedRecords
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BasePolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Return a list of all policies with imported records.
+      tags:
+        - policies
   /policies/migrate-data:
     post:
       description: >-
@@ -5308,6 +5478,42 @@ paths:
       security:
         - bearer: []
       summary: Remove policy.
+      tags:
+        - policies
+  /policies/push/delete-multiple:
+    post:
+      description: >-
+        Remove multiple policies by their IDs. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: PolicyApi_deletePoliciesAsync
+      parameters:
+        - name: policyIds
+          required: true
+          in: path
+          description: Policy Ids
+          schema:
+            example:
+              - '000000000000000000000001'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Remove multiple policies.
       tags:
         - policies
   /policies/{policyId}:
@@ -6416,6 +6622,67 @@ paths:
       summary: Sends data to the specified block.
       tags:
         - policies
+  /policies/{policyId}/blocks/{uuid}/sync-events:
+    post:
+      description: Sends data to the specified block.
+      operationId: PolicyApi_setBlockDataWithSyncEvents
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: uuid
+          required: true
+          in: path
+          description: Block Identifier
+          schema:
+            example: 00000000-0000-0000-0000-000000000000
+            type: string
+        - name: history
+          required: false
+          in: query
+          description: History
+          schema:
+            example: true
+            type: boolean
+      requestBody:
+        required: true
+        description: Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDTOWithSyncEvents'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
+      security:
+        - bearer: []
+      summary: Sends data to the specified block.
+      tags:
+        - policies
   /policies/{policyId}/tag/{tagName}/blocks:
     post:
       description: Sends data to the specified block.
@@ -6516,6 +6783,67 @@ paths:
       security:
         - bearer: []
       summary: Requests block data.
+      tags:
+        - policies
+  /policies/{policyId}/tag/{tagName}/blocks/sync-events:
+    post:
+      description: Sends data to the specified block.
+      operationId: PolicyApi_setBlocksByTagNameWithSyncEvents
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: tagName
+          required: true
+          in: path
+          description: Block name (Tag)
+          schema:
+            example: block-tag
+            type: string
+        - name: history
+          required: false
+          in: query
+          description: History
+          schema:
+            example: true
+            type: boolean
+      requestBody:
+        required: true
+        description: Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDTOWithSyncEvents'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
+      security:
+        - bearer: []
+      summary: Sends data to the specified block.
       tags:
         - policies
   /policies/{policyId}/tag/{tagName}:
@@ -6770,6 +7098,13 @@ paths:
           schema:
             example: true
             type: boolean
+        - name: originalTracking
+          required: false
+          in: query
+          description: Save original state of the policy
+          schema:
+            example: true
+            type: boolean
       requestBody:
         required: true
         description: Message.
@@ -6820,6 +7155,13 @@ paths:
           required: false
           in: query
           description: Import policy in demo mode.
+          schema:
+            example: true
+            type: boolean
+        - name: originalTracking
+          required: false
+          in: query
+          description: Save original state of the policy
           schema:
             example: true
             type: boolean
@@ -7059,6 +7401,13 @@ paths:
           schema:
             example: true
             type: boolean
+        - name: originalTracking
+          required: false
+          in: query
+          description: Save original state of the policy
+          schema:
+            example: true
+            type: boolean
       requestBody:
         required: true
         description: A zip file containing policy config.
@@ -7107,6 +7456,13 @@ paths:
           required: false
           in: query
           description: Import policy in demo mode.
+          schema:
+            example: true
+            type: boolean
+        - name: originalTracking
+          required: false
+          in: query
+          description: Save original state of the policy
           schema:
             example: true
             type: boolean
@@ -8348,6 +8704,80 @@ paths:
       summary: Get filtered policies
       tags:
         - policies
+  /policies/{policyId}/create-new-version-vc-document:
+    post:
+      description: Create new version vc document.
+      operationId: PolicyApi_createNewVersionVcDocument
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Create new version vc document.
+      tags:
+        - policies
+  /policies/{policyId}/get-all-version-vc-documents/{documentId}:
+    get:
+      description: Get all version VC documents.
+      operationId: PolicyApi_getAllVersionVcDocuments
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get all version VC documents.
+      tags:
+        - policies
   /schema/{schemaId}:
     get:
       description: >-
@@ -8461,32 +8891,21 @@ paths:
       summary: Returns schema tree.
       tags:
         - schema
-  /schema/{schemaId}/deletionPreview:
+  /schema/{schemaId}/sample-payload:
     get:
-      description: Returns all child schemas.
-      operationId: SingleSchemaApi_getSchemaDeletionPreview
+      description: Returns a sample payload for the schema by schema Id.
+      operationId: SingleSchemaApi_getSampleSchemaPayload
       parameters:
         - name: schemaId
           required: true
           in: path
-          description: Schema identifier
+          description: Schema ID
           schema:
-            type: string
-        - name: topicId
-          required: false
-          in: query
-          description: Policy topic Id
-          schema:
+            example: '000000000000000000000001'
             type: string
       responses:
         '200':
-          description: Schema deletion preview.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SchemaDeletionPreviewDTO'
+          description: Successful operation.
         '401':
           description: Unauthorized.
         '403':
@@ -8499,7 +8918,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Returns all child schemas.
+      summary: Returns a sample payload for the schema by schema Id.
       tags:
         - schema
   /schemas:
@@ -9036,9 +9455,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SchemaDTO'
+                $ref: '#/components/schemas/TaskDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -9707,6 +10124,10 @@ paths:
       responses:
         '200':
           description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -10072,6 +10493,84 @@ paths:
       security:
         - bearer: []
       summary: Deletes all schemas by topic id.
+      tags:
+        - schemas
+  /schemas/deletionPreview:
+    post:
+      description: Returns all child schemas.
+      operationId: SchemaApi_getSchemaDeletionPreview
+      parameters:
+        - name: schemaIds
+          required: true
+          in: path
+          description: Schema Ids
+          schema:
+            example:
+              - '000000000000000000000001'
+      responses:
+        '200':
+          description: Schema deletion preview.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDeletionPreviewDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns all child schemas.
+      tags:
+        - schemas
+  /schemas/delete-multiple:
+    post:
+      description: >-
+        Deletes the schema with the provided schema ID. Only users with the
+        Standard Registry role are allowed to make the request.
+      operationId: SchemaApi_deleteSchemas
+      parameters:
+        - name: includeChildren
+          required: false
+          in: query
+          description: Include child schemas
+          schema:
+            type: boolean
+        - name: schemaIds
+          required: true
+          in: path
+          description: Schema Ids
+          schema:
+            example:
+              - '000000000000000000000001'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Deletes the schema with the provided schema ID.
       tags:
         - schemas
   /settings:
@@ -10441,7 +10940,7 @@ paths:
           content:
             application/json:
               schema:
-                type: boolean
+                $ref: '#/components/schemas/TaskDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -10897,6 +11396,42 @@ paths:
       security:
         - bearer: []
       summary: Deletes the token with the provided schema ID.
+      tags:
+        - tokens
+  /tokens/push/delete-multiple:
+    post:
+      description: >-
+        Delete multiple tokens by their IDs. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: TokensApi_deleteTokensAsync
+      parameters:
+        - name: tokenIds
+          required: true
+          in: path
+          description: Token Ids
+          schema:
+            example:
+              - '000000000000000000000001'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Delete multiple tokens.
       tags:
         - tokens
   /tokens/{tokenId}/associate:
@@ -12779,6 +13314,21 @@ paths:
           description: Policy Id
           schema:
             example: '000000000000000000000001'
+            type: string
+        - name: importRecords
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: syncNewRecords
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: fromPolicyId
+          required: true
+          in: query
+          schema:
             type: string
       requestBody:
         required: true
@@ -17618,7 +18168,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 3.4.1
+  version: 3.5.0-rc
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -17996,6 +18546,8 @@ components:
         version:
           type: string
           example: 1.0.0
+        originalChanged:
+          type: string
         config:
           type: object
           additionalProperties: true
@@ -18203,6 +18755,13 @@ components:
           minimum: 0
           maximum: 100
           example: 0
+        toolMessageIds:
+          example:
+            - '000000000000000000000001'
+            - '000000000000000000000001'
+          type: array
+          items:
+            type: string
         toolName:
           type: string
           example: >-
@@ -19008,6 +19567,41 @@ components:
         - owner
         - policyTag
         - document
+    BlockDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        blockType:
+          type: string
+        blocks:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlockDTO'
+      required:
+        - id
+        - blockType
+        - blocks
+    ResponseDTOWithSyncEvents:
+      type: object
+      properties:
+        response:
+          type: object
+          nullable: true
+          additionalProperties: true
+        result:
+          type: object
+          nullable: true
+          additionalProperties: true
+        steps:
+          additionalProperties: true
+          type: array
+          items:
+            type: object
+      required:
+        - response
+        - result
+        - steps
     LogFilterDTO:
       type: object
       properties:
@@ -19154,6 +19748,7 @@ components:
             - USER_PERMISSIONS
             - POLICY_DISCUSSION_V2
             - POLICY_COMMENT
+            - POLICY_EXPORT_PROOF
           example: POLICY
         iri:
           type: string
@@ -19346,21 +19941,6 @@ components:
       required:
         - module
         - results
-    BlockDTO:
-      type: object
-      properties:
-        id:
-          type: string
-        blockType:
-          type: string
-        blocks:
-          type: array
-          items:
-            $ref: '#/components/schemas/BlockDTO'
-      required:
-        - id
-        - blockType
-        - blocks
     ToolDTO:
       type: object
       properties:
@@ -19763,6 +20343,18 @@ components:
       required:
         - messageId
         - key
+    BasePolicyDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        name:
+          type: string
+          example: Policy name
+      required:
+        - id
+        - name
     MigrationConfigPoliciesDTO:
       type: object
       properties:
@@ -19856,6 +20448,10 @@ components:
             - private
             - public
           example: private
+        recordingEnabled:
+          type: boolean
+          example: false
+          description: Record policy actions
       required:
         - policyVersion
     PolicyValidationDTO:
@@ -20062,36 +20658,6 @@ components:
         - id
         - name
         - type
-    ChildSchemaDeletionBlockDTO:
-      type: object
-      properties:
-        schema:
-          nullable: true
-          allOf:
-            - $ref: '#/components/schemas/SchemaDTO'
-        blockingSchemas:
-          nullable: true
-          allOf:
-            - $ref: '#/components/schemas/SchemaDTO'
-      required:
-        - schema
-        - blockingSchemas
-    SchemaDeletionPreviewDTO:
-      type: object
-      properties:
-        deletableChildren:
-          nullable: true
-          type: array
-          items:
-            $ref: '#/components/schemas/SchemaDTO'
-        blockedChildren:
-          nullable: true
-          type: array
-          items:
-            $ref: '#/components/schemas/ChildSchemaDeletionBlockDTO'
-      required:
-        - deletableChildren
-        - blockedChildren
     VersionSchemaDTO:
       type: object
       properties:
@@ -20152,6 +20718,36 @@ components:
       required:
         - name
         - entity
+    ChildSchemaDeletionBlockDTO:
+      type: object
+      properties:
+        schema:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SchemaDTO'
+        blockingSchemas:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SchemaDTO'
+      required:
+        - schema
+        - blockingSchemas
+    SchemaDeletionPreviewDTO:
+      type: object
+      properties:
+        deletableChildren:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+        blockedChildren:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/ChildSchemaDeletionBlockDTO'
+      required:
+        - deletableChildren
+        - blockedChildren
     SettingsDTO:
       type: object
       properties:
@@ -20227,6 +20823,10 @@ components:
         document:
           type: object
           additionalProperties: true
+        inheritTags:
+          type: boolean
+          example: false
+          description: Inherit tags
       required:
         - uuid
         - name
@@ -20255,6 +20855,7 @@ components:
             - Module
             - Contract
             - PolicyDocument
+            - PolicyBlock
           example: PolicyDocument
         target:
           type: string
@@ -20264,10 +20865,17 @@ components:
           type: array
           items:
             type: string
+        linkedItems:
+          example:
+            - '0000000000.000000001'
+          type: array
+          items:
+            type: string
       required:
         - entity
         - target
         - targets
+        - linkedItems
     TagMapDTO:
       type: object
       properties:
@@ -21055,6 +21663,7 @@ components:
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
             - POLICIES_POLICY_AUDIT
+            - POLICIES_POLICY_TAG
             - POLICIES_EXTERNAL_POLICY_READ
             - POLICIES_EXTERNAL_POLICY_CREATE
             - POLICIES_EXTERNAL_POLICY_UPDATE
@@ -21138,6 +21747,7 @@ components:
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
             - POLICIES_POLICY_AUDIT
+            - POLICIES_POLICY_TAG
             - POLICIES_EXTERNAL_POLICY_READ
             - POLICIES_EXTERNAL_POLICY_CREATE
             - POLICIES_EXTERNAL_POLICY_UPDATE
@@ -21261,6 +21871,7 @@ components:
             - UPDATE
             - DELETE
             - REVIEW
+            - TAG
             - AUDIT
             - EXECUTE
             - MANAGE

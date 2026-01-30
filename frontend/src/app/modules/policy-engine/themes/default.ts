@@ -33,6 +33,8 @@ export const defaultTheme = {
                 'tagsManager',
                 'tokenConfirmationBlock',
                 'externalTopicBlock',
+                'globalEventsReaderBlock',
+                'globalEventsWriterBlock',
                 'messagesReportBlock'
             ]
         },
@@ -47,6 +49,7 @@ export const defaultTheme = {
             filterValue: [
                 'aggregateDocumentBlock',
                 'calculateContainerBlock',
+                'mathBlock',
                 'customLogicBlock',
                 'externalDataBlock',
                 'mintDocumentBlock',

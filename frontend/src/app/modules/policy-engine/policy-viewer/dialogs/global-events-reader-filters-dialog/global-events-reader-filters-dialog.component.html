@@ -1,0 +1,151 @@
+<div class="gerf">
+    <div class="gerf-header">
+        <div class="gerf-title">Conditions</div>
+
+        <button
+            type="button"
+            class="gerf-close"
+            (click)="onCancel()"
+            aria-label="Close"
+            title="Close"
+        >
+            <i class="pi pi-times"></i>
+        </button>
+    </div>
+
+    <div class="gerf-body">
+        <ng-container *ngIf="(branches || []).length > 0; else gerfNoBranches">
+            <div class="gerf-branch" *ngFor="let branch of branches">
+                <div class="gerf-branch-title">
+                    <span class="gerf-branch-title-label">Branch event:</span>
+                    <span class="gerf-branch-title-value">{{ branch.branchEvent }}</span>
+                </div>
+
+                <div class="gerf-type">
+                    <label class="gerf-label">Type</label>
+
+                    <select
+                        class="gerf-select"
+                        [(ngModel)]="branch.documentType"
+                        [disabled]="readonly"
+                    >
+                        <option *ngFor="let t of documentTypes" [ngValue]="t.value">
+                            {{ t.label }}
+                        </option>
+                    </select>
+                </div>
+
+                <ng-container *ngIf="branch.documentType === 'vc' && branch.schemaId; else gerfNoValidation">
+                    <div class="gerf-schema">
+                        <div class="gerf-schema-label">Schema</div>
+
+                        <div class="gerf-schema-value">
+                            <span class="gerf-schema-id">{{ branch.schemaName || branch.schemaId }}</span>
+                        </div>
+
+                        <ng-container *ngIf="(branch.items || []).length > 0; else gerfNoItems">
+                            <div class="gerf-items">
+                                <div class="gerf-item" *ngFor="let item of (branch.items || []); let fi = index">
+                                    <div class="gerf-item-grid">
+                                        <div class="gerf-field-col">
+                                            <label class="gerf-label">Field label (title/description/name)</label>
+                                            <input
+                                                type="text"
+                                                class="gerf-input"
+                                                [(ngModel)]="item.key"
+                                                [readonly]="readonly"
+                                            />
+                                        </div>
+
+                                        <div class="gerf-field-col">
+                                            <label class="gerf-label">Expected value</label>
+                                            <input
+                                                type="text"
+                                                class="gerf-input"
+                                                [(ngModel)]="item.value"
+                                                [readonly]="readonly"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        class="gerf-trash"
+                                        (click)="removeFilterItem(branch, fi)"
+                                        [disabled]="readonly"
+                                        aria-label="Delete"
+                                        title="Delete"
+                                    >
+                                        <i class="pi pi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                class="gerf-add"
+                                (click)="addFilterItem(branch)"
+                                [disabled]="readonly"
+                            >
+                                <i class="pi pi-plus"></i>
+                                Add Condition
+                            </button>
+                        </ng-container>
+
+                        <ng-template #gerfNoItems>
+                            <div class="gerf-empty gerf-empty-in-schema">
+                                <i class="pi pi-list gerf-empty-icon"></i>
+                                <div class="gerf-empty-text">No conditions for this branch</div>
+
+                                <button
+                                    type="button"
+                                    class="gerf-add"
+                                    (click)="addFilterItem(branch)"
+                                    [disabled]="readonly"
+                                >
+                                    <i class="pi pi-plus"></i>
+                                    Add Condition
+                                </button>
+                            </div>
+                        </ng-template>
+                    </div>
+                </ng-container>
+
+                <ng-template #gerfNoValidation>
+                    <div class="gerf-empty-panel">
+                        <i class="pi pi-list gerf-empty-panel-icon"></i>
+
+                        <div class="gerf-empty-panel-text" *ngIf="branch.documentType !== 'vc'">
+                            This document type does not support any validation/filters in this UI
+                        </div>
+
+                        <div class="gerf-empty-panel-text" *ngIf="branch.documentType === 'vc' && !branch.schemaId">
+                            Select a schema in block settings to enable filters for this branch
+                        </div>
+                    </div>
+                </ng-template>
+            </div>
+        </ng-container>
+
+        <ng-template #gerfNoBranches>
+            <div class="gerf-no-branches">
+                No branches configured in block settings.
+            </div>
+        </ng-template>
+    </div>
+
+    <div class="gerf-footer">
+        <button type="button" class="gerf-btn gerf-btn-outline" (click)="onCancel()">
+            Close
+        </button>
+
+        <button
+            type="button"
+            class="gerf-btn gerf-btn-primary"
+            (click)="onApply()"
+            [disabled]="readonly"
+        >
+            Apply
+        </button>
+    </div>
+</div>

@@ -1,9 +1,10 @@
 import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
-import { JsonToSchema, Schema, SchemaHelper, SchemaToJson } from '@guardian/interfaces';
+import { JsonToSchema, Schema, SchemaEntity, SchemaHelper, SchemaToJson } from '@guardian/interfaces';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuItem } from 'primeng/api';
 import { SchemaService } from '../../../services/schema.service';
+import { SchemaType } from '../../policy-engine/structures/types/schema-type.type';
 
 
 /**
@@ -152,6 +153,11 @@ export class SchemaDialog {
         } else {
             this.schema = new Schema();
             this.schema.topicId = this.topicId;
+
+            if (this.schemaType === SchemaType.System) {
+                this.schema.system = true;
+                this.schema.entity = SchemaEntity.STANDARD_REGISTRY;
+            }
         }
 
         this.schemaControl.setData(this.schema, this.topicId);

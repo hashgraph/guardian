@@ -40,6 +40,7 @@ BlockIcons[BlockType.Wipe] = 'trash';
 BlockIcons[BlockType.TokenActionBlock] = 'key';
 BlockIcons[BlockType.TokenConfirmationBlock] = 'key';
 BlockIcons[BlockType.ImpactAddon] = 'file';
+BlockIcons[BlockType.MathBlock] = 'calculator';
 BlockIcons[BlockType.Calculate] = 'chart-bar';
 BlockIcons[BlockType.CustomLogicBlock] = 'chart-bar';
 BlockIcons[BlockType.DataTransformationAddon] = 'chart-bar';
@@ -57,5 +58,7 @@ BlockIcons[BlockType.Tool] = 'wrench';
 BlockIcons[BlockType.Module] = 'folder';
 BlockIcons[BlockType.HttpRequestUIAddon] = 'globe';
 BlockIcons[BlockType.TransformationUIAddon] = 'chart-bar';
+BlockIcons[BlockType.GlobalEventsReaderBlock] = 'cloud-download';
+BlockIcons[BlockType.GlobalEventsWriterBlock] = 'cloud-upload';
 
 export default BlockIcons;

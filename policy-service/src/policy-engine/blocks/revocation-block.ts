@@ -158,7 +158,11 @@ export class RevocationBlock {
         for (const policyTopicMessage of policyTopicsMessages) {
             const relatedMessage = relatedMessages.find((item) => item.id === policyTopicMessage.id);
             if (relatedMessage) {
-                policyTopicMessage.revoke(doc.comment, relatedMessage.parentIds);
+                policyTopicMessage.revoke(
+                    doc.comment,
+                    event.user.did,
+                    relatedMessage.parentIds
+                );
                 needUpdate.push(policyTopicMessage);
             }
         }
@@ -168,7 +172,7 @@ export class RevocationBlock {
         await PolicyActionsUtils.sendMessages({
             ref,
             messages: needUpdate,
-            owner: event.user.did,
+            owner: doc.owner,
             relayerAccount,
             updateIpfs: false,
             userId
@@ -207,8 +211,9 @@ export class RevocationBlock {
             data: documents
         };
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
+        // event.actionStatus.saveResult(state);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
 
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
@@ -217,5 +222,7 @@ export class RevocationBlock {
         );
 
         ref.backup();
+
+        return event.data;
     }
 }

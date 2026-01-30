@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ImportType } from '@guardian/interfaces';
@@ -38,6 +38,9 @@ export interface IImportEntityArray {
     label?: any,
     formula?: any,
     schemasCanBeReplaced?: any,
+    importRecords?: boolean,
+    syncNewRecords?: boolean,
+    fromPolicyId?: string,
 }
 
 export interface IImportEntityMessage {
@@ -52,6 +55,9 @@ export interface IImportEntityMessage {
     label?: any,
     formula?: any,
     schemasCanBeReplaced?: any,
+    importRecords?: boolean,
+    syncNewRecords?: boolean,
+    fromPolicyId?: string,
 }
 
 export type IImportEntityResult = IImportEntityArray | IImportEntityMessage;
@@ -64,7 +70,7 @@ export type IImportEntityResult = IImportEntityArray | IImportEntityMessage;
     templateUrl: './import-entity-dialog.component.html',
     styleUrls: ['./import-entity-dialog.component.scss'],
 })
-export class ImportEntityDialog {
+export class ImportEntityDialog implements OnInit {
     public loading: boolean = false;
     public title: string = 'Import Entity';
 
@@ -73,6 +79,14 @@ export class ImportEntityDialog {
 
     public type: ImportEntityType = ImportEntityType.Policy;
     public importType: ImportType = ImportType.FILE;
+    public recordSource: 'file' | 'imported' | 'otherPolicy' = 'file';
+    public selectedPolicy: { id?: string; name?: string } | null = null;
+    public policiesWithImportedRecords: { id?: string; name?: string }[] = [];
+    public policiesLoading = false;
+    public canUseImportedRecords = false;
+    public currentPolicyHasImportedRecords = false;
+    public recordSourceOptions: { label: string; value: 'file' | 'imported' | 'otherPolicy' }[] = [];
+    public syncNewRecords: boolean = false;
 
     public dataForm = this.fb.group({
         timestamp: ['', Validators.required],
@@ -92,6 +106,8 @@ export class ImportEntityDialog {
         public config: DynamicDialogConfig<{
             type?: string,
             timeStamp?: string,
+            withRecords?: boolean,
+            policyId?: string,
         }>,
         //Form
         private fb: UntypedFormBuilder,
@@ -108,7 +124,7 @@ export class ImportEntityDialog {
         private formulasService: FormulasService,
     ) {
         const _config = this.config.data || {};
-
+        this.currentPolicyHasImportedRecords = !!_config.withRecords;
         switch (_config.type) {
             case 'policy':
                 this.type = ImportEntityType.Policy;
@@ -149,6 +165,7 @@ export class ImportEntityDialog {
                 this.title = 'Open Record';
                 this.fileExtension = 'record';
                 this.placeholder = 'Import Record .record file';
+                this.recordSource = 'file';
                 break;
             case 'schema-rule':
                 this.type = ImportEntityType.SchemaRule;
@@ -212,6 +229,37 @@ export class ImportEntityDialog {
                 });
                 this.importFromMessage();
             }
+        }
+
+        if (this.type === ImportEntityType.Record) {
+            this.updateRecordSourceOptions();
+        }
+    }
+
+    ngOnInit(): void {
+        if (this.type === ImportEntityType.Record) {
+            this.loadPoliciesWithImportedRecords();
+        }
+    }
+
+    private updateRecordSourceOptions(): void {
+        if (this.type !== ImportEntityType.Record) {
+            return;
+        }
+        const options: { label: string; value: 'file' | 'imported' | 'otherPolicy' }[] = [
+            { label: 'Import from file', value: 'file' },
+        ];
+        if (this.currentPolicyHasImportedRecords) {
+            options.push({ label: 'Use records imported with this policy', value: 'imported' });
+        }
+        if (this.policiesWithImportedRecords.length) {
+            options.push({ label: 'Use records from another policy', value: 'otherPolicy' });
+        }
+        this.recordSourceOptions = options;
+        this.canUseImportedRecords = options.length > 1;
+        if (!options.find((option) => option.value === this.recordSource)) {
+            this.recordSource = 'file';
+            this.selectedPolicy = null;
         }
     }
 
@@ -370,6 +418,78 @@ export class ImportEntityDialog {
                 this.loading = false;
                 this.taskId = undefined;
             });
+    }
+
+    private loadPoliciesWithImportedRecords(): void {
+        const policyId = this.config.data?.policyId;
+        if (!policyId) {
+            return;
+        }
+        this.policiesLoading = true;
+        this.policyEngineService.allWithImportedRecords(policyId).subscribe(
+            (policies) => {
+                this.policiesWithImportedRecords = policies || [];
+                this.updateRecordSourceOptions();
+                this.policiesLoading = false;
+            },
+            () => {
+                this.policiesLoading = false;
+            }
+        );
+    }
+
+    public onRecordSourceChange(value: 'file' | 'imported' | 'otherPolicy'): void {
+        this.recordSource = value;
+        if (this.recordSource !== 'imported') {
+            this.syncNewRecords = false;
+        }
+        if (this.recordSource !== 'otherPolicy') {
+            this.selectedPolicy = null;
+        } else {
+            if (!this.policiesWithImportedRecords.length) {
+                this.loadPoliciesWithImportedRecords();
+            }
+        }
+    }
+
+    public onPrimaryAction(): void {
+        if (this.type === ImportEntityType.Record) {
+            if (this.recordSource === 'imported') {
+                this.setResult({
+                    type: 'message',
+                    data: '',
+                    importRecords: true,
+                    syncNewRecords: this.syncNewRecords
+                });
+                return;
+            }
+            if (this.recordSource === 'otherPolicy' && this.selectedPolicy?.id) {
+                this.setResult({
+                    type: 'message',
+                    data: '',
+                    importRecords: true,
+                    fromPolicyId: this.selectedPolicy.id
+                });
+                return;
+            }
+        }
+        this.importFromMessage();
+    }
+
+    public isPrimaryActionDisabled(): boolean {
+        if (this.type === ImportEntityType.Record) {
+            if (this.recordSource === 'imported') {
+                return false;
+            }
+            if (this.recordSource === 'otherPolicy') {
+                return !this.selectedPolicy?.id || this.policiesLoading;
+            }
+            return true;
+        }
+        if (this.importType === ImportType.FILE) {
+            return true;
+        }
+        return this.dataForm.invalid;
     }
 
     private policyFromFile(arrayBuffer: any) {

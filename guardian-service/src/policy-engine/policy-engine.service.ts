@@ -20,9 +20,10 @@ import {
     MessageType,
     NatsService,
     NewNotifier,
+    NotificationStep,
     PinoLogger,
     Policy,
-    PolicyAction,
+    PolicyAction, PolicyComment,
     PolicyDiscussion,
     PolicyImportExport,
     PolicyMessage,
@@ -56,13 +57,12 @@ import {
     IgnoreRule,
     SchemaStatus
 } from '@guardian/interfaces';
-import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
 import { GuardiansService } from '../helpers/guardians.js';
-import { BlockAboutString } from './block-about.js';
 import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 import { PolicyDataLoader, VcDocumentLoader, VpDocumentLoader } from './helpers/policy-data/loaders/index.js';
 import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import-export.js';
@@ -71,6 +71,7 @@ import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
 import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
 import { PolicyCommentsUtils } from './policy-comments-utils.js';
+import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
 
 /**
  * PolicyEngineChannel
@@ -282,6 +283,26 @@ export class PolicyEngineService {
                 }
             })
 
+        this.channel.getMessages(PolicyEvents.RECORD_PERSIST_STEP,
+            async (msg: PersistStepPayload) => {
+                const {
+                    policyMessageId,
+                    payload,
+                    hederaOptions,
+                    userFull
+                } = msg;
+                try {
+                    await RecordPersistService.persistStep({
+                        policyMessageId,
+                        payload,
+                        hederaOptions,
+                        userFull
+                    });
+                } catch (error: any) {
+                    console.error(`Error persisting record step for policy ${payload.policyId}`, error);
+                }
+            })
+
         this.channel.getMessages(PolicyEvents.RECORD_UPDATE_BROADCAST,
             async (msg: {
                 id: string,
@@ -403,7 +424,8 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>('mrv-data',
             async (msg: any) => {
                 // await PolicyComponentsUtils.ReceiveExternalData(msg);
-                const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
+                const { data } = msg;
+                const policy = await DatabaseServer.getPolicyByTag(data?.policyTag);
                 if (policy) {
                     const policyId = policy.id.toString();
                     await new GuardiansService()
@@ -500,10 +522,12 @@ export class PolicyEngineService {
                 user: IAuthUser,
                 blockId: string,
                 policyId: string,
-                data: any
+                data: any,
+                syncEvents?: boolean,
+                history?: boolean,
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, blockId, policyId, data } = msg;
+                    const { user, blockId, policyId, data, syncEvents, history } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
@@ -511,7 +535,9 @@ export class PolicyEngineService {
                             user,
                             blockId,
                             policyId,
-                            data
+                            data,
+                            syncEvents,
+                            history
                         }) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -525,10 +551,12 @@ export class PolicyEngineService {
                 user: IAuthUser,
                 tag: string,
                 policyId: string,
-                data: any
+                data: any,
+                syncEvents?: boolean,
+                history?: boolean,
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, tag, policyId, data } = msg;
+                    const { user, tag, policyId, data, syncEvents, history } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
@@ -536,7 +564,9 @@ export class PolicyEngineService {
                             user,
                             tag,
                             policyId,
-                            data
+                            data,
+                            syncEvents,
+                            history,
                         }) as any
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -657,7 +687,8 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA,
             async (msg: any) => {
                 try {
-                    const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
+                    const { data } = msg;
+                    const policy = await DatabaseServer.getPolicyByTag(data?.policyTag);
                     if (policy) {
                         const policyId = policy.id.toString();
                         new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA, policyId, {
@@ -726,7 +757,9 @@ export class PolicyEngineService {
             user: IAuthUser
         }) => {
             try {
-                return new MessageResponse(BlockAboutString);
+                const blockAboutString = await new GuardiansService()
+                    .sendMessageWithTimeout(PolicyEvents.GET_BLOCK_ABOUT, 60 * 1000, null);
+                return new MessageResponse(blockAboutString);
             } catch (error) {
                 return new MessageError(error);
             }
@@ -751,6 +784,11 @@ export class PolicyEngineService {
                     const userFull = await (new Users()).getUserById(userDid, owner.id);
                     await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
                 }
+
+                if (policy.status !== PolicyStatus.PUBLISH && policy.status !== PolicyStatus.DISCONTINUED) {
+                    result.withRecords = !!policy.autoRecordSteps;
+                }
+
                 return new MessageResponse(result);
             });
 
@@ -781,6 +819,7 @@ export class PolicyEngineService {
                             'policyGroups',
                             'policyRoles',
                             'discontinuedDate',
+                            'originalChanged'
                         ]
                     };
                     const _pageSize = parseInt(pageSize, 10);
@@ -837,6 +876,36 @@ export class PolicyEngineService {
                         await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
                     }
                     return new MessageResponse({ policies, count });
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Get policies with imported records
+         */
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICIES_WITH_IMPORTED_RECORDS,
+            async (msg: { currentPolicyId: string }) => {
+                try {
+                    const policies = await DatabaseServer.getPolicies({
+                        id: { $ne: msg.currentPolicyId },
+                        status: {
+                            $in: [
+                                PolicyStatus.DRY_RUN,
+                                PolicyStatus.DRAFT,
+                                PolicyStatus.DEMO,
+                                PolicyStatus.VIEW,
+                            ]
+                        },
+                        recordsTopicId: {
+                            $ne: null,
+                        },
+                        autoRecordSteps: true,
+                    }, {
+                        fields: ['id', 'name', 'messageId']
+                    });
+
+                    return new MessageResponse(policies);
                 } catch (error) {
                     return new MessageError(error);
                 }
@@ -1067,6 +1136,47 @@ export class PolicyEngineService {
                 return new MessageResponse(task);
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DELETE_POLICIES_ASYNC,
+            async (msg: { policyIds: string[], owner: IOwner, task: any }): Promise<IMessageResponse<any>> => {
+                const { policyIds, owner, task } = msg;
+                const notifier = await NewNotifier.create(task);
+                RunFunctionAsync(async () => {
+
+                    const policies = await DatabaseServer.getPolicies({ id: { $in: policyIds }, owner: owner.owner });
+                    if (!policies || policies?.length <= 0) {
+                        throw new Error('Policy not found');
+                    }
+
+                    const stepMap = new Map<string, NotificationStep>();
+                    const results = new Map<string, boolean>();
+
+                    for (const policy of policies) {
+                        const STEP_DELETE_TOKEN = 'DELETE POLICY (' + policy.name + ')';
+                        const deletePolicyStep = notifier.addStep(STEP_DELETE_TOKEN);
+                        stepMap.set(policy.id, deletePolicyStep);
+                    }
+
+                    for (const policy of policies) {
+                        await this.policyEngine.accessPolicy(policy, owner, 'delete');
+
+                        const deletePolicyStep = stepMap.get(policy.id);
+
+                        if (policy.status === PolicyStatus.DEMO) {
+                            const result = await this.policyEngine.deleteDemoPolicy(policy, owner, deletePolicyStep, logger);
+                            results.set(policy.id, result);
+                        } else {
+                            const result = await this.policyEngine.deletePolicy(policy, owner, deletePolicyStep, logger);
+                            results.set(policy.id, result);
+                        }
+                    }
+
+                    notifier.result(results);
+                }, async (error) => {
+                    notifier.fail(error);
+                });
+                return new MessageResponse(task);
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.SAVE_POLICIES,
             async (msg: { policyId: string, model: Policy, owner: IOwner }): Promise<IMessageResponse<Policy>> => {
                 try {
@@ -1079,6 +1189,21 @@ export class PolicyEngineService {
                     }
                     let result = await DatabaseServer.updatePolicyConfig(policyId, model);
                     result = await PolicyImportExportHelper.updatePolicyComponents(result, logger, owner.id);
+
+                    if(result && (result.originalZipId || result.originalMessageId)) {
+                        const policyComponents = await PolicyImportExport.loadPolicyComponents(result);
+                        const policyHash = PolicyImportExport.getPolicyHash(policyComponents);
+
+                        if(policyHash !== result.originalHash) {
+                            result.originalChanged = true;
+                        } else {
+                            result.originalChanged = false;
+                        }
+
+                        if(result.id) {
+                            await DatabaseServer.updatePolicy(result);
+                        }
+                    }
                     return new MessageResponse(result);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1091,7 +1216,8 @@ export class PolicyEngineService {
                 policyId: string,
                 options: {
                     policyVersion: string,
-                    policyAvailability?: PolicyAvailability
+                    policyAvailability?: PolicyAvailability,
+                    recordingEnabled?: boolean,
                 },
                 owner: IOwner
             }): Promise<IMessageResponse<any>> => {
@@ -1123,7 +1249,8 @@ export class PolicyEngineService {
                 policyId: string,
                 options: {
                     policyVersion: string,
-                    policyAvailability?: PolicyAvailability
+                    policyAvailability?: PolicyAvailability,
+                    recordingEnabled?: boolean,
                 },
                 owner: IOwner,
                 task: any
@@ -1337,6 +1464,14 @@ export class PolicyEngineService {
                     const { policyId, owner } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
+
+                    if (policy.status === PolicyStatus.PUBLISH && policy.contentFileId) {
+                        const buffer = await DatabaseServer.loadFile(policy.contentFileId);
+                        const arrayBuffer = Uint8Array.from(buffer).buffer;
+
+                        return new BinaryMessageResponse(arrayBuffer);
+                    }
+
                     const zip = await PolicyImportExport.generate(policy);
                     const file = await zip.generateAsync({
                         type: 'arraybuffer',
@@ -1344,8 +1479,8 @@ export class PolicyEngineService {
                         compressionOptions: {
                             level: 3,
                         },
+                        platform: 'UNIX',
                     });
-                    console.log('File size: ' + file.byteLength);
                     return new BinaryMessageResponse(file);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1415,10 +1550,11 @@ export class PolicyEngineService {
                 owner: IOwner,
                 versionOfTopicId: string,
                 metadata: any,
-                demo: boolean
+                demo: boolean,
+                originalTracking: boolean
             }): Promise<IMessageResponse<boolean>> => {
                 try {
-                    const { zip, owner, versionOfTopicId, metadata, demo } = msg;
+                    const { zip, owner, versionOfTopicId, metadata, demo, originalTracking } = msg;
                     if (!zip) {
                         throw new Error('file in body is empty');
                     }
@@ -1442,6 +1578,19 @@ export class PolicyEngineService {
                     if (demo) {
                         await this.policyEngine.startDemo(result.policy, owner, logger, NewNotifier.empty());
                     }
+
+                    if(originalTracking && result.policy)
+                    {
+                        const originalFileId = await PolicyImportExport.saveOriginalZip(Buffer.from(zip.data), result.policy.name);
+                        const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
+                        result.policy.originalHash = policyHash;
+                        result.policy.originalChanged = false;
+                        result.policy.originalZipId = originalFileId;
+
+                        if(result.policy?.id) {
+                            await DatabaseServer.updatePolicy(result.policy);
+                        }
+                    }
                     return new MessageResponse(true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1456,9 +1605,10 @@ export class PolicyEngineService {
                 versionOfTopicId: string,
                 metadata: any,
                 demo: boolean,
-                task: any
+                task: any,
+                originalTracking: boolean
             }): Promise<IMessageResponse<any>> => {
-                const { zip, owner, versionOfTopicId, task, metadata, demo } = msg;
+                const { zip, owner, versionOfTopicId, task, metadata, demo, originalTracking } = msg;
                 const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
@@ -1504,10 +1654,25 @@ export class PolicyEngineService {
                         policyId: result.policy.id,
                         errors: result.errors
                     });
+
+                    if(originalTracking && result.policy)
+                    {
+                        const originalFileId = await PolicyImportExport.saveOriginalZip(Buffer.from(zip.data), result.policy.name);
+                        const policyComponents = await PolicyImportExport.loadPolicyComponents(result.policy);
+                        const policyHash = await PolicyImportExport.getPolicyHash(policyComponents);
+                        result.policy.originalHash = policyHash;
+                        result.policy.originalChanged = false;
+                        result.policy.originalZipId = originalFileId;
+
+                        if(result.policy?.id) {
+                            await DatabaseServer.updatePolicy(result.policy);
+                        }
+                    }
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
                     notifier.fail(error);
                 });
+
                 return new MessageResponse(task);
             });
 
@@ -1521,6 +1686,7 @@ export class PolicyEngineService {
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
                     policyToImport.similar = similarPolicies;
+                    policyToImport.withRecords = !!policyToImport.policy.autoRecordSteps;
                     return new MessageResponse(policyToImport);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1544,6 +1710,7 @@ export class PolicyEngineService {
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
                     policyToImport.similar = similarPolicies;
+                    policyToImport.withRecords = !!policyToImport.policy.autoRecordSteps;
                     notifier.result(policyToImport);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1558,10 +1725,11 @@ export class PolicyEngineService {
                 owner: IOwner,
                 versionOfTopicId: string,
                 metadata: any,
-                demo: boolean
+                demo: boolean,
+                originalTracking: boolean
             }): Promise<IMessageResponse<boolean>> => {
                 try {
-                    const { messageId, owner, versionOfTopicId, metadata, demo } = msg;
+                    const { messageId, owner, versionOfTopicId, metadata, demo, originalTracking } = msg;
                     if (!messageId) {
                         throw new Error('Policy ID in body is empty');
                     }
@@ -1583,6 +1751,7 @@ export class PolicyEngineService {
                             .setComponents(policyToImport)
                             .setUser(owner)
                             .setParentPolicyTopic(versionOfTopicId)
+                            .setImportRecords(metadata?.importRecords)
                             .setMetadata(metadata),
                         notifier.getStep(STEP_IMPORT_POLICY),
                         owner.id
@@ -1600,6 +1769,18 @@ export class PolicyEngineService {
                             notifier.getStep(STEP_START_POLICY)
                         );
                     }
+
+                    if(originalTracking && result.policy)
+                    {
+                        const policyComponents = await PolicyImportExport.loadPolicyComponents(result.policy);
+                        const policyHash = await PolicyImportExport.getPolicyHash(policyComponents);
+                        result.policy.originalHash = policyHash;
+                        result.policy.originalChanged = false;
+                        result.policy.originalMessageId = messageId;
+                        if(result.policy?.id) {
+                            await DatabaseServer.updatePolicy(result.policy);
+                        }
+                    }
                     return new MessageResponse(true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1614,9 +1795,10 @@ export class PolicyEngineService {
                 versionOfTopicId: string,
                 metadata: any,
                 demo: boolean,
-                task: any
+                task: any,
+                originalTracking: boolean
             }): Promise<IMessageResponse<boolean>> => {
-                const { messageId, owner, versionOfTopicId, task, metadata, demo } = msg;
+                const { messageId, owner, versionOfTopicId, task, metadata, demo, originalTracking } = msg;
                 const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
@@ -1647,6 +1829,7 @@ export class PolicyEngineService {
                                 .setComponents(policyToImport)
                                 .setUser(owner)
                                 .setParentPolicyTopic(versionOfTopicId)
+                                .setImportRecords(metadata?.importRecords)
                                 .setMetadata(metadata),
                             notifier.getStep(STEP_IMPORT_POLICY),
                             owner.id
@@ -1670,6 +1853,18 @@ export class PolicyEngineService {
                             policyId: result.policy.id,
                             errors: result.errors
                         });
+
+                        if(originalTracking && result.policy)
+                        {
+                            const policyComponents = await PolicyImportExport.loadPolicyComponents(result.policy);
+                            const policyHash = await PolicyImportExport.getPolicyHash(policyComponents);
+                            result.policy.originalHash = policyHash;
+                            result.policy.originalChanged = false;
+                            result.policy.originalMessageId = messageId;
+                            if(result.policy?.id) {
+                                await DatabaseServer.updatePolicy(result.policy);
+                            }
+                        }
                     } catch (error) {
                         await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                         notifier.fail(error);
@@ -3747,7 +3942,7 @@ export class PolicyEngineService {
                         cid: string;
                     }[];
                 },
-            }): Promise<IMessageResponse<Policy>> => {
+            }): Promise<IMessageResponse<Policy | PolicyComment>> => {
                 try {
                     const { user, documentId, policyId, discussionId, data } = msg;
 
@@ -4294,6 +4489,45 @@ export class PolicyEngineService {
                     return new MessageError(error);
                 }
             });
+        //#endregion
+
+        //#region VC Docs
+        this.channel.getMessages(PolicyEngineEvents.CREATE_NEW_VERSION_VC_DOCUMENT,
+            async (msg: { user: IAuthUser, policyId: string, data: any }) => {
+                try {
+                    const { user, policyId, data } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const status = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.CREATE_NEW_VERSION_VC_DOCUMENT, policyId, {
+                            user,
+                            data
+                        });
+                    return new MessageResponse(status);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            })
+
+        this.channel.getMessages(PolicyEngineEvents.GET_All_NEW_VERSION_VC_DOCUMENTS,
+            async (msg: { user: IAuthUser, policyId: string, documentId: string }) => {
+                try {
+                    const { user, policyId: policyId, documentId: documentId } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const docs = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.GET_ALL_NEW_VERSION_VC_DOCUMENTS, policyId, {
+                            user,
+                            documentId
+                        });
+
+                    return new MessageResponse(docs);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            })
         //#endregion
     }
 }
