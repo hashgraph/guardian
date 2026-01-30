@@ -7,7 +7,8 @@ import {
     DataBaseHelper,
     Message,
     AnyResponse,
-    MessageCache
+    MessageCache,
+    ZipUtils
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
 import { MessageAction, MessageType, Page, Policy, RawMessage, SearchPolicyParams, SearchPolicyResult, VCDetails } from '@indexer/interfaces';
@@ -183,7 +184,7 @@ export class AnalyticsService {
     }
 
     @MessagePattern(IndexerMessageAPI.GET_COMPARE_ORIGINAL_POLICY)
-    async compareOriginalPolicy(@Payload() msg): Promise<AnyResponse<boolean>> {
+    async compareOriginalPolicy(@Payload() msg): Promise<AnyResponse<string>> {
         try {
             const { messageId, options } = msg;
 
@@ -201,29 +202,29 @@ export class AnalyticsService {
             compareModels.push(compareModel);
             let originalPolicyData = null;
             let originalItem = null;
-            if(item.options?.originalMessageId) {
+            if (item.options?.originalMessageId) {
                 originalItem = (await em.findOne(Message, {
                     consensusTimestamp: item.options.originalMessageId,
                     type: MessageType.INSTANCE_POLICY,
                     action: MessageAction.PublishPolicy,
                 } as any)) as Policy;
             }
-            else if(item.options?.originalHash) {
+            else if (item.options?.originalHash) {
                 originalItem = (await em.findOne(Message, {
                     'options.originalHash': item.options.originalHash,
                     type: MessageType.INSTANCE_POLICY,
                     action: MessageAction.PublishPolicy,
                 } as any,
-                {
-                    orderBy: { _id: 'ASC' },
-                }) as Policy);
+                    {
+                        orderBy: { _id: 'ASC' },
+                    }) as Policy);
             }
 
-            if(originalItem) {
+            if (originalItem) {
                 originalPolicyData = await getPolicyData(originalItem);
             }
 
-            if(!originalPolicyData) {
+            if (!originalPolicyData) {
                 return null;
             }
 
@@ -235,17 +236,18 @@ export class AnalyticsService {
 
             const result = comparator.to(results, 'message');
 
-            return new MessageResponse(result);
+            const zip = await ZipUtils.zipJson(result);
+            return new MessageResponse(zip);
         } catch (error) {
             return new MessageError(error);
         }
     }
 
     @MessagePattern(IndexerMessageAPI.GET_DERIVATIONS)
-    async getDerivations(@Payload() msg):  Promise<AnyResponse<Page<Policy>>> {
+    async getDerivations(@Payload() msg): Promise<AnyResponse<Page<Policy>>> {
         try {
             const options = parsePageParams(msg);
-            
+
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
 

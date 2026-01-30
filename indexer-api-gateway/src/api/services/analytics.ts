@@ -7,7 +7,7 @@ import {
     ApiTags,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { IndexerMessageAPI } from '@indexer/common';
+import { IndexerMessageAPI, ZipUtils } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 import {
     InternalServerErrorDTO,
@@ -113,7 +113,7 @@ export class AnalyticsApi extends ApiClient {
         @Param('messageId') messageId: string,
         @Body() filters: PolicyFiltersDTO
     ): Promise<ComparePoliciesDTO> {
-        return await this.send(IndexerMessageAPI.GET_COMPARE_ORIGINAL_POLICY, {
+        const zip = await this.send<string>(IndexerMessageAPI.GET_COMPARE_ORIGINAL_POLICY, {
             messageId: messageId,
             options: {
                 eventsLvl: filters?.eventsLvl,
@@ -122,6 +122,7 @@ export class AnalyticsApi extends ApiClient {
                 idLvl: filters?.idLvl
             }
         });
+        return await ZipUtils.unZipJson(zip);
     }
 
     /**
