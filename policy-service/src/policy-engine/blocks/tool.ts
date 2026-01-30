@@ -1,5 +1,4 @@
 import { ContainerBlock } from '../helpers/decorators/container-block.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ActionCallback } from '../helpers/decorators/index.js';
@@ -16,17 +15,6 @@ import { PolicyUtils } from '../helpers/utils.js';
     blockType: 'tool',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    about: {
-        label: 'Tool',
-        title: `Add 'Tool' Block`,
-        post: false,
-        get: true,
-        children: ChildrenType.Any,
-        control: ControlType.UI,
-        input: null,
-        output: null,
-        defaultEvent: false
-    },
     variables: []
 })
 export class ToolBlock {

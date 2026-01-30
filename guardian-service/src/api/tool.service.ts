@@ -1,16 +1,13 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, Hashing, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, NewNotifier, PinoLogger, Policy, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
-import {
-    GenerateUUIDv4,
-    IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyStatus, SchemaStatus, TagType, TopicType
-} from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyEvents, PolicyStatus, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
-import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import * as crypto from 'crypto';
 import { FilterObject } from '@mikro-orm/core';
 import { deleteSchema, findAndDryRunSchema, importToolByFile, importToolByMessage, importToolErrors, PolicyImportExportHelper, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
 import { escapeRegExp } from './helpers/api-helper.js';
+import { GuardiansService } from '../helpers/guardians.js';
 
 /**
  * Sha256
@@ -179,10 +176,11 @@ export async function validateAndPublish(
  * @param tool
  */
 export async function validateTool(tool: PolicyTool): Promise<ISerializedErrors> {
-    const toolValidator = new ToolValidator(tool.config);
-    await toolValidator.build(tool);
-    await toolValidator.validate();
-    return toolValidator.getSerializedErrors();
+    const result = await (new GuardiansService())
+        .sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_TOOL, 60 * 1000, {
+            module
+        });
+    return result;
 }
 
 /**

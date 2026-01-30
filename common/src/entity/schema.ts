@@ -194,6 +194,12 @@ export class Schema extends BaseEntity implements ISchema {
     _contextFileId?: ObjectId;
 
     /**
+     * topicCount
+     */
+    @Property({ persist: false, nullable: true })
+    topicCount?: number;
+
+    /**
      * Document file id of the original schema(publish flow).
      */
     @Property({ nullable: true })

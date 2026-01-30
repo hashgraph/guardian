@@ -49,6 +49,7 @@ export const defaultTheme = {
             filterValue: [
                 'aggregateDocumentBlock',
                 'calculateContainerBlock',
+                'mathBlock',
                 'customLogicBlock',
                 'externalDataBlock',
                 'mintDocumentBlock',

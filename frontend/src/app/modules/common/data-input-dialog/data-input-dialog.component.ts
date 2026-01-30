@@ -9,16 +9,13 @@ import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 @Component({
     selector: 'data-input-dialog',
     templateUrl: './data-input-dialog.component.html',
-    styleUrls: ['./data-input-dialog.component.css'],
+    styleUrls: ['./data-input-dialog.component.scss'],
 })
 export class DataInputDialogComponent {
-    dataForm = new UntypedFormGroup({});
-    loading: boolean = false;
-
-    title: string = '';
-    fieldsConfig: any = [];
-
-    isVisible: boolean = true;
+    public dataForm = new UntypedFormGroup({});
+    public title: string = '';
+    public fieldsConfig: any = [];
+    public button: string = '';
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -30,6 +27,7 @@ export class DataInputDialogComponent {
             return;
         }
         this.title = data.title;
+        this.button = data.button || 'Ok';
         this.fieldsConfig = data.fieldsConfig;
         this.fieldsConfig.forEach((item: any) => {
             this.dataForm.addControl(

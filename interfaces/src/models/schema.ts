@@ -140,6 +140,10 @@ export class Schema implements ISchema {
      */
     public codeVersion?: string;
     /**
+     * Topic count
+     */
+    public topicCount?: number;
+    /**
      * Schema constructor
      * @param schema
      * @param includeSystemProperties
@@ -200,6 +204,7 @@ export class Schema implements ISchema {
             this.component = (schema as any).component || (schema as any).__component;
             this.errors = schema.errors;
             this.codeVersion = schema.codeVersion;
+            this.topicCount = schema.topicCount;
         } else {
             this._id = undefined;
             this.id = undefined;
@@ -256,6 +261,7 @@ export class Schema implements ISchema {
         this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
         this.setPaths(this.fields, '', this.iri + '/');
+        this.setTypes(this.fields, null);
     }
 
     /**
@@ -268,6 +274,20 @@ export class Schema implements ISchema {
             f.fullPath = fullPath + f.name;
             if (Array.isArray(f.fields)) {
                 this.setPaths(f.fields, f.path + '.', f.fullPath + '.');
+            }
+        }
+    }
+
+    /**
+     * Parse document
+     * @private
+     */
+    private setTypes(fields: SchemaField[], parent: SchemaField | null): void {
+        for (const f of fields) {
+            f.arrayLvl = (parent ? parent.arrayLvl : 0) + (f.isArray ? 1 : 0);
+            f.fullType = (f.isRef ? 'object' : (f.type || 'Help Text')) + '[]'.repeat(f.arrayLvl);
+            if (Array.isArray(f.fields)) {
+                this.setTypes(f.fields, f);
             }
         }
     }
@@ -342,6 +362,7 @@ export class Schema implements ISchema {
         clone.fields = this.fields;
         clone.conditions = this.conditions;
         clone.userDID = this.userDID;
+        clone.topicCount = this.topicCount;
         return clone;
     }
 

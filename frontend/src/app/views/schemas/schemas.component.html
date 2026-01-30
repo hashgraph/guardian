@@ -20,25 +20,47 @@
                         [(ngModel)]="currentTopic"
                         [options]="allPolicies"
                         [showClear]="false"
-                        class="policy-dropdown"
+                        class="guardian-dropdown"
+                        placeholder="Select Policy"
                         optionLabel="name"
                         optionValue="topicId"
-                        placeholder="Policy"
                         [appendTo]="'body'"
-                    ></p-dropdown>
+                        panelStyleClass="guardian-dropdown-panel">
+                        <ng-template pTemplate="selectedItem">
+                            <div *ngIf="currentTopic" class="guardian-dropdown-selected">
+                                <span class="guardian-dropdown-label">Policy</span>
+                                <span class="guardian-dropdown-item">{{ policyNameByTopic[currentTopic] || 'No Binding' }}</span>
+                            </div>
+                            <div *ngIf="!currentTopic" class="guardian-dropdown-selected">
+                                <span class="guardian-dropdown-label">Policy</span>
+                                <span class="guardian-dropdown-item">All Policies</span>
+                            </div>
+                        </ng-template>
+                    </p-dropdown>
                 </div>
                 <div *ngIf="isTool" class="topic-search">
                     <p-dropdown
                         (onChange)="onFilter($event)"
                         [(ngModel)]="currentTopic"
                         [options]="tools"
-                        [showClear]="true"
-                        class="policy-dropdown"
+                        [showClear]="false"
+                        class="guardian-dropdown"
+                        placeholder="Select Tool"
                         optionLabel="name"
                         optionValue="topicId"
-                        placeholder="Tool"
                         [appendTo]="'body'"
-                    ></p-dropdown>
+                        panelStyleClass="guardian-dropdown-panel">
+                        <ng-template pTemplate="selectedItem">
+                            <div *ngIf="currentTopic" class="guardian-dropdown-selected">
+                                <span class="guardian-dropdown-label">Tool</span>
+                                <span class="guardian-dropdown-item">{{ toolNameByTopic[currentTopic] || 'No Binding' }}</span>
+                            </div>
+                            <div *ngIf="!currentTopic" class="guardian-dropdown-selected">
+                                <span class="guardian-dropdown-label">Tool</span>
+                                <span class="guardian-dropdown-item">All Tools</span>
+                            </div>
+                        </ng-template>
+                    </p-dropdown>
                 </div>
                 <div *ngIf="isPolicy || isTool || isModule" class="guardian-input-container text-search">
                     <input
@@ -91,7 +113,7 @@
 
     <ng-container *ngIf="page && page.length > 0; else noData">
         <div *ngIf="isAny" class="guardian-grid-container">
-            <p-table [value]="page"
+            <p-treeTable *ngIf="isPolicy || isModule || isTool" [value]="treeData"
                 class="guardian-grid-table"
                 [scrollable]="true"
             >
@@ -106,9 +128,6 @@
                                     [binary]="true"
                                 >
                                 </p-checkbox>
-                            </th>
-                            <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
-                                Policy
                             </th>
                             <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
                                 Name
@@ -157,6 +176,268 @@
                                 Operations
                             </th>
                         </ng-container>
+                        <th class="header-cell-text" style="min-width: 110px; width: 110px; max-width: 110px;">
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template let-rowNode let-rowData="rowData" pTemplate="body">
+                    <tr *ngIf="(!rowData.isParent || (rowData.isParent && rowData.topicId) && !isModule)" [ttRow]="rowNode" class="guardian-grid-row" [class.grey-row]="(!rowData.isParent || (rowData.isParent && rowData.topicId) && !isModule)" [attr.schema-status]="rowData.status">
+                        <ng-container *ngIf="rowData.isParent">
+                            <td class="row-cell-text parent-row-cell" [attr.colspan]="type === 'policy' ? 8 : (type === 'tool' ? 4 : 3)">
+                                <div class="parent-row-content">
+                                    <span class="parent-row-name">
+                                        <a (click)="onSelectFilter(rowData.topicId)" class="filter-link">
+                                            {{ rowData.name }}
+                                        </a>
+                                        <span class="schemas-count">
+                                            {{ rowData.count }} of {{ rowData.totalCount }} schemas shown
+                                        </span>
+                                    </span>
+                                    <div class="parent-row-actions">
+                                        <a *ngIf="type === 'policy' && rowData.topicId !== NOT_BINDED"
+                                           [queryParams]="{ policyId: policyIdByTopic[rowData.topicId] }"
+                                           [routerLink]="['/policy-configuration']"
+                                           class="btn-configure"
+                                        >
+                                            Configure
+                                        </a>
+                                        <a *ngIf="type === 'tool' && rowData.topicId !== NOT_BINDED"
+                                           [queryParams]="{ toolId: toolIdByTopic[rowData.topicId] }"
+                                           [routerLink]="['/tool-configuration']"
+                                           class="btn-configure"
+                                        >
+                                            Configure
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="row-cell-text parent-row-cell" style="min-width: 110px; width: 110px; max-width: 110px;"></td>
+                        </ng-container>
+
+                        <ng-container *ngIf="!rowData.isParent">
+                            <ng-container *ngIf="type === 'policy'">
+                                <td *ngIf="canDisplayColumn('select')" class="first-schema-grid-cell" style="min-width: 140px; max-width: 150px;">
+                                    <p-checkbox
+                                        (onChange)="onSelectItem(rowData)"
+                                        [disabled]="isDeleteDisabled(rowData)"
+                                        [ngModel]="isSelected(rowData)"
+                                        [binary]="true"
+                                    >
+                                    </p-checkbox>
+                                </td>
+                                <td [pTooltip]="rowData.name" class="row-cell-text col-200">
+                                    <span class="text-truncate">{{ rowData.name || '–' }}</span>
+                                </td>
+                                <td class="row-cell-text">
+                                        <ng-container *ngIf="rowData.topicId === 'draft'; else topicExplorer">
+                                        <span>Draft</span>
+                                    </ng-container>
+                                    <ng-template #topicExplorer>
+                                        <hedera-explorer [params]="rowData.topicId" type="topics">{{ rowData.topicId }}
+                                        </hedera-explorer>
+                                    </ng-template>
+                                </td>
+                                <td class="row-cell-text" [class.text-grey]="rowData.status === 'DRAFT'">
+                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                        <span>{{ rowData.version || rowData.sourceVersion }}</span>
+                                        <div *ngIf="rowData.status === 'DRAFT' && (rowData.version !== '' || rowData.sourceVersion !== '')" class="btn-info"
+                                             pTooltip="Expected version" tooltipStyleClass="guardian-tooltip"
+                                             tooltipPosition="top">
+                                            <svg-icon src="/assets/images/icons/info.svg"
+                                                      svgClass="color-grey-5"></svg-icon>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="row-cell-text">
+                                    <span class="text-truncate">{{ rowData.entity }}</span>
+                                </td>
+                                <td class="row-cell-text" style="min-width: 185px;">
+                                    <tags-explorer
+                                        *ngIf="user.TAGS_TAG_READ"
+                                        [user]="user"
+                                        [data]="rowData._tags"
+                                        [entity]="tagEntity"
+                                        [owner]="owner"
+                                        [schemas]="tagSchemas"
+                                        [service]="tagsService"
+                                        [target]="rowData.id"></tags-explorer>
+                                </td>
+                                <td class="row-cell-text" style="min-width: 100px;">
+                                    <span [ngSwitch]="rowData.status">
+                                        <div *ngSwitchCase="'DRAFT'">
+                                            <span class="schema-status status-DRAFT">Draft</span>
+                                        </div>
+                                        <div *ngSwitchCase="'PUBLISHED'">
+                                            <span class="schema-status status-PUBLISHED">Published</span>
+                                        </div>
+                                        <div *ngSwitchCase="'UNPUBLISHED'">
+                                            <span class="schema-status status-UNPUBLISHED">Unpublished</span>
+                                        </div>
+                                        <div *ngSwitchCase="'ERROR'">
+                                            <span class="schema-status status-ERROR">Incomplete</span>
+                                        </div>
+                                        <div *ngSwitchCase="'DEMO'">
+                                            <span class="schema-status status-DEMO">Demo</span>
+                                        </div>
+                                        <div *ngSwitchCase="'VIEW'">
+                                            <span class="schema-status status-VIEW">View</span>
+                                        </div>
+                                        <div *ngSwitchDefault>
+                                            <span class="schema-status">{{ rowData.status }}</span>
+                                        </div>
+                                    </span>
+                                </td>
+                                <td class="row-cell-text" style="min-width: 140px;">
+                                    <div class="operations-row-container">
+                                        <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
+                                            <div
+                                                (click)="onPublish(rowData)"
+                                                *ngIf="rowData.status == 'DRAFT'"
+                                                [attr.disabled]="rowData.topicId === 'draft'"
+                                                class="btn-approve">Publish
+                                            </div>
+                                            <div
+                                                (click)="onPublish(rowData)"
+                                                *ngIf="rowData.status == 'UNPUBLISHED'"
+                                                [attr.disabled]="rowData.topicId === 'draft'"
+                                                class="btn-approve">Publish
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </ng-container>
+                            <ng-container *ngIf="type === 'module'">
+                                <td [pTooltip]="rowData.name" class="row-cell-text" style="min-width: 140px; max-width: 150px;">
+                                    <span class="text-truncate">{{ rowData.name }}</span>
+                                </td>
+                                <td class="row-cell-text" style="min-width: 100px;">
+                                    <span [ngSwitch]="rowData.status">
+                                        <div *ngSwitchCase="'DRAFT'">
+                                            <span class="schema-status status-DRAFT">Draft</span>
+                                        </div>
+                                        <div *ngSwitchCase="'PUBLISHED'">
+                                            <span class="schema-status status-PUBLISHED">Published</span>
+                                        </div>
+                                        <div *ngSwitchCase="'UNPUBLISHED'">
+                                            <span class="schema-status status-UNPUBLISHED">Unpublished</span>
+                                        </div>
+                                        <div *ngSwitchCase="'ERROR'">
+                                            <span class="schema-status status-ERROR">Incomplete</span>
+                                        </div>
+                                        <div *ngSwitchDefault>
+                                            <span class="schema-status">{{ rowData.status }}</span>
+                                        </div>
+                                    </span>
+                                </td>
+                                <td class="row-cell-text" style="min-width: 140px;">
+                                    <div class="operations-row-container">
+                                        <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
+                                            <div
+                                                (click)="onPublish(rowData)"
+                                                *ngIf="rowData.status == 'DRAFT'"
+                                                [attr.disabled]="rowData.topicId === 'draft'"
+                                                class="btn-approve">Publish
+                                            </div>
+                                            <div
+                                                (click)="onPublish(rowData)"
+                                                *ngIf="rowData.status == 'UNPUBLISHED'"
+                                                [attr.disabled]="rowData.topicId === 'draft'"
+                                                class="btn-approve">Publish
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </ng-container>
+                            <ng-container *ngIf="type === 'tool'">
+                                <td class="row-cell-text col-200"></td>
+                                <td [pTooltip]="rowData.name" class="row-cell-text" style="min-width: 140px; max-width: 150px;">
+                                    <span class="text-truncate">{{ rowData.name }}</span>
+                                </td>
+                                <td class="row-cell-text" style="min-width: 100px;">
+                                    <span [ngSwitch]="rowData.status">
+                                        <div *ngSwitchCase="'DRAFT'">
+                                            <span class="schema-status status-DRAFT">Draft</span>
+                                        </div>
+                                        <div *ngSwitchCase="'PUBLISHED'">
+                                            <span class="schema-status status-PUBLISHED">Published</span>
+                                        </div>
+                                        <div *ngSwitchCase="'UNPUBLISHED'">
+                                            <span class="schema-status status-UNPUBLISHED">Unpublished</span>
+                                        </div>
+                                        <div *ngSwitchCase="'ERROR'">
+                                            <span class="schema-status status-ERROR">Incomplete</span>
+                                        </div>
+                                        <div *ngSwitchDefault>
+                                            <span class="schema-status">{{ rowData.status }}</span>
+                                        </div>
+                                    </span>
+                                </td>
+                                <td class="row-cell-text" style="min-width: 140px;">
+                                    <div class="operations-row-container">
+                                        <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
+                                            <div
+                                                (click)="onPublish(rowData)"
+                                                *ngIf="rowData.status == 'DRAFT'"
+                                                [attr.disabled]="rowData.topicId === 'draft'"
+                                                class="btn-approve">Publish
+                                            </div>
+                                            <div
+                                                (click)="onPublish(rowData)"
+                                                *ngIf="rowData.status == 'UNPUBLISHED'"
+                                                [attr.disabled]="rowData.topicId === 'draft'"
+                                                class="btn-approve">Publish
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <td class="row-cell-text" style="min-width: 110px; width: 110px; max-width: 110px;">
+                                <div class="operations-row-container">
+                                    <div style="margin-right: 12px;">
+                                        <div
+                                            *ngIf="ifCanEdit(rowData)"
+                                            (click)="onEditSchema(rowData)"
+                                            class="btn-settings"
+                                            pTooltip="Edit"
+                                            tooltipStyleClass="guardian-tooltip"
+                                            tooltipPosition="top"
+                                        >
+                                            <svg-icon src="/assets/images/icons/edit.svg" svgClass="color-primary"></svg-icon>
+                                        </div>
+                                        <div
+                                            *ngIf="!ifCanEdit(rowData)"
+                                            class="btn-settings"
+                                            pTooltip="Edit"
+                                            tooltipStyleClass="guardian-tooltip"
+                                            tooltipPosition="top"
+                                        >
+                                            <svg-icon src="/assets/images/icons/edit.svg" svgClass="color-grey"></svg-icon>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div
+                                            class="btn-settings"
+                                            (click)="onMenuClick($event, schemaMenu, rowData)"
+                                            pTooltip="Menu"
+                                            tooltipPosition="top"
+                                        >
+                                            <svg-icon src="/assets/images/icons/menu.svg" svgClass="color-primary"></svg-icon>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </ng-container>
+                    </tr>
+                </ng-template>
+            </p-treeTable>
+
+            <p-table *ngIf="isSystem || isTag" [value]="page"
+                class="guardian-grid-table"
+                [scrollable]="true"
+            >
+                <ng-template pTemplate="header">
+                    <tr class="guardian-grid-header">
                         <ng-container *ngIf="type === 'system'">
                             <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
                                 Name
@@ -194,190 +475,8 @@
                 </ng-template>
                 <ng-template let-schema pTemplate="body">
                     <tr class="guardian-grid-row" [attr.schema-status]="schema.status">
-
-                        <ng-container *ngIf="type === 'policy'">
-                            <td *ngIf="canDisplayColumn('select')" class="first-schema-grid-cell" style="min-width: 140px; max-width: 150px;">
-                                <p-checkbox
-                                    (onChange)="onSelectItem(schema)"
-                                    [disabled]="isDeleteDisabled(schema)"
-                                    [ngModel]="isSelected(schema)"
-                                    [binary]="true"
-                                >
-                                </p-checkbox>
-                            </td>
-                            <td class="row-cell-text col-200">
-                                <a class="text-truncate"
-                                    [queryParams]="{ policyId: policyIdByTopic[schema.topicId] }"
-                                    [routerLink]="['/policy-configuration']"
-                                >
-                                    {{ policyNameByTopic[schema.topicId] }}
-                                </a>
-                            </td>
-                            <td [pTooltip]="schema.name" class="row-cell-text col-200">
-                                <span class="text-truncate">{{ schema.name || '–' }}</span>
-                            </td>
-                            <td class="row-cell-text">
-                                <ng-container *ngIf="schema.topicId === 'draft'; else topicExplorer">
-                                    <span>Draft</span>
-                                </ng-container>
-                                <ng-template #topicExplorer>
-                                    <hedera-explorer [params]="schema.topicId" type="topics">{{ schema.topicId }}
-                                    </hedera-explorer>
-                                </ng-template>
-                            </td>
-                            <td class="row-cell-text">
-                                <span class="text-truncate">{{ schema.version || schema.sourceVersion }}</span>
-                            </td>
-                            <td class="row-cell-text">
-                                <span class="text-truncate">{{ schema.entity }}</span>
-                            </td>
-                            <td class="row-cell-text" style="min-width: 185px;">
-                                <tags-explorer
-                                    *ngIf="user.TAGS_TAG_READ"
-                                    [user]="user"
-                                    [data]="schema._tags"
-                                    [entity]="tagEntity"
-                                    [owner]="owner"
-                                    [schemas]="tagSchemas"
-                                    [service]="tagsService"
-                                    [target]="schema.id"></tags-explorer>
-                            </td>
-                            <td class="row-cell-text" style="min-width: 100px;">
-                                <span [ngSwitch]="schema.status">
-                                    <div *ngSwitchCase="'DRAFT'">
-                                        <span class="schema-status status-DRAFT">Draft</span>
-                                    </div>
-                                    <div *ngSwitchCase="'PUBLISHED'">
-                                        <span class="schema-status status-PUBLISHED">Published</span>
-                                    </div>
-                                    <div *ngSwitchCase="'UNPUBLISHED'">
-                                        <span class="schema-status status-UNPUBLISHED">Unpublished</span>
-                                    </div>
-                                    <div *ngSwitchCase="'ERROR'">
-                                        <span class="schema-status status-ERROR">Incomplete</span>
-                                    </div>
-                                    <div *ngSwitchCase="'DEMO'">
-                                        <span class="schema-status status-DEMO">Demo</span>
-                                    </div>
-                                    <div *ngSwitchCase="'VIEW'">
-                                        <span class="schema-status status-VIEW">View</span>
-                                    </div>
-                                    <div *ngSwitchDefault>
-                                        <span class="schema-status">{{ schema.status }}</span>
-                                    </div>
-                                </span>
-                            </td>
-                            <td class="row-cell-text" style="min-width: 140px;">
-                                <div class="operations-row-container">
-                                    <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
-                                        <div
-                                            (click)="onPublish(schema)"
-                                            *ngIf="schema.status == 'DRAFT'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                            class="btn-approve">Publish
-                                        </div>
-                                        <div
-                                            (click)="onPublish(schema)"
-                                            *ngIf="schema.status == 'UNPUBLISHED'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                            class="btn-approve">Publish
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </ng-container>
-                        <ng-container *ngIf="type === 'module'">
-                            <td [pTooltip]="schema.name" class="row-cell-text" style="min-width: 140px; max-width: 150px;">
-                                <span class="text-truncate">{{ schema.name }}</span>
-                            </td>
-                            <td class="row-cell-text" style="min-width: 100px;">
-                                <span [ngSwitch]="schema.status">
-                                    <div *ngSwitchCase="'DRAFT'">
-                                        <span class="schema-status status-DRAFT">Draft</span>
-                                    </div>
-                                    <div *ngSwitchCase="'PUBLISHED'">
-                                        <span class="schema-status status-PUBLISHED">Published</span>
-                                    </div>
-                                    <div *ngSwitchCase="'UNPUBLISHED'">
-                                        <span class="schema-status status-UNPUBLISHED">Unpublished</span>
-                                    </div>
-                                    <div *ngSwitchCase="'ERROR'">
-                                        <span class="schema-status status-ERROR">Incomplete</span>
-                                    </div>
-                                    <div *ngSwitchDefault>
-                                        <span class="schema-status">{{ schema.status }}</span>
-                                    </div>
-                                </span>
-                            </td>
-                            <td class="row-cell-text" style="min-width: 140px;">
-                                <div class="operations-row-container">
-                                    <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
-                                        <div
-                                            (click)="onPublish(schema)"
-                                            *ngIf="schema.status == 'DRAFT'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                            class="btn-approve">Publish
-                                        </div>
-                                        <div
-                                            (click)="onPublish(schema)"
-                                            *ngIf="schema.status == 'UNPUBLISHED'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                            class="btn-approve">Publish
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </ng-container>
-                        <ng-container *ngIf="type === 'tool'">
-                            <td class="row-cell-text col-200">
-                                <a class="text-truncate" [queryParams]="{toolId: toolIdByTopic[schema.topicId]}"
-                                [routerLink]="'/tool-configuration'">
-                                    {{ toolNameByTopic[schema.topicId] }}
-                                </a>
-                            </td>
-                            <td [pTooltip]="schema.name" class="row-cell-text" style="min-width: 140px; max-width: 150px;">
-                                <span class="text-truncate">{{ schema.name }}</span>
-                            </td>
-                            <td class="row-cell-text" style="min-width: 100px;">
-                                <span [ngSwitch]="schema.status">
-                                    <div *ngSwitchCase="'DRAFT'">
-                                        <span class="schema-status status-DRAFT">Draft</span>
-                                    </div>
-                                    <div *ngSwitchCase="'PUBLISHED'">
-                                        <span class="schema-status status-PUBLISHED">Published</span>
-                                    </div>
-                                    <div *ngSwitchCase="'UNPUBLISHED'">
-                                        <span class="schema-status status-UNPUBLISHED">Unpublished</span>
-                                    </div>
-                                    <div *ngSwitchCase="'ERROR'">
-                                        <span class="schema-status status-ERROR">Incomplete</span>
-                                    </div>
-                                    <div *ngSwitchDefault>
-                                        <span class="schema-status">{{ schema.status }}</span>
-                                    </div>
-                                </span>
-                            </td>
-                            <td class="row-cell-text" style="min-width: 140px;">
-                                <div class="operations-row-container">
-                                    <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
-                                        <div
-                                            (click)="onPublish(schema)"
-                                            *ngIf="schema.status == 'DRAFT'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                            class="btn-approve">Publish
-                                        </div>
-                                        <div
-                                            (click)="onPublish(schema)"
-                                            *ngIf="schema.status == 'UNPUBLISHED'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                            class="btn-approve">Publish
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </ng-container>
                         <ng-container *ngIf="type === 'system'">
-                            <td [pTooltip]="schema.name" class="row-cell-text" style="min-width: 140px; max-width: 150px;">
+                            <td [pTooltip]="schema.name" class="row-cell-text" style="min-width: 40px; max-width: 50px;">
                                 <span class="text-truncate">{{ schema.name }}</span>
                             </td>
                             <td class="row-cell-text" style="min-width: 140px;">
@@ -489,7 +588,6 @@
                         </td>
                     </tr>
                 </ng-template>
-                <ng-template let-columns pTemplate="emptymessage"></ng-template>
             </p-table>
 
             <div class="guardian-grid-paginator">

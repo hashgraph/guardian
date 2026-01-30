@@ -275,16 +275,18 @@ export class CustomLogicBlock {
 
                 const expression = ref.options.expression || '';
                 if (ref.options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
-                    const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-python-worker.js'), {
-                        workerData: {
-                            execFunc: `${execCode}${expression}`,
-                            user,
-                            artifacts,
-                            documents: context.documents,
-                            sources: context.sources,
-                            tablesPack
-                        },
-                    });
+                    const worker = new Worker(
+                        path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-python-worker.js'),
+                        {
+                            workerData: {
+                                execFunc: `${execCode}${expression}`,
+                                user,
+                                artifacts,
+                                documents: context.documents,
+                                sources: context.sources,
+                                tablesPack
+                            },
+                        });
                     worker.on('error', (error) => {
                         reject(error);
                     });
@@ -305,16 +307,18 @@ export class CustomLogicBlock {
                         }
                     });
                 } else {
-                    const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-worker.js'), {
-                        workerData: {
-                            execFunc: `${execCode}${expression}`,
-                            user,
-                            artifacts,
-                            documents: context.documents,
-                            sources: context.sources,
-                            tablesPack
-                        },
-                    });
+                    const worker = new Worker(
+                        path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-worker.js'),
+                        {
+                            workerData: {
+                                execFunc: `${execCode}${expression}`,
+                                user,
+                                artifacts,
+                                documents: context.documents,
+                                sources: context.sources,
+                                tablesPack
+                            },
+                        });
                     worker.on('error', (error) => {
                         reject(error);
                     });
