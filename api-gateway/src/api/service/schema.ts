@@ -2175,7 +2175,7 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.OK)
     async deleteSystemSchema(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
