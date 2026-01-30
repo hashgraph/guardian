@@ -53,6 +53,12 @@ export interface PolicyOptions {
      * Discontinued date
      */
     discontinuedDate?: string;
+
+    originalHash?: string;
+
+    currentHash?: string;
+
+    originalMessageId?: string;
 }
 
 /**
@@ -107,6 +113,8 @@ export interface PolicyAnalytics {
      * Dynamic topics
      */
     dynamicTopics?: string[];
+
+    derivationsCount?: number;
 }
 
 /**

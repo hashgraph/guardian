@@ -116,7 +116,6 @@ export class CompareComponent implements OnInit {
         this.route.queryParams.subscribe(queryParams => {
             this.loadData();
         });
-        // this.loadData();
     }
 
     loadData() {

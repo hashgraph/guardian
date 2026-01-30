@@ -94,6 +94,9 @@ export class Parser {
                 case MessageType.POLICY:
                 case MessageType.INSTANCE_POLICY:
                     message.options.uuid = json.uuid;
+                    message.options.originalHash = json.originalHash;
+                    message.options.currentHash = json.currentHash;
+                    message.options.originalMessageId = json.originalMessageId;
                     message.options.name = json.name;
                     message.options.description = json.description;
                     message.options.topicDescription = json.topicDescription;

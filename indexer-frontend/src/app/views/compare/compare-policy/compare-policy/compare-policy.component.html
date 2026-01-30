@@ -1,0 +1,555 @@
+<div *ngIf="policy1 && policy2" class="list">
+    <div class="toolbar">
+        <div class="total-info" [attr.total]="total">
+            Policies are <span>{{ total }}%</span> the same
+        </div>
+
+        <div class="colorblind-toggle">
+            <label class="toggle-label">
+                <input type="checkbox" [checked]="colorBlindMode" (change)="toggleColorBlindMode()">
+                <span class="toggle-text">Color-blind mode</span>
+            </label>
+        </div>
+    </div>
+    <div class="compare-scrollable">
+        <div class="info-container">
+            <div class="info-title">Description</div>
+            <div class="left-compare-result compare-result" [attr.open]="true">
+                <ng-container *ngTemplateOutlet="policyInfo; context: { policy: policy1 }"></ng-container>
+            </div>
+            <div class="middle-compare-result compare-result" [attr.open]="true"></div>
+            <div class="right-compare-result compare-result" [attr.open]="true">
+                <ng-container *ngTemplateOutlet="policyInfo; context: { policy: policy2 }"></ng-container>
+            </div>
+        </div>
+        <div class="merge-lvl">
+            <div *ngIf="isUUIDLvl" class="f1">
+                <div class="filter-field">
+                    <span class="filter-label">UUID</span>
+
+                    <p-dropdown
+                        id="uuidLevel"
+                        [(ngModel)]="idLvl"
+                        [options]="uuidOptions"
+                        placeholder="Select UUID Level"
+                        (onChange)="onFilterChange()"
+                        [appendTo]="'body'"
+                        styleClass="guardian-dropdown filter-select"
+                        panelStyleClass="guardian-dropdown-panel"
+                    ></p-dropdown>
+                </div>
+            </div>
+            <div *ngIf="isPropertiesLvl" class="f1">
+                <div class="filter-field">
+                    <span class="filter-label">Properties</span>
+
+                    <p-dropdown
+                        id="propertiesDropdown"
+                        [(ngModel)]="propLvl"
+                        [options]="propertyOptions"
+                        placeholder="Select Property Level"
+                        (onChange)="onFilterChange()"
+                        [appendTo]="'body'"
+                        styleClass="guardian-dropdown filter-select"
+                        panelStyleClass="guardian-dropdown-panel"
+                    ></p-dropdown>
+                </div>
+            </div>
+            <div *ngIf="isEventsLvl" class="f1">
+                <div class="filter-field">
+                    <span class="filter-label">Events</span>
+
+                    <p-dropdown
+                        id="eventsDropdown"
+                        [(ngModel)]="eventsLvl"
+                        [options]="eventOptions"
+                        placeholder="Select Event Level"
+                        (onChange)="onFilterChange()"
+                        [appendTo]="'body'"
+                        styleClass="guardian-dropdown filter-select"
+                        panelStyleClass="guardian-dropdown-panel"
+                    ></p-dropdown>
+                </div>
+            </div>
+            <div *ngIf="isChildrenLvl" class="f1">
+                <div class="filter-field">
+                    <span class="filter-label">Children</span>
+
+                    <p-dropdown
+                        id="childrenDropdown"
+                        [(ngModel)]="childrenLvl"
+                        [options]="childrenOptions"
+                        placeholder="Select Children Level"
+                        (onChange)="onFilterChange()"
+                        [appendTo]="'body'"
+                        styleClass="guardian-dropdown filter-select"
+                        panelStyleClass="guardian-dropdown-panel"
+                    ></p-dropdown>
+                </div>
+            </div>
+            <div class="merge-lvl-apply">
+                <button 
+                    (click)="onMergeLevelChange()"
+                    class="guardian-button guardian-button-primary merge-lvl-btn"
+                    [disabled]="!needApplyFilters">Apply
+                </button>
+            </div>
+        </div>
+
+        <p-accordion [multiple]="true">
+            <p-accordionTab header="Policy Roles">
+                <div *ngIf="roles && roles.length" class="merge-tree">
+                    <div *ngFor="let item of roles" class="report-item report-item-small"
+                            [attr.type]="item.type" [attr.rate]="item.total_rate">
+                        <div class="left-compare-result compare-result" [attr.open]="true">
+                            <ng-container *ngIf="item.left">
+                                <ng-container
+                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 0 }"></ng-container>
+                            </ng-container>
+                        </div>
+                        <div class="middle-compare-result compare-result" [attr.open]="true"></div>
+                        <div class="right-compare-result compare-result" [attr.open]="true">
+                            <ng-container *ngIf="item.right">
+                                <ng-container
+                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 1 }"></ng-container>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </p-accordionTab>
+
+            <p-accordionTab header="Policy Groups">
+                <div *ngIf="groups && groups.length" class="merge-tree">
+                    <div *ngFor="let item of groups" class="report-item report-item-small" [attr.type]="item.type"
+                            [attr.rate]="item.total_rate">
+                        <div class="left-compare-result compare-result" [attr.open]="true">
+                            <ng-container *ngIf="item.left">
+                                <ng-container
+                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 0 }"></ng-container>
+                            </ng-container>
+                        </div>
+                        <div class="middle-compare-result compare-result" [attr.open]="true"></div>
+                        <div class="right-compare-result compare-result" [attr.open]="true">
+                            <ng-container *ngIf="item.right">
+                                <ng-container
+                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 1 }"></ng-container>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </p-accordionTab>
+
+            <p-accordionTab header="Policy Tokens">
+                <div *ngIf="topics && topics.length" class="merge-tree">
+                    <div *ngFor="let item of topics" class="report-item report-item-small" [attr.type]="item.type"
+                            [attr.rate]="item.total_rate">
+                        <div class="left-compare-result compare-result" [attr.open]="true">
+                            <ng-container *ngIf="item.left">
+                                <ng-container
+                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 0 }"></ng-container>
+                            </ng-container>
+                        </div>
+                        <div class="middle-compare-result compare-result" [attr.open]="true"></div>
+                        <div class="right-compare-result compare-result" [attr.open]="true">
+                            <ng-container *ngIf="item.right">
+                                <ng-container
+                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 1 }"></ng-container>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </p-accordionTab>
+
+            <p-accordionTab header="Policy Tools">
+                <div *ngIf="tools && tools.length" class="merge-tree">
+                    <div *ngFor="let item of tools" class="report-item report-item-small" [attr.type]="item.type"
+                            [attr.rate]="item.total_rate">
+                        <div class="left-compare-result compare-result" [attr.open]="true">
+                            <ng-container *ngIf="item.left">
+                                <ng-container
+                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 0 }"></ng-container>
+                            </ng-container>
+                        </div>
+                        <div class="middle-compare-result compare-result" [attr.open]="true"></div>
+                        <div class="right-compare-result compare-result" [attr.open]="true">
+                            <ng-container *ngIf="item.right">
+                                <ng-container
+                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 1 }"></ng-container>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </p-accordionTab>
+
+            <p-accordionTab header="Policy Blocks" [selected]="true">
+                <div class="merge-container">
+                    <div class="legend" [attr.type-1]="type1" [attr.type-2]="type2" [attr.type-3]="type3"
+                            [attr.type-4]="type4">
+                        <div class="legend-item" (click)="type1=!type1">
+                            <div class="legend-icon legend-l1"></div>
+                            <div class="legend-text">
+                                Blocks are equal, including their child blocks.
+                            </div>
+                        </div>
+                        <div class="legend-item" (click)="type2=!type2">
+                            <div class="legend-icon legend-l2"></div>
+                            <div class="legend-text">
+                                Blocks are equal, but their child blocks are different. ([≠])
+                            </div>
+                        </div>
+                        <div class="legend-item" (click)="type3=!type3">
+                            <div class="legend-icon legend-l3"></div>
+                            <div class="legend-text">
+                                Blocks are of the same type and are partially equal. (≈)
+                            </div>
+                        </div>
+                        <div class="legend-item" (click)="type4=!type4">
+                            <div class="legend-icon legend-l4"></div>
+                            <div class="legend-text">
+                                Blocks are absent in the other Policy. (+ / -)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="type==='tree'" class="merge-tree" [attr.open]="panelOpenState" [attr.type-1]="type1"
+                            [attr.type-2]="type2" [attr.type-3]="type3" [attr.type-4]="type4">
+
+                        <div *ngFor="let item of blocks; let i=index" class="report-item report-item-number"
+                                [attr.type]="item.type" [attr.rate]="item.total_rate" [attr.hidden]="item._hidden">
+                            <div class="report-number">{{ i + 1 }}</div>
+                            <div class="report-collapse" [attr.collapse]="item._collapse" (click)="onCollapse(item)">
+                                <i class="pi pi-minus icon open-icon" *ngIf="item._collapse === 1"></i>
+                                <i class="pi pi-plus icon collapse-icon" *ngIf="item._collapse !== 1"></i>
+                            </div>
+                            <ng-container *ngIf="item.left_type">
+                                <div [attr.offset]="item.lvl" [style.padding-left.px]="_pOffset*item.lvl"
+                                        class="left-tree hidden-item">
+                                    <div class="block-tree" (click)="item._open = !item._open">
+                                        <div class="block-index" [attr.index-rate]="item.index_rate">
+                                            {{ item.left_index }}
+                                        </div>
+                                        <div class="block-icon">
+                                            <i [ngClass]="'pi pi-' + icons[item.left_type]"></i>
+                                        </div>
+                                        <div class="block-type">{{ item.left_tag || item.left_type }}</div>
+                                    </div>
+                                </div>
+                                <div *ngIf="!item.right_type" [attr.offset]="item.lvl"
+                                        [style.padding-left.px]="_pOffset*2*item.lvl"
+                                        class="right-tree fantom-tree hidden-item">
+                                    <div class="block-tree">
+                                        <div class="block-index" [attr.index-rate]="item.index_rate">
+                                            {{ item.left_index }}
+                                        </div>
+                                        <div class="block-icon">
+                                            <i [ngClass]="'pi pi-' + icons[item.left_type]"></i>
+                                        </div>
+                                        <div class="block-type">{{ item.left_tag || item.left_type }}</div>
+                                    </div>
+                                </div>
+                            </ng-container>
+
+                            <ng-container *ngIf="item.right_type">
+                                <div [attr.offset]="item.lvl" [style.padding-left.px]="_pOffset*2*item.lvl"
+                                        class="right-tree hidden-item">
+                                    <div class="block-tree" (click)="item._open = !item._open">
+                                        <div class="block-index" [attr.index-rate]="item.index_rate">
+                                            {{ item.right_index }}
+                                        </div>
+                                        <div class="block-icon">
+                                            <i [ngClass]="'pi pi-' + icons[item.right_type]"></i>
+                                        </div>
+                                        <div class="block-type">{{ item.right_tag || item.right_type }}</div>
+                                    </div>
+                                </div>
+                                <div *ngIf="!item.left_type" [attr.offset]="item.lvl"
+                                        [style.padding-left.px]="_pOffset*item.lvl"
+                                        class="left-tree fantom-tree hidden-item">
+                                    <div class="block-tree">
+                                        <div class="block-index" [attr.index-rate]="item.index_rate">
+                                            {{ item.right_index }}
+                                        </div>
+                                        <div class="block-icon">
+                                            <i [ngClass]="'pi pi-' + icons[item.right_type]"></i>
+                                        </div>
+                                        <div class="block-type">{{ item.right_tag || item.right_type }}</div>
+                                    </div>
+                                </div>
+                            </ng-container>
+                            <div class="middle-tree">
+                                <span class="type-indicator left-indicator" *ngIf="(item.type === 'PARTLY' || (item.type === 'FULL' && item.total_rate !== '100%')) && item._collapse">[≠]</span>
+                                <span class="type-indicator left-indicator" *ngIf="(item.type === 'PARTLY' || (item.type === 'FULL' && item.total_rate !== '100%')) && !item._collapse">≈</span>
+                                <span class="type-indicator left-indicator" *ngIf="item.type === 'LEFT'">+</span>
+                                <span class="type-indicator left-indicator" *ngIf="item.type === 'RIGHT'">-</span>
+                                <div class="compare-btn" (click)="item._open = !item._open">
+                                    <i *ngIf="!item._open"
+                                        class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
+                                    <i *ngIf="item._open"
+                                        class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
+                                </div>
+                                <span class="type-indicator right-indicator" *ngIf="(item.type === 'PARTLY' || (item.type === 'FULL' && item.total_rate !== '100%')) && item._collapse">[≠]</span>
+                                <span class="type-indicator right-indicator" *ngIf="(item.type === 'PARTLY' || (item.type === 'FULL' && item.total_rate !== '100%')) && !item._collapse">≈</span>
+                                <span class="type-indicator right-indicator" *ngIf="item.type === 'LEFT'">-</span>
+                                <span class="type-indicator right-indicator" *ngIf="item.type === 'RIGHT'">+</span>
+                            </div>
+
+                            <ng-container *ngIf="item._open">
+                                <div class="left-compare-result compare-result hidden-item" [attr.open]="item._open"
+                                        [style.padding-left.px]="_pOffset*item.lvl">
+                                    <ng-container *ngIf="item.left">
+                                        <ng-container
+                                            *ngTemplateOutlet="blockInfo; context: { blocks:item, index:0 }"></ng-container>
+                                    </ng-container>
+                                </div>
+                                <div class="middle-compare-result compare-result" [attr.open]="item._open"></div>
+                                <div class="right-compare-result compare-result hidden-item" [attr.open]="item._open"
+                                        [style.padding-left.px]="_pOffset*item.lvl">
+                                    <ng-container *ngIf="item.right">
+                                        <ng-container
+                                            *ngTemplateOutlet="blockInfo; context: { blocks:item, index:1 }"></ng-container>
+                                    </ng-container>
+                                </div>
+                            </ng-container>
+                        </div>
+                    </div>
+
+                    <div *ngIf="type === 'table'" class="merge-table" [attr.open]="panelOpenState">
+                        <div class="merge-table-content">
+                            <p-table *ngIf="blocks" [value]="blocks" class="table mat-table">
+                                <ng-template pTemplate="header">
+                                    <tr class="mat-header-row">
+                                        <ng-container *ngFor="let column of columns">
+                                            <th *ngIf="displayedColumns.includes(column.name)" class="mat-header-cell">
+                                                {{ column.label }}
+                                            </th>
+                                        </ng-container>
+                                    </tr>
+                                </ng-template>
+
+                                <ng-template pTemplate="body" let-row>
+                                    <tr class="mat-row" [attr.type]="row.type" [attr.rate]="row.total_rate">
+                                        <ng-container *ngFor="let column of columns">
+                                            <td *ngIf="displayedColumns.includes(column.name)" class="mat-cell">
+                                                <ng-container *ngIf="!isObject(row[column.name])">
+                                                    {{ row[column.name] }}
+                                                </ng-container>
+                                            </td>
+                                        </ng-container>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+
+                </div>
+            </p-accordionTab>
+        </p-accordion>
+    </div>
+</div>
+
+<ng-template #policyInfo let-policy="policy">
+    <div class="policy-info">
+        <div [ngSwitch]="policy.type" class="policy-info-field">
+            <div *ngSwitchCase="'message'" class="policy-info-field-name">Message ID</div>
+            <div *ngSwitchCase="'file'" class="policy-info-field-name">File</div>
+            <div *ngSwitchDefault class="policy-info-field-name">ID</div>
+            <div class="policy-info-field-value">{{ getPolicyId(policy) }}</div>
+        </div>
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">Name</div>
+            <div class="policy-info-field-value">{{ policy.name }}</div>
+        </div>
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">Description</div>
+            <div class="policy-info-field-value">{{ policy.description }}</div>
+        </div>
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">Topic</div>
+            <div class="policy-info-field-value">{{ policy.instanceTopicId }}</div>
+        </div>
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">Version</div>
+            <div class="policy-info-field-value">{{ policy.version }}</div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #blockInfo let-blocks="blocks" let-index="index">
+    <div class="prop">
+        <div class="prop-name">Permission Rate:</div>
+        <div class="prop-value" [attr.rate]="blocks.permission_rate">{{ blocks.permission_rate }}</div>
+    </div>
+    <div class="prop">
+        <div class="prop-name">Properties Rate:</div>
+        <div class="prop-value" [attr.rate]="blocks.prop_rate">{{ blocks.prop_rate }}</div>
+    </div>
+    <div class="prop">
+        <div class="prop-name">Events Rate:</div>
+        <div class="prop-value" [attr.rate]="blocks.event_rate">{{ blocks.event_rate }}</div>
+    </div>
+    <div class="prop">
+        <div class="prop-name">Artifacts Rate:</div>
+        <div class="prop-value" [attr.rate]="blocks.artifacts_rate">{{ blocks.artifacts_rate }}</div>
+    </div>
+    <div class="prop">
+        <div class="prop-name">Total Rate:</div>
+        <div class="prop-value" [attr.rate]="blocks.total_rate">{{ blocks.total_rate }}</div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+
+    <div class="prop">
+        <div class="prop-name">Block Type:</div>
+        <div class="prop-value">{{ blocks.block_type }}</div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+
+    <div class="prop-table">
+        <div class="prop-table-header">Permissions:</div>
+        <div class="prop-table-body">
+            <div *ngFor="let perm of blocks.permissions; let i=index" class="prop-table-row" [attr.type]="perm.type"
+                 [attr.index]="index">
+                <div class="prop-table-name" [style.padding-left.px]="10">{{ i }}:</div>
+                <div class="prop-table-value">
+                    <span *ngIf="perm.items[index]">
+                        {{ perm.items[index] }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+
+    <div class="prop-table">
+        <div class="prop-table-header">Properties:</div>
+        <div class="prop-table-body">
+            <div *ngFor="let prop of blocks.properties" class="prop-table-row" [attr.type]="prop.type"
+                 [attr.offset]="prop.lvl" [attr.index]="index">
+                <div class="prop-table-name" [style.padding-left.px]="10*prop.lvl">{{ prop.name }}:</div>
+                <div class="prop-table-value" [attr.prop-type]="prop.items[index]?.type">
+                    <div class="compare-btn" (click)="compareSchema(prop)">
+                        <i class="pi pi-search"></i>
+                    </div>
+
+                    <span *ngIf="prop.items[index]" [title]="prop.items[index].value">
+                        {{ prop.items[index].value }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+
+    <div class="prop-table">
+        <div class="prop-table-header">Events:</div>
+        <div class="prop-table-body">
+            <ng-container *ngFor="let event of blocks.events">
+                <div class="prop-table-row" [attr.type]="event.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="10">Event:</div>
+                    <div class="prop-table-value"><span></span></div>
+                </div>
+                <div class="prop-table-row" [attr.type]="event.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">source:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="event.items[index]">{{ event.items[index].source }}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" [attr.type]="event.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">output:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="event.items[index]">{{ event.items[index].output }}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" [attr.type]="event.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">target:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="event.items[index]">{{ event.items[index].target }}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" [attr.type]="event.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">input:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="event.items[index]">{{ event.items[index].input }}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" [attr.type]="event.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">actor:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="event.items[index]">{{ event.items[index].actor }}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" [attr.type]="event.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">disabled:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="event.items[index]">{{ event.items[index].disabled }}</span>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+
+    <div class="prop-table">
+        <div class="prop-table-header">Artifacts:</div>
+        <div class="prop-table-body">
+            <ng-container *ngFor="let artifact of blocks.artifacts">
+                <div class="prop-table-row" [attr.type]="artifact.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="10">Artifact:</div>
+                    <div class="prop-table-value"><span></span></div>
+                </div>
+                <div class="prop-table-row" [attr.type]="artifact.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">name:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="artifact.items[index]">{{ artifact.items[index].name }}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" [attr.type]="artifact.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">extension:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="artifact.items[index]">{{ artifact.items[index].extension }}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" [attr.type]="artifact.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">type:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="artifact.items[index]">{{ artifact.items[index].type }}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" [attr.type]="artifact.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">hash:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="artifact.items[index]">{{ artifact.items[index].weight }}</span>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+</ng-template>
+
+<ng-template #propInfo let-props="props" let-index="index">
+
+    <div class="prop-table">
+        <div class="prop-table-body">
+            <div *ngFor="let prop of props.properties" class="prop-table-row" [attr.type]="prop.type"
+                 [attr.offset]="prop.lvl" [attr.index]="index">
+                <div class="prop-table-name" [style.padding-left.px]="10*prop.lvl">{{ prop.name }}:</div>
+                <div class="prop-table-value" [attr.prop-type]="prop.items[index]?.type">
+
+                    <div class="compare-btn" (click)="compareSchema(prop)">
+                        <i class="pi pi-search"></i>
+                    </div>
+                    <span *ngIf="prop.items[index]">
+                        {{ prop.items[index].value }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</ng-template>
