@@ -801,8 +801,8 @@ a {
     }
 
     ::ng-deep .guardian-grid-table {
-        .p-datatable-wrapper {
-            max-height: calc(-385px + 100vh);
+        .p-treetable-scrollable-body {
+            max-height: calc(-435px + 100vh);
         }
 
         .grey-row.parent {

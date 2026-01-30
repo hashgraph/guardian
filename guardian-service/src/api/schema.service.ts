@@ -289,25 +289,27 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const blockedChildren: IChildSchemaDeletionBlock[] = [];
                 const blockedSchemaIds = new Set<string>();
                 const policySchemas = new Map<string, SchemaCollection[]>();
+                const schemaDefIds = new Set<string>();
 
                 for (const schema of schemas) {
                     const defs = schema.defs ? (Array.isArray(schema.defs) ? schema.defs : [schema.defs]) : [];
-                    const childSchemasFilter: any = {
-                        iri: { $in: defs },
-                        status: ModuleStatus.DRAFT,
-                    }
-                    const childSchemasDefs = await DatabaseServer.getSchemas(childSchemasFilter, {
-                        fields: [
-                            'iri',
-                            'name',
-                            'version',
-                            'sourceVersion',
-                            'status'
-                        ]
-                    })
-                    for (const childSchema of childSchemasDefs) {
-                        childSchemas.set(childSchema.iri, childSchema);
-                    }
+                    defs.forEach(def => schemaDefIds.add(def));
+                }
+                const childSchemasFilter: any = {
+                    iri: { $in: [...schemaDefIds] },
+                    status: ModuleStatus.DRAFT,
+                }
+                const childSchemasDefs = await DatabaseServer.getSchemas(childSchemasFilter, {
+                    fields: [
+                        'iri',
+                        'name',
+                        'version',
+                        'sourceVersion',
+                        'status'
+                    ]
+                })
+                for (const childSchema of childSchemasDefs) {
+                    childSchemas.set(childSchema.iri, childSchema);
                 }
 
                 for (const schema of schemas) {
@@ -405,9 +407,14 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         !blockedSchemaIds.has(child.iri)
                         && !schemas.some(schema => schema.iri === child.iri))
 
+                const blockedChildrenResult = blockedChildren.map(item => ({
+                    schema: item.schema.name,
+                    blockingSchemas: item.blockingSchemas.map(schema => schema.name)
+                }));
+
                 return new MessageResponse({
                     deletableChildren,
-                    blockedChildren
+                    blockedChildren: blockedChildrenResult
                 });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -969,26 +976,27 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const blockedChildren: IChildSchemaDeletionBlock[] = [];
                 const blockedSchemaIds = new Set<string>();
                 const policySchemas = new Map<string, SchemaCollection[]>();
+                const schemaDefIds = new Set<string>();
 
                 for (const schema of schemas) {
                     const defs = schema.defs ? (Array.isArray(schema.defs) ? schema.defs : [schema.defs]) : [];
-                    const childSchemasFilter: any = {
-                        iri: { $in: defs },
-                        status: ModuleStatus.DRAFT,
-                    }
-                    const childSchemasDefs = await DatabaseServer.getSchemas(childSchemasFilter, {
-                        fields: [
-                            'iri',
-                            'name',
-                            'version',
-                            'sourceVersion',
-                            'status'
-                        ]
-                    })
-
-                    for (const childSchema of childSchemasDefs) {
-                        childSchemas.set(childSchema.iri, childSchema);
-                    }
+                    defs.forEach(def => schemaDefIds.add(def));
+                }
+                const childSchemasFilter: any = {
+                    iri: { $in: [...schemaDefIds] },
+                    status: ModuleStatus.DRAFT,
+                }
+                const childSchemasDefs = await DatabaseServer.getSchemas(childSchemasFilter, {
+                    fields: [
+                        'iri',
+                        'name',
+                        'version',
+                        'sourceVersion',
+                        'status'
+                    ]
+                })
+                for (const childSchema of childSchemasDefs) {
+                    childSchemas.set(childSchema.iri, childSchema);
                 }
 
                 for (const schema of schemas) {
