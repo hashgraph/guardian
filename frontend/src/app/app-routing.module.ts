@@ -31,7 +31,6 @@ import { CompareComponent } from './modules/analytics/compare/compare.component'
 import { ModulesListComponent } from './modules/policy-engine/modules-list/modules-list.component';
 import { ToolsListComponent } from './modules/policy-engine/tools-list/tools-list.component';
 import { SearchPoliciesComponent } from './modules/analytics/search-policies/search-policies.component';
-import { AboutViewComponent } from './views/admin/about-view/about-view.component';
 import { PolicySearchComponent } from './views/policy-search/policy-search.component';
 import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-tokens-user.component';
 import { RecordResultsComponent } from './modules/policy-engine/record/record-results/record-results.component';
@@ -63,7 +62,6 @@ import { ExternalPolicyComponent } from './modules/policy-engine/external-polici
 import { PolicyRequestsComponent } from './modules/policy-engine/requests/requests.component';
 import { PolicyRepositoryComponent } from './modules/policy-engine/policy-repository/policy-repository.component';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
-
 
 @Injectable({
     providedIn: 'root'
@@ -260,7 +258,6 @@ const routes: Routes = [
         children: [
             { path: 'status', component: ServiceStatusComponent },
             { path: 'settings', component: SettingsViewComponent },
-            { path: 'about', component: AboutViewComponent }
         ],
         data: {
             roles: [UserRole.STANDARD_REGISTRY],
@@ -768,7 +765,6 @@ const routes: Routes = [
             ]
         }
     },
-
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },
