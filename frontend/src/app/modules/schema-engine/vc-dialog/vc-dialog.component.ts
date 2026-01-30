@@ -151,7 +151,7 @@ export class VCViewerDialog {
         this.loading = true;
         const requests = [this.profileService.getProfile()];
 
-        if (id && topicId && category) {
+        if (id && category) {
             requests.push(this.schemaService.getSchemaWithSubSchemas(category, id, topicId));
         }
 

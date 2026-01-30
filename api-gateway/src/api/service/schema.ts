@@ -2175,7 +2175,7 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.OK)
     async deleteSystemSchema(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
@@ -2207,6 +2207,8 @@ export class SchemaApi {
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
+            return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

@@ -2480,7 +2480,7 @@ export class PolicyConfigurationComponent implements OnInit {
         if (tagsHistory.length > 0) {
             const dialogRef = this.dialog.open(MultipleTagsExplorerDialog, {
                 width: '750px',
-                closable: false,
+                closable: true,
                 header: 'Tags',
                 data: {
                     user: this.user,
@@ -2507,7 +2507,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 const dialogRef = this.dialog.open(TagsExplorerDialog, {
                     width: '750px',
                     height: '600px',
-                    closable: false,
+                    closable: true,
                     header: 'Tags',
                     data: {
                         user: this.user,

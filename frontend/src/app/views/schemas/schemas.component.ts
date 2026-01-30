@@ -39,14 +39,7 @@ import { SchemaDeleteWarningDialogComponent } from 'src/app/modules/schema-engin
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
 import { ReplaceSchemasDialogComponent } from '../../modules/policy-engine/dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
 import { TreeNode } from 'primeng/api';
-
-enum SchemaType {
-    System = 'system',
-    Policy = 'policy',
-    Tag = 'tag',
-    Module = 'module',
-    Tool = 'tool'
-}
+import { SchemaType } from 'src/app/modules/policy-engine/structures/types/schema-type.type';
 
 const policySchemaColumns: string[] = [
     'policy',
@@ -952,8 +945,13 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
-                this.schemaService.deleteSystemSchema(id).subscribe((data: any) => {
-                    this.loadSchemas();
+                this.schemaService.deleteSystemSchema(id).subscribe((result: any) => {
+                    const { taskId, expectation } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
                 }, (e) => {
                     this.loadError(e);
                 });

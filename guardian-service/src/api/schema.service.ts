@@ -441,7 +441,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const schema = await DatabaseServer.getSchemaById(id);
-                if (!schema || schema.owner !== owner.owner) {
+                if (!schema || (schema.owner && schema.owner !== owner.owner)) {
                     return new MessageError('Schema is not found');
                 }
 
@@ -472,7 +472,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         const schema = await DatabaseServer.getSchema({
                             iri: type
                         });
-                        if (result.findIndex(item => item.type === schema.iri) === -1) {
+                        if (schema && result.findIndex(item => item.type === schema.iri) === -1) {
                             result.push(await createNode(schema));
                         }
                     }
