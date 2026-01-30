@@ -23,9 +23,7 @@ interface IColumn {
     styleUrls: ['./external-policies.component.scss'],
 })
 export class ExternalPolicyComponent implements OnInit {
-    public title: string = 'Remote Policy';
-    public actionButtonLabel: string = 'Request Access';
-    public isStandardRegistry: boolean = false;
+    public title: string = 'Remote Policy Request';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
@@ -127,13 +125,6 @@ export class ExternalPolicyComponent implements OnInit {
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
 
-            this.isStandardRegistry = this.user.role === UserRole.STANDARD_REGISTRY;
-            if (this.isStandardRegistry) {
-                this.actionButtonLabel = 'Import External Policy';
-            } else {
-                this.actionButtonLabel = 'Request Access';
-            }
-
             if (this.user.POLICIES_EXTERNAL_POLICY_UPDATE) {
                 this.columns = [...this._defaultColumns, {
                     id: 'options',
@@ -209,9 +200,6 @@ export class ExternalPolicyComponent implements OnInit {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
-            data: {
-                isStandardRegistry: this.isStandardRegistry
-            }
         });
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {
