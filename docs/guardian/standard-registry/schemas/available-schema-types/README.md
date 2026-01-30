@@ -100,7 +100,7 @@ For all fields of type string with different formats (e.g., `url`, `uri`, `file`
 * The validation is applied only for published policies. For draft policies, validation is disabled.
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 For geoJSON fields :\\
