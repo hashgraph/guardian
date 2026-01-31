@@ -1,15 +1,13 @@
 #!/usr/bin/env node
 
-import { spawnSync } from 'child_process';
-import { Command } from 'commander';
+import {spawnSync} from 'child_process';
+import {Command} from 'commander';
 
-import { PolicyPublisher } from './helpers/policy-publisher.helper.js';
-import {
-  ContractPublisher,
-  Network,
-} from './helpers/contract-publisher.helper.js';
+import {PolicyPublisher} from './helpers/policy-publisher.helper.js';
+import {ContractPublisher, Network,} from './helpers/contract-publisher.helper.js';
+import {ContractHelper} from './helpers/contract.helper.js';
 
-import { TopicHelper } from './helpers/topic.helper.js';
+import {TopicHelper} from './helpers/topic.helper.js';
 
 const GUARDIAN_REPOSITORY = 'https://github.com/hashgraph/guardian';
 
@@ -817,6 +815,79 @@ function main() {
             }
         });
 
+    program
+        .command('propose-owner')
+        .description('Propose new owner for contract')
+        .argument('<contract-id>', 'Contract identifier')
+        .argument('<new-owner-address>', 'New owner hedera account id or evm address')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-g --gas <gas>', 'Gas')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (contractId, newOwnerAddress, account, key, options) => {
+            try {
+                const receipt = await ContractHelper.proposeOwner(
+                    contractId,
+                    newOwnerAddress,
+                    options.gas && parseInt(options.gas, 10),
+                    { operatorId: account, operatorKey: key },
+                    options.network
+                );
+                console.log(`Owner proposed for ${contractId}. Status: ${receipt.status.toString()}`);
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('claim-owner')
+        .description('Claim ownership for contract')
+        .argument('<contract-id>', 'Contract identifier')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-g --gas <gas>', 'Gas')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (contractId, account, key, options) => {
+            try {
+                const receipt = await ContractHelper.claimOwner(
+                    contractId,
+                    options.gas && parseInt(options.gas, 10),
+                    { operatorId: account, operatorKey: key },
+                    options.network
+                );
+                console.log(`Ownership claimed for ${contractId}. Status: ${receipt.status.toString()}`);
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('remove-owner')
+        .description('Remove owner from contract')
+        .argument('<contract-id>', 'Contract identifier')
+        .argument('<owner-address>', 'Owner hedera account id or evm address')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-g --gas <gas>', 'Gas')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (contractId, ownerAddress, account, key, options) => {
+            try {
+                const receipt = await ContractHelper.removeOwner(
+                    contractId,
+                    ownerAddress,
+                    options.gas && parseInt(options.gas, 10),
+                    { operatorId: account, operatorKey: key },
+                    options.network
+                );
+                console.log(`Owner removed from ${contractId}. Status: ${receipt.status.toString()}`);
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
     // -------------------- TOPIC COMMANDS --------------------
 
     program
@@ -969,7 +1040,7 @@ function main() {
             }
         });
 
-    program.parse();
+    program.parse(process.argv);
 }
 
 main();
