@@ -17,6 +17,7 @@ import {
 import {
     DataLoadingProgress,
     DataPriorityLoadingProgress,
+    MessageStatus,
     MessageType,
     Page,
     PageFilters,
@@ -124,7 +125,7 @@ export class LoadingQueueService {
                 const priorityTimestamp = Date.now();
 
                 if (await this.checkQueue(id)) {
-                    const topicResult = await this.addTopic(id, priorityTimestamp);
+                    const topicResult = await this.tryUpdateTopic(id, priorityTimestamp, true);
 
                     if (topicResult) {
                         await this.createQueue(id, priorityTimestamp, 'Topic');
@@ -151,7 +152,7 @@ export class LoadingQueueService {
             for (const id of policyTopicIds) {
                 const priorityTimestamp = Date.now();
                 if (await this.checkQueue(id)) {
-                    const topicResult = await this.addInstancePolicy(id, priorityTimestamp);
+                    const topicResult = await this.tryUpdatePolicyInstance(id, priorityTimestamp);
 
                     if (topicResult) {
                         await this.createQueue(id, priorityTimestamp, 'Topic');
@@ -178,7 +179,7 @@ export class LoadingQueueService {
             for (const id of tokenIds) {
                 const priorityTimestamp = Date.now();
                 if (await this.checkQueue(id)) {
-                    const topicResult = await this.addToken(id, priorityTimestamp);
+                    const topicResult = await this.tryUpdateToken(id, priorityTimestamp);
 
                     if (topicResult) {
                         await this.createQueue(id, priorityTimestamp, 'Token');
@@ -308,7 +309,29 @@ export class LoadingQueueService {
         }
     }
 
-    private async addTopic(topicId: string, priorityTimestamp: number = Date.now()) {
+    private async findTopic(topicId: string): Promise<boolean> {
+        const em = DataBaseHelper.getEntityManager();
+        const topicResult = await em.count(TopicCache, { topicId });
+        return topicResult > 0;
+    }
+
+    private async addTopic(topicId: string, priorityTimestamp: number = Date.now(), inheritPriority: boolean = false) {
+        const em = DataBaseHelper.getEntityManager();
+        await em.persistAndFlush(em.create(TopicCache, {
+            topicId,
+            status: MessageStatus.NONE,
+            lastUpdate: 0,
+            messages: 0,
+            hasNext: false,
+            priorityDate: new Date(),
+            priorityStatus: PriorityStatus.SCHEDULED,
+            priorityStatusDate: new Date(),
+            priorityTimestamp,
+            inheritPriority
+        }));
+    }
+
+    private async tryUpdateTopic(topicId: string, priorityTimestamp: number = Date.now(), inheritPriority: boolean = false) {
         const em = DataBaseHelper.getEntityManager();
 
         const topicResult = await em.nativeUpdate(TopicCache, {
@@ -319,7 +342,8 @@ export class LoadingQueueService {
                 priorityDate: new Date(),
                 priorityStatus: PriorityStatus.SCHEDULED,
                 priorityStatusDate: new Date(),
-                priorityTimestamp
+                priorityTimestamp,
+                inheritPriority
             }
         );
 
@@ -338,7 +362,7 @@ export class LoadingQueueService {
         return (topicResult + messageResult) > 0;
     }
 
-    private async addToken(tokenId: string, priorityTimestamp: number = Date.now()) {
+    private async tryUpdateToken(tokenId: string, priorityTimestamp: number = Date.now()) {
         const em = DataBaseHelper.getEntityManager();
 
         const result = await em.nativeUpdate(TokenCache, {
@@ -356,7 +380,7 @@ export class LoadingQueueService {
         return result !== 0;
     }
 
-    private async addPolicy(policyId: string, priorityTimestamp: number = Date.now()) {
+    private async tryUpdatePolicy(policyId: string, priorityTimestamp: number = Date.now()) {
         const em = DataBaseHelper.getEntityManager();
 
         const row = await em.find(
@@ -369,6 +393,8 @@ export class LoadingQueueService {
         )
 
         if (row) {
+            this.tryUpdateTopic(policyId, priorityTimestamp, true);
+
             const policyInstances = await em.find(
                 Message,
                 {
@@ -379,7 +405,7 @@ export class LoadingQueueService {
 
             let policyInstancesResult = false;
             for (const item of policyInstances) {
-                policyInstancesResult ||= await this.addInstancePolicy(item.options.instanceTopicId, priorityTimestamp);
+                policyInstancesResult ||= await this.tryUpdatePolicyInstance(item.options.instanceTopicId, priorityTimestamp);
             }
 
             return policyInstancesResult;
@@ -388,7 +414,7 @@ export class LoadingQueueService {
         return false;
     }
 
-    private async addInstancePolicy(policyId: string, priorityTimestamp: number = Date.now()) {
+    private async tryUpdatePolicyInstance(policyId: string, priorityTimestamp: number = Date.now()) {
         const em = DataBaseHelper.getEntityManager();
 
         const priorityDate = new Date();
@@ -449,26 +475,44 @@ export class LoadingQueueService {
     }
 
     private async addEntity(entityId: string, priorityTimestamp: number = Date.now()) {
-        if (await this.addPolicy(entityId, priorityTimestamp)) {
+        if (await this.tryUpdatePolicy(entityId, priorityTimestamp)) {
             return true;
         }
 
-        if (await this.addInstancePolicy(entityId, priorityTimestamp)) {
+        if (await this.tryUpdatePolicyInstance(entityId, priorityTimestamp)) {
             return true;
         }
 
-        if (await this.addTopic(entityId, priorityTimestamp)) {
+        if (await this.tryUpdateTopic(entityId, priorityTimestamp, true)) {
             return true;
         }
 
-        if (await this.addToken(entityId, priorityTimestamp)) {
+        if (await this.tryUpdateToken(entityId, priorityTimestamp)) {
             return true;
         }
 
-        return await this.trySetPriorityFromHedera(entityId, priorityTimestamp);
+        const topicsFromHedera = await this.tryFindTopicFromHedera(entityId, priorityTimestamp);
+
+        const topicsArray = [...topicsFromHedera];
+        const lastParentExist = topicsArray.at(-1);
+        const parentsNonExists = topicsArray.slice(1, -1);
+
+        this.addTopic(entityId, priorityTimestamp, true);
+
+        for (const topicId of parentsNonExists) {
+            this.addTopic(topicId, priorityTimestamp, false);
+        }
+
+        this.tryUpdateTopic(lastParentExist, priorityTimestamp, false);
+
+        return true;
     }
 
-    private async trySetPriorityFromHedera(entityId: string, priorityTimestamp: number, parentIds: Set<string> = new Set<string>(), depth: number = 0) {
+    private async tryFindTopicFromHedera(
+        entityId: string,
+        priorityTimestamp: number,
+        parentIds: Set<string> = new Set<string>(),
+        depth: number = 0): Promise<any> {
         if (depth >= 10) {
             console.log('Recursion limit reached: ', depth);
             return false;
@@ -498,13 +542,13 @@ export class LoadingQueueService {
                     const message = this.parseMessage(data);
 
                     if (message && message.type === 'Topic' && message.parentId) {
-                        const cacheResult = await this.addEntity(message.parentId, priorityTimestamp);
-
+                        const cacheResult = await this.findTopic(message.parentId);
                         if (cacheResult) {
-                            return cacheResult;
+                            parentIds.add(message.parentId);
+                            return parentIds;
                         }
 
-                        return await this.trySetPriorityFromHedera(message.parentId, priorityTimestamp, parentIds, depth + 1);
+                        return await this.tryFindTopicFromHedera(message.parentId, priorityTimestamp, parentIds, depth + 1);
                     }
                 }
             } else {
@@ -512,7 +556,7 @@ export class LoadingQueueService {
             }
         } catch (error) {
             console.log('Try set priority from Hedera error: ', entityId, error.message);
-            return false;
+            return await this.tryFindTopicFromHedera(entityId, priorityTimestamp, parentIds, depth + 1);
         }
     }
 

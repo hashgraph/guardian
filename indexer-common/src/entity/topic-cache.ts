@@ -43,4 +43,7 @@ export class TopicCache implements RawTopic {
 
     @Property({ nullable: true })
     priorityTimestamp?: number;
+
+    @Property({ nullable: true })
+    inheritPriority?: boolean;
 }
