@@ -110,6 +110,7 @@
         "lastUpdate": "Last Update",
         "entity_id": "Entity Id",
         "entity_type": "Entity Type",
+        "version": "Version",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",
@@ -147,6 +148,8 @@
         "add_key": "Import Keys",
         "not_exist_comments_header": "Discussions & comments are encrypted",
         "not_exist_comments_text": "Please import the keys to decrypt data and access discussions and comments",
+        "origin": "Origin",
+        "derivations": "Derivations",
         "tabs": {
             "activity": "Activity"
         },

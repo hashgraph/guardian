@@ -24,7 +24,7 @@ export class SchemaService {
 
     public static getOptions(filters?: {
         pageIndex?: number,
-        pageSize?: number,
+        pageSize?: number | string,
         [key: string]: any
     }): HttpParams {
         let params = new HttpParams();
@@ -36,7 +36,10 @@ export class SchemaService {
                     }
                 }
             }
-            if (Number.isInteger(filters.pageIndex) && Number.isInteger(filters.pageSize)) {
+            if (filters.pageSize === 'all') {
+                params = params.set('pageIndex', '0');
+                params = params.set('pageSize', 'all');
+            } else if (Number.isInteger(filters.pageIndex) && Number.isInteger(filters.pageSize)) {
                 params = params.set('pageIndex', String(filters.pageIndex));
                 params = params.set('pageSize', String(filters.pageSize));
             }
@@ -102,7 +105,7 @@ export class SchemaService {
         topicId?: string,
         search?: string,
         pageIndex?: number,
-        pageSize?: number,
+        pageSize?: number | string,
     }): Observable<HttpResponse<ISchema[]>> {
         const params = SchemaService.getOptions(options);
         return this.http.get<any>(`${this.url}`, { observe: 'response', headers: headersV2, params });

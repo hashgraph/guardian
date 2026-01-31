@@ -357,24 +357,22 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 data: U,
                 actionStatus: RecordActionStep
             ): Promise<void> {
-                const status = actionStatus;
-
-                if (output === PolicyOutputEventType.RunEvent) {
+                if (output === PolicyOutputEventType.RunEvent && actionStatus) {
                     actionStatus.saveResult(data);
                 }
 
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
-                        if (output === PolicyOutputEventType.RunEvent) {
+                        if (output === PolicyOutputEventType.RunEvent && actionStatus) {
                            actionStatus.checkCycle(link);
                         }
 
-                        if (actionStatus.syncActions) {
-                            const syncRes = await link.run(user, data, status);
+                        if (actionStatus?.syncActions) {
+                            const syncRes = await link.run(user, data, actionStatus);
 
                             return syncRes;
                         } else {
-                            link.run(user, data, status);
+                            link.run(user, data, actionStatus);
                         }
                     }
                 }

@@ -770,6 +770,15 @@ export class EntityService {
                 type: MessageType.INSTANCE_POLICY,
                 action: MessageAction.PublishPolicy,
             } as any)) as Policy;
+
+            const derivationsCount = await em.count(Message, {
+                'options.originalMessageId': messageId,
+                type: MessageType.INSTANCE_POLICY,
+                action: MessageAction.PublishPolicy,
+            } as any);
+
+            item.analytics.derivationsCount = derivationsCount;
+
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
@@ -1201,7 +1210,6 @@ export class EntityService {
         }
     }
 
-
     @MessagePattern(IndexerMessageAPI.GET_SCHEMAS_PACKAGE)
     async getSchemasPackage(
         @Payload() msg: { messageId: string }
@@ -1227,7 +1235,6 @@ export class EntityService {
                 type: MessageType.SCHEMA,
                 'options.packageMessageId': row.consensusTimestamp,
             } as any);
-
 
             const activity: any = {
                 schemas,
@@ -2389,7 +2396,7 @@ export class EntityService {
                 sr: message.analytics.issuer,
             }
 
-            var newRow = { ...row, analytics };
+            const newRow = { ...row, analytics };
 
             return new MessageResponse<NFTDetails>({
                 id: tokenId,
