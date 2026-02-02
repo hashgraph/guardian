@@ -5,6 +5,8 @@ export const REQUIRED_PROPS = {
     TOPIC_ID: 'topicId',
     VERSION: 'version',
     MESSAGE_ID: 'messageId',
+    OWNER: 'owner',
+    CREATOR: 'creator',
     _ID: '_id',
 };
 

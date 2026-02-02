@@ -1,4 +1,15 @@
-import { GeoJsonContext, IOwner, IRootConfig, ISchemaDocument, ModuleStatus, Schema, SchemaHelper, SchemaStatus, SentinelHubContext } from '@guardian/interfaces';
+import {
+    GenerateUUIDv4,
+    GeoJsonContext,
+    IOwner,
+    IRootConfig,
+    ISchemaDocument,
+    ModuleStatus,
+    Schema,
+    SchemaHelper,
+    SchemaStatus,
+    SentinelHubContext
+} from '@guardian/interfaces';
 import { DatabaseServer, INotificationStep, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, SchemaPackageMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { checkForCircularDependency } from '../common/load-helper.js';
 import { incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper.js';
@@ -159,6 +170,12 @@ export async function publishSchema(
 
     const relationships = await SchemaImportExportHelper.exportSchemas([item.id]);
 
+    const documentBuffer = Buffer.from(JSON.stringify(item.document));
+    const contextBuffer = Buffer.from(JSON.stringify(item.context));
+
+    item.contentDocumentFileId = (await DatabaseServer.saveFile(GenerateUUIDv4(), documentBuffer)).toString();
+    item.contentContextFileId = (await DatabaseServer.saveFile(GenerateUUIDv4(), contextBuffer)).toString();
+
     const message = new SchemaMessage(type || MessageAction.PublishSchema);
     message.setDocument(item);
     message.setRelationships(relationships);
@@ -295,10 +312,7 @@ export async function searchSchemaDefs(
 
 /**
  * Publish schemas
- * @param schemas
- * @param owner
- * @param messageServer
- * @param type
+ * @param options
  */
 export async function publishSchemasPackage(options: {
     name: string,
@@ -310,6 +324,7 @@ export async function publishSchemasPackage(options: {
     notifier: INotificationStep,
     staticSchemas?: boolean,
     schemaMap?: Map<string, string>,
+    onPackageDocuments?: (docs: { document: Buffer; context: Buffer; metadata: Buffer }) => void
 }): Promise<Map<string, string>> {
     const {
         type,
@@ -416,6 +431,16 @@ export async function publishSchemasPackage(options: {
     const message = new SchemaPackageMessage(type);
     message.setDocument(packageDocuments);
     message.setMetadata(draftSchemas, publishedSchemas);
+
+    const documents = await message.toDocuments();
+    if (documents.length && options.onPackageDocuments) {
+        options.onPackageDocuments({
+            document: documents[0],
+            context: documents[1],
+            metadata: documents[2]
+        });
+    }
+
     const result = await server
         .sendMessage(message, {
             sendToIPFS: true,

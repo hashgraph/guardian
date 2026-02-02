@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MigrationConfig, PolicyAvailability, PolicyToolMetadata } from '@guardian/interfaces';
-import { Observable, firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom, map } from 'rxjs';
 import { headersV2 } from '../constants';
 import { API_BASE_URL } from './api';
 
@@ -152,7 +152,7 @@ export class PolicyEngineService {
     }
 
     public setBlockData(blockId: string, policyId: string, data: any): Observable<any> {
-        return this.http.post<void>(`${this.url}/${policyId}/blocks/${blockId}`, data);
+        return this.http.post<any>(`${this.url}/${policyId}/blocks/${blockId}/sync-events`, data).pipe(map(res => res.response));
     }
 
     public getGetIdByName(blockName: string, policyId: string): Observable<any> {

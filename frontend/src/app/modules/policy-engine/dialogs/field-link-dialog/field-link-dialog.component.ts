@@ -1,0 +1,166 @@
+import { Component } from '@angular/core';
+import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
+
+@Component({
+    selector: 'field-link-dialog',
+    templateUrl: './field-link-dialog.component.html',
+    styleUrls: ['./field-link-dialog.component.scss'],
+})
+export class FieldLinkDialog {
+    public loading = true;
+    public items: TreeListView<any> | null;
+    public item: TreeListItem<any> | null;
+    public title: string | string[];
+    public search: string;
+    public searchGroup: string;
+    public value: string | null;
+    public subName: boolean;
+    public groups: {
+        id: string,
+        name: string,
+        subName: string,
+        view: TreeListView<any>,
+        highlighted: boolean,
+        searchHighlighted: boolean,
+        search?: boolean,
+    }[] | null;
+    public selectedGroup: any;
+
+    constructor(
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig,
+        private dialogService: DialogService,
+    ) {
+        this.title = this.config.data?.title;
+        this.subName = this.config.data?.subName !== false;
+
+        this.items = this.config.data?.view;
+        this.value = this.config.data?.value;
+
+        this.groups = this.config.data?.groups;
+        const group = this.config.data?.group;
+
+        if (!this.groups?.length) {
+            this.groups = null;
+        }
+        if (this.groups) {
+            this.items = null;
+            if (group) {
+                this.selectedGroup = this.groups.find((g) => g.id === group) || this.groups[0];
+            } else {
+                this.selectedGroup = this.groups[0];
+            }
+            for (const g of this.groups) {
+                g.name = g.name || '';
+                g.search = true;
+            }
+        } else if (this.items) {
+            this.item = this.items?.findOne((e) => e.id === this.value);
+            if (this.item) {
+                this.items.collapsePath(this.item, true);
+            }
+        }
+    }
+
+    ngOnInit() {
+        this.loading = false;
+    }
+
+    ngOnDestroy(): void {
+    }
+
+    public getTitle(): string {
+        if (Array.isArray(this.title)) {
+            if (this.groups) {
+                if (this.items) {
+                    return this.title[1];
+                } else {
+                    return this.title[0];
+                }
+            } else {
+                return this.title[0];
+            }
+        } else {
+            return this.title;
+        }
+    }
+
+    public onClose(): void {
+        this.ref.close(null);
+    }
+
+    public onCollapseItem(item: TreeListItem<any>) {
+        if (this.items) {
+            this.items.collapse(item, !item.collapsed);
+            this.items.updateHidden();
+        }
+    }
+
+    public onSelectItem(item: TreeListItem<any>) {
+        if (item.expandable) {
+            this.onCollapseItem(item);
+            return;
+        }
+        this.value = item.id;
+        this.item = item;
+    }
+
+    public onSubmit(): void {
+        if (this.value && this.item) {
+            const parents = this.getParents(this.item);
+            const fullName = parents.map(e => e.name).join('|');
+            this.ref.close({
+                group: this.selectedGroup?.id,
+                fullName: fullName,
+                name: this.item.name,
+                value: this.value
+            });
+        }
+    }
+
+    private getParents(item: TreeListItem<any> | null): TreeListItem<any>[] {
+        if (item) {
+            const parents = this.getParents(item.parent);
+            parents.push(item);
+            return parents;
+        } else {
+            return [];
+        }
+    }
+
+    public onFilter() {
+        const search = (this.search || '').toLowerCase();
+        this.items?.searchItems(search, [0, 1]);
+    }
+
+    public onFilterGroup() {
+        if (this.groups) {
+            const search = (this.searchGroup || '').toLowerCase();
+            for (const g of this.groups) {
+                g.search = g.name.toLowerCase().includes(search);
+            }
+        }
+    }
+
+    public onSelectGroup(group: any) {
+        this.selectedGroup = group;
+    }
+
+    public onNext() {
+        if (this.selectedGroup) {
+            this.items = this.selectedGroup.view;
+            if (this.items) {
+                this.item = this.items.findItem((e) => e.id === this.value);
+                if (this.item) {
+                    this.items.collapsePath(this.item, false);
+                    this.items.updateHidden();
+                }
+            }
+        }
+    }
+
+    public onPrev() {
+        this.items = null;
+    }
+}

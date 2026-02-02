@@ -19,6 +19,7 @@ import { ButtonModule } from 'primeng/button';
 import { IValidatorStep, LabelValidators } from '@indexer/interfaces';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { FormsModule } from '@angular/forms';
+import { DialogService } from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'label-document-details',
@@ -123,10 +124,11 @@ export class LabelDocumentDetailsComponent extends BaseDetailsComponent {
 
     constructor(
         entitiesService: EntitiesService,
+        dialogService: DialogService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(entitiesService, route, router);
+        super(entitiesService, dialogService, route, router);
     }
 
     protected override loadData(): void {

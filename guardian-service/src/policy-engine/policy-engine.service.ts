@@ -23,7 +23,7 @@ import {
     NotificationStep,
     PinoLogger,
     Policy,
-    PolicyAction,
+    PolicyAction, PolicyComment,
     PolicyDiscussion,
     PolicyImportExport,
     PolicyMessage,
@@ -63,7 +63,6 @@ import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
 import { GuardiansService } from '../helpers/guardians.js';
-import { BlockAboutString } from './block-about.js';
 import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 import { PolicyDataLoader, VcDocumentLoader, VpDocumentLoader } from './helpers/policy-data/loaders/index.js';
 import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import-export.js';
@@ -286,12 +285,12 @@ export class PolicyEngineService {
 
         this.channel.getMessages(PolicyEvents.RECORD_PERSIST_STEP,
             async (msg: PersistStepPayload) => {
-            const {
-                policyMessageId,
-                payload,
-                hederaOptions,
-                userFull
-            } = msg;
+                const {
+                    policyMessageId,
+                    payload,
+                    hederaOptions,
+                    userFull
+                } = msg;
                 try {
                     await RecordPersistService.persistStep({
                         policyMessageId,
@@ -425,7 +424,8 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>('mrv-data',
             async (msg: any) => {
                 // await PolicyComponentsUtils.ReceiveExternalData(msg);
-                const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
+                const { data } = msg;
+                const policy = await DatabaseServer.getPolicyByTag(data?.policyTag);
                 if (policy) {
                     const policyId = policy.id.toString();
                     await new GuardiansService()
@@ -522,10 +522,12 @@ export class PolicyEngineService {
                 user: IAuthUser,
                 blockId: string,
                 policyId: string,
-                data: any
+                data: any,
+                syncEvents?: boolean,
+                history?: boolean,
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, blockId, policyId, data } = msg;
+                    const { user, blockId, policyId, data, syncEvents, history } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
@@ -533,7 +535,9 @@ export class PolicyEngineService {
                             user,
                             blockId,
                             policyId,
-                            data
+                            data,
+                            syncEvents,
+                            history
                         }) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -547,10 +551,12 @@ export class PolicyEngineService {
                 user: IAuthUser,
                 tag: string,
                 policyId: string,
-                data: any
+                data: any,
+                syncEvents?: boolean,
+                history?: boolean,
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, tag, policyId, data } = msg;
+                    const { user, tag, policyId, data, syncEvents, history } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
@@ -558,7 +564,9 @@ export class PolicyEngineService {
                             user,
                             tag,
                             policyId,
-                            data
+                            data,
+                            syncEvents,
+                            history,
                         }) as any
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -679,7 +687,8 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA,
             async (msg: any) => {
                 try {
-                    const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
+                    const { data } = msg;
+                    const policy = await DatabaseServer.getPolicyByTag(data?.policyTag);
                     if (policy) {
                         const policyId = policy.id.toString();
                         new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA, policyId, {
@@ -748,7 +757,9 @@ export class PolicyEngineService {
             user: IAuthUser
         }) => {
             try {
-                return new MessageResponse(BlockAboutString);
+                const blockAboutString = await new GuardiansService()
+                    .sendMessageWithTimeout(PolicyEvents.GET_BLOCK_ABOUT, 60 * 1000, null);
+                return new MessageResponse(blockAboutString);
             } catch (error) {
                 return new MessageError(error);
             }
@@ -1453,6 +1464,14 @@ export class PolicyEngineService {
                     const { policyId, owner } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
+
+                    if (policy.status === PolicyStatus.PUBLISH && policy.contentFileId) {
+                        const buffer = await DatabaseServer.loadFile(policy.contentFileId);
+                        const arrayBuffer = Uint8Array.from(buffer).buffer;
+
+                        return new BinaryMessageResponse(arrayBuffer);
+                    }
+
                     const zip = await PolicyImportExport.generate(policy);
                     const file = await zip.generateAsync({
                         type: 'arraybuffer',
@@ -1460,6 +1479,7 @@ export class PolicyEngineService {
                         compressionOptions: {
                             level: 3,
                         },
+                        platform: 'UNIX',
                     });
                     return new BinaryMessageResponse(file);
                 } catch (error) {
@@ -3922,7 +3942,7 @@ export class PolicyEngineService {
                         cid: string;
                     }[];
                 },
-            }): Promise<IMessageResponse<Policy>> => {
+            }): Promise<IMessageResponse<Policy | PolicyComment>> => {
                 try {
                     const { user, documentId, policyId, discussionId, data } = msg;
 
@@ -4478,7 +4498,7 @@ export class PolicyEngineService {
                     const { user, policyId, data } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
-                    const status =await new GuardiansService()
+                    const status = await new GuardiansService()
                         .sendBlockMessage(PolicyEvents.CREATE_NEW_VERSION_VC_DOCUMENT, policyId, {
                             user,
                             data
@@ -4490,8 +4510,8 @@ export class PolicyEngineService {
                 }
             })
 
-         this.channel.getMessages(PolicyEngineEvents.GET_All_NEW_VERSION_VC_DOCUMENTS,
-             async (msg: { user: IAuthUser, policyId: string, documentId: string }) => {
+        this.channel.getMessages(PolicyEngineEvents.GET_All_NEW_VERSION_VC_DOCUMENTS,
+            async (msg: { user: IAuthUser, policyId: string, documentId: string }) => {
                 try {
                     const { user, policyId: policyId, documentId: documentId } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);

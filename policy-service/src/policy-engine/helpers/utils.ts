@@ -17,9 +17,10 @@ import {
     Wallet,
     Workers,
     EncryptVcHelper,
-    SchemaConverterUtils
+    SchemaConverterUtils,
+    Tag
 } from '@guardian/common';
-import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SchemaField, SignatureType, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SchemaField, SignatureType, TagType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hiero-ledger/sdk';
 import { FilterQuery } from '@mikro-orm/core';
 import * as mathjs from 'mathjs';
@@ -1902,6 +1903,101 @@ export class PolicyUtils {
             return true;
         } catch (error) {
             return null;
+        }
+    }
+
+    /**
+     * Get block tags
+     * @param ref
+     */
+    public static async getBlockTags(ref: AnyBlockType): Promise<any[]> {
+        const target = ref.policyId;
+        const filter: any = {
+            localTarget: target,
+            entity: TagType.PolicyBlock,
+            linkedItems: { $in: [ref.uuid] }
+        }
+        const tags = await ref.databaseServer.getTags(filter);
+        return tags.map(({ _id, ...rest }) => rest);
+    }
+    /**
+     * Set document tags
+     * @param document
+     * @param tags
+     */
+    public static setDocumentTags(document: IPolicyDocument, tags: Tag[]) {
+        if (!document?.document || !tags || tags.length <= 0) {
+            return;
+        }
+        document.document.tags = document.document.tags || [];
+        for (const tag of tags) {
+            if (!tag.inheritTags) {
+                continue;
+            }
+            if (document.document.tags.some(item => item.messageId === tag.messageId)) {
+                continue;
+            }
+            const shortTag = {
+                name: tag.name,
+                description: tag.description,
+                owner: tag.owner,
+                target: tag.target,
+                topicId: tag.topicId,
+                messageId: tag.messageId,
+                inheritTags: tag.inheritTags || false
+            }
+            document.document.tags.push(shortTag);
+        }
+    }
+
+    public static async findRelationships(
+        ref: AnyBlockType,
+        target: IPolicyDocument
+    ): Promise<IPolicyDocument[]> {
+        const owner = target.owner;
+        const map = new Map<string, IPolicyDocument>();
+        if (target.messageId) {
+            map.set(target.messageId, null);
+        }
+        if (Array.isArray(target.relationships)) {
+            for (const messageId of target.relationships) {
+                await PolicyUtils._findRelationships(ref, ref.policyId, messageId, owner, map);
+            }
+        }
+        map.delete(target.messageId);
+
+        const result: IPolicyDocument[] = [];
+        for (const doc of map.values()) {
+            result.push(doc)
+        }
+
+        return result.sort((a, b) => a.messageId > b.messageId ? 1 : -1);
+    }
+
+    private static async _findRelationships(
+        ref: AnyBlockType,
+        policyId: string,
+        messageId: string,
+        owner: string,
+        map: Map<string, IPolicyDocument>
+    ) {
+        if (map.has(messageId)) {
+            return;
+        }
+        const vc = await ref.databaseServer.getVcDocument({
+            policyId,
+            owner,
+            messageId
+        });
+        if (!vc) {
+            return;
+        }
+
+        map.set(messageId, vc);
+        if (Array.isArray(vc.relationships)) {
+            for (const id of vc.relationships) {
+                await PolicyUtils._findRelationships(ref, policyId, id, owner, map);
+            }
         }
     }
 }

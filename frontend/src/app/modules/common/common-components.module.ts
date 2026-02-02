@@ -49,6 +49,7 @@ import { TextInputAutocompleteDirective } from './angular-text-input-autocomplet
 import { TextInputAutocompleteContainerComponent } from './angular-text-input-autocomplete/text-input-autocomplete-container.component';
 import { TextInputAutocompleteMenuComponent } from './angular-text-input-autocomplete/text-input-autocomplete-menu.component';
 import { PluralizePipe } from './pipes/pluralize.pipe';
+import { PagesControl } from './pages-control/pages-control.component';
 
 @NgModule({
     declarations: [
@@ -85,7 +86,8 @@ import { PluralizePipe } from './pipes/pluralize.pipe';
         TextInputAutocompleteDirective,
         TextInputAutocompleteContainerComponent,
         TextInputAutocompleteMenuComponent,
-        PluralizePipe
+        PluralizePipe,
+        PagesControl
     ],
     imports: [
         CommonModule,
@@ -144,7 +146,8 @@ import { PluralizePipe } from './pipes/pluralize.pipe';
         TextInputAutocompleteDirective,
         TextInputAutocompleteContainerComponent,
         TextInputAutocompleteMenuComponent,
-        PluralizePipe
+        PluralizePipe,
+        PagesControl
     ]
 })
 export class CommonComponentsModule {

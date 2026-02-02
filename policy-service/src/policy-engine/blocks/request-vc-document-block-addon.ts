@@ -25,7 +25,7 @@ import {
 } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/block-action-error.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { PolicyOutputEventType } from '../interfaces/policy-event-type.js';
+import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/policy-event-type.js';
 import deepEqual from 'deep-equal';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
@@ -44,8 +44,16 @@ import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.
         get: true,
         children: ChildrenType.Special,
         control: ControlType.UI,
-        input: null,
-        output: null,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.RefreshEvent,
+            PolicyInputEventType.RestoreEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.DraftEvent
+        ],
         defaultEvent: false,
     },
     variables: [{ path: 'options.schema', alias: 'schema', type: 'Schema' }],
@@ -260,6 +268,9 @@ export class RequestVcDocumentBlockAddon {
                     userId: user.userId
                 });
                 let item = PolicyUtils.createVC(ref, documentOwner, vc, actionStatus?.id);
+
+                const tags = await PolicyUtils.getBlockTags(ref);
+                PolicyUtils.setDocumentTags(item, tags);
 
                 const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, this._schema);
                 const schemaIRI = ref.options.schema;

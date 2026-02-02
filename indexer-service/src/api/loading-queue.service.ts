@@ -5,8 +5,6 @@ import {
     MessageResponse,
     AnyResponse,
     DataBaseHelper,
-    ProjectCoordinates,
-    Analytics,
     Message,
     MessageCache,
     MessageError,
@@ -19,8 +17,6 @@ import {
 import {
     DataLoadingProgress,
     DataPriorityLoadingProgress,
-    LandingAnalytics as IAnalytics,
-    ProjectCoordinates as IProjectCoordinates,
     MessageType,
     Page,
     PageFilters,
@@ -29,6 +25,7 @@ import {
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
 import { AnalyticsTask } from '../helpers/analytics-task.js';
+import { MongoEntityManager } from '@mikro-orm/mongodb';
 
 @Controller()
 export class LoadingQueueService {
@@ -233,69 +230,40 @@ export class LoadingQueueService {
         try {
             const em = DataBaseHelper.getEntityManager();
 
-            const filter = {
-                priorityTimestamp,
-            }
-    
             const priorityQueueItem = await em.findOne(PriorityQueue, { priorityTimestamp });
-    
-            const topics = await em.find(TopicCache, filter);
-            const tokens = await em.find(TokenCache, filter);
-            const messages = await em.find(MessageCache, filter);
-    
-            let status = priorityQueueItem.priorityStatus;
-            let isFinished = true;
-    
-            topics.forEach(item => {
-                if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
-                    status = PriorityStatus.RUNNING;
-                }
-                if (item.priorityStatus !== PriorityStatus.FINISHED) {
-                    isFinished = false;
-                }
-            });
-    
-            tokens.forEach(item => {
-                if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
-                    status = PriorityStatus.RUNNING;
-                }
-                if (item.priorityStatus !== PriorityStatus.FINISHED) {
-                    isFinished = false;
-                }
-            });
-    
-            messages.forEach(item => {
-                if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
-                    status = PriorityStatus.RUNNING;
-                }
-                if (item.priorityStatus !== PriorityStatus.FINISHED) {
-                    isFinished = false;
-                }
-            });
+            if (!priorityQueueItem) {
+                return;
+            }
+
+            const { status, isFinished } = await this.getPriorityStatusFromCaches(
+                em,
+                priorityTimestamp,
+                priorityQueueItem.priorityStatus as PriorityStatus
+            );
 
             if (isFinished) {
                 AnalyticsTask.onAddEvent(priorityTimestamp);
-    
+
                 await em.nativeUpdate(PriorityQueue, {
-                    priorityTimestamp: priorityTimestamp,
+                    priorityTimestamp,
                 }, {
                     priorityStatus: PriorityStatus.ANALYTICS
                 });
             } else {
                 await em.nativeUpdate(PriorityQueue, {
-                    priorityTimestamp: priorityTimestamp,
+                    priorityTimestamp,
                 }, {
                     priorityStatus: status
                 });
             }
         } catch (error) {
-
+            console.log('updatePriorityQueue error:', error);
         }
     }
 
     public async updateAllPriorityQueue() {
         console.log('started updating the entire priority queue');
-        
+
         try {
             const em = DataBaseHelper.getEntityManager();
             const queueCollection = em.getCollection<PriorityQueue>('PriorityQueue');
@@ -306,43 +274,15 @@ export class LoadingQueueService {
                 const priorityQueueItem = await priorityQueue.next();
                 const priorityTimestamp = priorityQueueItem.priorityTimestamp;
 
-                const topics = await em.find(TopicCache, { priorityTimestamp });
-                const tokens = await em.find(TokenCache, { priorityTimestamp });
-                const messages = await em.find(MessageCache, { priorityTimestamp });
-        
-                let status = priorityQueueItem.priorityStatus;
-                let isFinished = true;
-        
-                topics.forEach(item => {
-                    if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
-                        status = PriorityStatus.RUNNING;
-                    }
-                    if (item.priorityStatus !== PriorityStatus.FINISHED) {
-                        isFinished = false;
-                    }
-                });
-        
-                tokens.forEach(item => {
-                    if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
-                        status = PriorityStatus.RUNNING;
-                    }
-                    if (item.priorityStatus !== PriorityStatus.FINISHED) {
-                        isFinished = false;
-                    }
-                });
-        
-                messages.forEach(item => {
-                    if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
-                        status = PriorityStatus.RUNNING;
-                    }
-                    if (item.priorityStatus !== PriorityStatus.FINISHED) {
-                        isFinished = false;
-                    }
-                });
-                
+                const { status, isFinished } = await this.getPriorityStatusFromCaches(
+                    em,
+                    priorityTimestamp,
+                    priorityQueueItem.priorityStatus as PriorityStatus
+                );
+
                 if (isFinished) {
                     await em.nativeUpdate(PriorityQueue, {
-                        priorityTimestamp: priorityTimestamp,
+                        priorityTimestamp,
                     }, {
                         priorityStatus: PriorityStatus.ANALYTICS
                     });
@@ -350,13 +290,13 @@ export class LoadingQueueService {
                     if ((Date.now() - priorityQueueItem.priorityTimestamp) > 24 * 60 * 60 * 1000) {
                         await this.addEntity(priorityQueueItem.entityId, priorityTimestamp);
                         await em.nativeUpdate(PriorityQueue, {
-                            priorityTimestamp: priorityTimestamp,
+                            priorityTimestamp,
                         }, {
                             priorityStatus: PriorityStatus.SCHEDULED
                         });
                     } else {
                         await em.nativeUpdate(PriorityQueue, {
-                            priorityTimestamp: priorityTimestamp,
+                            priorityTimestamp,
                         }, {
                             priorityStatus: status
                         });
@@ -364,7 +304,7 @@ export class LoadingQueueService {
                 }
             }
         } catch (error) {
-            console.log(error);
+            console.log('updateAllPriorityQueue error:', error);
         }
     }
 
@@ -372,8 +312,8 @@ export class LoadingQueueService {
         const em = DataBaseHelper.getEntityManager();
 
         const topicResult = await em.nativeUpdate(TopicCache, {
-            topicId: topicId,
-            priorityDate: { $eq: null }
+            topicId,
+            priorityTimestamp: { $ne: priorityTimestamp }
         },
             {
                 priorityDate: new Date(),
@@ -384,8 +324,8 @@ export class LoadingQueueService {
         );
 
         const messageResult = await em.nativeUpdate(MessageCache, {
-            topicId: topicId,
-            priorityDate: { $eq: null }
+            topicId,
+            priorityTimestamp: { $ne: priorityTimestamp }
         },
             {
                 priorityDate: new Date(),
@@ -403,7 +343,7 @@ export class LoadingQueueService {
 
         const result = await em.nativeUpdate(TokenCache, {
             tokenId,
-            priorityDate: { $eq: null }
+            priorityTimestamp: { $ne: priorityTimestamp }
         },
             {
                 priorityDate: new Date(),
@@ -413,7 +353,7 @@ export class LoadingQueueService {
             }
         );
 
-        return result != 0;
+        return result !== 0;
     }
 
     private async addPolicy(policyId: string, priorityTimestamp: number = Date.now()) {
@@ -436,7 +376,7 @@ export class LoadingQueueService {
                     topicId: policyId,
                 } as any,
             )
-            
+
             let policyInstancesResult = false;
             for (const item of policyInstances) {
                 policyInstancesResult ||= await this.addInstancePolicy(item.options.instanceTopicId, priorityTimestamp);
@@ -479,23 +419,23 @@ export class LoadingQueueService {
             }
         });
 
-        const topicResult = await em.nativeUpdate(TopicCache, { topicId: { $in: Array.from(topicIds) }, priorityDate: { $eq: null } }, {
-            priorityDate: priorityDate,
+        const topicResult = await em.nativeUpdate(TopicCache, { topicId: { $in: Array.from(topicIds) }, priorityTimestamp: { $ne: priorityTimestamp } }, {
+            priorityDate,
             priorityStatus: PriorityStatus.SCHEDULED,
             priorityStatusDate: priorityDate,
             priorityTimestamp
         });
 
-        const tokenResult = await em.nativeUpdate(TokenCache, { tokenId: { $in: Array.from(tokenIds) }, priorityDate: { $eq: null } }, {
-            priorityDate: priorityDate,
+        const tokenResult = await em.nativeUpdate(TokenCache, { tokenId: { $in: Array.from(tokenIds) }, priorityTimestamp: { $ne: priorityTimestamp } }, {
+            priorityDate,
             priorityStatus: PriorityStatus.SCHEDULED,
             priorityStatusDate: priorityDate,
             priorityTimestamp
         });
-        
+
         const messageResult = await em.nativeUpdate(MessageCache, {
             topicId: { $in: Array.from(topicIds) },
-            priorityDate: { $eq: null }
+            priorityTimestamp: { $ne: priorityTimestamp }
         },
             {
                 priorityDate: new Date(),
@@ -530,12 +470,12 @@ export class LoadingQueueService {
 
     private async trySetPriorityFromHedera(entityId: string, priorityTimestamp: number, parentIds: Set<string> = new Set<string>(), depth: number = 0) {
         if (depth >= 10) {
-            console.log("Recursion limit reached: ", depth);
+            console.log('Recursion limit reached: ', depth);
             return false;
         }
 
         if (parentIds.has(entityId)) {
-            console.log("Recursion already touched: ", entityId);
+            console.log('Recursion already touched: ', entityId);
             return false;
         }
 
@@ -557,7 +497,7 @@ export class LoadingQueueService {
                 for (const data of topicInfo.messages) {
                     const message = this.parseMessage(data);
 
-                    if (message && message.type == 'Topic' && message.parentId) {
+                    if (message && message.type === 'Topic' && message.parentId) {
                         const cacheResult = await this.addEntity(message.parentId, priorityTimestamp);
 
                         if (cacheResult) {
@@ -618,5 +558,47 @@ export class LoadingQueueService {
         } catch (error) {
             return null;
         }
+    }
+
+    private async getPriorityStatusFromCaches(
+        em: MongoEntityManager,
+        priorityTimestamp: number,
+        initialStatus: PriorityStatus
+    ): Promise<{ status: PriorityStatus; isFinished: boolean }> {
+
+        const filters = { priorityTimestamp };
+        const options = { projection: { _id: 1 } };
+
+        let status: PriorityStatus = initialStatus;
+        let isFinished = true;
+
+        const collections = [
+            em.getCollection(TopicCache),
+            em.getCollection(TokenCache),
+            em.getCollection(MessageCache),
+        ];
+
+        for (const collection of collections) {
+            const notFinished = await collection.findOne(
+                { ...filters, priorityStatus: { $ne: PriorityStatus.FINISHED } },
+                options
+            );
+
+            if (notFinished) {
+                isFinished = false;
+            }
+
+            if (status !== PriorityStatus.RUNNING) {
+                const hasStatus = await collection.findOne(
+                    { ...filters, priorityStatus: { $in: [PriorityStatus.RUNNING, PriorityStatus.FINISHED] } },
+                    options
+                );
+                if (hasStatus) {
+                    status = PriorityStatus.RUNNING;
+                }
+            }
+        }
+
+        return { status, isFinished };
     }
 }

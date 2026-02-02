@@ -32,6 +32,9 @@ export class ContextHelper {
     }
 
     private static _clearContext(item: any, contexts: Set<string>) {
+        if (item === undefined || item === null) {
+            return;
+        }
         if (typeof item === 'object') {
             if (Array.isArray(item)) {
                 for (const i of item) {
@@ -105,6 +108,9 @@ export class ContextHelper {
     }
 
     private static _getItems(root: any, key: string, items: any[]) {
+        if (root === null || root === undefined) {
+            return items;
+        }
         if (Array.isArray(root)) {
             for (const item of root) {
                 ContextHelper._getItems(item, key, items);
@@ -119,6 +125,28 @@ export class ContextHelper {
             return items;
         } else {
             return items;
+        }
+    }
+
+    public static clearEmptyProperties(vc: any): any {
+        if (vc === null || vc === undefined) {
+            return vc;
+        }
+        if (Array.isArray(vc)) {
+            for (const prop of vc) {
+                ContextHelper.clearEmptyProperties(prop);
+            }
+        } else if (typeof vc === 'object') {
+            for (const key of Object.keys(vc)) {
+                if (vc[key] === null || vc[key] === undefined) {
+                    delete vc[key];
+                } else {
+                    ContextHelper.clearEmptyProperties(vc[key]);
+                }
+            }
+            return vc;
+        } else {
+            return vc;
         }
     }
 }

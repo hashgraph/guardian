@@ -2431,8 +2431,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async getTags(owner: IOwner, entity: string, targets: string[]): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.GET_TAGS, { owner, entity, targets });
+    public async getTags(owner: IOwner, entity: string, targets: string[], linkedItems?: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_TAGS, { owner, entity, targets, linkedItems });
     }
 
     /**
@@ -2451,8 +2451,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async exportTags(owner: IOwner, entity: string, targets: string[]): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.EXPORT_TAGS, { owner, entity, targets });
+    public async exportTags(owner: IOwner, entity: string, targets: string[], linkedItems?: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.EXPORT_TAGS, { owner, entity, targets, linkedItems });
     }
 
     /**
@@ -2461,8 +2461,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async getTagCache(owner: IOwner, entity: string, targets: string[]): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.GET_TAG_CACHE, { owner, entity, targets });
+    public async getTagCache(owner: IOwner, entity: string, targets: string[], linkedItems?: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_TAG_CACHE, { owner, entity, targets, linkedItems });
     }
 
     /**
@@ -2471,8 +2471,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async synchronizationTags(owner: IOwner, entity: string, target: string): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { owner, entity, target });
+    public async synchronizationTags(owner: IOwner, entity: string, target: string, linkedItems?: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { owner, entity, target, linkedItems });
     }
 
     /**

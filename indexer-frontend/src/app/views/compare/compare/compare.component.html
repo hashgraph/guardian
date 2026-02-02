@@ -1,0 +1,16 @@
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>
+
+<div *ngIf="error" class="error-message">
+    <div>{{ error }}</div>
+</div>
+
+<div class="content-result">
+    <app-compare-policy
+        class="compare-policy"
+        [type]="visibleType"
+        [value]="result"
+        (change)="onChange($event)"
+        (mergeLevel)="onFilters($event)"></app-compare-policy>
+</div>

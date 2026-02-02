@@ -16,7 +16,7 @@ jobs:
       contents: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
         with:
           egress-policy: audit
 
@@ -29,7 +29,7 @@ jobs:
           if_false: 'hotfix'
 
       - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: get-npm-version
         id: package-version
@@ -46,7 +46,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         id: auth
-        uses: step-security/google-github-auth@190f7ef9b7a34cc0dfd0c11f0e327365f70071d6 # v2.1.12
+        uses: step-security/google-github-auth@57c51210cb4d85d8a5d39dc4c576c79bd693f914 # v3.0.1
         with:
           workload_identity_provider: 'projects/101730247931/locations/global/workloadIdentityPools/hedera-registry-pool/providers/hedera-registry-gh-actions'
           service_account: 'guardian-publisher@hedera-registry.iam.gserviceaccount.com'

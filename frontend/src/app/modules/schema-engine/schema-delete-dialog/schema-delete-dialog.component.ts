@@ -25,11 +25,8 @@ export class SchemaDeleteDialogComponent implements OnInit {
         this.text = this.config.data.text;
 
         this.itemNames = this.config.data.itemNames;
-        this.deletableChildren = this.config.data?.deletableChildren?.map((item: any) => item.name);
-        this.blockedChildren = this.config.data?.blockedChildren?.map((item: any) => ({
-            schema: item.schema,
-            blockingSchemas: item.blockingSchemas?.map((blockingSchema: ISchema) => blockingSchema.name)
-        }));
+        this.deletableChildren = this.config.data?.deletableChildren;
+        this.blockedChildren = this.config.data?.blockedChildren;
     }
 
     ngOnInit() {

@@ -12,7 +12,7 @@ import {
     TopicConfig,
     UrlType
 } from '@guardian/common';
-import { IOwner, IRootConfig, TagType } from '@guardian/interfaces';
+import {GenerateUUIDv4, IOwner, IRootConfig, TagType} from '@guardian/interfaces';
 
 // /**
 //  * Publish schema tags
@@ -250,6 +250,10 @@ export async function publishTag(
     item.date = item.date || (new Date()).toISOString();
     const message = new TagMessage(MessageAction.PublishTag);
     message.setDocument(item);
+
+    const buffer = Buffer.from(JSON.stringify(item.document));
+    item.contentFileId = (await DatabaseServer.saveFile(GenerateUUIDv4(), buffer)).toString();
+
     const result = await messageServer
         .sendMessage(message, {
             sendToIPFS: true,

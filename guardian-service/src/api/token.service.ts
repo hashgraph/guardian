@@ -1140,7 +1140,25 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             pageSize: number
         }) => {
             try {
-                const { owner, did } = msg;
+                const { owner, did, pageIndex, pageSize } = msg;
+
+                const options =
+                    (
+                        typeof pageIndex === 'number' &&
+                        typeof pageSize === 'number'
+                    ) ?
+                        {
+                            orderBy: {
+                                createDate: OrderDirection.DESC,
+                            },
+                            limit: pageSize,
+                            offset: pageIndex * pageSize,
+                        }
+                        : {
+                            orderBy: {
+                                createDate: OrderDirection.DESC,
+                            },
+                        };
 
                 const users = new Users();
                 const user = await users.getUserById(did, owner?.id);
@@ -1160,7 +1178,8 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                             { owner: { $exists: false } },
                             { owner: null },
                         ]
-                    } as FilterObject<Token> : {}
+                    } as FilterObject<Token> : {},
+                    options
                 );
 
                 const workers = new Workers();

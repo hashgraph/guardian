@@ -6,7 +6,7 @@
         "@azure/keyvault-secrets": "^4.9.0",
         "@formulajs/formulajs": "4.5.4",
         "@google-cloud/secret-manager": "^4.2.2",
-        "@guardian/interfaces": "3.4.1",
+        "@guardian/interfaces": "3.5.0-rc",
         "@hiero-ledger/sdk": "2.78.0",
         "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
         "@meeco/cryppo": "^2.0.2",
@@ -82,5 +82,5 @@
         "test:stability": "mocha tests/stability.test.js"
     },
     "type": "module",
-    "version": "3.4.1"
+    "version": "3.5.0-rc"
 }

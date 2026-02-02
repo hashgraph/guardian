@@ -107,7 +107,11 @@ Within the Guardian interface:
 * Each iteration (message or update) incurs a Hedera transaction and IPFS upload, impacting performance in very large workflows
 * Only authenticated Guardian users may participate in discussions
 
-## 6. Summary
+## 6. Demo Video
+
+[Youtube](https://youtu.be/mbp0LAT2rfs?si=x4ePJbha3LuT6a_G\&t=114)
+
+## 7. Summary
 
 The Complex Iterative Review and Approval Workflow introduces a digital-first approach to project validation and document review. It enables continuous, verifiable, and structured dialogue between project participants, ensuring every exchange is part of the permanent trust chain.
 
