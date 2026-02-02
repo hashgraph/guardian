@@ -194,9 +194,9 @@ export class ReportBlock {
         for (let i = 0; i < vcs.length - 1; i++) {
             const doc = vcs[i];
             const credentialSubject = doc.credentialSubject[0];
-            if (credentialSubject.type === 'TokenDataSource') {
+            if (credentialSubject.type && credentialSubject.type.startsWith('TokenDataSource')) {
                 dataSource.push(doc);
-            } else if (credentialSubject.type === 'ActivityImpact') {
+            } else if (credentialSubject.type && credentialSubject.type.startsWith('ActivityImpact')) {
                 impacts.push({
                     type: 'VC',
                     impactType: getVCField(doc, 'impactType'),
