@@ -79,7 +79,6 @@ import { TagsManagerBlockComponent } from './policy-viewer/blocks/tags-manager-b
 import { MessagesReportBlockComponent } from './policy-viewer/blocks/messages-report-block/messages-report-block.component';
 import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-topic-block/external-topic-block.component';
 import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
-
 //Helpers
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
 import { SavePolicyDialog } from './dialogs/save-policy-dialog/save-policy-dialog.component';
@@ -140,6 +139,7 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { PasswordModule } from 'primeng/password';
+import { DynamicMsalAuthService } from './services/dynamic-msal-auth.service';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
 import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
@@ -171,8 +171,12 @@ import { GlobalEventsWriterBlockComponent} from "./policy-viewer/blocks/global-e
 import { GlobalEventsReaderBlockComponent } from "./policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component";
 import { GlobalEventsReaderFiltersDialogComponent } from "./policy-viewer/dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component";
 import { AddGlobalEventTopicDialogComponent } from "./policy-viewer/dialogs/add-global-event-topic/add-global-event-topic-dialog.component";
+import { MathConfigComponent } from './policy-configuration/blocks/calculate/math-config/math-config.component';
+import { MathEditorDialogComponent } from './dialogs/math-editor-dialog/math-editor-dialog.component';
+import { FieldLinkDialog } from './dialogs/field-link-dialog/field-link-dialog.component';
 import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
 import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
+import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-dialog.component';
 
 @NgModule({
     declarations: [
@@ -213,6 +217,7 @@ import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update
         PreviewPolicyDialog,
         ReplaceSchemasDialogComponent,
         ExportPolicyDialog,
+        MathConfigComponent,
         CalculateConfigComponent,
         CalculateMathConfigComponent,
         JsonPropertiesComponent,
@@ -301,6 +306,9 @@ import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update
         GlobalEventsReaderFiltersDialogComponent,
         GlobalEventsWriterBlockComponent,
         AddGlobalEventTopicDialogComponent,
+        MathEditorDialogComponent,
+        FieldLinkDialog,
+        AddDocumentDialog,
         ChangeBlockSettingsDialog,
         ApproveUpdateVcDocumentDialogComponent
     ],
@@ -347,6 +355,7 @@ import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update
         WizardService,
         DialogService,
         PolicyProgressService,
+        DynamicMsalAuthService,
         DatePipe,
         {
             provide: CONFIGURATION_ERRORS,

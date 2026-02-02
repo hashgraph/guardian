@@ -3,6 +3,7 @@ import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { IPolicyBlock, IPolicyContainerBlock } from '../../policy-engine.interface.js';
 import { PolicyUser } from '../../policy-user.js';
+import { RecordActionStep } from '../../record-action-step.js';
 
 /**
  * Container block decorator
@@ -25,10 +26,10 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param data
              * @param target
              */
-            async changeStep(user: PolicyUser, data: any, target: IPolicyBlock) {
+            async changeStep(user: PolicyUser, data: any, target: IPolicyBlock, actionStatus: RecordActionStep) {
                 let result: any;
                 if (typeof super.changeStep === 'function') {
-                    result = super.changeStep(user, data, target);
+                    result = super.changeStep(user, data, target, actionStatus);
                 }
                 return result;
             }

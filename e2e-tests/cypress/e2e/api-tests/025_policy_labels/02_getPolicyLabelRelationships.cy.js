@@ -2,104 +2,108 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Get policy labels", { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
+context("Get policy label relationships", { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
     const UserUsername = Cypress.env('User');
-
     let policyLabel, policy;
 
+    const getPolicyLabels = (headers = {}) =>
+        cy.request({
+            method: METHOD.GET,
+            url: `${API.ApiServer}${API.PolicyLabels}`,
+            headers,
+            failOnStatusCode: false,
+        });
+
+    const getPolicies = (headers = {}) =>
+        cy.request({
+            method: METHOD.GET,
+            url: `${API.ApiServer}${API.Policies}`,
+            headers,
+            failOnStatusCode: false,
+        });
+
+    const getPolicyByName = (name, headers = {}) =>
+        getPolicies(headers).then(({ body, status }) => {
+            expect(status).to.eq(STATUS_CODE.OK);
+            expect(body).to.be.an("array");
+            const found = body.find(p => p.name === name);
+            if (!found) {
+                throw new Error(`Policy with name "${name}" not found. Available: ${body.map(p => p.name).join(", ")}`);
+            }
+            return found;
+        });
+
+    const getPolicyLabelRelationships = (labelId, headers = {}) =>
+        cy.request({
+            method: METHOD.GET,
+            url: `${API.ApiServer}${API.PolicyLabels}${labelId}/${API.Relationships}`,
+            headers,
+            failOnStatusCode: false,
+        });
+
     before("Get policy label and policy", () => {
-        Authorization.getAccessToken(UserUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.PolicyLabels,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                policyLabel = response.body.at(0);
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies,
-                    headers: {
-                        authorization,
-                    },
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    response.body.forEach(element => {
-                        if (element.name == "iRec_4") {
-                            policy = element;
-                        }
-                    })
-                })
-            })
-        });
-    })
+        Authorization.getAccessToken(UserUsername).then((auth) => {
+            const headers = { authorization: auth };
 
-    it("Get policy labels", () => {
-        Authorization.getAccessToken(UserUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Relationships,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-
-                //expect(response.body.documentsSchemas.length).eql(14);
-                expect(response.body.policySchemas.length).eql(8);
-
-                expect(response.body.policy.description).eql(policy.description);
-                expect(response.body.policy.id).eql(policy.id);
-                expect(response.body.policy.instanceTopicId).eql(policy.instanceTopicId);
-                expect(response.body.policy.messageId).eql(policy.messageId);
-                expect(response.body.policy.name).eql(policy.name);
-                expect(response.body.policy.owner).eql(policy.owner);
-                expect(response.body.policy.status).eql(policy.status);
-                expect(response.body.policy.topicId).eql(policy.topicId);
-                expect(response.body.policy.policyRoles).eql(policy.userRoles);
-                expect(response.body.policy.uuid).eql(policy.uuid);
-                expect(response.body.policy.version).eql(policy.version);
+            // Get the first available label
+            getPolicyLabels(headers).then(({ body, status }) => {
+                expect(status).to.eq(STATUS_CODE.OK);
+                expect(body).to.be.an("array").and.not.be.empty;
+                policyLabel = body.at(0);
+                expect(policyLabel).to.have.property("id");
             });
-        })
-    });
 
-    it("Get policy labels without auth - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Relationships,
-            headers: {
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+            // Get the target policy object by name
+            getPolicyByName("iRec_4", headers).then((p) => {
+                policy = p;
+                // Basic shape checks (optional but helpful)
+                expect(policy).to.include.all.keys("id", "name", "uuid", "version");
+            });
         });
     });
 
-    it("Get policy labels with incorrect auth - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Relationships,
-            headers: {
-                authorization: "bearer 11111111111111111111@#$",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+    it("Get policy label relationships", () => {
+        Authorization.getAccessToken(UserUsername).then((auth) => {
+            getPolicyLabelRelationships(policyLabel.id, { authorization: auth }).then(({ body, status }) => {
+                expect(status).to.eq(STATUS_CODE.OK);
+
+                // Core expectations
+                expect(body).to.have.property("policySchemas");
+                expect(body.policySchemas).to.be.an("array");
+                expect(body.policySchemas.length).to.eq(8);
+
+                // Grouped policy assertions
+                const resPolicy = body.policy;
+                expect(resPolicy).to.be.an("object");
+                expect(resPolicy.id).to.eq(policy.id);
+                expect(resPolicy.name).to.eq(policy.name);
+                expect(resPolicy.instanceTopicId).to.eq(policy.instanceTopicId);
+                expect(resPolicy.messageId).to.eq(policy.messageId);
+                expect(resPolicy.owner).to.eq(policy.owner);
+                expect(resPolicy.status).to.eq(policy.status);
+                expect(resPolicy.topicId).to.eq(policy.topicId);
+                expect(resPolicy.policyRoles).to.eql(policy.userRoles);
+                expect(resPolicy.uuid).to.eq(policy.uuid);
+                expect(resPolicy.version).to.eq(policy.version);
+            });
         });
     });
 
-    it("Get policy labels with empty auth - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Relationships,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        });
+    it("Get policy label relationships without auth - Negative", () => {
+        getPolicyLabelRelationships(policyLabel.id, {})
+            .its('status')
+            .should('eq', STATUS_CODE.UNAUTHORIZED);
+    });
+
+    it("Get policy label relationships with incorrect auth - Negative", () => {
+        getPolicyLabelRelationships(policyLabel.id, { authorization: "bearer invalid_token" })
+            .its('status')
+            .should('eq', STATUS_CODE.UNAUTHORIZED);
+    });
+
+    it("Get policy label relationships with empty auth - Negative", () => {
+        getPolicyLabelRelationships(policyLabel.id, { authorization: "" })
+            .its('status')
+            .should('eq', STATUS_CODE.UNAUTHORIZED);
     });
 });

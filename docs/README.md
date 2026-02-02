@@ -78,7 +78,7 @@ Below are the universal software prerequisites, followed by network-specific ite
 
 ## **7. Additional Resources**
 
-* [Hedera Guardian Documentation](https://github.com/hashgraph/guardian/wiki)
+* [Hedera Guardian Documentation](https://guardian.hedera.com)
 * [Hedera Developer Portal](https://portal.hedera.com/login)
 * [Community Forum](https://github.com/hashgraph/guardian/discussions)
 * [Roadmap](guardian/readme/roadmap.md)

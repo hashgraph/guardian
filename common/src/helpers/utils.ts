@@ -393,3 +393,22 @@ export function stripPrefix(text: string, prefixes: string | string[]): string {
     }
     return text
 }
+
+export function findBlocks(tree: any, filter: (block: any) => boolean): any[] {
+    const result: any[] = [];
+    _findBlocks(tree, filter, result);
+    return result;
+}
+
+function _findBlocks(node: any, filter: (block: any) => boolean, result: any[]): void {
+    if (node) {
+        if (filter(node)) {
+            result.push(node);
+        }
+        if (Array.isArray(node.children)) {
+            for (const child of node.children) {
+                _findBlocks(child, filter, result);
+            }
+        }
+    }
+}

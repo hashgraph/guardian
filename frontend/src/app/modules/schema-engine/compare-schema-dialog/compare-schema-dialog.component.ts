@@ -19,6 +19,8 @@ export class CompareSchemaDialog {
     list2: any[];
 
     policies: any[];
+    entityType: string = 'Policy';
+    entityTypePlaceholder: string = 'Select Policy';
 
     topicId1!: any;
     topicId2!: any;
@@ -30,6 +32,8 @@ export class CompareSchemaDialog {
         this.schema = this.config.data.schema;
         this.schemas = this.config.data.schemas || [];
         this.policies = this.config.data.policies || [];
+        this.entityType = this.config.data.entityType || 'Policy';
+        this.entityTypePlaceholder = `Select ${this.entityType}`;
         this.schemaId1 = this.schema?.id;
         this.list1 = this.schemas;
         this.list2 = this.schemas;

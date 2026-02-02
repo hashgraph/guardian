@@ -33,6 +33,7 @@ export class TagsExplorerDialog {
     public hasChanges: boolean = false;
     public selectedTags: TagMapItem[] = [];
     public user: UserPermissions;
+    public inheritTagsOption: boolean = false;
 
     public get canCreate(): boolean {
         if (this.user) {
@@ -56,6 +57,7 @@ export class TagsExplorerDialog {
         this.history = dialogData.data?.history;
         this.user = dialogData.data?.user;
         this.selectedTags = this.history.items;
+        this.inheritTagsOption = dialogData.data?.inheritTagsOption;
 
         this.owner = this.history.owner;
         this.select = this.history.getItem();
@@ -65,7 +67,7 @@ export class TagsExplorerDialog {
         if (!this.select) {
             this.select = this.history.getHistory();
         }
-        if (!this.selectedTags || this.selectedTags.length === 0) {
+        if ((this.history.history && this.history.history.length > 0) && (!this.selectedTags || this.selectedTags.length === 0)) {
             this.selectedTags = this.history.history;
             this.tab = 2;
         }
@@ -97,7 +99,8 @@ export class TagsExplorerDialog {
             closable: true,
             header: this.title,
             data: {
-                schemas: this.schemas
+                schemas: this.schemas,
+                inheritTagsOption: this.inheritTagsOption,
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
@@ -110,17 +113,22 @@ export class TagsExplorerDialog {
     private create(tag: any) {
         tag = this.history.create(tag);
         this.loading = true;
+
         this.tagsService.create(tag).subscribe((data) => {
             this.history.add(data);
+
             if (this.tab === 1) {
                 this.select = this.history.getItem(this.select);
             } else {
                 this.select = this.history.getHistory(this.select);
             }
+
             this.history.updateItems();
+
             setTimeout(() => {
                 this.loading = false;
                 this.hasChanges = true;
+                this.tagsService.tagsUpdated$.next();
                 this.openTab(this.tab);
             }, 500);
         }, (e) => {
@@ -142,6 +150,7 @@ export class TagsExplorerDialog {
             setTimeout(() => {
                 this.loading = false;
                 this.hasChanges = true;
+                this.tagsService.tagsUpdated$.next();
                 this.openTab(this.tab);
             }, 500);
         }, (e) => {
@@ -153,7 +162,7 @@ export class TagsExplorerDialog {
 
     public onUpdate() {
         this.loading = true;
-        this.tagsService.synchronization(this.history.entity, this.history.target).subscribe((data) => {
+        this.tagsService.synchronization(this.history.entity, this.history.target, this.history.linkedItems).subscribe((data) => {
             this.history.setData(data.tags);
             this.history.setDate(data.refreshDate);
             if (this.tab === 1) {
@@ -209,10 +218,10 @@ export class TagsExplorerDialog {
                 row: item,
                 dryRun: !!item.dryRunId,
                 document: item.document,
-                title: title,
-                type: 'Document',
-                viewDocument: false,
-                toggle: false
+                title,
+                type: 'VC',
+                viewDocument: true,
+                toggle: true
             }
         });
         dialogRef.onClose.subscribe(async (result) => { });

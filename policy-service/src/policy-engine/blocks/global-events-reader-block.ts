@@ -7,11 +7,12 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
-import { GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, GlobalEventsReaderStreamRow, GlobalEventsStreamStatus,
-    LocationType, Schema, SchemaField, SchemaHelper, SetDataPayloadReader, TopicType,  WorkerTaskType
+import {
+    GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, GlobalEventsReaderStreamRow, GlobalEventsStreamStatus,
+    LocationType, Schema, SchemaField, SchemaHelper, SetDataPayloadReader, TopicType, WorkerTaskType
 } from '@guardian/interfaces';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { GlobalEventsReaderStream, IPFS, MessageAction, MessageServer, SchemaMessage, SchemaPackageMessage, TopicHelper, UrlType, Workers} from '@guardian/common';
+import { GlobalEventsReaderStream, IPFS, MessageAction, MessageServer, SchemaMessage, SchemaPackageMessage, TopicHelper, UrlType, Workers } from '@guardian/common';
 import { TopicId } from '@hiero-ledger/sdk';
 
 /**
@@ -113,16 +114,16 @@ type WorkerTopicMessageRaw = {
                             label: 'Topic ID',
                             title: 'Hedera topic id (0.0.x)',
                             type: PropertyType.Input
+                        },
+                        {
+                            name: 'active',
+                            label: 'Active by default',
+                            title: 'Add this topic stream as active for new users',
+                            type: PropertyType.Checkbox,
+                            default: true,
                         }
                     ]
                 }
-            },
-            {
-                name: 'active',
-                label: 'Active by default',
-                title: 'Add this topic stream as active for new users',
-                type: PropertyType.Checkbox,
-                default: true,
             },
             {
                 name: 'branches',
@@ -183,7 +184,7 @@ class GlobalEventsReaderBlock {
 
         const existingTopicIds = new Set<string>();
 
-        for (const stream of existingStreams ) {
+        for (const stream of existingStreams) {
             const streamTopicId = stream.globalTopicId;
             if (streamTopicId) {
                 existingTopicIds.add(streamTopicId);
@@ -486,7 +487,7 @@ class GlobalEventsReaderBlock {
 
             let isVcDocument: boolean
 
-            if(isTypeDocumentByBranch) {
+            if (isTypeDocumentByBranch) {
                 isVcDocument = branchDocumentTypeByBranch[branchEvent] === GLOBAL_DOCUMENT_TYPE_DEFAULT;
             } else {
                 isVcDocument = branch.documentType === GLOBAL_DOCUMENT_TYPE_DEFAULT;
@@ -1080,7 +1081,7 @@ class GlobalEventsReaderBlock {
 
     public async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const config =ref.options;
+        const config = ref.options;
 
         if (ref.dryRun) {
             return {

@@ -11,6 +11,8 @@ export enum PolicyEvents {
     POLICY_START_ERROR = 'policy-start-error',
     DELETE_POLICY = 'policy-event-delete-policy',
     VALIDATE_POLICY = 'policy-event-validate-policy',
+    VALIDATE_MODULE = 'policy-event-validate-module',
+    VALIDATE_TOOL = 'policy-event-validate-tool',
     GET_BLOCK_DATA = 'policy-event-get-block-data',
     GET_BLOCK_DATA_BY_TAG = 'policy-event-get-block-data-by-tag',
     SET_BLOCK_DATA = 'policy-event-set-block-data',

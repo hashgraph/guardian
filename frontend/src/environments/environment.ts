@@ -7,6 +7,7 @@ export const environment = {
     accessTokenUpdateInterval: 29 * 1000,
     displayDemoAccounts: true,
     isMeecoConfigured: true,
+    requireAuthorizationPopup: true,
     explorerSettings: {
         url: 'https://hashscan.io/${network}/${type}/${value}/${subType}/${subValue}',
         networkMap: {

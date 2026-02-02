@@ -351,17 +351,29 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvents<U>(
+            public async triggerEvents<U>(
                 output: PolicyOutputEventType,
                 user: PolicyUser,
                 data: U,
                 actionStatus: RecordActionStep
-            ): void {
-                const status = actionStatus;
+            ): Promise<void> {
+                if (output === PolicyOutputEventType.RunEvent && actionStatus) {
+                    actionStatus.saveResult(data);
+                }
 
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
-                        link.run(user, data, status);
+                        if (output === PolicyOutputEventType.RunEvent && actionStatus) {
+                           actionStatus.checkCycle(link);
+                        }
+
+                        if (actionStatus?.syncActions) {
+                            const syncRes = await link.run(user, data, actionStatus);
+
+                            return syncRes;
+                        } else {
+                            link.run(user, data, actionStatus);
+                        }
                     }
                 }
             }
@@ -415,7 +427,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
                 const parent = this.parent as any;
                 if (parent && (typeof parent.changeStep === 'function')) {
-                    await parent.changeStep(event.user, event.data, this);
+                    await parent.changeStep(event.user, event.data, this, event.actionStatus);
                 }
                 let result: any;
                 if (typeof super.runAction === 'function') {

@@ -58,10 +58,17 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-left: 2px;
-    margin-bottom: 2px;
+    margin-left: 0px;
+    margin-bottom: 24px;
+    cursor: pointer;
+    user-select: none;
+
+    * {
+        pointer-events: none;
+    }
 }
 
 .recording-label {
     margin: 0px;
+    cursor: pointer;
 }

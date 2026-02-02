@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 import { PolicyModule, Schema, Tag } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
+import { ImportExportUtils } from './utils.js';
 
 /**
  * Module components
@@ -73,18 +74,22 @@ export class ModuleImportExport {
 
         const zip = new JSZip();
 
-        zip.file(ModuleImportExport.moduleFileName, JSON.stringify(moduleObject));
+        const ZIP_FILE_OPTIONS = ImportExportUtils.getDeterministicZipFileOptions();
 
-        zip.folder('tags');
+        zip.file(ModuleImportExport.moduleFileName, JSON.stringify(moduleObject), ZIP_FILE_OPTIONS);
+
+        ImportExportUtils.addDeterministicZipDir(zip, 'tags');
         for (let index = 0; index < components.tags.length; index++) {
             const tag = { ...components.tags[index] };
             delete tag.id;
             delete tag._id;
             tag.status = 'History';
-            zip.file(`tags/${index}.json`, JSON.stringify(tag));
+            zip.file(`tags/${index}.json`, JSON.stringify(tag), ZIP_FILE_OPTIONS);
         }
 
-        zip.folder('schemas');
+        ImportExportUtils.addDeterministicZipDir(zip, 'ipfs');
+
+        ImportExportUtils.addDeterministicZipDir(zip, 'schemas');
         for (const schema of components.schemas) {
             const item = { ...schema };
             delete item._id;
@@ -92,7 +97,7 @@ export class ModuleImportExport {
             delete item.status;
             delete item.readonly;
             item.id = schema.id.toString();
-            zip.file(`schemas/${item.iri}.json`, JSON.stringify(item));
+            zip.file(`schemas/${item.iri}.json`, JSON.stringify(item), ZIP_FILE_OPTIONS);
         }
 
         return zip;

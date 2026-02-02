@@ -11,7 +11,8 @@ import {
     SchemaHelper,
     SchemaStatus,
     TagType,
-    UserPermissions
+    UserPermissions,
+    ModelHelper
 } from '@guardian/interfaces';
 import { forkJoin, Observable, Subject, takeUntil } from 'rxjs';
 //services
@@ -37,14 +38,8 @@ import { ProjectComparisonService } from 'src/app/services/project-comparison.se
 import { SchemaDeleteWarningDialogComponent } from 'src/app/modules/schema-engine/schema-delete-warning-dialog/schema-delete-warning-dialog.component';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
 import { ReplaceSchemasDialogComponent } from '../../modules/policy-engine/dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
-
-enum SchemaType {
-    System = 'system',
-    Policy = 'policy',
-    Tag = 'tag',
-    Module = 'module',
-    Tool = 'tool'
-}
+import { TreeNode } from 'primeng/api';
+import { SchemaType } from 'src/app/modules/policy-engine/structures/types/schema-type.type';
 
 const policySchemaColumns: string[] = [
     'policy',
@@ -105,6 +100,7 @@ export class SchemaConfigComponent implements OnInit {
     public isConfirmed: boolean = false;
     public currentTopic: string | null = null;
     public page: ISchema[] = [];
+    public treeData: TreeNode[] = [];
     public pageIndex: number = 0;
     public pageSize: number = 25;
     public count: number = 0;
@@ -140,6 +136,7 @@ export class SchemaConfigComponent implements OnInit {
     public isAllSelected: boolean = false;
     public selectedItems: any[] = [];
     public selectedItemIds: string[] = [];
+    private static readonly NOT_BINDED = 'not-binded';
 
     public onMenuClick(event: MouseEvent, overlayPanel: any, menuData: any): void {
         this.element = menuData;
@@ -332,12 +329,16 @@ export class SchemaConfigComponent implements OnInit {
     public ifDraft(element: Schema): boolean {
         return (element.status === 'DRAFT' || element.status === 'ERROR');
     }
-        
+
+    public get NOT_BINDED(): string {
+        return SchemaConfigComponent.NOT_BINDED;
+    }
+
     private _destroy$ = new Subject<void>();
 
     ngOnInit() {
-        const type = this.route.snapshot.queryParams['type'];
-        const topic = this.route.snapshot.queryParams['topic'];
+        const type = this.route.snapshot.queryParams.type;
+        const topic = this.route.snapshot.queryParams.topic;
         this.type = this.getType(type);
         this.currentTopic = topic && topic !== 'all' ? topic : '';
         this.loadProfile();
@@ -400,6 +401,10 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private getTopicId(): string | null {
+        // Preserve "No Binding" selection exactly as-is so it reaches the API as topicId=not-binded
+        if (this.currentTopic === SchemaConfigComponent.NOT_BINDED) {
+            return SchemaConfigComponent.NOT_BINDED;
+        }
         switch (this.type) {
             case SchemaType.Tag:
                 return '';
@@ -489,8 +494,12 @@ export class SchemaConfigComponent implements OnInit {
                 this.policyNameByTopic = {};
                 this.policyIdByTopic = {};
                 this.allPolicies = [{
-                    name: 'No binding',
+                    name: 'All Policies',
                     topicId: null
+                },
+                {
+                    name: 'No Binding',
+                    topicId: SchemaConfigComponent.NOT_BINDED
                 }];
                 for (const policy of policies) {
                     if (policy.topicId) {
@@ -524,7 +533,10 @@ export class SchemaConfigComponent implements OnInit {
                 const tools: any[] = toolsResponse?.body || [];
                 this.toolNameByTopic = {};
                 this.toolIdByTopic = {};
-                this.tools = [];
+                this.tools = [{
+                    name: 'All Tools',
+                    topicId: null
+                }];
                 this.draftTools = [];
                 for (const tool of tools) {
                     if (tool.topicId) {
@@ -583,6 +595,7 @@ export class SchemaConfigComponent implements OnInit {
     private loadSchemas() {
         this.loading = true;
         this.page = [];
+        this.treeData = [];
         this.columns = this.getColumns();
         this.currentTopic = this.getTopicId();
         let loader: Observable<HttpResponse<ISchema[]>>;
@@ -607,7 +620,7 @@ export class SchemaConfigComponent implements OnInit {
             default: {
                 const category = this.getCategory();
                 loader = this.schemaService.getSchemasByPage({
-                    category: category,
+                    category,
                     topicId: this.currentTopic || '',
                     search: this.textSearch,
                     pageIndex: this.pageIndex,
@@ -617,7 +630,7 @@ export class SchemaConfigComponent implements OnInit {
             }
         }
         loader.subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
-            this.page = SchemaHelper.map(schemasResponse.body || []);
+            this.page = schemasResponse.body || [];
             for (const element of this.page as any[]) {
                 element.__policyId = this.policyIdByTopic[element.topicId];
                 element.__policyName = this.policyNameByTopic[element.topicId] || ' - ';
@@ -625,11 +638,94 @@ export class SchemaConfigComponent implements OnInit {
                 element.__toolName = this.toolNameByTopic[element.topicId] || ' - ';
             }
             this.count = (schemasResponse.headers.get('X-Total-Count') || this.page.length) as number;
+            this.treeData = this.groupSchemas(this.page);
             this.checkIsAllSelected();
             this.loadTagsData();
         }, (e) => {
             this.loadError(e);
         });
+    }
+
+    private groupSchemas(schemas: ISchema[]): TreeNode[] {
+        if (this.type === SchemaType.System || this.type === SchemaType.Tag) {
+            return [];
+        }
+
+        const groups = new Map<string, ISchema[]>();
+        for (const schema of schemas) {
+            const hasPolicyOrToolBinding = Boolean((schema as Record<string, unknown>).__policyId) || Boolean((schema as Record<string, unknown>).__toolId);
+            const topicId = hasPolicyOrToolBinding ? schema.topicId ?? SchemaConfigComponent.NOT_BINDED : SchemaConfigComponent.NOT_BINDED;
+            if (!groups.has(topicId)) {
+                groups.set(topicId, []);
+            }
+            groups.get(topicId)!.push(schema);
+        }
+
+        const result: TreeNode[] = [];
+        groups.forEach((groupSchemas, topicId) => {
+            const sortedSchemas = groupSchemas.sort((a, b) => {
+                // First compare by topicId
+                const topicA = a.topicId || '';
+                const topicB = b.topicId || '';
+                const topicCompare = topicA.localeCompare(topicB);
+
+                // If topicIds are different, return the topic comparison result
+                if (topicCompare !== 0) {
+                    return topicCompare;
+                }
+
+                // If topicIds are the same, compare by version
+                return ModelHelper.versionCompare(b.version || b.sourceVersion || '', a.version || a.sourceVersion || '');
+            });
+
+            let parentName = '';
+            let parentId = '';
+            if (this.type === SchemaType.Policy) {
+                parentName = this.policyNameByTopic[topicId] || 'No Binding';
+                parentId = this.policyIdByTopic[topicId];
+            } else if (this.type === SchemaType.Module) {
+                parentName = this.moduleNameByTopic[topicId] || '';
+            } else if (this.type === SchemaType.Tool) {
+                parentName = this.toolNameByTopic[topicId] || '';
+                parentId = this.toolIdByTopic[topicId];
+            }
+
+            const topicCountByTopicId = new Map<string, number>();
+            for (const schema of groupSchemas) {
+                if (!schema.topicId) {
+                    continue;
+                }
+                const count = schema.topicCount ?? 0;
+                if (!topicCountByTopicId.has(schema.topicId)) {
+                    topicCountByTopicId.set(schema.topicId, count);
+                }
+            }
+
+            const totalTopicCount = Array.from(topicCountByTopicId.values()).reduce(
+                (sum, count) => sum + count,
+                0
+            );
+
+            const parentNode: TreeNode = {
+                data: {
+                    name: parentName,
+                    topicId,
+                    isParent: true,
+                    policyId: parentId,
+                    toolId: parentId,
+                    count: groupSchemas.length,
+                    totalCount: totalTopicCount
+                },
+                expanded: true,
+                children: sortedSchemas.map(schema => ({
+                    data: schema,
+                    leaf: true
+                }))
+            };
+            result.push(parentNode);
+        });
+
+        return result;
     }
 
     private loadTagsData() {
@@ -638,6 +734,13 @@ export class SchemaConfigComponent implements OnInit {
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 for (const schema of this.page) {
                     (schema as any)._tags = data[String(schema.id)];
+                }
+                for (const node of this.treeData) {
+                    if (node.children) {
+                        for (const child of node.children) {
+                            child.data._tags = data[String(child.data.id)];
+                        }
+                    }
                 }
                 setTimeout(() => {
                     this.loading = false;
@@ -664,6 +767,11 @@ export class SchemaConfigComponent implements OnInit {
             },
         });
         this.loadSchemas();
+    }
+
+    public onSelectFilter(topicId: string) {
+        this.currentTopic = topicId === SchemaConfigComponent.NOT_BINDED ? SchemaConfigComponent.NOT_BINDED : topicId;
+        this.onFilter();
     }
 
     public onPage(event: any): void {
@@ -837,8 +945,13 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
-                this.schemaService.deleteSystemSchema(id).subscribe((data: any) => {
-                    this.loadSchemas();
+                this.schemaService.deleteSystemSchema(id).subscribe((result: any) => {
+                    const { taskId, expectation } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
                 }, (e) => {
                     this.loadError(e);
                 });
@@ -1025,7 +1138,7 @@ export class SchemaConfigComponent implements OnInit {
     public onOpenForm(schema: Schema, example: boolean): void {
         this.dialog.open(SchemaFormDialog, {
             showHeader: false,
-            header: 'Example',
+            header: 'Dry run with test data',
             width: '950px',
             styleClass: 'guardian-dialog',
             data: {
@@ -1184,7 +1297,7 @@ export class SchemaConfigComponent implements OnInit {
         delete newDocument.uuid;
         delete newDocument.creator;
         delete newDocument.owner;
-        delete newDocument.version;
+        // delete newDocument.version;
         delete newDocument.previousVersion;
         const dialogRef = this.dialogService.open(SchemaDialog, {
             showHeader: false,
@@ -1215,7 +1328,7 @@ export class SchemaConfigComponent implements OnInit {
         delete newDocument.uuid;
         delete newDocument.creator;
         delete newDocument.owner;
-        delete newDocument.version;
+        // delete newDocument.version;
         delete newDocument.previousVersion;
         const dialogRef = this.dialog.open(CopySchemaDialog, {
             width: '860px',
@@ -1255,6 +1368,9 @@ export class SchemaConfigComponent implements OnInit {
             width: '350px',
             modal: true,
             closable: false,
+            data: {
+                schema: element
+            }
         });
         dialogRef.onClose.subscribe(async (version) => {
             if (version) {
@@ -1291,8 +1407,8 @@ export class SchemaConfigComponent implements OnInit {
             styleClass: 'guardian-dialog',
             showHeader: false,
             data: {
-                schemas: schemas,
-                errors: errors,
+                schemas,
+                errors,
                 topicId: this.currentTopic,
                 schemaType: this.type,
                 policies: this.policies,
@@ -1361,7 +1477,7 @@ export class SchemaConfigComponent implements OnInit {
             showHeader: false,
             data: {
                 title: 'Schemas for replace',
-                schemasCanBeReplaced: schemasCanBeReplaced,
+                schemasCanBeReplaced,
             },
         });
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
@@ -1380,7 +1496,7 @@ export class SchemaConfigComponent implements OnInit {
             showHeader: false,
             data: {
                 title: 'Schemas for replace',
-                schemasCanBeReplaced: schemasCanBeReplaced,
+                schemasCanBeReplaced,
             },
         });
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
@@ -1399,7 +1515,7 @@ export class SchemaConfigComponent implements OnInit {
             showHeader: false,
             data: {
                 title: 'Schemas for replace',
-                schemasCanBeReplaced: schemasCanBeReplaced,
+                schemasCanBeReplaced,
             },
         });
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
@@ -1417,7 +1533,7 @@ export class SchemaConfigComponent implements OnInit {
                 width: '720px',
                 styleClass: 'custom-dialog',
                 data: {
-                    schema: schema
+                    schema
                 },
             }), (e) => {
                 this.loadError(e);
@@ -1435,37 +1551,90 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onCompare(element?: Schema) {
-        const dialogRef = this.dialogService.open(CompareSchemaDialog, {
-            header: 'Compare Schemas',
-            width: '650px',
-            styleClass: 'custom-dialog',
-            data: {
-                schema: element,
-                policies: this.policies,
-                schemas: this.compareList
+        let listData: any[] = [];
+        let entityType: string = 'Policy';
+        const category = this.getCategory();
+
+        switch (this.type) {
+            case SchemaType.Tool:
+                listData = this.tools;
+                entityType = 'Tool';
+                break;
+            case SchemaType.Module:
+                listData = this.modules;
+                entityType = 'Module';
+                break;
+            case SchemaType.Policy:
+            default:
+                listData = this.policies;
+                entityType = 'Policy';
+                break;
+        }
+
+        this.loading = true;
+        this.schemaService.getSchemasByPage({
+            category: category,
+            pageIndex: 0,
+            pageSize: 'all'
+        }).subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
+            this.loading = false;
+            const allSchemas = SchemaHelper.map(schemasResponse.body || []);
+
+            for (const schema of allSchemas as any[]) {
+                schema.policy = this.policyNameByTopic[schema.topicId];
+                schema.module = this.moduleNameByTopic[schema.topicId];
+                schema.tool = this.toolNameByTopic[schema.topicId];
+                const name = SchemaHelper.getSchemaName(
+                    schema.name,
+                    schema.version || schema.sourceVersion,
+                    schema.status
+                );
+                if (schema.policy) {
+                    schema.fullName = `${name} (${schema.policy})`;
+                } else if (schema.module) {
+                    schema.fullName = `${name} (${schema.module})`;
+                } else if (schema.tool) {
+                    schema.fullName = `${name} (${schema.tool})`;
+                } else {
+                    schema.fullName = name;
+                }
             }
-        });
-        dialogRef.onClose.subscribe(async (result) => {
-            if (result && result.schemaId1 && result.schemaId2) {
-                const items = btoa(JSON.stringify({
-                    parent: null,
-                    items: [
-                        result.schemaId1,
-                        result.schemaId2
-                    ].map((id) => {
-                        return {
-                            type: 'id',
-                            value: id
+
+            const dialogRef = this.dialogService.open(CompareSchemaDialog, {
+                header: 'Compare Schemas',
+                width: '650px',
+                styleClass: 'custom-dialog',
+                data: {
+                    schema: element,
+                    policies: listData,
+                    schemas: allSchemas,
+                    entityType: entityType
+                }
+            });
+            dialogRef.onClose.subscribe(async (result) => {
+                if (result && result.schemaId1 && result.schemaId2) {
+                    const items = btoa(JSON.stringify({
+                        parent: null,
+                        items: [
+                            result.schemaId1,
+                            result.schemaId2
+                        ].map((id) => {
+                            return {
+                                type: 'id',
+                                value: id
+                            }
+                        })
+                    }));
+                    this.router.navigate(['/compare'], {
+                        queryParams: {
+                            type: 'schema',
+                            items
                         }
-                    })
-                }));
-                this.router.navigate(['/compare'], {
-                    queryParams: {
-                        type: 'schema',
-                        items
-                    }
-                });
-            }
+                    });
+                }
+            });
+        }, (e) => {
+            this.loadError(e);
         });
     }
 
@@ -1482,7 +1651,7 @@ export class SchemaConfigComponent implements OnInit {
         this.schemaService
             .downloadExcelExample()
             .subscribe((fileBuffer) => {
-                let downloadLink = document.createElement('a');
+                const downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(
                     new Blob([new Uint8Array(fileBuffer)], {
                         type: 'application/guardian-schema',
@@ -1516,12 +1685,12 @@ export class SchemaConfigComponent implements OnInit {
                         this.user.SCHEMAS_SCHEMA_DELETE
                     );
                 }
-        
+
             default:
                 return true;
         }
     }
-    
+
     public onSelectAllItems(event: any) {
         if (event.checked) {
             this.selectedItems = [...this.selectedItems, ...this.page.filter((item: any) => this.ifCanDelete(item) && !this.selectedItemIds.includes(item.id))];

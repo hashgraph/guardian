@@ -324,7 +324,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                             body: {
                                 terms: "MGS.v2",
                             }
-                        }).then((response) => {
+                        }).then(() => {
                             cy.request({
                                 method: METHOD.GET,
                                 url: API.ApiMGS + 'accounts/standard-registries',

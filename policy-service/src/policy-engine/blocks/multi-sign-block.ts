@@ -185,7 +185,7 @@ export class MultiSignBlock {
         const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
         await this.updateThreshold(users, sourceDoc, documentId, user, user.userId, actionStatus);
 
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null, actionStatus);
 
         PolicyComponentsUtils.BlockUpdateFn(ref.parent, user);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
@@ -261,6 +261,10 @@ export class MultiSignBlock {
 
             const vpMessageId = vpMessageResult.getId();
             const vpDocument = PolicyUtils.createVP(ref, docOwner, vp, actionStatus?.id);
+
+            const tags = await PolicyUtils.getBlockTags(ref);
+            PolicyUtils.setDocumentTags(vpDocument, tags);
+
             vpDocument.type = DocumentCategoryType.MULTI_SIGN;
             vpDocument.messageId = vpMessageId;
             vpDocument.topicId = vpMessageResult.getTopicId();
@@ -277,7 +281,7 @@ export class MultiSignBlock {
             );
 
             const state: IPolicyEventState = { data: sourceDoc };
-            ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(
                 new ExternalEvent(ExternalEventType.SignatureQuorumReachedEvent, ref, null, {
                     documents: ExternalDocuments(data),
@@ -294,7 +298,7 @@ export class MultiSignBlock {
             );
 
             const state: IPolicyEventState = { data: sourceDoc };
-            ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(
                 new ExternalEvent(ExternalEventType.SignatureSetInsufficientEvent, ref, null, {
                     documents: ExternalDocuments(data)
@@ -369,7 +373,7 @@ export class MultiSignBlock {
                 const vc = await ref.databaseServer.getVcDocument(documentId);
                 await this.updateThreshold(users, vc, documentId, event.target, event?.user?.userId, event.actionStatus);
             }
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, null, event.actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, null, event.actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, event.target, null));
         }
         ref.backup();

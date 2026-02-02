@@ -274,4 +274,8 @@ export interface BlockAbout {
      * Default properties
      */
     properties?: AnyBlockProperties[];
+    /**
+     * Is deprecated
+     */
+    deprecated?: boolean;
 }
