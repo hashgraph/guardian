@@ -22,11 +22,15 @@
                     </div>
 
                     <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
-                        <input
-                            pInputText
+                        <textarea
+                            pInputTextarea
                             [value]="item.value"
                             [readonly]="true"
-                            type="text"/>
+                            type="text"
+                            [autoResize]="true"
+                            rows="1"
+                        >
+                        </textarea>
                     </div>
 
                     <div *ngIf="isInput(item) && isIPFS(item)" class="form-field-ipfs guardian-input-container">
@@ -170,11 +174,15 @@
                             </div>
 
                             <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
-                                <input
-                                    pInputText
+                                <textarea
+                                    pInputTextarea
                                     [value]="listItem.value"
                                     [readonly]="true"
-                                    type="text"/>
+                                    type="text"
+                                    [autoResize]="true"
+                                    rows="1"    
+                                >
+                                </textarea>
                             </div>
 
                             <div *ngIf="isInput(item) && isIPFS(item)" class="form-field-ipfs guardian-input-container">
@@ -274,6 +282,141 @@
                         </ng-container>
                     </p-accordionTab>
                 </p-accordion>
+            </div>
+
+
+            <!-- array of objects as table -->
+            <div *ngIf="canDrawTable(item)">
+                <p-table [value]="getTableHRowFields(item) || []">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 3rem">#</th>
+                            <th 
+                                *ngFor="let col of getTableHeaderFields(item)"
+                                class="table-header"
+                            >
+                                {{ col.description }}
+                            </th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
+                        <tr>
+                            <td>
+                                <div class="form-field-value">{{ rowIndex + 1 }}</div>
+                            </td>
+                            <td *ngFor="let field of rowData">
+                                <div>
+                                    <div *ngIf="ifSimpleField(field)" class="form-field-value">
+                                        <div *ngIf="isPrefix(field)" class="form-field-prefix">
+                                            {{ field.unit }}
+                                        </div>
+
+                                        <div *ngIf="isInput(field) && !isIPFS(field)" class="form-field-input guardian-input-container">
+                                            <textarea
+                                                class="p-inputtextarea p-inputtext textarea-resize-none"
+                                                [value]="field.value"
+                                                [readonly]="true"
+                                                type="text"
+                                                rows="1"
+                                            >
+                                            </textarea>
+                                        </div>
+
+                                        <div *ngIf="isInput(field) && isIPFS(field)" class="form-field-ipfs guardian-input-container">
+                                            <div class="form-field-url">
+                                                <input
+                                                    class="p-inputtext"
+                                                    [value]="field.value"
+                                                    [readonly]="true"
+                                                    type="text"/>
+                                                <div class="form-field-url-buttons">
+                                                    <button 
+                                                        [cdkCopyToClipboard]="field.value" 
+                                                        class="guardian-button guardian-button-primary"
+                                                    >
+                                                        Copy Link
+                                                    </button>
+                                                    <button
+                                                        [cdkCopyToClipboard]="getCID(field.value)"
+                                                        class="guardian-button guardian-button-secondary"
+                                                    >
+                                                        Copy CID
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div *ngIf="field?.customType !== 'file'" class="form-field-img">
+                                                <img *ngIf="!field.loading; else loading" class="ipfs-image" [src]="field.imgSrc" [alt]="field.value">
+                                                <ng-template #loading>
+                                                    <div class="guardian-loading">
+                                                        <div class="guardian-loading-image"></div>
+                                                    </div>
+                                                </ng-template>
+                                            </div>
+                                        </div>
+
+                                        <div *ngIf="isTime(field)" class="form-field-input guardian-input-container">
+                                            <input [readonly]="true" [value]="field.value" class="p-field-input" class="p-inputtext">
+                                        </div>
+
+                                        <div *ngIf="isDateTime(field)" class="form-field-input guardian-input-container">
+                                            <input [readonly]="true" [value]="field.value | date: 'medium'" class="p-field-input" class="p-inputtext">
+                                        </div>
+
+                                        <div *ngIf="isDate(field)" class="form-field-input guardian-input-container">
+                                            <input [readonly]="true" [value]="field.value" class="p-field-input" class="p-inputtext">
+                                        </div>
+
+                                        <div *ngIf="isBoolean(field)" class="form-field-boolean">
+                                            <span class="boolean-show">{{ isBooleanView(field.value) }}</span>
+                                        </div>
+
+                                        <div class="form-field-postfix" *ngIf="isPostfix(field)">{{field.unit}}</div>
+                                        <ng-container *ngIf="isDiscussion(field)">
+                                            <div
+                                                *ngIf="isDiscussionCount(field) as messageCount; else elseDiscussion"
+                                                class="form-field-discussion">
+                                                <button
+                                                    class="guardian-icon-button"
+                                                    (click)="openDiscussion(field)">
+                                                    <svg-icon
+                                                        src="/assets/images/icons/chat.svg"
+                                                        svgClass="icon-color-grey-color-3"
+                                                    ></svg-icon>
+                                                </button>
+                                                <div class="icon-count">{{messageCount}}</div>
+                                            </div>
+                                            <ng-template #elseDiscussion>
+                                                <div class="form-field-discussion">
+                                                    <button
+                                                        class="guardian-icon-button"
+                                                        (click)="openDiscussion(field)">
+                                                        <svg-icon
+                                                            src="/assets/images/icons/chat.svg"
+                                                            svgClass="icon-color-grey-color-3"
+                                                        ></svg-icon>
+                                                    </button>
+                                                </div>
+                                            </ng-template>
+                                        </ng-container>
+
+                                        <div
+                                            *ngIf="discussionAction"
+                                            class="form-field-discussion discussion-action">
+                                            <button
+                                                class="guardian-icon-button"
+                                                (click)="linkMessage(field)">
+                                                <svg-icon
+                                                    src="/assets/images/icons/hashtag.svg"
+                                                    svgClass="icon-color-primary"></svg-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
             </div>
 
             <div *ngIf="ifSubSchemaArray(item)" class="form-field-group schema-form-field-array-group">

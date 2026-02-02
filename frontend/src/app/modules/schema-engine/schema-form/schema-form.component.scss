@@ -457,15 +457,31 @@ form::ng-deep {
     }
 }
 
-.table-header{
-    min-width: 200px;
+.table-header {
+    min-width: 275px;
 }
 
-.table-content{
-    display: flex;
+.table-content {
     gap: 8px;
+}
 
-    .guardian-input-container{
-        height: auto;
-    }
+.form-field-input-bool {
+    gap: 12px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.simple-field {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+}
+
+.guardian-input-container {
+    height: auto !important;
+} 
+
+.form-field-input {
+    height: auto !important;
 }

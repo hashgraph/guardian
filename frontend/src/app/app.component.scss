@@ -490,3 +490,16 @@ body {
     color: var(--color-primary);
     border-color: var(--color-primary);
 }
+
+::ng-deep {
+    .p-inputtextarea {
+        min-height: 40px !important;
+        max-height: 250px !important;
+        border-radius: 8px !important;
+        overflow: auto !important;
+    }
+
+    .textarea-resize-none {
+          resize: none !important;
+    }
+}

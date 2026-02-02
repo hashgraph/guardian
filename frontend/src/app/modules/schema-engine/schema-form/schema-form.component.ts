@@ -727,7 +727,25 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public canDrawTable(item: IFieldControl<any>): boolean {
-        return item.isArray && item.isRef && !item.fields?.find((s) => s.isArray || s.isRef || s.customType ==='table');
+        return item.isArray && 
+            item.isRef && 
+            item.customType !== 'geo' &&
+            item.customType !== 'table' &&
+            item.customType !== 'sentinel' &&
+            !item.hidden &&
+            !item.fields?.find(f => (f.isArray || 
+                f.isRef ||
+                f.customType === 'geo' ||
+                f.customType === 'table' ||
+                f.customType === 'sentinel') && !f.hidden);
+    }
+
+    public getTableHeaderFields(item: IFieldControl<any>): any[] | undefined {
+        return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
+    }
+
+    public getTableRowFields(item: IFieldIndexControl<any>): any[] | undefined {
+        return item.model.controls?.filter((f: any) => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
     }
 }
 
