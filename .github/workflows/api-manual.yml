@@ -168,7 +168,7 @@ jobs:
             -e CYPRESS_MGSIndexerAPIToken=${{ secrets.MGSIndexerAPIToken }} \
             -e CYPRESS_grepTags="preparing ${{ inputs.tags }}" \
             -e CYPRESS_grepFilterSpecs=true \
-            -e ReportName=${{ inputs.report_name }} \
+            -e ReportName="${{ inputs.report_name }}" \
             cypress-runner \
             --browser chrome
 
