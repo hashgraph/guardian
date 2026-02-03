@@ -419,7 +419,7 @@
                 </p-table>
             </div>
 
-            <div *ngIf="ifSubSchemaArray(item)" class="form-field-group schema-form-field-array-group">
+            <div *ngIf="ifSubSchemaArray(item) && !canDrawTable(item)" class="form-field-group schema-form-field-array-group">
                 <p-accordion class="guardian-accordion">
                     <p-accordionTab [(selected)]="item.open">
                         <ng-template pTemplate="header">
