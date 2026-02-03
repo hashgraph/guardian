@@ -7,6 +7,10 @@ on:
         type: string
         description: Tags for API tests scope(s) (smoke, accounts, policies, etc.)
         default: "all"
+      report_name:
+        type: string
+        description: Cypress Report name
+        default: "Guardian's Cypress Report"
 
 jobs:
   buildAndTest:
@@ -164,6 +168,7 @@ jobs:
             -e CYPRESS_MGSIndexerAPIToken=${{ secrets.MGSIndexerAPIToken }} \
             -e CYPRESS_grepTags="preparing ${{ inputs.tags }}" \
             -e CYPRESS_grepFilterSpecs=true \
+            -e ReportName = ${{ inputs.report_name }} \
             cypress-runner \
             --browser chrome
 
