@@ -7,11 +7,14 @@ import {
     DataBaseHelper,
     Message,
     AnyResponse,
-    MessageCache
+    MessageCache,
+    ZipUtils
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
-import { MessageAction, MessageType, RawMessage, SearchPolicyParams, SearchPolicyResult, VCDetails } from '@indexer/interfaces';
-import { HashComparator } from '../analytics/index.js';
+import { MessageAction, MessageType, Page, Policy, RawMessage, SearchPolicyParams, SearchPolicyResult, VCDetails } from '@indexer/interfaces';
+import { CompareOptions, HashComparator, PolicyComparator, PolicyLoader, PolicyModel } from '../analytics/index.js';
+import { getPolicyData } from '../helpers/parsers/policy.parser.js';
+import { parsePageParams } from '../utils/parse-page-params.js';
 
 function createRegex(text: string) {
     return {
@@ -178,5 +181,99 @@ export class AnalyticsService {
     @MessagePattern(IndexerMessageAPI.GET_INDEXER_AVAILABILITY)
     async checkAvailability(): Promise<AnyResponse<boolean>> {
         return new MessageResponse<boolean>(true);
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_COMPARE_ORIGINAL_POLICY)
+    async compareOriginalPolicy(@Payload() msg): Promise<AnyResponse<string>> {
+        try {
+            const { messageId, options } = msg;
+
+            const compareOptions = CompareOptions.from(options);
+
+            const compareModels: PolicyModel[] = [];
+            const em = DataBaseHelper.getEntityManager();
+            const item = (await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.INSTANCE_POLICY,
+                action: MessageAction.PublishPolicy,
+            } as any)) as Policy;
+            const policyData = await getPolicyData(item);
+            const compareModel = await PolicyLoader.create(policyData, compareOptions);
+            compareModels.push(compareModel);
+            let originalPolicyData = null;
+            let originalItem = null;
+            if (item.options?.originalMessageId) {
+                originalItem = (await em.findOne(Message, {
+                    consensusTimestamp: item.options.originalMessageId,
+                    type: MessageType.INSTANCE_POLICY,
+                    action: MessageAction.PublishPolicy,
+                } as any)) as Policy;
+            }
+            else if (item.options?.originalHash) {
+                originalItem = (await em.findOne(Message, {
+                    'options.originalHash': item.options.originalHash,
+                    type: MessageType.INSTANCE_POLICY,
+                    action: MessageAction.PublishPolicy,
+                } as any,
+                    {
+                        orderBy: { _id: 'ASC' },
+                    }) as Policy);
+            }
+
+            if (originalItem) {
+                originalPolicyData = await getPolicyData(originalItem);
+            }
+
+            if (!originalPolicyData) {
+                return null;
+            }
+
+            const originalCompareModel = await PolicyLoader.create(originalPolicyData, compareOptions);
+            compareModels.push(originalCompareModel);
+
+            const comparator = new PolicyComparator(compareOptions);
+            const results = comparator.compare(compareModels);
+
+            const result = comparator.to(results, 'message');
+
+            const zip = await ZipUtils.zipJson(result);
+            return new MessageResponse(zip);
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_DERIVATIONS)
+    async getDerivations(@Payload() msg): Promise<AnyResponse<Page<Policy>>> {
+        try {
+            const options = parsePageParams(msg);
+
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+
+            const [rows, count] = (await em.findAndCount(Message, {
+                'options.originalMessageId': messageId,
+                type: MessageType.INSTANCE_POLICY,
+                action: MessageAction.PublishPolicy,
+            } as any)) as [Policy[], number];
+
+            for (const row of rows) {
+                if (row.analytics) {
+                    delete row.analytics.hashMap;
+                }
+            }
+
+            const result = {
+                items: rows,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+
+            return new MessageResponse<Page<Policy>>(result);
+        } catch (error) {
+            return new MessageError(error);
+        }
     }
 }

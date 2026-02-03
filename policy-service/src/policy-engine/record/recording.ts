@@ -265,13 +265,15 @@ export class Recording {
      * @param data
      * @public
      */
-    public async externalData(data: any): Promise<void> {
+    public async externalData(data: any, recordActionId: string, actionTimestemp: number): Promise<void> {
         await this.appendRecord({
             method: RecordMethod.Action,
             action: RecordAction.SetExternalData,
             user: null,
             target: null,
-            document: data
+            document: data,
+            recordActionId,
+            actionTimestemp,
         });
     }
 

@@ -122,8 +122,8 @@ export class PolicyLink<T> {
      * @param user
      * @param data
      */
-    public run(user: PolicyUser, data: T, actionStatus: RecordActionStep): void {
-        this.getUser(user, data).then((_user) => {
+    public run(user: PolicyUser, data: T, actionStatus: RecordActionStep): Promise<any> {
+        return this.getUser(user, data).then((_user) => {
             const event: IPolicyEvent<T> = {
                 type: this.type,
                 inputType: this.inputType,
@@ -144,14 +144,17 @@ export class PolicyLink<T> {
                 const res = this.callback.call(this.target, event);
 
                 if (typeof res?.then === 'function') {
-                    res.then(() => {
+                    res.then((result) => {
                         actionStatus.dec();
+                        return result;
                     })
                 } else {
                     actionStatus.dec();
                 }
+
+                return res;
             } else{
-                this.callback.call(this.target, event);
+                return this.callback.call(this.target, event);
             }
         });
     }

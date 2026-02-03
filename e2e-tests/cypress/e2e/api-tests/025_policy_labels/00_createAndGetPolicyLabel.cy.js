@@ -1,3 +1,4 @@
+
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -6,7 +7,24 @@ context("Create policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
     const UserUsername = Cypress.env('User');
     const labelName = "testPolicyLabelAPI";
 
-    let policy, did, SRDid, labelId, policyLabel;
+    let policy, did, SRDid, labelId;
+
+    const createPolicyLabel = (authorization, body, failOnStatusCode = true) =>
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.PolicyLabels,
+            headers: authorization ? { authorization } : {},
+            body,
+            failOnStatusCode,
+        });
+
+    const getPolicyLabel = (authorization, labelId, failOnStatusCode = true) =>
+        cy.request({
+            method: METHOD.GET,
+            url: API.ApiServer + API.PolicyLabels + labelId,
+            headers: authorization ? { authorization } : {},
+            failOnStatusCode,
+        });
 
     before("Get policy ids and did", () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
@@ -40,18 +58,11 @@ context("Create policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
 
     it("Create policy labels", () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.PolicyLabels,
-                body: {
-                    name: labelName,
-                    description: labelName + " desc",
-                    policyId: policy.id,
-                    policyInstanceTopicId: policy.instanceTopicId
-                },
-                headers: {
-                    authorization,
-                },
+            createPolicyLabel(authorization, {
+                name: labelName,
+                description: labelName + " desc",
+                policyId: policy.id,
+                policyInstanceTopicId: policy.instanceTopicId
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 labelId = response.body.id;
@@ -74,70 +85,41 @@ context("Create policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
     });
 
     it("Create policy labels without auth - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.PolicyLabels,
-            body: {
-                name: labelName,
-                description: labelName + " desc",
-                policyId: policy.id,
-                policyInstanceTopicId: policy.instanceTopicId
-            },
-            headers: {
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        createPolicyLabel(undefined, {
+            name: labelName,
+            description: labelName + " desc",
+            policyId: policy.id,
+            policyInstanceTopicId: policy.instanceTopicId
+        }, false).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Create policy labels with incorrect auth - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.PolicyLabels,
-            body: {
-                name: labelName,
-                description: labelName + " desc",
-                policyId: policy.id,
-                policyInstanceTopicId: policy.instanceTopicId
-            },
-            headers: {
-                authorization: "bearer 11111111111111111111@#$",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        createPolicyLabel("bearer 11111111111111111111@#$", {
+            name: labelName,
+            description: labelName + " desc",
+            policyId: policy.id,
+            policyInstanceTopicId: policy.instanceTopicId
+        }, false).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Create policy labels with empty auth - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.PolicyLabels,
-            body: {
-                name: labelName,
-                description: labelName + " desc",
-                policyId: policy.id,
-                policyInstanceTopicId: policy.instanceTopicId
-            },
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        createPolicyLabel("", {
+            name: labelName,
+            description: labelName + " desc",
+            policyId: policy.id,
+            policyInstanceTopicId: policy.instanceTopicId
+        }, false).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Get policy label", () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.PolicyLabels + labelId,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
+            getPolicyLabel(authorization, labelId).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 expect(response.body).to.have.property("uuid");
 
@@ -158,39 +140,19 @@ context("Create policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
     });
 
     it("Get policy label without auth - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.PolicyLabels + labelId,
-            headers: {
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        getPolicyLabel(undefined, labelId, false).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Get policy label with incorrect auth - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.PolicyLabels + labelId,
-            headers: {
-                authorization: "bearer 11111111111111111111@#$",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        getPolicyLabel("bearer 11111111111111111111@#$", labelId, false).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Get policy label with empty auth - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.PolicyLabels + labelId,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        getPolicyLabel("", labelId, false).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });

@@ -1743,8 +1743,8 @@ export class PolicyComponentsUtils {
         return true;
     }
 
-    public static async blockReceiveData(block: IPolicyInterfaceBlock | IPolicyBlock, data: any): Promise<any> {
-        return await (block as any).receiveData(data);
+    public static async blockReceiveData(block: IPolicyInterfaceBlock | IPolicyBlock, data: any, actionStatus?: RecordActionStep): Promise<any> {
+        return await (block as any).receiveData(data, actionStatus);
     }
 
     public static getActionsController(policyId: string) {

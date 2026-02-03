@@ -6,6 +6,23 @@ export function createChartConfig(
     links: any = [],
     categories: any[] = []
 ): EChartsOption {
+    const nodes = data.map((n) => {
+        const count =
+            typeof n.tagsCount === 'number'
+                ? n.tagsCount
+                : Array.isArray(n.tags)
+                    ? n.tags.length
+                    : 0;
+
+        if (!count) return n;
+        const baseColor = n.itemStyle?.color ?? '#5470C6';
+
+        return {
+            ...n,
+            symbol: getTagCounterNodeSymbol(baseColor, count),
+        };
+    });
+
     return {
         title: {
             text: 'Relationships',
@@ -48,7 +65,7 @@ export function createChartConfig(
                         width: 10,
                     },
                 },
-                data,
+                data: nodes,
                 links,
                 lineStyle: {
                     color: 'source',
@@ -89,7 +106,26 @@ export function createChartData(
                   }
                 : undefined,
         category: item.category,
+        tagsCount: item.tagsCount,
     };
+}
+
+function getTagCounterNodeSymbol(baseColor: string, count: number): string {
+    const text = count > 99 ? '99+' : String(count);
+    const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="${baseColor}" />
+            <rect x="64" y="4" width="32" height="24" rx="12" ry="12"
+                    fill="#E53935" stroke="white" stroke-width="1"/>
+            <text x="80" y="17"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            font-family="Inter, sans-serif"
+            font-size="12"
+            font-weight="500"
+            fill="#fff">${text}</text>
+        </svg>`.trim();
+    return `image://data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
 function getCoordinates(categoryIndex: number, index: number, count: number, columnOffsetX: number, previousCategoryIndex: number | null) {

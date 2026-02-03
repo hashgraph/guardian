@@ -27,7 +27,7 @@ interface IColumn {
     styleUrls: ['./requests.component.scss'],
 })
 export class PolicyRequestsComponent implements OnInit {
-    public readonly title: string = 'Policy Requests';
+    public readonly title: string = 'Incoming Requests';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;

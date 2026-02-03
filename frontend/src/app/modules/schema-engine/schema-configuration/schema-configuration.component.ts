@@ -25,14 +25,7 @@ import { ConditionControl, IfOperator } from '../condition-control';
 import { FieldControl } from '../field-control';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { SchemaService } from 'src/app/services/schema.service';
-
-enum SchemaType {
-    System = 'system',
-    Policy = 'policy',
-    Tag = 'tag',
-    Module = 'module',
-    Tool = 'tool'
-}
+import { SchemaType } from '../../policy-engine/structures/types/schema-type.type';
 
 function NoBindingValidator(control: UntypedFormControl): ValidationErrors | null {
     return (control.value && control.value.length) ? null : { wrongTopicId: true };

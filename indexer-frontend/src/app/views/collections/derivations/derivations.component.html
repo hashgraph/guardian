@@ -1,0 +1,8 @@
+<div>
+    <div class="content__table">
+        <app-table class="collection-container__table" [loading]="loadingData" [columns]="columns" [data]="items"
+            [pageIndex]="pageIndex" [pageSize]="pageSize" [total]="total" (onPage)="onPage($event)"
+            [sortColumn]="orderField" [sortDirection]="orderDir" (onSort)="onSort($event)">
+        </app-table>
+    </div>
+</div>

@@ -38,6 +38,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ApproveUpdateVcDocumentDialogComponent } from '../../policy-engine/dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { prepareVcData } from '../../common/models/prepare-vc-data';
+import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-dialog.component';
 
 /**
  * Dialog for display json
@@ -98,6 +99,7 @@ export class VCFullscreenDialog {
     public allVcDocs: any[] = [];
     public versionOptions: { label: string; value: number }[] = [];
     public selectedVersionIndex: number = 0;
+    public tags: any[] = [];
 
     private _destroy$ = new Subject<void>();
     private _subscription?: Subscription | null;
@@ -105,6 +107,7 @@ export class VCFullscreenDialog {
     constructor(
         public dialogRef: DynamicDialogRef,
         public dialogConfig: DynamicDialogConfig,
+        private dialogService: DialogService,
         private profileService: ProfileService,
         private commentsService: CommentsService,
         private route: ActivatedRoute,
@@ -201,6 +204,8 @@ export class VCFullscreenDialog {
 
         this.document = document;
         this.setJson();
+
+        this.tags = document.tags;
 
         const fileSizeBytes = new Blob([this.json]).size;
         this.fileSize = Math.round(fileSizeBytes / (1024 * 1024));
@@ -625,6 +630,7 @@ export class VCFullscreenDialog {
         this.loading = true;
         this.document = document;
         this.setJson();
+        this.tags = document.tags;
         this.setSubjects();
         this.isCurrentUserOwner =
             this.currentSelectedVcDoc?.owner === this.user?.did;
@@ -647,5 +653,18 @@ export class VCFullscreenDialog {
             this.json = '';
             this.currentTab = 1;
         }
+    }
+
+    public onOpenTag(tag: any) {
+        this.dialogService.open(ViewerDialog, {
+            showHeader: false,
+            width: '850px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Tag',
+                type: 'JSON',
+                value: tag,
+            }
+        });
     }
 }

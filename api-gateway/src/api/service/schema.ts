@@ -1925,13 +1925,21 @@ export class SchemaApi {
             const ids = schemas.map(s => s.id);
             const tags = await guardians.exportTags(owner, 'Schema', ids);
             const name = `${Date.now()}`;
-            const zip = await SchemaImportExport.generateZipFile({ schemas, tags });
+
+            const zip = await SchemaImportExport.generateZipFile({
+                schemas,
+                tags,
+                helpers: guardians,
+                user
+            });
+
             const arcStream = zip.generateNodeStream({
                 type: 'nodebuffer',
                 compression: 'DEFLATE',
                 compressionOptions: {
                     level: 3
-                }
+                },
+                platform: 'UNIX',
             });
             res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(name)}`);
             res.header('Content-type', 'application/zip');
@@ -2167,7 +2175,7 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.OK)
     async deleteSystemSchema(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
@@ -2199,6 +2207,8 @@ export class SchemaApi {
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
+            return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

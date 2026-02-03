@@ -212,6 +212,7 @@ const API = {
     Relationships: "relationships/",
     Documents: "documents/",
     Import: "import/",
+    Info: "info/",
 
     //Indexer
     IndexerRegistries: "entities/registries/",
@@ -271,6 +272,9 @@ const API = {
 
     //Permissions
     UsersPermissions: "permissions/users/",
+
+    //Relayer-accounts
+    RelayerAccounts: "relayer-accounts/",
 
     //MGS
     //Tenants

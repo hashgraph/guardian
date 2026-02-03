@@ -41,7 +41,7 @@
             <div class="schemas-block">
                 <ul class="schemas-list">
                     <li *ngFor="let item of deletableChildren">
-                        <p class="child-item">{{ item }}</p>
+                        <p class="child-item">{{ item.name }}</p>
                     </li>
                 </ul>
             </div>
@@ -53,7 +53,7 @@
                 <ul class="schemas-list">
                     <li *ngFor="let item of blockedChildren">
                         <p class="child-cant-delete-item">
-                            {{ item?.schema?.name + ' (depends on: ' + item?.blockingSchemas?.join(', ') + ')' }}
+                            {{ item?.schema + ' (depends on: ' + item?.blockingSchemas?.join(', ') + ')' }}
                         </p>
                     </li>
                 </ul>

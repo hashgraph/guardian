@@ -11,8 +11,8 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
     about: {
         label: 'History',
         title: `Add 'History' Addon`,
-        post: true,
-        get: true,
+        post: false,
+        get: false,
         children: ChildrenType.None,
         control: ControlType.Special,
         input: null,

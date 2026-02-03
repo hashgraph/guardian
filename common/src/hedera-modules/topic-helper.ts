@@ -204,6 +204,9 @@ export class TopicHelper {
         rationale: string,
         userId?: string
     ) {
+        if (!topic) {
+            throw new Error('Invalid topic');
+        }
         const messageServer = new MessageServer({
             operatorId: this.hederaAccountId,
             operatorKey: this.hederaAccountKey,

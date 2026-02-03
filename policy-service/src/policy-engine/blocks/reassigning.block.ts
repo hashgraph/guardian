@@ -104,6 +104,10 @@ export class ReassigningBlock {
         });
 
         let item = PolicyUtils.createVC(ref, owner, vc, actionStatus?.id);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(item, tags);
+
         item.type = document.type;
         item.schema = document.schema;
         item.assignedTo = document.assignedTo;
@@ -150,14 +154,17 @@ export class ReassigningBlock {
 
         event.data.data = result;
         // ref.log(`Reassigning Document: ${JSON.stringify(result)}`);
+        // event.actionStatus.saveResult(event.data);
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, event.data, event.actionStatus);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, event.actionStatus);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, event.data, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, event.data, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, event.data, event.actionStatus);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(result)
         }));
         ref.backup();
+
+        return event.data;
     }
 }

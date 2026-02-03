@@ -1,0 +1,24 @@
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    padding: 4px 0px;
+
+    button {
+        height: 36px;
+        border: none !important;
+        border-radius: 0px !important;
+        padding: 0px 16px;
+        justify-content: flex-start;
+    }
+}
+
+.menu-items {
+    max-height: 300px;
+    overflow: auto;
+}
+
+.menu-item-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}

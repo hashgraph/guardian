@@ -296,6 +296,13 @@ export class Policy extends BaseEntity {
 
     @Property({ nullable: true })
     originalMessageId?: string;
+
+    /**
+     * File id of the original policy zip (publish flow).
+     */
+    @Property({ nullable: true })
+    contentFileId?: string;
+
     /**
      * Set policy defaults
      */
@@ -404,6 +411,21 @@ export class Policy extends BaseEntity {
                 .catch((reason) => {
                     console.error(`AfterDelete: Policy, ${this._id}, hasMapFileId`)
                     console.error(reason)
+                });
+        }
+    }
+
+    /**
+     * Delete original policy zip (publish flow)
+     */
+    @AfterDelete()
+    deleteContentFile() {
+        if (this.contentFileId) {
+            DataBaseHelper.gridFS
+                .delete(new ObjectId(this.contentFileId))
+                .catch((reason) => {
+                    console.error('AfterDelete: Policy, contentFileId');
+                    console.error(reason);
                 });
         }
     }

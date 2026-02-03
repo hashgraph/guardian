@@ -183,4 +183,14 @@ export interface SchemaField {
      * Is Field Updatable
      */
     isUpdatable: any;
+
+    /**
+     * Full type
+     */
+    fullType?: string;
+
+    /**
+     * Array level
+     */
+    arrayLvl?: number;
 }

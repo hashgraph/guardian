@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApplicationStates } from '@guardian/interfaces';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { SettingsService } from 'src/app/services/settings.service';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -15,11 +16,12 @@ export class ServiceStatusComponent implements OnInit {
 
     servicesStates: any[] = [];
     last?: any;
+    guardianVersion?: string;
 
     constructor(
         private wsService: WebSocketService,
         private route: ActivatedRoute,
-        private router: Router
+        private settingsService: SettingsService
     ) {
         this.servicesStates = this.wsService.getServicesStatesArray();
         this.last = this.route?.snapshot?.queryParams?.last;
@@ -77,7 +79,9 @@ export class ServiceStatusComponent implements OnInit {
     }
 
     ngOnInit() {
-
+        this.settingsService.getAbout().subscribe((about) => {
+            this.guardianVersion = about?.version;
+        });
     }
 
     onBack() {
