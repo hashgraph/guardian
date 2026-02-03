@@ -39,6 +39,12 @@ export class RetireRequest extends BaseEntity implements IRetireRequest {
     @Property()
     user: string;
 
+    /**
+     * User Account Id
+     */
+    @Property()
+    userAccountId?: string;
+
     @BeforeCreate()
     @BeforeUpdate()
     setTokens() {

@@ -1187,6 +1187,14 @@ export class Worker extends NatsService {
                     break;
                 }
 
+                case WorkerTaskType.RESOLVE_ACCOUNT_ALIAS: {
+                    const { accountId } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .resolveAccountAlias(accountId);
+                    break;
+                }
+
                 default:
                     result.error = 'unknown task'
             }
