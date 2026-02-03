@@ -321,6 +321,14 @@ form {
     opacity: 0.6 !important;
     cursor: not-allowed !important;
 }
+
+.guardian-input-container {
+    height: auto !important;
+} 
+
+.form-field-input {
+    height: auto !important;
+}
 /* form {
     display: flex;
     flex-direction: column;
