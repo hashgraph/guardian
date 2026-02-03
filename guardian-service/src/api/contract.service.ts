@@ -803,7 +803,6 @@ async function resolveNumericAccountId(
     return resolved?.accountId || rawAccountId;
 }
 
-
 export async function syncRetireContract(
     dataBaseServer: DatabaseServer,
     workers: Workers,
