@@ -1,10 +1,9 @@
 import { AfterContentInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Schema, SchemaField } from '@guardian/interfaces';
-import { MathLiveComponent } from 'src/app/modules/common/mathlive/mathlive.component';
+import { IFieldNode, Schema } from '@guardian/interfaces';
 import { FieldLinkDialog } from '../field-link-dialog/field-link-dialog.component';
 import { SchemaVariables } from '../../structures';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { Validators } from '@angular/forms';
 import { TreeListData, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 import { FieldData } from 'src/app/modules/common/models/schema-node';
 import { Code, FieldLink, MathContext, MathFormula, MathEngine, setDocumentValueByPath, DocumentMap } from './math-model/index';
@@ -126,9 +125,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     private inputSchemaName: string = '';
     private outputSchemaName: string = '';
     private schemaNames: Map<string, string> = new Map<string, string>();
-    private schemaFieldMap: Map<string, Map<string, SchemaField>> = new Map<string, Map<string, SchemaField>>();
-    private inputSchemaFieldMap: Map<string, SchemaField> = new Map<string, SchemaField>();
-    private outputSchemaFieldMap: Map<string, SchemaField> = new Map<string, SchemaField>();
+    private schemaFieldMap: Map<string, Map<string, IFieldNode>> = new Map<string, Map<string, IFieldNode>>();
+    private inputSchemaFieldMap: Map<string, IFieldNode> = new Map<string, IFieldNode>();
+    private outputSchemaFieldMap: Map<string, IFieldNode> = new Map<string, IFieldNode>();
 
     public keyboard: boolean = false;
     public step: string = 'step_1';
@@ -213,9 +212,15 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.test = this.data.test;
         this.block = this.data.block;
         this.properties = this.block.properties;
-        this.schemas = this.data.schemas?.filter((v: SchemaVariables) => v.data)?.map((v: SchemaVariables) => v.data) || [];
-        this.inputSchema = this.data.schemas?.find((v: SchemaVariables) => v.value === this.properties?.inputSchema)?.data;
-        this.outputSchema = this.data.schemas?.find((v: SchemaVariables) => v.value === this.properties?.outputSchema)?.data;
+        this.schemas = this.data.schemas
+            ?.filter((v: SchemaVariables) => !!v.data?.getFields)
+            ?.map((v: SchemaVariables) => v.data) || [];
+        this.inputSchema = this.data.schemas
+            ?.find((v: SchemaVariables) => v.value === this.properties?.inputSchema)
+            ?.data;
+        this.outputSchema = this.data.schemas
+            ?.find((v: SchemaVariables) => v.value === this.properties?.outputSchema)
+            ?.data;
         if (!this.properties?.outputSchema) {
             this.outputSchema = this.inputSchema;
         }
@@ -321,69 +326,73 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
         this.schemaNames.clear();
         this.schemaFieldMap.clear();
-        for (const schema of this.schemas) {
-            this.schemaNames.set(String(schema.iri || ''), String(schema.name || ''));
-            const fields = schema.getFields();
-            const map = new Map<string, SchemaField>();
-            for (const field of fields) {
-                map.set(String(field.path), field);
-            }
-            this.schemaFieldMap.set(String(schema.iri || ''), map);
-        }
+
+
         this.schemaNames.set('#GeoJSON', 'GeoJSON');
+        for (const schema of this.schemas) {
+            const iri = String(schema.iri || '');
+            const name = String(schema.name || '');
+            const fields = schema.getDeepFields();
+            const map = this.createFieldMap(fields, new Map<string, IFieldNode>());
+            this.schemaNames.set(iri, name);
+            this.schemaFieldMap.set(iri, map);
+        }
 
         if (this.inputSchema) {
+            const fields = this.inputSchema.getDeepFields();
+            this.inputSchemaFieldMap = this.createFieldMap(fields, new Map<string, IFieldNode>());
             this.inputSchemaName = String(this.inputSchema.name || '');
-
-            const fields = this.inputSchema.getFields();
-            for (const field of fields) {
-                this.inputSchemaFieldMap.set(String(field.path), field);
-            }
-
-            this.codeMirrorOptions.inputLinks = this.createLinks(this.inputSchema);
+            this.codeMirrorOptions.inputLinks = this.createLinks(fields);
         }
+
         if (this.outputSchema) {
+            const fields = this.outputSchema.getDeepFields();
+            this.outputSchemaFieldMap = this.createFieldMap(fields, new Map<string, IFieldNode>());
             this.outputSchemaName = String(this.outputSchema.name || '');
-
-            const fields = this.outputSchema.getFields();
-            for (const field of fields) {
-                this.outputSchemaFieldMap.set(String(field.path), field);
-            }
-
-            this.codeMirrorOptions.outputLinks = this.createLinks(this.outputSchema);
+            this.codeMirrorOptions.outputLinks = this.createLinks(fields);
         }
     }
 
-    private createLinks(schema: Schema): any[] {
+    private createFieldMap(fields: IFieldNode[], map: Map<string, IFieldNode>): Map<string, IFieldNode> {
+        if (Array.isArray(fields)) {
+            for (const field of fields) {
+                map.set(String(field.path), field);
+                this.createFieldMap(field.fields, map);
+            }
+        }
+        return map;
+    }
+
+    private createLinks(fields: IFieldNode[] | undefined,): any[] {
         const links: any[] = [];
-        this._createLinks(schema.fields, links, null, '');
+        this._createLinks(fields, links, null, '');
         links.sort((a, b) => a.path.length > b.path.length ? 1 : -1);
         return links;
     }
 
     private _createLinks(
-        fields: SchemaField[] | undefined,
+        fields: IFieldNode[] | undefined,
         links: any[],
-        parent: SchemaField | null,
+        parent: IFieldNode | null,
         parentPattern: string | null
     ) {
         if (Array.isArray(fields)) {
             for (const field of fields) {
                 let pattern: string;
                 if (parent) {
-                    if (parent.isArray) {
-                        pattern = `${parentPattern}\\[\\w+\\].${field.name}`;
+                    if (parent.field.isArray) {
+                        pattern = `${parentPattern}\\[\\w+\\].${field.field.name}`;
                     } else {
-                        pattern = `${parentPattern}.${field.name}`;
+                        pattern = `${parentPattern}.${field.field.name}`;
                     }
                 } else {
-                    pattern = `${field.name}`;
+                    pattern = `${field.field.name}`;
                 }
                 links.push({
                     path: field.path,
                     pattern: new RegExp('^' + pattern)
                 });
-                if (field.isArray) {
+                if (field.field.isArray) {
                     links.push({
                         path: field.path,
                         pattern: new RegExp('^' + pattern + '\\[\\w+\\]')
@@ -394,22 +403,26 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }
     }
 
-    private createSchemaView(schema: any) {
-        const fields = TreeListData.fromObject<FieldData>(schema, 'fields', (item) => {
-            if (item && item.data) {
-                let type = item.data.isRef ? this.schemaNames.get(item.data.type) : item.data.type;
+    private createSchemaView(schema: Schema) {
+        const fields = schema.getDeepFields();
+
+        const list = TreeListData.fromObject<IFieldNode>({ fields }, 'fields', (item) => {
+            const node: IFieldNode = item.data;
+            if (node) {
+                const field = node.field;
+                let type = field.isRef ? this.schemaNames.get(field.type) : field.type;
                 if (type === null || type === 'null') {
                     type = 'Help Text';
                 }
-                item.id = item.data.path;
-                item.name = item.data.description;
+                item.id = node.path;
+                item.name = field.description;
                 item.subName = `${item.id} (${type})`;
             }
             return item;
         });
-        const items = TreeListView.createView(fields, (s) => { return !s.parent });
+        const items = TreeListView.createView(list, (s) => { return !s.parent });
         items.setSearchRules((item) => [
-            `(${item.description || ''})`.toLocaleLowerCase(),
+            `(${item.field.description || ''})`.toLocaleLowerCase(),
             `(${item.path || ''})`.toLocaleLowerCase()
         ]);
         return items;
@@ -519,17 +532,29 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public getFieldName(type: 'input' | 'output', schema: string | null, link: string): string {
         const field = this.getField(type, schema, link);
-        return field?.description || '';
+        if (field) {
+            return field.field.description;
+        } else {
+            return '';
+        }
     }
 
     public getFieldType(type: 'input' | 'output', schema: string | null, link: string): string {
         const field = this.getField(type, schema, link);
-        return field?.fullType || '';
+        if (field) {
+            return field.type;
+        } else {
+            return '';
+        }
     }
 
     public getFieldPath(type: 'input' | 'output', schema: string | null, link: string): string {
         const field = this.getField(type, schema, link);
-        return field?.path || '';
+        if (field) {
+            return field.path;
+        } else {
+            return '';
+        }
     }
 
     public getItemValue(value: any) {
