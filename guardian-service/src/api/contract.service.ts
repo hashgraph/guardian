@@ -2776,7 +2776,10 @@ export async function contractAPI(
                 }
                 result = await dataBaseServer.findAndCount(RetireRequest, filters, otherOptions);
             } else if (user.role === UserRole.USER) {
-                filters.user = user.hederaAccountId;
+                filters.$or = [
+                    { user: user.hederaAccountId },
+                    { userAccountId: user.hederaAccountId },
+                ];
                 result = await dataBaseServer.findAndCount(RetireRequest, filters, otherOptions);
             }
             return new MessageResponse(result);
@@ -3429,7 +3432,7 @@ export async function contractAPI(
                     owner,
                     root.hederaAccountId,
                     rootKey,
-                    request.user,
+                    request.userAccountId || request.user,
                     request.tokens,
                     userId
                 );
