@@ -237,7 +237,7 @@ export class Workers extends NatsService {
             }
         })
 
-        this.subscribe(WorkerEvents.TASK_COMPLETE, async (data: any) => {
+        this.subscribe(WorkerEvents.TASK_COMPLETE_DIRECT, async (data: any) => {
             if (!data.id) {
                 throw new Error('Message without id');
             }
@@ -401,9 +401,13 @@ export class Workers extends NatsService {
         }
 
         const worker = availableWorkers[candidateIndex];
+        const subject = worker.subject.replace(
+            WorkerEvents.SEND_TASK_TO_WORKER,
+            WorkerEvents.SEND_TASK_TO_WORKER_DIRECT
+        );
 
         const response = await this.sendMessage<{ result: boolean }>(
-            worker.subject,
+            subject,
             {
                 ...task,
                 reply: this.messageQueueName
