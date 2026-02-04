@@ -100,6 +100,14 @@ export class FormulasService {
         return this.http.post<any>(`${this.url}/data`, options);
     }
 
+    public draft(item: any): Observable<any> {
+        return this.http.put<boolean>(`${this.url}/${item.id}/draft`, item);
+    }
+
+    public dryRun(item: any): Observable<any> {
+        return this.http.put<boolean>(`${this.url}/${item.id}/dry-run`, item);
+    }
+
     public publish(item: any): Observable<any> {
         return this.http.put<boolean>(`${this.url}/${item.id}/publish`, item);
     }
