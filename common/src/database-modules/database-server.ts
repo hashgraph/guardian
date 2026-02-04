@@ -3548,16 +3548,20 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public async getVPMintInformation(
         vpDocument: VpDocument
     ): Promise<
-        [
+        {
             serials: { serial: number; tokenId: string }[],
             amount: number,
             error: string,
             wasTransferNeeded: boolean,
             transferSerials: number[],
+            mintAmount: number,
             transferAmount: number,
+            mintExpected: number,
+            transferExpected: number,
             tokenIds: string[],
-            target: string
-        ]
+            target: string,
+            mainDocument: string
+        }
     > {
         const mintRequests = await this.getMintRequests({
             $or: [
@@ -3569,52 +3573,56 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 },
             ],
         } as FilterObject<MintRequest>);
+        const target = mintRequests?.[0]?.target;
+        const mainDocument = mintRequests?.[0]?.vpMessageId;
+
+        const errors = [];
+
         const serials = vpDocument.serials
-            ? vpDocument.serials.map((serial) => ({
+            ? vpDocument.serials.map((serial: any) => ({
                 serial,
                 tokenId: vpDocument.tokenId,
-            }))
-            : [];
-        let amount = Number.isFinite(Number(vpDocument.amount))
+            })) : [];
+        const transferSerials = vpDocument.serials
+            ? vpDocument.serials.map((serial: any) => ({
+                serial,
+                tokenId: vpDocument.tokenId,
+            })) : [];
+        const oldAmount = Number.isFinite(Number(vpDocument.amount))
             ? Number(vpDocument.amount)
             : serials.length;
-        const transferSerials = vpDocument.serials
-            ? vpDocument.serials.map((serial) => ({
-                serial,
-                tokenId: vpDocument.tokenId,
-            }))
-            : [];
-        let transferAmount = amount;
-        const errors = [];
+
+        let mintAmount = 0;
+        let transferAmount = 0;
+        let mintExpected = 0;
+        let transferExpected = 0;
+
         let wasTransferNeeded = false;
+
         const tokenIds = new Set<string>();
         if (vpDocument.tokenId) {
             tokenIds.add(vpDocument.tokenId);
         }
-        const target = mintRequests?.[0]?.target;
         for (const mintRequest of mintRequests) {
             if (mintRequest.error) {
                 errors.push(mintRequest.error);
             }
             wasTransferNeeded ||= mintRequest.wasTransferNeeded;
             tokenIds.add(mintRequest.tokenId);
+
             if (mintRequest.tokenType === TokenType.NON_FUNGIBLE) {
-                const requestSerials = await this.getMintRequestSerials(
-                    mintRequest.id
-                );
+                const requestSerials = await this.getMintRequestSerials(mintRequest.id);
                 serials.push(
                     ...requestSerials.map((serial) => ({
                         serial,
                         tokenId: mintRequest.tokenId,
                     }))
                 );
-                amount += requestSerials.length;
+                mintAmount += requestSerials.length;
+                mintExpected += mintRequest.amount;
 
                 if (wasTransferNeeded) {
-                    const requestTransferSerials =
-                        await this.getMintRequestTransferSerials(
-                            mintRequest.id
-                        );
+                    const requestTransferSerials = await this.getMintRequestTransferSerials(mintRequest.id);
                     transferSerials.push(
                         ...requestTransferSerials.map((serial) => ({
                             serial,
@@ -3628,13 +3636,12 @@ export class DatabaseServer extends AbstractDatabaseServer {
                     mintRequestId: mintRequest.id,
                     mintStatus: MintTransactionStatus.SUCCESS,
                 });
+
+                const amount = mintRequest.decimals > 0 ? mintRequest.amount / Math.pow(10, mintRequest.decimals) : mintRequest.amount;
+
                 if (mintRequestTransaction) {
-                    if (mintRequest.decimals > 0) {
-                        amount +=
-                            mintRequest.amount / Math.pow(10, mintRequest.decimals);
-                    } else {
-                        amount += mintRequest.amount;
-                    }
+                    mintAmount += amount;
+                    mintExpected += amount;
                 }
                 if (wasTransferNeeded) {
                     const mintRequestTransferTransaction =
@@ -3643,28 +3650,35 @@ export class DatabaseServer extends AbstractDatabaseServer {
                             transferStatus: MintTransactionStatus.SUCCESS,
                         });
                     if (mintRequestTransferTransaction) {
-                        if (mintRequest.decimals > 0) {
-                            transferAmount +=
-                                mintRequest.amount /
-                                Math.pow(10, mintRequest.decimals);
-                        } else {
-                            transferAmount += mintRequest.amount;
-                        }
+                        transferAmount += amount;
                     }
                 }
             }
         }
 
-        return [
+        if (wasTransferNeeded) {
+            transferExpected = mintExpected;
+        }
+
+        mintAmount += oldAmount;
+        transferAmount += oldAmount;
+        mintExpected += oldAmount;
+        transferExpected += oldAmount;
+
+        return {
             serials,
-            amount,
-            errors.join(', '),
+            amount: mintAmount, //old
+            error: errors.join(', '),
             wasTransferNeeded,
             transferSerials,
+            mintAmount,
             transferAmount,
-            [...tokenIds],
+            mintExpected,
+            transferExpected,
+            tokenIds: [...tokenIds],
             target,
-        ];
+            mainDocument
+        }
     }
 
     /**

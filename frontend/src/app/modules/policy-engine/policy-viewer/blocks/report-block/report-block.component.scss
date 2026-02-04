@@ -29,7 +29,6 @@
 }
 
 
-
 .title {
     margin-left: 20px;
     background: #fff;
@@ -338,6 +337,7 @@ a[disabled="true"] {
     font-style: normal;
     font-weight: 600;
     line-height: 32px;
+    margin-top: 16px;
 }
 
 .search-btn {
@@ -901,4 +901,8 @@ h3 {
 *[readonly-block="true"] {
     pointer-events: none !important;
     filter: grayscale(1);
+}
+
+.proof {
+    padding-top: 24px;
 }
