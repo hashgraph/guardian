@@ -227,10 +227,10 @@ export class Workers extends NatsService {
             if (!data.id) {
                 throw new Error('Message without id');
             }
-            if (data.error) {
-                console.error(data);
-            }
             if (this.tasksCallbacks.has(data.id)) {
+                if (data.error) {
+                    console.error(data);
+                }
                 const activeTask = this.tasksCallbacks.get(data.id);
                 activeTask.callback(data.data, data.error, data.isTimeoutError);
                 this.tasksCallbacks.delete(data.id)
@@ -241,10 +241,10 @@ export class Workers extends NatsService {
             if (!data.id) {
                 throw new Error('Message without id');
             }
-            if (data.error) {
-                console.error(data);
-            }
             if (this.tasksCallbacks.has(data.id)) {
+                if (data.error) {
+                    console.error(data);
+                }
                 const activeTask = this.tasksCallbacks.get(data.id);
                 activeTask.callback(data.data, data.error, data.isTimeoutError);
                 this.tasksCallbacks.delete(data.id);
