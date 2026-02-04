@@ -20823,6 +20823,10 @@ components:
         document:
           type: object
           additionalProperties: true
+        tagSchemaId:
+          type: string
+          description: Tag schema database ID (for tags created with a tag schema)
+          example: '000000000000000000000001'
         inheritTags:
           type: boolean
           example: false
