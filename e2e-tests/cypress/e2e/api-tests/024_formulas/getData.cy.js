@@ -24,6 +24,14 @@ context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
             failOnStatusCode,
         });
 
+    const publishFormula = (authorization, formulaId, failOnStatusCode = true) =>
+        cy.request({
+            method: METHOD.PUT,
+            url: `${API.ApiServer}${API.Formulas}${formulaId}/${API.Publish}`,
+            headers: authorization ? { authorization } : {},
+            failOnStatusCode,
+        });
+
     const postFormulaData = (
         authorization,
         { documentId, policyId, schemaId },
@@ -42,11 +50,13 @@ context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
             getFormulas(authorization).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 firstFormula = response.body.at(0);
-
-                getPolicyApplications(authorization, firstFormula.policyId).then((appsRes) => {
-                    expect(appsRes.status).eql(STATUS_CODE.OK);
-                    documentId = appsRes.body.data.at(0).id;
-                });
+                publishFormula(authorization, firstFormula.id).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
+                    getPolicyApplications(authorization, firstFormula.policyId).then((appsRes) => {
+                        expect(appsRes.status).eql(STATUS_CODE.OK);
+                        documentId = appsRes.body.data.at(0).id;
+                    });
+                })
             });
         });
     });
@@ -77,8 +87,7 @@ context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
                 expect(response.body.formulas.at(0).policyId).eql(firstFormula.policyId);
                 expect(response.body.formulas.at(0).policyInstanceTopicId).eql(firstFormula.policyInstanceTopicId);
                 expect(response.body.formulas.at(0).policyTopicId).eql(firstFormula.policyTopicId);
-                expect(response.body.formulas.at(0).status).eql(firstFormula.status);
-                expect(response.body.formulas.at(0).status).eql(firstFormula.status);
+                expect(response.body.formulas.at(0).status).eql("PUBLISHED");
             });
         });
     });
