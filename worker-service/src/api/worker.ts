@@ -246,7 +246,6 @@ export class Worker extends NatsService {
             })
         })
 
-
         this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
             try {
                 const ipfsStorageApiKey = msg?.ipfsStorageApiKey;
