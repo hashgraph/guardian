@@ -7,6 +7,10 @@ on:
         type: string
         description: Tags for API tests scope(s) (smoke, accounts, policies, etc.)
         default: "all"
+      report_name:
+        type: string
+        description: Cypress Report name
+        default: "Guardian's Cypress Report"
 
 jobs:
   buildAndTest:
@@ -164,6 +168,7 @@ jobs:
             -e CYPRESS_MGSIndexerAPIToken=${{ secrets.MGSIndexerAPIToken }} \
             -e CYPRESS_grepTags="preparing ${{ inputs.tags }}" \
             -e CYPRESS_grepFilterSpecs=true \
+            -e ReportName="${{ inputs.report_name }}" \
             cypress-runner \
             --browser chrome
 
@@ -171,6 +176,12 @@ jobs:
         if: always()
         run: |
           docker cp cypress-test-run:/e2e/cypress/test_results ./e2e-tests/cypress/test_results || true
+
+      - name: Copy cypress reports from Docker container
+        if: always()
+        run: |
+          docker cp cypress-test-run:/e2e/cypress/reports ./e2e-tests/cypress/reports || true
+          find e2e-tests/cypress/reports -type f || true
 
       - name: Cleanup Docker resources
         if: always()
@@ -182,3 +193,11 @@ jobs:
         if: always()
         with:
           files: e2e-tests/cypress/test_results/**/*.xml
+
+      - name: Upload tests results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          path: e2e-tests/cypress/reports/html/.jsons/**
+          include-hidden-files: true
+          retention-days: 1

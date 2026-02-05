@@ -8,7 +8,9 @@ context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
     const schemaNameA = "schemaA";
     const schemaNameB = "schemaB";
 
-    let topicId, schemaAId, schemaBId;
+    let topicId, schemaAId, schemaBId, schemas;
+
+
 
     before("Create policy", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -25,6 +27,17 @@ context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 topicId = response.body.at(0).topicId;
+                cy.fixture("schemaForNestedTest.json").then((schemasFromJSON) => {
+                    schemas = schemasFromJSON;
+                    schemas.schemaA.name = schemaNameA;
+                    schemas.schemaA.document.title = schemaNameA;
+                    schemas.schemaB.name = schemaNameB;
+                    schemas.schemaB.document.title = schemaNameB;
+                    schemas.schemaB.document.properties.field0 = schemaNameA;
+                    schemas.schemaB.document.$defs["#de21cc0a-18ad-47c0-ae82-aefe7107fc61&1.0.1"].title = schemaNameA;
+                    schemas.schemaA.topicId = topicId;
+                    schemas.schemaB.topicId = topicId;
+                })
             });
         })
     });
@@ -37,25 +50,7 @@ context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                 headers: {
                     authorization,
                 },
-                body: {
-                    "uuid": "de21cc0a-18ad-47c0-ae82-aefe7107fc61",
-                    "name": schemaNameA,
-                    "entity": "NONE",
-                    "status": "DRAFT",
-                    "readonly": false,
-                    "document": {
-                        "$id": "#de21cc0a-18ad-47c0-ae82-aefe7107fc61",
-                        "$comment": "{ \"@id\": \"schema:de21cc0a-18ad-47c0-ae82-aefe7107fc61#de21cc0a-18ad-47c0-ae82-aefe7107fc61\", \"term\": \"de21cc0a-18ad-47c0-ae82-aefe7107fc61\" }",
-                        "title": schemaNameA,
-                        "type": "object",
-                        "additionalProperties": false,
-                    },
-                    "topicId": topicId,
-                    "contextURL": "schema:de21cc0a-18ad-47c0-ae82-aefe7107fc61",
-                    "active": false,
-                    "system": false,
-                    "category": "POLICY"
-                }
+                body: schemas.schemaA
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 cy.request({
@@ -64,79 +59,7 @@ context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                     headers: {
                         authorization,
                     },
-                    body: {
-                        "uuid": "f5d3e328-cd4e-4819-a807-c98c4a5795f8",
-                        "name": schemaNameB,
-                        "entity": "NONE",
-                        "status": "DRAFT",
-                        "readonly": false,
-                        "document": {
-                            "$id": "#f5d3e328-cd4e-4819-a807-c98c4a5795f8",
-                            "$comment": "{ \"@id\": \"schema:f5d3e328-cd4e-4819-a807-c98c4a5795f8#f5d3e328-cd4e-4819-a807-c98c4a5795f8\", \"term\": \"f5d3e328-cd4e-4819-a807-c98c4a5795f8\" }",
-                            "title": schemaNameB,
-                            "type": "object",
-                            "properties": {
-                                "@context": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    ],
-                                    "readOnly": true
-                                },
-                                "type": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    ],
-                                    "readOnly": true
-                                },
-                                "id": {
-                                    "type": "string",
-                                    "readOnly": true
-                                },
-                                "field0": {
-                                    "title": "field0",
-                                    "description": schemaNameA,
-                                    "readOnly": false,
-                                    "$ref": "#de21cc0a-18ad-47c0-ae82-aefe7107fc61",
-                                    "$comment": "{\"term\":\"field0\",\"@id\":\"schema:f5d3e328-cd4e-4819-a807-c98c4a5795f8#de21cc0a-18ad-47c0-ae82-aefe7107fc61\",\"availableOptions\":[],\"orderPosition\":0}"
-                                }
-                            },
-                            "required": [
-                                "@context",
-                                "type"
-                            ],
-                            "additionalProperties": false,
-                            "$defs": {
-                                "#de21cc0a-18ad-47c0-ae82-aefe7107fc61": {
-                                    "$id": "#de21cc0a-18ad-47c0-ae82-aefe7107fc61",
-                                    "$comment": "{ \"@id\": \"schema:de21cc0a-18ad-47c0-ae82-aefe7107fc61#de21cc0a-18ad-47c0-ae82-aefe7107fc61\", \"term\": \"de21cc0a-18ad-47c0-ae82-aefe7107fc61\" }",
-                                    "title": schemaNameA,
-                                    "type": "object",
-                                    "additionalProperties": false
-                                }
-                            }
-                        },
-                        "topicId": topicId,
-                        "contextURL": "schema:f5d3e328-cd4e-4819-a807-c98c4a5795f8",
-                        "active": false,
-                        "system": false,
-                        "category": "POLICY",
-                    }
+                    body: schemas.schemaB
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.SUCCESS);
                     cy.request({
@@ -151,6 +74,7 @@ context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                         }
                     }).then((response) => {
                         schemaAId = response.body.at(1).id;
+
                         schemaBId = response.body.at(0).id;
                     })
                 });
@@ -197,79 +121,7 @@ context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                 headers: {
                     authorization,
                 },
-                body: {
-                    "uuid": "f5d3e328-cd4e-4819-a807-c98c4a5795f8",
-                    "name": schemaNameB,
-                    "entity": "NONE",
-                    "status": "DRAFT",
-                    "readonly": false,
-                    "document": {
-                        "$id": "#f5d3e328-cd4e-4819-a807-c98c4a5795f8",
-                        "$comment": "{ \"@id\": \"schema:f5d3e328-cd4e-4819-a807-c98c4a5795f8#f5d3e328-cd4e-4819-a807-c98c4a5795f8\", \"term\": \"f5d3e328-cd4e-4819-a807-c98c4a5795f8\" }",
-                        "title": schemaNameB,
-                        "type": "object",
-                        "properties": {
-                            "@context": {
-                                "oneOf": [
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                ],
-                                "readOnly": true
-                            },
-                            "type": {
-                                "oneOf": [
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                ],
-                                "readOnly": true
-                            },
-                            "id": {
-                                "type": "string",
-                                "readOnly": true
-                            },
-                            "field0": {
-                                "title": "field0",
-                                "description": schemaNameA,
-                                "readOnly": false,
-                                "$ref": "#de21cc0a-18ad-47c0-ae82-aefe7107fc61",
-                                "$comment": "{\"term\":\"field0\",\"@id\":\"schema:f5d3e328-cd4e-4819-a807-c98c4a5795f8#de21cc0a-18ad-47c0-ae82-aefe7107fc61\",\"availableOptions\":[],\"orderPosition\":0}"
-                            }
-                        },
-                        "required": [
-                            "@context",
-                            "type"
-                        ],
-                        "additionalProperties": false,
-                        "$defs": {
-                            "#de21cc0a-18ad-47c0-ae82-aefe7107fc61": {
-                                "$id": "#de21cc0a-18ad-47c0-ae82-aefe7107fc61",
-                                "$comment": "{ \"@id\": \"schema:de21cc0a-18ad-47c0-ae82-aefe7107fc61#de21cc0a-18ad-47c0-ae82-aefe7107fc61\", \"term\": \"de21cc0a-18ad-47c0-ae82-aefe7107fc61\" }",
-                                "title": schemaNameA,
-                                "type": "object",
-                                "additionalProperties": false
-                            }
-                        }
-                    },
-                    "topicId": topicId,
-                    "contextURL": "schema:f5d3e328-cd4e-4819-a807-c98c4a5795f8",
-                    "active": false,
-                    "system": false,
-                    "category": "POLICY",
-                }
+                body: schemas.schemaB
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 cy.request({
@@ -294,6 +146,7 @@ context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                             includeChildren: true
                         }
                     }).then((response) => {
+                        cy.wait(10000);
                         expect(response.status).eql(STATUS_CODE.OK);
                         cy.request({
                             method: METHOD.GET,
