@@ -272,7 +272,7 @@ export class PolicySettingsComponent implements OnInit {
     public importTheme() {
         const dialogRef = this.dialogService.open(ImportEntityDialog, {
             showHeader: false,
-            width: '720px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             data: {
                 type: ImportEntityType.Theme,

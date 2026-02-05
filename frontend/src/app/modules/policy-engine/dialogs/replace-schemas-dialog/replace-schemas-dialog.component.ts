@@ -86,7 +86,7 @@ export class ReplaceSchemasDialogComponent implements OnDestroy {
   public onOpenDocument(schema: Schema): void {
       this.dialogService.open(VCViewerDialog, {
           showHeader: false,
-          width: '1000px',
+          width: '80%',
           styleClass: 'guardian-dialog',
           data: {
               row: schema,

@@ -280,7 +280,7 @@ export class VCViewerDialog {
     public onOpenTag(tag: any) {
         this.dialogService.open(ViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             data: {
                 title: 'Tag',

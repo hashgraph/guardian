@@ -401,7 +401,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     onEditEnum() {
         const dialogRef = this.dialogService.open(EnumEditorDialog, {
             header: 'Enum data',
-            width: '700px',
+            width: '80%',
             showHeader: false,
             styleClass: 'guardian-dialog',
             data: {

@@ -398,7 +398,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
 
         this.filtersDialogRef = this.dialogService.open(GlobalEventsReaderFiltersDialogComponent, {
             showHeader: false,
-            width: '720px',
+            width: '80%',
             styleClass: 'global-events-reader-filters-dialog',
             data: {
                 readonly: this.readonly,

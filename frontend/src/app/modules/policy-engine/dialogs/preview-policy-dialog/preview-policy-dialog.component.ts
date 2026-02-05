@@ -266,7 +266,7 @@ export class PreviewPolicyDialog {
     public onToolSearch(toolConfig: any) {
         const dialogRef = this.dialogService.open(SearchToolDialog, {
             showHeader: false,
-            width: '900px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             data: {
                 name: toolConfig.name

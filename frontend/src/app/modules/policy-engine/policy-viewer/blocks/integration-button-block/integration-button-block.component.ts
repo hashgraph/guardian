@@ -127,7 +127,7 @@ export class IntegrationButtonBlockComponent implements OnInit {
     openDialog(document: any, data: any) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             data: {
                 title: 'VC',
