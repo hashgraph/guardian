@@ -1,45 +1,47 @@
 <div class="tree-container">
-    <div 
-        #movedEl 
+    <div
+        #movedEl
         class="tree-graph"
         [attr.moving]="moving"
         (mousedown)="onMouseDown($event)"
         (mouseup)="onMouseUp($event)"
-
         (mouseleave)="onMouseUp($event)"
         (mouseenter)="onMouseUp($event)"
         (wheel)="onScroll($event)"
     >
-        <div 
-            #gridEl 
-            class="tree-moving-container"
-        >
-            <div 
+        <div #gridEl class="tree-moving-container">
+            <div
                 *ngIf="grid"
                 class="tree-grid"
                 [style.grid-template-columns]="grid.columnsTemplate"
                 [style.grid-template-rows]="grid.rowsTemplate"
             >
-            <div 
-                *ngFor="let node of grid.nodes"
-                [style.grid-column-start]="node.minColumn"
-                [style.grid-column-end]="node.maxColumn"
-                [style.grid-row-start]="node.minRow"
-                [style.grid-row-end]="node.maxRow"
-                class="tree-node-container"
-            >
-                <div class="tree-node" (click)="onSelectNode(node)" [attr.node-id]="node.uuid">
-                    <ng-container 
-                        [ngTemplateOutlet]="nodeTemplate" 
-                        [ngTemplateOutletContext]="{ node }"
-                    ></ng-container>
-                </div>
-                <div class="tree-node-lines">
-                    <div
-                        *ngFor="let line of node.lines"
-                        class="tree-node-line {{line.type}}-line selected-type-{{line.selected}}"
-                        [style.width.px]="line.width"
-                    >
+                <div
+                    *ngFor="let node of grid.nodes"
+                    [style.grid-column-start]="node.minColumn"
+                    [style.grid-column-end]="node.maxColumn"
+                    [style.grid-row-start]="node.minRow"
+                    [style.grid-row-end]="node.maxRow"
+                    class="tree-node-container"
+                >
+                    <div class="tree-node" (click)="onSelectNode(node)" [attr.node-id]="node.uuid">
+                        <div class="tree-node-content">
+                            <ng-container [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ node }"></ng-container>
+                        </div>
+                        <div
+                            *ngIf="node.linkLine"
+                            class="tree-link-line {{ node.linkLine.variant ? 'variant-' + node.linkLine.variant : '' }} selected-type-{{
+                                node.linkLine.selected
+                            }}"
+                            [style.width.px]="node.linkLine.width"
+                        ></div>
+                    </div>
+                    <div class="tree-node-lines">
+                        <div
+                            *ngFor="let line of node.lines"
+                            class="tree-node-line {{ line.type }}-line selected-type-{{ line.selected }}"
+                            [style.width.px]="line.width"
+                        ></div>
                     </div>
                 </div>
             </div>

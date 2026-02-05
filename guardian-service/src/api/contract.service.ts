@@ -391,7 +391,8 @@ async function setRetireRequest(
     contractId: string,
     user: string,
     tokens: RetireTokenRequest[],
-    userId: string | null
+    userId: string | null,
+    userAccountId: string | null = null
 ) {
     const newTokens = await Promise.all(
         tokens.map(async (token) => {
@@ -441,6 +442,7 @@ async function setRetireRequest(
         RetireRequest,
         {
             user,
+            userAccountId,
             tokens: newTokens,
             contractId,
         }
@@ -781,6 +783,26 @@ export async function syncRetireContracts(
     }
 }
 
+async function resolveNumericAccountId(
+    workers: Workers,
+    rawAccountId: string,
+    userId: string | null
+): Promise<string> {
+    if (!/^0\.0\.[0-9a-fA-F]{40}$/.test(rawAccountId)) {
+        return rawAccountId;
+    }
+
+    const resolved = await workers.addRetryableTask(
+        {
+            type: WorkerTaskType.RESOLVE_ACCOUNT_ALIAS,
+            data: { accountId: rawAccountId, payload: { userId } },
+        },
+        { priority: 10 }
+    );
+
+    return resolved?.accountId || rawAccountId;
+}
+
 export async function syncRetireContract(
     dataBaseServer: DatabaseServer,
     workers: Workers,
@@ -954,6 +976,8 @@ export async function syncRetireContract(
                     const retireUser = AccountId.fromSolidityAddress(
                         data[0]
                     ).toString();
+
+                    const userAccountId = await resolveNumericAccountId(workers, retireUser, userId);
                     await setRetireRequest(
                         workers,
                         dataBaseServer,
@@ -966,7 +990,8 @@ export async function syncRetireContract(
                             count: Number(item[1]),
                             serials: item[2].map((serial) => Number(serial)),
                         })),
-                        userId
+                        userId,
+                        userAccountId
                     );
                     if (!sendNotifications) {
                         break;
@@ -2751,7 +2776,10 @@ export async function contractAPI(
                 }
                 result = await dataBaseServer.findAndCount(RetireRequest, filters, otherOptions);
             } else if (user.role === UserRole.USER) {
-                filters.user = user.hederaAccountId;
+                filters.$or = [
+                    { user: user.hederaAccountId },
+                    { userAccountId: user.hederaAccountId },
+                ];
                 result = await dataBaseServer.findAndCount(RetireRequest, filters, otherOptions);
             }
             return new MessageResponse(result);
@@ -3404,7 +3432,7 @@ export async function contractAPI(
                     owner,
                     root.hederaAccountId,
                     rootKey,
-                    request.user,
+                    request.userAccountId || request.user,
                     request.tokens,
                     userId
                 );
