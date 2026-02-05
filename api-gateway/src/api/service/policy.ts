@@ -2051,7 +2051,7 @@ export class PolicyApi {
         @Param('policyId') policyId: string,
         @Param('uuid') uuid: string,
         @Query('timeout') timeout: number,
-        @Query('waitRemotePolicy') waitRemotePolicy: boolean,
+        @Query('waitRemotePolicy', new DefaultValuePipe(true), ParseBoolPipe) waitRemotePolicy: boolean,
         @Body() body: any,
         @Req() req
     ): Promise<any> {
@@ -2143,7 +2143,7 @@ export class PolicyApi {
         @Param('uuid') uuid: string,
         @Query('history', new DefaultValuePipe(false), ParseBoolPipe) history: boolean,
         @Query('timeout') timeout: number,
-        @Query('waitRemotePolicy') waitRemotePolicy: boolean,
+        @Query('waitRemotePolicy', new DefaultValuePipe(true), ParseBoolPipe) waitRemotePolicy: boolean,
         @Body() body: any,
         @Req() req
     ): Promise<any> {
@@ -2227,7 +2227,7 @@ export class PolicyApi {
         @Param('policyId') policyId: string,
         @Param('tagName') tagName: string,
         @Query('timeout') timeout: number,
-        @Query('waitRemotePolicy') waitRemotePolicy: boolean,
+        @Query('waitRemotePolicy', new DefaultValuePipe(true), ParseBoolPipe) waitRemotePolicy: boolean,
         @Body() body: any,
         @Req() req
     ): Promise<any> {
@@ -2319,7 +2319,7 @@ export class PolicyApi {
         @Param('tagName') tagName: string,
         @Query('history', new DefaultValuePipe(false), ParseBoolPipe) history: boolean,
         @Query('timeout') timeout: number,
-        @Query('waitRemotePolicy') waitRemotePolicy: boolean,
+        @Query('waitRemotePolicy', new DefaultValuePipe(true), ParseBoolPipe) waitRemotePolicy: boolean,
         @Body() body: any,
         @Req() req
     ): Promise<any> {
