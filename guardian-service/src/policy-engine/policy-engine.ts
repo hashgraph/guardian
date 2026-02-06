@@ -266,8 +266,9 @@ export class PolicyEngine extends NatsService {
      * @param user
      */
     public async addAccessFilters(filters: { [field: string]: any }, user: IOwner): Promise<any> {
-        const subFilters: any = {};
-        subFilters.owner = user.owner;
+        //Local
+        const localFilters: any = {};
+        localFilters.owner = user.owner;
         switch (user.access) {
             case AccessType.ALL: {
                 break;
@@ -275,42 +276,50 @@ export class PolicyEngine extends NatsService {
             case AccessType.ASSIGNED_OR_PUBLISHED: {
                 const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap = assigned.map((e) => e.entityId);
-                subFilters.$or = [
+                localFilters.$or = [
                     { status: { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] } },
                     { id: { $in: assignedMap } }
                 ];
                 break;
             }
             case AccessType.PUBLISHED: {
-                subFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
+                localFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
                 break;
             }
             case AccessType.ASSIGNED: {
                 const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap = assigned.map((e) => e.entityId);
-                subFilters.id = { $in: assignedMap };
+                localFilters.id = { $in: assignedMap };
                 break;
             }
             case AccessType.ASSIGNED_AND_PUBLISHED: {
                 const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap = assigned.map((e) => e.entityId);
-                subFilters.id = { $in: assignedMap };
-                subFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
+                localFilters.id = { $in: assignedMap };
+                localFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
                 break;
             }
             case AccessType.NONE: {
-                subFilters.id = { $in: [] };
+                localFilters.id = { $in: [] };
                 break;
             }
             default: {
-                subFilters.id = { $in: [] };
+                localFilters.id = { $in: [] };
                 break;
             }
         }
-        filters.$or = [{
+        //Remote
+        const remoteFilters: any = {
             locationType: { $eq: LocationType.REMOTE },
             status: PolicyStatus.VIEW
-        }, subFilters]
+        }
+        const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.RemotePolicy);
+        const assignedMap = assigned.map((e) => e.entityId);
+        remoteFilters.id = { $in: assignedMap };
+
+        //All
+        filters.$or = [remoteFilters, localFilters];
+        return filters;
     }
 
     /**

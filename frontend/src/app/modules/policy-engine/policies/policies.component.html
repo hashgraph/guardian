@@ -203,6 +203,11 @@
                                     pFrozenColumn>Operations
                                 </th>
                                 <th
+                                    *ngIf="canDisplayColumn('disconnect')"
+                                    class="header-cell-text cell-150 cell-last"
+                                    pFrozenColumn>
+                                </th>
+                                <th
                                     *ngIf="canDisplayColumn('modified')"
                                     class="header-cell-text cell-description">Modified
                                 </th>
@@ -280,7 +285,7 @@
                                 <td
                                     *ngIf="canDisplayColumn('instance')"
                                     class="cell-{{sizeColumn('instance')}}"
-                                    [class.cell-last]="!canDisplayColumn('operations')"
+                                    [class.cell-last]="!canDisplayColumn('operations') && !canDisplayColumn('disconnect')"
                                     pFrozenColumn
                                 >
                                     <div *ngIf="showInstance(policy) as instanceLabel" class="instances">
@@ -328,7 +333,8 @@
 
                                 <td
                                     *ngIf="canDisplayColumn('operations')"
-                                    class="text-truncate cell-120 cell-last"
+                                    class="text-truncate cell-120"
+                                    [class.cell-last]="!canDisplayColumn('disconnect')"
                                     pFrozenColumn
                                 >
                                     <div class="commands-line">
@@ -355,6 +361,23 @@
                                                       svgClass="primary-color"></svg-icon>
                                         </div>
                                     </div>
+                                </td>
+                                <td
+                                    *ngIf="canDisplayColumn('disconnect')"
+                                    class="cell-150 cell-last cell-left-padding-0"
+                                    pFrozenColumn
+                                >
+                                    <button 
+                                        (click)="disconnect(policy)"
+                                        class="guardian-button guardian-button-delete disconnect-btn">
+                                        <div class="guardian-button-icon">
+                                            <svg-icon class="icon-btn svg-icon"
+                                                src="/assets/images/icons/delete.svg"
+                                                svgClass="icon-color-delete">
+                                            </svg-icon>
+                                        </div>
+                                        Disconnect
+                                    </button>
                                 </td>
                                 <td
                                     *ngIf="canDisplayColumn('modified')"

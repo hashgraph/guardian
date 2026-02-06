@@ -1190,17 +1190,17 @@ export class PolicyEngineService {
                     let result = await DatabaseServer.updatePolicyConfig(policyId, model);
                     result = await PolicyImportExportHelper.updatePolicyComponents(result, logger, owner.id);
 
-                    if(result && (result.originalZipId || result.originalMessageId)) {
+                    if (result && (result.originalZipId || result.originalMessageId)) {
                         const policyComponents = await PolicyImportExport.loadPolicyComponents(result);
                         const policyHash = PolicyImportExport.getPolicyHash(policyComponents);
 
-                        if(policyHash !== result.originalHash) {
+                        if (policyHash !== result.originalHash) {
                             result.originalChanged = true;
                         } else {
                             result.originalChanged = false;
                         }
 
-                        if(result.id) {
+                        if (result.id) {
                             await DatabaseServer.updatePolicy(result);
                         }
                     }
@@ -1440,6 +1440,16 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DISCONNECT_POLICY,
+            async (msg: { policyId: string, owner: IOwner }): Promise<IMessageResponse<boolean>> => {
+                try {
+                    return new MessageResponse(true);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.VALIDATE_POLICIES,
             async (msg: { policyId: string, model: Policy & { ignoreRules?: ReadonlyArray<IgnoreRule> }, owner: IOwner }): Promise<IMessageResponse<any>> => {
                 try {
@@ -1579,15 +1589,14 @@ export class PolicyEngineService {
                         await this.policyEngine.startDemo(result.policy, owner, logger, NewNotifier.empty());
                     }
 
-                    if(originalTracking && result.policy)
-                    {
+                    if (originalTracking && result.policy) {
                         const originalFileId = await PolicyImportExport.saveOriginalZip(Buffer.from(zip.data), result.policy.name);
                         const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
                         result.policy.originalHash = policyHash;
                         result.policy.originalChanged = false;
                         result.policy.originalZipId = originalFileId;
 
-                        if(result.policy?.id) {
+                        if (result.policy?.id) {
                             await DatabaseServer.updatePolicy(result.policy);
                         }
                     }
@@ -1655,8 +1664,7 @@ export class PolicyEngineService {
                         errors: result.errors
                     });
 
-                    if(originalTracking && result.policy)
-                    {
+                    if (originalTracking && result.policy) {
                         const originalFileId = await PolicyImportExport.saveOriginalZip(Buffer.from(zip.data), result.policy.name);
                         const policyComponents = await PolicyImportExport.loadPolicyComponents(result.policy);
                         const policyHash = await PolicyImportExport.getPolicyHash(policyComponents);
@@ -1664,7 +1672,7 @@ export class PolicyEngineService {
                         result.policy.originalChanged = false;
                         result.policy.originalZipId = originalFileId;
 
-                        if(result.policy?.id) {
+                        if (result.policy?.id) {
                             await DatabaseServer.updatePolicy(result.policy);
                         }
                     }
@@ -1770,14 +1778,13 @@ export class PolicyEngineService {
                         );
                     }
 
-                    if(originalTracking && result.policy)
-                    {
+                    if (originalTracking && result.policy) {
                         const policyComponents = await PolicyImportExport.loadPolicyComponents(result.policy);
                         const policyHash = await PolicyImportExport.getPolicyHash(policyComponents);
                         result.policy.originalHash = policyHash;
                         result.policy.originalChanged = false;
                         result.policy.originalMessageId = messageId;
-                        if(result.policy?.id) {
+                        if (result.policy?.id) {
                             await DatabaseServer.updatePolicy(result.policy);
                         }
                     }
@@ -1854,14 +1861,13 @@ export class PolicyEngineService {
                             errors: result.errors
                         });
 
-                        if(originalTracking && result.policy)
-                        {
+                        if (originalTracking && result.policy) {
                             const policyComponents = await PolicyImportExport.loadPolicyComponents(result.policy);
                             const policyHash = await PolicyImportExport.getPolicyHash(policyComponents);
                             result.policy.originalHash = policyHash;
                             result.policy.originalChanged = false;
                             result.policy.originalMessageId = messageId;
-                            if(result.policy?.id) {
+                            if (result.policy?.id) {
                                 await DatabaseServer.updatePolicy(result.policy);
                             }
                         }

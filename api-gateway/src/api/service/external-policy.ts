@@ -443,7 +443,7 @@ export class ExternalPoliciesApi {
     }
 
     /**
-     * UApproves a request
+     * Approves a request
      */
     @Put('/requests/:messageId/approve')
     @AuthAndLocation(
@@ -460,10 +460,10 @@ export class ExternalPoliciesApi {
     })
     @ApiParam({
         name: 'messageId',
-        type: 'string',
+        type: String,
+        description: 'Policy message id',
         required: true,
-        description: 'Schema Rule Identifier',
-        example: Examples.MESSAGE_ID,
+        example: Examples.MESSAGE_ID
     })
     @ApiBody({
         description: 'Object that contains a configuration.',
@@ -513,10 +513,10 @@ export class ExternalPoliciesApi {
     })
     @ApiParam({
         name: 'messageId',
-        type: 'string',
+        type: String,
+        description: 'Policy message id',
         required: true,
-        description: 'Schema Rule Identifier',
-        example: Examples.MESSAGE_ID,
+        example: Examples.MESSAGE_ID
     })
     @ApiBody({
         description: 'Object that contains a configuration.',
@@ -747,6 +747,45 @@ export class ExternalPoliciesApi {
             return res.send(result);
         } catch (error) {
             await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Disconnect
+     */
+    @Put('/:messageId/disconnect')
+    @Auth(Permissions.POLICIES_POLICY_READ)
+    @ApiOperation({
+        summary: '',
+        description: '',
+    })
+    @ApiParam({
+        name: 'messageId',
+        type: String,
+        description: 'Policy message id',
+        required: true,
+        example: Examples.MESSAGE_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async disconnectPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string
+    ): Promise<boolean> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.disconnectPolicy(messageId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

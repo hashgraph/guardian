@@ -62,7 +62,7 @@ export class PolicyEngineService {
     public allWithImportedRecords(policyId: string): Observable<any[]> {
         return this.http.get<any[]>(`${this.url}/with-imported-records/${policyId}`);
     }
-    
+
 
     public create(policy: any): Observable<void> {
         return this.http.post<any>(`${this.url}/`, policy);
@@ -218,7 +218,7 @@ export class PolicyEngineService {
             params = params.set('demo', demo);
         }
 
-        if(originalTracking) {
+        if (originalTracking) {
             params = params.set('originalTracking', originalTracking);
         }
 
@@ -621,5 +621,9 @@ export class PolicyEngineService {
 
     public getAllVersionVcDocuments(policyId?: string, documentId?: string): Observable<any> {
         return this.http.get<void>(`${this.url}/${policyId}/get-all-version-vc-documents/${documentId}`);
+    }
+
+    public disconnect(policyId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/disconnect`, null);
     }
 }

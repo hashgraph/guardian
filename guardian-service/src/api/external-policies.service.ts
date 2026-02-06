@@ -13,9 +13,23 @@ import {
     INotificationStep,
     NewNotifier
 } from '@guardian/common';
-import { ExternalPolicyStatus, IOwner, MessageAPI, PolicyAvailability } from '@guardian/interfaces';
+import { AssignedEntityType, ExternalPolicyStatus, IOwner, MessageAPI, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { ImportMode, ImportPolicyOptions, PolicyImportExportHelper } from '../helpers/import-helpers/index.js'
+
+async function assignPolicy(policyId: string, user: string, assign: boolean): Promise<void> {
+    if (!policyId) {
+        return
+    }
+    if (assign) {
+        const assigned = await DatabaseServer.getAssignedEntity(AssignedEntityType.RemotePolicy, policyId, user);
+        if (!assigned) {
+            await DatabaseServer.assignEntity(AssignedEntityType.RemotePolicy, policyId, true, user, user);
+        }
+    } else {
+        await DatabaseServer.removeAssignEntity(AssignedEntityType.RemotePolicy, policyId, user);
+    }
+}
 
 /**
  * Prepare policy for preview by message
@@ -270,33 +284,41 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
         async (msg: { messageId: string, owner: IOwner }) => {
             try {
                 const { messageId, owner } = msg;
-                const item = await DatabaseServer.getExternalPolicy({ messageId, creator: owner.creator });
-                if (item) {
-                    return new MessageError(`Item is already exist.`);
+                const policy = await DatabaseServer.getPolicy({ messageId });
+                if (policy) {
+                    if (policy.status !== PolicyStatus.VIEW) {
+                        return new MessageError(`Policy is already exist.`);
+                    }
+                    await assignPolicy(policy.id, owner.creator, true);
+                    return new MessageResponse(policy);
+                } else {
+                    const item = await DatabaseServer.getExternalPolicy({ messageId, creator: owner.creator });
+                    if (item) {
+                        return new MessageError(`Item is already exist.`);
+                    }
+                    const policyToImport = await preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
+                    if (policyToImport.availability !== PolicyAvailability.PUBLIC) {
+                        return new MessageError(`Policy is private.`);
+                    }
+                    if (!policyToImport.restoreTopicId || !policyToImport.actionsTopicId) {
+                        return new MessageError(`Policy is private.`);
+                    }
+                    const externalPolicy = await DatabaseServer.createExternalPolicy({
+                        uuid: policyToImport.policy.uuid,
+                        name: policyToImport.policy.name,
+                        description: policyToImport.policy.description,
+                        version: policyToImport.policy.version,
+                        topicId: policyToImport.topicId,
+                        instanceTopicId: policyToImport.policy.instanceTopicId,
+                        messageId,
+                        policyTag: policyToImport.policy.policyTag,
+                        owner: owner.owner,
+                        creator: owner.creator,
+                        username: owner.username,
+                        status: ExternalPolicyStatus.NEW
+                    });
+                    return new MessageResponse(externalPolicy);
                 }
-                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
-                if (policyToImport.availability !== PolicyAvailability.PUBLIC) {
-                    return new MessageError(`Policy is private.`);
-                }
-                if (!policyToImport.restoreTopicId || !policyToImport.actionsTopicId) {
-                    return new MessageError(`Policy is private.`);
-                }
-                const externalPolicy = await DatabaseServer.createExternalPolicy({
-                    uuid: policyToImport.policy.uuid,
-                    name: policyToImport.policy.name,
-                    description: policyToImport.policy.description,
-                    version: policyToImport.policy.version,
-                    topicId: policyToImport.topicId,
-                    instanceTopicId: policyToImport.policy.instanceTopicId,
-                    messageId,
-                    policyTag: policyToImport.policy.policyTag,
-                    owner: owner.owner,
-                    creator: owner.creator,
-                    username: owner.username,
-                    status: ExternalPolicyStatus.NEW
-                });
-
-                return new MessageResponse(externalPolicy);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
@@ -323,7 +345,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const policy = await DatabaseServer.getPolicy({ messageId });
+                let policy = await DatabaseServer.getPolicy({ messageId });
                 const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
                     let errors: any[] = [];
@@ -336,6 +358,9 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                         item.status = ExternalPolicyStatus.APPROVED;
                         await DatabaseServer.updateExternalPolicy(item);
                     }
+
+                    policy = await DatabaseServer.getPolicy({ messageId });
+                    await assignPolicy(policy?.id, owner.creator, true);
 
                     notifier.result({ id: messageId, errors });
                 }, async (error) => {
@@ -370,7 +395,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const policy = await DatabaseServer.getPolicy({ messageId });
+                let policy = await DatabaseServer.getPolicy({ messageId });
                 const notifier = NewNotifier.empty();
 
                 let errors: any[] = [];
@@ -385,6 +410,9 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 notifier.result({ id: messageId, errors });
+
+                policy = await DatabaseServer.getPolicy({ messageId });
+                await assignPolicy(policy?.id, owner.creator, true);
 
                 return new MessageResponse(true);
             } catch (error) {
@@ -464,4 +492,27 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
+    ApiResponse(MessageAPI.DISCONNECT_POLICY,
+        async (msg: { messageId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+
+                const { messageId, owner } = msg;
+
+                const policy = await DatabaseServer.getPolicy({ messageId });
+
+                if (!policy || policy.status !== PolicyStatus.VIEW) {
+                    return new MessageError(`Policy does not exist.`);
+                }
+
+                await assignPolicy(policy.id, owner.creator, false);
+
+                return new MessageResponse(true);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
 }

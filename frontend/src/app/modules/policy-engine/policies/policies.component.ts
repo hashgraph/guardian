@@ -55,6 +55,8 @@ import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.s
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
 import { ToastrService } from 'ngx-toastr';
 import { UserPolicyDialog } from '../dialogs/user-policy-dialog/user-policy-dialog.component';
+import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -86,13 +88,13 @@ class MenuButton {
     }
 }
 
-const columns = [ {
+const columns = [{
     id: 'select',
     size: '50',
     permissions: (user: UserPermissions, type: LocationType) => {
         return user.POLICIES_POLICY_DELETE;
     }
-},  {
+}, {
     id: 'name',
     permissions: (user: UserPermissions, type: LocationType) => {
         return true;
@@ -102,7 +104,7 @@ const columns = [ {
     permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
-},{
+}, {
     id: 'modified',
     permissions: (user: UserPermissions, type: LocationType) => {
         return true;
@@ -191,6 +193,12 @@ const columns = [ {
         } else {
             return false;
         }
+    }
+}, {
+    id: 'disconnect',
+    size: '150',
+    permissions: (user: UserPermissions, type: LocationType) => {
+        return type !== LocationType.LOCAL;
     }
 }, {
     id: 'multi-instance',
@@ -663,16 +671,15 @@ export class PoliciesComponent implements OnInit {
         public tagsService: TagsService,
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
+        private externalPoliciesService: ExternalPoliciesService,
         private router: Router,
         private route: ActivatedRoute,
         private dialogService: DialogService,
-        private taskService: TasksService,
         private informService: InformService,
         private schemaService: SchemaService,
         private wizardService: WizardService,
         private tokenService: TokenService,
         private toastr: ToastrService,
-        private analyticsService: AnalyticsService,
         private contractSerivce: ContractService,
         private wsService: WebSocketService,
         @Inject(CONFIGURATION_ERRORS)
@@ -1821,8 +1828,11 @@ export class PoliciesComponent implements OnInit {
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: any | null) => {
             if (result) {
-                // this.loadAllPolicy();
-                this.router.navigate(['/external-policies']);
+                if (result.status === 'VIEW') {
+                    this.loadAllPolicy();
+                } else {
+                    this.router.navigate(['/external-policies']);
+                }
             }
         });
     }
@@ -1851,7 +1861,7 @@ export class PoliciesComponent implements OnInit {
     public onSelectAllItems(event: any) {
         if (event.checked) {
             this.selectedItems = [...this.selectedItems, ...this.policiesList.filter((item: any) => (item.status === PolicyStatus.DRAFT ||
-                 item.status === PolicyStatus.DEMO) && !this.selectedItemIds.includes(item.id))];
+                item.status === PolicyStatus.DEMO) && !this.selectedItemIds.includes(item.id))];
             this.selectedItemIds = this.selectedItems.map(item => item.id);
         } else {
             this.selectedItems = this.selectedItems.filter(item => !this.policiesList.some(policy => item.id === policy.id));
@@ -1941,7 +1951,7 @@ export class PoliciesComponent implements OnInit {
                                     keyPrefix
                                 );
 
-                                this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policyId).catch(() =>{
+                                this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policyId).catch(() => {
                                     //
                                 })
 
@@ -1971,5 +1981,37 @@ export class PoliciesComponent implements OnInit {
         this.selectedItems = [];
         this.selectedItemIds = [];
         this.isAllSelected = false;
+    }
+
+    public disconnect(policy: any) {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete tab',
+                text: 'Are you sure want to disconnect this policy?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Disconnect',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Disconnect') {
+                this.loading = true;
+                this.externalPoliciesService
+                    .disconnect(policy.messageId)
+                    .pipe(takeUntil(this._destroy$))
+                    .subscribe((result) => {
+                        this.loadAllPolicy();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
     }
 }

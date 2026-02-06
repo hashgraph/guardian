@@ -24,6 +24,7 @@ export enum PolicyEngineEvents {
     PUBLISH_POLICIES_ASYNC = 'policy-engine-event-publish-policies-async',
     DRY_RUN_POLICIES = 'policy-engine-event-dry-run-policies',
     DRAFT_POLICIES = 'policy-engine-event-draft-policies',
+    DISCONNECT_POLICY = 'policy-engine-event-disconnect-policy',
     RESTART_POLICY_INSTANCE = 'policy-engine-restart-policy-instance',
     VALIDATE_POLICIES = 'policy-engine-event-validate-policies',
     POLICY_BLOCKS = 'policy-engine-event-get-policy-blocks',

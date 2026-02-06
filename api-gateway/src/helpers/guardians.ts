@@ -3920,6 +3920,16 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Disconnect policy
+     * 
+     * @param messageId
+     * @param owner
+     */
+    public async disconnectPolicy(messageId: string,owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DISCONNECT_POLICY, { messageId, owner });
+    }
+
+    /**
      * Return User Profile
      *
      * @param {IAuthUser} user - user
