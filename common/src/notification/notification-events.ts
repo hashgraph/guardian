@@ -18,7 +18,9 @@ export const notificationActionMap = new Map<TaskAction, NotificationAction>([
     [TaskAction.CREATE_TOKEN, NotificationAction.TOKENS_PAGE],
     [TaskAction.UPDATE_TOKEN, NotificationAction.TOKENS_PAGE],
     [TaskAction.DELETE_TOKEN, NotificationAction.TOKENS_PAGE],
+    [TaskAction.DELETE_TOKENS, NotificationAction.TOKENS_PAGE],
     [TaskAction.DELETE_POLICY, NotificationAction.POLICIES_PAGE],
+    [TaskAction.DELETE_POLICIES, NotificationAction.POLICIES_PAGE],
     [TaskAction.CLONE_POLICY, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.PUBLISH_POLICY_LABEL, NotificationAction.POLICY_LABEL_PAGE],
 ]);

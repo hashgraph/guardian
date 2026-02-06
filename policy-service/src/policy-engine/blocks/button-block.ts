@@ -46,7 +46,11 @@ export class ButtonBlock {
             ),
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData,
-            user: ref.options.user
+            user: ref.options.user,
+
+            userId: user ? user.userId : null,
+            userDid: user ? user.did : null,
+
         }
         return data;
     }
@@ -65,11 +69,11 @@ export class ButtonBlock {
          * Tag
          */
         tag: any
-    }): Promise<any> {
+    }, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const data: IPolicyDocument = blockData.document;
         const state: IPolicyEventState = { data };
-        ref.triggerEvents(blockData.tag, user, state);
+        await ref.triggerEvents(blockData.tag, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             button: blockData.tag,
             documents: ExternalDocuments(blockData.document)

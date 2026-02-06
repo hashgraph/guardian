@@ -13,6 +13,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import deepEqual from 'deep-equal';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Request VC document block
@@ -178,7 +179,7 @@ export class RequestVcDocumentBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async setData(user: PolicyUser, data: IPolicyDocument): Promise<any> {
+    async setData(user: PolicyUser, data: IPolicyDocument, _, actionStatus): Promise<any> {
         if (this.state.hasOwnProperty(user.id)) {
             delete this.state[user.id].restoreData;
         }
@@ -187,10 +188,10 @@ export class RequestVcDocumentBlock {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
             throw new BlockActionError('User have no any did.', ref.blockType, ref.uuid);
         }
-        return await this.setBlockData(user, data);
+        return await this.setBlockData(user, data, actionStatus);
     }
 
-    private async setBlockData(user: PolicyUser, data: IPolicyDocument) {
+    private async setBlockData(user: PolicyUser, data: IPolicyDocument, actionStatus: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         try {
             //Prepare data
@@ -208,7 +209,7 @@ export class RequestVcDocumentBlock {
                 = await PolicyUtils.getRelayerAccountAndOwner(ref, user, data.relayerAccount, documentRef, inheritRelayerAccount);
 
             //Prepare Credential Subject
-            const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document);
+            const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document, actionStatus?.id);
 
             //Get relationships
             if (documentRef) {
@@ -238,7 +239,7 @@ export class RequestVcDocumentBlock {
             }
 
             //Create Verifiable Credential
-            const item = await this.createVerifiableCredential(user, documentOwner, relayerAccount, credentialSubject);
+            const item = await this.createVerifiableCredential(user, documentOwner, relayerAccount, credentialSubject, actionStatus?.id);
             PolicyUtils.setDocumentRef(item, documentRef);
 
             //Update metadata
@@ -268,15 +269,16 @@ export class RequestVcDocumentBlock {
 
             //Trigger Events
             if (draft) {
-                ref.triggerEvents(PolicyOutputEventType.DraftEvent, user, state);
+                await ref.triggerEvents(PolicyOutputEventType.DraftEvent, user, state, actionStatus);
             } else {
-                ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+                // actionStatus.saveResult(state);
+                await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
             }
             if (draft || editType === 'edit') {
-                ref.triggerEvents(PolicyOutputEventType.ReferenceEvent, user, { data: documentRef });
+                await ref.triggerEvents(PolicyOutputEventType.ReferenceEvent, user, { data: documentRef }, actionStatus);
             }
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+            await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
                 documents: ExternalDocuments(item)
             }));
@@ -392,7 +394,8 @@ export class RequestVcDocumentBlock {
     private async createCredentialSubject(
         user: PolicyUser,
         relayerAccount: string,
-        document: any
+        document: any,
+        actionStatusId: string,
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
@@ -412,7 +415,7 @@ export class RequestVcDocumentBlock {
             user,
             relayerAccount,
             userId: user.userId
-        });
+        }, actionStatusId);
         if (newId) {
             credentialSubject.id = newId;
         }
@@ -428,12 +431,13 @@ export class RequestVcDocumentBlock {
         issuer: PolicyUser,
         owner: PolicyUser,
         relayerAccount: string,
-        credentialSubject: any
+        credentialSubject: any,
+        actionStatusId: string
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         const groupContext = await PolicyUtils.getGroupContext(ref, issuer);
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatusId);
 
         const vc = await PolicyActionsUtils.signVC({
             ref,
@@ -443,7 +447,10 @@ export class RequestVcDocumentBlock {
             options: { uuid, group: groupContext },
             userId: issuer.userId
         });
-        const item = PolicyUtils.createVC(ref, owner, vc);
+        const item = PolicyUtils.createVC(ref, owner, vc, actionStatusId);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(item, tags);
 
         const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, this._schema);
         const schemaIRI = ref.options.schema;

@@ -25,14 +25,7 @@ import { ConditionControl, IfOperator } from '../condition-control';
 import { FieldControl } from '../field-control';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { SchemaService } from 'src/app/services/schema.service';
-
-enum SchemaType {
-    System = 'system',
-    Policy = 'policy',
-    Tag = 'tag',
-    Module = 'module',
-    Tool = 'tool'
-}
+import { SchemaType } from '../../policy-engine/structures/types/schema-type.type';
 
 function NoBindingValidator(control: UntypedFormControl): ValidationErrors | null {
     return (control.value && control.value.length) ? null : { wrongTopicId: true };
@@ -770,7 +763,8 @@ export class SchemaConfigurationComponent implements OnInit {
             suggest,
             example,
             autocalculate,
-            expression
+            expression,
+            isUpdatable
         } = metadata;
         const type = this.schemaTypeMap[typeIndex];
         let suggestValue;
@@ -862,6 +856,7 @@ export class SchemaConfigurationComponent implements OnInit {
             default: defaultValue,
             suggest: suggestValue,
             examples: this.isNotEmpty(exampleValue) ? [exampleValue] : undefined,
+            isUpdatable: isUpdatable || false,
         };
     }
 
@@ -904,7 +899,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 customType: fieldConfig.customType,
                 readOnly: true,
                 isPrivate: fieldConfig.isPrivate,
-                property: fieldConfig.property
+                property: fieldConfig.property,
+                isUpdatable: fieldConfig.isUpdatable,
             };
             fields.push(schemaField);
             allFieldsByName.set(fieldConfig.name, schemaField);

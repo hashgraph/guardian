@@ -59,6 +59,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     public tagOptions: string[] = [];
 
     public textSearch: string = '';
+    public tagFilter: string = '';
 
     public publishMenuSelector: any = null;
 
@@ -120,6 +121,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.textSearch = this.route.snapshot.queryParams['search'] || '';
+        this.tagFilter = this.route.snapshot.queryParams['tag'] || '';
 
         this.loading = true;
         this.loadTools();
@@ -161,7 +163,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     private loadAllTools() {
         this.loading = true;
         this.tagOptions = [];
-        this.toolsService.page(this.pageIndex, this.pageSize, this.textSearch).subscribe((policiesResponse) => {
+        this.toolsService.page(this.pageIndex, this.pageSize, this.textSearch, this.tagFilter).subscribe((policiesResponse) => {
             this.tools = policiesResponse.body || [];
             this.toolsCount = policiesResponse.headers.get('X-Total-Count') || this.tools.length;
             this.loadTagsData();
@@ -480,6 +482,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         this.router.navigate(['/tools'], {
             queryParams: {
                 search: this.textSearch || null,
+                tag: this.tagFilter || null
             },
         });
         this.loadTools();
@@ -487,6 +490,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
 
     public clearFilters(): void {
         this.textSearch = '';
+        this.tagFilter = '';
         this.pageIndex = 0;
         this.router.navigate(['/tools'], {
             queryParams: {

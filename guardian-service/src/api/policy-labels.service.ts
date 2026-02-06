@@ -18,7 +18,16 @@ import {
     INotificationStep,
     NewNotifier,
 } from '@guardian/common';
-import { EntityStatus, IOwner, LabelValidators, MessageAPI, PolicyStatus, Schema, SchemaStatus } from '@guardian/interfaces';
+import {
+    EntityStatus,
+    GenerateUUIDv4,
+    IOwner,
+    LabelValidators,
+    MessageAPI,
+    PolicyStatus,
+    Schema,
+    SchemaStatus
+} from '@guardian/interfaces';
 import { findRelationships, generateSchema, generateVpDocument, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
 import { publishSchemas } from '../helpers/import-helpers/index.js';
 
@@ -86,8 +95,11 @@ async function publishPolicyLabel(
         compression: 'DEFLATE',
         compressionOptions: {
             level: 3
-        }
+        },
+        platform: 'UNIX',
     });
+
+    item.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
 
     const statMessage = new LabelMessage(MessageAction.PublishPolicyLabel);
     statMessage.setDocument(item, buffer);
@@ -444,6 +456,12 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
+                if (item.status === EntityStatus.PUBLISHED && item.contentFileId) {
+                    const buffer = await DatabaseServer.loadFile(item.contentFileId);
+                    const arrayBuffer = Uint8Array.from(buffer).buffer;
+                    return new BinaryMessageResponse(arrayBuffer);
+                }
+
                 const zip = await PolicyLabelImportExport.generate(item);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
@@ -451,6 +469,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     compressionOptions: {
                         level: 3,
                     },
+                    platform: 'UNIX',
                 });
 
                 return new BinaryMessageResponse(file);

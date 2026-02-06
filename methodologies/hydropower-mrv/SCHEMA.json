@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Hydropower MRV Policy Schema",
+  "description": "Guardian-compatible policy schema for small-scale hydropower MRV based on Verra VM0040",
+  "version": "1.0.0",
+  "type": "object",
+  "properties": {
+    "policyInfo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "const": "Hydropower MRV Policy (VM0040)"
+        },
+        "description": {
+          "type": "string",
+          "const": "Guardian implementation of Verra VM0040 for small-scale hydropower with DID-based verification"
+        },
+        "topicDescription": {
+          "type": "string",
+          "const": "Hydropower energy generation tracking"
+        },
+        "version": {
+          "type": "string",
+          "const": "1.0.0"
+        }
+      }
+    },
+    "policyRoles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["Owner", "Gateway", "Verifier", "Auditor", "Registry"]
+      }
+    },
+    "schemas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "entity": {
+            "type": "string",
+            "enum": ["VC", "MRV", "POLICY"]
+          },
+          "fields": {
+            "type": "object"
+          }
+        }
+      },
+      "minItems": 1
+    }
+  },
+  "definitions": {
+    "HydropowerTelemetrySchema": {
+      "type": "object",
+      "required": ["flowRate", "headHeight", "energyOutput", "timestamp", "gatewayDID", "signature", "nonce"],
+      "properties": {
+        "flowRate": {
+          "type": "number",
+          "description": "Water flow rate in cubic meters per second (m³/s)",
+          "minimum": 0
+        },
+        "headHeight": {
+          "type": "number",
+          "description": "Water head height in meters (m)",
+          "minimum": 0
+        },
+        "energyOutput": {
+          "type": "number",
+          "description": "Energy generated in megawatt-hours (MWh)",
+          "minimum": 0
+        },
+        "capacityFactor": {
+          "type": "number",
+          "description": "Capacity factor as percentage",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "pH": {
+          "type": "number",
+          "description": "Water pH level",
+          "minimum": 0,
+          "maximum": 14
+        },
+        "turbidity": {
+          "type": "number",
+          "description": "Water turbidity in NTU",
+          "minimum": 0
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of measurement"
+        },
+        "gatewayDID": {
+          "type": "string",
+          "pattern": "^did:hedera:testnet:[a-zA-Z0-9._-]+$",
+          "description": "Hedera DID of the gateway device"
+        },
+        "signature": {
+          "type": "string",
+          "description": "Ed25519 signature (base64 encoded)"
+        },
+        "nonce": {
+          "type": "string",
+          "description": "Unique nonce for replay protection"
+        }
+      }
+    }
+  }
+}

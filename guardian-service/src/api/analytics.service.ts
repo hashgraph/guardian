@@ -19,7 +19,8 @@ import {
     ToolModel,
     ToolLoader,
     DocumentLoader,
-    SchemaLoader
+    SchemaLoader,
+    IAnyPolicy
 } from '../analytics/index.js';
 import {
     DatabaseServer,
@@ -79,6 +80,7 @@ async function localSearch(
             hashMap: any;
             threshold: number;
         },
+        toolMessageIds?: string[],
         toolName?: string,
         toolVersion?: string
     }
@@ -118,6 +120,11 @@ async function localSearch(
     if (options.owner) {
         filter.$and.push({
             owner: options.owner
+        });
+    }
+    if (options.toolMessageIds) {
+        filter.$and.push({
+            ['tools.messageId']: { $in: options.toolMessageIds }
         });
     }
     if (options.toolName) {
@@ -276,13 +283,66 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 const comparator = new PolicyComparator(compareOptions);
                 const results = comparator.compare(compareModels);
                 const result = comparator.to(results, type);
+
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });
+    ApiResponse<any>(MessageAPI.COMPARE_ORIGINAL_POLICIES,
+        async (msg: {
+            user: IOwner,
+            type: string,
+            policyId: string,
+            options: {
+                propLvl: string | number,
+                childrenLvl: string | number,
+                eventsLvl: string | number,
+                idLvl: string | number
+            },
+        }) => {
+            try {
+                const { user, type, policyId, options } = msg;
+                const compareOptions = CompareOptions.from(options);
 
+                const compareModels: PolicyModel[] = [];
+                const policyData = await PolicyLoader.load(policyId);
+                const compareModel = await PolicyLoader.create(policyData, compareOptions);
+                compareModels.push(compareModel);
+
+                let originalPolicyData = null;
+                if(policyData.policy.originalMessageId) {
+                    const originalAnyPolicy: IAnyPolicy = {
+                        type: 'message',
+                        value: policyData.policy.originalMessageId
+                    }
+                    originalPolicyData = await PolicyLoader.load(originalAnyPolicy, user);
+                } else if(policyData.policy.originalZipId) {
+                    const originalAnyPolicy: IAnyPolicy = {
+                        type: 'file',
+                        value: {
+                            id:'',
+                            name: '',
+                            value: (await DatabaseServer.loadFile(policyData.policy.originalZipId)).toString('base64')
+                        }
+                    }
+                    originalPolicyData = await PolicyLoader.load(originalAnyPolicy, user);
+                }
+
+                const originalCompareModel = await PolicyLoader.create(originalPolicyData, compareOptions);
+                compareModels.push(originalCompareModel);
+
+                const comparator = new PolicyComparator(compareOptions);
+                const results = comparator.compare(compareModels);
+                const result = comparator.to(results, type);
+
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                return new MessageError(error);
+            }
+        });
     ApiResponse<any>(MessageAPI.COMPARE_MODULES,
         async (msg: {
             user: IAuthUser,
@@ -408,6 +468,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 text?: string;
                 owner?: string;
                 threshold?: number;
+                toolMessageIds?: string[];
                 toolName?: string;
                 toolVersion?: string;
             },
@@ -425,6 +486,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     minVpCount,
                     minTokensCount,
                     threshold,
+                    toolMessageIds,
                     toolName,
                     toolVersion
                 } = filters;
@@ -435,9 +497,11 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     minVpCount,
                     minTokensCount,
                     blocks: undefined,
+                    toolMessageIds,
                     toolName,
                     toolVersion
                 }
+
                 const result: any = {
                     target: null,
                     result: []

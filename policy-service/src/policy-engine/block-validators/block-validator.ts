@@ -5,6 +5,7 @@ import { IBlockProp } from './interfaces/block-prop.interface.js';
 import { InterfaceDocumentActionBlock } from './blocks/action-block.js';
 import { AggregateBlock } from './blocks/aggregate-block.js';
 import { ButtonBlock } from './blocks/button-block.js';
+import { MathBlock } from './blocks/math-block.js';
 import { CalculateContainerBlock } from './blocks/calculate-block.js';
 import { CalculateMathAddon } from './blocks/calculate-math-addon.js';
 import { CalculateMathVariables } from './blocks/calculate-math-variables.js';
@@ -59,6 +60,8 @@ import { TransformationButtonBlock } from './blocks/transformation-button-block.
 import { IntegrationButtonBlock } from './blocks/integration-button-block.js';
 import { HttpRequestUIAddon } from './blocks/http-request-ui-addon.js';
 import { TransformationUIAddon } from './blocks/transformation-ui-addon.js';
+import {GlobalEventsWriterBlock} from './blocks/global-events-writer-block.js';
+import {GlobalEventsReaderBlock} from './blocks/global-events-reader-block.js';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -66,6 +69,7 @@ export const validators = [
     ButtonBlock,
     TransformationButtonBlock,
     IntegrationButtonBlock,
+    MathBlock,
     CalculateContainerBlock,
     CalculateMathAddon,
     CalculateMathVariables,
@@ -114,7 +118,9 @@ export const validators = [
     RequestVcDocumentBlockAddon,
     DataTransformationAddon,
     HttpRequestUIAddon,
-    TransformationUIAddon
+    TransformationUIAddon,
+    GlobalEventsWriterBlock,
+    GlobalEventsReaderBlock,
 ];
 
 /**

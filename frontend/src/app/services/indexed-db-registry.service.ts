@@ -227,7 +227,7 @@ export class IndexedDbRegistryService {
 
             const keysToDelete = allKeys.filter((key) => {
                 const keyString = String(key ?? '');
-                return keyString.startsWith(keyPrefix);
+                return keyString.includes(keyPrefix);
             });
 
             if (keysToDelete.length === 0) {

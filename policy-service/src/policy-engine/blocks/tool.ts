@@ -1,5 +1,4 @@
 import { ContainerBlock } from '../helpers/decorators/container-block.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ActionCallback } from '../helpers/decorators/index.js';
@@ -7,6 +6,7 @@ import { IPolicyEvent } from '../interfaces/index.js';
 import { PolicyInputEventType } from '../interfaces/policy-event-type.js';
 import { IPolicyAddonBlock, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { LocationType } from '@guardian/interfaces';
+import { PolicyUtils } from '../helpers/utils.js';
 
 /**
  * Container block with UI
@@ -15,17 +15,6 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'tool',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    about: {
-        label: 'Tool',
-        title: `Add 'Tool' Block`,
-        post: false,
-        get: true,
-        children: ChildrenType.Any,
-        control: ControlType.UI,
-        input: null,
-        output: null,
-        defaultEvent: false
-    },
     variables: []
 })
 export class ToolBlock {
@@ -74,15 +63,27 @@ export class ToolBlock {
     })
     async onAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
+        if (event?.data?.data) {
+            if (Array.isArray(event?.data?.data)) {
+                for (const document of event?.data?.data) {
+                    PolicyUtils.setDocumentTags(document, tags);
+                }
+            } else {
+                PolicyUtils.setDocumentTags(event?.data?.data, tags);
+            }
+        }
+
         for (const e of this.inputEvents) {
             if (e.name === event.inputType) {
-                ref.triggerEvents(e.name, event.user, event.data);
+                await ref.triggerEvents(e.name, event.user, event.data, event.actionStatus);
                 return;
             }
         }
         for (const e of this.outputEvents) {
             if (e.name === event.inputType) {
-                ref.triggerEvents(e.name, event.user, event.data);
+                await ref.triggerEvents(e.name, event.user, event.data, event.actionStatus);
                 return;
             }
         }

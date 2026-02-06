@@ -1,7 +1,7 @@
 import { Permissions } from '@guardian/interfaces';
 import { EntityOwner, Guardians, InternalException, ONLY_SR, checkPolicyByRecord } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Controller, Get, HttpCode, HttpStatus, Post, Response, Param, Body } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Post, Response, Param, Body, Query } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { InternalServerErrorDTO, RecordActionDTO, RecordStatusDTO, RunningDetailsDTO, RunningResultDTO, Examples } from '#middlewares';
@@ -241,12 +241,15 @@ export class RecordApi {
     async runRecord(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() file: any
+        @Body() file: any,
+        @Query('importRecords') importRecords: string,
+        @Query('syncNewRecords') syncNewRecords: string,
+        @Query('fromPolicyId') fromPolicyId: string,
     ) {
         const owner = new EntityOwner(user);
         await checkPolicyByRecord(policyId, owner);
         try {
-            const options = { file };
+            const options = { file, importRecords: importRecords === 'true', syncNewRecords: syncNewRecords === 'true', fromPolicyId };
             const guardians = new Guardians();
             return await guardians.runRecord(policyId, owner, options);
         } catch (error) {

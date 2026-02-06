@@ -95,6 +95,12 @@ export class PolicyModule extends BaseEntity {
     _configFileId?: ObjectId;
 
     /**
+     * File id of the original module zip (publish flow).
+     */
+    @Property({ nullable: true })
+    contentFileId?: ObjectId;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()
@@ -166,6 +172,21 @@ export class PolicyModule extends BaseEntity {
                 .catch((reason) => {
                     console.error(`AfterDelete: PolicyModule, ${this._id}, configFileId`)
                     console.error(reason)
+                });
+        }
+    }
+
+    /**
+     * Delete original module zip (publish flow)
+     */
+    @AfterDelete()
+    deleteContentFile() {
+        if (this.contentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.contentFileId)
+                .catch((reason) => {
+                    console.error('AfterDelete: PolicyModule, contentFileId');
+                    console.error(reason);
                 });
         }
     }

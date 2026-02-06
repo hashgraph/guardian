@@ -168,8 +168,19 @@ form {
     }
 }
 
+*[readonly] {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
+
 .guardian-accordion-container::ng-deep .guardian-accordion-container {
     background: #F9FAFC;
+}
+
+.tags-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 :host ::ng-deep .form-field-table {

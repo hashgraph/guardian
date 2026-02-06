@@ -12,6 +12,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 interface IMetadata {
     owner: PolicyUser;
@@ -120,7 +121,8 @@ export class CalculateContainerBlock {
     private async process(
         documents: IPolicyDocument | IPolicyDocument[],
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        actionStatus: RecordActionStep
     ): Promise<IPolicyDocument> {
         const context = await ref.debugContext({ documents });
         const contextDocuments = context.documents as IPolicyDocument | IPolicyDocument[];
@@ -147,10 +149,10 @@ export class CalculateContainerBlock {
 
         const newJson = await this.calculate(json, ref, contextDocuments, userId);
         if (ref.options.unsigned) {
-            return await this.createUnsignedDocument(newJson, ref);
+            return await this.createUnsignedDocument(newJson, ref, actionStatus?.id);
         } else {
             const metadata = await this.aggregateMetadata(contextDocuments, ref, userId);
-            return await this.createDocument(newJson, metadata, ref, userId);
+            return await this.createDocument(newJson, metadata, ref, userId, actionStatus?.id);
         }
     }
 
@@ -222,7 +224,8 @@ export class CalculateContainerBlock {
         json: any,
         metadata: IMetadata,
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        actionStatusId: string,
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -253,7 +256,7 @@ export class CalculateContainerBlock {
             VCHelper.addDryRunContext(vcSubject);
         }
 
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatusId);
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const didDocument = await policyOwnerCred.loadDidDocument(ref, userId);
         const newVC = await VCHelper.createVerifiableCredential(
@@ -263,7 +266,11 @@ export class CalculateContainerBlock {
             { uuid }
         );
 
-        const item = PolicyUtils.createVC(ref, owner, newVC);
+        const item = PolicyUtils.createVC(ref, owner, newVC, actionStatusId);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(item, tags);
+
         item.type = outputSchema.iri;
         item.schema = outputSchema.iri;
         item.relationships = relationships.length ? relationships : null;
@@ -282,10 +289,11 @@ export class CalculateContainerBlock {
      */
     private async createUnsignedDocument(
         json: any,
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        recordActionId: string
     ): Promise<IPolicyDocument> {
         const vc = PolicyUtils.createVcFromSubject(json);
-        return PolicyUtils.createUnsignedVC(ref, vc);
+        return PolicyUtils.createUnsignedVC(ref, vc, recordActionId);
     }
 
     /**
@@ -308,23 +316,27 @@ export class CalculateContainerBlock {
             if (Array.isArray(event.data.data)) {
                 const result: IPolicyDocument[] = [];
                 for (const doc of event.data.data) {
-                    const newVC = await this.process(doc, ref, event?.user?.userId);
+                    const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus);
                     result.push(newVC)
                 }
                 event.data.data = result;
             } else {
-                event.data.data = await this.process(event.data.data, ref, event?.user?.userId);
+                event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus);
             }
         } else {
-            event.data.data = await this.process(event.data.data, ref, event?.user?.userId);
+            event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+        // event.actionStatus.saveResult(event.data);
+
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             documents: ExternalDocuments(event.data?.data)
         }));
         ref.backup();
+
+        return event.data;
     }
 }

@@ -7,7 +7,7 @@ Best practices for implementing conditional and visibility logic in Hedera Guard
 * **Visualize User Workflow First**\
   Map out scenarios and user journeys before defining conditional logic. This helps identify where fields should appear, be hidden, required, or read-only depending on prior inputs, ensuring an intuitive form flow.
 
-<figure><img src="../../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * **Use Clear and Distinct Conditions**\
   Define precise conditional statements that combine multiple criteria sensibly. For example, use AND/OR logic to activate visibility rules rather than relying on overlapping or ambiguous conditions, preventing conflicts when multiple rules could apply.
@@ -23,12 +23,12 @@ Best practices for implementing conditional and visibility logic in Hedera Guard
 * **Test Conditional Logic Extensively**\
   Rigorous testing is essential. Use Guardian’s dry run mode or real data simulations to verify that fields behave as expected across all relevant input combinations. Confirm that visibility and requirement rules are mutually consistent.
 
-<figure><img src="../../../../.gitbook/assets/image (9) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (9) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * **Explicitly Label Rules and Conditions**\
   Clearly describe each conditional rule’s purpose with labels and comments. This documentation helps team members understand reasoning, especially when rules grow complex.
 
-<figure><img src="../../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * **Handle Overwrites Carefully**\
   Be mindful that rules can override each other. Explicitly document and test cases where multiple conditions influence the same field to ensure consistent behavior. When conflicts arise, merge conditions into a single, comprehensive rule.

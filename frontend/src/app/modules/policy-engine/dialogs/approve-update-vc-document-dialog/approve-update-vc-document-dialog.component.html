@@ -1,0 +1,17 @@
+<div class="dialog-body">
+    {{text}}
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button
+                (click)="onClose()"
+                class="guardian-button guardian-button-secondary">{{closeBtnName}}</button>
+        </div>
+        <div class="dialog-button">
+            <button
+                (click)="onSave()"
+                class="guardian-button guardian-button-primary">{{okBtnName}}</button>
+        </div>
+    </div>
+</div>

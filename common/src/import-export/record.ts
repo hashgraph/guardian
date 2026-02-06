@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
-import { Record, VpDocument as VpDocumentCollection, VcDocument as VcDocumentCollection } from '../entity/index.js';
+import { Record, VpDocument as VpDocumentCollection, VcDocument as VcDocumentCollection, VcDocument, VpDocument } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Record result
@@ -119,6 +120,23 @@ export class RecordImportExport {
      * Record filename
      */
     public static readonly recordFileName = 'actions.csv';
+    /**
+     * Generate archive for single record entry
+     * @param record
+     */
+    public static async generateSingleRecordZip(
+    record: Record,
+    results?: IRecordResult[]): Promise<JSZip> {
+        const baseTime = record.time ? Number(record.time) : Date.now();
+
+        const components: IRecordComponents = {
+            records: [record],
+            results: results || [],
+            time: baseTime,
+            duration: 0
+        };
+        return await RecordImportExport.generateZipFile(components);
+    }
 
     /**
      * Get full time
@@ -219,6 +237,51 @@ export class RecordImportExport {
     }
 
     /**
+     * Load record results
+     * @param uuid record
+     *
+     * @returns results
+     * @public
+     * @static
+     */
+    public static async loadRecordResultsByActionId(
+        recordActionId?: string
+    ): Promise<IRecordResult[]> {
+        const result: IRecordResult[] = [];
+        const db = new DatabaseServer();
+
+        const vcdocuments = await db.getVcDocuments<VcDocumentCollection>(
+            {
+                recordActionId
+            } as FilterObject<VcDocument>,
+            ) as VcDocumentCollection[];
+
+        const vpdocuments = await db.getVpDocuments<VpDocumentCollection>(
+            {
+                recordActionId
+            } as FilterObject<VpDocument>,
+            ) as VpDocumentCollection[];
+
+        for (const vc of vcdocuments) {
+            result.push({
+                id: vc.document.id,
+                type: 'vc',
+                document: vc.document
+            });
+        }
+
+        for (const vp of vpdocuments) {
+            result.push({
+                id: vp.document.id,
+                type: 'vp',
+                document: vp.document
+            });
+        }
+
+        return result;
+    }
+
+    /**
      * Load record components
      * @param uuid record
      *
@@ -289,6 +352,9 @@ export class RecordImportExport {
                 } else {
                     row.push('');
                 }
+                if (item.userRole) {
+                    row.push(item.userRole);
+                }
             }
             json += row.join(',') + '\r\n';
         }
@@ -342,7 +408,7 @@ export class RecordImportExport {
         const lines = recordString.split('\r\n');
         for (const line of lines) {
             if (line && !line.startsWith('--')) {
-                const [method, time, action, user, target, documentId] = line.split(',');
+                const [method, time, action, user, target, documentId, userRole = ''] = line.split(',');
                 if (method) {
                     records.push({
                         method,
@@ -350,7 +416,8 @@ export class RecordImportExport {
                         user,
                         target,
                         time: RecordImportExport.addTime(now, time),
-                        document: documents.get(documentId)
+                        document: documents.get(documentId),
+                        userRole,
                     });
                 }
             }

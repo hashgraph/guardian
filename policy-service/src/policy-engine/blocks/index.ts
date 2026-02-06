@@ -7,6 +7,7 @@ export { CustomLogicBlock } from '../blocks/custom-logic-block.js';
 export { DocumentsSourceAddon } from './documents-source-addon.js';
 export { ExternalDataBlock } from './external-data-block.js';
 export { FiltersAddonBlock } from './filters-addon-block.js';
+export { TokenOperationAddon } from './impact-addon.js';
 export { InformationBlock } from './information-block.js';
 export { InterfaceContainerBlock } from './container-block.js';
 export { InterfaceDocumentActionBlock } from './action-block.js';
@@ -37,7 +38,6 @@ export { MultiSignBlock } from './multi-sign-block.js';
 export { CalculateMathVariables } from './calculate-math-variables.js';
 export { CreateTokenBlock } from './create-token-block.js';
 export { SplitBlock } from './split-block.js';
-export { TokenOperationAddon } from './impact-addon.js';
 export { HttpRequestBlock } from './http-request-block.js';
 export { HistoryAddon } from './history-addon.js';
 export { SelectiveAttributes } from './selective-attributes-addon.js';
@@ -55,3 +55,6 @@ export { RequestVcDocumentBlockAddon } from './request-vc-document-block-addon.j
 export { DataTransformationAddon } from './data-transformation-addon.js';
 export { HttpRequestUIAddon } from './http-request-ui-addon.js';
 export { TransformationUIAddon } from './transformation-ui-addon.js';
+export { MathBlock } from './math-block.js';
+export { GlobalEventsWriterBlock } from './global-events-writer-block.js';
+export { default as GlobalEventsReaderBlock } from './global-events-reader-block.js'

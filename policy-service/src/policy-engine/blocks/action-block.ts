@@ -100,7 +100,7 @@ export class InterfaceDocumentActionBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent]
     })
-    async setData(user: PolicyUser, document: IPolicyDocument): Promise<any> {
+    async setData(user: PolicyUser, document: IPolicyDocument, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
         const state: IPolicyEventState = { data: document };
@@ -112,15 +112,15 @@ export class InterfaceDocumentActionBlock {
                 const newUser = option.user === UserType.CURRENT
                     ? user
                     : await PolicyUtils.getDocumentOwner(ref, document, user.userId);
-                ref.triggerEvents(option.tag, newUser, state);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
+                await ref.triggerEvents(option.tag, newUser, state, actionStatus);
+                await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state, actionStatus);
             }
         }
 
         if (ref.options.type === 'dropdown') {
             const newUser = await PolicyUtils.getDocumentOwner(ref, document, user.userId);
-            ref.triggerEvents(PolicyOutputEventType.DropdownEvent, newUser, state);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
+            await ref.triggerEvents(PolicyOutputEventType.DropdownEvent, newUser, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state, actionStatus);
         }
 
         if (ref.options.type === 'download') {
@@ -155,7 +155,8 @@ export class InterfaceDocumentActionBlock {
         }
 
         if (ref.options.type === 'transformation') {
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            // actionStatus.saveResult(state);
+            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
         }
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {

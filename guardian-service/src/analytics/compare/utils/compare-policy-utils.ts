@@ -148,27 +148,36 @@ export class ComparePolicyUtils {
             _rate.calc(options);
             return _rate;
         }
-        if (tree1.equal(tree2)) {
-            rate.type = Status.FULL;
-            rate.setChildren(
-                ComparePolicyUtils.compareChildren(
-                    Status.FULL,
-                    tree1.children,
-                    tree2.children,
-                    createRate
-                )
-            );
-        } else {
-            rate.type = Status.PARTLY;
-            rate.setChildren(
-                ComparePolicyUtils.compareChildren(
-                    Status.PARTLY,
-                    tree1.children,
-                    tree2.children,
-                    createRate
-                )
-            );
-        }
+        // if (tree1.equal(tree2)) {
+        //     rate.type = Status.FULL;
+        //     rate.setChildren(
+        //         ComparePolicyUtils.compareChildren(
+        //             Status.FULL,
+        //             tree1.children,
+        //             tree2.children,
+        //             createRate
+        //         )
+        //     );
+        // } else {
+        //     rate.type = Status.PARTLY;
+        //     rate.setChildren(
+        //         ComparePolicyUtils.compareChildren(
+        //             Status.PARTLY,
+        //             tree1.children,
+        //             tree2.children,
+        //             createRate
+        //         )
+        //     );
+        // }
+        rate.type = Status.PARTLY;
+        rate.setChildren(
+            ComparePolicyUtils.compareChildren(
+                Status.PARTLY,
+                tree1.children,
+                tree2.children,
+                createRate
+            )
+        );
         return rate;
     }
 

@@ -1,6 +1,18 @@
 <div class="dialog-header">
     <div class="header-container">
         <div class="header-text">{{title}}</div>
+        <div *ngIf="tags && tags.length > 0" class="tags-container">
+            <div class="tag-item" *ngFor="let tag of tags" (click)="onOpenTag(tag)">
+                <svg-icon
+                    class="svg-icon-16"
+                    src="/assets/images/icons/16/label.svg"
+                    svgClass="primary-color">
+                </svg-icon>
+                <div class="name">
+                    {{ tag.name }}
+                </div>
+            </div>
+        </div>
     </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
@@ -44,11 +56,23 @@
                     type="document" 
                     class="compare-container"
                     buttonStyle="guardian"></app-compare-btn>
+
+                <p-dropdown
+                    *ngIf="allVcDocs.length > 1"
+                    [options]="versionOptions"
+                    [(ngModel)]="selectedVersionIndex"
+                    (onChange)="onVersionChange($event)"
+                    placeholder="Select Revision"
+                    class="version-dropdown"
+                    [appendTo]="'body'"
+                    styleClass="guardian-dropdown"
+                ></p-dropdown>
             </div>
         </div>
         <div class="view-dialog-content">
             <ng-container *ngIf="viewDocument === true">
                 <app-document-view 
+                    *ngIf="!loading"
                     [policyId]="policyId"
                     [documentId]="documentId"
                     [schemaId]="schemaId"

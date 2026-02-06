@@ -16,6 +16,7 @@ import { LocationType, SchemaEntity } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Split block
@@ -117,7 +118,8 @@ export class SplitBlock {
         maxChunks: number,
         sourceValue: number,
         threshold: number,
-        userId: string | null
+        userId: string | null,
+        actionStatusId: string,
     ): Promise<IPolicyDocument> {
         let clone = PolicyUtils.cloneVC(ref, document);
         PolicyUtils.setObjectValue(clone, ref.options.sourceField, newValue);
@@ -137,7 +139,7 @@ export class SplitBlock {
                 maxChunks
             });
         }
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatusId);
         const didDocument = await root.loadDidDocument(ref, userId);
         vc = await this.vcHelper.issueVerifiableCredential(
             vc,
@@ -169,7 +171,8 @@ export class SplitBlock {
         result: SplitDocuments[][],
         residue: SplitDocuments[],
         document: IPolicyDocument,
-        userId: string | null
+        userId: string | null,
+        actionStatusId: string
     ) {
         const threshold = parseFloat(ref.options.threshold);
         const value = await this.calcDocValue(ref, document);
@@ -189,7 +192,7 @@ export class SplitBlock {
         if (value < needed) {
             const maxChunks = 1;
             const newDoc = await this.createNewDoc(
-                ref, root, document, value, maxChunks, maxChunks, value, threshold, userId
+                ref, root, document, value, maxChunks, maxChunks, value, threshold, userId, actionStatusId
             );
             residue.push(ref.databaseServer.createResidue(
                 ref.policyId,
@@ -204,7 +207,7 @@ export class SplitBlock {
             const maxChunks = (count > 0 ? count : 0) + (end > 0 ? 1 : 0) + 1;
 
             const newDoc1 = await this.createNewDoc(
-                ref, root, document, needed, 1, maxChunks, value, threshold, userId
+                ref, root, document, needed, 1, maxChunks, value, threshold, userId, actionStatusId
             );
             residue.push(ref.databaseServer.createResidue(
                 ref.policyId,
@@ -219,7 +222,7 @@ export class SplitBlock {
             if (count > 0) {
                 for (let i = 0; i < count; i++) {
                     const newDocN = await this.createNewDoc(
-                        ref, root, document, threshold, i + 2, maxChunks, value, threshold, userId
+                        ref, root, document, threshold, i + 2, maxChunks, value, threshold, userId, actionStatusId
                     );
                     result.push([ref.databaseServer.createResidue(
                         ref.policyId,
@@ -232,7 +235,7 @@ export class SplitBlock {
             }
             if (end > 0) {
                 const newDocL = await this.createNewDoc(
-                    ref, root, document, end, maxChunks, maxChunks, value, threshold, userId
+                    ref, root, document, end, maxChunks, maxChunks, value, threshold, userId, actionStatusId
                 );
                 residue.push(ref.databaseServer.createResidue(
                     ref.policyId,
@@ -253,7 +256,7 @@ export class SplitBlock {
      * @param documents
      * @param userId
      */
-    private async addDocs(ref: IPolicyBlock, user: PolicyUser, documents: IPolicyDocument[], userId: string | null) {
+    private async addDocs(ref: IPolicyBlock, user: PolicyUser, documents: IPolicyDocument[], userId: string | null, actionStatus: RecordActionStep) {
         const residue = await ref.databaseServer.getResidue(ref.policyId, ref.uuid, user.id);
         const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
 
@@ -261,7 +264,7 @@ export class SplitBlock {
 
         const data: SplitDocuments[][] = [];
         for (const document of documents) {
-            current = await this.split(ref, root, user, data, current, document, userId);
+            current = await this.split(ref, root, user, data, current, document, userId, actionStatus?.id);
         }
 
         await ref.databaseServer.removeResidue(residue);
@@ -275,12 +278,14 @@ export class SplitBlock {
                     return c.document;
                 })
             };
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+
+            // actionStatus.saveResult(state);
+            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Chunk, ref, user, {
                 documents: ExternalDocuments(state.data)
             }));
         }
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, { data: documents });
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, { data: documents }, actionStatus);
     }
 
     /**
@@ -304,11 +309,13 @@ export class SplitBlock {
             documents: ExternalDocuments(docs)
         }));
         if (Array.isArray(docs)) {
-            await this.addDocs(ref, event.user, docs, event?.user?.userId);
+            await this.addDocs(ref, event.user, docs, event?.user?.userId, event.actionStatus);
         } else {
-            await this.addDocs(ref, event.user, [docs], event?.user?.userId);
+            await this.addDocs(ref, event.user, [docs], event?.user?.userId, event.actionStatus);
         }
 
         ref.backup();
+
+        return event.data;
     }
 }

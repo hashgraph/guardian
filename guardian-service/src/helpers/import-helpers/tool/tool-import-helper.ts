@@ -82,12 +82,14 @@ export async function importToolByMessage(
 ): Promise<ImportToolResult> {
     // <-- Steps
     const STEP_LOAD_FILE = 'Load tool file';
+    const STEP_SAVE_FILE_IN_DB = 'Save file in database';
     const STEP_PARSE_FILE = 'Parse tool file';
     const STEP_IMPORT_SCHEMAS = 'Import tool schemas';
     const STEP_IMPORT_TAGS = 'Import tool tags';
     // Steps -->
 
     notifier.addStep(STEP_LOAD_FILE);
+    notifier.addStep(STEP_SAVE_FILE_IN_DB);
     notifier.addStep(STEP_PARSE_FILE);
     notifier.addStep(STEP_IMPORT_SCHEMAS);
     notifier.addStep(STEP_IMPORT_TAGS);
@@ -123,12 +125,29 @@ export async function importToolByMessage(
     if (!message.document) {
         throw new Error('File in body is empty');
     }
+
     const oldTool = await DatabaseServer.getTool({ messageId });
     if (oldTool) {
         if (
             oldTool.hash === message.hash &&
             oldTool.owner === message.owner
         ) {
+            if (message.tagsTopicId) {
+                const topic = await DatabaseServer.getTopicById(message.tagsTopicId);
+                if (!topic) {
+                    const tagsTopic = {
+                        type: TopicType.TagsTopic,
+                        topicId: message.tagsTopicId,
+                        name: message.name || TopicType.TagsTopic,
+                        description: message.description || TopicType.TagsTopic,
+                        owner: user.owner,
+                        policyId: message.id.toString(),
+                        policyUUID: message.uuid
+                    };
+                    await DatabaseServer.saveTopic(tagsTopic);
+                }
+            }
+
             notifier.completeStep(STEP_LOAD_FILE);
             notifier.complete();
             return {
@@ -140,6 +159,11 @@ export async function importToolByMessage(
         }
     }
     notifier.completeStep(STEP_LOAD_FILE);
+
+    notifier.startStep(STEP_SAVE_FILE_IN_DB);
+    const buffer = Buffer.from(message.document);
+    const contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), buffer);
+    notifier.completeStep(STEP_SAVE_FILE_IN_DB);
 
     notifier.startStep(STEP_PARSE_FILE);
     const components = await ToolImportExport.parseZipFile(message.document);
@@ -159,6 +183,7 @@ export async function importToolByMessage(
     components.tool.status = ModuleStatus.PUBLISHED;
 
     await updateToolConfig(components.tool);
+    components.tool.contentFileId = contentFileId;
     const result = await DatabaseServer.createTool(components.tool);
     notifier.completeStep(STEP_PARSE_FILE);
 
@@ -182,6 +207,17 @@ export async function importToolByMessage(
 
     const toolTags = components.tags?.filter((t: any) => t.entity === TagType.Tool) || [];
     if (message.tagsTopicId) {
+        const tagsTopic = {
+            type: TopicType.TagsTopic,
+            topicId: message.tagsTopicId,
+            name: message.name || TopicType.TagsTopic,
+            description: message.description || TopicType.TagsTopic,
+            owner: user.owner,
+            policyId: message.id.toString(),
+            policyUUID: message.uuid
+        };
+        await DatabaseServer.saveTopic(tagsTopic);
+
         const tagMessages = await messageServer.getMessages<TagMessage>(
             message.tagsTopicId,
             userId,

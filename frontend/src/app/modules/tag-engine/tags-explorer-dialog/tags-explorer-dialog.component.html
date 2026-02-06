@@ -5,9 +5,9 @@
     <ng-container *ngIf="!loading">
         <ng-container *ngIf="history?.items?.length || history?.history?.length else emptyContainer">
 
-            <div class="tabs">
+            <div *ngIf="history.history?.length" class="tabs">
                 <div class="tab-item" (click)="openTab(1)" [attr.selected]="tab===1">Current Tags</div>
-                <div (click)="openTab(2)" *ngIf="history.history?.length" [attr.selected]="tab===2" class="tab-item">
+                <div (click)="openTab(2)"  [attr.selected]="tab===2" class="tab-item">
                     Imported Tags
                 </div>
             </div>
@@ -17,6 +17,8 @@
                      *ngFor="let item of selectedTags"
                      [class.selected]="item === select"
                      class="item"
+                     [pTooltip]="item.name"
+                     [tooltipPosition]="'top'"
                 >
                     <svg-icon
                         class="svg-icon-16"
@@ -26,7 +28,7 @@
                         {{ item.name }}
                     </div>
                     <div *ngIf="item.count > 1" class="count">
-                        {{ item.count }}
+                        ({{ item.count }})
                     </div>
                 </div>
             </div>
@@ -34,7 +36,7 @@
             <button (click)="onAdd()"
                     *ngIf="this.tab === 1 && canCreate"
                     [label]="'Create a Tag'"
-                    class="button secondary"
+                    class="button secondary create-tag"
                     icon="pi pi-plus"
                     pButton>
             </button>
@@ -114,9 +116,6 @@
             </div>
         </ng-container>
     </ng-container>
-</div>
-<div class="footer">
-    <button (click)="dialogRef.close()" [disabled]="loading" class="button secondary" label="Close" pButton></button>
 </div>
 <ng-template #emptyContainer>
     <div *ngIf="canCreate" class="empty-container">

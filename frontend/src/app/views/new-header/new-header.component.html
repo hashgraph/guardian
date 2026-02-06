@@ -40,7 +40,7 @@
                     class="item clickable"
                 >
                     <img *ngIf="barItem.iconUrl" [src]="'/assets/images/icons/' + barItem.iconUrl + '.svg'" alt="">
-                    <svg-icon 
+                    <svg-icon
                         *ngIf="barItem.svgIcon"
                         class="svg-icon-16"
                         src="/assets/images/icons/16/{{barItem.svgIcon}}.svg"
@@ -50,17 +50,17 @@
                         <span [class.without-icon]="!(barItem.iconUrl || barItem.svgIcon)">
                             {{ barItem.title }}
                         </span>
-                        <img 
-                            *ngIf="barItem.childItems" 
-                            [class.rotate-180]="barItem.active" 
+                        <img
+                            *ngIf="barItem.childItems"
+                            [class.rotate-180]="barItem.active"
                             alt=""
-                            class="smooth-rotate" 
+                            class="smooth-rotate"
                             src="/assets/images/icons/chevron-white.svg"
                         >
                     </div>
                 </div>
                 <div *ngIf="!menuCollapsed && barItem.active && barItem.childItems" class="item-container">
-                    <ng-container 
+                    <ng-container
                         [ngTemplateOutletContext]="{barItems: barItem.childItems}"
                         [ngTemplateOutlet]="menuBarItem"></ng-container>
                 </div>
@@ -123,7 +123,7 @@
                 </div>
             </div>
             <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
-                <span>Policy Requests</span>
+                <span>Incoming Requests</span>
                 <div>
                     <div
                         *ngIf="newPolicyRequests > 0"
@@ -149,7 +149,7 @@
             [queryParams]="{tab: 'relayerAccount'}"
             class="item balance-item"
         >
-            <svg-icon 
+            <svg-icon
                 class="svg-icon-16"
                 src="/assets/images/icons/16/wallet.svg"
                 svgClass="icon-color-menu">

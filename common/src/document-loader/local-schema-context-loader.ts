@@ -38,6 +38,11 @@ export class LocalSchemaContextLoader extends DocumentLoader {
         if (!schema.context) {
             throw new Error(`Context not found: ${iri}`);
         }
+
+        if ('@vocab' in schema.context['@context']) {
+            schema.context['@context']['@vocab'] = 'https://w3id.org/traceability/#undefinedTerm';
+        }
+
         return schema.context;
     }
 
@@ -51,7 +56,9 @@ export class LocalSchemaContextLoader extends DocumentLoader {
             if (!contextURL) {
                 return null;
             }
-            return await this.dataBaseServer.findOne(Schema, { contextURL });
+            const test = await this.dataBaseServer.findOne(Schema, { contextURL });
+
+            return test;
         }
         catch (error) {
             return null;

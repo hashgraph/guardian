@@ -370,6 +370,7 @@
         *ngIf="isDryRun && permissions.POLICIES_RECORD_ALL"
         [(active)]="recordingActive"
         [policyId]="policyId"
+        [withRecords]="policyInfo?.withRecords"
     ></app-record-controller>
 </div>
 

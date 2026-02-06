@@ -68,6 +68,7 @@ export class ImportPolicyOptions {
     public additionalPolicyConfig: Partial<Policy> | null;
     public metadata: PolicyToolMetadata | null;
     public logger: PinoLogger;
+    public importRecords: boolean;
 
     constructor(logger: PinoLogger) {
         this.logger = logger;
@@ -95,6 +96,11 @@ export class ImportPolicyOptions {
 
     public setMetadata(metadata: PolicyToolMetadata | null): ImportPolicyOptions {
         this.metadata = metadata;
+        return this;
+    }
+
+    public setImportRecords(importRecords?: boolean): ImportPolicyOptions {
+        this.importRecords = !!importRecords;
         return this;
     }
 

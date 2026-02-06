@@ -34,6 +34,7 @@ export interface IFieldJson {
     required: string;
     type: string;
     isArray: boolean;
+    isUpdatable: boolean;
     property: string;
 
     private?: boolean;
@@ -293,7 +294,8 @@ export class SchemaToJson {
             type: SchemaToJson.getType(field),
             pattern: SchemaToJson.getPattern(field),
             isArray: field.isArray,
-            property: field.property || ''
+            property: field.property || '',
+            isUpdatable: field.isUpdatable || false,
         };
 
         const privateValue = SchemaToJson.getPrivate(field);
@@ -1039,6 +1041,7 @@ export class JsonToSchema {
             unitSystem: JsonToSchema.fromUnitType(value, context.add('unitSystem')) as any,
             customType: JsonToSchema.fromCustomType(value, context.add('customType')) as any,
             isArray: JsonToSchema.fromBoolean(value.isArray, context.add('isArray')) || false,
+            isUpdatable: JsonToSchema.fromBoolean(value.isUpdatable, context.add('isUpdatable')) || false,
             isRef: JsonToSchema.fromIsRef(value, all, context),
             isPrivate: JsonToSchema.fromIsPrivate(value, entity, context),
 
@@ -1088,6 +1091,7 @@ export class JsonToSchema {
             expression: defaultConfig.expression,
             required: defaultConfig.required,
             isArray: defaultConfig.isArray,
+            isUpdatable: defaultConfig.isUpdatable,
             isRef: defaultConfig.isRef,
             type: defaultConfig.type,
             format: defaultConfig.format,

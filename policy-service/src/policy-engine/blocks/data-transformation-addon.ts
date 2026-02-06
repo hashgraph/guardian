@@ -24,7 +24,9 @@ const filename = fileURLToPath(import.meta.url);
         get: true,
         children: ChildrenType.None,
         control: ControlType.Special,
-        input: null,
+        input: [
+            PolicyInputEventType.GetDataEvent
+        ],
         output: null,
         defaultEvent: false,
     },

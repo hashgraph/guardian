@@ -94,11 +94,11 @@ export class TransformationButtonBlock {
          * Tag
          */
         tag: any
-    }): Promise<any> {
+    }, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const data: IPolicyDocument = blockData.document;
         const state: IPolicyEventState = { data };
-        const eventData = await ref.triggerEventSync(PolicyInputEventType.GetDataEvent, user, state);
+        const eventData = await ref.triggerEventSync(PolicyInputEventType.GetDataEvent, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             button: blockData.tag,
             documents: ExternalDocuments(blockData.document)

@@ -1,0 +1,44 @@
+.dialog-body {
+    display: flex;
+    align-items: center;
+    height: 55%;
+    font-family: Inter;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 100%;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    user-select: none;
+    gap: 8px;
+
+    .guardian-button {
+        padding: 5px 32px;
+        font-family: Inter;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 30px;
+        vertical-align: middle;
+    }
+}
+
+::ng-deep {
+    .p-dialog-header {
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        padding-bottom: 10px;
+
+        .p-dialog-title {
+            font-family: Poppins;
+            font-weight: 600;
+            font-size: 24px;
+            line-height: 32px;
+        }
+    }
+
+    .p-dialog-content {
+        padding-bottom: 16px;
+    }
+}

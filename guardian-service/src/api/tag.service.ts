@@ -144,6 +144,18 @@ export async function getTarget(entity: TagType, id: string): Promise<{
                 return null;
             }
         }
+        case TagType.PolicyBlock: {
+            const policy = await DatabaseServer.getPolicyById(id);
+            if (!policy) {
+                return null;
+            };
+
+            return {
+                id,
+                target: id,
+                topicId: policy.topicId
+            };
+        }
         default:
             return null;
     }
@@ -171,12 +183,27 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const { tag, owner } = msg;
+
+                if (tag.target && tag.entity === 'Policy') {
+                    const isTagExisted = await DatabaseServer.getTags({
+                        localTarget: tag.target,
+                        name: tag.name,
+                        entity: tag.entity,
+                        owner: owner.creator,
+                    });
+
+                    if (isTagExisted?.length) {
+                        throw new Error(`Tag "${tag.name}" already exists`);
+                    }
+                }
+
                 tag.uuid = tag.uuid || GenerateUUIDv4();
                 tag.owner = owner.creator;
                 tag.operation = 'Create';
                 tag.date = (new Date()).toISOString();
 
                 const target = await getTarget(tag.entity, tag.localTarget || tag.target);
+
                 if (target) {
                     const users = new Users();
                     const root = await users.getHederaAccount(owner.creator, owner?.id);
@@ -202,6 +229,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                     } else {
                         tag.document = null;
                     }
+
                     //Message
                     if (target.target && target.topicId) {
                         tag.target = target.target;
@@ -220,6 +248,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                         tag.localTarget = target.id;
                         tag.status = 'Draft';
                     }
+
                     const item = await DatabaseServer.createTag(tag);
                     return new MessageResponse(item);
                 } else {
@@ -235,17 +264,24 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             owner: IOwner,
             entity: string,
-            targets: string[]
+            targets: string[],
+            linkedItems?: string[]
         }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
-                const { targets, entity } = msg;
+                const { targets, entity, linkedItems } = msg;
+
                 const filter: any = {
                     localTarget: { $in: targets },
                     entity
                 }
+
+                if (Array.isArray(linkedItems) && linkedItems.length > 0) {
+                    filter.linkedItems = { $in: linkedItems };
+                }
+
                 const items = await DatabaseServer.getTags(filter);
                 return new MessageResponse(items);
             } catch (error) {
@@ -258,17 +294,23 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             owner: IOwner,
             entity: string,
-            targets: string[]
+            targets: string[],
+            linkedItems?: string[]
         }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
-                const { targets, entity } = msg;
+                const { targets, entity, linkedItems } = msg;
                 const filter: any = {
                     localTarget: { $in: targets },
                     entity
                 }
+
+                if (Array.isArray(linkedItems) && linkedItems.length > 0) {
+                    filter.linkedItems = { $in: linkedItems };
+                }
+
                 const items = await DatabaseServer.getTagCache(filter);
                 return new MessageResponse(items);
             } catch (error) {
@@ -281,23 +323,31 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             owner: IOwner,
             entity: TagType,
-            target: string
+            target: string,
+            linkedItems?: string[]
         }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
 
-                const { owner, target, entity } = msg;
+                const { owner, target, entity, linkedItems } = msg;
                 const localTarget = target;
                 const filter: any = { localTarget, entity };
+
+                if (Array.isArray(linkedItems) && linkedItems.length > 0) {
+                    filter.linkedItems = { $in: linkedItems };
+                }
 
                 const targetObject = await getTarget(entity, localTarget);
                 if (targetObject) {
                     if (targetObject.topicId) {
                         const messageServer = new MessageServer(null);
                         const messages = await messageServer.getMessages<TagMessage>(targetObject.topicId, owner.id, MessageType.Tag);
-                        const items = await DatabaseServer.getTags({ localTarget, entity, status: 'Published' });
+
+                        filter.status = 'Published';
+
+                        const items = await DatabaseServer.getTags(filter);
                         const map = new Map<string, any>();
                         for (const message of messages) {
                             if (message.target === targetObject.target) {
@@ -409,17 +459,23 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             owner: IOwner,
             entity: string,
-            targets: string[]
+            targets: string[],
+            linkedItems: string[]
         }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
-                const { targets, entity } = msg;
+                const { targets, entity, linkedItems } = msg;
                 const filter: any = {
                     localTarget: { $in: targets },
                     entity
                 }
+
+                if (Array.isArray(linkedItems) && linkedItems.length > 0) {
+                    filter.linkedItems = { $in: linkedItems };
+                }
+
                 const items = await DatabaseServer.getTags(filter);
                 for (const item of items) {
                     delete item.id;

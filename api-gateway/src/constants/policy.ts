@@ -8,9 +8,11 @@ export const REQUIRED_PROPS = {
     INSTANCE_TOPIC_ID: 'instanceTopicId',
     VERSION: 'version',
     OWNER: 'owner',
+    CREATOR: 'creator',
     MESSAGE_ID: 'messageId',
     DISCONTINUED_DATE: 'discontinuedDate',
-    AVAILABILITY: 'availability'
+    AVAILABILITY: 'availability',
+    ORIGINAL_CHANGED: 'originalChanged'
 };
 
 export const UN_REQUIRED_PROPS = {

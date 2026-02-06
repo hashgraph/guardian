@@ -67,7 +67,7 @@ export class TagsExplorer {
         const dialogRef = this.dialog.open(TagsExplorerDialog, {
             width: '750px',
             height: '600px',
-            closable: false,
+            closable: true,
             header: 'Tags',
             data: {
                 user: this.user,

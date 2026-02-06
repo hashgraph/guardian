@@ -1,3 +1,4 @@
+
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -6,6 +7,22 @@ context('Get session', { tags: ['accounts', 'firstPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
+    const sessionUrl = `${API.ApiServer}${API.AccountSession}`;
+
+    const getSessionWithAuth = (authorization) =>
+        cy.request({
+            method: METHOD.GET,
+            url: sessionUrl,
+            headers: { authorization },
+        });
+
+    const getSessionWithoutAuth = (headers = {}) =>
+        cy.request({
+            method: METHOD.GET,
+            url: sessionUrl,
+            headers,
+            failOnStatusCode: false,
+        });
 
     it('Get user session as Standard Registry', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -18,10 +35,10 @@ context('Get session', { tags: ['accounts', 'firstPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK)
                 expect(response.body).to.have.property('id')
-                expect(response.body).to.have.property('username', SRUsername)
                 expect(response.body).to.have.property('did')
                 expect(response.body).to.have.property('hederaAccountId')
-                expect(response.body).to.have.property('role')
+                expect(response.body.username).eq(SRUsername)
+                expect(response.body.role).eq('STANDARD_REGISTRY')
             })
         })
     })
@@ -37,48 +54,30 @@ context('Get session', { tags: ['accounts', 'firstPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK)
                 expect(response.body).to.have.property('id')
+                expect(response.body.username).eq(UserUsername)
                 expect(response.body.role).eq('USER')
             })
         })
     })
 
     it('Get user session with empty token - Negative', () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.AccountSession,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK)
-            expect(response.body).to.eq(null)
-        })
-    })
+        getSessionWithoutAuth({ authorization: '' }).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.OK);
+            expect(response.body).to.eq(null);
+        });
+    });
 
     it('Get user session with invalid token - Negative', () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.AccountSession,
-            headers: {
-                authorization: "Bearer 21321232121",
-            },
-            failOnStatusCode: false
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED)
-        })
-    })
+        getSessionWithoutAuth({ authorization: 'Bearer 21321232121' }).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
 
     it('Get user session without token - Negative', () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.AccountSession,
-            headers: {
-            },
-            failOnStatusCode: false
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK)
-            expect(response.body).to.eq(null)
-        })
-    })
-})
+        getSessionWithoutAuth().then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.OK);
+            expect(response.body).to.eq(null);
+        });
+    });
+
+});

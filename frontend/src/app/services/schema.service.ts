@@ -24,7 +24,7 @@ export class SchemaService {
 
     public static getOptions(filters?: {
         pageIndex?: number,
-        pageSize?: number,
+        pageSize?: number | string,
         [key: string]: any
     }): HttpParams {
         let params = new HttpParams();
@@ -36,7 +36,10 @@ export class SchemaService {
                     }
                 }
             }
-            if (Number.isInteger(filters.pageIndex) && Number.isInteger(filters.pageSize)) {
+            if (filters.pageSize === 'all') {
+                params = params.set('pageIndex', '0');
+                params = params.set('pageSize', 'all');
+            } else if (Number.isInteger(filters.pageIndex) && Number.isInteger(filters.pageSize)) {
                 params = params.set('pageIndex', String(filters.pageIndex));
                 params = params.set('pageSize', String(filters.pageSize));
             }
@@ -102,7 +105,7 @@ export class SchemaService {
         topicId?: string,
         search?: string,
         pageIndex?: number,
-        pageSize?: number,
+        pageSize?: number | string,
     }): Observable<HttpResponse<ISchema[]>> {
         const params = SchemaService.getOptions(options);
         return this.http.get<any>(`${this.url}`, { observe: 'response', headers: headersV2, params });
@@ -128,8 +131,16 @@ export class SchemaService {
         return this.http.put<any[]>(`${this.url}/${id}/unpublish`, null);
     }
 
-    public delete(id: string, includeChildren?: boolean): Observable<ISchema[]> {
-        return this.http.delete<any[]>(`${this.url}/${id}`, {
+    public delete(id: string, includeChildren?: boolean): Observable<{ taskId: string, expectation: number }> {
+        return this.http.delete<{ taskId: string, expectation: number }>(`${this.url}/${id}`, {
+            params: {
+                includeChildren: includeChildren ? true : false
+            }
+        });
+    }
+
+    public deleteMultiple(schemaIds: string[], includeChildren?: boolean): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/delete-multiple`, { schemaIds }, {
             params: {
                 includeChildren: includeChildren ? true : false
             }
@@ -222,9 +233,8 @@ export class SchemaService {
         return this.http.get<SchemaNode>(`${this.singleSchemaUrl}/${id}/tree`);
     }
 
-    public getSchemaDeletionPreview(id: string, topicId?: string): Observable<ISchemaDeletionPreview> {
-        const options = topicId ? { params: { topicId } } : {};
-        return this.http.get<ISchemaDeletionPreview>(`${this.singleSchemaUrl}/${id}/deletionPreview`, options);
+    public getSchemaDeletionPreview(schemaIds: string[]): Observable<ISchemaDeletionPreview> {
+        return this.http.post<ISchemaDeletionPreview>(`${this.url}/deletionPreview`, { schemaIds });
     }
 
     public deleteSchemasByTopicId(topicId: string): Observable<any> {

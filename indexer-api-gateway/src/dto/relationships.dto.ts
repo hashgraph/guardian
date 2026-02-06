@@ -35,6 +35,11 @@ export class RelationshipDTO implements Relationship {
         example: 'Monitoring Report Document',
     })
     name: string;
+    @ApiProperty({
+        description: 'Tags count',
+        example: 1,
+    })
+    tagsCount: number;
 }
 
 export class RelationshipLinkDTO implements RelationshipLink {

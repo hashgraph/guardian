@@ -59,7 +59,7 @@
                             label="Clear filters"
                             pButton></button>
                 </form>
-    
+
                 <div class="actions-container-btns">
                     <p-button
                         *ngIf="user.POLICIES_POLICY_CREATE"
@@ -125,7 +125,7 @@
             </div>
         </ng-container>
 
-        <ng-container *ngIf="tab === 'remote'"> 
+        <ng-container *ngIf="tab === 'remote'">
             <div class="actions-container" *ngIf="user.POLICIES_EXTERNAL_POLICY_CREATE">
                 <form *ngIf="hasPolicies" [formGroup]="filtersForm" class="policy-filters">
                     <span class="p-input-icon-right">
@@ -152,14 +152,7 @@
                         *ngIf="user.POLICIES_EXTERNAL_POLICY_CREATE"
                         (click)="importExternalPolicy()"
                         class="guardian-button guardian-button-primary">
-                        <div class="guardian-button-icon">
-                            <svg-icon
-                                class="icon-btn"
-                                src="/assets/images/icons/add.svg"
-                                svgClass="icon-color-secondary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Request Access</div>
+                        <div class="guardian-button-label">Request Remote Policy</div>
                     </button>
                 </div>
             </div>
@@ -181,6 +174,19 @@
                         <ng-template pTemplate="header">
                             <tr class="grid-table-header">
                                 <th
+                                    *ngIf="canDisplayColumn('select')"
+                                    class="header-cell-text cell-64"
+                                    pFrozenColumn>
+                                        <p-checkbox
+                                            class="guardian-checkbox checkbox-24"
+                                            (onChange)="onSelectAllItems($event)"
+                                            [disabled]="isAnyDeleteDisabled()"
+                                            [ngModel]="isAllSelected"
+                                            [binary]="true"
+                                        >
+                                        </p-checkbox>
+                                </th>
+                                <th
                                     *ngIf="canDisplayColumn('name')"
                                     class="header-cell-text cell-150"
                                     pFrozenColumn>Name
@@ -195,6 +201,10 @@
                                     *ngIf="canDisplayColumn('operations')"
                                     class="header-cell-text cell-120 cell-last"
                                     pFrozenColumn>Operations
+                                </th>
+                                <th
+                                    *ngIf="canDisplayColumn('modified')"
+                                    class="header-cell-text cell-description">Modified
                                 </th>
                                 <th
                                     *ngIf="canDisplayColumn('description')"
@@ -244,6 +254,21 @@
                         </ng-template>
                         <ng-template let-policy pTemplate="body">
                             <tr class="grid-table-row">
+                                <td
+                                    *ngIf="canDisplayColumn('select')"
+                                    class="cell-64"
+                                    pFrozenColumn
+                                >
+                                    <p-checkbox
+                                        class="guardian-checkbox checkbox-24"
+                                        (onChange)="onSelectItem(policy)"
+                                        [disabled]="isDeleteDisabled(policy)"
+                                        [ngModel]="isSelected(policy)"
+                                        [binary]="true"
+                                    >
+                                    </p-checkbox>
+                                </td>
+
                                 <td
                                     *ngIf="canDisplayColumn('name')"
                                     class="text-truncate cell-150"
@@ -332,6 +357,52 @@
                                     </div>
                                 </td>
                                 <td
+                                    *ngIf="canDisplayColumn('modified')"
+                                    class="text-truncate cell-description"
+                                >
+                                    <div *ngIf="policy?.originalChanged === true">
+                                        <button
+                                            (click)="comparePolicyOrigin(policy)"
+                                            class="guardian-button guardian-button-secondary original-status-btn"
+                                            pTooltip="Policy was modified after import"
+                                            tooltipPosition="bottom"
+                                            pButton>
+                                            <div class="guardian-button-icon">
+                                                <svg-icon
+                                                    class="icon-btn"
+                                                    src="/assets/images/icons/compare.svg"
+                                                    svgClass="icon-color-primary">
+                                                </svg-icon>
+                                            </div>
+                                            <div class="guardian-button-label">Compare</div>
+                                        </button>
+                                    </div>
+
+                                    <div *ngIf="policy?.originalChanged === false">
+                                        <button
+                                            class="button secondary original-status-btn"
+                                            [disabled]="true"
+                                            label="No changes"
+                                            pButton>
+                                        </button>
+                                    </div>
+
+                                    <div *ngIf="policy?.originalChanged === undefined">
+                                        <span
+                                            pTooltip="Policy modification tracking was likely disabled"
+                                            tooltipPosition="bottom"
+                                        >
+                                            <button
+                                                class="button secondary original-status-btn"
+                                                [disabled]="true"
+                                                label="Status unavailable"
+                                                pTooltip="Policy modification tracking was likely disabled"
+                                                pButton>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td
                                     *ngIf="canDisplayColumn('description')"
                                     class="text-truncate cell-description"
                                     pTooltip="{{ policy.description }}"
@@ -397,7 +468,7 @@
                                     class="cell-140 text-truncate"
                                 >
                                     <span class="text-truncate">
-                                        <hedera-explorer 
+                                        <hedera-explorer
                                             [params]="policy.topicId"
                                             type="topics">{{ policy.topicId }}</hedera-explorer>
                                     </span>
@@ -566,6 +637,28 @@
         <span class="info-text">Please create a new policy to see the data</span>
     </div>
 </ng-template>
+
+<div *ngIf="isAnyItemSelected()" class="options-footer-container">
+    <div class="options-footer">
+        <div class="selected-info-block">
+            <span class="selected-info">{{ selectedItems.length | pluralize: 'policy' : 'policies'}} selected</span>
+            <p-button
+                (click)="onClearSelection()"
+                class="secondary-btn"
+                [outlined]="true"
+            >
+                Clear selection
+            </p-button>
+        </div>
+        <div>
+            <p-button
+                (click)="onDeleteItems()"
+                severity="danger"
+                label="Delete selected"
+                type="button"></p-button>
+        </div>
+    </div>
+</div>
 
 <ng-template #preloader>
     <div class="preloader-image"></div>

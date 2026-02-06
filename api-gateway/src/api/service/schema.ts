@@ -1,4 +1,4 @@
-import { ISchema, Permissions, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction } from '@guardian/interfaces';
+import { DocumentGenerator, ISchema, Permissions, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
@@ -6,7 +6,7 @@ import { Auth, AuthUser } from '#auth';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { Examples, ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, pageHeader, SchemaDTO, SystemSchemaDTO, SchemaDeletionPreviewDTO, TaskDTO, VersionSchemaDTO } from '#middlewares';
 import { CACHE, PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
-import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache } from '#helpers';
+import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache, FilenameSanitizer } from '#helpers';
 import process from 'process';
 
 @Controller('schema')
@@ -171,53 +171,41 @@ export class SingleSchemaApi {
     }
 
     /**
-     * Returns schema deletion preview
+     * Returns a sample payload for the schema by schema Id.
      */
-    @Get('/:schemaId/deletionPreview')
-    @Auth(
-        Permissions.SCHEMAS_SCHEMA_READ,
-        // UserRole.STANDARD_REGISTRY,
-        // UserRole.AUDITOR ?,
-        // UserRole.USER ?
-    )
+    @Get('/:schemaId/sample-payload')
+    @Auth()
     @ApiOperation({
-        summary: 'Returns all child schemas.',
-        description: 'Returns all child schemas.',
+        summary: 'Returns a sample payload for the schema by schema Id.',
+        description: 'Returns a sample payload for the schema by schema Id.',
     })
     @ApiParam({
         name: 'schemaId',
         type: String,
-        description: 'Schema identifier',
-        required: true
-    })
-    @ApiQuery({
-        name: 'topicId',
-        type: String,
-        description: 'Policy topic Id',
-        required: false
+        description: 'Schema ID',
+        required: true,
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
-        description: 'Schema deletion preview.',
-        isArray: true,
-        type: SchemaDeletionPreviewDTO
+        description: 'Successful operation.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(SchemaDeletionPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getSchemaDeletionPreview(
+    async getSampleSchemaPayload(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
-        @Query('topicId') topicId?: string,
-    ): Promise<SchemaDeletionPreviewDTO> {
+    ): Promise<any> {
         try {
             const guardians = new Guardians();
-            const owner = new EntityOwner(user);
-            const result = await guardians.getSchemaDeletionPreview(schemaId, topicId, owner);
-
-            return result;
+            const iSchema = await guardians.getSchemaById(user, schemaId);
+            if (!iSchema) {
+                throw new HttpException(`Schema not found.`, HttpStatus.NOT_FOUND);
+            }
+            const schema = new Schema(iSchema)
+            return DocumentGenerator.generateDocument(schema);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -1135,21 +1123,20 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        isArray: true,
-        type: SchemaDTO
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSchema(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
         @Query('includeChildren') includeChildren: boolean = false,
         @Req() req
-    ): Promise<SchemaDTO[]> {
+    ): Promise<any> {
         const guardians = new Guardians();
         let schema: ISchema;
         const owner = new EntityOwner(user);
@@ -1162,9 +1149,9 @@ export class SchemaApi {
         if (!schema) {
             throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
         }
-        const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
-        if (error) {
-            throw new HttpException(error, HttpStatus.FORBIDDEN)
+        const permissionError = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
+        if (permissionError) {
+            throw new HttpException(permissionError, HttpStatus.FORBIDDEN)
         }
         if (schema.status === SchemaStatus.PUBLISHED) {
             throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -1174,14 +1161,19 @@ export class SchemaApi {
         }
 
         try {
-            const schemas = (await guardians.deleteSchema(schemaId, owner, true, String(includeChildren).toLowerCase() === 'true') as ISchema[]);
-            SchemaHelper.updatePermission(schemas, owner);
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                await guardians.deleteSchema(schemaId, owner, task, String(includeChildren).toLowerCase() === 'true');
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+            });
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
-            return SchemaUtils.toOld(schemas);
+            return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -1933,15 +1925,23 @@ export class SchemaApi {
             const ids = schemas.map(s => s.id);
             const tags = await guardians.exportTags(owner, 'Schema', ids);
             const name = `${Date.now()}`;
-            const zip = await SchemaImportExport.generateZipFile({ schemas, tags });
+
+            const zip = await SchemaImportExport.generateZipFile({
+                schemas,
+                tags,
+                helpers: guardians,
+                user
+            });
+
             const arcStream = zip.generateNodeStream({
                 type: 'nodebuffer',
                 compression: 'DEFLATE',
                 compressionOptions: {
                     level: 3
-                }
+                },
+                platform: 'UNIX',
             });
-            res.header('Content-disposition', `attachment; filename=${name}`);
+            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(name)}`);
             res.header('Content-type', 'application/zip');
             return res.send(arcStream);
         } catch (error) {
@@ -2168,13 +2168,14 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(InternalServerErrorDTO)
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
     async deleteSystemSchema(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
@@ -2187,18 +2188,27 @@ export class SchemaApi {
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
-            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.SYSTEM);
-            if (error) {
-                throw new HttpException(error, HttpStatus.FORBIDDEN);
+            const permissionError = SchemaUtils.checkPermission(schema, owner, SchemaCategory.SYSTEM);
+            if (permissionError) {
+                throw new HttpException(permissionError, HttpStatus.FORBIDDEN);
             }
             if (schema.active) {
                 throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            await guardians.deleteSchema(schemaId, owner);
+
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                await guardians.deleteSchema(schemaId, owner, task);
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+            });
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
+            return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -2426,7 +2436,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file: any = await guardians.exportSchemasXlsx(owner, [schemaId]);
             const schema: any = await guardians.getSchemaById(user, schemaId);
-            const filename = (schema.name || '').replace(/[/\\?%*:|"<>,.]/g, '_');
+            const filename = FilenameSanitizer.sanitize(schema.name || '');
             res.header('Content-disposition', `attachment; filename=${filename}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
@@ -2647,7 +2657,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file = await guardians.getFileTemplate(owner, filename);
             const fileBuffer = Buffer.from(file, 'base64');
-            res.header('Content-disposition', `attachment; filename=` + filename);
+            res.header('Content-disposition', `attachment; filename=` + FilenameSanitizer.sanitize(filename));
             res.header('Content-type', 'application/zip');
 
             req.locals = fileBuffer
@@ -2697,7 +2707,7 @@ export class SchemaApi {
         const owner = new EntityOwner(user);
 
         try {
-            await guardians.deleteSchemas(topicId, owner);
+            await guardians.deleteSchemasByTopic(topicId, owner);
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
 
@@ -2709,5 +2719,137 @@ export class SchemaApi {
         }
 
         return false;
+    }
+
+    /**
+     * Returns schema deletion preview
+     */
+    @Post('/deletionPreview')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.AUDITOR ?,
+        // UserRole.USER ?
+    )
+    @ApiOperation({
+        summary: 'Returns all child schemas.',
+        description: 'Returns all child schemas.',
+    })
+    @ApiParam({
+        name: 'schemaIds',
+        type: [String],
+        description: 'Schema Ids',
+        required: true,
+        example: [Examples.DB_ID]
+    })
+    @ApiOkResponse({
+        description: 'Schema deletion preview.',
+        isArray: true,
+        type: SchemaDeletionPreviewDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SchemaDeletionPreviewDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSchemaDeletionPreview(
+        @AuthUser() user: IAuthUser,
+        @Body('schemaIds') schemaIds: string[],
+    ): Promise<SchemaDeletionPreviewDTO> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const result = await guardians.getSchemaDeletionPreview(schemaIds, owner);
+
+            return result;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Delete Schemas
+     */
+    @Post('/delete-multiple')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Deletes the schema with the provided schema ID.',
+        description: 'Deletes the schema with the provided schema ID.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'schemaIds',
+        type: [String],
+        description: 'Schema Ids',
+        required: true,
+        example: [Examples.DB_ID]
+    })
+    @ApiQuery({
+        name: 'includeChildren',
+        type: Boolean,
+        required: false,
+        description: 'Include child schemas',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async deleteSchemas(
+        @AuthUser() user: IAuthUser,
+        @Body('schemaIds') schemaIds: string[],
+        @Query('includeChildren') includeChildren: boolean = false,
+        @Req() req
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            let schema: ISchema;
+            const owner = new EntityOwner(user);
+
+            for (const schemaId of schemaIds) {
+                try {
+                    schema = await guardians.getSchemaById(user, schemaId);
+                } catch (error) {
+                    await InternalException(error, this.logger, user.id);
+                }
+                if (!schema) {
+                    throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
+                }
+                const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
+                if (error) {
+                    throw new HttpException(error, HttpStatus.FORBIDDEN)
+                }
+                if (schema.status === SchemaStatus.PUBLISHED) {
+                    throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
+                }
+                if (schema.status === SchemaStatus.DEMO) {
+                    throw new HttpException('Schema imported in demo mode.', HttpStatus.UNPROCESSABLE_ENTITY)
+                }
+            }
+
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                await guardians.deleteSchemasByIds(schemaIds, owner, task, String(includeChildren).toLowerCase() === 'true');
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+            });
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
+            return task;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
     }
 }

@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ModelHelper } from '@guardian/interfaces';
 
 /**
  * Publish tool dialog
@@ -50,6 +51,8 @@ export class PublishToolDialog {
     }
 
     public get isPublishDisabled(): boolean {
-        return !this.versionControl.valid;
+        const isFormInvalid = !this.versionControl.valid;
+        const isVersionNotNewer = this.tool?.version && ModelHelper.versionCompare(this.tool.version, this.versionControl.value) >= 0;
+        return isFormInvalid || isVersionNotNewer;
     }
 }

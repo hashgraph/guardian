@@ -1,0 +1,17 @@
+form {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    padding-bottom: 25px;
+}
+
+.guardian-input-container {
+    margin-bottom: 16px;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 20px;
+}

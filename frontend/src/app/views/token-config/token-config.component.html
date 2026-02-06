@@ -55,19 +55,33 @@
 
         <div *ngIf="!loading" class="guardian-user-page-grid">
             <ng-container *ngIf="tokens && tokens.length > 0; else noData">
-                <div class="guardian-grid-container">
+                <div class="grid-table-container">
                     <p-table
-                        class="guardian-grid-table"
+                        class="grid-table"
                         [value]="tokens"
                         [scrollable]="true"
                     >
                         <ng-template pTemplate="header">
-                            <tr class="guardian-grid-header">
+                            <tr class="grid-table-header">
                                 <ng-container *ngFor="let column of columns">
                                     <th
                                         *ngIf="!column.canDisplay || column.canDisplay()"
                                         class="header-cell-{{column.type}} col-{{column.size}}"
-                                        >{{column.title}}</th>
+                                        [ngSwitch]="column.id"
+                                    >
+                                        <ng-container *ngSwitchCase="'select'">
+                                            <p-checkbox
+                                                (onChange)="onSelectAllItems($event)"
+                                                [disabled]="isAnyDeleteDisabled()"
+                                                [ngModel]="isAllSelected"
+                                                [binary]="true"
+                                            >
+                                            </p-checkbox>
+                                        </ng-container>
+                                        <ng-container *ngSwitchDefault>
+                                            {{column.title}}
+                                        </ng-container>
+                                    </th>
                                 </ng-container>
                             </tr>
                         </ng-template>
@@ -83,6 +97,15 @@
                                         [showDelay]="1000"
                                         [ngSwitch]="column.id"
                                     >
+                                        <ng-container *ngSwitchCase="'select'">
+                                                <p-checkbox
+                                                    (onChange)="onSelectItem(row)"
+                                                    [disabled]="isDeleteDisabled(row)"
+                                                    [ngModel]="isSelected(row)"
+                                                    [binary]="true"
+                                                >
+                                                </p-checkbox>
+                                        </ng-container>
                                         <ng-container *ngSwitchCase="'id'">
                                             <hedera-explorer 
                                                 *ngIf="!row.draftToken else draftToken" 
@@ -217,9 +240,9 @@
 
         <div *ngIf="!loading" class="guardian-user-page-grid">
             <ng-container *ngIf="users && users.length > 0; else noData">
-                <div class="guardian-grid-container">
+                <div class="grid-table-container">
                     <p-table
-                        class="guardian-grid-table"
+                        class="grid-table"
                         [value]="users"
                         [scrollable]="true"
                     >
@@ -358,27 +381,34 @@
     </div>
 </ng-template>
 
-<p-dialog [(visible)]="deleteTokenVisible" [closable]="true" [draggable]="false" [modal]="true">
-    <ng-template pTemplate="header">
-        <span class="modal-header">Delete Token</span>
-    </ng-template>
-    <div class="" style="padding: 0 10px 0 10px;">
-        Are you sure to delete token?
-    </div>
-    <ng-template pTemplate="footer">
-        <button (click)="deleteToken(false)" class="button secondary" label="Cancel" pButton
-                type="button"></button>
-        <button (click)="deleteToken(true)" [label]="'Delete'" class="button button-color-red" pButton
-                type="button"></button>
-    </ng-template>
-</p-dialog>
-
 <ng-template #preloader>
     <div class="preloader-image"></div>
 </ng-template>
 
 <div *ngIf="loading && !taskId" class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
+</div>
+
+<div *ngIf="isAnyItemSelected()" class="options-footer-container">
+    <div class="options-footer">
+        <div class="selected-info-block">
+            <span class="selected-info">{{ selectedItems.length | pluralize: 'token' : 'tokens'}} selected</span>
+            <p-button
+                (click)="onClearSelection()"
+                class="secondary-btn"
+                [outlined]="true"
+            >
+                Clear selection
+            </p-button>
+        </div>
+        <div>
+            <p-button
+                (click)="onDeleteItems()"
+                severity="danger"
+                label="Delete selected"
+                type="button"></p-button>
+        </div>
+    </div>
 </div>
 
 <async-progress *ngIf="loading && taskId" [taskId]="taskId"

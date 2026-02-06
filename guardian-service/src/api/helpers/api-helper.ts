@@ -9,16 +9,21 @@ export function getPageOptions(msg: {
     fields?: string[],
 }, options?: any): any {
     const otherOptions: any = options || {};
-    const _pageSize = parseInt(String(msg.pageSize), 10);
-    const _pageIndex = parseInt(String(msg.pageIndex), 10);
-    if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+
+    if (msg.pageSize === 'all') {
         otherOptions.orderBy = { createDate: 'DESC' };
-        otherOptions.limit = Math.min(1000, _pageSize);
-        otherOptions.offset = _pageIndex * _pageSize;
     } else {
-        otherOptions.orderBy = { createDate: 'DESC' };
-        otherOptions.limit = 1000;
-        otherOptions.offset = 0
+        const _pageSize = parseInt(String(msg.pageSize), 10);
+        const _pageIndex = parseInt(String(msg.pageIndex), 10);
+        if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+            otherOptions.orderBy = { createDate: 'DESC' };
+            otherOptions.limit = Math.min(1000, _pageSize);
+            otherOptions.offset = _pageIndex * _pageSize;
+        } else {
+            otherOptions.orderBy = { createDate: 'DESC' };
+            otherOptions.limit = 1000;
+            otherOptions.offset = 0
+        }
     }
 
     if (msg.fields) {
@@ -26,4 +31,8 @@ export function getPageOptions(msg: {
     }
 
     return otherOptions;
+}
+
+export function escapeRegExp(text) {
+    return text.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, '\\$&');
 }

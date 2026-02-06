@@ -25,6 +25,7 @@ import { FormulaConfigurationComponent } from './formula-configuration/formula-c
 import { NewFormulaDialog } from './dialogs/new-formula-dialog/new-formula-dialog.component';
 import { FormulasViewDialog } from './dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import { UploadFormulaFileDialog } from './dialogs/upload-formula-file-dialog/upload-formula-file-dialog.component';
+import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formulas-graph-tab/formulas-graph-tab.component";
 
 @NgModule({
     declarations: [
@@ -33,7 +34,8 @@ import { UploadFormulaFileDialog } from './dialogs/upload-formula-file-dialog/up
         NewFormulaDialog,
         LinkDialog,
         FormulasViewDialog,
-        UploadFormulaFileDialog
+        UploadFormulaFileDialog,
+        FormulasGraphTabComponent,
     ],
     imports: [
         CommonModule,

@@ -423,6 +423,9 @@ context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                 failOnStatusCode: false
             }
             Checks.whileRequestProccessing(waitProjectValidated, "approved_project", "data.0.type")
+            cy.request(waitProjectValidated).then((response) => { 
+                cy.task('log', response.body.data.length)
+            });
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies + policyId + "/" + API.ProjectGridPP2,
@@ -580,7 +583,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                 }
             }).then((response) => {
                 let reportVerifyData = response.body.data[0];
-                reportVerifyData.option.status = "APPROVED";
+                cy.task('log', reportVerifyData);
+                reportVerifyData["option"]["status"] = "APPROVED";
                 cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveValidationReportBtn,
@@ -645,6 +649,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                 }
             }).then((response) => {
                 let reportVerifyData = response.body.data[0];
+                cy.task('log', reportVerifyData);
                 reportVerifyData.option.status = "APPROVED";
                 cy.request({
                     method: METHOD.POST,

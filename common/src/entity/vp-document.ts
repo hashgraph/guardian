@@ -74,6 +74,12 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
     policyId?: string;
 
     /**
+     * Record action id
+     */
+    @Property({ nullable: true })
+    recordActionId?: string;
+
+    /**
      * Tag
      */
     @Property({ nullable: true })

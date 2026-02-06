@@ -7,6 +7,7 @@ import { ChildrenType, ControlType, PropertyType, SelectItemType } from '../inte
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Step block
@@ -92,7 +93,7 @@ export class InterfaceStepBlock {
     @ActionCallback({
         output: PolicyOutputEventType.RefreshEvent
     })
-    async changeStep(user: PolicyUser, data: any, target: IPolicyBlock) {
+    async changeStep(user: PolicyUser, data: any, target: IPolicyBlock, actionStatus: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.id)) {
@@ -113,7 +114,7 @@ export class InterfaceStepBlock {
         }
         ref.log(`changeStep: ${blockState?.index}, ${user?.id}`);
         ref.updateBlock(blockState, user, ref.tag, user.userId);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null, actionStatus);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Step, ref, user, {
             index: blockState?.index
@@ -145,7 +146,7 @@ export class InterfaceStepBlock {
                 }
                 blockState.index = 0;
                 ref.updateBlock(blockState, user, ref.tag, user.userId);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+                await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null, event.actionStatus);
             }
         }
 

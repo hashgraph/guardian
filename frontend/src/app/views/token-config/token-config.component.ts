@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ContractType, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -14,6 +14,7 @@ import { UntypedFormGroup } from '@angular/forms';
 import { ContractService } from 'src/app/services/contract.service';
 import { TokenDialogComponent } from 'src/app/components/token-dialog/token-dialog.component';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
+import { DeleteDialogComponent } from 'src/app/modules/policy-engine/dialogs/delete-dialog/delete-dialog.component';
 
 enum OperationMode {
     None, Kyc, Freeze
@@ -55,7 +56,6 @@ export class TokenConfigComponent implements OnInit {
     public tagEntity = TagType.Token;
     public owner: any;
     public tagSchemas: any[] = [];
-    public deleteTokenVisible: boolean = false;
     public currentTokenId: any;
     public readonlyForm: boolean = false;
     public policyDropdownItem: any;
@@ -68,6 +68,10 @@ export class TokenConfigComponent implements OnInit {
     public userPageCount: any;
     public userPageIndex: number;
     public userPageSize: number;
+
+    public isAllSelected: boolean = false;
+    public selectedItems: any[] = [];
+    public selectedItemIds: string[] = [];
 
     private selectedUser: any;
 
@@ -93,6 +97,13 @@ export class TokenConfigComponent implements OnInit {
         this.userPageCount = 0;
 
         this.columns = [{
+            id: 'select',
+            title: '',
+            type: 'text',
+            size: '150',
+            tooltip: false,
+            canDisplay: () => this.user.TOKENS_TOKEN_DELETE
+        }, {
             id: 'id',
             title: 'TOKEN ID',
             type: 'text',
@@ -174,6 +185,8 @@ export class TokenConfigComponent implements OnInit {
             tooltip: false
         }]
     }
+    
+    private _destroy$ = new Subject<void>();
 
     ngOnInit() {
         this.loading = true;
@@ -181,6 +194,11 @@ export class TokenConfigComponent implements OnInit {
         this.tokenUrl = this.route.snapshot.queryParams['tokenId'];
         this.tokenId = this.tokenUrl ? atob(this.tokenUrl) : '';
         this.loadProfile();
+    }
+
+    ngOnDestroy(): void {
+        this._destroy$.next();
+        this._destroy$.complete();
     }
 
     private loadProfile() {
@@ -261,6 +279,8 @@ export class TokenConfigComponent implements OnInit {
             this.tokens = data.map((e: any) => new Token(e));
             this.tokensCount = tokensResponse?.headers.get('X-Total-Count') || this.tokens.length;
             this.loadTagsData();
+
+            this.checkIsAllSelected();
         }, ({ message }) => {
             this.loading = false;
             console.error(message);
@@ -490,8 +510,32 @@ export class TokenConfigComponent implements OnInit {
     }
 
     public questToDeleteToken(token: any) {
-        this.currentTokenId = token.tokenId;
-        this.deleteTokenVisible = true;
+        const dialogRef = this.dialog.open(DeleteDialogComponent, {
+            header: 'Delete Tokens',
+            width: '720px',
+            styleClass: 'custom-dialog',
+            data: {
+                notificationText: 'Are you sure want to delete this token?'
+            },
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
+            if (!result) {
+                return;
+            }
+
+            this.loading = true;
+            this.tokenService.pushDelete(token.tokenId).subscribe((result) => {
+                const { taskId, expectation } = result;
+                this.router.navigate(['task', taskId], {
+                    queryParams: {
+                        last: btoa(location.href)
+                    }
+                });
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+        });
     }
 
     public saveToken(dataForm: UntypedFormGroup) {
@@ -583,28 +627,6 @@ export class TokenConfigComponent implements OnInit {
         this.queryChange();
     }
 
-    deleteToken(deleteToken: boolean) {
-        if (!deleteToken) {
-            this.deleteTokenVisible = false;
-            this.currentTokenId = null;
-        } else {
-            if (this.currentTokenId) {
-                this.loading = true;
-                this.tokenService.pushDelete(this.currentTokenId).subscribe((result) => {
-                    const { taskId, expectation } = result;
-                    this.router.navigate(['task', taskId], {
-                        queryParams: {
-                            last: btoa(location.href)
-                        }
-                    });
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                });
-            }
-        }
-    }
-
     public onPage(event: any): void {
         if (this.pageSize != event.pageSize) {
             this.pageIndex = 0;
@@ -625,5 +647,99 @@ export class TokenConfigComponent implements OnInit {
             this.userPageSize = event.pageSize;
         }
         this.loadRelayerAccounts();
+    }
+    
+    public onSelectAllItems(event: any) {
+        if (event.checked) {
+            this.selectedItems = [...this.selectedItems, ...this.tokens.filter((item: any) => item.canDelete && !this.selectedItemIds.includes(item.id))];
+            this.selectedItemIds = this.selectedItems.map(item => item.id);
+        } else {
+            this.selectedItems = this.selectedItems.filter(item => !this.tokens.some(token => item.id === token.id));
+            this.selectedItemIds = this.selectedItems.map(item => item.id);
+        }
+
+        this.checkIsAllSelected();
+    }
+
+    public onSelectItem(item: any) {
+        const index = this.selectedItemIds.indexOf(item.id);
+        if (index === -1) {
+            this.selectedItems.push(item);
+            this.selectedItemIds.push(item.id);
+        } else {
+            this.selectedItems.splice(index, 1);
+            this.selectedItemIds.splice(index, 1);
+        }
+
+        this.checkIsAllSelected();
+    }
+
+    public checkIsAllSelected() {
+        const canDeleteItems = this.tokens.filter(token => token.canDelete);
+        this.isAllSelected = canDeleteItems?.length > 0;
+
+        canDeleteItems.forEach(token => {
+            if (!this.selectedItemIds.includes(token.id)) {
+                this.isAllSelected = false;
+            }
+        })
+    }
+
+    public isSelected(item: any) {
+        return this.selectedItemIds.includes(item.id);
+    }
+
+    public isAnyItemSelected() {
+        return this.selectedItems.length > 0;
+    }
+
+    public isAnyDeleteDisabled() {
+        return !this.tokens.some(item => item.canDelete);
+    }
+
+    public isDeleteDisabled(item: any) {
+        return !item.canDelete;
+    }
+
+    public onDeleteItems() {
+        if (this.selectedItems?.length > 0) {
+            const dialogRef = this.dialog.open(DeleteDialogComponent, {
+                header: 'Delete Tokens',
+                width: '720px',
+                styleClass: 'custom-dialog',
+                data: {
+                    notificationText: 'Are you sure want to delete these tokens?',
+                    itemNames: this.selectedItems.map(item => item.tokenName + ' (' + item.tokenId + ')'),
+                },
+            });
+            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
+                if (!result) {
+                    return;
+                }
+
+                this.loading = true;
+                this.tokenService.pushDeleteMultiple(this.selectedItems.map(item => item.tokenId))
+                    .pipe(takeUntil(this._destroy$))
+                    .subscribe(
+                        async (result) => {
+                            const { taskId, expectation } = result;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href)
+                                }
+                            });
+                        },
+                        (e) => {
+                            this.loading = false;
+                        }
+                );
+            });
+        }
+    }
+
+    public onClearSelection() {
+        this.selectedItems = [];
+        this.selectedItemIds = [];
+        this.isAllSelected = false;
     }
 }

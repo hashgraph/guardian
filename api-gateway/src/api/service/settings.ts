@@ -5,10 +5,13 @@ import { SettingsDTO, InternalServerErrorDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { Guardians, InternalException } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
+import fs from 'node:fs';
 
 @Controller('settings')
 @ApiTags('settings')
 export class SettingsApi {
+    private cachedVersion?: string;
+
     constructor(private readonly logger: PinoLogger) {
     }
 
@@ -138,6 +141,28 @@ export class SettingsApi {
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getAbout(): Promise<AboutInterface> {
-        return { version: '3.4.0' };
+        let version = this.cachedVersion;
+
+        if (!version) {
+            const envVersion = process.env.npm_package_version;
+            if (envVersion) {
+                version = envVersion;
+            } else {
+                const unknown = 'Unknown';
+                try {
+                    const packageJsonUrl = new URL('../../../package.json', import.meta.url);
+                    const raw = fs.readFileSync(packageJsonUrl, 'utf-8');
+                    const parsed = JSON.parse(raw);
+
+                    version = parsed.version || unknown;
+                } catch (error) {
+                    version = unknown;
+                }
+            }
+
+            this.cachedVersion = version;
+        }
+
+        return { version };
     }
 }

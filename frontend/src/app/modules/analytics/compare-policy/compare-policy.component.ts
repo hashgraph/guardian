@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, HostBinding, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import BlockIcons from '../../policy-engine/services/block-icons';
 import { CompareStorage } from 'src/app/services/compare-storage.service';
 
@@ -28,6 +28,7 @@ export class ComparePolicyComponent implements OnInit {
     public tokens!: any[];
     public groups!: any[];
     public roles!: any[];
+    public tools!: any[];
 
     public displayedColumns: string[] = [];
     public columns: any[] = [];
@@ -39,13 +40,21 @@ export class ComparePolicyComponent implements OnInit {
     public type3 = true;
     public type4 = true;
 
+    public colorBlindMode = false;
+
+    @HostBinding('class.colorblind-mode')
+    get colorBlindClass() {
+        return this.colorBlindMode;
+    }
+
     public _pOffset = 30;
 
     constructor(private compareStorage: CompareStorage) {
     }
 
     ngOnInit() {
-
+        const saved = localStorage.getItem('compare-policy-colorblind');
+        this.colorBlindMode = saved === 'true';
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -64,12 +73,14 @@ export class ComparePolicyComponent implements OnInit {
         const groups = this.value.groups;
         const tokens = this.value.tokens;
         const topics = this.value.topics;
+        const tools = this.value.tools;
 
         this.roles = roles?.report;
         this.groups = groups?.report;
         this.tokens = tokens?.report;
         this.topics = topics?.report;
         this.blocks = blocks?.report;
+        this.tools = tools?.report;
 
         let max = 0;
         for (let i = 0; i < this.blocks.length; i++) {
@@ -160,5 +171,10 @@ export class ComparePolicyComponent implements OnInit {
 
     isObject(value: any): boolean {
         return value !== null && typeof value === 'object';
+    }
+
+    toggleColorBlindMode() {
+        this.colorBlindMode = !this.colorBlindMode;
+        localStorage.setItem('compare-policy-colorblind', String(this.colorBlindMode));
     }
 }

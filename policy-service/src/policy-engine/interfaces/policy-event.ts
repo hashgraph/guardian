@@ -3,6 +3,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { EventActor, PolicyInputEventType, PolicyOutputEventType } from './policy-event-type.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Event callback type
@@ -53,6 +54,10 @@ export interface IPolicyEvent<T> {
      * Data
      */
     data?: T;
+    /**
+     * Action status
+     */
+    actionStatus?: RecordActionStep;
 }
 
 /**
@@ -117,8 +122,8 @@ export class PolicyLink<T> {
      * @param user
      * @param data
      */
-    public run(user: PolicyUser, data: T): void {
-        this.getUser(user, data).then((_user) => {
+    public run(user: PolicyUser, data: T, actionStatus: RecordActionStep): Promise<any> {
+        return this.getUser(user, data).then((_user) => {
             const event: IPolicyEvent<T> = {
                 type: this.type,
                 inputType: this.inputType,
@@ -129,9 +134,28 @@ export class PolicyLink<T> {
                 target: this.target.tag,
                 targetId: this.target.uuid,
                 user: _user,
+                actionStatus,
                 data
             };
-            this.callback.call(this.target, event);
+
+            if (actionStatus) {
+                actionStatus.inc();
+
+                const res = this.callback.call(this.target, event);
+
+                if (typeof res?.then === 'function') {
+                    res.then((result) => {
+                        actionStatus.dec();
+                        return result;
+                    })
+                } else {
+                    actionStatus.dec();
+                }
+
+                return res;
+            } else{
+                return this.callback.call(this.target, event);
+            }
         });
     }
 
@@ -140,7 +164,7 @@ export class PolicyLink<T> {
      * @param user
      * @param data
      */
-    public async runSync(user: PolicyUser, data: T): Promise<any> {
+    public async runSync(user: PolicyUser, data: T, actionStatus: RecordActionStep): Promise<any> {
         const _user = await this.getUser(user, data);
         const event: IPolicyEvent<T> = {
             type: this.type,
@@ -152,10 +176,21 @@ export class PolicyLink<T> {
             target: this.target.tag,
             targetId: this.target.uuid,
             user: _user,
+            actionStatus,
             data
         };
 
-        return await this.callback.bind(this.target)(event);
+        if (actionStatus) {
+            actionStatus.inc()
+
+            const res = await this.callback.bind(this.target)(event);
+
+            actionStatus.dec()
+
+            return res;
+        } else {
+            return await this.callback.bind(this.target)(event);
+        }
     }
     /**
      * Get owner

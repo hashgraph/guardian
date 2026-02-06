@@ -194,7 +194,8 @@ body {
                 background: #f7f7f7;
             }
 
-            i, svg {
+            i,
+            svg {
                 height: 28px;
                 width: 28px;
                 margin: 4px;
@@ -266,6 +267,7 @@ body {
 ::ng-deep ngx-codemirror {
     width: 100%;
 }
+
 ::ng-deep .CodeMirror {
     height: 100% !important;
 }
@@ -326,7 +328,6 @@ body {
 
         .p-datatable-wrapper {
             max-height: calc(-265px + 100vh);
-            box-shadow: 0px 50px 16px 0 rgba(0, 0, 0, 0.08) !important;
         }
 
         .cell-last {
@@ -350,7 +351,6 @@ body {
 
         .grid-table-row {
             font-family: Inter, sans-serif;
-            box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
             font-size: 14px;
         }
 
@@ -408,6 +408,12 @@ body {
             max-width: 120px;
         }
 
+        .cell-64 {
+            min-width: 64px;
+            width: 64px;
+            max-width: 64px;
+        }
+
         .text-truncate {
             overflow: hidden;
             text-overflow: ellipsis;
@@ -433,7 +439,6 @@ body {
     border-bottom-left-radius: 8px !important;
     border-bottom-right-radius: 8px !important;
     background: #fff;
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
     position: relative;
 }
 
@@ -477,7 +482,7 @@ body {
 }
 
 ::ng-deep td.propRowCell.cellName,
-::ng-deep .propRow .propRowCell{
+::ng-deep .propRow .propRowCell {
     align-content: center;
 }
 
@@ -492,4 +497,15 @@ body {
 ::ng-deep .p-tabview-nav li.p-highlight .p-tabview-nav-link {
     color: var(--color-primary);
     border-color: var(--color-primary);
+}
+
+::ng-deep {
+    .cm-block-code-highlight {
+        color: var(--formula-function-color, #E50299) !important;
+    }
+
+    .cm-block-code-link-highlight {
+        color: var(--formula-constant-color, #4169e2) !important;
+        text-decoration: underline;
+    }
 }

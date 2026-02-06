@@ -5,7 +5,7 @@
 
     <div class="row-container">
         <div class="policy-dropdown-container">
-            <label class="form-label" htmlFor="firstPolicy">Policy</label>
+            <label class="form-label" htmlFor="firstPolicy">{{ entityType }}</label>
             <p-dropdown
                     (onChange)="onChange()"
                     [(ngModel)]="topicId1"
@@ -15,7 +15,7 @@
                     id="firstPolicy"
                     optionLabel="name"
                     optionValue="topicId"
-                    placeholder="Select Policy"
+                    [placeholder]="entityTypePlaceholder"
             ></p-dropdown>
         </div>
 
@@ -37,7 +37,7 @@
 
     <div class="row-container">
         <div class="policy-dropdown-container">
-            <label class="form-label" htmlFor="secondPolicy">Policy</label>
+            <label class="form-label" htmlFor="secondPolicy">{{ entityType }}</label>
             <p-dropdown
                     (onChange)="onChange()"
                     [(ngModel)]="topicId2"
@@ -47,7 +47,7 @@
                     id="secondPolicy"
                     optionLabel="name"
                     optionValue="topicId"
-                    placeholder="Select Policy"
+                    [placeholder]="entityTypePlaceholder"
             ></p-dropdown>
         </div>
 

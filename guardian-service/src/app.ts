@@ -35,7 +35,7 @@ import {
     NotificationEvents
 } from '@guardian/common';
 import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
-import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, TopicId } from '@hiero-ledger/sdk';
 import { ipfsAPI } from './api/ipfs.service.js';
 import { artifactAPI } from './api/artifact.service.js';
 import { sendKeysToVault } from './helpers/send-keys-to-vault.js';

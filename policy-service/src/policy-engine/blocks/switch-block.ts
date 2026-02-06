@@ -164,20 +164,22 @@ export class SwitchBlock {
             ref.log(`check condition: ${curUser?.id}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);
 
             if (result) {
-                ref.triggerEvents(tag, curUser, event.data);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
+                await ref.triggerEvents(tag, curUser, event.data, event.actionStatus);
+                await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data, event.actionStatus);
                 tags.push(tag);
                 if (executionFlow === 'firstTrue') {
                     break;
                 }
             }
         }
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event?.user, null);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event?.user, null, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
             conditions: tags,
             documents: ExternalDocuments(docs),
         }));
 
         ref.backup();
+
+        return event.data;
     }
 }

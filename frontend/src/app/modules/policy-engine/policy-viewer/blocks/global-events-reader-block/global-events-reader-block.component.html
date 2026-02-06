@@ -1,0 +1,169 @@
+<div class="ger-card">
+    <div class="ger-header">
+        <div class="ger-title">
+            Global Events Reader
+        </div>
+    </div>
+
+    <div class="ger-toolbar">
+        <div class="ger-toolbar-left"></div>
+
+        <div class="ger-header-actions">
+            <button
+                type="button"
+                pButton
+                class="button ger-header-btn"
+                label="Add Event Topic"
+                (click)="openAddTopicModal()"
+                [disabled]="readonly || loading"
+            >
+            </button>
+
+            <button
+                type="button"
+                pButton
+                class="button ger-header-btn"
+                label="Create Topic"
+                (click)="openCreateTopicModal()"
+                [disabled]="readonly || loading"
+            >
+            </button>
+        </div>
+    </div>
+
+    <div class="ger-table">
+        <div class="ger-row ger-row-head">
+            <div class="ger-cell ger-col-topic">
+                TOPIC ID
+            </div>
+
+            <div class="ger-cell ger-col-status">
+                STATUS
+            </div>
+
+            <div class="ger-cell ger-col-update">
+                LAST UPDATE
+            </div>
+
+            <div class="ger-cell ger-col-active">
+                ACTIVE
+            </div>
+
+            <div class="ger-cell ger-col-conditions">
+                CONDITIONS
+            </div>
+
+            <div class="ger-cell ger-col-save">
+                SAVE
+            </div>
+
+            <div class="ger-cell ger-col-actions"></div>
+        </div>
+
+        <div
+            class="ger-row"
+            *ngFor="let row of rows; let i = index"
+            [class.ger-row-saving]="row.saving"
+        >
+            <div class="ger-cell ger-col-topic">
+                <div class="ger-topic-value" [title]="row.globalTopicId">
+                    {{ row.globalTopicId }}
+                </div>
+
+                <span class="ger-default-pill" *ngIf="row.isDefault">
+                    DEFAULT TOPIC
+                </span>
+            </div>
+
+            <div class="ger-cell ger-col-status">
+                <span
+                    class="ger-status-pill"
+                    [class.ger-status-processing]="row.status === 'PROCESSING'"
+                    [class.ger-status-error]="row.status === 'ERROR'"
+                >
+                    <span class="ger-status-text">{{ row.status }}</span>
+                </span>
+            </div>
+
+            <div class="ger-cell ger-col-update">
+                <div class="ger-muted">
+                    {{ formatLastUpdate(row.lastMessageCursor) }}
+                </div>
+            </div>
+
+            <div class="ger-cell ger-col-active">
+                <p-checkbox
+                    [(ngModel)]="row.active"
+                    [binary]="true"
+                    [disabled]="readonly || loading || row.saving"
+                    (onChange)="onActiveChanged(row, $event.checked)"
+                ></p-checkbox>
+            </div>
+
+            <div class="ger-cell ger-col-conditions">
+                <span
+                    class="ger-conditions-pill"
+                    [class.ger-conditions-custom]="getFiltersCount(row) > 0"
+                >
+                    {{ getFiltersLabel(row) }}
+                </span>
+
+                <button
+                    type="button"
+                    class="ger-icon-btn ger-icon-btn-edit"
+                    (click)="openFilters(row)"
+                    [disabled]="readonly || loading || row.saving"
+                    aria-label="Edit conditions"
+                    title="Edit"
+                >
+                    <i class="pi pi-pencil"></i>
+                </button>
+            </div>
+
+            <div class="ger-cell ger-col-actions">
+                <button
+                    type="button"
+                    class="ger-icon-btn ger-icon-btn-danger"
+                    (click)="removeRow(i)"
+                    [disabled]="readonly || loading || row.saving || row.isDefault"
+                    aria-label="Delete topic"
+                    title="Delete"
+                >
+                    <i class="pi pi-trash"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="ger-empty" *ngIf="!rows.length">
+            No topics configured yet.
+        </div>
+    </div>
+</div>
+
+<app-add-global-event-topic
+    [visible]="addTopicModalOpen"
+    [loading]="loading"
+    (cancel)="closeAddTopicModal()"
+    (add)="confirmAddTopicModal($event)"
+>
+</app-add-global-event-topic>
+
+<div class="progress-footer" id="block-progress-footer" *ngIf="showNextButton">
+    <div></div>
+    <div>
+        <button
+            type="button"
+            pButton
+            class="p-button"
+            label="Next"
+            (click)="onNext()"
+            [disabled]="loading"
+            form="roles-form"
+        >
+        </button>
+    </div>
+</div>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

@@ -36,3 +36,5 @@ export {
 export { EventActor } from './policy-event-type.js';
 
 export { BlockCacheType } from './block-cache.type.js';
+
+export * from './global-events.js';

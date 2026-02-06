@@ -1,0 +1,180 @@
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.content {
+    display: block;
+}
+
+.content-result {
+    min-width: 1130px;
+    height: 100%;
+}
+
+.content-result[headers='true'] {
+    padding-top: 22px;
+}
+
+.f1 {
+    width: 145px;
+    display: flex;
+    height: 50px;
+    box-sizing: border-box;
+    margin-right: 20px;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+
+.f2 {
+    width: 225px;
+    display: flex;
+    height: 50px;
+    box-sizing: border-box;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.merge-type {
+    display: flex;
+}
+
+
+.export-btn {
+    margin-top: 8px;
+    height: 40px;
+    width: 115px;
+}
+
+.merge-back>div {
+    width: 105px;
+    height: 38px;
+    margin: 6px;
+    position: relative;
+    cursor: pointer;
+}
+
+.merge-back>div span {
+    color: #707070;
+    position: absolute;
+    top: 9px;
+    left: 21px;
+    font-weight: 500;
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.merge-back>div i,
+.merge-back>div svg {
+    color: #707070;
+    position: absolute;
+    top: 3px;
+    left: -4px;
+    font-size: 30px;
+    pointer-events: none;
+}
+
+.error-message {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: #fff;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+}
+
+@media screen and (max-width: 1130px) {
+    .merge-options {
+        min-width: 670px;
+        grid-template-columns: min-content min-content auto 60px 80px;
+    }
+
+    .content-result {
+        min-width: 670px;
+    }
+
+    .f1 {
+        width: 80px;
+    }
+
+    .merge-lvl-btn {
+        width: 70px;
+    }
+
+    .export-btn {
+        width: 44px;
+        overflow: hidden;
+        padding-left: 44px;
+
+        .guardian-button-label {
+            display: none;
+        }
+    }
+}
+
+@media screen and (max-width: 830px) {
+    .merge-options {
+        min-width: 520px;
+        grid-template-columns: min-content min-content auto 52px 70px;
+    }
+
+    .content-result {
+        min-width: 520px;
+    }
+
+    .f1 {
+        width: 68px;
+        margin-right: 8px;
+    }
+
+    .merge-lvl-btn {
+        width: 70px;
+    }
+
+    .export-btn {
+        width: 44px;
+        overflow: hidden;
+        padding-left: 44px;
+
+        .guardian-button-label {
+            display: none;
+        }
+    }
+}
+
+@media screen and (max-width: 520px) {
+    .merge-options {
+        min-width: 0px;
+        overflow-y: hidden;
+        overflow-x: auto;
+    }
+
+    .content-result {
+        min-width: 0px;
+    }
+}
+
+.p-fluid {
+    position: relative;
+    padding: 8px 0
+}
+
+.compare-policy {
+    height: 100%;
+}

@@ -25,3 +25,20 @@ runtime-data/
 logs/
 **/logs/
 /.run/
+
+# Hardhat files
+**/cache
+**/artifacts
+
+# TypeChain files
+**/typechain
+**/typechain-types
+
+# Test coverage
+/coverage
+/coverage.json
+.nyc_output
+*.lcov
+
+# Contracts
+/contractAddresses.json
