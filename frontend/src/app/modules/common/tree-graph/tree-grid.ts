@@ -1,7 +1,6 @@
 import { Line } from "./tree-line";
 import { TreeNode } from "./tree-node";
 
-
 export class Grid {
     public column: number;
     public row: number;
@@ -66,14 +65,45 @@ export class Grid {
             this.rowsTemplate += ` auto `;
         }
 
+        // Build node lookup by id
+        const nodeById = new Map<string, TreeNode<any>>();
+        for (const node of this.nodes) {
+            nodeById.set(node.id, node);
+        }
+
         for (const node of this.nodes) {
             node.lines = [];
+            node.linkLine = null;
+
+            // Create child lines
             for (const child of node.children) {
                 const line = new Line(this.width);
                 line.addStart(node);
                 line.addEnd(child);
                 line.render();
                 node.lines.push(line);
+            }
+
+            // Create link line to rightmost target
+            if (node.linkIds.size > 0) {
+                let rightmostTarget: TreeNode<any> | null = null;
+                let variant: string | undefined;
+
+                for (const linkId of node.linkIds) {
+                    const targetNode = nodeById.get(linkId.to);
+                    if (targetNode && (!rightmostTarget || targetNode.column > rightmostTarget.column)) {
+                        rightmostTarget = targetNode;
+                        variant = linkId.variant;
+                    }
+                }
+
+                if (rightmostTarget) {
+                    const linkLine = new Line(this.width, variant);
+                    linkLine.addStart(node);
+                    linkLine.addEnd(rightmostTarget);
+                    linkLine.render();
+                    node.linkLine = linkLine;
+                }
             }
         }
     }

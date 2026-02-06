@@ -3797,12 +3797,36 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Draft Formula
+     *
+     * @param formulaId
+     * @param owner
+     *
+     * @returns Formula
+     */
+    public async draftFormula(formulaId: string, owner: IOwner): Promise<FormulaDTO> {
+        return await this.sendMessage(MessageAPI.DRAFT_FORMULA, { formulaId, owner });
+    }
+
+    /**
+     * Dry-Run Formula
+     *
+     * @param formulaId
+     * @param owner
+     *
+     * @returns Formula
+     */
+    public async dryRunFormula(formulaId: string, owner: IOwner): Promise<FormulaDTO> {
+        return await this.sendMessage(MessageAPI.DRY_RUN_FORMULA, { formulaId, owner });
+    }
+
+    /**
      * Publish Formula
      *
      * @param formulaId
      * @param owner
      *
-     * @returns statistic
+     * @returns Formula
      */
     public async publishFormula(formulaId: string, owner: IOwner): Promise<FormulaDTO> {
         return await this.sendMessage(MessageAPI.PUBLISH_FORMULA, { formulaId, owner });

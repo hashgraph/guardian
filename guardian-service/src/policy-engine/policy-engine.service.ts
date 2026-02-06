@@ -525,11 +525,16 @@ export class PolicyEngineService {
                 data: any,
                 syncEvents?: boolean,
                 history?: boolean,
+                timeout?: number,
+                waitRemotePolicy?: boolean
             }): Promise<IMessageResponse<any>> => {
                 try {
                     const { user, blockId, policyId, data, syncEvents, history } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+
+                    const timeout = Math.min(Math.max(msg.timeout || 5 * 60 * 1000, 10), 60 * 60 * 1000);
+                    const waitRemotePolicy = !(msg.waitRemotePolicy === false);
                     const blockData = await new GuardiansService()
                         .sendBlockMessage(PolicyEvents.SET_BLOCK_DATA, policyId, {
                             user,
@@ -537,8 +542,9 @@ export class PolicyEngineService {
                             policyId,
                             data,
                             syncEvents,
-                            history
-                        }) as any;
+                            history,
+                            waitRemotePolicy
+                        }, timeout) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
@@ -554,11 +560,16 @@ export class PolicyEngineService {
                 data: any,
                 syncEvents?: boolean,
                 history?: boolean,
+                timeout?: number,
+                waitRemotePolicy?: boolean
             }): Promise<IMessageResponse<any>> => {
                 try {
                     const { user, tag, policyId, data, syncEvents, history } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+
+                    const timeout = Math.min(Math.max(msg.timeout || 5 * 60 * 1000, 10), 60 * 60 * 1000);
+                    const waitRemotePolicy = !(msg.waitRemotePolicy === false);
                     const blockData = await new GuardiansService()
                         .sendBlockMessage(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, {
                             user,
@@ -567,7 +578,8 @@ export class PolicyEngineService {
                             data,
                             syncEvents,
                             history,
-                        }) as any
+                            waitRemotePolicy
+                        }, timeout) as any
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);

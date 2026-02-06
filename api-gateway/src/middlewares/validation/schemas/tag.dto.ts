@@ -114,6 +114,14 @@ export class TagDTO {
     document?: any;
 
     @ApiProperty({
+        type: 'string',
+        required: false,
+        description: 'Tag schema database ID (for tags created with a tag schema)',
+        example: Examples.DB_ID
+    })
+    tagSchemaId?: string;
+
+    @ApiProperty({
         type: 'boolean',
         required: false,
         example: false,

@@ -1642,10 +1642,8 @@ export class SchemaConfigComponent implements OnInit {
         this.dialog.open(SchemaTreeComponent, {
             showHeader: false,
             header: 'Tree',
-            width: '650px',
             styleClass: 'guardian-dialog',
             data: element,
-            // autoFocus: false
         })
     }
 

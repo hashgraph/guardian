@@ -337,8 +337,12 @@ export class PolicyEngine extends NatsService {
         data: any,
         syncEvents = false,
         history = false,
+        timeout?: number,
+        waitRemotePolicy?: boolean
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data, syncEvents, history });
+        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, {
+            user, blockId, policyId, data, syncEvents, history, timeout, waitRemotePolicy
+        });
     }
 
     /**
@@ -355,8 +359,12 @@ export class PolicyEngine extends NatsService {
         data: any,
         syncEvents = false,
         history = false,
+        timeout?: number,
+        waitRemotePolicy?: boolean
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data, syncEvents, history });
+        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, {
+            user, tag, policyId, data, syncEvents, history, timeout, waitRemotePolicy
+        });
     }
 
     /**

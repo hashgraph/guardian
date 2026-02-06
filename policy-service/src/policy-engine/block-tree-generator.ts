@@ -1,4 +1,4 @@
-import { DataBaseHelper, JwtServicesValidator, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
+import { DataBaseHelper, IAuthUser, JwtServicesValidator, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
 import { GenerateUUIDv4, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
 import { headers } from 'nats';
 import { Inject } from '../helpers/decorators/inject.js';
@@ -188,74 +188,93 @@ export class BlockTreeGenerator extends NatsService {
             return await PolicyComponentsUtils.blockGetData(block, userFull, params);
         });
 
-        this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA, policyId, async (msg: any) => {
-            const { user, blockId, data, syncEvents, history } = msg;
-            const userFull = await this.getUser(policyInstance, user);
-            const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
+        this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA, policyId,
+            async (msg: {
+                user: IAuthUser,
+                blockId: string,
+                policyId: string,
+                data: any,
+                syncEvents?: boolean,
+                history?: boolean,
+                waitRemotePolicy?: boolean
+            }) => {
+                const { user, blockId, data, syncEvents, history, waitRemotePolicy } = msg;
 
-            // <-- Available
-            const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
-            if (error) {
-                return error;
-            }
-            // Available -->
+                const userFull = await this.getUser(policyInstance, user);
+                const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
-            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents, history);
-
-            const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
-
-            actionstep.finish();
-
-            if (syncEvents) {
-                const results = actionstep.getResults();
-                if (res instanceof MessageError) {
-                    return res;
-                } else {
-                    return new MessageResponse({
-                        response: res.body,
-                        result: results.at(-1),
-                        steps: history ? results : [],
-                    }, res.code);
+                // <-- Available
+                const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
+                if (error) {
+                    return error;
                 }
-            } else {
-                return res;
-            }
-        });
+                // Available -->
 
-        this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, async (msg: any) => {
-            const { user, tag, data, syncEvents, history } = msg;
-            const userFull = await this.getUser(policyInstance, user);
-            const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
+                const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents, history);
 
-            // <-- Available
-            const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
-            if (error) {
-                return error;
-            }
-            // Available -->
+                const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep, waitRemotePolicy);
 
-            const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents, history);
+                actionstep.finish();
 
-            const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep);
-
-            actionstep.finish();
-
-            if (syncEvents) {
-                const results = actionstep.getResults();
-
-                if (res instanceof MessageError) {
-                    return res;
+                if (syncEvents) {
+                    const results = actionstep.getResults();
+                    if (res instanceof MessageError) {
+                        return res;
+                    } else {
+                        return new MessageResponse({
+                            response: res.body,
+                            result: results.at(-1),
+                            steps: history ? results : [],
+                        }, res.code);
+                    }
                 } else {
-                    return new MessageResponse({
-                        response: res.body,
-                        result: results.at(-1),
-                        steps: history ? results : [],
-                    }, res.code);
+                    return res;
                 }
-            } else {
-                return res;
-            }
-        });
+            });
+
+        this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId,
+            async (msg: {
+                user: IAuthUser,
+                tag: string,
+                policyId: string,
+                data: any,
+                syncEvents?: boolean,
+                history?: boolean,
+                waitRemotePolicy?: boolean
+            }) => {
+                const { user, tag, data, syncEvents, history, waitRemotePolicy } = msg;
+                const userFull = await this.getUser(policyInstance, user);
+                const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
+
+                // <-- Available
+                const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
+                if (error) {
+                    return error;
+                }
+                // Available -->
+
+                const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents, history);
+
+                const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep, waitRemotePolicy);
+
+                actionstep.finish();
+
+                if (syncEvents) {
+                    const results = actionstep.getResults();
+
+                    if (res instanceof MessageError) {
+                        return res;
+                    } else {
+                        return new MessageResponse({
+                            response: res.body,
+                            result: results.at(-1),
+                            steps: history ? results : [],
+                        }, res.code);
+                    }
+                } else {
+                    return res;
+                }
+            });
 
         this.getPolicyMessages(PolicyEvents.SELECT_POLICY_GROUP, policyId, async (msg: any) => {
             const { user, uuid } = msg;
