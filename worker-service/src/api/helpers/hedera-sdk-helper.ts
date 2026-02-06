@@ -48,12 +48,12 @@ import {
 } from '@hiero-ledger/sdk';
 import { HederaUtils, timeout } from './utils.js';
 import axios, { AxiosResponse } from 'axios';
+import { Environment } from './environment.js';
 import { ContractParamType, FireblocksCreds, GenerateUUIDv4, HederaResponseCode, ISignOptions, SignType } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'process';
 import { FireblocksHelper } from './fireblocks-helper.js';
-import { Environment } from '@guardian/common';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -107,11 +107,6 @@ export class NetworkOptions {
      * Hedera mirror nodes
      */
     public mirrorNodes: string[] = [];
-
-    /**
-     * Hedera mirror nodes base api
-     */
-    public mirrorNodesBaseApi: string = '/api/v1';
 }
 
 /**
@@ -163,24 +158,16 @@ export class HederaSDKHelper {
      */
     private readonly network: string;
 
-    /**
-     * Mainnet API
-     * @private
-     */
-    private static readonly HEDERA_MAINNET_API: string = 'https://mainnet-public.mirrornode.hedera.com/api/v1';
-
     constructor(
         operatorId: string | AccountId | null,
         operatorKey: string | PrivateKey | null,
         dryRun: string = null,
         networkOptions: NetworkOptions
     ) {
-        Environment.setMainnetApiUrl(HederaSDKHelper.HEDERA_MAINNET_API);
         Environment.setLocalNodeAddress(networkOptions.localNodeAddress);
         Environment.setLocalNodeProtocol(networkOptions.localNodeProtocol);
         Environment.setNodes(networkOptions.nodes);
         Environment.setMirrorNodes(networkOptions.mirrorNodes);
-        Environment.setMirrorNodesBaseApi(networkOptions.mirrorNodesBaseApi);
         Environment.setNetwork(networkOptions.network);
         this.dryRun = dryRun || null;
         this.client = Environment.createClient();
@@ -196,12 +183,10 @@ export class HederaSDKHelper {
      * @private
      */
     public static setNetwork(networkOptions: NetworkOptions) {
-        Environment.setMainnetApiUrl(HederaSDKHelper.HEDERA_MAINNET_API);
         Environment.setLocalNodeAddress(networkOptions.localNodeAddress);
         Environment.setLocalNodeProtocol(networkOptions.localNodeProtocol);
         Environment.setNodes(networkOptions.nodes);
         Environment.setMirrorNodes(networkOptions.mirrorNodes);
-        Environment.setMirrorNodesBaseApi(networkOptions.mirrorNodesBaseApi);
         Environment.setNetwork(networkOptions.network);
         return HederaSDKHelper;
     }
@@ -1097,7 +1082,7 @@ export class HederaSDKHelper {
         startTimestamp?: string
     ): Promise<any[]> {
         let goNext = true;
-        let url = `${Environment.HEDERA_TOPIC_API}/${topicId}/messages`;
+        let url = `${Environment.HEDERA_TOPIC_API}${topicId}/messages`;
         if (startTimestamp) {
             url += `?timestamp=gt:${startTimestamp}`;
         }
@@ -1170,7 +1155,7 @@ export class HederaSDKHelper {
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get topic message request (by index) timeout exceeded')
     public static async getTopicMessageByIndex(topicId: string, index: number): Promise<any> {
-        const url = `${Environment.HEDERA_TOPIC_API}/${topicId}/messages/${index}`;
+        const url = `${Environment.HEDERA_TOPIC_API}${topicId}/messages/${index}`;
         const res = await axios.get(url, { responseType: 'json' });
         if (!res || !res.data || !res.data.message) {
             throw new Error(`Invalid message. TopicId: '${topicId}', index: '${index}'`);
@@ -1790,7 +1775,7 @@ export class HederaSDKHelper {
     public static async getContractInfo(
         contractId: string | ContractId,
     ): Promise<{ memo: string }> {
-        const url = `${Environment.HEDERA_CONTRACT_API}/${contractId}`;
+        const url = `${Environment.HEDERA_CONTRACT_API}${contractId}`;
         const res = await axios.get(url, {
             responseType: 'json',
         });
@@ -1827,7 +1812,7 @@ export class HederaSDKHelper {
             params,
             responseType: 'json',
         };
-        const url = `${Environment.HEDERA_CONTRACT_API}/${contractId}/results/logs`;
+        const url = `${Environment.HEDERA_CONTRACT_API}${contractId}/results/logs`;
         return await HederaSDKHelper.hederaRestApi(url, p, 'logs');
     }
 
@@ -1849,7 +1834,7 @@ export class HederaSDKHelper {
             params,
             responseType: 'json',
         };
-        const url = `${Environment.HEDERA_ACCOUNT_API}/${client.operatorAccountId}/nfts`;
+        const url = `${Environment.HEDERA_ACCOUNT_API}${client.operatorAccountId}/nfts`;
         return await HederaSDKHelper.hederaRestApi(url, p, 'nfts');
     }
 
@@ -1870,7 +1855,7 @@ export class HederaSDKHelper {
             params,
             responseType: 'json',
         };
-        const url = `${Environment.HEDERA_ACCOUNT_API}/${hederaAccountId}/nfts`;
+        const url = `${Environment.HEDERA_ACCOUNT_API}${hederaAccountId}/nfts`;
         return await HederaSDKHelper.hederaRestApi(url, p, 'nfts');
     }
 
@@ -1998,7 +1983,7 @@ export class HederaSDKHelper {
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get contract info request timeout exceeded')
     public async getContractInfoRest(contractId: string): Promise<any> {
         const res = await axios.get(
-            `${Environment.HEDERA_CONTRACT_API}/${contractId}`,
+            `${Environment.HEDERA_CONTRACT_API}${contractId}`,
             { responseType: 'json' }
         );
         if (!res || !res.data) {
@@ -2071,7 +2056,7 @@ export class HederaSDKHelper {
         }
 
         const error = `Invalid account '${accountId}'`;
-        const responses = await HederaSDKHelper.loadData(`${Environment.HEDERA_ACCOUNT_API}/${accountId}/tokens`, '', [], error);
+        const responses = await HederaSDKHelper.loadData(`${Environment.HEDERA_ACCOUNT_API}${accountId}/tokens`, '', [], error);
         const result: { [tokenId: string]: any } = {};
         for (const response of responses) {
             const tokens: any[] = response.tokens;
@@ -2103,7 +2088,7 @@ export class HederaSDKHelper {
         }
 
         const res = await axios.get(
-            `${Environment.HEDERA_ACCOUNT_API}/${accountId}`,
+            `${Environment.HEDERA_ACCOUNT_API}${accountId}`,
             { responseType: 'json' }
         );
         if (!res || !res.data) {
@@ -2138,7 +2123,7 @@ export class HederaSDKHelper {
                 responseType: 'json'
             }
         } else {
-            url = `${Environment.HEDERA_TOPIC_API}/${topicId}/messages`;
+            url = `${Environment.HEDERA_TOPIC_API}${topicId}/messages`;
             if (startTimestamp) {
                 requestParams = {
                     params: {
@@ -2207,7 +2192,7 @@ export class HederaSDKHelper {
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Resolve alias request timeout exceeded')
     public static async resolveAccountAlias(accountId: string): Promise<{ accountId: string }> {
         const res = await axios.get(
-            `${Environment.HEDERA_ACCOUNT_API}/${accountId}`,
+            `${Environment.HEDERA_ACCOUNT_API}${accountId}`,
             { responseType: 'json' }
         );
 

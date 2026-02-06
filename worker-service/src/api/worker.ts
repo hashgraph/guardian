@@ -317,8 +317,7 @@ export class Worker extends NatsService {
             localNodeAddress: task.data.localNodeAddress,
             localNodeProtocol: task.data.localNodeProtocol,
             nodes: task.data.nodes,
-            mirrorNodes: task.data.mirrorNodes,
-            mirrorNodesBaseApi: task.data.mirrorNodesBaseApi
+            mirrorNodes: task.data.mirrorNodes
         }
         let client: HederaSDKHelper;
         try {

@@ -110,7 +110,7 @@ export class Listener {
 
     public async getMessages(topicId: string, lastNumber: number): Promise<TopicInfo | null> {
         try {
-            const url = `${Environment.HEDERA_TOPIC_API}/${topicId}/messages`;
+            const url = `${Environment.HEDERA_TOPIC_API}${topicId}/messages`;
             const option: any = {
                 params: {
                     limit: Listener.REST_API_MAX_LIMIT
