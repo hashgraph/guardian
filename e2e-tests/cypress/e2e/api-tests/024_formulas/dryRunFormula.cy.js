@@ -3,7 +3,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
+context("Put formula in Dry Run status and get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let firstFormula, documentId;
@@ -24,14 +24,6 @@ context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
             failOnStatusCode,
         });
 
-    const publishFormula = (authorization, formulaId, failOnStatusCode = true) =>
-        cy.request({
-            method: METHOD.PUT,
-            url: `${API.ApiServer}${API.Formulas}${formulaId}/${API.Publish}`,
-            headers: authorization ? { authorization } : {},
-            failOnStatusCode,
-        });
-
     const postFormulaData = (
         authorization,
         { documentId, policyId, schemaId },
@@ -45,12 +37,29 @@ context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
             failOnStatusCode,
         });
 
+    const dryRunFormula = (authorization, formulaId, failOnStatusCode = true) =>
+        cy.request({
+            method: METHOD.PUT,
+            url: `${API.ApiServer}${API.Formulas}${formulaId}/${API.DryRun}`,
+            headers: authorization ? { authorization } : {},
+            failOnStatusCode,
+        });
+
+    const draftFormula = (authorization, formulaId, failOnStatusCode = true) =>
+        cy.request({
+            method: METHOD.PUT,
+            url: `${API.ApiServer}${API.Formulas}${formulaId}/${API.Draft}`,
+            headers: authorization ? { authorization } : {},
+            failOnStatusCode,
+        });
+
+
     before("Get policy, document and schema id", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getFormulas(authorization).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 firstFormula = response.body.at(0);
-                publishFormula(authorization, firstFormula.id).then((response) => {
+                dryRunFormula(authorization, firstFormula.id).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     getPolicyApplications(authorization, firstFormula.policyId).then((appsRes) => {
                         expect(appsRes.status).eql(STATUS_CODE.OK);
@@ -87,50 +96,29 @@ context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
                 expect(response.body.formulas.at(0).policyId).eql(firstFormula.policyId);
                 expect(response.body.formulas.at(0).policyInstanceTopicId).eql(firstFormula.policyInstanceTopicId);
                 expect(response.body.formulas.at(0).policyTopicId).eql(firstFormula.policyTopicId);
-                expect(response.body.formulas.at(0).status).eql("PUBLISHED");
+                expect(response.body.formulas.at(0).status).eql("DRY_RUN");
             });
         });
     });
 
-    it("Get formula data without auth - Negative", () => {
-        postFormulaData(
-            undefined,
-            {
-                documentId,
-                policyId: firstFormula.policyId,
-                schemaId: firstFormula.config.formulas.at(0).link.entityId,
-            },
-            false
-        ).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        });
-    });
 
-    it("Get formula data with incorrect auth - Negative", () => {
-        postFormulaData(
-            "bearer 11111111111111111111@#$",
-            {
-                documentId,
-                policyId: firstFormula.policyId,
-                schemaId: firstFormula.config.formulas.at(0).link.entityId,
-            },
-            false
-        ).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        });
-    });
-
-    it("Get formula data with empty auth - Negative", () => {
-        postFormulaData(
-            "",
-            {
-                documentId,
-                policyId: firstFormula.policyId,
-                schemaId: firstFormula.config.formulas.at(0).link.entityId,
-            },
-            false
-        ).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+    it("Draft formula and check that formula isn't displayed", () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            draftFormula(authorization, firstFormula.id).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                postFormulaData(
+                    authorization,
+                    {
+                        documentId,
+                        policyId: firstFormula.policyId,
+                        schemaId: firstFormula.config.formulas.at(0).link.entityId,
+                    },
+                    true
+                ).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.SUCCESS);
+                    expect(response.body).eql(null);
+                });
+            })
         });
     });
 });
