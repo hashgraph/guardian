@@ -33,7 +33,7 @@
         "express": "^5.1.0",
         "geotiff": "^2.1.4-beta.0",
         "js-base64": "^3.6.1",
-        "jsonld-signatures": "11.5.0",
+        "jsonld-signatures": "11.6.0",
         "jszip": "^3.7.1",
         "lodash.get": "^4.4.2",
         "lodash.set": "^4.3.2",
