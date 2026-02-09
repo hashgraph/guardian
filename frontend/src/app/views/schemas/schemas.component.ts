@@ -1645,7 +1645,6 @@ export class SchemaConfigComponent implements OnInit {
             width: '80%',
             styleClass: 'guardian-dialog',
             data: element,
-            // autoFocus: false
         })
     }
 
