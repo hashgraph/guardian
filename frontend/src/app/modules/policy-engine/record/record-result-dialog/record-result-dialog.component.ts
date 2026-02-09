@@ -72,7 +72,7 @@ export class RecordResultDialog {
         const title = `${item.type.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             data: {
                 id: document.id,

@@ -161,7 +161,7 @@ export class UploadDocumentBlockComponent implements OnInit {
             });
         } else {
             this.dialogRef = this.dialog.open(this.dialogTemplate, {
-                width: '850px',
+                width: '80%',
                 modal: true,
                 closable: false,
                 data: this

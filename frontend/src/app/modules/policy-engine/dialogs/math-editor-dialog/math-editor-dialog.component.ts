@@ -741,7 +741,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public addInputDocument() {
         const dialogRef = this.dialogService.open(AddDocumentDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             focusOnClose: false,
             data: {
@@ -761,7 +761,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         const schemas = this.schemas.filter((s) => s !== this.inputSchema && s.entity !== 'NONE');
         const dialogRef = this.dialogService.open(AddDocumentDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             focusOnClose: false,
             data: {
@@ -781,7 +781,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         const schema = this.schemas.find((s) => s.iri === item.schema);
         const dialogRef = this.dialogService.open(AddDocumentDialog, {
             showHeader: false,
-            width: '800px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             focusOnClose: false,
             data: {

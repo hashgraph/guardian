@@ -205,7 +205,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         const part3 = (userRole: UserRole) => {
             this.dialogService.open(RegisterDialogComponent, {
                 header: 'Sign Up Request',
-                width: '640px',
+                width: '80%',
                 modal: true,
             }).onClose.subscribe((userData) => {
                 if (userData) {
@@ -217,7 +217,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         const part2 = () => {
             this.dialogService.open(AccountTypeSelectorDialogComponent, {
                 header: 'Select Account Type',
-                width: '640px',
+                width: '80%',
                 modal: true,
             }).onClose.subscribe((userRole) => {
                 if (userRole) {
@@ -285,7 +285,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
     forgotPasswordInit() {
         this.dialogService.open(ForgotPasswordDialogComponent, {
             header: 'Request Password Reset',
-            width: '640px',
+            width: '80%',
             modal: true,
             data: {
                 login: this.loginControl.value,
@@ -300,7 +300,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
     changePassword(login: string) {
         this.dialogService.open(ChangePasswordComponent, {
             header: 'Please change user password',
-            width: '640px',
+            width: '80%',
             modal: true,
             data: {
                 message: 'Please update your password to comply with hardened Guardian security protocols.',
@@ -338,7 +338,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                 this.vcSubmitDialogRef = this.dialog.open(
                     MeecoVCSubmitDialogComponent,
                     {
-                        width: '750px',
+                        width: '80%',
                         modal: true,
                         closable: false,
                         data: {

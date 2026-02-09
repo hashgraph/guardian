@@ -97,7 +97,7 @@ export class CustomLogicConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(TestCodeDialog, {
             showHeader: false,
             header: 'Code',
-            width: '1200px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             data: {
                 block: this.item,

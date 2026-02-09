@@ -627,7 +627,7 @@ export class MigrateData {
         this._dialogService.open(JsonEditorDialogComponent, {
             closable: true,
             modal: true,
-            width: '70vw',
+            width: '80%',
             styleClass: 'custom-json-dialog',
             header: 'View document',
             data: {
@@ -741,7 +741,7 @@ export class MigrateData {
             .open(JsonEditorDialogComponent, {
                 closable: true,
                 modal: true,
-                width: '70vw',
+                width: '80%',
                 styleClass: 'custom-json-dialog',
                 header: 'Edit document',
                 data: {

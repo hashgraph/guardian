@@ -278,7 +278,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         const document = row[field.name];
         if (field._block) {
             const dialogRef = this.dialog.open(DialogBlock, {
-                width: '850px',
+                width: '80%',
                 data: {
                     data: data,
                     document: document,
@@ -296,7 +296,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         } else {
             const dialogRef = this.dialogService.open(VCFullscreenDialog, {
                 showHeader: false,
-                width: '1000px',
+                width: '80%',
                 styleClass: 'guardian-dialog',
                 maskStyleClass: 'guardian-fullscreen-dialog',
                 data: {
@@ -455,7 +455,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             data: {
                 id: row.id,
@@ -490,7 +490,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
         const dialogRef = this.dialog.open(ViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             data: {
                 title: field.title,
