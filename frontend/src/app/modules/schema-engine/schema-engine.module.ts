@@ -52,6 +52,7 @@ import {TableFieldComponent} from './table-field/table-field.component';
 import {TableViewerComponent} from "./table-viewer/table-viewer.component";
 import { SchemaDeleteWarningDialogComponent } from './schema-delete-warning-dialog/schema-delete-warning-dialog.component';
 import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delete-dialog.component';
+import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-form-navigation.component';
 
 @NgModule({
     declarations: [
@@ -82,7 +83,8 @@ import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delet
         DateTimeComponent,
         SchemaFormRootComponent,
         TableFieldComponent,
-        TableViewerComponent
+        TableViewerComponent,
+        SchemaFormNavigationComponent
     ],
     imports: [
         CommonModule,
@@ -121,7 +123,8 @@ import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delet
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
         SchemaFormDialog,
-        SchemaFormRootComponent
+        SchemaFormRootComponent,
+        SchemaFormNavigationComponent
     ],
     providers: [
         DialogService
