@@ -1469,6 +1469,30 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Get Backup Controller
+     * @param policyId
+     */
+    public static GetBackupService(policyId: string) {
+        return PolicyComponentsUtils.BackupControllers.get(policyId);
+    }
+
+    /**
+     * Get Restore Controller
+     * @param policyId
+     */
+    public static GetRestoreService(policyId: string) {
+        return PolicyComponentsUtils.RestoreControllers.get(policyId);
+    }
+
+    /**
+     * Get Actions Controller
+     * @param policyId
+     */
+    public static GetActionsService(policyId: string) {
+        return PolicyComponentsUtils.ActionsControllers.get(policyId);
+    }
+
+    /**
      * Unregister Backup Controller
      * @param policyId
      */

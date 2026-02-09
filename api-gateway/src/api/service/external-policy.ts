@@ -1,5 +1,5 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { LocationType, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyRequestDTO, PolicyRequestCountDTO } from '#middlewares';
@@ -351,6 +351,84 @@ export class ExternalPoliciesApi {
             return await guardians.rejectExternalPolicy(messageId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Disconnect
+     */
+    @Put('/:messageId/disconnect')
+    @Auth(Permissions.POLICIES_POLICY_READ)
+    @ApiOperation({
+        summary: '',
+        description: '',
+    })
+    @ApiParam({
+        name: 'messageId',
+        type: String,
+        description: 'Policy message id',
+        required: true,
+        example: Examples.MESSAGE_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async disconnectPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string
+    ): Promise<boolean> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.disconnectPolicy(messageId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Disconnect
+     */
+    @Delete('/:messageId')
+    @Auth(Permissions.POLICIES_EXTERNAL_POLICY_UPDATE)
+    @ApiOperation({
+        summary: '',
+        description: '',
+    })
+    @ApiParam({
+        name: 'messageId',
+        type: String,
+        description: 'Policy message id',
+        required: true,
+        example: Examples.MESSAGE_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async deletePolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string
+    ): Promise<boolean> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.deletePolicy(messageId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -747,45 +825,6 @@ export class ExternalPoliciesApi {
             return res.send(result);
         } catch (error) {
             await InternalException(error, this.logger);
-        }
-    }
-
-    /**
-     * Disconnect
-     */
-    @Put('/:messageId/disconnect')
-    @Auth(Permissions.POLICIES_POLICY_READ)
-    @ApiOperation({
-        summary: '',
-        description: '',
-    })
-    @ApiParam({
-        name: 'messageId',
-        type: String,
-        description: 'Policy message id',
-        required: true,
-        example: Examples.MESSAGE_ID
-    })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        isArray: true,
-        type: Boolean
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
-    })
-    @ApiExtraModels(InternalServerErrorDTO)
-    @HttpCode(HttpStatus.OK)
-    async disconnectPolicy(
-        @AuthUser() user: IAuthUser,
-        @Param('messageId') messageId: string
-    ): Promise<boolean> {
-        try {
-            const guardians = new Guardians();
-            return await guardians.disconnectPolicy(messageId, new EntityOwner(user));
-        } catch (error) {
-            await InternalException(error, this.logger, user.id);
         }
     }
 }

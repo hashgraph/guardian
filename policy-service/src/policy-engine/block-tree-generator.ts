@@ -633,6 +633,18 @@ export class BlockTreeGenerator extends NatsService {
 
     public async destroyModel(policyId: string, logger: PinoLogger, policyOwnerId: string | null): Promise<void> {
         try {
+            const backupService = PolicyComponentsUtils.GetBackupService(policyId);
+            const restoreService = PolicyComponentsUtils.GetRestoreService(policyId);
+            const actionsService = PolicyComponentsUtils.GetActionsService(policyId);
+            if (backupService) {
+                await backupService.destroy();
+            }
+            if (restoreService) {
+                await restoreService.destroy();
+            }
+            if (actionsService) {
+                await actionsService.destroy();
+            }
             await RecordUtils.DestroyRecording(policyId);
             await RecordUtils.DestroyRunning(policyId);
             await PolicyComponentsUtils.UnregisterBlocks(policyId);

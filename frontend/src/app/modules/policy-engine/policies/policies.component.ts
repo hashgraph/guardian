@@ -1828,7 +1828,7 @@ export class PoliciesComponent implements OnInit {
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: any | null) => {
             if (result) {
-                if (result.status === 'VIEW') {
+                if (result.status !== 'NEW') {
                     this.loadAllPolicy();
                 } else {
                     this.router.navigate(['/external-policies']);
@@ -1984,34 +1984,38 @@ export class PoliciesComponent implements OnInit {
     }
 
     public disconnect(policy: any) {
-        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-            showHeader: false,
-            width: '640px',
-            styleClass: 'guardian-dialog',
-            data: {
-                header: 'Delete tab',
-                text: 'Are you sure want to disconnect this policy?',
-                buttons: [{
-                    name: 'Close',
-                    class: 'secondary'
-                }, {
-                    name: 'Disconnect',
-                    class: 'delete'
-                }]
-            },
-        });
-        dialogRef.onClose.subscribe((result: string) => {
-            if (result === 'Disconnect') {
-                this.loading = true;
-                this.externalPoliciesService
-                    .disconnect(policy.messageId)
-                    .pipe(takeUntil(this._destroy$))
-                    .subscribe((result) => {
-                        this.loadAllPolicy();
-                    }, (e) => {
-                        this.loading = false;
-                    });
-            }
-        });
+        if (policy.locationType === LocationType.LOCAL) {
+            return
+        } else {
+            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'guardian-dialog',
+                data: {
+                    header: 'Delete tab',
+                    text: 'Are you sure want to disconnect this policy?',
+                    buttons: [{
+                        name: 'Close',
+                        class: 'secondary'
+                    }, {
+                        name: 'Disconnect',
+                        class: 'delete'
+                    }]
+                },
+            });
+            dialogRef.onClose.subscribe((result: string) => {
+                if (result === 'Disconnect') {
+                    this.loading = true;
+                    this.externalPoliciesService
+                        .disconnect(policy.messageId)
+                        .pipe(takeUntil(this._destroy$))
+                        .subscribe((result) => {
+                            this.loadAllPolicy();
+                        }, (e) => {
+                            this.loading = false;
+                        });
+                }
+            });
+        }
     }
 }

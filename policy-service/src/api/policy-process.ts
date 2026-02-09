@@ -158,8 +158,8 @@ Promise.all([
     const synchronizationService = new SynchronizationService(policyConfig, logger, policyOwnerId);
     synchronizationService.start();
 
-    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, async (payload: {policyOwnerId: string | null}) => {
-        await generator.destroyModel(policyId, logger, payload.policyOwnerId)
+    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, async (payload: { policyOwnerId: string | null }) => {
+        await generator.destroyModel(policyId, logger, payload.policyOwnerId);
         synchronizationService.stop();
         process.exit(0);
     });

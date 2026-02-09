@@ -54,6 +54,12 @@ export class PolicyActionsService {
         await this.topicListener.subscribe(this.loadTask.bind(this));
     }
 
+    public async destroy(): Promise<void> {
+        if (this.topicListener) {
+            await this.topicListener.close();
+        }
+    }
+
     public async selectGroup(
         user: PolicyUser,
         uuid: string

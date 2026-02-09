@@ -117,4 +117,8 @@ export class ExternalPoliciesService {
     public disconnect(messageId: string): Observable<any> {
         return this.http.put<any>(`${this.url}/${messageId}/disconnect`, null);
     }
+
+    public delete(messageId: string): Observable<any> {
+        return this.http.delete<any>(`${this.url}/${messageId}`);
+    }
 }

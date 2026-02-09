@@ -82,24 +82,34 @@
                                                 type="topics">{{ row.topicId }}</hedera-explorer>
                                         </span>
                                     </ng-container>
+                                    <ng-container *ngSwitchCase="'userCount'">
+                                        <button 
+                                            (click)="onUsers()" 
+                                            class="guardian-button guardian-button-secondary users-btn">
+                                            <div class="guardian-button-icon">
+                                                <svg-icon class="icon-btn svg-icon"
+                                                    src="/assets/images/icons/group.svg"
+                                                    svgClass="icon-color-primary">
+                                                </svg-icon>
+                                            </div>
+                                            <div class="guardian-button-label">{{row.userCount}}</div>
+                                        </button>
+                                    </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
                                         <div *ngIf="row.fullStatus === 'NEW'" class="option-btns">
-                                            <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>
-                                            <button class="guardian-button reject-btn" (click)="onReject(row)">Reject</button>
+                                            <button 
+                                                class="guardian-button approve-btn" 
+                                                (click)="onApprove(row)">Approve</button>
+                                            <button 
+                                                class="guardian-button reject-btn" 
+                                                (click)="onReject(row)">Reject</button>
+                                        </div>
+                                        <div *ngIf="row.fullStatus === 'APPROVED'" class="option-btns">
+                                            <button 
+                                                class="guardian-button guardian-button-delete disconnect-btn" 
+                                                (click)="onDisconnect(row)">Disconnect</button>
                                         </div>
                                     </ng-container>
-                                    <!-- <ng-container *ngSwitchCase="'delete'">
-                                        <div
-                                            [attr.disabled]="row.status === 'PUBLISHED'"
-                                            class="guardian-icon-button big"
-                                            (click)="onDelete(row)">
-                                            <svg-icon
-                                                class="icon-btn"
-                                                src="/assets/images/icons/delete.svg"
-                                                [svgClass]="row.status === 'PUBLISHED' ? 'icon-color-disabled' : 'icon-color-delete'">
-                                            </svg-icon>
-                                        </div>
-                                    </ng-container> -->
                                     <ng-container *ngSwitchDefault>
                                         <span class="text-truncate">{{row[column.id]}}</span>
                                     </ng-container>

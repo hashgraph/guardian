@@ -1,4 +1,4 @@
-import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus } from '@guardian/interfaces';
+import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus, ExternalPolicyType } from '@guardian/interfaces';
 import { TopicId } from '@hiero-ledger/sdk';
 import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
@@ -1284,11 +1284,19 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Delete ExternalPolicy
+     * Remove ExternalPolicy
      * @param externalPolicy
      */
     public static async removeExternalPolicy(externalPolicy: ExternalPolicy): Promise<void> {
         return await new DataBaseHelper(ExternalPolicy).remove(externalPolicy);
+    }
+
+    /**
+     * Delete ExternalPolicy
+     * @param filters
+     */
+    public static async deleteExternalPolicy(filters: FilterObject<ExternalPolicy>): Promise<number> {
+        return await new DataBaseHelper(ExternalPolicy).delete(filters);
     }
 
     /**
@@ -1326,7 +1334,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 owner: { $addToSet: '$owner' },
                 creator: { $push: '$creator' },
                 status: { $push: '$status' },
-                username: { $push: '$username' }
+                type: { $first: '$type', },
+                username: { $push: '$username' },
+                types: { $push: { username: '$username', type: '$type' } }
             }
         });
         pipeline.push({
@@ -1343,6 +1353,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 creator: true,
                 status: true,
                 username: true,
+                users: true,
+                type: true,
+                types: true,
                 fullStatus: {
                     $switch: {
                         branches: [
@@ -2331,6 +2344,19 @@ export class DatabaseServer extends AbstractDatabaseServer {
             return await (new DataBaseHelper(AssignEntity)).find({ type, did });
         } else {
             return await (new DataBaseHelper(AssignEntity)).find({ did });
+        }
+    }
+
+    /**
+     * Get assigned users
+     * @param did
+     * @param type
+     */
+    public static async getAssignedUsers(entityId: string, type?: AssignedEntityType): Promise<AssignEntity[]> {
+        if (type) {
+            return await (new DataBaseHelper(AssignEntity)).find({ entityId, type });
+        } else {
+            return await (new DataBaseHelper(AssignEntity)).find({ entityId });
         }
     }
 
@@ -4081,11 +4107,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public static async removeAssignEntity(
         type: AssignedEntityType,
         entityId: string,
-        did: string,
+        did?: string,
         owner?: string
     ): Promise<boolean> {
-        const filters: { type: AssignedEntityType, entityId: string, did: string, owner?: string } = { type, entityId, did };
-
+        const filters: {
+            type: AssignedEntityType,
+            entityId: string,
+            did?: string,
+            owner?: string
+        } = { type, entityId };
+        if (did) {
+            filters.did = did;
+        }
         if (owner) {
             filters.owner = owner;
         }

@@ -6,6 +6,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
+import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 interface IColumn {
     id: string;
@@ -61,7 +62,7 @@ export class ExternalPolicyComponent implements OnInit {
             id: 'version',
             title: 'Version',
             type: 'text',
-            size: '135',
+            size: '100',
             tooltip: false
         }, {
             id: 'topicId',
@@ -76,26 +77,18 @@ export class ExternalPolicyComponent implements OnInit {
             size: '210',
             tooltip: false
         }, {
-            id: 'username',
-            title: 'Username',
+            id: 'userCount',
+            title: 'Users',
             type: 'text',
-            size: '180',
+            size: '100',
             tooltip: false
         }, {
             id: 'status',
             title: 'Status',
             type: 'text',
-            size: '180',
+            size: '135',
             tooltip: false
-        },
-            // , {
-            //     id: 'delete',
-            //     title: '',
-            //     type: 'text',
-            //     size: '64',
-            //     tooltip: false
-            // }
-        ];
+        }];
         this.columns = [...this._defaultColumns];
     }
 
@@ -130,7 +123,7 @@ export class ExternalPolicyComponent implements OnInit {
                     id: 'options',
                     title: 'Options',
                     type: 'text',
-                    size: '180',
+                    size: '200',
                     tooltip: false
                 }];
             } else {
@@ -160,8 +153,18 @@ export class ExternalPolicyComponent implements OnInit {
             )
             .subscribe((response) => {
                 const { page, count } = this.externalPoliciesService.parsePage(response);
-                this.page = page;
+                this.page = page || [];
                 this.pageCount = count;
+                for (const item of this.page) {
+                    item.userCount = 0;
+                    item.types = item.types || [];
+                    for (const user of item.types) {
+                        user.type = user.type || 'IMPORT';
+                        if (user.type === 'IMPORT') {
+                            item.userCount++;
+                        }
+                    }
+                }
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -208,38 +211,35 @@ export class ExternalPolicyComponent implements OnInit {
         });
     }
 
-    public onDelete(item: any) {
-        // if (item.status === EntityStatus.ACTIVE) {
-        //     return;
-        // }
-        // const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-        //     showHeader: false,
-        //     width: '640px',
-        //     styleClass: 'guardian-dialog',
-        //     data: {
-        //         header: 'Delete Label',
-        //         text: `Are you sure want to delete label (${item.name})?`,
-        //         buttons: [{
-        //             name: 'Close',
-        //             class: 'secondary'
-        //         }, {
-        //             name: 'Delete',
-        //             class: 'delete'
-        //         }]
-        //     },
-        // });
-        // dialogRef.onClose.subscribe((result: string) => {
-        //     if (result === 'Delete') {
-        //         this.loading = true;
-        //         this.externalPoliciesService
-        //             .deleteLabel(item.id)
-        //             .subscribe((result) => {
-        //                 this.loadData();
-        //             }, (e) => {
-        //                 this.loading = false;
-        //             });
-        //     }
-        // });
+    public onDisconnect(policy: any) {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete tab',
+                text: 'Are you sure want to disconnect this policy?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Disconnect',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Disconnect') {
+                this.loading = true;
+                this.externalPoliciesService
+                    .delete(policy.messageId)
+                    .subscribe((result) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
     }
 
     public onApprove(item: any) {
@@ -263,21 +263,16 @@ export class ExternalPolicyComponent implements OnInit {
         this.externalPoliciesService
             .reject(item.messageId)
             .subscribe((result) => {
-                const { taskId, expectation } = result;
-                this.router.navigate(['task', taskId], {
-                    queryParams: {
-                        last: btoa(location.href),
-                    },
-                });
+                this.loadData();
             }, (e) => {
                 this.loading = false;
             });
     }
 
-    getStatusName(row: any) {
+    public getStatusName(row: any) {
         switch (row.fullStatus) {
             case ExternalPolicyStatus.NEW:
-                return 'Requested';
+                return 'New';
             case ExternalPolicyStatus.APPROVED:
                 return 'Approved';
             case ExternalPolicyStatus.REJECTED:
@@ -285,5 +280,25 @@ export class ExternalPolicyComponent implements OnInit {
             default:
                 return 'Incorrect status';
         }
+    }
+
+    public onUsers() {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete tab',
+                text: 'Are you sure want to disconnect this policy?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Disconnect',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => { });
     }
 }

@@ -13,7 +13,7 @@ import {
     INotificationStep,
     NewNotifier
 } from '@guardian/common';
-import { AssignedEntityType, ExternalPolicyStatus, IOwner, MessageAPI, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';
+import { AssignedEntityType, ExternalPolicyStatus, ExternalPolicyType, IOwner, MessageAPI, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { ImportMode, ImportPolicyOptions, PolicyImportExportHelper } from '../helpers/import-helpers/index.js'
 
@@ -156,123 +156,26 @@ async function addPolicy(
     return result;
 }
 
+
+async function deletePolicy(
+    messageId: string,
+    owner: IOwner,
+    logger: PinoLogger,
+    notifier: INotificationStep
+) {
+    const policy = await DatabaseServer.getPolicy({ messageId });
+    if (policy && policy.status !== PolicyStatus.VIEW) {
+        return new MessageError(`Policy is already exist.`);
+    }
+
+    const policyEngine = new PolicyEngine(logger);
+    await policyEngine.deleteViewPolicy(policy, owner, notifier, logger);
+}
+
 /**
  * Connect to the message broker methods of working with formula.
  */
 export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
-    /**
-     * Get external policy
-     *
-     * @param {any} msg - external policy id
-     *
-     * @returns {any} - external policy
-     */
-    ApiResponse(MessageAPI.GET_EXTERNAL_POLICY_REQUEST,
-        async (msg: { filters: any, owner: IOwner }) => {
-            try {
-                if (!msg) {
-                    return new MessageError('Invalid parameters.');
-                }
-                const { filters } = msg;
-                const item = await DatabaseServer.getExternalPolicy(filters);
-                if (!item) {
-                    return new MessageError('Item does not exist.');
-                }
-                return new MessageResponse(item);
-            } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
-            }
-        });
-
-    /**
-     * Get external policies
-     *
-     * @param {any} msg - filters
-     *
-     * @returns {any} - external policies
-     */
-    ApiResponse(MessageAPI.GET_EXTERNAL_POLICY_REQUESTS,
-        async (msg: { filters: any, owner: IOwner }) => {
-            try {
-                if (!msg) {
-                    return new MessageError('Invalid parameters.');
-                }
-                const { filters } = msg;
-                const { query, pageIndex, pageSize } = filters;
-
-                const otherOptions: any = {};
-                const _pageSize = parseInt(pageSize, 10);
-                const _pageIndex = parseInt(pageIndex, 10);
-                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                    otherOptions.orderBy = { createDate: 'DESC' };
-                    otherOptions.limit = _pageSize;
-                    otherOptions.offset = _pageIndex * _pageSize;
-                } else {
-                    otherOptions.orderBy = { createDate: 'DESC' };
-                    otherOptions.limit = 100;
-                }
-                const [items, count] = await DatabaseServer.getExternalPoliciesAndCount(query, otherOptions);
-                return new MessageResponse({ items, count });
-            } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
-            }
-        });
-
-    /**
-     * Get external policies
-     *
-     * @param {any} msg - filters
-     *
-     * @returns {any} - external policies
-     */
-    ApiResponse(MessageAPI.GROUP_EXTERNAL_POLICY_REQUESTS,
-        async (msg: { filters: { full: boolean, pageIndex: string, pageSize: string }, owner: IOwner }) => {
-            try {
-                if (!msg) {
-                    return new MessageError('Invalid parameters.');
-                }
-                const { filters, owner } = msg;
-                const { full, pageIndex, pageSize } = filters;
-                const _pageSize = parseInt(pageSize, 10);
-                const _pageIndex = parseInt(pageIndex, 10);
-                let limit: number;
-                let offset: number;
-                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                    limit = _pageSize;
-                    offset = _pageIndex * _pageSize;
-                } else {
-                    offset = 0;
-                    limit = 100;
-                }
-                const [items, count] = await DatabaseServer.groupExternalPoliciesAndCount(owner, offset, limit, full);
-                return new MessageResponse({ items, count });
-            } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
-            }
-        });
-
-    /**
-     * Preview external policy
-     *
-     * @param {any} msg - messageId
-     *
-     * @returns {any} - external policy
-     */
-    ApiResponse(MessageAPI.PREVIEW_EXTERNAL_POLICY,
-        async (msg: { messageId: string, owner: IOwner }) => {
-            try {
-                const { messageId, owner } = msg;
-                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
-                return new MessageResponse(policyToImport);
-            } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
-            }
-        });
-
     /**
      * Import external policy
      *
@@ -285,90 +188,57 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
             try {
                 const { messageId, owner } = msg;
                 const policy = await DatabaseServer.getPolicy({ messageId });
+                const request = await DatabaseServer.getExternalPolicy({ messageId, creator: owner.creator });
+
+                if (policy && policy.status !== PolicyStatus.VIEW) {
+                    return new MessageError(`Policy is already exist.`);
+                }
+
                 if (policy) {
-                    if (policy.status !== PolicyStatus.VIEW) {
-                        return new MessageError(`Policy is already exist.`);
-                    }
                     await assignPolicy(policy.id, owner.creator, true);
-                    return new MessageResponse(policy);
+                }
+
+                if (request) {
+                    request.type = ExternalPolicyType.IMPORT;
+                    await DatabaseServer.updateExternalPolicy(request);
+                    return new MessageResponse(request);
+                }
+
+                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
+                if (policyToImport.availability !== PolicyAvailability.PUBLIC) {
+                    return new MessageError(`Policy is private.`);
+                }
+                if (!policyToImport.restoreTopicId || !policyToImport.actionsTopicId) {
+                    return new MessageError(`Policy is private.`);
+                }
+
+                const otherRequest = await DatabaseServer.getExternalPolicy({ messageId });
+                let status: ExternalPolicyStatus;
+                if (otherRequest) {
+                    if (otherRequest.status === ExternalPolicyStatus.REJECTED) {
+                        status = ExternalPolicyStatus.NEW;
+                    } else {
+                        status = otherRequest.status;
+                    }
                 } else {
-                    const item = await DatabaseServer.getExternalPolicy({ messageId, creator: owner.creator });
-                    if (item) {
-                        return new MessageError(`Item is already exist.`);
-                    }
-                    const policyToImport = await preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
-                    if (policyToImport.availability !== PolicyAvailability.PUBLIC) {
-                        return new MessageError(`Policy is private.`);
-                    }
-                    if (!policyToImport.restoreTopicId || !policyToImport.actionsTopicId) {
-                        return new MessageError(`Policy is private.`);
-                    }
-                    const externalPolicy = await DatabaseServer.createExternalPolicy({
-                        uuid: policyToImport.policy.uuid,
-                        name: policyToImport.policy.name,
-                        description: policyToImport.policy.description,
-                        version: policyToImport.policy.version,
-                        topicId: policyToImport.topicId,
-                        instanceTopicId: policyToImport.policy.instanceTopicId,
-                        messageId,
-                        policyTag: policyToImport.policy.policyTag,
-                        owner: owner.owner,
-                        creator: owner.creator,
-                        username: owner.username,
-                        status: ExternalPolicyStatus.NEW
-                    });
-                    return new MessageResponse(externalPolicy);
+                    status = ExternalPolicyStatus.NEW;
                 }
-            } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
-            }
-        });
-
-    /**
-     * Approve external policy
-     *
-     * @param {any} msg - messageId
-     *
-     * @returns {any} - external policy
-     */
-    ApiResponse(MessageAPI.APPROVE_EXTERNAL_POLICY_ASYNC,
-        async (msg: { messageId: string, owner: IOwner, task: any }) => {
-            try {
-                if (!msg) {
-                    return new MessageError('Invalid parameters.');
-                }
-                const { messageId, owner, task } = msg;
-
-                const items = await DatabaseServer.getExternalPolicies({ messageId });
-                if (!items || !items.length) {
-                    return new MessageError('Item does not exist.');
-                }
-
-                let policy = await DatabaseServer.getPolicy({ messageId });
-                const notifier = await NewNotifier.create(task);
-                RunFunctionAsync(async () => {
-                    let errors: any[] = [];
-                    if (!policy) {
-                        const result = await addPolicy(messageId, owner, logger, notifier, owner?.id);
-                        errors = result.errors;
-                    }
-
-                    for (const item of items) {
-                        item.status = ExternalPolicyStatus.APPROVED;
-                        await DatabaseServer.updateExternalPolicy(item);
-                    }
-
-                    policy = await DatabaseServer.getPolicy({ messageId });
-                    await assignPolicy(policy?.id, owner.creator, true);
-
-                    notifier.result({ id: messageId, errors });
-                }, async (error) => {
-                    await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    notifier.fail(error);
+                const externalPolicy = await DatabaseServer.createExternalPolicy({
+                    uuid: policyToImport.policy.uuid,
+                    name: policyToImport.policy.name,
+                    description: policyToImport.policy.description,
+                    version: policyToImport.policy.version,
+                    topicId: policyToImport.topicId,
+                    instanceTopicId: policyToImport.policy.instanceTopicId,
+                    messageId,
+                    policyTag: policyToImport.policy.policyTag,
+                    owner: owner.owner,
+                    creator: owner.creator,
+                    username: owner.username,
+                    status,
+                    type: ExternalPolicyType.IMPORT,
                 });
-
-                return new MessageResponse(task);
+                return new MessageResponse(externalPolicy);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
@@ -395,7 +265,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                let policy = await DatabaseServer.getPolicy({ messageId });
+                const policy = await DatabaseServer.getPolicy({ messageId });
                 const notifier = NewNotifier.empty();
 
                 let errors: any[] = [];
@@ -411,9 +281,84 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
 
                 notifier.result({ id: messageId, errors });
 
-                policy = await DatabaseServer.getPolicy({ messageId });
-                await assignPolicy(policy?.id, owner.creator, true);
+                return new MessageResponse(true);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
 
+    /**
+     * Approve external policy
+     *
+     * @param {any} msg - messageId
+     *
+     * @returns {any} - external policy
+     */
+    ApiResponse(MessageAPI.APPROVE_EXTERNAL_POLICY_ASYNC,
+        async (msg: { messageId: string, owner: IOwner, task: any }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { messageId, owner, task } = msg;
+
+                const items = await DatabaseServer.getExternalPolicies({ messageId });
+                if (!items || !items.length) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                const policy = await DatabaseServer.getPolicy({ messageId });
+                const notifier = await NewNotifier.create(task);
+                RunFunctionAsync(async () => {
+                    let errors: any[] = [];
+                    if (!policy) {
+                        const result = await addPolicy(messageId, owner, logger, notifier, owner?.id);
+                        errors = result.errors;
+                    }
+
+                    for (const item of items) {
+                        item.status = ExternalPolicyStatus.APPROVED;
+                        await DatabaseServer.updateExternalPolicy(item);
+                    }
+
+                    notifier.result({ id: messageId, errors });
+                }, async (error) => {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    notifier.fail(error);
+                });
+
+                return new MessageResponse(task);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Reject external policy
+     *
+     * @param {any} msg - messageId
+     *
+     * @returns {any} - external policy
+     */
+    ApiResponse(MessageAPI.REJECT_EXTERNAL_POLICY,
+        async (msg: { messageId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { messageId } = msg;
+
+                const items = await DatabaseServer.getExternalPolicies({ messageId });
+                if (!items || !items.length) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                for (const item of items) {
+                    item.status = ExternalPolicyStatus.REJECTED;
+                    await DatabaseServer.updateExternalPolicy(item);
+                }
                 return new MessageResponse(true);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -462,37 +407,62 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * Reject external policy
+     * Get external policy
      *
-     * @param {any} msg - messageId
+     * @param {any} msg - external policy id
      *
      * @returns {any} - external policy
      */
-    ApiResponse(MessageAPI.REJECT_EXTERNAL_POLICY,
-        async (msg: { messageId: string, owner: IOwner }) => {
+    ApiResponse(MessageAPI.GET_EXTERNAL_POLICY_REQUEST,
+        async (msg: { filters: any, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { messageId } = msg;
-
-                const items = await DatabaseServer.getExternalPolicies({ messageId });
-                if (!items || !items.length) {
-                    return new MessageError('Item does not exist.');
-                }
-
-                for (const item of items) {
-                    item.status = ExternalPolicyStatus.REJECTED;
-                    await DatabaseServer.updateExternalPolicy(item);
-                }
-                return new MessageResponse(true);
+                const { filters } = msg;
+                const item = await DatabaseServer.getExternalPolicy(filters);
+                return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
-    ApiResponse(MessageAPI.DISCONNECT_POLICY,
+    /**
+     * Get external policies
+     *
+     * @param {any} msg - filters
+     *
+     * @returns {any} - external policies
+     */
+    ApiResponse(MessageAPI.GROUP_EXTERNAL_POLICY_REQUESTS,
+        async (msg: { filters: { full: boolean, pageIndex: string, pageSize: string }, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { filters, owner } = msg;
+                const { full, pageIndex, pageSize } = filters;
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                let limit: number;
+                let offset: number;
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    limit = _pageSize;
+                    offset = _pageIndex * _pageSize;
+                } else {
+                    offset = 0;
+                    limit = 100;
+                }
+                const [items, count] = await DatabaseServer.groupExternalPoliciesAndCount(owner, offset, limit, full);
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.DISCONNECT_EXTERNAL_POLICY,
         async (msg: { messageId: string, owner: IOwner }) => {
             try {
                 if (!msg) {
@@ -509,7 +479,59 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
 
                 await assignPolicy(policy.id, owner.creator, false);
 
+                const item = await DatabaseServer.getExternalPolicy({ messageId });
+                if (item) {
+                    item.type = ExternalPolicyType.DISCONNECT;
+                    await DatabaseServer.updateExternalPolicy(item);
+                }
+
                 return new MessageResponse(true);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.DELETE_EXTERNAL_POLICY,
+        async (msg: { messageId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+
+                const { messageId, owner } = msg;
+
+                const policy = await DatabaseServer.getPolicy({ messageId });
+
+                if (!policy || policy.status !== PolicyStatus.VIEW) {
+                    return new MessageError(`Policy does not exist.`);
+                }
+
+                const notifier = NewNotifier.empty();
+                await DatabaseServer.removeAssignEntity(AssignedEntityType.RemotePolicy, policy.id);
+                await DatabaseServer.deleteExternalPolicy({ messageId });
+                await deletePolicy(messageId, owner, logger, notifier);
+
+                return new MessageResponse(true);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Preview external policy
+     *
+     * @param {any} msg - messageId
+     *
+     * @returns {any} - external policy
+     */
+    ApiResponse(MessageAPI.PREVIEW_EXTERNAL_POLICY,
+        async (msg: { messageId: string, owner: IOwner }) => {
+            try {
+                const { messageId, owner } = msg;
+                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
+                return new MessageResponse(policyToImport);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);

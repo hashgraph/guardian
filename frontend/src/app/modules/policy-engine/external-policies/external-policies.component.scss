@@ -72,11 +72,23 @@
         color: #FFF;
         margin-right: 8px;
     }
-    
+
     .reject-btn {
         width: 100px;
         height: 28px;
         background: #FF432A;
         color: #FFF;
     }
+
+    .disconnect-btn {
+        width: 100px;
+        height: 28px;
+    }
+}
+
+.users-btn {
+    width: 80px;
+    height: 28px;
+    justify-content: flex-start;
+    border: none;
 }

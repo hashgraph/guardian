@@ -21,36 +21,70 @@ import {
     ModuleStatus
 } from '@guardian/interfaces';
 import {
+    AggregateVC,
+    ApprovalDocument,
     Artifact,
+    BlockCache,
+    BlockState,
+    BlockStateSavepoint,
     DatabaseServer,
+    DeleteCache,
+    DidDocument,
+    DocumentDraft,
+    DocumentState,
+    ExternalDocument,
     findAllEntities,
+    Formula,
     FormulaImportExport,
     getArtifactType,
+    GlobalEventsReaderStream,
+    GlobalEventsWriterStream,
     INotificationStep,
     IPolicyComponents,
     MessageAction,
     MessageServer,
     MessageType,
+    MintRequest,
+    MintTransaction,
+    MultiDocuments,
     MultiPolicy,
+    MultiPolicyTransaction,
     NatsService,
     NotificationHelper, PinoLogger,
     Policy,
+    PolicyAction,
+    PolicyCacheData,
+    PolicyComment,
+    PolicyDiff,
+    PolicyDiscussion,
     PolicyImportExport,
+    PolicyInvitations,
+    PolicyLabel,
+    PolicyLabelDocument,
     PolicyMessage,
+    PolicyRoles,
+    PolicyStatistic,
+    PolicyStatisticDocument,
+    Record,
     replaceAllEntities,
     replaceAllVariables,
     replaceArtifactProperties,
     Schema as SchemaCollection,
     SchemaFields,
+    SchemaRule,
     Singleton,
+    SplitDocuments,
     SynchronizationMessage,
+    Tag,
     Token,
     TokenMessage,
     Topic,
     TopicConfig,
     TopicHelper,
     Users,
+    VcDocument,
     VcHelper,
+    VpDocument,
 } from '@guardian/common';
 import {
     deleteDemoSchema,
@@ -690,6 +724,87 @@ export class PolicyEngine extends NatsService {
 
         notifier.startStep(STEP_DELETE_INSTANCE);
         await this.destroyModel(policyToDelete.id.toString(), user.id);
+        const databaseServer = new DatabaseServer(policyToDelete.id.toString());
+        await databaseServer.clear(true);
+        notifier.completeStep(STEP_DELETE_INSTANCE);
+
+        notifier.startStep(STEP_DELETE_SCHEMAS);
+        const schemasToDelete = await DatabaseServer.getSchemas({
+            topicId: policyToDelete.topicId
+        });
+        for (const schema of schemasToDelete) {
+            const step = notifier.addStep(`Delete schema ${schema.name}`);
+            step.setId(schema.id);
+            step.minimize(true);
+        }
+        for (const schema of schemasToDelete) {
+            await deleteDemoSchema(
+                schema.id,
+                user,
+                notifier.getStepById(schema.id)
+            );
+        }
+        notifier.completeStep(STEP_DELETE_SCHEMAS);
+
+        notifier.startStep(STEP_DELETE_ARTIFACTS);
+        const artifactsToDelete = await new DatabaseServer().find(Artifact, {
+            policyId: policyToDelete.id
+        });
+        for (const artifact of artifactsToDelete) {
+            await DatabaseServer.removeArtifact(artifact);
+        }
+        notifier.completeStep(STEP_DELETE_ARTIFACTS);
+
+        notifier.startStep(STEP_DELETE_TESTS);
+        await DatabaseServer.deletePolicyTests(policyToDelete.id);
+        notifier.completeStep(STEP_DELETE_TESTS);
+
+        notifier.startStep(STEP_DELETE_POLICY);
+        await DatabaseServer.deletePolicy(policyToDelete.id);
+        notifier.completeStep(STEP_DELETE_POLICY);
+
+        notifier.complete();
+        return true;
+    }
+
+    /**
+     * Delete policy
+     * @param policyId Policy ID
+     * @param owner User
+     * @param notifier Notifier
+     * @param logger Notifier
+     * @returns Result
+     */
+    public async deleteViewPolicy(
+        policyToDelete: Policy,
+        user: IOwner,
+        notifier: INotificationStep,
+        logger: PinoLogger
+    ): Promise<boolean> {
+        // <-- Steps
+        const STEP_DELETE_INSTANCE = 'Delete policy instance';
+        const STEP_DELETE_SCHEMAS = 'Delete schemas';
+        const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
+        const STEP_DELETE_TESTS = 'Delete tests';
+        const STEP_DELETE_POLICY = 'Delete policy from DB';
+        // Steps -->
+
+        notifier.addStep(STEP_DELETE_INSTANCE);
+        notifier.addStep(STEP_DELETE_SCHEMAS);
+        notifier.addStep(STEP_DELETE_ARTIFACTS);
+        notifier.addStep(STEP_DELETE_TESTS);
+        notifier.addStep(STEP_DELETE_POLICY);
+        notifier.start();
+
+        await logger.info('Delete Policy', ['GUARDIAN_SERVICE'], user.id);
+
+        if ((policyToDelete.status !== PolicyStatus.DEMO)) {
+            throw new Error('Policy is not in demo status');
+        }
+
+        notifier.startStep(STEP_DELETE_INSTANCE);
+        await this.destroyModel(policyToDelete.id.toString(), user.id);
+        await this.deletePolicyDocuments(policyToDelete.id.toString(), null, user.id);
         const databaseServer = new DatabaseServer(policyToDelete.id.toString());
         await databaseServer.clear(true);
         notifier.completeStep(STEP_DELETE_INSTANCE);
@@ -2098,5 +2213,52 @@ export class PolicyEngine extends NatsService {
         await this.generateModel(policy.id.toString());
         notifier.completeStep(STEP_RUN_POLICY);
         notifier.complete();
+    }
+
+    private async deletePolicyDocuments(
+        policyId: string,
+        owner: string | null,
+        userId: string | null
+    ) {
+        const db = new DatabaseServer();
+        await db.deleteEntity(AggregateVC, { policyId });
+        await db.deleteEntity(ApprovalDocument, { policyId });
+        await db.deleteEntity(BlockCache, { policyId });
+        await db.deleteEntity(BlockStateSavepoint, { policyId });
+        await db.deleteEntity(BlockState, { policyId });
+        await db.deleteEntity(DeleteCache, { policyId });
+        await db.deleteEntity(DidDocument, { policyId });
+        await db.deleteEntity(DocumentDraft, { policyId });
+        await db.deleteEntity(DocumentState, { policyId });
+        await db.deleteEntity(ExternalDocument, { policyId });
+        await db.deleteEntity(Formula, { policyId });
+        await db.deleteEntity(GlobalEventsReaderStream, { policyId });
+        await db.deleteEntity(GlobalEventsWriterStream, { policyId });
+        await db.deleteEntity(MintRequest, { policyId });
+        await db.deleteEntity(MintTransaction, { policyId });
+        await db.deleteEntity(MultiDocuments, { policyId });
+        await db.deleteEntity(MultiPolicyTransaction, { policyId });
+        await db.deleteEntity(PolicyAction, { policyId });
+        await db.deleteEntity(PolicyCacheData, { policyId });
+        await db.deleteEntity(PolicyComment, { policyId });
+        await db.deleteEntity(PolicyDiff, { policyId });
+        await db.deleteEntity(PolicyDiscussion, { policyId });
+        await db.deleteEntity(PolicyInvitations, { policyId });
+        await db.deleteEntity(PolicyLabelDocument, { policyId });
+        await db.deleteEntity(PolicyLabel, { policyId });
+        await db.deleteEntity(PolicyRoles, { policyId });
+        await db.deleteEntity(PolicyStatisticDocument, { policyId });
+        await db.deleteEntity(PolicyStatistic, { policyId });
+        await db.deleteEntity(Record, { policyId });
+        await db.deleteEntity(SchemaRule, { policyId });
+        await db.deleteEntity(SplitDocuments, { policyId });
+        await db.deleteEntity(Tag, { policyId });
+        await db.deleteEntity(Topic, { policyId });
+        await db.deleteEntity(VcDocument, { policyId });
+        await db.deleteEntity(VpDocument, { policyId });
+        await db.deleteEntity(Token, { policyId });
+
+        // await db.deleteEntity(Artifact, { policyId });
+        // PolicyCache ?
     }
 }
