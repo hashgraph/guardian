@@ -5843,6 +5843,42 @@ paths:
       summary: Validates policy.
       tags:
         - policies
+  /policies/{policyId}/disconnect:
+    put:
+      description: ''
+      operationId: PolicyApi_disconnectPolicy
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: ''
+      tags:
+        - policies
   /policies/{policyId}/navigation:
     get:
       description: Returns a policy navigation.
@@ -16087,6 +16123,78 @@ paths:
       summary: Rejects the request to import a remote policy.
       tags:
         - external-policies
+  /external-policies/{messageId}/disconnect:
+    put:
+      description: ''
+      operationId: ExternalPoliciesApi_disconnectPolicy
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Policy message id
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: ''
+      tags:
+        - external-policies
+  /external-policies/{messageId}:
+    delete:
+      description: ''
+      operationId: ExternalPoliciesApi_deletePolicy
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Policy message id
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: ''
+      tags:
+        - external-policies
   /external-policies/requests:
     get:
       description: Returns the list of requests for action from remote Guardians.
@@ -16166,7 +16274,7 @@ paths:
         - name: messageId
           required: true
           in: path
-          description: Schema Rule Identifier
+          description: Policy message id
           schema:
             example: '0000000000.000000001'
             type: string
@@ -16207,7 +16315,7 @@ paths:
         - name: messageId
           required: true
           in: path
-          description: Schema Rule Identifier
+          description: Policy message id
           schema:
             example: '0000000000.000000001'
             type: string
