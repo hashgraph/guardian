@@ -16,7 +16,7 @@ jobs:
       contents: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
         with:
           egress-policy: audit
 
@@ -33,7 +33,7 @@ jobs:
 
       - name: get-npm-version
         id: package-version
-        uses: step-security/npm-get-version-action@f39973dcb0213ee66ce68c57bd29ebd364f4741f # v1.3.3
+        uses: step-security/npm-get-version-action@bda0647177945f76ffac4f078bf811fe26fc5268 # v1.3.4
         with:
           path: guardian-service
 
