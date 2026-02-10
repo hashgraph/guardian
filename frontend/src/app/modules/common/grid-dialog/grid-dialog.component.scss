@@ -25,6 +25,9 @@
     font-style: normal;
 }
 
+.dialog-grid-container {
+    margin-bottom: 24px;
+}
 
 .dialog-body {
     min-height: 100px;
@@ -65,4 +68,33 @@
     line-height: 18px;
     margin-top: 25px;
     white-space: pre-line;
+}
+
+
+.label-approved {
+    color: #19BE47;
+    background: #CAFDD9;
+    border-radius: 6px;
+    padding: 6px 10px !important;
+    font-family: Inter;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 16px;
+    vertical-align: middle;
+    height: 32px;
+    width: fit-content !important;
+}
+
+.label-rejected {
+    color: #FF432A;
+    background: #FFEAEA;
+    border-radius: 6px;
+    padding: 6px 10px !important;
+    font-family: Inter;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 16px;
+    vertical-align: middle;
+    height: 32px;
+    width: fit-content !important;
 }

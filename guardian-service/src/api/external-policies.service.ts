@@ -479,7 +479,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
 
                 await assignPolicy(policy.id, owner.creator, false);
 
-                const item = await DatabaseServer.getExternalPolicy({ messageId });
+                const item = await DatabaseServer.getExternalPolicy({ messageId, creator: owner.creator });
                 if (item) {
                     item.type = ExternalPolicyType.DISCONNECT;
                     await DatabaseServer.updateExternalPolicy(item);

@@ -7,6 +7,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { GridDialogComponent } from '../../common/grid-dialog/grid-dialog.component';
 
 interface IColumn {
     id: string;
@@ -163,6 +164,7 @@ export class ExternalPolicyComponent implements OnInit {
                         if (user.type === 'IMPORT') {
                             item.userCount++;
                         }
+                        user.typeName = user.type === 'IMPORT' ? 'Imported' : 'Disconnected';
                     }
                 }
                 setTimeout(() => {
@@ -217,7 +219,7 @@ export class ExternalPolicyComponent implements OnInit {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Delete tab',
+                header: 'Delete',
                 text: 'Are you sure want to disconnect this policy?',
                 buttons: [{
                     name: 'Close',
@@ -282,20 +284,32 @@ export class ExternalPolicyComponent implements OnInit {
         }
     }
 
-    public onUsers() {
-        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+    public onUsers(row: any) {
+        const dialogRef = this.dialogService.open(GridDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Delete tab',
-                text: 'Are you sure want to disconnect this policy?',
+                header: 'Users',
+                columns: [{
+                    id: 'username',
+                    title: 'User',
+                    width: 'auto',
+                    field: 'username'
+                }, {
+                    id: 'username',
+                    title: 'Status',
+                    width: '150',
+                    field: 'typeName',
+                    colClass: (column: any, row: any) =>{
+                        return row.type === 'IMPORT' ? 'label-approved' : 'label-rejected';
+                    }
+                }],
+                height: 52,
+                data: row.types,
                 buttons: [{
                     name: 'Close',
                     class: 'secondary'
-                }, {
-                    name: 'Disconnect',
-                    class: 'delete'
                 }]
             },
         });

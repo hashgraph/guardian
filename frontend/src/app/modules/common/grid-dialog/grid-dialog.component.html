@@ -12,7 +12,32 @@
         <div class="preloader-image preloader-image-l-size"></div>
     </div>
 
-    
+    <div class="dialog-grid-container">
+        <div *ngIf="data?.length" class="dialog-grid-header">
+            <div *ngFor="let col of columns" class="col-{{col.width}} col-id-header-{{col.id}}">
+                {{col.title}}
+            </div>
+        </div>
+        <div *ngIf="data?.length" class="dialog-grid-body">
+            <ng-container *ngFor="let item of data" >
+                <div class="dialog-grid-row row-{{height}}">
+                    <div *ngFor="let col of columns" class="col-{{col.width}} col-id-{{col.id}}">
+                       <div class="{{colClass(col, item)}}">{{item[col.field]}}</div> 
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+        <div *ngIf="!data?.length" class="dialog-grid-empty">
+            <div>
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/list.svg"
+                    svgClass="icon-color-disabled">
+                </svg-icon>
+            </div>
+            <div>There are no data</div>
+        </div>
+    </div>
 </div>
 
 <div class="dialog-footer">

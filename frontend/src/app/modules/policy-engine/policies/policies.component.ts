@@ -1992,7 +1992,7 @@ export class PoliciesComponent implements OnInit {
                 width: '640px',
                 styleClass: 'guardian-dialog',
                 data: {
-                    header: 'Delete tab',
+                    header: 'Disconnect',
                     text: 'Are you sure want to disconnect this policy?',
                     buttons: [{
                         name: 'Close',

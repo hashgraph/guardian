@@ -84,7 +84,7 @@
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'userCount'">
                                         <button 
-                                            (click)="onUsers()" 
+                                            (click)="onUsers(row)" 
                                             class="guardian-button guardian-button-secondary users-btn">
                                             <div class="guardian-button-icon">
                                                 <svg-icon class="icon-btn svg-icon"
@@ -107,7 +107,7 @@
                                         <div *ngIf="row.fullStatus === 'APPROVED'" class="option-btns">
                                             <button 
                                                 class="guardian-button guardian-button-delete disconnect-btn" 
-                                                (click)="onDisconnect(row)">Disconnect</button>
+                                                (click)="onDisconnect(row)">Disconnect & Remove</button>
                                         </div>
                                     </ng-container>
                                     <ng-container *ngSwitchDefault>
