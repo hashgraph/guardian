@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 export interface NavItem {
     title: string;
@@ -13,7 +13,6 @@ export interface NavItem {
 })
 export class SchemaFormNavigationComponent {
     @Input() schemaFields: any[] | null;
-    @Input() showCounts: boolean = true;
 
     public expanded = new Set<string>();
 
@@ -21,42 +20,30 @@ export class SchemaFormNavigationComponent {
         return this.buildNavTree(this.schemaFields || []);
     }
 
-    public get navItems(): NavItem[] {
-        const tree = this.navTree;
-        const res: NavItem[] = [];
-        const walk = (nodes?: NavItem[]) => {
-            if (!nodes) return;
-            for (const n of nodes) {
-                res.push({ title: n.title, path: n.path });
-                walk(n.children);
-            }
-        };
-        walk(tree);
-        return res;
-    }
-
-    public buildNavTree(fields: any[], parentPath?: string): NavItem[] {
+    public buildNavTree(controls: any[], parentPath?: string): NavItem[] {
         const items: NavItem[] = [];
-        for (const field of fields || []) {
-            if (!(field?.isRef || (field?.isArray && field?.isRef))) {
+        for (const control of controls || []) {
+            if (control?.visibility === false) continue;
+
+            if (!(control?.isRef || (control?.isArray && control?.isRef) || Array.isArray(control?.fields))) {
                 continue;
             }
 
-            const name = field.name ?? field.title ?? field.fullPath ?? '';
-            const basePath = parentPath ? `${parentPath}.${name}` : (field.path ?? field.fullPath ?? name);
-            const title = field.description ?? field.title ?? field.name ?? basePath;
+            const name = control.name ?? control.title ?? control.path ?? control.fullPath ?? '';
+            
+            const rawPath = control.path ?? control.fullPath ?? name;
+            const basePath = parentPath && rawPath && !rawPath.includes('.') ? `${parentPath}.${rawPath}` : (rawPath || name);
+            const title = control.description ?? control.title ?? control.name ?? basePath;
 
-            const node: NavItem = { title, path: basePath, count: field.count ?? (Array.isArray(field.list) ? field.list.length : undefined) };
+            const node: NavItem = { title, path: basePath};
 
-            // If field.fields exist, build nested nav items for them (recursive)
-            if (Array.isArray(field.fields) && field.fields.length > 0) {
-                // For nested fields we want to include only those that render as accordions
-                node.children = this.buildNavTree(field.fields, basePath);
+            const childControls = Array.isArray(control.model?.controls) ? control.model.controls : undefined;
+            if (Array.isArray(childControls) && childControls.length > 0) {
+                node.children = this.buildNavTree(childControls, basePath);
             }
 
-            // If this is an array of sub-schemas and has instance list, create child nodes for each instance
-            if (field?.isArray) {
-                const list = Array.isArray(field.list) ? field.list : [];
+            if (control?.isArray) {
+                const list = Array.isArray(control.list) ? control.list : [];
                 if (list.length > 0) {
                     node.children = node.children || [];
                     for (let i = 0; i < list.length; i++) {
@@ -65,15 +52,15 @@ export class SchemaFormNavigationComponent {
                         const instPath = `${basePath}.${idx}`;
                         const instTitle = `${title} #${idx + 1}`;
                         const instNode: NavItem = { title: instTitle, path: instPath };
-                        // For each instance, include children from schema fields (if any)
-                        if (Array.isArray(field.fields) && field.fields.length > 0) {
-                            instNode.children = this.buildNavTree(field.fields, instPath);
+                        if (Array.isArray(control.model?.controls) && control.model?.controls.length > 0) {
+                            instNode.children = this.buildNavTree(control.model.controls, instPath);
                         }
                         node.children.push(instNode);
+                        node.count = node.children.length;
                     }
                 }
             }
-
+            node.count = node.children?.length;
             items.push(node);
         }
         return items;
@@ -91,6 +78,7 @@ export class SchemaFormNavigationComponent {
         }
     }
 
-    public onSelect(path: string) {
+    public onSelect(node: NavItem) {
+        
     }
 }

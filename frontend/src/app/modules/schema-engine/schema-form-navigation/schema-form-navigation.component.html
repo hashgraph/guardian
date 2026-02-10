@@ -6,14 +6,14 @@
     </div>
 
     <ng-template #nodeTpl let-node let-level="level">
-        <div class="nav-node" [style.paddingLeft.px]="level * 12">
+        <div class="nav-node" [style.paddingLeft.px]="level * 30">
             <button class="nav-toggle" *ngIf="node.children?.length" (click)="toggle(node.path); $event.stopPropagation();" type="button">
                 <span class="chev" [class.open]="isExpanded(node.path)">▾</span>
             </button>
 
-            <button class="nav-label" (click)="onSelect(node.path)">
+            <button class="nav-label" (click)="onSelect(node)">
                 <span class="nav-title">{{ node.title }}</span>
-                <span *ngIf="showCounts && node.count !== undefined" class="nav-count">{{ node.count }}</span>
+                <span *ngIf="node.count" class="nav-count">{{ node.count }}</span>
             </button>
         </div>
 
