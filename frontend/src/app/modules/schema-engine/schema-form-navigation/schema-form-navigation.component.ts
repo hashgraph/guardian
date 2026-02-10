@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { IFieldControl } from '../schema-form-model/field-form';
 
 export interface NavItem {
     title: string;
@@ -12,7 +13,7 @@ export interface NavItem {
     styleUrls: ['./schema-form-navigation.component.scss'],
 })
 export class SchemaFormNavigationComponent {
-    @Input() schemaFields: any[] | null;
+    @Input() schemaFields: IFieldControl<any>[] | null;
 
     public expanded = new Set<string>();
 
@@ -50,7 +51,7 @@ export class SchemaFormNavigationComponent {
                         const li = list[i];
                         const idx = li?.index2 ?? li?.index ?? i;
                         const instPath = `${basePath}.${idx}`;
-                        const instTitle = `${title} #${idx + 1}`;
+                        const instTitle = `${title} #${idx}`;
                         const instNode: NavItem = { title: instTitle, path: instPath };
                         if (Array.isArray(control.model?.controls) && control.model?.controls.length > 0) {
                             instNode.children = this.buildNavTree(control.model.controls, instPath);
@@ -79,6 +80,6 @@ export class SchemaFormNavigationComponent {
     }
 
     public onSelect(node: NavItem) {
-        
+        console.log('Selected node:', node);
     }
 }
