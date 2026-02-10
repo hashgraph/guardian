@@ -302,6 +302,10 @@ export class TokensApi {
 
             const tokenById: IToken = await guardians.getTokenById(tokenId, owner);
 
+            if (!tokenById) {
+                return null;
+            }
+
             const [dynamicTokenById] = await setDynamicTokenPolicy([tokenById], owner);
             const [tokenByIdWithPolicies] = setTokensPolicies([dynamicTokenById], map, policyId, false);
 
