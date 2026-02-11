@@ -9,7 +9,7 @@
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
         "@storacha/client": "1.8.21",
-        "axios": "^1.8.3",
+        "axios": "^1.13.5",
         "cids": "^1.1.9",
         "dotenv": "^16.0.0",
         "fireblocks-sdk": "^5.33.0",
