@@ -641,7 +641,7 @@
                 >
                     <p-accordionTab [(selected)]="item.open">
                         <ng-template pTemplate="header">
-                            <div class="group-label-field" id="detail-section">
+                            <div class="group-label-field" id="detail-section" [attr.accordionTabId]="item.id">
                                 <div
                                     *ngIf="
                                         !isChildSchema &&
@@ -823,7 +823,7 @@
                 >
                     <p-accordionTab [(selected)]="item.open">
                         <ng-template pTemplate="header">
-                            <div class="group-label-field" id="detail-section">
+                            <div class="group-label-field" id="detail-section" [attr.accordionTabId]="item.id">
                                 <div
                                     *ngIf="!isChildSchema && formModel.controls && !isEditMode"
                                     class="page-number"
@@ -920,6 +920,7 @@
                                             <div
                                                 class="group-label-field"
                                                 id="detail-section"
+                                                [attr.accordionTabId]="item.id + '-' + listItem.index2"
                                             >
                                                 <span
                                                     [attr.default]="

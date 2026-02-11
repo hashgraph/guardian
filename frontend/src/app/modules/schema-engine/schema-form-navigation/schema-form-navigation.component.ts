@@ -3,7 +3,7 @@ import { IFieldControl } from '../schema-form-model/field-form';
 
 export interface NavItem {
     title: string;
-    path: string;
+    accordionId: string;
     children?: NavItem[];
     count?: number;
 }
@@ -21,7 +21,7 @@ export class SchemaFormNavigationComponent {
         return this.buildNavTree(this.schemaFields || []);
     }
 
-    public buildNavTree(controls: any[], parentPath?: string): NavItem[] {
+    public buildNavTree(controls: any[]): NavItem[] {
         const items: NavItem[] = [];
         for (const control of controls || []) {
             if (control?.visibility === false) continue;
@@ -30,17 +30,14 @@ export class SchemaFormNavigationComponent {
                 continue;
             }
 
-            const name = control.name ?? control.title ?? control.path ?? control.fullPath ?? '';
-            
-            const rawPath = control.path ?? control.fullPath ?? name;
-            const basePath = parentPath && rawPath && !rawPath.includes('.') ? `${parentPath}.${rawPath}` : (rawPath || name);
-            const title = control.description ?? control.title ?? control.name ?? basePath;
+            const accordionId = control.id;
+            const title = control.description ?? control.title ?? control.name;
 
-            const node: NavItem = { title, path: basePath};
+            const node: NavItem = { title, accordionId};
 
             const childControls = Array.isArray(control.model?.controls) ? control.model.controls : undefined;
             if (Array.isArray(childControls) && childControls.length > 0) {
-                node.children = this.buildNavTree(childControls, basePath);
+                node.children = this.buildNavTree(childControls);
             }
 
             if (control?.isArray) {
@@ -49,12 +46,12 @@ export class SchemaFormNavigationComponent {
                     node.children = node.children || [];
                     for (let i = 0; i < list.length; i++) {
                         const li = list[i];
-                        const idx = li?.index2 ?? li?.index ?? i;
-                        const instPath = `${basePath}.${idx}`;
+                        const idx = li?.index2 ?? i;
+                        const instAccordionId = `${accordionId}.${idx}`;
                         const instTitle = `${title} #${idx}`;
-                        const instNode: NavItem = { title: instTitle, path: instPath };
+                        const instNode: NavItem = { title: instTitle, accordionId: instAccordionId };
                         if (Array.isArray(control.model?.controls) && control.model?.controls.length > 0) {
-                            instNode.children = this.buildNavTree(control.model.controls, instPath);
+                            instNode.children = this.buildNavTree(control.model.controls);
                         }
                         node.children.push(instNode);
                         node.count = node.children.length;
