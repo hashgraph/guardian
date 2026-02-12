@@ -275,7 +275,7 @@
             </div>
 
             <!-- array of simple fields -->
-            <div *ngIf="ifSimpleArray(item)" class="form-field-array">
+            <div *ngIf="ifSimpleArray(item)" class="form-field-array" [attr.array-invalid]="item.control?.invalid">
                 <div class="label-field" id="detail-section">
                     <div
                         *ngIf="!isChildSchema && formModel.controls && !isEditMode"
