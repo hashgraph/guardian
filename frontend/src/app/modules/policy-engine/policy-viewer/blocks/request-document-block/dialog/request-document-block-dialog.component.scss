@@ -57,6 +57,7 @@ form {
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        max-height: calc(85vh - 175px) !important;
     }
 
     .body-dialog-template {

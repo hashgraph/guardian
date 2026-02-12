@@ -482,7 +482,11 @@ export class FieldForm {
     private createControl(item: IFieldControl<any>, preset: any): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
         const validators = this.getValidators(item);
         const value = (preset === null || preset === undefined) ? undefined : preset;
-        return new UntypedFormControl(value, validators);
+        const control = new UntypedFormControl(value, validators);
+        if (value !== undefined) {
+            control.markAsDirty();
+        }
+        return control;
     }
 
     private getValidators(item: any): ValidatorFn[] {

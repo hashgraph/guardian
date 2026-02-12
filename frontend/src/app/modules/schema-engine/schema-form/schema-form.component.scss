@@ -283,9 +283,17 @@ form {
     }
 }
 
+.form-field-array[array-invalid="true"] {
+    border-color: #f44336 !important;
+}
+
 .form-field-value[invalid-required-field="true"] {
     .form-field-boolean ::ng-deep .guardian-radio-button .p-radiobutton .p-radiobutton-box {
         border-color: #f44336;
+    }
+
+    .form-field-enum ::ng-deep p-dropdown .p-dropdown {
+        border-color: #f44336 !important;
     }
 
     .form-field-input input {
