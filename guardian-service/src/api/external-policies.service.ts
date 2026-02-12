@@ -165,7 +165,7 @@ async function deletePolicy(
 ) {
     const policy = await DatabaseServer.getPolicy({ messageId });
     if (policy && policy.status !== PolicyStatus.VIEW) {
-        return new MessageError(`Policy is already exist.`);
+        return new MessageError(`Policy does not exist.`);
     }
 
     const policyEngine = new PolicyEngine(logger);
@@ -279,6 +279,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     await DatabaseServer.updateExternalPolicy(item);
                 }
 
+                await assignPolicy(policy.id, owner.creator, true);
+
                 notifier.result({ id: messageId, errors });
 
                 return new MessageResponse(true);
@@ -321,6 +323,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                         item.status = ExternalPolicyStatus.APPROVED;
                         await DatabaseServer.updateExternalPolicy(item);
                     }
+
+                    await assignPolicy(policy.id, owner.creator, true);
 
                     notifier.result({ id: messageId, errors });
                 }, async (error) => {
@@ -462,6 +466,11 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
+    /**
+     * Disconnect external policy
+     *
+     * @param {any} msg - messageId
+     */
     ApiResponse(MessageAPI.DISCONNECT_EXTERNAL_POLICY,
         async (msg: { messageId: string, owner: IOwner }) => {
             try {
@@ -492,6 +501,11 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
+    /**
+     * Delete external policy
+     *
+     * @param {any} msg - messageId
+     */
     ApiResponse(MessageAPI.DELETE_EXTERNAL_POLICY,
         async (msg: { messageId: string, owner: IOwner }) => {
             try {

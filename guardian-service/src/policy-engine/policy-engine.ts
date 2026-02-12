@@ -767,6 +767,7 @@ export class PolicyEngine extends NatsService {
         return true;
     }
 
+
     /**
      * Delete policy
      * @param policyId Policy ID
@@ -798,8 +799,8 @@ export class PolicyEngine extends NatsService {
 
         await logger.info('Delete Policy', ['GUARDIAN_SERVICE'], user.id);
 
-        if ((policyToDelete.status !== PolicyStatus.DEMO)) {
-            throw new Error('Policy is not in demo status');
+        if ((policyToDelete.status !== PolicyStatus.VIEW)) {
+            throw new Error(`Policy does not exist.`);
         }
 
         notifier.startStep(STEP_DELETE_INSTANCE);
