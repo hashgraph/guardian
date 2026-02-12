@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { IFieldControl } from '../schema-form-model/field-form';
 
 export interface NavItem {
@@ -14,6 +14,7 @@ export interface NavItem {
 })
 export class SchemaFormNavigationComponent {
     @Input() schemaFields: IFieldControl<any>[] | null;
+    @Output() select = new EventEmitter<string>();
 
     public expanded = new Set<string>();
 
@@ -33,7 +34,7 @@ export class SchemaFormNavigationComponent {
             const accordionId = control.id;
             const title = control.description ?? control.title ?? control.name;
 
-            const node: NavItem = { title, accordionId};
+            const node: NavItem = { title, accordionId };
 
             const childControls = Array.isArray(control.model?.controls) ? control.model.controls : undefined;
             if (Array.isArray(childControls) && childControls.length > 0) {
@@ -47,7 +48,7 @@ export class SchemaFormNavigationComponent {
                     for (let i = 0; i < list.length; i++) {
                         const li = list[i];
                         const idx = li?.index2 ?? i;
-                        const instAccordionId = `${accordionId}.${idx}`;
+                        const instAccordionId = `${accordionId}-${idx}`;
                         const instTitle = `${title} #${idx}`;
                         const instNode: NavItem = { title: instTitle, accordionId: instAccordionId };
                         if (Array.isArray(control.model?.controls) && control.model?.controls.length > 0) {
@@ -77,6 +78,27 @@ export class SchemaFormNavigationComponent {
     }
 
     public onSelect(node: NavItem) {
-        console.log('Selected node:', node);
+        if (!node || !node.accordionId) return;
+            console.log('[schema-nav] onSelect ->', node.accordionId, node.title);
+        this.expandAncestors(node.accordionId);
+        this.select.emit(node.accordionId);
+    }
+
+    public selectByPath(path?: string) {
+        if (!path) return;
+        this.expandAncestors(path);
+    }
+
+    private expandAncestors(accordionId: string) {
+        const parts = accordionId.split('-')[0].split('.');
+        const root = accordionId.includes('-') ? accordionId.split('-')[0] : null;
+        let cur = '';
+        for (let i = 0; i < parts.length; i++) {
+            cur = cur ? `${cur}.${parts[i]}` : parts[i];
+            this.expanded.add(cur);
+        }
+        if (root) {
+            this.expanded.add(root);
+        }
     }
 }

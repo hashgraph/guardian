@@ -1,8 +1,9 @@
 <div class="schema-form-root">
     <div class="schema-form-view-nav">
-        <app-schema-form-navigation *ngIf="model" [schemaFields]="model.controls"></app-schema-form-navigation>
+        <app-schema-form-navigation #schemaNav *ngIf="model" [schemaFields]="model.controls" (select)="onNavSelect($event)"></app-schema-form-navigation>
     </div>
     <app-schema-form
+        #childForm
         *ngIf="model"
         [form-model]="model"
         [private-fields]="hide"

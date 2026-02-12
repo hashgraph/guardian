@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { SchemaFormComponent } from '../schema-form/schema-form.component';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaField, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { FieldForm, IFieldControl } from '../schema-form-model/field-form';
@@ -15,6 +16,7 @@ export class SchemaFormRootComponent implements OnInit {
     public group: UntypedFormGroup;
     public model: FieldForm | null;
     public loading: boolean = true;
+    @ViewChild('childForm') private childForm?: SchemaFormComponent;
 
     @Input('schema') schema: Schema;
     @Input('fields') fields: SchemaField[];
@@ -114,6 +116,18 @@ export class SchemaFormRootComponent implements OnInit {
 
     public onChange($event: Schema | null) {
         this.change.emit($event);
+    }
+
+    public onNavSelect(link: string) {
+        console.log('[schema-root] nav selected ->', link);
+        // prefer calling child directly to ensure handler is executed
+        if (this.childForm && typeof this.childForm.openField === 'function') {
+            this.childForm.openField(link);
+        } else {
+            // fallback: set model and let input binding handle it (if implemented)
+            (this as any).navLink = link;
+            setTimeout(() => { (this as any).navLink = undefined; }, 500);
+        }
     }
 
     public onSaveBtnEvent($event: boolean | IFieldControl<any>[] | undefined | null) {

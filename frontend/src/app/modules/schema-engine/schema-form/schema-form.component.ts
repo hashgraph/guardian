@@ -697,6 +697,92 @@ export class SchemaFormComponent implements OnInit {
         }, 100)
     }
 
+    public openField(link?: string): void {
+        if (!link || !this.formModel?.controls) return;
+
+        const target = link;
+        const found = this.findAndOpen(this.formModel.controls, target);
+        if (found) {
+            try { 
+                this.changeDetectorRef.detectChanges(); 
+            } catch (e) {
+                console.error(e);
+            }
+            this.scrollToAccordionAttr(target);
+        }
+    }
+
+    private findAndOpen(controls: IFieldControl<any>[] | undefined | null, target: string): boolean {
+        if (!controls || !Array.isArray(controls)) return false;
+
+        for (const field of controls) {
+            (field as any).link = undefined;
+            if (field.id === target || field.name === target) {
+                field.open = true;
+                return true;
+            }
+
+            if (field.isArray) {
+                const list = Array.isArray((field as any).list) ? (field as any).list : [];
+                for (const listItem of list) {
+                    const idx = (listItem as any).index2 ?? (listItem as any).index;
+                    const composite = `${field.id}-${idx}`;
+                    if (composite === target) {
+                        field.open = true;
+                        (listItem as any).open = true;
+                        return true;
+                    }
+                    
+                    const itemChildControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
+                    if (Array.isArray(itemChildControls) && itemChildControls.length > 0) {
+                        const foundInItem = this.findAndOpen(itemChildControls, target);
+                        if (foundInItem) {
+                            field.open = true;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            const childControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
+            if (Array.isArray(childControls) && childControls.length > 0) {
+                const foundInChild = this.findAndOpen(childControls, target);
+                if (foundInChild) {
+                    field.open = true;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private scrollToAccordionAttr(value: string) {
+        setTimeout(() => {
+            try { 
+                this.changeDetectorRef.detectChanges(); 
+            } catch (e) {
+                console.error(e);
+            }
+
+            const attrName = 'accordionTabId';
+            let found: Element | null = null;
+
+            const nodes = document.querySelectorAll(`[${attrName}]`);
+            for (let i = 0; i < nodes.length; i++) {
+                const n = nodes[i] as Element;
+                const val = n.getAttribute(attrName);
+                if (val === value) {
+                    found = n;
+                }
+            }
+
+            if (found) {
+                (found as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 60);
+    }
+
     private updateRemoteFiles(item: IFieldControl<any>) {
         if (item.remoteLink && item.fileUploading === true) {
             this.ipfs
