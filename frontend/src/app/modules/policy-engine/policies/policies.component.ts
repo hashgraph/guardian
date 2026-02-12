@@ -71,6 +71,7 @@ class MenuButton {
         disabled: boolean,
         tooltip: string,
         icon: string,
+        color: string,
         click: () => void;
     }) {
         this.visible = option.visible;
@@ -78,7 +79,7 @@ class MenuButton {
         this.tooltip = option.tooltip;
         this.icon = option.icon;
         this.click = option.click;
-        this.color = option.disabled ? 'disabled-color' : 'primary-color';
+        this.color = option.disabled ? 'disabled-color' : (option.color || 'primary-color');
     }
 
     public onClick() {
@@ -493,12 +494,14 @@ export class PoliciesComponent implements OnInit {
                 tooltip: 'Analytics',
                 group: false,
                 visible: this.user.ANALYTIC_POLICY_READ,
+                color: 'primary-color',
                 buttons: [
                     new MenuButton({
                         visible: this.user.ANALYTIC_POLICY_READ,
                         disabled: false,
                         tooltip: 'Search policies',
                         icon: 'search',
+                        color: 'primary-color',
                         click: () => this.searchPolicy(policy)
                     }),
                     new MenuButton({
@@ -506,6 +509,7 @@ export class PoliciesComponent implements OnInit {
                         disabled: false,
                         tooltip: 'Compare policies',
                         icon: 'compare',
+                        color: 'primary-color',
                         click: () => this.comparePolicy(policy)
                     })
                 ]
@@ -513,6 +517,7 @@ export class PoliciesComponent implements OnInit {
                 tooltip: 'Test',
                 group: false,
                 visible: true,
+                color: 'primary-color',
                 buttons: [
                     new MenuButton({
                         visible: true,
@@ -523,6 +528,7 @@ export class PoliciesComponent implements OnInit {
                         ),
                         tooltip: 'Attach test file',
                         icon: 'add-test',
+                        color: 'primary-color',
                         click: () => this.addTest(policy)
                     }),
                     new MenuButton({
@@ -530,6 +536,7 @@ export class PoliciesComponent implements OnInit {
                         disabled: !(policy.tests && policy.tests.length),
                         tooltip: 'Test details',
                         icon: 'run-test',
+                        color: 'primary-color',
                         click: () => this.testDetails(policy)
                     })
                 ]
@@ -537,12 +544,14 @@ export class PoliciesComponent implements OnInit {
                 tooltip: 'Export & Import',
                 group: false,
                 visible: true,
+                color: 'primary-color',
                 buttons: [
                     new MenuButton({
                         visible: true,
                         disabled: false,
                         tooltip: 'Export policy',
                         icon: 'export-file',
+                        color: 'primary-color',
                         click: () => this.exportPolicy(policy)
                     }),
                     new MenuButton({
@@ -550,6 +559,7 @@ export class PoliciesComponent implements OnInit {
                         disabled: false,
                         tooltip: 'Export schemas to Excel',
                         icon: 'export-xls',
+                        color: 'primary-color',
                         click: () => this.exportToExcel(policy)
                     }),
                     new MenuButton({
@@ -557,6 +567,7 @@ export class PoliciesComponent implements OnInit {
                         disabled: policy.status !== PolicyStatus.DRAFT,
                         tooltip: 'Import schemas from Excel',
                         icon: 'import-xls',
+                        color: 'primary-color',
                         click: () => this.importFromExcel(policy)
                     })
                 ]
@@ -565,33 +576,39 @@ export class PoliciesComponent implements OnInit {
                 group: true,
                 visible: true,
                 icon: 'import-data',
+                color: 'primary-color',
+                disabled: !this.checkMigrationStatus(policy.status),
                 buttons: [
                     new MenuButton({
                         visible: this.user.POLICIES_MIGRATION_CREATE,
                         disabled: !this.checkMigrationStatus(policy.status),
                         tooltip: 'Export policy data',
                         icon: 'export-data',
+                        color: 'primary-color',
                         click: () => this.exportPolicyData(policy)
                     }),
                     new MenuButton({
                         visible: this.user.POLICIES_MIGRATION_CREATE,
-                        disabled: false,
+                        disabled: !this.checkMigrationStatus(policy.status),
                         tooltip: 'Migrate data',
                         icon: 'import-data',
+                        color: 'primary-color',
                         click: () => this.migrateData(policy)
                     }),
                     new MenuButton({
                         visible: PolicyHelper.isDryRunMode(policy) && this.user.POLICIES_MIGRATION_CREATE,
-                        disabled: false,
+                        disabled: !this.checkMigrationStatus(policy.status),
                         tooltip: 'Export virtual keys',
                         icon: 'export-key',
+                        color: 'primary-color',
                         click: () => this.exportVirtualKeys(policy)
                     }),
                     new MenuButton({
                         visible: PolicyHelper.isDryRunMode(policy) && this.user.POLICIES_MIGRATION_CREATE,
-                        disabled: false,
+                        disabled: !this.checkMigrationStatus(policy.status),
                         tooltip: 'Import virtual keys',
                         icon: 'import-key',
+                        color: 'primary-color',
                         click: () => this.importVirtualKeys(policy)
                     })
                 ]
@@ -599,12 +616,14 @@ export class PoliciesComponent implements OnInit {
                 tooltip: 'Users',
                 group: false,
                 visible: true,
+                color: 'primary-color',
                 buttons: [
                     new MenuButton({
                         visible: this.user.PERMISSIONS_ROLE_MANAGE || this.user.DELEGATION_ROLE_MANAGE,
                         disabled: false,
                         tooltip: 'User Manage',
                         icon: 'group',
+                        color: 'primary-color',
                         click: () => this.userPolicyManage(policy)
                     })
                 ]
@@ -612,6 +631,7 @@ export class PoliciesComponent implements OnInit {
                 tooltip: 'Delete',
                 group: false,
                 visible: true,
+                color: 'delete-color',
                 buttons: [
                     new MenuButton({
                         visible: this.user.SCHEMAS_SCHEMA_DELETE,
@@ -621,6 +641,7 @@ export class PoliciesComponent implements OnInit {
                         ),
                         tooltip: 'Delete All Schemas',
                         icon: 'delete',
+                        color: 'delete-color',
                         click: () => this.deleteAllSchemas(policy)
                     })
                 ]
@@ -628,6 +649,7 @@ export class PoliciesComponent implements OnInit {
                 tooltip: 'Delete',
                 group: false,
                 visible: true,
+                color: 'delete-color',
                 buttons: [
                     new MenuButton({
                         visible: this.user.POLICIES_POLICY_DELETE,
@@ -637,6 +659,7 @@ export class PoliciesComponent implements OnInit {
                         ),
                         tooltip: 'Delete Policy',
                         icon: 'delete',
+                        color: 'delete-color',
                         click: () => this.deletePolicy(policy)
                     })
                 ]
@@ -1012,65 +1035,72 @@ export class PoliciesComponent implements OnInit {
         const dialogRef = this.dialogService.open(DeleteDialogComponent, {
             header: 'Delete Policy',
             width: '720px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
             data: {
                 notificationText: !policy?.previousVersion
                     ? 'Are you sure want to delete policy with related schemas?'
                     : 'Are you sure want to delete policy?',
             },
         });
-        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
-            if (!result) {
-                return;
-            }
-
-            this.loading = true;
-            this.policyEngineService.pushDelete(policy?.id).pipe(takeUntil(this._destroy$)).subscribe(
-                async (result) => {
-                    await this.indexedDb.delete(DB_NAME.GUARDIAN, STORES_NAME.POLICY_STORAGE, policy?.id);
-
-                    const databaseName = DB_NAME.TABLES;
-                    const storeNames = [
-                        STORES_NAME.FILES_STORE,
-                        STORES_NAME.DRAFT_STORE
-                    ];
-                    const keyPrefix = `${policy?.id}__`;
-
-                    await this.indexedDb.clearByKeyPrefixAcrossStores(
-                        databaseName,
-                        storeNames,
-                        keyPrefix
-                    );
-
-                    this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policy.id).catch(() => {
-                        //
-                    })
-
-                    return this.indexedDb.clearByKeyPrefixAcrossStores(
-                        DB_NAME.HIDE_EVENTS_UI_STATE,
-                        [STORES_NAME.POLICY_HIDE_EVENTS_STORE],
-                        `${policy?.id}`
-                    );
-
-                    const { taskId, expectation } = result;
-                    this.router.navigate(['task', taskId], {
-                        queryParams: {
-                            last: btoa(location.href),
-                        },
-                    });
-                },
-                (e) => {
-                    this.loading = false;
+        dialogRef.onClose
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((result) => {
+                if (!result) {
+                    return;
                 }
-            );
-        });
+
+                this.loading = true;
+                this.policyEngineService
+                    .pushDelete(policy?.id)
+                    .pipe(takeUntil(this._destroy$))
+                    .subscribe(
+                        async (result) => {
+                            await this.indexedDb.delete(DB_NAME.GUARDIAN, STORES_NAME.POLICY_STORAGE, policy?.id);
+
+                            const databaseName = DB_NAME.TABLES;
+                            const storeNames = [
+                                STORES_NAME.FILES_STORE,
+                                STORES_NAME.DRAFT_STORE
+                            ];
+                            const keyPrefix = `${policy?.id}__`;
+
+                            await this.indexedDb.clearByKeyPrefixAcrossStores(
+                                databaseName,
+                                storeNames,
+                                keyPrefix
+                            );
+
+                            this.indexedDb.delete(DB_NAME.POLICY_WARNINGS, STORES_NAME.IGNORE_RULES_STORE, policy.id).catch(() => {
+                                //
+                            })
+
+                            this.indexedDb.clearByKeyPrefixAcrossStores(
+                                DB_NAME.HIDE_EVENTS_UI_STATE,
+                                [STORES_NAME.POLICY_HIDE_EVENTS_STORE],
+                                `${policy?.id}`
+                            );
+
+                            const { taskId, expectation } = result;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href),
+                                },
+                            });
+                        },
+                        (e) => {
+                            this.loading = false;
+                        }
+                    );
+            });
     }
 
     public deleteAllSchemas(policy?: any) {
         const dialogRef = this.dialogService.open(DeleteDialogComponent, {
             header: 'Delete Schemas',
             width: '720px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
             data: {
                 notificationText: 'Are you sure want to delete all schemas for this policy?'
             },
@@ -1917,7 +1947,8 @@ export class PoliciesComponent implements OnInit {
             const dialogRef = this.dialogService.open(DeleteDialogComponent, {
                 header: 'Delete Policies',
                 width: '720px',
-                styleClass: 'custom-dialog',
+                styleClass: 'guardian-dialog',
+                showHeader: false,
                 data: {
                     notificationText: 'Are you sure want to delete these policies?',
                     itemNames: this.selectedItems.map(item => item.name),

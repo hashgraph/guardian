@@ -600,7 +600,7 @@
         <ng-container *ngIf="group.visible">
             <ng-container *ngIf="group.group">
                 <div
-                    class="policy-menu-btn sub-menu-button"
+                    class="policy-menu-btn sub-menu-button {{group.color}}"
                     (click)="onSubMenuClick($event, policySubMenu, group)"
                 >
                     <div>
@@ -618,13 +618,14 @@
                         (click)="button.onClick()"
                         [disabled]="button.disabled"
                         label="{{button.tooltip}}"
-                        class="policy-menu-btn"
+                        class="policy-menu-btn {{button.color}}"
                         [outlined]=true
                         [pTooltip]="button.tooltip"
                         tooltipPosition="bottom"
                         appendTo="body">
-                        <svg-icon src="/assets/images/icons/{{button.icon}}.svg"
-                                  [svgClass]="button.disabled ? 'disabled-color' : 'primary-color'"></svg-icon>
+                        <svg-icon 
+                            src="/assets/images/icons/{{button.icon}}.svg"
+                            [svgClass]="button.color"></svg-icon>
                     </p-button>
                 </ng-container>
             </ng-container>
@@ -641,12 +642,13 @@
                 (click)="button.onClick()"
                 [disabled]="button.disabled"
                 label="{{button.tooltip}}"
-                class="policy-menu-btn"
+                class="policy-menu-btn {{button.color}}"
                 [outlined]=true
                 [pTooltip]="button.tooltip"
                 tooltipPosition="bottom">
-                <svg-icon src="/assets/images/icons/{{button.icon}}.svg"
-                          [svgClass]="button.disabled ? 'disabled-color' : 'primary-color'"></svg-icon>
+                <svg-icon 
+                    src="/assets/images/icons/{{button.icon}}.svg"
+                    [svgClass]="button.color"></svg-icon>
             </p-button>
         </ng-container>
     </div>
