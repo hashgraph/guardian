@@ -288,6 +288,10 @@ form {
         border-color: #f44336;
     }
 
+    .form-field-enum ::ng-deep p-dropdown .p-dropdown {
+        border-color: #f44336 !important
+    }
+
     .form-field-input input {
         border-color: #f44336;
     }
