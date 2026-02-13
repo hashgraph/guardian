@@ -147,7 +147,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
     }
 
     private onUpdate(blocks: string[]): void {
-        if (this.readonly || this.loading) {
+        if (this.readonly) {
             return;
         }
 
@@ -284,26 +284,16 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
         this.addTopicModalError = '';
         this.changeDetector.detectChanges();
 
-        this.loading = true;
-
         const payload = {
             globalTopicId: topicId,
             active: false,
             filterFieldsByBranch: {},
         };
 
-        this.policyEngineService
-            .setBlockData(this.id, this.policyId, {
-                operation: 'AddTopic',
-                value: { streams: [payload] },
-            })
-            .subscribe(
-                () => {
-                },
-                (e) => {
-                    console.error(e?.error || e);
-                },
-            );
+        this.submitAndReload({
+            operation: 'AddTopic',
+            value: { streams: [payload] },
+        });
     }
 
     public removeRow(index: number): void {
@@ -340,20 +330,15 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.loading = true;
         this.setRowSaving(row, true);
 
-        this.policyEngineService.setBlockData(this.id, this.policyId, {
-            operation: 'Delete',
-            value: { streams: [{ globalTopicId: topicId }] },
-        }).pipe(
-            finalize(() => {
+        this.submitAndReload(
+            {
+                operation: 'Delete',
+                value: { streams: [{ globalTopicId: topicId }] },
+            },
+            () => {
                 this.setRowSaving(row, false);
-            }),
-        ).subscribe(
-            () => {},
-            (e) => {
-                console.error(e?.error || e);
             },
         );
     }
@@ -440,7 +425,6 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.loading = true;
         this.setRowSaving(row, true);
 
         const payload = {
@@ -450,14 +434,13 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             branchDocumentTypeByBranch: row.branchDocumentTypeByBranch,
         };
 
-        this.policyEngineService.setBlockData(this.id, this.policyId, {
-            operation: 'Update',
-            value: { streams: [payload] },
-        }).pipe(
-        ).subscribe(
-            () => {},
-            (e) => {
-                console.error(e?.error || e);
+        this.submitAndReload(
+            {
+                operation: 'Update',
+                value: { streams: [payload] },
+            },
+            () => {
+                this.setRowSaving(row, false);
             },
         );
     }
@@ -581,19 +564,10 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.loading = true;
-
-        this.policyEngineService
-            .setBlockData(this.id, this.policyId, {
-                operation: 'CreateTopic',
-                value: { streams: [] },
-            })
-            .subscribe(
-                () => {},
-                (e) => {
-                    console.error(e?.error || e);
-                },
-            );
+        this.submitAndReload({
+            operation: 'CreateTopic',
+            value: { streams: [] },
+        });
     }
 
     public onNext(): void {
@@ -607,14 +581,24 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.loading = true;
-
-        const payload = {
+        this.submitAndReload({
             operation: 'Next',
-        };
+        });
+    }
+
+    private submitAndReload(payload: any, onFinally?: () => void): void {
+        this.loading = true;
 
         this.policyEngineService
             .setBlockData(this.id, this.policyId, payload)
+            .pipe(
+                finalize(() => {
+                    if (onFinally) {
+                        onFinally();
+                    }
+                    this.loadData();
+                }),
+            )
             .subscribe(
                 () => {},
                 (e) => {

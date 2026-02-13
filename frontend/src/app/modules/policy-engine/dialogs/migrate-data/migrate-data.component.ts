@@ -82,7 +82,7 @@ class MigrationConfig {
     constructor(
         private _src?: string,
         private _dst?: string
-    ) {}
+    ) { }
 
     updatePolicyValidity() {
         this._policiesValidity = !!this._src && !!this._dst;
@@ -247,6 +247,18 @@ class MigrationConfig {
         };
     }
 
+    ifSystem(iri: string): boolean {
+        if (!iri) {
+            return false;
+        }
+        for (const systemIRI of this._systemSchemas) {
+            if (iri.startsWith(systemIRI)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     addVC(vc: { id: string; schema: string }) {
         this._vcs.push({
             id: vc.id,
@@ -254,7 +266,7 @@ class MigrationConfig {
         });
         this.updateVcValidity();
         if (
-            !this._systemSchemas.includes(vc.schema) &&
+            !this.ifSystem(vc.schema) &&
             !this._schemas.hasOwnProperty(vc.schema)
         ) {
             this._schemas[vc.schema] = undefined;
@@ -550,8 +562,8 @@ export class MigrateData {
                 this.migrationConfig.src === this.uploadedPolicy?.id
                     ? this.uploadedPolicy
                     : await this._policyEngineService
-                          .policy(this.migrationConfig.src)
-                          .toPromise();
+                        .policy(this.migrationConfig.src)
+                        .toPromise();
 
             this.srcRoles = srcPolicy.policyRoles || [];
             if (this.dstRoles.length > 0) {
@@ -592,8 +604,8 @@ export class MigrateData {
         }
 
         this.showMigrateRetirePools = (srcPolicy?.status !== PolicyStatus.DRY_RUN);
-        
-        if (!this.showMigrateRetirePools){
+
+        if (!this.showMigrateRetirePools) {
             this.migrationConfig.migrateRetirePools = false;
         }
 
@@ -769,7 +781,7 @@ export class MigrateData {
                     } else {
                         this.migrationConfig.editedVCs[doc.id] = editedVC;
                     }
-                } catch {}
+                } catch { }
             });
     }
 

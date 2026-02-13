@@ -185,7 +185,7 @@ export class TokenConfigComponent implements OnInit {
             tooltip: false
         }]
     }
-    
+
     private _destroy$ = new Subject<void>();
 
     ngOnInit() {
@@ -513,7 +513,8 @@ export class TokenConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(DeleteDialogComponent, {
             header: 'Delete Tokens',
             width: '720px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
             data: {
                 notificationText: 'Are you sure want to delete this token?'
             },
@@ -648,7 +649,7 @@ export class TokenConfigComponent implements OnInit {
         }
         this.loadRelayerAccounts();
     }
-    
+
     public onSelectAllItems(event: any) {
         if (event.checked) {
             this.selectedItems = [...this.selectedItems, ...this.tokens.filter((item: any) => item.canDelete && !this.selectedItemIds.includes(item.id))];
@@ -706,7 +707,8 @@ export class TokenConfigComponent implements OnInit {
             const dialogRef = this.dialog.open(DeleteDialogComponent, {
                 header: 'Delete Tokens',
                 width: '720px',
-                styleClass: 'custom-dialog',
+                styleClass: 'guardian-dialog',
+                showHeader: false,
                 data: {
                     notificationText: 'Are you sure want to delete these tokens?',
                     itemNames: this.selectedItems.map(item => item.tokenName + ' (' + item.tokenId + ')'),
@@ -732,7 +734,7 @@ export class TokenConfigComponent implements OnInit {
                         (e) => {
                             this.loading = false;
                         }
-                );
+                    );
             });
         }
     }

@@ -218,7 +218,7 @@
 
                     <div
                         *ngIf="isEnum(item)"
-                        class="form-field-input guardian-input-container"
+                        class="form-field-input guardian-input-container form-field-enum"
                         [attr.readonly-field]="isEditMode && !item.isUpdatable"
                     >
                         <p-dropdown
@@ -275,7 +275,7 @@
             </div>
 
             <!-- array of simple fields -->
-            <div *ngIf="ifSimpleArray(item)" class="form-field-array">
+            <div *ngIf="ifSimpleArray(item)" class="form-field-array" [attr.array-invalid]="item.control?.invalid">
                 <div class="label-field" id="detail-section">
                     <div
                         *ngIf="!isChildSchema && formModel.controls && !isEditMode"
