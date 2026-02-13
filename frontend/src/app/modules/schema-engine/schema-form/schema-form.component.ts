@@ -741,11 +741,17 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public getTableHeaderFields(item: IFieldControl<any>): any[] | undefined {
-        return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
+        if (this.hide) {
+            return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
+        }
+        return item.fields?.filter(f => f.type !== 'null' && !f.hidden);
     }
 
     public getTableRowFields(item: IFieldIndexControl<any>): any[] | undefined {
-        return item.model.controls?.filter((f: any) => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
+        if (this.hide) {
+            return item.model.controls?.filter((f: any) => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
+        }
+        return item.model.controls?.filter((f: any) => f.type !== 'null' && !f.hidden);
     }
 }
 

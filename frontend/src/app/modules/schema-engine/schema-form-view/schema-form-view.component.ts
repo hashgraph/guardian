@@ -508,7 +508,10 @@ export class SchemaFormViewComponent implements OnInit {
     }
     
     public getTableHeaderFields(item: IFieldControl): any[] | undefined {
-        return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
+        if (this.hide) {
+            return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
+        }
+        return item.fields?.filter(f => f.type !== 'null' && !f.hidden);
     }
 
    public getTableHRowFields(item: IFieldControl): any[] {
@@ -524,7 +527,7 @@ export class SchemaFormViewComponent implements OnInit {
 
             for (let j = 0; j < item.fields.length; j++) {
                 const field = item.fields[j];
-                if (this.hide[field.name] || field.hidden || field.type === 'null') 
+                if (this.hide && this.hide[field.name] || field.hidden || field.type === 'null') 
                     continue;
 
                 const tableField: IFieldControl = {
