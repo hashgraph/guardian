@@ -130,8 +130,15 @@ export class AddDocumentDialog {
         const reader = new FileReader()
         reader.readAsText(event);
         reader.addEventListener('load', (e: any) => {
-            this.fileBuffer = e.target.result;
-            this.fileValue = JSON.parse(this.fileBuffer);
+            this.fileBuffer = e.target.result || '';
+            try {
+                const start = this.fileBuffer.indexOf('{');
+                const end = this.fileBuffer.lastIndexOf('}');
+                this.fileBuffer = this.fileBuffer.substring(start, end + 1);
+                this.fileValue = JSON.parse(this.fileBuffer);
+            } catch (error) {
+                this.error = error?.toString();
+            }
         });
     }
 
