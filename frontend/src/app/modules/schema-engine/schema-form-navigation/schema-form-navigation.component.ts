@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { IFieldControl } from '../schema-form-model/field-form';
 
 export interface NavItem {
@@ -22,7 +22,29 @@ export class SchemaFormNavigationComponent {
         return this.buildNavTree(this.schemaFields || []);
     }
 
-    public buildNavTree(controls: any[]): NavItem[] {
+    ngOnInit(): void {
+        this.openFirstNavItem();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['schemaFields'] && !changes['schemaFields'].firstChange) {
+            this.expanded.clear();
+            this.openFirstNavItem();
+        }
+    }
+
+    private openFirstNavItem() {
+        setTimeout(() => {
+            if (this.navTree && this.navTree.length > 0) {
+                const firstItem = this.navTree[0];
+                if (firstItem && firstItem.accordionId) {
+                    this.toggle(firstItem.accordionId);
+                }
+            }
+        }, 50);
+    }
+
+    public buildNavTree(controls: any[], parentPath?: string): NavItem[] {
         const items: NavItem[] = [];
         for (const control of controls || []) {
             if (control?.visibility === false) continue;
@@ -31,14 +53,15 @@ export class SchemaFormNavigationComponent {
                 continue;
             }
 
-            const accordionId = control.id;
+            const baseId = control.id;
+            const accordionId = parentPath ? `${parentPath};${baseId}` : baseId;
             const title = control.description ?? control.title ?? control.name;
 
             const node: NavItem = { title, accordionId };
 
             const childControls = Array.isArray(control.model?.controls) ? control.model.controls : undefined;
             if (Array.isArray(childControls) && childControls.length > 0) {
-                node.children = this.buildNavTree(childControls);
+                node.children = this.buildNavTree(childControls, accordionId);
             }
 
             if (control?.isArray) {
@@ -48,11 +71,12 @@ export class SchemaFormNavigationComponent {
                     for (let i = 0; i < list.length; i++) {
                         const li = list[i];
                         const idx = li?.index2 ?? i;
-                        const instAccordionId = `${accordionId}-${idx}`;
+                        const instBase = `${baseId}-${idx}`;
+                        const instAccordionId = parentPath ? `${parentPath};${instBase}` : instBase;
                         const instTitle = `${title} #${idx}`;
                         const instNode: NavItem = { title: instTitle, accordionId: instAccordionId };
                         if (Array.isArray(control.model?.controls) && control.model?.controls.length > 0) {
-                            instNode.children = this.buildNavTree(control.model.controls);
+                            instNode.children = this.buildNavTree(control.model.controls, instAccordionId);
                         }
                         node.children.push(instNode);
                         node.count = node.children.length;
@@ -84,21 +108,18 @@ export class SchemaFormNavigationComponent {
         this.select.emit(node.accordionId);
     }
 
-    public selectByPath(path?: string) {
-        if (!path) return;
-        this.expandAncestors(path);
-    }
-
     private expandAncestors(accordionId: string) {
-        const parts = accordionId.split('-')[0].split('.');
-        const root = accordionId.includes('-') ? accordionId.split('-')[0] : null;
+        const parts = accordionId.split(';');
         let cur = '';
         for (let i = 0; i < parts.length; i++) {
-            cur = cur ? `${cur}.${parts[i]}` : parts[i];
+            cur = cur ? `${cur};${parts[i]}` : parts[i];
             this.expanded.add(cur);
         }
-        if (root) {
-            this.expanded.add(root);
+    }
+
+    public expandedByAccordionId(accordionId: string): void {
+        if (accordionId) {
+            this.toggle(accordionId); 
         }
     }
 }

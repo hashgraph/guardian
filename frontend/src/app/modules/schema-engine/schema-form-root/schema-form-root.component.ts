@@ -3,6 +3,7 @@ import { SchemaFormComponent } from '../schema-form/schema-form.component';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaField, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { FieldForm, IFieldControl } from '../schema-form-model/field-form';
+import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-form-navigation.component';
 
 /**
  * Form built by schema
@@ -17,6 +18,7 @@ export class SchemaFormRootComponent implements OnInit {
     public model: FieldForm | null;
     public loading: boolean = true;
     @ViewChild('childForm') private childForm?: SchemaFormComponent;
+    @ViewChild('schemaNav') private schemaNav?: SchemaFormNavigationComponent;
 
     @Input('schema') schema: Schema;
     @Input('fields') fields: SchemaField[];
@@ -119,14 +121,14 @@ export class SchemaFormRootComponent implements OnInit {
     }
 
     public onNavSelect(link: string) {
-        console.log('[schema-root] nav selected ->', link);
-        // prefer calling child directly to ensure handler is executed
         if (this.childForm && typeof this.childForm.openField === 'function') {
             this.childForm.openField(link);
-        } else {
-            // fallback: set model and let input binding handle it (if implemented)
-            (this as any).navLink = link;
-            setTimeout(() => { (this as any).navLink = undefined; }, 500);
+        }
+    }
+
+    public onAccordionSelect(link: string) {
+        if (this.schemaNav && typeof this.schemaNav.expandedByAccordionId === 'function') {
+            this.schemaNav.expandedByAccordionId(link);
         }
     }
 

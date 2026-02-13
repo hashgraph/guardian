@@ -639,9 +639,9 @@
                         item.control?.invalid ? 'guardian-accordion-error' : ''
                     }}"
                 >
-                    <p-accordionTab [(selected)]="item.open">
+                    <p-accordionTab [(selected)]="item.open" (selectedChange)="onAccordionSelectEvent($event, item)">
                         <ng-template pTemplate="header">
-                            <div class="group-label-field" id="detail-section" [attr.accordionTabId]="item.id">
+                            <div class="group-label-field" id="detail-section" [attr.accordiontabid]="item.id">
                                 <div
                                     *ngIf="
                                         !isChildSchema &&
@@ -781,6 +781,7 @@
                                                 isFormForRequestBlock
                                             "
                                             [isEditMode]="isEditMode"
+                                            (onAccordionSelect)="onAccordionSelectEvent($event, item, '', $event)"
                                         >
                                         </app-schema-form>
                                     </ng-container>
@@ -821,9 +822,9 @@
                         item.control?.invalid ? 'guardian-accordion-error' : ''
                     }}"
                 >
-                    <p-accordionTab [(selected)]="item.open">
+                    <p-accordionTab [(selected)]="item.open" (selectedChange)="onAccordionSelectEvent($event, item)">
                         <ng-template pTemplate="header">
-                            <div class="group-label-field" id="detail-section" [attr.accordionTabId]="item.id">
+                            <div class="group-label-field" id="detail-section" [attr.accordiontabid]="item.id">
                                 <div
                                     *ngIf="!isChildSchema && formModel.controls && !isEditMode"
                                     class="page-number"
@@ -915,12 +916,13 @@
                                 >
                                     <p-accordionTab
                                         [(selected)]="listItem.open"
+                                        (selectedChange)="onAccordionSelectEvent($event, item, listItem.index2)"
                                     >
                                         <ng-template pTemplate="header">
                                             <div
                                                 class="group-label-field"
                                                 id="detail-section"
-                                                [attr.accordionTabId]="item.id + '-' + listItem.index2"
+                                                [attr.accordiontabid]="item.id + '-' + listItem.index2"
                                             >
                                                 <span
                                                     [attr.default]="
@@ -1031,6 +1033,7 @@
                                                             [isEditMode]="
                                                                 isEditMode
                                                             "
+                                                            (onAccordionSelect)="onAccordionSelectEvent($event, item, listItem.index2, $event)"
                                                         >
                                                         </app-schema-form>
                                                     </ng-container>
