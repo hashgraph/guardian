@@ -232,7 +232,8 @@ form {
 }
 
 .dialog-body {
-    height: 65vh;
+    height: 100vh;
+    max-height: 75vh;
     overflow-y: auto;
 }
 

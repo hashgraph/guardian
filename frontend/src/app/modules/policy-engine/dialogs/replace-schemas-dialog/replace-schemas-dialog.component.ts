@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FormArray, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -24,7 +24,8 @@ export class ReplaceSchemasDialogComponent implements OnDestroy {
   schemas: Schema[] = [];
   checks = new FormArray<FormControl<boolean>>([]);
   master = new FormControl<boolean>(false, { nonNullable: true });
-
+  public isLargeSize: boolean = true;
+  @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
   private subs = new Subscription();
 
 
@@ -84,19 +85,40 @@ export class ReplaceSchemasDialogComponent implements OnDestroy {
   }
 
   public onOpenDocument(schema: Schema): void {
-      this.dialogService.open(VCViewerDialog, {
-          showHeader: false,
-          width: '80%',
-          styleClass: 'guardian-dialog',
-          data: {
-              row: schema,
-              document: schema?.document,
-              title: 'Schema',
-              type: 'JSON',
-              topicId: schema.topicId,
-              schemaId: schema.id,
-              category: SchemaCategory.POLICY
-          }
-      });
-  }
+        this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
+            data: {
+                row: schema,
+                document: schema?.document,
+                title: 'Schema',
+                type: 'JSON',
+                topicId: schema.topicId,
+                schemaId: schema.id,
+                category: SchemaCategory.POLICY
+            }
+        });
+    }
+
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
+    }
 }

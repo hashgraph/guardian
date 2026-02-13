@@ -212,7 +212,7 @@ export class PolicyRepositoryComponent implements OnInit {
         const schema = this.getSchema(row.schema);
         const dialogRef = this.dialogService.open(VCFullscreenDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             maskStyleClass: 'guardian-fullscreen-dialog',
             data: {

@@ -508,4 +508,11 @@ body {
         color: var(--formula-constant-color, #4169e2) !important;
         text-decoration: underline;
     }
+
+    .header-icon.resize {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 16px;
+    }
 }

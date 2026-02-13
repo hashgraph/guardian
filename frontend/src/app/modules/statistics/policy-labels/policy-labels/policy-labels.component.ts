@@ -226,7 +226,7 @@ export class PolicyLabelsComponent implements OnInit {
     public onCreate() {
         const dialogRef = this.dialogService.open(NewPolicyLabelDialog, {
             showHeader: false,
-            width: '80%',
+            width: '720px',
             styleClass: 'guardian-dialog',
             data: {
                 title: 'Create New',
@@ -256,7 +256,7 @@ export class PolicyLabelsComponent implements OnInit {
     public onImport() {
         const dialogRef = this.dialogService.open(ImportEntityDialog, {
             showHeader: false,
-            width: '80%',
+            width: '720px',
             styleClass: 'guardian-dialog',
             data: {
                 type: ImportEntityType.PolicyLabel,
@@ -273,7 +273,7 @@ export class PolicyLabelsComponent implements OnInit {
         const { type, data, label } = result;
         const dialogRef = this.dialogService.open(NewPolicyLabelDialog, {
             showHeader: false,
-            width: '80%',
+            width: '720px',
             styleClass: 'guardian-dialog',
             data: {
                 title: 'Preview',

@@ -658,7 +658,7 @@ export class VCFullscreenDialog {
     public onOpenTag(tag: any) {
         this.dialogService.open(ViewerDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 title: 'Tag',

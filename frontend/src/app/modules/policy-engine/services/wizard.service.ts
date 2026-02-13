@@ -128,7 +128,7 @@ export class WizardService {
     ) {
         const dialogRef = this.dialogService.open(PolicyWizardDialogComponent, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             header: 'Policy Wizard',
             data: {

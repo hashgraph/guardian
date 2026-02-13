@@ -159,7 +159,7 @@ export class UserContractConfigComponent implements OnInit {
         const title = `VC Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 title: title,

@@ -211,7 +211,7 @@ export class TagsExplorerDialog {
     public openVCDocument(item: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 id: item.id,

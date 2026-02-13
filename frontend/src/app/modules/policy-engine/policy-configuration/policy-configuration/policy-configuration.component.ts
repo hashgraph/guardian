@@ -1598,7 +1598,7 @@ export class PolicyConfigurationComponent implements OnInit {
         const dialogRef = this.dialogService.open(TestCodeDialog, {
             showHeader: false,
             header: 'Code',
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 block,
@@ -1861,7 +1861,7 @@ export class PolicyConfigurationComponent implements OnInit {
         const dialogRef = this.dialogService.open(PublishPolicyDialog, {
             showHeader: false,
             header: 'Publish Policy',
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 policy: this.policyTemplate
@@ -2479,7 +2479,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
         if (tagsHistory.length > 0) {
             const dialogRef = this.dialog.open(MultipleTagsExplorerDialog, {
-                width: '80%',
+                width: '90%',
                 closable: true,
                 header: 'Tags',
                 data: {

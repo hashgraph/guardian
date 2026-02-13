@@ -71,7 +71,7 @@ export class CustomLogicConfigComponent implements OnInit {
     editExpression($event: MouseEvent) {
         const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 test: true,
@@ -97,7 +97,7 @@ export class CustomLogicConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(TestCodeDialog, {
             showHeader: false,
             header: 'Code',
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 block: this.item,

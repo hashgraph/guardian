@@ -321,7 +321,7 @@ export class TestCodeDialog {
         }
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 dryRun: true,
