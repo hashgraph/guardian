@@ -492,4 +492,73 @@ export class SchemaFormViewComponent implements OnInit {
             }
         }
     }
+
+    public canDrawTable(item: IFieldControl): boolean {
+        return item.isArray && 
+            item.isRef && 
+            item.customType !== 'geo' &&
+            item.customType !== 'table' &&
+            item.customType !== 'sentinel' &&
+            !item.hidden &&
+            !item.fields?.find(f => (f.isArray || 
+                f.isRef ||
+                f.customType === 'geo' ||
+                f.customType === 'table' ||
+                f.customType === 'sentinel') && !f.hidden);
+    }
+    
+    public getTableHeaderFields(item: IFieldControl): any[] | undefined {
+        if (this.hide) {
+            return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
+        }
+        return item.fields?.filter(f => f.type !== 'null' && !f.hidden);
+    }
+
+   public getTableHRowFields(item: IFieldControl): any[] {
+        if (!item.list?.length || !item.fields?.length) {
+            return [];
+        }
+
+        const resultRows: any[] = [];
+
+        for (let i = 0; i < item.list.length; i++) {
+            const dataRow = item.list[i] as any;
+            const rowFields: any[] = [];
+
+            for (let j = 0; j < item.fields.length; j++) {
+                const field = item.fields[j];
+                if (this.hide && this.hide[field.name] || field.hidden || field.type === 'null') 
+                    continue;
+
+                const tableField: IFieldControl = {
+                    ...field,
+                    fullPath: field.fullPath || '',
+                    hide: false,
+                    isInvalidType: false,
+                    value: dataRow[field.name] ?? undefined,
+                    loading: false,
+                    list: [],
+                    pageIndex: 0,
+                    pageSize: 0,
+                    count: 0,
+                    imgSrc: '',
+                    open: false
+                };
+
+                if (this.isIPFS(field) && field.customType !== 'file') {
+                    this.loadImg(tableField);
+                }
+
+                if (!field.isArray && field.isRef) {
+                    tableField.fields = field.fields;
+                }
+
+                rowFields.push(tableField);
+            }
+
+            resultRows.push(rowFields);
+        }
+
+        return resultRows;
+    }
 }
