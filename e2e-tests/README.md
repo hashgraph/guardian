@@ -1,3 +1,72 @@
+# Guardian E2E (Docker)
+
+This folder contains Cypress API and UI tests runnable via Docker.
+
+## Prerequisites
+
+- Docker Desktop (or Docker Engine + Compose)
+- Guardian backend reachable from Docker (default: API gateway at `host.docker.internal:3002`)
+
+## Run API tests (Docker)
+
+All API tests:
+
+```bash
+cd e2e-tests
+docker compose run --rm --build cypress-api
+```
+
+Sanity example (multi-tag):
+
+```bash
+cd e2e-tests
+CYPRESS_grepTags="preparing policies" CYPRESS_grepFilterSpecs=true docker compose run --rm --build cypress-api
+```
+
+Smoke example:
+
+```bash
+cd e2e-tests
+CYPRESS_grepTags="smoke" CYPRESS_grepFilterSpecs=true docker compose run --rm --build cypress-api
+```
+
+## Run UI tests (Docker)
+
+All UI tests:
+
+```bash
+cd e2e-tests
+docker compose run --rm --build cypress-ui
+```
+
+UI smoke (small suite by tags):
+
+```bash
+cd e2e-tests
+CYPRESS_grepTags="ui smoke" CYPRESS_grepFilterSpecs=true docker compose run --rm --build cypress-ui
+```
+
+## Reports
+
+After any Docker run:
+
+```bash
+cd e2e-tests
+open cypress/reports/html/index.html
+```
+
+## Useful overrides
+
+- **API origin** (Docker Desktop): `CYPRESS_apiServer=http://host.docker.internal:3002/`
+- **UI → API gateway** (for the `ui` container): `UI_GATEWAY_HOST` / `UI_GATEWAY_PORT`
+
+Example:
+
+```bash
+cd e2e-tests
+UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --rm --build cypress-ui
+```
+
 # Guardian Test Automation
 
 ## Description
@@ -208,6 +277,70 @@ CYPRESS_grepTags=all CYPRESS_grepFilterSpecs=true docker-compose up
 > Note: when running API tests in Docker, we target the API gateway directly at `:3002` (no `/api/v1` prefix).
 > If you point Cypress at `http://...:3002/api/v1/...` you’ll get 404s (the Angular `:4200/api/v1` proxy normally rewrites that prefix away).
 
+#### Recommended (one-shot) Docker Compose runs
+
+Prefer `docker compose run --rm` for test jobs (it exits cleanly and doesn’t leave long-lived containers).
+
+```bash
+cd e2e-tests
+docker compose build
+docker compose run --rm cypress-api
+```
+
+Run a smaller suite:
+
+```bash
+cd e2e-tests
+docker compose run --rm cypress-api --spec "cypress/e2e/api-tests/000_accounts_tests/*.cy.js"
+```
+
+Sanity (multi-tag):
+
+```bash
+cd e2e-tests
+CYPRESS_grepTags="preparing policies" CYPRESS_grepFilterSpecs=true docker compose run --rm cypress-api
+```
+
+Smoke:
+
+```bash
+cd e2e-tests
+CYPRESS_grepTags="smoke" CYPRESS_grepFilterSpecs=true docker compose run --rm cypress-api
+```
+
+UI tests (requires UI server reachable from Docker; set `CYPRESS_UI_BASEURL`):
+
+```bash
+cd e2e-tests
+CYPRESS_UI_BASEURL=http://host.docker.internal:4200 docker compose run --rm cypress-tests --spec "cypress/e2e/ui-tests/specs/**/*.cy.js"
+```
+
+UI tests (no host binding tweaks): run the UI inside Docker (frontend runs in `ui` service). This still expects the **API gateway** to be reachable from Docker (default: `host.docker.internal:3002`). If needed, set `UI_GATEWAY_HOST` / `UI_GATEWAY_PORT`.
+
+```bash
+cd e2e-tests
+docker compose run --rm --build cypress-ui
+```
+
+If the `ui` container crashes on startup with Nginx errors, make sure these variables are set (they’re required by the `frontend-demo` image template):
+
+- `UI_MRV_SENDER_HOST` / `UI_MRV_SENDER_PORT` (defaults: `host.docker.internal:3005`)
+- `UI_TOPIC_VIEWER_HOST` / `UI_TOPIC_VIEWER_PORT` (defaults: `host.docker.internal:3006`)
+
+UI tests (small 3-spec suite):
+
+```bash
+cd e2e-tests
+docker compose run --rm --build cypress-ui --spec "cypress/e2e/ui-tests/specs/01_administration/status.cy.js,cypress/e2e/ui-tests/specs/01_administration/logs.cy.js,cypress/e2e/ui-tests/specs/01_administration/settings.cy.js"
+```
+
+UI smoke (small suite by tags, no `--spec`):
+
+```bash
+cd e2e-tests
+CYPRESS_grepTags="ui smoke" CYPRESS_grepFilterSpecs=true docker compose run --rm --build cypress-ui
+```
+
 #### Using raw Docker (from repo root)
 ```bash
 docker build -f e2e-tests/Dockerfile.chrome -t cypress-runner ./e2e-tests
@@ -222,8 +355,8 @@ docker run --rm --network host -e CYPRESS_portApi=3002 -e CYPRESS_grepTags="smok
 cd e2e-tests
 CYPRESS_grepTags="preparing policies" \
 CYPRESS_grepFilterSpecs=true \
-CYPRESS_operatorId=0.0.xxx \
-CYPRESS_operatorKey=xxxx \
+CYPRESS_operatorId= \
+CYPRESS_operatorKey= \
 docker-compose up
 ```
 
@@ -245,21 +378,26 @@ When running Docker tests, all environment variables must be prefixed with `CYPR
 | Variable | Default | Description |
 |----------|---------|-------------|
 | CYPRESS_portApi | 3002 | Guardian API port (direct API gateway). For local runs via the Angular proxy, this is typically `4200/api/v1` |
-| CYPRESS_baseUrl | - | Base URL for UI tests (optional). When using `docker compose`, set `CYPRESS_UI_BASEURL` (it maps to `CYPRESS_baseUrl`) e.g. `http://host.docker.internal:4200` |
+| CYPRESS_baseUrl | - | Base URL for UI tests. When using `docker compose run cypress-tests`, set `CYPRESS_UI_BASEURL` (it maps to `CYPRESS_baseUrl`) e.g. `http://host.docker.internal:4200`. When using `docker compose run cypress-ui`, it is set automatically to `http://ui`. |
 | CYPRESS_grepTags | all | Tag filter; for multiple tags use spaces (e.g. `preparing policies`). Commas are also accepted. |
 | CYPRESS_grepFilterSpecs | true | Enable tag filtering |
 | CYPRESS_operatorId | - | Hedera operator ID (optional) |
 | CYPRESS_operatorKey | - | Hedera operator key (optional) |
 | CYPRESS_BROWSER | electron in default image, chromium in docker-compose | Browser: `electron`, `chromium`, or `firefox` (must exist in the image) |
 | CYPRESS_apiServer | - | Optional full API origin override (useful on Docker Desktop). Examples: `http://host.docker.internal:3002/` (direct API gateway) or `http://host.docker.internal:4200/api/v1/` (if using Angular proxy) |
+| CYPRESS_SPEC | `cypress/e2e/api-tests/**/*.cy.js` in `cypress-api` | Optional default spec pattern used by the Docker entrypoint when `--spec` is not provided |
+| CYPRESS_API_WAIT_TIMEOUT | 60 | API readiness wait timeout (seconds) |
+| CYPRESS_API_WAIT_INTERVAL | 2 | API readiness wait interval (seconds) |
+| CYPRESS_UI_WAIT_TIMEOUT | 90 | UI readiness wait timeout (seconds), used when `CYPRESS_baseUrl` is set |
+| CYPRESS_UI_WAIT_INTERVAL | 2 | UI readiness wait interval (seconds), used when `CYPRESS_baseUrl` is set |
 
 ### Configuration File
 
 Create `.env` file in the e2e-tests directory for persistent environment variables:
 
 ```bash
-CYPRESS_operatorId=0.0.7416934
-CYPRESS_operatorKey=302e020100300506032b6570042204207b761e73e67ca2c44270724eb60314bff2f13483bf1b69fd69c0d58f178654b5
+CYPRESS_operatorId=
+CYPRESS_operatorKey=
 CYPRESS_MGSAdmin=
 CYPRESS_MGSIndexerAPIToken=
 ```
