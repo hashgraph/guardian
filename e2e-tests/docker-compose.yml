@@ -1,18 +1,22 @@
-version: "3.3"
 services:
-  cypress-container:
+  cypress-tests:
     build:
       context: .
-      dockerfile: Dockerfile-test
-    image: cypress-build
-
-  cypress-tests:
-    image: cypress-build
-    depends_on:
-      - cypress-container
+      dockerfile: Dockerfile.chrome
+    image: cypress-build:chrome
+    env_file:
+      - .env
     environment:
-      - PORT=${PORT}
-      - CYPRESS_baseUrl=http://localhost:4200
-      - TAG=${TAG}
+      - CYPRESS_portApi=${CYPRESS_portApi:-4200/}
+      - CYPRESS_baseUrl=${CYPRESS_baseUrl:-http://host.docker.internal:4200}
+      - CYPRESS_BROWSER=chromium
+      - CYPRESS_grepTags=${CYPRESS_grepTags:-all}
+      - CYPRESS_grepFilterSpecs=${CYPRESS_grepFilterSpecs:-true}
+      - CYPRESS_operatorId=${CYPRESS_operatorId}
+      - CYPRESS_operatorKey=${CYPRESS_operatorKey}
+      - CYPRESS_MGSAdmin=${CYPRESS_MGSAdmin}
+      - CYPRESS_MGSIndexerAPIToken=${CYPRESS_MGSIndexerAPIToken}
     network_mode: "host"
-    command: "./entrypoint.sh"
+    volumes:
+      - ./cypress/reports:/e2e/cypress/reports
+      - ./cypress/test_results:/e2e/cypress/test_results
