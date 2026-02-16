@@ -23,6 +23,11 @@
                         <div class="tabview-label">Remote Policies</div>
                     </ng-template>
                 </p-tabPanel>
+                <p-tabPanel *ngIf="user.POLICIES_POLICY_EXECUTE && !user.POLICIES_POLICY_MANAGE" [selected]="tab === 'disconnected'">
+                    <ng-template pTemplate="header">
+                        <div class="tabview-label">Disconnected Policies</div>
+                    </ng-template>
+                </p-tabPanel>
             </p-tabView>
         </div>
     </ng-container>
@@ -367,8 +372,9 @@
                                     class="cell-150 cell-last cell-left-padding-0"
                                     pFrozenColumn
                                 >
-                                    <button 
-                                        (click)="disconnect(policy)"
+                                    <button
+                                        *ngIf="tab !== 'disconnected'"
+                                        (click)="disconnect(policy, tab)"
                                         class="guardian-button guardian-button-delete disconnect-btn">
                                         <div class="guardian-button-icon">
                                             <svg-icon class="icon-btn svg-icon"
@@ -377,6 +383,18 @@
                                             </svg-icon>
                                         </div>
                                         Disconnect
+                                    </button>
+                                    <button
+                                        *ngIf="tab === 'disconnected'"
+                                        (click)="reconnect(policy, tab)"
+                                        class="guardian-button guardian-button-success disconnect-btn">
+                                        <div class="guardian-button-icon">
+                                            <svg-icon class="icon-btn svg-icon"
+                                                src="/assets/images/icons/refresh-2.svg"
+                                                svgClass="icon-color-success">
+                                            </svg-icon>
+                                        </div>
+                                        Reconnect
                                     </button>
                                 </td>
                                 <td

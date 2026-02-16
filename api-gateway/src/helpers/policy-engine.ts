@@ -237,13 +237,13 @@ export class PolicyEngine extends NatsService {
     /**
      * Disconnect policy
      * @param policyId
-     * @param owner
+     * @param user
      */
     public async disconnectPolicy(
         policyId: string,
-        owner: IOwner
+        user: IAuthUser,
     ): Promise<boolean> {
-        return await this.sendMessage(PolicyEngineEvents.DISCONNECT_POLICY, { policyId, owner });
+        return await this.sendMessage(PolicyEngineEvents.DISCONNECT_POLICY, { policyId, user });
     }
 
     /**

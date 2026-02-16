@@ -21,70 +21,36 @@ import {
     ModuleStatus
 } from '@guardian/interfaces';
 import {
-    AggregateVC,
-    ApprovalDocument,
     Artifact,
-    BlockCache,
-    BlockState,
-    BlockStateSavepoint,
     DatabaseServer,
-    DeleteCache,
-    DidDocument,
-    DocumentDraft,
-    DocumentState,
-    ExternalDocument,
     findAllEntities,
-    Formula,
     FormulaImportExport,
     getArtifactType,
-    GlobalEventsReaderStream,
-    GlobalEventsWriterStream,
     INotificationStep,
     IPolicyComponents,
     MessageAction,
     MessageServer,
     MessageType,
-    MintRequest,
-    MintTransaction,
-    MultiDocuments,
     MultiPolicy,
-    MultiPolicyTransaction,
     NatsService,
     NotificationHelper, PinoLogger,
     Policy,
-    PolicyAction,
-    PolicyCacheData,
-    PolicyComment,
-    PolicyDiff,
-    PolicyDiscussion,
     PolicyImportExport,
-    PolicyInvitations,
-    PolicyLabel,
-    PolicyLabelDocument,
     PolicyMessage,
-    PolicyRoles,
-    PolicyStatistic,
-    PolicyStatisticDocument,
-    Record,
     replaceAllEntities,
     replaceAllVariables,
     replaceArtifactProperties,
     Schema as SchemaCollection,
     SchemaFields,
-    SchemaRule,
     Singleton,
-    SplitDocuments,
     SynchronizationMessage,
-    Tag,
     Token,
     TokenMessage,
     Topic,
     TopicConfig,
     TopicHelper,
     Users,
-    VcDocument,
-    VcHelper,
-    VpDocument,
+    VcHelper
 } from '@guardian/common';
 import {
     deleteDemoSchema,
@@ -352,7 +318,10 @@ export class PolicyEngine extends NatsService {
         remoteFilters.id = { $in: assignedMap };
 
         //All
-        filters.$or = [remoteFilters, localFilters];
+        filters.$or = [
+            localFilters,
+            remoteFilters
+        ];
         return filters;
     }
 
@@ -361,11 +330,31 @@ export class PolicyEngine extends NatsService {
      * @param filters
      * @param type
      */
-    public async addLocationFilters(filters: { [field: string]: any }, type: LocationType): Promise<any> {
-        if (type === LocationType.REMOTE) {
+    public async addLocationFilters(
+        filters: { [field: string]: any },
+        type: 'local' | 'remote' | 'disconnected',
+        user: IOwner
+    ): Promise<any> {
+        if (type === 'remote') {
             filters.locationType = { $eq: LocationType.REMOTE }
         } else {
             filters.locationType = { $ne: LocationType.REMOTE }
+
+            //Disconnected
+            const disconnected = await DatabaseServer.getDisconnectedPolicies(user.creator);
+            const disconnectedMap = disconnected.map((e) => e.policyId);
+            if (!filters.$and) {
+                filters.$and = [];
+            }
+            filters.$and.push({
+                id: type === 'disconnected' ? { $in: disconnectedMap } : { $nin: disconnectedMap }
+            });
+            if (filters.id) {
+                filters.$and.push({
+                    id: filters.id
+                });
+                delete filters.id;
+            }
         }
     }
 
@@ -2222,44 +2211,6 @@ export class PolicyEngine extends NatsService {
         userId: string | null
     ) {
         const db = new DatabaseServer();
-        await db.deleteEntity(AggregateVC, { policyId });
-        await db.deleteEntity(ApprovalDocument, { policyId });
-        await db.deleteEntity(BlockCache, { policyId });
-        await db.deleteEntity(BlockStateSavepoint, { policyId });
-        await db.deleteEntity(BlockState, { policyId });
-        await db.deleteEntity(DeleteCache, { policyId });
-        await db.deleteEntity(DidDocument, { policyId });
-        await db.deleteEntity(DocumentDraft, { policyId });
-        await db.deleteEntity(DocumentState, { policyId });
-        await db.deleteEntity(ExternalDocument, { policyId });
-        await db.deleteEntity(Formula, { policyId });
-        await db.deleteEntity(GlobalEventsReaderStream, { policyId });
-        await db.deleteEntity(GlobalEventsWriterStream, { policyId });
-        await db.deleteEntity(MintRequest, { policyId });
-        await db.deleteEntity(MintTransaction, { policyId });
-        await db.deleteEntity(MultiDocuments, { policyId });
-        await db.deleteEntity(MultiPolicyTransaction, { policyId });
-        await db.deleteEntity(PolicyAction, { policyId });
-        await db.deleteEntity(PolicyCacheData, { policyId });
-        await db.deleteEntity(PolicyComment, { policyId });
-        await db.deleteEntity(PolicyDiff, { policyId });
-        await db.deleteEntity(PolicyDiscussion, { policyId });
-        await db.deleteEntity(PolicyInvitations, { policyId });
-        await db.deleteEntity(PolicyLabelDocument, { policyId });
-        await db.deleteEntity(PolicyLabel, { policyId });
-        await db.deleteEntity(PolicyRoles, { policyId });
-        await db.deleteEntity(PolicyStatisticDocument, { policyId });
-        await db.deleteEntity(PolicyStatistic, { policyId });
-        await db.deleteEntity(Record, { policyId });
-        await db.deleteEntity(SchemaRule, { policyId });
-        await db.deleteEntity(SplitDocuments, { policyId });
-        await db.deleteEntity(Tag, { policyId });
-        await db.deleteEntity(Topic, { policyId });
-        await db.deleteEntity(VcDocument, { policyId });
-        await db.deleteEntity(VpDocument, { policyId });
-        await db.deleteEntity(Token, { policyId });
-
-        // await db.deleteEntity(Artifact, { policyId });
-        // PolicyCache ?
+        await db.deletePolicyDocuments(policyId);
     }
 }

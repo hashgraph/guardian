@@ -21,7 +21,6 @@ import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-polic
 import { NewPolicyDialog } from '../dialogs/new-policy-dialog/new-policy-dialog.component';
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { ReplaceSchemasDialogComponent } from '../dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
-import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { MultiPolicyDialogComponent } from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from '../dialogs/compare-policy-dialog/compare-policy-dialog.component';
@@ -30,7 +29,6 @@ import { forkJoin, Subject, Subscription } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { AnalyticsService } from 'src/app/services/analytics.service';
 import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
@@ -92,27 +90,27 @@ class MenuButton {
 const columns = [{
     id: 'select',
     size: '50',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return user.POLICIES_POLICY_DELETE;
     }
 }, {
     id: 'name',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return true;
     }
 }, {
     id: 'description',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return true;
     }
 }, {
     id: 'modified',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return true;
     }
 }, {
     id: 'topic',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return (
             user.POLICIES_POLICY_CREATE ||
             user.POLICIES_POLICY_UPDATE ||
@@ -122,12 +120,12 @@ const columns = [{
     }
 }, {
     id: 'publicLink',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return true;
     }
 }, {
     id: 'roles',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return !(
             user.POLICIES_POLICY_CREATE ||
             user.POLICIES_POLICY_UPDATE ||
@@ -137,13 +135,13 @@ const columns = [{
     }
 }, {
     id: 'version',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return true;
     }
 }, {
     id: 'tests',
-    permissions: (user: UserPermissions, type: LocationType) => {
-        if (type === LocationType.LOCAL) {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
+        if (type === 'local') {
             return (
                 user.POLICIES_POLICY_CREATE ||
                 user.POLICIES_POLICY_UPDATE ||
@@ -156,34 +154,34 @@ const columns = [{
     }
 }, {
     id: 'tags',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return true;
     }
 }, {
     id: 'tokens',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return user.TOKENS_TOKEN_READ;
     }
 }, {
     id: 'schemas',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return user.SCHEMAS_SCHEMA_READ;
     }
 }, {
     id: 'status',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return true;
     }
 }, {
     id: 'instance',
     size: '150',
-    permissions: (user: UserPermissions, type: LocationType) => {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return true;
     }
 }, {
     id: 'operations',
-    permissions: (user: UserPermissions, type: LocationType) => {
-        if (type === LocationType.LOCAL) {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
+        if (type === 'local') {
             return (
                 user.POLICIES_POLICY_CREATE ||
                 user.POLICIES_POLICY_UPDATE ||
@@ -198,13 +196,17 @@ const columns = [{
 }, {
     id: 'disconnect',
     size: '150',
-    permissions: (user: UserPermissions, type: LocationType) => {
-        return type !== LocationType.LOCAL;
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
+        if (type === 'local') {
+            return user.POLICIES_POLICY_EXECUTE && !user.POLICIES_POLICY_MANAGE;
+        } else {
+            return true;
+        }
     }
 }, {
     id: 'multi-instance',
-    permissions: (user: UserPermissions, type: LocationType) => {
-        if (type === LocationType.LOCAL) {
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
+        if (type === 'local') {
             return user.POLICIES_POLICY_EXECUTE && !user.POLICIES_POLICY_MANAGE;
         } else {
             return false;
@@ -287,7 +289,7 @@ export class PoliciesComponent implements OnInit {
             color: 'red',
         },
     ];
-    public tab: LocationType = LocationType.LOCAL;
+    public tab: 'local' | 'remote' | 'disconnected' = 'local';
 
     private filteredPolicies: any[] = [];
     public filtersForm = new UntypedFormGroup({
@@ -727,15 +729,27 @@ export class PoliciesComponent implements OnInit {
                 this.updatePolicyTest(test);
             }))
         );
-        this.tab = this.route.snapshot.queryParams['tab'] || LocationType.LOCAL;
+        this.tab = this.getTab(this.route.snapshot.queryParams['tab']);
         this.subscription.add(
             this.route.queryParams.pipe(takeUntil(this._destroy$)).subscribe((queryParams) => {
-                this.tab = this.route.snapshot.queryParams['tab'] || LocationType.LOCAL;
+                this.tab = this.getTab(this.route.snapshot.queryParams['tab']);
             })
         );
         this.loading = true;
         this.loadPolicy();
         this.handleTagsUpdate();
+    }
+
+    private getTab(tabName: string): 'local' | 'remote' | 'disconnected' {
+        if (tabName === 'local') {
+            return 'local';
+        } else if (tabName === 'remote') {
+            return 'remote';
+        } else if (tabName === 'disconnected') {
+            return 'disconnected';
+        } else {
+            return 'local';
+        }
     }
 
     private destroyOverlayPanel(panel?: OverlayPanel): void {
@@ -1838,7 +1852,15 @@ export class PoliciesComponent implements OnInit {
 
     public onChangeTab(tab: any) {
         this.loading = true;
-        this.tab = tab.index === 0 ? LocationType.LOCAL : LocationType.REMOTE;
+        if (tab.index === 0) {
+            this.tab = 'local';
+        } else if (tab.index === 1) {
+            this.tab = 'remote';
+        } else if (tab.index === 2) {
+            this.tab = 'disconnected';
+        } else {
+            this.tab = 'local';
+        }
         this.pageIndex = 0;
         this.router.navigate([], {
             queryParams: { tab: this.tab }
@@ -2014,9 +2036,37 @@ export class PoliciesComponent implements OnInit {
         this.isAllSelected = false;
     }
 
-    public disconnect(policy: any) {
-        if (policy.locationType === LocationType.LOCAL) {
-            return
+    public disconnect(policy: any, tab: string) {
+        if (tab === 'local') {
+            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'guardian-dialog',
+                data: {
+                    header: 'Disconnect',
+                    text: 'Are you sure want to disconnect this policy?',
+                    buttons: [{
+                        name: 'Close',
+                        class: 'secondary'
+                    }, {
+                        name: 'Disconnect',
+                        class: 'delete'
+                    }]
+                },
+            });
+            dialogRef.onClose.subscribe((result: string) => {
+                if (result === 'Disconnect') {
+                    this.loading = true;
+                    this.policyEngineService
+                        .disconnect(policy.id)
+                        .pipe(takeUntil(this._destroy$))
+                        .subscribe((result) => {
+                            this.loadAllPolicy();
+                        }, (e) => {
+                            this.loading = false;
+                        });
+                }
+            });
         } else {
             const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
                 showHeader: false,
@@ -2048,5 +2098,9 @@ export class PoliciesComponent implements OnInit {
                 }
             });
         }
+    }
+
+    public reconnect(policy: any, tab: string) {
+
     }
 }

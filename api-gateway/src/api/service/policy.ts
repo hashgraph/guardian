@@ -1067,7 +1067,7 @@ export class PolicyApi {
     ): Promise<boolean> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.disconnectPolicy(policyId, new EntityOwner(user));
+            return await engineService.disconnectPolicy(policyId, user);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

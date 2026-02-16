@@ -21,7 +21,7 @@ import {
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface.js';
-import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyAction, PolicyComment, PolicyDiscussion, PolicyRoles, PolicyTool, Users } from '@guardian/common';
+import { DatabaseServer, IAuthUser, MessageError, MessageResponse, Policy, PolicyAction, PolicyComment, PolicyDiscussion, PolicyRoles, PolicyTool, Users } from '@guardian/common';
 import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
@@ -1868,5 +1868,12 @@ export class PolicyComponentsUtils {
                 return false;
             }
         }
+    }
+
+    public static async DisconnectPolicy(policyId: string, user: IAuthUser): Promise<boolean> {
+        const db = new DatabaseServer();
+        await DatabaseServer.disconnectPolicy(policyId, user.did);
+        await db.disconnectPolicyDocuments(policyId, user);
+        return true;
     }
 }

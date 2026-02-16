@@ -845,7 +845,7 @@ export class PolicyEngineService {
                         otherOptions.limit = 100;
                     }
                     await this.policyEngine.addAccessFilters(_filters, owner);
-                    await this.policyEngine.addLocationFilters(_filters, type);
+                    await this.policyEngine.addLocationFilters(_filters, type, owner);
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
                     const userFull = await (new Users()).getUserById(owner.creator, owner.id);
                     for (const policy of policies) {
@@ -880,7 +880,7 @@ export class PolicyEngineService {
                         otherOptions.limit = 100;
                     }
                     await this.policyEngine.addAccessFilters(_filters, owner);
-                    await this.policyEngine.addLocationFilters(_filters, type);
+                    await this.policyEngine.addLocationFilters(_filters, type, owner);
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
 
                     const userFull = await (new Users()).getUserById(owner.creator, owner.id);
@@ -1453,11 +1453,22 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DISCONNECT_POLICY,
-            async (msg: { policyId: string, owner: IOwner }): Promise<IMessageResponse<boolean>> => {
+            async (msg: { policyId: string, user: IAuthUser, }): Promise<IMessageResponse<boolean>> => {
                 try {
-                    return new MessageResponse(true);
+                    const { policyId, user } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (policy) {
+                        const result = await new GuardiansService()
+                            .sendPolicyMessage<boolean>(PolicyEvents.DISCONNECT_POLICY, policyId, {
+                                user,
+                                policyId,
+                            }) as any
+                        return new MessageResponse(result);
+                    } else {
+                        return new MessageResponse(true);
+                    }
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
                 }
             });

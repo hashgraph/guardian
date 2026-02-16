@@ -43,6 +43,7 @@ export enum PolicyEvents {
     RECORD_RETRY_STEP = 'policy-event-retry-step',
     RECORD_SKIP_STEP = 'policy-event-skip-step',
     REFRESH_MODEL = 'policy-event-refresh-model',
+    DISCONNECT_POLICY = 'policy-event-disconnect-policy',
     GET_TAG_BLOCK_MAP = 'policy-event-get-tag-block-map',
     APPROVE_REMOTE_REQUEST = 'approve-remote-request',
     REJECT_REMOTE_REQUEST = 'reject-remote-request',
