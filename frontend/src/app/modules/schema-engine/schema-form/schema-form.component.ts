@@ -737,7 +737,7 @@ export class SchemaFormComponent implements OnInit {
         if (!link || !this.formModel?.controls) return;
 
         let found = false;
-        let parts:any = [];
+        let parts:any = [link];
         if (link.includes(';')) {
             parts = link.split(';').map(p => p.trim()).filter(p => p.length > 0);
             if (parts.length > 0) {
@@ -755,9 +755,11 @@ export class SchemaFormComponent implements OnInit {
         } else {
             const idxEntry = this.controlsIndex.get(link);
             if (idxEntry) {
-                for (const anc of idxEntry.ancestors || []) anc.open = true;
+                for (const anc of idxEntry.ancestors || []) 
+                    anc.open = true;
                 idxEntry.field.open = true;
-                if (idxEntry.listItem) idxEntry.listItem.open = true;
+                if (idxEntry.listItem) 
+                    idxEntry.listItem.open = true;
                 found = true;
             } else {
                 found = this.findAndOpen(this.formModel.controls, link);

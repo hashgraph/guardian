@@ -1,64 +1,89 @@
 .schema-nav {
-	border: 1px solid rgba(0,0,0,0.06);
-	border-radius: 6px;
-	padding: 8px;
-	background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 6px;
+    padding: 8px;
+    background: #fff;
+    position: fixed;
+    width: 19vw;
+    height: calc(85vh - 240px);
+    overflow: auto;
 }
-.schema-nav-title {
-	font-weight: 600;
-	margin-bottom: 6px;
-}
+
 .schema-nav-tree {
-	display: block;
+    display: block;
 }
+
 .nav-node {
-	display: flex;
-	align-items: center;
-	padding: 4px 6px;
+    display: flex;
+    align-items: center;
+    padding: 4px 6px;
 }
+
+.nav-node:hover {
+    background: rgba(65, 105, 226, 0.08)
+}
+
 .nav-toggle {
-	background: transparent;
-	border: none;
-	width: 18px;
-	height: 18px;
-	padding: 0;
-	cursor: pointer;
+    background: transparent;
+    border: none;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    cursor: pointer;
+    margin-right: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
 }
+
 .chev {
     opacity: 0.7;
-    display:inline-block; 
+    display: inline-block; 
     transform: rotate(0deg); 
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
+
 .chev.open { 
     transform: rotate(180deg); 
 }
+
 .nav-label { 
     background: transparent; 
     border: none; 
     cursor: pointer; 
-    display:flex; 
-    align-items:center;
-    gap:8px; 
-    width:100%; 
-    text-align:left; 
-    padding:0; 
+    display: flex; 
+    align-items: center;
+    gap: 8px; 
+    width: 100%; 
+    text-align: left; 
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
 }
+
 .nav-title { 
     flex: 1 1 auto; 
-    font-size: 13px; 
+    font-size: 13px;
+    color: #333;
+    transition: color 0.2s ease;
 }
+
 .nav-count { 
-    background: #eef2ff; 
+    background: rgba(239, 243, 247, 1); 
     color: #333; 
     padding: 3px 8px; 
     border-radius: 12px; 
-    font-size: 12px; 
+    font-size: 12px;
+    transition: all 0.2s ease;
 }
+
 .nav-children { 
     margin-top: 2px; 
 }
-.sf-nav-highlight {
-	transition: background-color 0.3s ease;
-	background-color: rgba(255,235,153,0.9) !important;
-}
 
+:host ::ng-deep {
+    @media (max-height: 1000px) {
+        .schema-nav {
+            height: calc(85vh - 175px);
+        }
+    }
+}

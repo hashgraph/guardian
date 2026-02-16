@@ -102,8 +102,8 @@ export class SchemaFormNavigationComponent {
     }
 
     public onSelect(node: NavItem) {
-        if (!node || !node.accordionId) return;
-            console.log('[schema-nav] onSelect ->', node.accordionId, node.title);
+        if (!node || !node.accordionId) 
+            return;
         this.expandAncestors(node.accordionId);
         this.select.emit(node.accordionId);
     }
