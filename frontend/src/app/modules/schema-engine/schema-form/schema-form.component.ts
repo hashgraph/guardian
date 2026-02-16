@@ -904,7 +904,7 @@ export class SchemaFormComponent implements OnInit {
                     return;
                 }
             } catch (e) { }
-        }, 500);
+        }, 1000);
     }
 
     public onAccordionSelectEvent(isOpen: any, item: IFieldControl<any>, index: string = '', childrenAccordionId?: string) {
