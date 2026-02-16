@@ -98,7 +98,7 @@ export class SchemaFormComponent implements OnInit {
     @Output() saveBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() updatableBtnEvent = new EventEmitter();
     @Output() buttons = new EventEmitter<any>();
-    @Output() onAccordionSelect = new EventEmitter<string>();
+    @Output() onAccordionSelect = new EventEmitter<{path: string, isOpen: boolean}>();
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
 
@@ -910,13 +910,16 @@ export class SchemaFormComponent implements OnInit {
     public onAccordionSelectEvent(isOpen: any, item: IFieldControl<any>, index: string = '', childrenAccordionId?: string) {
         let accordionId = item.id;
         if (index) {
-            accordionId = `${accordionId} #${index}`;
+            accordionId = `${accordionId}-${index}`;
         }
 
         if (childrenAccordionId) {
             accordionId = `${accordionId};${childrenAccordionId}`;
         }
-        this.onAccordionSelect.emit(accordionId);
+        this.onAccordionSelect.emit({
+            path: accordionId,
+            isOpen: isOpen
+        });
     }
 
     private updateRemoteFiles(item: IFieldControl<any>) {

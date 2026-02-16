@@ -122,9 +122,13 @@ export class SchemaFormNavigationComponent {
         }
     }
 
-    public expandedByAccordionId(accordionId: string): void {
-        if (accordionId) {
-            this.toggle(accordionId); 
+    public expandedByAccordionId(accordionInfo: {path: string, isOpen: boolean}): void {
+        if (accordionInfo && accordionInfo.path) {
+            if (accordionInfo.isOpen) {
+                this.expanded.add(accordionInfo.path);
+            } else {
+                this.expanded.delete(accordionInfo.path);
+            }
         }
     }
 }

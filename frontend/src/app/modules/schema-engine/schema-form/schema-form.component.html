@@ -1006,7 +1006,7 @@
                                                 isFormForRequestBlock
                                             "
                                             [isEditMode]="isEditMode"
-                                            (onAccordionSelect)="onAccordionSelectEvent($event, item, '', $event)"
+                                            (onAccordionSelect)="onAccordionSelectEvent($event.isOpen, item, '', $event.path)"
                                         >
                                         </app-schema-form>
                                     </ng-container>
@@ -1258,7 +1258,7 @@
                                                             [isEditMode]="
                                                                 isEditMode
                                                             "
-                                                            (onAccordionSelect)="onAccordionSelectEvent($event, item, listItem.index2, $event)"
+                                                            (onAccordionSelect)="onAccordionSelectEvent($event.isOpen, item, listItem.index2, $event.path)"
                                                         >
                                                         </app-schema-form>
                                                     </ng-container>

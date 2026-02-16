@@ -126,9 +126,9 @@ export class SchemaFormRootComponent implements OnInit {
         }
     }
 
-    public onAccordionSelect(link: string) {
+    public onAccordionSelect(accordionInfo: {path: string, isOpen: boolean}) {
         if (this.schemaNav && typeof this.schemaNav.expandedByAccordionId === 'function') {
-            this.schemaNav.expandedByAccordionId(link);
+            this.schemaNav.expandedByAccordionId(accordionInfo);
         }
     }
 
