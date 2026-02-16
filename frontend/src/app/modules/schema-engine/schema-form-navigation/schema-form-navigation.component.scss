@@ -5,10 +5,10 @@
     background: #fff;
     position: fixed;
     width: 19vw;
-    height: calc(85vh - 240px);
+    max-height: calc(100% - 255px);
     overflow: auto;
 }
-
+    
 .schema-nav-tree {
     display: block;
 }
