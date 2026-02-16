@@ -8,6 +8,9 @@
         "resolveJsonModule": true,
         "experimentalDecorators": true,
         "inlineSourceMap": true,
+        "types": [
+            "node"
+        ],
         "skipLibCheck": true,
         "lib": [
             "esnext"

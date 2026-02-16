@@ -472,4 +472,15 @@ export class EntitiesService {
             messageId
         }) as any;
     }
+
+    //#region TOKEN MINTS
+    public getTokenMints(filters: PageFilters): Observable<any> {
+        const entity = 'token-mints';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<any>(
+            `${this.url}/${entity}`,
+            options
+        ) as any;
+    }
+    //#endregion
 }

@@ -52,6 +52,7 @@ import { FormulaDetailsComponent } from '@views/details/formula-details/formula-
 import { PriorityQueueComponent } from '@views/priority-queue/priority-queue.component';
 import { SchemasPackagesComponent } from '@views/collections/schemas-packages/schemas-packages.component';
 import { SchemasPackageDetailsComponent } from '@views/details/schemas-packages-details/schemas-packages-details.component';
+import { TokenMintsComponent } from '@views/collections/token-mints/token-mints.component';
 
 export const routes: Routes = [
     // _DEV
@@ -87,6 +88,7 @@ export const routes: Routes = [
     { path: 'statistic-documents', component: StatisticDocumentsComponent },
     { path: 'formulas', component: FormulasComponent },
     { path: 'schemas-packages', component: SchemasPackagesComponent },
+    { path: 'token-mints', component: TokenMintsComponent },
 
     //Details
     { path: 'registries/:id', component: RegistryDetailsComponent },

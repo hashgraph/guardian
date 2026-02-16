@@ -1,0 +1,18 @@
+.total-amount {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 16px;
+
+    &__label {
+        font-weight: 500;
+        color: var(--text-color-secondary, #6c757d);
+    }
+
+    &__value {
+        font-weight: 700;
+        font-size: 20px;
+        color: var(--primary-color, #3b82f6);
+    }
+}

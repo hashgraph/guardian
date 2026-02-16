@@ -12,6 +12,9 @@
         "experimentalDecorators": true,
         "esModuleInterop": true,
         "declaration": true,
+        "types": [
+            "node"
+        ],
         "skipLibCheck": true
     },
     "include": [
