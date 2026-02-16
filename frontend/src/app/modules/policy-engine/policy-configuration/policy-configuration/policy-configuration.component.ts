@@ -1861,7 +1861,7 @@ export class PolicyConfigurationComponent implements OnInit {
         const dialogRef = this.dialogService.open(PublishPolicyDialog, {
             showHeader: false,
             header: 'Publish Policy',
-            width: '90%',
+            width: '600px',
             styleClass: 'guardian-dialog',
             data: {
                 policy: this.policyTemplate
