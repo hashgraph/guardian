@@ -62,12 +62,12 @@ npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 
 #### Run with specific tags (sanity testing with user preparation)
 ```bash
-npx cypress run --browser chrome --headed --env "grepTags=preparing,policies,grepFilterSpecs=true"
+npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
 **Cypress 15+ only** (if you see "Cannot parse as valid JSON"):
 ```bash
-npx cypress run --browser chrome --headed --env '{"grepTags":"preparing,policies","grepFilterSpecs":true}'
+npx cypress run --browser chrome --headed --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
 ```
 
 #### Run single test file
@@ -87,7 +87,7 @@ npx cypress run --env "grepTags=smoke,grepFilterSpecs=true"
 
 ### Running Tests with Tags
 
-Tags allow you to run specific test subsets. Multiple tags are comma-separated (spaces after commas are optional).
+Tags allow you to run specific test subsets. For local CLI runs using `--env "grepTags=..."`, pass multiple tags as a **space-separated** list. For Docker runs, `CYPRESS_grepTags` accepts both spaces and commas (the entrypoint normalizes them).
 
 #### Verified tag examples
 
@@ -98,10 +98,10 @@ npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 
 **Sanity run (preparing + specific feature, e.g. policies):**
 ```bash
-npx cypress run --browser chrome --headed --env "grepTags=preparing,policies,grepFilterSpecs=true"
+npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
-**Cypress 15+:** use JSON for `--env`, e.g. `--env '{"grepTags":"preparing,policies","grepFilterSpecs":true}'`
+**Cypress 15+:** use JSON for `--env`, e.g. `--env '{"grepTags":"preparing policies","grepFilterSpecs":true}'`
 
 #### Single Tag
 ```bash
@@ -110,10 +110,12 @@ npx cypress run --browser chrome --env "grepTags=accounts,grepFilterSpecs=true"
 
 #### Multiple Tags (AND operation)
 ```bash
-npx cypress run --browser chrome --env "grepTags=preparing,policies,grepFilterSpecs=true"
+npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
-**Important**: Use commas to separate tags (e.g. `preparing,policies`). Spaces after commas are allowed; avoid spaces before commas.
+**Important**:
+- **Local CLI (`--env "..."`)**: use spaces, e.g. `preparing policies`
+- **Docker (`CYPRESS_grepTags=...`)**: spaces or commas are accepted, e.g. `preparing policies` or `preparing,policies`
 
 #### Available Tags
 
@@ -159,9 +161,9 @@ npx cypress run --browser chrome --env "grepTags=preparing,policies,grepFilterSp
 The e2e-tests directory includes Docker setup for containerized test execution. Two Dockerfile variants are available:
 
 1. **Dockerfile** - Uses Electron browser (default in container). No extra browser install; use for fast, minimal runs.
-2. **Dockerfile.chrome** - Installs Chromium; use when you need Chrome (e.g. CI or local runs matching `--browser chrome`).
+2. **Dockerfile.chrome** - Installs Chromium and defaults to `CYPRESS_BROWSER=chromium`; use for CI/Docker runs.
 
-Tests run in Docker only if the chosen browser exists in the image: use **Dockerfile** for Electron, **Dockerfile.chrome** for Chromium.
+Tests run in Docker only if the chosen browser exists in the image: use **Dockerfile** for Electron, **Dockerfile.chrome** for Chrome.
 
 ### Building the Docker Image
 
@@ -172,7 +174,7 @@ docker build -t cypress-runner .
 docker run --network host -e CYPRESS_grepTags="all" -e CYPRESS_grepFilterSpecs=true cypress-runner
 ```
 
-#### Using Chromium (docker-compose or Dockerfile.chrome):
+#### Using Chrome (docker-compose or Dockerfile.chrome):
 ```bash
 cd e2e-tests
 docker-compose build
@@ -188,7 +190,7 @@ Ensure Guardian is running and reachable (e.g. API on port 3002). From the repo 
 ```bash
 cd e2e-tests
 docker-compose build
-CYPRESS_grepTags="preparing,policies" CYPRESS_grepFilterSpecs=true docker-compose up
+CYPRESS_grepTags="preparing policies" CYPRESS_grepFilterSpecs=true docker-compose up
 ```
 
 #### Smoke tests only
@@ -203,11 +205,14 @@ cd e2e-tests
 CYPRESS_grepTags=all CYPRESS_grepFilterSpecs=true docker-compose up
 ```
 
+> Note: when running API tests in Docker, we target the API gateway directly at `:3002` (no `/api/v1` prefix).
+> If you point Cypress at `http://...:3002/api/v1/...` you’ll get 404s (the Angular `:4200/api/v1` proxy normally rewrites that prefix away).
+
 #### Using raw Docker (from repo root)
 ```bash
 docker build -f e2e-tests/Dockerfile.chrome -t cypress-runner ./e2e-tests
 # Sanity:
-docker run --rm --network host -e CYPRESS_portApi=3002 -e CYPRESS_grepTags="preparing,policies" -e CYPRESS_grepFilterSpecs=true cypress-runner
+docker run --rm --network host -e CYPRESS_portApi=3002 -e CYPRESS_grepTags="preparing policies" -e CYPRESS_grepFilterSpecs=true cypress-runner
 # Smoke:
 docker run --rm --network host -e CYPRESS_portApi=3002 -e CYPRESS_grepTags="smoke" -e CYPRESS_grepFilterSpecs=true cypress-runner
 ```
@@ -215,7 +220,7 @@ docker run --rm --network host -e CYPRESS_portApi=3002 -e CYPRESS_grepTags="smok
 #### With custom authentication:
 ```bash
 cd e2e-tests
-CYPRESS_grepTags="preparing,policies" \
+CYPRESS_grepTags="preparing policies" \
 CYPRESS_grepFilterSpecs=true \
 CYPRESS_operatorId=0.0.xxx \
 CYPRESS_operatorKey=xxxx \
@@ -227,7 +232,7 @@ docker-compose up
 ```bash
 docker run --network host --name cypress-test-run \
   -e CYPRESS_portApi=3002 \
-  -e CYPRESS_baseUrl=http://localhost:4200 \
+  -e CYPRESS_apiServer=http://host.docker.internal:3002/ \
   -e CYPRESS_grepTags="all" \
   -e CYPRESS_grepFilterSpecs=true \
   cypress-build:chrome
@@ -239,13 +244,14 @@ When running Docker tests, all environment variables must be prefixed with `CYPR
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| CYPRESS_portApi | 3002/api/v1 | Guardian API port |
-| CYPRESS_baseUrl | http://host.docker.internal:4200 | Base URL for UI tests |
-| CYPRESS_grepTags | all | Tag filter; comma-separated for multiple (e.g. `all` or `preparing,policies`) |
+| CYPRESS_portApi | 3002 | Guardian API port (direct API gateway). For local runs via the Angular proxy, this is typically `4200/api/v1` |
+| CYPRESS_baseUrl | - | Base URL for UI tests (optional). When using `docker compose`, set `CYPRESS_UI_BASEURL` (it maps to `CYPRESS_baseUrl`) e.g. `http://host.docker.internal:4200` |
+| CYPRESS_grepTags | all | Tag filter; for multiple tags use spaces (e.g. `preparing policies`). Commas are also accepted. |
 | CYPRESS_grepFilterSpecs | true | Enable tag filtering |
 | CYPRESS_operatorId | - | Hedera operator ID (optional) |
 | CYPRESS_operatorKey | - | Hedera operator key (optional) |
 | CYPRESS_BROWSER | electron in default image, chromium in docker-compose | Browser: `electron`, `chromium`, or `firefox` (must exist in the image) |
+| CYPRESS_apiServer | - | Optional full API origin override (useful on Docker Desktop). Examples: `http://host.docker.internal:3002/` (direct API gateway) or `http://host.docker.internal:4200/api/v1/` (if using Angular proxy) |
 
 ### Configuration File
 
@@ -260,15 +266,17 @@ CYPRESS_MGSIndexerAPIToken=
 
 The `.env` file is automatically loaded by docker-compose and will override defaults.
 
+When running `docker compose` from `e2e-tests/`, we also load `../guardian-service/configs/.env.guardian` so `OPERATOR_ID` / `OPERATOR_KEY` can be picked up automatically (they’re mapped to `operatorId` / `operatorKey` inside `entrypoint.sh`).
+
 ### Available Browsers in Docker
 
 - **Electron** (default in original Dockerfile) - Lightweight, fast, minimal overhead
-- **Chromium** (in Dockerfile.chrome) - Full Chromium browser, more realistic web testing
+- **Chrome** (in Dockerfile.chrome) - Full browser, more realistic web testing
 - **Firefox** - Alternative browser option (use: --browser firefox)
 
 ### Switching Browsers
 
-Set `CYPRESS_BROWSER`; the browser must be installed in the image (Electron in default Dockerfile, Chromium in Dockerfile.chrome):
+Set `CYPRESS_BROWSER`; the browser must be installed in the image (Electron in default Dockerfile, Chrome in Dockerfile.chrome):
 
 ```bash
 CYPRESS_BROWSER=chromium docker-compose up
@@ -302,7 +310,7 @@ The repository includes automated test execution via GitHub Actions (`.github/wo
 
 #### Available Input Parameters
 
-- `tags` (default: `all`) - Test tags to run; use comma-separated values for multiple (e.g. `policies` or `policies,schemas`). The workflow automatically prepends `preparing` when not already present.
+- `tags` (default: `all`) - Test tags to run. For multiple tags, use spaces (e.g. `policies schemas`) or commas (e.g. `policies,schemas`). In Docker/CI runs, `preparing` is automatically prepended for feature-scoped runs (not for `all`).
 - `report_name` (default: `Guardian's Cypress Report`) - Custom report name
 
 #### Workflow Features
@@ -374,7 +382,7 @@ npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 
 ### Pattern 2: Sanity Testing (Prepare Users + Run Policies Tests)
 ```bash
-npx cypress run --browser chrome --headed --env "grepTags=preparing,policies,grepFilterSpecs=true"
+npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
 ### Pattern 3: Docker-based Full Test Suite
@@ -389,7 +397,7 @@ docker run --network host \
 
 ### Pattern 4: Running Multiple Feature Tags
 ```bash
-npx cypress run --browser chrome --env "grepTags=preparing,policies,schemas,artifacts,grepFilterSpecs=true"
+npx cypress run --browser chrome --env "grepTags=preparing policies schemas artifacts,grepFilterSpecs=true"
 ```
 
 ## Troubleshooting
@@ -401,7 +409,7 @@ If you see **"Cannot parse as valid JSON"** when using `--env`, you are on Cypre
 - **Option A (recommended):** Use the project’s Cypress 14 from `e2e-tests`: run `npm install` in `e2e-tests` and use `npx cypress run` from that directory so the pinned version (14.x) is used.
 - **Option B:** Use JSON for `--env`:
   ```bash
-  npx cypress run --browser chrome --env '{"grepTags":"preparing,policies","grepFilterSpecs":true}'
+  npx cypress run --browser chrome --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
   ```
   For all API tests: `--env '{"grepTags":"all","grepFilterSpecs":true}'`
 

@@ -6,9 +6,11 @@ services:
     image: cypress-build:chrome
     env_file:
       - .env
+      - ../guardian-service/configs/.env.guardian
     environment:
-      - CYPRESS_portApi=${CYPRESS_portApi:-4200/}
-      - CYPRESS_baseUrl=${CYPRESS_baseUrl:-http://host.docker.internal:4200}
+      - CYPRESS_portApi=${CYPRESS_portApi:-3002}
+      - CYPRESS_baseUrl=${CYPRESS_UI_BASEURL:-}
+      - CYPRESS_apiServer=${CYPRESS_apiServer:-http://host.docker.internal:3002/}
       - CYPRESS_BROWSER=chromium
       - CYPRESS_grepTags=${CYPRESS_grepTags:-all}
       - CYPRESS_grepFilterSpecs=${CYPRESS_grepFilterSpecs:-true}
@@ -16,7 +18,11 @@ services:
       - CYPRESS_operatorKey=${CYPRESS_operatorKey}
       - CYPRESS_MGSAdmin=${CYPRESS_MGSAdmin}
       - CYPRESS_MGSIndexerAPIToken=${CYPRESS_MGSIndexerAPIToken}
-    network_mode: "host"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./cypress/reports:/e2e/cypress/reports
       - ./cypress/test_results:/e2e/cypress/test_results
+      - ./cypress/screenshots:/e2e/cypress/screenshots
+      - ./cypress/videos:/e2e/cypress/videos
+      - ./cypress/downloads:/e2e/cypress/downloads

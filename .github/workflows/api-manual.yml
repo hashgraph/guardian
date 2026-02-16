@@ -167,7 +167,7 @@ jobs:
             -e CYPRESS_operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }} \
             -e CYPRESS_MGSAdmin=${{ secrets.MGS_TENANT_NAME }} \
             -e CYPRESS_MGSIndexerAPIToken=${{ secrets.MGSIndexerAPIToken }} \
-            -e "CYPRESS_grepTags=preparing,${{ inputs.tags }}" \
+            -e "CYPRESS_grepTags=${{ inputs.tags }}" \
             -e CYPRESS_grepFilterSpecs=true \
             -e ReportName="${{ inputs.report_name }}" \
             cypress-runner
@@ -175,9 +175,12 @@ jobs:
       - name: Copy test results from Docker container
         if: always()
         run: |
-          mkdir -p e2e-tests/cypress/test_results e2e-tests/cypress/reports
+          mkdir -p e2e-tests/cypress/test_results e2e-tests/cypress/reports e2e-tests/cypress/screenshots e2e-tests/cypress/videos e2e-tests/cypress/downloads
           docker cp cypress-test-run:/e2e/cypress/test_results/. e2e-tests/cypress/test_results/ || true
           docker cp cypress-test-run:/e2e/cypress/reports/. e2e-tests/cypress/reports/ || true
+          docker cp cypress-test-run:/e2e/cypress/screenshots/. e2e-tests/cypress/screenshots/ || true
+          docker cp cypress-test-run:/e2e/cypress/videos/. e2e-tests/cypress/videos/ || true
+          docker cp cypress-test-run:/e2e/cypress/downloads/. e2e-tests/cypress/downloads/ || true
           find e2e-tests/cypress/reports -type f 2>/dev/null || true
 
       - name: Cleanup Docker resources
@@ -196,6 +199,10 @@ jobs:
         if: always()
         with:
           name: cypress-reports
-          path: e2e-tests/cypress/reports/
+          path: |
+            e2e-tests/cypress/reports/
+            e2e-tests/cypress/screenshots/
+            e2e-tests/cypress/videos/
+            e2e-tests/cypress/downloads/
           include-hidden-files: true
           retention-days: 30
