@@ -228,6 +228,19 @@ export class FormulaImportExport {
         }
     }
 
+    private static getItems(items: any, result: any[]) {
+        if (Array.isArray(items)) {
+            for (const item of items) {
+                if (item.type === 'group') {
+                    FormulaImportExport.getItems(item.items, result);
+                } else {
+                    result.push(item);
+                }
+            }
+        }
+        return result;
+    }
+
     private static generateFormulaByBlock(block: any, result: any[]) {
         try {
             const inputSchema = block.inputSchema;
@@ -235,34 +248,32 @@ export class FormulaImportExport {
             const expression = block.expression;
             const items: any[] = [];
             // Variables
-            if (Array.isArray(expression?.variables)) {
-                for (const item of expression.variables) {
-                    items.push({
-                        uuid: GenerateUUIDv4(),
-                        name: item.name,
-                        description: item.description,
-                        type: 'variable',
-                        value: '',
-                        link: {
-                            entityId: inputSchema,
-                            item: item.field,
-                            type: 'schema'
-                        }
-                    })
-                }
+            const variables = FormulaImportExport.getItems(expression?.variables, []);
+            for (const item of variables) {
+                items.push({
+                    uuid: GenerateUUIDv4(),
+                    name: item.name,
+                    description: item.description,
+                    type: 'variable',
+                    value: '',
+                    link: {
+                        entityId: inputSchema,
+                        item: item.field,
+                        type: 'schema'
+                    }
+                })
             }
             // Formulas
-            if (Array.isArray(expression?.formulas)) {
-                for (const item of expression.formulas) {
-                    items.push({
-                        uuid: GenerateUUIDv4(),
-                        name: item.name,
-                        description: item.description,
-                        type: 'formula',
-                        value: item.body,
-                        relationships: item.relationships
-                    })
-                }
+            const formulas = FormulaImportExport.getItems(expression?.formulas, []);
+            for (const item of formulas) {
+                items.push({
+                    uuid: GenerateUUIDv4(),
+                    name: item.name,
+                    description: item.description,
+                    type: 'formula',
+                    value: item.body,
+                    relationships: item.relationships
+                })
             }
             // Relationships
             for (const item of items) {
@@ -278,9 +289,10 @@ export class FormulaImportExport {
                 item.relationships = relationships;
             }
             // Outputs
-            if (Array.isArray(expression?.outputs)) {
-                for (const item of expression.outputs) {
-                    let link = items.find((e) => e.name === item.name);
+            const outputs = FormulaImportExport.getItems(expression?.outputs, []);
+            for (const item of outputs) {
+                let link = items.find((e) => e.name === item.name);
+                if (link) {
                     if (link.type === 'variable') {
                         const newTarget = {
                             uuid: GenerateUUIDv4(),
@@ -300,12 +312,12 @@ export class FormulaImportExport {
                     }
                 }
             }
-
             for (const item of items) {
                 result.push(item);
             }
             return result;
         } catch (error) {
+            console.error(error);
             return;
         }
     }
