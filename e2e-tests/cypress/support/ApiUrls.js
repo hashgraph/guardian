@@ -284,5 +284,6 @@ const API = {
     TenantsInvite: "tenants/invite",
     TermsAgree: "accounts/terms/agree"
     
+    
 };
 export default API;
