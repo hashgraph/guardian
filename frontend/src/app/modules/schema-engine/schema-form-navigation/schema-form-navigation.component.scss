@@ -79,11 +79,3 @@
 .nav-children { 
     margin-top: 2px; 
 }
-
-:host ::ng-deep {
-    @media (max-height: 1000px) {
-        .schema-nav {
-            height: calc(85vh - 175px);
-        }
-    }
-}

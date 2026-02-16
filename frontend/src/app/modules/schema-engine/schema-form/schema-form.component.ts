@@ -863,6 +863,15 @@ export class SchemaFormComponent implements OnInit {
                                 return true;
                             }
                         }
+                        const listItemChildControls = Array.isArray((listItem as any).model?.controls) ? (listItem as any).model.controls : undefined;
+                        if (Array.isArray(listItemChildControls) && listItemChildControls.length > 0) {
+                            const foundInItem = this.findAndOpenByParts(parts, listItemChildControls, idx + 1);
+                            if (foundInItem) {
+                                field.open = true;
+                                (listItem as any).open = true;
+                                return true;
+                            }
+                        }
                     }
                 }
             }
@@ -886,7 +895,7 @@ export class SchemaFormComponent implements OnInit {
                 this.changeDetectorRef.detectChanges();
             } catch (e) { }
 
-            const attrSelector = `[accordionTabId="${value}"]`;
+            const attrSelector = `[accordiontabid="${value}"]`;
 
             try {
                 const node = document.querySelector(attrSelector) as Element | null;

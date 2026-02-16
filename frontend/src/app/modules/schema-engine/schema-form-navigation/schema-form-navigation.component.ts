@@ -78,6 +78,11 @@ export class SchemaFormNavigationComponent {
                         if (Array.isArray(control.model?.controls) && control.model?.controls.length > 0) {
                             instNode.children = this.buildNavTree(control.model.controls, instAccordionId);
                         }
+
+                        if (Array.isArray(li.model?.controls) && li.model?.controls.length > 0) {
+                            instNode.children = this.buildNavTree(li.model.controls, instAccordionId);
+                        }
+                        instNode.count = instNode.children?.length || 0;
                         node.children.push(instNode);
                         node.count = node.children.length;
                     }
@@ -104,6 +109,8 @@ export class SchemaFormNavigationComponent {
     public onSelect(node: NavItem) {
         if (!node || !node.accordionId) 
             return;
+
+        console.log('Selected node:', node);
         this.expandAncestors(node.accordionId);
         this.select.emit(node.accordionId);
     }

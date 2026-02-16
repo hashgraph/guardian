@@ -280,7 +280,7 @@
             <div *ngIf="canDrawTable(item)">
                 <p-table [value]="item.list || []">
                     <ng-template pTemplate="header">
-                        <tr>
+                        <tr [attr.accordiontabid]="item.id">
                             <th style="width: 3rem">#</th>
                             <th 
                                 *ngFor="let col of getTableHeaderFields(item)"
@@ -292,9 +292,9 @@
                         </tr>
                     </ng-template>
 
-                    <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
-                    <tr>
-                        <td>{{ rowIndex + 1 }}</td>
+                    <ng-template pTemplate="body" let-rowData>
+                    <tr [attr.accordiontabid]="item.id + '-' + rowData.index2">
+                        <td>{{ rowData.index2 }}</td>
                         <td *ngFor="let itemControl of getTableRowFields(rowData)">
                             <div class="table-content form-field-value">
                                 <span *ngIf="ifRequiredField(itemControl)" class="required-field">*</span>
