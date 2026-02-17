@@ -18682,6 +18682,8 @@ components:
           example: 1.0.0
         originalChanged:
           type: string
+        editableParametersSettings:
+          type: string
         config:
           type: object
           additionalProperties: true
