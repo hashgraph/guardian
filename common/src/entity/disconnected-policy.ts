@@ -6,8 +6,12 @@ import { BaseEntity } from '../models/index.js';
  */
 @Entity()
 @Index({
-    properties: ['policyId', 'owner'],
+    properties: ['owner'],
     name: 'user_index'
+})
+@Index({
+    properties: ['policyId', 'owner'],
+    name: 'policy_user_index'
 })
 export class DisconnectedPolicy extends BaseEntity {
     /**

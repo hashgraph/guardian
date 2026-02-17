@@ -246,16 +246,28 @@ export class PolicyEngine extends NatsService {
 
     /**
      * Check access
+     * 
      * @param policy
      * @param user
+     * @param action
      */
-    public async accessPolicy(policy: Policy, user: IOwner, action: string): Promise<boolean> {
+    public async accessPolicy(
+        policy: Policy,
+        user: IOwner,
+        action: 'create' | 'read' | 'edit' | 'update' | 'execute' | 'delete' | 'discontinue' | 'publish'
+    ): Promise<boolean> {
         const code = await this.accessPolicyCode(policy, user);
         if (code === PolicyAccessCode.NOT_EXIST) {
             throw new Error('Policy does not exist.');
         }
         if (code === PolicyAccessCode.UNAVAILABLE) {
             throw new Error(`Insufficient permissions to ${action} the policy.`);
+        }
+        if(action === 'execute') {
+            const disconnected = await DatabaseServer.getDisconnectedPolicy(policy.id, user.creator);
+            if(disconnected) {
+                throw new Error('You were disconnected from this policy.');
+            }
         }
         return true;
     }

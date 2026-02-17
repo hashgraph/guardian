@@ -804,6 +804,25 @@ export class PolicyEngineService {
                 return new MessageResponse(result);
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_DISCONNECTED_POLICY,
+            async (msg: {
+                policyId: string,
+                owner: IOwner
+            }) => {
+                const { policyId, owner } = msg;
+                const disconnected = await DatabaseServer.getDisconnectedPolicy(policyId, owner.creator);
+                if (disconnected) {
+                    const policy = await DatabaseServer.getPolicy({ id: policyId });
+                    if (policy) {
+                        const userFull = await (new Users()).getUserById(owner.creator, owner.id);
+                        await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
+                    }
+                    return new MessageResponse(policy);
+                } else {
+                    return new MessageResponse(null);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICIES,
             async (msg: { options: any, owner: IOwner }) => {
                 try {

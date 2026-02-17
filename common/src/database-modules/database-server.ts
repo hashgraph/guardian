@@ -5689,6 +5689,16 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param owner
      *
      */
+    public static async getDisconnectedPolicy(policyId: string, owner: string): Promise<DisconnectedPolicy[]> {
+        return await new DataBaseHelper(DisconnectedPolicy).find({ policyId, owner });
+    }
+
+    /**
+     * Get Disconnected Policies
+     *
+     * @param owner
+     *
+     */
     public static async getDisconnectedPolicies(owner: string): Promise<DisconnectedPolicy[]> {
         return await new DataBaseHelper(DisconnectedPolicy).find({ owner });
     }

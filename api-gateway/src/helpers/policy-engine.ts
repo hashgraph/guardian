@@ -29,6 +29,15 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Get disconnected policy
+     * @param policyId
+     * @param user
+     */
+    public async getDisconnectedPolicy(policyId: any, owner: IOwner): Promise<PolicyDTO | null> {
+        return await this.sendMessage(PolicyEngineEvents.GET_DISCONNECTED_POLICY, { policyId, owner });
+    }
+
+    /**
      * Get policy
      * @param policyId
      */

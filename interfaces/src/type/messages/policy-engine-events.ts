@@ -37,6 +37,7 @@ export enum PolicyEngineEvents {
     GET_POLICIES_V2 = 'policy-engine-event-get-policies-V2',
     GET_POLICIES_WITH_IMPORTED_RECORDS = 'policy-engine-event-get-policies-with-imported-records',
     GET_POLICY = 'policy-engine-event-get-policy',
+    GET_DISCONNECTED_POLICY = 'policy-engine-event-get-disconnected-policy',
     GET_BLOCK_PARENTS = 'policy-engine-event-get-block-parents',
     BLOCK_ABOUT = 'policy-engine-event-block-about',
     GET_VIRTUAL_USERS = 'policy-engine-event-get-virtual-users',

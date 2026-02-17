@@ -340,7 +340,7 @@ export class PoliciesComponent implements OnInit {
         switch (policy.status) {
             case PolicyStatus.VIEW: {
                 if (this.user.POLICIES_POLICY_EXECUTE) {
-                    return 'Register';
+                    return 'Open';
                 } else {
                     return null;
                 }
@@ -350,7 +350,7 @@ export class PoliciesComponent implements OnInit {
                 if (this.user.POLICIES_POLICY_MANAGE) {
                     return 'Open';
                 } else if (this.user.POLICIES_POLICY_EXECUTE) {
-                    return 'Register';
+                    return 'Open';
                 } else {
                     return null;
                 }
@@ -2101,6 +2101,34 @@ export class PoliciesComponent implements OnInit {
     }
 
     public reconnect(policy: any, tab: string) {
-
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Disconnect',
+                text: 'Are you sure want to reconnect this policy?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Reconnect',
+                    class: 'primary'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Reconnect') {
+                this.loading = true;
+                this.policyEngineService
+                    .reconnect(policy.id)
+                    .pipe(takeUntil(this._destroy$))
+                    .subscribe((result) => {
+                        this.loadAllPolicy();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
     }
 }

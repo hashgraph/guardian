@@ -626,4 +626,12 @@ export class PolicyEngineService {
     public disconnect(policyId: string): Observable<any> {
         return this.http.put<any>(`${this.url}/${policyId}/disconnect`, null);
     }
+
+    public getDisconnectedPolicy(policyId: string) {
+        return this.http.get<any>(`${this.url}/${policyId}/disconnected`);
+    }
+
+    public reconnect(policyId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/reconnect`, null);
+    }
 }
