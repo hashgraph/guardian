@@ -21,9 +21,9 @@ Expression definition is guided by a wizard with in-place test execution, allowi
 
 Use this section to map fields from the input document to short variable names that you can reference in formulas.
 
-<figure><img src="../../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
-
 <figure><img src="../../../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note 1**: A variable in a formula may reference data from any field in any document, not just the input document itself. However, the referenced document must be associated with the input document (i.e. be part of its ‘relationships' chain). If no such relationship exists, the value cannot be resolved at runtime, which may lead to unpredictable or undefined behavior.

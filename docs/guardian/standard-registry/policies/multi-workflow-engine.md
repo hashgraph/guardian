@@ -63,4 +63,4 @@ Get complete information about the blocks: [Global Events Writer Block](policy-c
   * schema validation passes (if configured)
   * field filters match (only if enabled and applicable)
 
-<figure><img src="../../../.gitbook/assets/unknown (27).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>

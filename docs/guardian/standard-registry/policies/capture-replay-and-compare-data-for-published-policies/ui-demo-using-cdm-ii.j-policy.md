@@ -18,7 +18,7 @@ These actions are written to Hedera and stored immutably, with payloads in IPFS.
 
 2. Once the policy is published, submit the Project Registration by logging in as Project Proponent:
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: “Each step you see here—data submission, validation, calculations—is recorded as a discrete step.\

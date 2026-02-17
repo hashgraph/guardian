@@ -24,7 +24,7 @@ Detailed best practices for Excel-first design in building Hedera Guardian schem
     * Allow multiple answers? (Yes/No)
     * Default or example value for user guidance.
 
-    <figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 * **Use Enums for Controlled Vocabularies**\
   Create separate enum tabs for all enumerated types used in the schema (units of measure, certifications, status types). This standardizes inputs and enables conditional field visibility through enum selections.
 

@@ -48,7 +48,7 @@ Possible States
 * No Changes – The policy matches its original imported state
 * Status Unavailable – Original state is not available (e.g., tracking was not enabled)
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3.2 Compare Action
 
@@ -71,7 +71,7 @@ In the policy description, new states related to this functionality are availabl
 
 When the Origin tab is displayed, it means that information about the parent policy is available, allowing the user to check for any differences from the parent policy
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 The comparison functionality remains consistent with the Guardian one, providing multiple comparison options, while the UI design has been updated
 

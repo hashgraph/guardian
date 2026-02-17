@@ -34,7 +34,7 @@ They can select Save Draft to store progress safely, then return later to comple
 
 Saved drafts can be edited, an additional option ‘EditType’ has been added to the request block for this purpose
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Draft Event Logic in Configurator
 
