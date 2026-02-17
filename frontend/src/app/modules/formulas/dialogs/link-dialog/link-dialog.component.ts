@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 import { FieldData } from 'src/app/modules/common/models/schema-node';
@@ -18,6 +18,8 @@ export class LinkDialog {
     public entityId: string;
     public itemId: string | null;
     public items: TreeListView<any> | null;
+    public isLargeSize: boolean = true;
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -116,5 +118,26 @@ export class LinkDialog {
             }
             this.ref.close(result);
         }
+    }
+
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
     }
 }

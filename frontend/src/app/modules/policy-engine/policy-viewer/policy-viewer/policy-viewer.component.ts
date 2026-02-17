@@ -468,7 +468,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public openDocument(element: any) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 document: element,
@@ -699,7 +699,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 const ref = this.dialogService.open(RestoreSavepointDialog, {
                     showHeader: false,
                     closable: false,
-                    width: '900px',
+                    width: '90%',
                     styleClass: 'guardian-dialog restore-savepoint-dialog',
                     data: { policyId: this.policyId, items, currentSavepointId: this.savepointId, ...(data || {}) },
                     ...(config || {})
@@ -783,7 +783,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     const ref = this.dialogService.open(OnLoadSavepointDialog, {
                         showHeader: false,
                         closable: false,
-                        width: '900px',
+                        width: '90%',
                         styleClass: 'guardian-dialog restore-onload-dialog',
                         data: { policyId: this.policyId, items, currentSavepointId: currentId }
                     });

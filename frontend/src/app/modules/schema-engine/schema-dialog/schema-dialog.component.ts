@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
 import { JsonToSchema, Schema, SchemaEntity, SchemaHelper, SchemaToJson } from '@guardian/interfaces';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -61,6 +61,8 @@ export class SchemaDialog {
         viewportMargin: Infinity
     };
 
+    public isLargeSize: boolean = true;
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
     @ViewChild('schemaControl') schemaControl!: SchemaConfigurationComponent;
 
     constructor(
@@ -102,6 +104,27 @@ export class SchemaDialog {
 
     public onClose() {
         this.ref.close(null);
+    }
+
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
     }
 
     public onCreate() {

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import {
     DialogService,
@@ -382,6 +382,9 @@ export class MigrateData {
     dstTokenMap: string[] = [];
 
     showMigrateRetirePools = false;
+    
+    public isLargeSize: boolean = true;
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -639,7 +642,7 @@ export class MigrateData {
         this._dialogService.open(JsonEditorDialogComponent, {
             closable: true,
             modal: true,
-            width: '70vw',
+            width: '90%',
             styleClass: 'custom-json-dialog',
             header: 'View document',
             data: {
@@ -753,7 +756,7 @@ export class MigrateData {
             .open(JsonEditorDialogComponent, {
                 closable: true,
                 modal: true,
-                width: '70vw',
+                width: '90%',
                 styleClass: 'custom-json-dialog',
                 header: 'Edit document',
                 data: {
@@ -822,5 +825,30 @@ export class MigrateData {
         } else {
             this.items = this.items.filter((item) => item.id !== 'blocks');
         }
+    }
+
+    onNoClick(): void {
+        this.ref.close(null);
+    }
+
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
     }
 }
