@@ -4,7 +4,7 @@
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
-        "@indexer/interfaces": "3.5.0-rc",
+        "@indexer/interfaces": "3.5.0",
         "cross-blob": "^2.0.1",
         "dotenv": "^16.0.0",
         "jszip": "^3.7.1",
