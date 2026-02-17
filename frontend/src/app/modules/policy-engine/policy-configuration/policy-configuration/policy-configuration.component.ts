@@ -42,6 +42,7 @@ import { TagCreateDialog } from 'src/app/modules/tag-engine/tags-create-dialog/t
 import { TagsHistory } from 'src/app/modules/tag-engine/models/tags-history';
 import { TagsExplorerDialog } from 'src/app/modules/tag-engine/tags-explorer-dialog/tags-explorer-dialog.component';
 import { MultipleTagsExplorerDialog } from 'src/app/modules/tag-engine/multiple-tags-explorer-dialog/multiple-tags-explorer-dialog.component';
+import { EditibleFieldsDialog } from '../../dialogs/editible-fields-dialog/editible-fields-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -106,6 +107,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public nestedBlock!: any;
     public openType: 'Root' | 'Sub' = 'Root';
     public openSettings: boolean = false;
+    public openEditibleFields: boolean = false;
     public themes!: Theme[];
     public theme!: Theme;
     public categories: IPolicyCategory[] = [];
@@ -1706,6 +1708,23 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public onSettings() {
         this.openSettings = true;
+    }
+
+    public onEditibleFields() {
+        const dialogRef = this.dialogService.open(EditibleFieldsDialog, {
+            width: '1024px',
+            styleClass: 'custom-dialog',
+            header: 'Editible Fields',
+            closable: true,
+            data: {
+                policy: this.policyTemplate,
+                type: 'module'
+            }
+        });
+
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
+            console.log(options);
+        });
     }
 
     public onSchemas() {

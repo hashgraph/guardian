@@ -37,6 +37,7 @@ export class PolicyTemplate {
     public readonly version!: string;
     public readonly previousVersion!: string;
     public readonly tests!: any;
+    public readonly editableParametersSettings: string;
 
     private _policyTag!: string;
     private _name!: string;
@@ -99,6 +100,7 @@ export class PolicyTemplate {
         this.version = policy.version;
         this.previousVersion = policy.previousVersion;
         this.tests = policy.tests;
+        this.editableParametersSettings = policy.editableParametersSettings;
 
         this.buildPolicy(policy);
         this.buildBlock(policy.config);
@@ -648,6 +650,7 @@ export class PolicyTemplate {
             policyTokens: Array<any>(),
             policyGroups: Array<any>(),
             config: null,
+            editableParametersSettings: this.editableParametersSettings
         };
         for (const role of this.policyRoles) {
             json.policyRoles.push(role.getJSON());

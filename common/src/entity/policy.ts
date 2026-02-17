@@ -297,6 +297,9 @@ export class Policy extends BaseEntity {
     @Property({ nullable: true })
     originalMessageId?: string;
 
+    @Property({ nullable: true })
+    editableParametersSettings?: string;
+
     /**
      * File id of the original policy zip (publish flow).
      */

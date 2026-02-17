@@ -1,0 +1,118 @@
+<div class="guardian-dialog">
+    <div class="dialog-body">
+        <form [formGroup]="form" (ngSubmit)="submit()" class="formgrid grid p-fluid">
+            <div formArrayName="fields">
+                <div *ngFor="let fg of fieldGroups; let i = index" [formGroupName]="i">
+                    <div class="fields-grid group-container">
+                        <div class="field">
+                            <label for="visible">Blocks</label>
+                            <select-block
+                                [style]="{ width: '210px' }"
+                                [blocks]="(fg.get('blocks')?.value ?? [])"
+                                [value]="fg.controls.blockTag.value"
+                                type="object"
+                                (valueChange)="onBlockChange($event, i)"
+
+                            ></select-block>
+                        </div>
+                        <div class="field">
+                            <label for="visible">Property</label>
+                            <p-dropdown
+                                [style]="{ width: '210px' }"
+                                formControlName="property"
+                                [options]="fg.controls.properties.value"
+                                optionLabel="label"
+                                optionValue="name"
+                                placeholder="Выберите свойство"
+                                [showClear]="false">
+                            </p-dropdown>
+                        </div>
+                        <div class="field">
+                            <label for="visible">Visible</label>
+                            <p-multiSelect
+                                [style]="{ width: '210px' }"
+                                formControlName="visible"
+                                [options]="fg.controls.roles.value"
+                                class="guardian-multiselect full-size"
+                                appendTo="body"
+                                placeholder="Visibility"
+                                optionLabel="_name" 
+                                optionValue="id"
+                                filterBy="_name">
+                            </p-multiSelect>
+                        </div>
+                        <div class="field">
+                            <label for="appliesTo">Applies To</label>
+                            <p-multiSelect
+                                [style]="{ width: '210px' }"
+                                formControlName="appliesTo"
+                                [options]="fg.controls.roles.value"
+                                class="guardian-multiselect full-size"
+                                appendTo="body"
+                                placeholder="Applies To"
+                                optionLabel="_name" 
+                                optionValue="id"
+                                filterBy="_name">
+                            </p-multiSelect>
+                        </div>
+                        <div class="delete-field">
+                            <button
+                                class="guardian-icon-button big"
+                                >
+                                <svg-icon
+                                    class="icon-btn svg-icon"
+                                    src="/assets/images/icons/delete.svg"
+                                    svgClass='icon-color-delete'>
+                                </svg-icon>
+                            </button>
+                        </div>
+                        <div class="field label-field">
+                            <label for="label">Label</label>
+                            <input id="label" pInputText formControlName="label">
+                        </div>
+                        <div class="field description-field">
+                            <label for="shortDescription">Short Description</label>
+                            <input id="shortDescription" pInputText formControlName="shortDescription">
+                        </div>
+                        <div class="field default-field">
+                            <label for="defaultLabel">Default Label</label>
+                            <input id="defaultLabel" pInputText formControlName="defaultLabel">
+                        </div>
+                        <div class="field required-field">
+                            <p-checkbox
+                                formControlName="required"
+                                [binary]="true"
+                                inputId="required">
+                            </p-checkbox>
+
+                            <label for="required">Set as required</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <button (click)="addField()" class="add-button dialog-button guardian-button guardian-button-secondary add-doc-btn">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/add.svg"
+                        svgClass="icon-color-primary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Add Field</div>
+        </button>
+    </div>
+    <div class="dialog-footer">
+        <div class="action-buttons">
+            <div class="dialog-button">
+                <button
+                    (click)="onClose()"
+                    class="guardian-button guardian-button-secondary">Cancel</button>
+            </div>
+            <div class="dialog-button">
+                <button
+                    (click)="submit()"
+                    class="guardian-button guardian-button-primary"> Apply Changes 
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

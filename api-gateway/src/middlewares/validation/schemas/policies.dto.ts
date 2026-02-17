@@ -247,6 +247,14 @@ export class PolicyDTO {
     @IsBoolean()
     originalChanged?: boolean;
 
+        @ApiProperty({
+        type: 'string',
+        required: false
+    })
+
+    @IsOptional()
+    editableParametersSettings?: string;
+
     @ApiProperty({
         type: 'object',
         additionalProperties: true,
