@@ -60,4 +60,5 @@ export enum BlockType {
     DataTransformationAddon = 'dataTransformationAddon',
     HttpRequestUIAddon = 'httpRequestUIAddon',
     TransformationUIAddon = 'transformationUIAddon',
+    IpfsTransformationUIAddon = 'ipfsTransformationUIAddon',
 }
