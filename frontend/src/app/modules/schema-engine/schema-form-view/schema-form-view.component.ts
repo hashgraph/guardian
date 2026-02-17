@@ -422,7 +422,7 @@ export class SchemaFormViewComponent implements OnInit {
     public showFormulas(formulas: any) {
         const dialogRef = this.dialogService.open(FormulasViewDialog, {
             showHeader: false,
-            width: '950px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: formulas,
         });

@@ -1,10 +1,13 @@
-<div class="dialog-header">
+<div #dialogHeader class="dialog-header">
     <div *ngIf="name" class="header-container">
         <div class="header-text">Search based on</div>
         <div class="header-item">{{name}}</div>
     </div>
     <div *ngIf="!name" class="header-container">
         <div class="header-text">Search tools</div>
+    </div>
+    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
     </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>

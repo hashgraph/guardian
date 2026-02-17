@@ -1221,7 +1221,7 @@ export class PoliciesComponent implements OnInit {
         const distinctPolicies = this.getDistinctPolicy();
         const dialogRef = this.dialogService.open(PreviewPolicyDialog, {
             header: 'Preview',
-            width: '800px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             showHeader: false,
             data: {
@@ -1283,7 +1283,7 @@ export class PoliciesComponent implements OnInit {
         const { data, schemasCanBeReplaced } = result;
         const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
             header: 'Schemas for replace',
-            width: '800px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             showHeader: false,
             data: {
@@ -1320,7 +1320,7 @@ export class PoliciesComponent implements OnInit {
         const { data, xlsx } = result;
         const dialogRef = this.dialogService.open(PreviewPolicyDialog, {
             header: 'Preview',
-            width: '800px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             showHeader: false,
             data: {
@@ -1436,7 +1436,7 @@ export class PoliciesComponent implements OnInit {
         if (event.value.id === 'Discontinue') {
             let dialogRef: DynamicDialogRef<DiscontinuePolicy> | undefined = this.dialogService.open(DiscontinuePolicy, {
                 header: 'Discontinue policy',
-                width: 'auto',
+                width: '90%',
             });
             dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 if (!result) {
@@ -1497,9 +1497,9 @@ export class PoliciesComponent implements OnInit {
     public comparePolicy(policy?: any) {
         const item = this.policies?.find((e) => e.id === policy?.id);
         const dialogRef = this.dialogService.open(ComparePolicyDialog, {
-            header: 'Policy Comparison',
-            width: '900px',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
             data: {
                 policy: item
             },
@@ -1535,9 +1535,9 @@ export class PoliciesComponent implements OnInit {
         this.contractSerivce.getContracts({ type: ContractType.RETIRE }).pipe(takeUntil(this._destroy$)).subscribe({
             next: (res) => {
                 const dialogRef = this.dialogService.open(MigrateData, {
-                    header: 'Migrate Data',
-                    width: '750px',
-                    styleClass: 'custom-dialog',
+                    showHeader: false,
+                    width: '90%',
+                    styleClass: 'guardian-dialog',
                     data: {
                         policy: item,
                         policies: this.policies?.filter(item => PolicyHelper.isRun(item)),
@@ -1572,7 +1572,7 @@ export class PoliciesComponent implements OnInit {
         const dialogRef = this.dialogService.open(NewPolicyDialog, {
             showHeader: false,
             header: 'New Policy',
-            width: '650px',
+            width: '90%',
             styleClass: 'guardian-dialog',
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
@@ -1708,7 +1708,7 @@ export class PoliciesComponent implements OnInit {
         const item = this.policies?.find((e) => e.id === policy?.id);
         const dialogRef = this.dialogService.open(SearchPolicyDialog, {
             showHeader: false,
-            width: '1100px',
+            width: '90%',
             styleClass: 'custom-dialog custom-header-dialog',
             data: {
                 policy: item
@@ -1733,10 +1733,9 @@ export class PoliciesComponent implements OnInit {
     public openSuggestionsDialog() {
         this.dialogService
             .open(SuggestionsConfigurationComponent, {
-                height: '640px',
-                width: '860px',
-                closable: true,
-                header: 'Suggestions',
+                width: '90%',
+                showHeader: false,
+                styleClass: 'guardian-dialog',
             })
             .onClose.pipe(takeUntil(this._destroy$)).subscribe();
     }
@@ -1789,7 +1788,7 @@ export class PoliciesComponent implements OnInit {
         const dialogRef = this.dialogService.open(PolicyTestDialog, {
             showHeader: false,
             header: 'Policy Tests',
-            width: '1100px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 policy: item
@@ -1869,7 +1868,7 @@ export class PoliciesComponent implements OnInit {
         this.policySubMenu?.hide();
         const dialogRef = this.dialogService.open(UserPolicyDialog, {
             showHeader: false,
-            width: '720px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 policy

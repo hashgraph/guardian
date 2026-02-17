@@ -509,8 +509,17 @@ body {
         text-decoration: underline;
     }
 
+    .header-icon.resize {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 16px;
+    }
+
+    textarea,
     .p-inputtextarea {
         min-height: 40px !important;
+        padding: 0.5rem 0.5rem !important;
         max-height: 250px !important;
         border-radius: 8px !important;
         overflow: auto !important;
