@@ -20,7 +20,7 @@
     "@tmcw/togeojson": "^7.1.2",
     "ag-grid-angular": "34.2.0",
     "ag-grid-community": "34.2.0",
-    "ajv": "^8.17.1",
+    "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "angular-svg-icon": "^18.0.2",
     "angularx-qrcode": "^18.0.2",
