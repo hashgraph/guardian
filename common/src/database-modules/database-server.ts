@@ -5682,6 +5682,94 @@ export class DatabaseServer extends AbstractDatabaseServer {
         }, { policyId, owner: user.did });
     }
 
+
+    /**
+     * 
+     *
+     * @param policyId
+     * @param user
+     */
+    public async reconnectPolicyDocuments(
+        policyId: string,
+        user: IAuthUser
+    ): Promise<void> {
+        await this.updateEntity(AggregateVC, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(ApprovalDocumentCollection, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(ExternalDocument, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(GlobalEventsReaderStream, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, userDid: user.did });
+        await this.updateEntity(GlobalEventsWriterStream, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, userDid: user.did });
+        await this.updateEntity(MultiDocuments, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, did: user.did });
+        await this.updateEntity(MultiPolicyTransaction, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyAction, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyComment, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyDiscussion, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyInvitations, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyRolesCollection, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(SplitDocuments, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, userId: user.id });
+        await this.updateEntity(VcDocumentCollection, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(VpDocumentCollection, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+    }
+
     /**
      * Get Disconnected Policies
      *
@@ -5689,8 +5777,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param owner
      *
      */
-    public static async getDisconnectedPolicy(policyId: string, owner: string): Promise<DisconnectedPolicy[]> {
-        return await new DataBaseHelper(DisconnectedPolicy).find({ policyId, owner });
+    public static async getDisconnectedPolicy(policyId: string, owner: string): Promise<DisconnectedPolicy> {
+        return await new DataBaseHelper(DisconnectedPolicy).findOne({ policyId, owner });
     }
 
     /**

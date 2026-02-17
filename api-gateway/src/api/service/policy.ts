@@ -1115,6 +1115,45 @@ export class PolicyApi {
             await InternalException(error, this.logger, user.id);
         }
     }
+
+    /**
+     * Reconnect
+     */
+    @Put('/:policyId/reconnect')
+    @Auth(Permissions.POLICIES_POLICY_READ)
+    @ApiOperation({
+        summary: '',
+        description: '',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: PolicyDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async reconnectPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string
+    ): Promise<boolean> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.reconnectPolicy(policyId, user);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
     //#endregion
 
     //#region Other

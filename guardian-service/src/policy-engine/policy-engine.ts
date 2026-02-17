@@ -263,7 +263,7 @@ export class PolicyEngine extends NatsService {
         if (code === PolicyAccessCode.UNAVAILABLE) {
             throw new Error(`Insufficient permissions to ${action} the policy.`);
         }
-        if(action === 'execute') {
+        if (action === 'execute') {
             const disconnected = await DatabaseServer.getDisconnectedPolicy(policy.id, user.creator);
             if(disconnected) {
                 throw new Error('You were disconnected from this policy.');

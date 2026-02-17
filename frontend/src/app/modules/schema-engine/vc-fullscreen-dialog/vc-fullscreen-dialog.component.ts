@@ -100,6 +100,7 @@ export class VCFullscreenDialog {
     public versionOptions: { label: string; value: number }[] = [];
     public selectedVersionIndex: number = 0;
     public tags: any[] = [];
+    public disconnected: boolean = true;
 
     private _destroy$ = new Subject<void>();
     private _subscription?: Subscription | null;

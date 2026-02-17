@@ -1876,4 +1876,11 @@ export class PolicyComponentsUtils {
         await db.disconnectPolicyDocuments(policyId, user);
         return true;
     }
+
+    public static async ReconnectPolicy(policyId: string, user: IAuthUser): Promise<boolean> {
+        const db = new DatabaseServer();
+        await DatabaseServer.reconnectPolicy(policyId, user.did);
+        await db.reconnectPolicyDocuments(policyId, user);
+        return true;
+    }
 }

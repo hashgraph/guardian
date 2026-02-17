@@ -256,6 +256,18 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Reconnect policy
+     * @param policyId
+     * @param user
+     */
+    public async reconnectPolicy(
+        policyId: string,
+        user: IAuthUser,
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.RECONNECT_POLICY, { policyId, user });
+    }
+
+    /**
      * Restart policy
      * @param user
      * @param policyId

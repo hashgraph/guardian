@@ -1492,6 +1492,27 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RECONNECT_POLICY,
+            async (msg: { policyId: string, user: IAuthUser, }): Promise<IMessageResponse<boolean>> => {
+                try {
+                    const { policyId, user } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (policy) {
+                        const result = await new GuardiansService()
+                            .sendPolicyMessage<boolean>(PolicyEvents.RECONNECT_POLICY, policyId, {
+                                user,
+                                policyId,
+                            }) as any
+                        return new MessageResponse(result);
+                    } else {
+                        return new MessageResponse(true);
+                    }
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.VALIDATE_POLICIES,
             async (msg: { policyId: string, model: Policy & { ignoreRules?: ReadonlyArray<IgnoreRule> }, owner: IOwner }): Promise<IMessageResponse<any>> => {
                 try {

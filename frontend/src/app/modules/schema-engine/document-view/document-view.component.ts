@@ -33,6 +33,8 @@ export class DocumentViewComponent implements OnInit {
     @Input() schemaId?: string;
     @Input('relayer-account') relayerAccount?: string;
 
+    @Input('disconnected') disconnected: boolean = false;
+    
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
 
     public loading: boolean = false;
