@@ -5594,6 +5594,43 @@ paths:
       summary: Updates policy configuration.
       tags:
         - policies
+  /policies/{policyId}/disconnected:
+    get:
+      description: >-
+        Retrieves disconnected policy configuration for the specified policy ID.
+        Only users with the Standard Registry role are allowed to make the
+        request.
+      operationId: PolicyApi_getDisconnectedPolicy
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Policy configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Retrieves disconnected policy configuration.
+      tags:
+        - policies
   /policies/{policyId}/publish:
     put:
       description: >-
