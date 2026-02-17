@@ -5916,6 +5916,42 @@ paths:
       summary: ''
       tags:
         - policies
+  /policies/{policyId}/reconnect:
+    put:
+      description: ''
+      operationId: PolicyApi_reconnectPolicy
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: ''
+      tags:
+        - policies
   /policies/{policyId}/navigation:
     get:
       description: Returns a policy navigation.
