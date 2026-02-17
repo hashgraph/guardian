@@ -25,6 +25,7 @@
         "ag-grid-community": "34.2.0",
         "idb": "8.0.3",
         "@indexer/interfaces": "file:../indexer-interfaces",
+        "@indexer/common": "file:../indexer-common",
         "@jsverse/transloco": "^7.2.1",
         "@meeco/cryppo": "^2.0.2",
         "chart.js": "^4.4.3",
