@@ -4,7 +4,7 @@
         "@filebase/client": "^0.0.5",
         "@guardian/common": "3.5.0",
         "@guardian/interfaces": "3.5.0",
-        "@hiero-ledger/sdk": "2.78.0",
+        "@hiero-ledger/sdk": "2.80.0",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
