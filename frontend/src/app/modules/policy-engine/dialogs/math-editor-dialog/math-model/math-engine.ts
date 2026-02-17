@@ -101,6 +101,7 @@ export class MathEngine {
         }
 
         list.set('_', new FieldLink('_'));
+        list.set('index', new FieldLink('index'));
 
         // Variables
         for (const page of this.variables.pages) {

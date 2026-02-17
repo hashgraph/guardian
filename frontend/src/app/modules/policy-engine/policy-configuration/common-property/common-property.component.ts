@@ -135,7 +135,7 @@ export class CommonPropertyComponent implements OnInit {
     editCode($event: MouseEvent) {
         const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 test: false,

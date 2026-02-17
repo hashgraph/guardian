@@ -99,14 +99,31 @@ export class FormulasComponent implements OnInit {
         label: 'Draft',
         value: EntityStatus.DRAFT,
         description: 'Return to editing.',
-        disable: true
+        disable: (value: string, item?: any): boolean => {
+            return (
+                (value !== EntityStatus.DRY_RUN)
+            );
+        }
+    }, {
+        label: 'Dry-run',
+        value: EntityStatus.DRY_RUN,
+        description: 'Run without making any persistent \n changes or executing transaction.',
+        disable: (value: string, item?: any): boolean => {
+            return (
+                (value !== EntityStatus.DRAFT)
+            );
+        }
     }, {
         label: 'Published',
         value: EntityStatus.PUBLISHED,
         description: 'Release version into public domain.',
         disable: (value: string, item?: any): boolean => {
             return (
-                (value !== EntityStatus.DRAFT && value !== EntityStatus.ERROR) ||
+                (
+                    value !== EntityStatus.DRAFT &&
+                    value !== EntityStatus.DRY_RUN &&
+                    value !== EntityStatus.ERROR
+                ) ||
                 (item?.policyStatus !== PolicyStatus.PUBLISH)
             );
         }
@@ -151,11 +168,11 @@ export class FormulasComponent implements OnInit {
             this.allPolicies.forEach((p: any) => p.label = p.name);
 
             const policy = this.route.snapshot.queryParams['policy'];
-            if(policy) {
+            if (policy) {
                 this.currentPolicy = this.allPolicies.find((p) => p.id === policy);
             }
 
-            if(!this.currentPolicy) {
+            if (!this.currentPolicy) {
                 this.currentPolicy = this.allPolicies[0];
             }
 
@@ -356,7 +373,13 @@ export class FormulasComponent implements OnInit {
     }
 
     public onChangeStatus($event: string, row: any): void {
-        this.publish(row)
+        if ($event === EntityStatus.DRAFT) {
+            this.draft(row);
+        } else if ($event === EntityStatus.DRY_RUN) {
+            this.dryRun(row);
+        } else if ($event === EntityStatus.PUBLISHED) {
+            this.publish(row);
+        }
     }
 
     private publish(row: any) {
@@ -388,6 +411,27 @@ export class FormulasComponent implements OnInit {
                     });
             }
         });
+    }
 
+    private draft(row: any) {
+        this.loading = true;
+        this.formulasService
+            .draft(row)
+            .subscribe((response) => {
+                this.loadData();
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    private dryRun(row: any) {
+        this.loading = true;
+        this.formulasService
+            .dryRun(row)
+            .subscribe((response) => {
+                this.loadData();
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

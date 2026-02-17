@@ -1352,7 +1352,8 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 tokenId,
                 $or: [
                     { owner: { $eq: owner.owner } },
-                    { owner: { $exists: false } }
+                    { owner: { $exists: false } },
+                    { owner: null }
                 ]
             });
             return new MessageResponse(token);

@@ -1,6 +1,9 @@
-<div class="dialog-header">
+<div #dialogHeader class="dialog-header">
     <div class="header-container">
         <div class="header-text">{{header}}</div>
+    </div>
+    <div class="header-icon" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
     </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
