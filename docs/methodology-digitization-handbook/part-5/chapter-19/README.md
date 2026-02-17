@@ -31,7 +31,9 @@ Once you click on create a new formula, you will see three tabs:
 
 ### Overview Tab
 
-In this tab, you would put in basic details about your formula such as name, description and the policy it belongs to.
+In this tab, you would put in basic details about your formula such as name, description and the policy it belongs to. Reference to the image below can be made which displays the overview section of Formula Linked Definitions for VM0033 digitized methodology
+
+![VM0033 FLDs Overview Tab](<../../../.gitbook/assets/VM0033-FLD-overview.png>)
 
 ### Edit Formula
 
@@ -41,12 +43,23 @@ There are 4 types of items available in order to compose a formula:
     - `Name`
     - `Description`
     - `Value`
+
+![VM0033 FLDs Constants](<../../../.gitbook/assets/VM0033-FLD-constants.png>)
+
 - **Variables** are going to be the data coming in from the documents. This can be linked to a particular field in the schemas of the policy or a component of another FLD formula. Along with the name and description, this item also has a 
-    - `Link (Input)` field where the particular field from the schemas/component from other forumlas (FLDs) can be added. 
+    - `Link (Input)` field where the particular field from the schemas/component from other forumlas (FLDs) can be added. (Image added below for reference)
+
+![VM0033 FLDs Variables](<../../../.gitbook/assets/VM0033-FLD-variables.png>)
+
+![VM0033 FLDs Link Input Schema Fields](<../../../.gitbook/assets/VM0033-FLD-link-input-schema-fields.png>)
+
 - **Formulas** item can be used to input the Mathematical Formula. Along with name and description fields, formula item also has 
     - `Formula` field where the Mathematical formula can be added with the built in Math keyboard or LaTex form. 
     - `Link (Output)` field which indicates the field in the document schema where the result of the calculation defined in CustomLogicBlock is located 
     - `Relationships` field where you can add all the variables and constants that are related/used in the formula. This enables navigation in a Formula using its variables when the user is looking at the published formulas in the schemas/VC documents.
+
+![VM0033 FLDs Formulas](<../../../.gitbook/assets/VM0033-FLD-formulas.png>)
+
 - **Text** a component which allows the description of the calculation algorithm without using mathematical notation. This component does not require any specific syntax. Text item contains the following fields:
     - `Name` of the text 
     - `Description` of the text
@@ -54,7 +67,9 @@ There are 4 types of items available in order to compose a formula:
     - `Link (Output)` which indicates the field in the document schema where the text should be shown.
     - `Relationships` field where you can select all the variables, constants and formulas that are related.
 
-Using the combination of the above 4 items, a Formula Linked Definitions can be generated which will explain the code/calculations that happen in the CustomLogicBlock. The best approach is to go from bottom to top i.e. create all the small formulas and variables/constants it is related to and then work you way up to create the final formula that represents the Main Formula of the methodology. A formula item can be used inside another formula which will create a heirarchy for the end users to track how each component is being calculated. 
+Using the combination of the above 4 items, a Formula Linked Definitions can be generated which will explain the code/calculations that happen in the CustomLogicBlock. The best approach is to go from bottom to top i.e. create all the small formulas and variables/constants it is related to and then work you way up to create the final formula that represents the Main Formula of the methodology. A formula item can be used inside another formula which will create a heirarchy for the end users to track how each component is being calculated.
+
+Once you have published the policy with the FLDs set up, 'fx' button will appear next to the fields for which the formulas were added in the FLDs and once clicked on the button you will hierarchy of the formulas and the variables involved and how it led to the calculated value. (Image attached in `Viewing Formula Linked Definitions` section)
 
 In order to have better readability, it is recommended to add relevant name and descriptions for the above items. 
 
@@ -64,7 +79,11 @@ Here you can attach all the relevant documents concerned with the Methodology th
 
 ## Viewing Formula Linked Definitions
 
-Once the policy and the formulas are published, all the relevant document (VC) will have a button besides the linked fields to view the FLD. Once clicked, the Formula display dialogue shows all linked formulas and provides facilities to navigate through the components of these formulas. In the dialog, all the relationships that were added can be seen along with its value that was filled by the user. This makes the verification of the calculations and formulas easier. 
+Once the policy and the formulas are published, all the relevant document (VC) will have a button besides the linked fields to view the FLD (refer to the images below). Once clicked, the Formula display dialogue shows all linked formulas and provides facilities to navigate through the components of these formulas (refer to the images below). In the dialog, all the relationships that were added can be seen along with its value that was filled by the user. This makes the verification of the calculations and formulas easier. 
+
+![VM0033 FLDs View Formula for a schema field](<../../../.gitbook/assets/VM0033-FLD-formula-button.png>)
+
+![VM0033 FLDs View Formulas](<../../../.gitbook/assets/VM0033-FLD-view-formula.png>)
 
 Along with the formulas, there will be a `Files` tab which will show all the files attached by the FLD developer (usually the policy developer)
 
@@ -79,6 +98,8 @@ Key takeaways:
 - FLDs allows to browse associations between fields in schemas/documents and the corresponding variables in the displayed math formulas.
 - Guardian platform allows users to navigate the hierarchy of formulas and the data they represent, and view mapping variables in the formula to fields in schemas.
 
+Note: VM0033 policy file with the Formula Linked Definitions is attached at the end for your reference 
+
 ### Next Steps
 
 Chapter 20 will demonstrate implementing specific AR Tool calculation patterns, showing how the parameter relationships we've identified in FLDs translate into working calculation code for biomass and soil carbon assessments.
@@ -88,5 +109,5 @@ Chapter 20 will demonstrate implementing specific AR Tool calculation patterns, 
 - [Guardian customLogicBlock Documentation](../../../available-policy-workflow-blocks/customlogicblock.md)
 - [VM0033 Calculation Implementation](../../_shared/artifacts/er-calculations.js)
 - [VM0033 Test Case Artifacts](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx)
-
+- [VM003 Policy with FLDs attached](../../../../Methodology%20Library/Verra/Verified%20Carbon%20Standard%20(VCS)/VM0033/VM0033.policy)
 ---
