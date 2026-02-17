@@ -3,7 +3,10 @@ import { EntityStatus, GenerateUUIDv4, IOwner, IRootConfig, PolicyStatus } from 
 
 type IDocument = VcDocument | VpDocument;
 
-async function findRelationships(target: IDocument): Promise<IDocument[]> {
+async function findRelationships(
+    db: DatabaseServer,
+    target: IDocument
+): Promise<IDocument[]> {
     if (!target) {
         return [];
     }
@@ -11,26 +14,36 @@ async function findRelationships(target: IDocument): Promise<IDocument[]> {
     const prevRelationships = new Map<string, IDocument>();
     prevRelationships.set(target.messageId, target);
 
-    await addRelationships(target, prevRelationships);
+    await addRelationships(db, target, prevRelationships);
 
     return Array.from(prevRelationships.values());
 }
 
-async function addRelationships(doc: IDocument, relationships: Map<string, IDocument>) {
+async function addRelationships(
+    db: DatabaseServer,
+    doc: IDocument,
+    relationships: Map<string, IDocument>
+) {
     if (doc && doc.relationships) {
         for (const id of doc.relationships) {
-            await addRelationship(id, relationships);
+            await addRelationship(db, id, relationships);
         }
     }
 }
 
-async function addRelationship(messageId: string, relationships: Map<string, IDocument>) {
+async function addRelationship(
+    db: DatabaseServer,
+    messageId: string,
+    relationships: Map<string, IDocument>
+) {
     if (!messageId || relationships.has(messageId)) {
         return;
     }
-    const doc = await DatabaseServer.getVC({ messageId });
-    relationships.set(messageId, doc);
-    await addRelationships(doc, relationships);
+    const doc = await db.getVcDocument({ messageId });
+    if (doc) {
+        relationships.set(messageId, doc);
+        await addRelationships(db, doc, relationships);
+    }
 }
 
 function checkDocument(document: any, policyId: string, owner: IOwner): boolean {
@@ -63,12 +76,12 @@ export async function getFormulasData(
         const vc = await db.getVcDocument(documentId);
         if (vc) {
             result.document = vc;
-            result.relationships = await findRelationships(vc);
+            result.relationships = await findRelationships(db, vc);
         } else {
             const vp = await db.getVpDocument(documentId);
             if (vp) {
                 result.document = vp;
-                result.relationships = await findRelationships(vp);
+                result.relationships = await findRelationships(db, vp);
             }
         }
     }
@@ -76,7 +89,7 @@ export async function getFormulasData(
     if (parentId) {
         const doc = await db.getVcDocument(parentId);
         if (doc) {
-            result.relationships = await findRelationships(doc);
+            result.relationships = await findRelationships(db, doc);
         }
     }
 

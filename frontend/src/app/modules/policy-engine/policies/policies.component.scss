@@ -488,8 +488,23 @@
 }
 
 .primary-color {
-    fill: var(--guardian-primary-color);
-    color: var(--guardian-primary-color);
+    fill: var(--guardian-primary-color) !important;
+    color: var(--guardian-primary-color) !important;
+
+    ::ng-deep button {
+        fill: var(--guardian-primary-color) !important;
+        color: var(--guardian-primary-color) !important;
+    }
+}
+
+.delete-color {
+    fill: var(--guardian-delete-color) !important;
+    color: var(--guardian-delete-color) !important;
+
+    ::ng-deep button {
+        fill: var(--guardian-delete-color) !important;
+        color: var(--guardian-delete-color) !important;
+    }
 }
 
 .color-white {
@@ -1057,7 +1072,7 @@
 
 .cell-description {
     min-width: 150px;
-    max-width: calc(100vw - 1180px);
+    max-width: calc(100vw - 1210px);
 }
 
 .submenu-arrow {

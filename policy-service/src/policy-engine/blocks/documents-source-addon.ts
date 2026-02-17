@@ -173,7 +173,18 @@ export class DocumentsSourceAddon {
                 data = await ref.databaseServer.getVpDocuments(filters, otherOptions, countResult) as number | IPolicyDocument[];
                 if (!countResult) {
                     for (const item of data as any[]) {
-                        [item.serials, item.amount, item.error, item.wasTransferNeeded, item.transferSerials, item.transferAmount, item.tokenIds] = await ref.databaseServer.getVPMintInformation(item);
+                        const info = await ref.databaseServer.getVPMintInformation(item);
+                        item.serials = info.serials;
+                        item.amount = info.amount;
+                        item.error = info.error;
+                        item.wasTransferNeeded = info.wasTransferNeeded;
+                        item.transferSerials = info.transferSerials;
+                        item.mintAmount = info.mintAmount;
+                        item.transferAmount = info.transferAmount;
+                        item.mintExpected = info.mintExpected;
+                        item.transferExpected = info.transferExpected;
+                        item.tokenIds = info.tokenIds;
+                        item.mainDocument = info.mainDocument;
                     }
                 }
                 break;

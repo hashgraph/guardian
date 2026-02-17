@@ -365,7 +365,7 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
 
             this.dialog.open(TableDialogComponent, {
                 header: 'View table',
-                width: '70vw',
+                width: '90%',
                 data: { columnDefs, rowData: parsed.rows, readOnly: true },
             });
         } catch (error: any) {

@@ -103,14 +103,16 @@
                         [ngClass]="{ 'ipfs-url': isIPFS(item) }"
                         [attr.readonly-field]="isEditMode && !item.isUpdatable"
                     >
-                        <input
-                            pInputText
+                        <textarea
+                            pInputTextarea
                             [formControl]="item.control"
                             (focus)="onFocusField(item.format, item)"
                             (blur)="onUnfocusField(item.format, item)"
                             [placeholder]="getPlaceholderByFieldType(item)"
                             type="text"
-                        />
+                            [autoResize]="true"
+                            rows="1"
+                        ></textarea>
                         <div *ngIf="isIPFS(item)">
                             <div class="file-upload">
                                 <ng-container [ngSwitch]="item.fileUploading">
@@ -218,7 +220,7 @@
 
                     <div
                         *ngIf="isEnum(item)"
-                        class="form-field-input guardian-input-container"
+                        class="form-field-input guardian-input-container form-field-enum"
                         [attr.readonly-field]="isEditMode && !item.isUpdatable"
                     >
                         <p-dropdown
@@ -274,8 +276,229 @@
                 </div>
             </div>
 
+            <!-- array of objects as table -->
+            <div *ngIf="canDrawTable(item)">
+                <p-table [value]="item.list || []">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 3rem">#</th>
+                            <th 
+                                *ngFor="let col of getTableHeaderFields(item)"
+                                class="table-header"
+                            >
+                                {{ col.description }}
+                            </th>
+                            <th style="width: 3rem"></th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
+                    <tr>
+                        <td>{{ rowIndex + 1 }}</td>
+                        <td *ngFor="let itemControl of getTableRowFields(rowData)">
+                            <div class="table-content form-field-value">
+                                <span *ngIf="ifRequiredField(itemControl)" class="required-field">*</span>
+                                <div *ngIf="ifSimpleField(itemControl)" class="simple-field">
+                                    <div 
+                                        *ngIf="isPrefix(itemControl)"
+                                        class="form-field-input guardian-input-container"
+                                    >
+                                        {{ itemControl.unit }}
+                                    </div>
+
+                                    <div 
+                                        *ngIf="isInput(itemControl)"
+                                        class="form-field-input guardian-input-container"
+                                        [attr.readonly-field]="isEditMode && !itemControl.isUpdatable"
+                                    >
+                                        <textarea
+                                            class="p-inputtextarea p-inputtext textarea-resize-none"
+                                            [formControl]="itemControl.control"
+                                            (focus)="onFocusField(itemControl.format, itemControl)"
+                                            (blur)="onUnfocusField(itemControl.format, itemControl)"
+                                            [placeholder]="getPlaceholderByFieldType(itemControl)"
+                                            type="text"
+                                            rows="1"
+                                        ></textarea> 
+                                        <div *ngIf="isIPFS(itemControl)">
+                                            <div class="file-upload">
+                                                <ng-container [ngSwitch]="itemControl.fileUploading">
+                                                    <p-progressSpinner
+                                                        *ngSwitchCase="true"
+                                                        [style]="{
+                                                            width: '38px',
+                                                            height: '38px'
+                                                        }"
+                                                    >
+                                                    </p-progressSpinner>
+
+                                                    <button
+                                                        mat-icon-button
+                                                        *ngSwitchCase="false"
+                                                        class="upload-btn"
+                                                        (click)="
+                                                            uploadFile(itemControl, itemControl, isFile(itemControl))
+                                                        "
+                                                    >
+                                                        <i class="pi pi-paperclip"></i>
+                                                    </button>
+                                                </ng-container>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        *ngIf="isDateTime(itemControl)"
+                                        class="form-field-input guardian-input-container"
+                                        [attr.readonly-field]="isEditMode && !itemControl.isUpdatable"
+                                    >
+                                        <date-time-control
+                                            [control]="itemControl.control"
+                                            [item]="itemControl"
+                                            [showTime]="true"
+                                        ></date-time-control>
+                                    </div>
+
+                                    <div
+                                        *ngIf="isDate(itemControl)"
+                                        class="form-field-input guardian-input-container"
+                                        [attr.readonly-field]="isEditMode && !itemControl.isUpdatable"
+                                    >
+                                        <date-time-control
+                                            [control]="itemControl.control"
+                                            [item]="itemControl"
+                                            [showTime]="false"
+                                            [showSeconds]="false"
+                                        ></date-time-control>
+                                    </div>
+
+                                    <div
+                                        *ngIf="isTime(itemControl)"
+                                        class="form-field-input guardian-input-container"
+                                        [attr.readonly-field]="isEditMode && !itemControl.isUpdatable"
+                                    >
+                                        <date-time-control
+                                            [control]="itemControl.control"
+                                            [item]="itemControl"
+                                            [showSeconds]="true"
+                                            [showTime]="true"
+                                            [timeOnly]="true"
+                                        ></date-time-control>
+                                    </div>
+
+                                    <div
+                                        *ngIf="isBoolean(itemControl)"
+                                        class="form-field-input guardian-input-container form-field-input-bool"
+                                        [attr.readonly-field]="isEditMode && !itemControl.isUpdatable"
+                                    >
+                                        <div class="boolean-field">
+                                            <p-radioButton
+                                                class="guardian-radio-button radio-button-24"
+                                                [name]="itemControl.id"
+                                                [value]="true"
+                                                [formControl]="itemControl.control"
+                                                inputId="{{ itemControl.id }}_true"
+                                            />
+                                            <label for="{{ itemControl.id }}_true">True</label>
+                                        </div>
+                                        <div class="boolean-field">
+                                            <p-radioButton
+                                                class="guardian-radio-button radio-button-24"
+                                                [name]="itemControl.id"
+                                                [value]="false"
+                                                [formControl]="itemControl.control"
+                                                inputId="{{ itemControl.id }}_false"
+                                            />
+
+                                            <label for="{{ itemControl.id }}_false">False</label>
+                                        </div>
+                                        <div *ngIf="!itemControl.required" class="boolean-field">
+                                            <p-radioButton
+                                                class="guardian-radio-button radio-button-24"
+                                                [name]="itemControl.id"
+                                                [value]="undefined"
+                                                [formControl]="itemControl.control"
+                                                inputId="{{ itemControl.id }}_unset"
+                                            />
+
+                                            <label for="{{ itemControl.id }}_unset">Unset</label>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        *ngIf="isEnum(itemControl)"
+                                        class="form-field-input guardian-input-container"
+                                        [attr.readonly-field]="isEditMode && !itemControl.isUpdatable"
+                                    >
+                                        <p-dropdown
+                                            class="guardian-dropdown"
+                                            [formControl]="itemControl.control"
+                                            [options]="itemControl.enumValues"
+                                            [showClear]="false"
+                                            appendTo="body"
+                                            placeholder="Not selected"
+                                            [appendTo]="'body'"
+                                            panelStyleClass="guardian-dropdown-panel"
+                                        >
+                                        </p-dropdown>
+                                    </div>
+
+                                    <div 
+                                        *ngIf="isPostfix(itemControl)"
+                                        class="form-field-input guardian-input-container"
+                                    >
+                                        {{ itemControl.unit }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div
+                                *ngIf="
+                                    !item.control.disabled && (!isEditMode || item?.isUpdatable)
+                                "
+                                class="guardian-icon-button big"
+                                (click)="
+                                    removeItem(
+                                        item,
+                                        rowData,
+                                        $event
+                                    )
+                                "
+                            >
+                                <svg-icon
+                                    class="icon-btn"
+                                    src="/assets/images/icons/delete.svg"
+                                    svgClass="icon-color-delete"
+                                >
+                                </svg-icon>
+                            </div>
+                        </td>
+                    </tr>
+                    </ng-template>
+                </p-table>
+
+                <button
+                    *ngIf="!item.control.disabled && (!isEditMode || item?.isUpdatable)"
+                    (click)="addItem(item)"
+                    class="guardian-button guardian-button-secondary add-btn"
+                >
+                    <div class="guardian-button-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon"
+                            src="/assets/images/icons/add.svg"
+                            svgClass="icon-color-primary"
+                        >
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">
+                        Add [{{ item.description }}]
+                    </div>
+                </button>
+            </div>
+
             <!-- array of simple fields -->
-            <div *ngIf="ifSimpleArray(item)" class="form-field-array">
+            <div *ngIf="ifSimpleArray(item)" class="form-field-array" [attr.array-invalid]="item.control?.invalid">
                 <div class="label-field" id="detail-section">
                     <div
                         *ngIf="!isChildSchema && formModel.controls && !isEditMode"
@@ -387,8 +610,8 @@
                                     isEditMode && !item.isUpdatable
                                 "
                             >
-                                <input
-                                    pInputText
+                                <textarea
+                                    pInputTextarea
                                     [formControl]="listItem.control"
                                     [placeholder]="
                                         getPlaceholderByFieldType(item)
@@ -400,7 +623,9 @@
                                         onUnfocusField(item.format, listItem)
                                     "
                                     type="text"
-                                />
+                                    [autoResize]="true"
+                                    rows="1"
+                                ></textarea>
                                 <div
                                     *ngIf="isIPFS(item)"
                                     [attr.readonly-field]="
@@ -811,7 +1036,7 @@
 
             <!-- array of sub schemas -->
             <div
-                *ngIf="ifSubSchemaArray(item)"
+                *ngIf="ifSubSchemaArray(item) && !canDrawTable(item)"
                 class="accordion-container form-field-group schema-form-field-array-group sub-schemas sub-schema-{{
                     item.customType
                 }}"

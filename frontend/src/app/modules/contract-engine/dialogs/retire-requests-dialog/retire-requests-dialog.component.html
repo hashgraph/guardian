@@ -5,7 +5,7 @@
         <div *ngFor="let request of requests" class="request">
             <div class="profile">
                 <i class="pi pi-user profile__icon"></i>
-                <span class="profile__id">{{ request.user }}</span>
+                <span class="profile__id">{{  request.displayUser }}</span>
             </div>
             <div class="tokens">
                 <div class="token-card" *ngFor="let token of request.tokens">

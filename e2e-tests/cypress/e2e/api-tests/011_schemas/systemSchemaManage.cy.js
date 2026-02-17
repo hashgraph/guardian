@@ -99,7 +99,7 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                                 schemaId,
                             headers: { authorization },
                         }).then((response) => {
-                            expect(response.status).eql(STATUS_CODE.NO_CONTENT);
+                            expect(response.status).eql(STATUS_CODE.OK);
                         });
                     });
                 });
