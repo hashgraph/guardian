@@ -56,7 +56,7 @@ const retireAbi = new ethers.Interface([
 ]);
 
 const versionEventsAbi = new ethers.Interface([
-    'event Version(uint256[3])',
+    'event VersionInfo(uint256[3])',
 ]);
 
 const accessEventsAbi = new ethers.Interface([
