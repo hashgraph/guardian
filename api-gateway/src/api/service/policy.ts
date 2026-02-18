@@ -2521,7 +2521,7 @@ export class PolicyApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    //@UseCache({ ttl: CACHE.LONG_TTL })
+    @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
     async getBlockAbout(
         @AuthUser() user: IAuthUser,
