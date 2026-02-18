@@ -1113,7 +1113,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialogService.open(SchemaDialog, {
             showHeader: false,
             header: 'New Schema',
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 type: 'new',
@@ -1139,7 +1139,7 @@ export class SchemaConfigComponent implements OnInit {
         this.dialog.open(SchemaFormDialog, {
             showHeader: false,
             header: 'Dry run with test data',
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 schema,
@@ -1152,7 +1152,7 @@ export class SchemaConfigComponent implements OnInit {
     public onOpenDocument(element: Schema): void {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 row: element,
@@ -1190,7 +1190,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialogService.open(SchemaDialog, {
             showHeader: false,
             header: 'Edit Schema',
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 type: 'edit',
@@ -1271,7 +1271,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialogService.open(SchemaDialog, {
             showHeader: false,
             header: 'New Version',
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 type: 'version',
@@ -1302,7 +1302,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialogService.open(SchemaDialog, {
             showHeader: false,
             header: 'New Version',
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 type: 'version',
@@ -1403,7 +1403,7 @@ export class SchemaConfigComponent implements OnInit {
     private importSchemasDetails(result: any) {
         const { type, data, schemas, errors } = result;
         const dialogRef = this.dialog.open(SchemaViewDialog, {
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             showHeader: false,
             data: {
@@ -1472,7 +1472,7 @@ export class SchemaConfigComponent implements OnInit {
         const { data, schemasCanBeReplaced } = result;
         const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
             header: 'Schemas for replace',
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             showHeader: false,
             data: {
@@ -1491,7 +1491,7 @@ export class SchemaConfigComponent implements OnInit {
         const { data, schemasCanBeReplaced } = result;
         const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
             header: 'Schemas for replace',
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             showHeader: false,
             data: {
@@ -1510,7 +1510,7 @@ export class SchemaConfigComponent implements OnInit {
         const { data, schemasCanBeReplaced } = result;
         const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
             header: 'Schemas for replace',
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             showHeader: false,
             data: {
@@ -1530,7 +1530,7 @@ export class SchemaConfigComponent implements OnInit {
         this.schemaService.exportInMessage(element.id)
             .subscribe(schema => this.dialogService.open(ExportSchemaDialog, {
                 header: 'Export Schema',
-                width: '80%',
+                width: '90%',
                 styleClass: 'custom-dialog',
                 data: {
                     schema
@@ -1642,7 +1642,7 @@ export class SchemaConfigComponent implements OnInit {
         this.dialog.open(SchemaTreeComponent, {
             showHeader: false,
             header: 'Tree',
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: element,
         })

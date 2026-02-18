@@ -561,7 +561,7 @@ export class UserProfileComponent implements OnInit {
     public openVCDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
@@ -580,7 +580,7 @@ export class UserProfileComponent implements OnInit {
     public openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
@@ -1220,7 +1220,7 @@ export class UserProfileComponent implements OnInit {
     public onOpenRelayerAccount(item: any) {
         const dialogRef = this.dialogService.open(RelayerAccountDetailsDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 relayerAccount: item

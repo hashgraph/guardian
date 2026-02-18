@@ -338,7 +338,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                 this.vcSubmitDialogRef = this.dialog.open(
                     MeecoVCSubmitDialogComponent,
                     {
-                        width: '80%',
+                        width: '640px',
                         modal: true,
                         closable: false,
                         data: {

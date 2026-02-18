@@ -672,7 +672,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public openVCDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
@@ -691,7 +691,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
@@ -799,7 +799,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public onOpenAccount(item: any) {
         const dialogRef = this.dialogService.open(RelayerAccountDetailsDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 relayerAccount: item

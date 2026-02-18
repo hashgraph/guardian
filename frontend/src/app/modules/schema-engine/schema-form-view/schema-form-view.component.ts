@@ -422,7 +422,7 @@ export class SchemaFormViewComponent implements OnInit {
     public showFormulas(formulas: any) {
         const dialogRef = this.dialogService.open(FormulasViewDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: formulas,
         });
@@ -500,11 +500,11 @@ export class SchemaFormViewComponent implements OnInit {
             item.customType !== 'table' &&
             item.customType !== 'sentinel' &&
             !item.hidden &&
-            !item.fields?.find(f => (f.isArray || 
+            !(item.fields?.find(f => (f.isArray || 
                 f.isRef ||
                 f.customType === 'geo' ||
                 f.customType === 'table' ||
-                f.customType === 'sentinel') && !f.hidden);
+                f.customType === 'sentinel') && !f.hidden) ?? true);
     }
     
     public getTableHeaderFields(item: IFieldControl): any[] | undefined {

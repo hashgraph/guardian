@@ -251,7 +251,7 @@ export class RequestDocumentBlockAddonComponent
 
         const dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: this
         });
