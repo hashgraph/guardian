@@ -952,11 +952,13 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public canDrawTable(item: IFieldControl<any>): boolean {
+        const customTypes = ['geo', 'table', 'sentinel'];
+
         if (!item.isArray || !item.isRef || item.hidden) {
             return false;
         }
 
-        if (['geo', 'table', 'sentinel'].includes(item.customType || '')) {
+        if (customTypes.includes(item.customType || '')) {
             return false;
         }
         
@@ -967,7 +969,7 @@ export class SchemaFormComponent implements OnInit {
         
         return !visibleFields.some(f => 
             f.isArray || f.isRef || 
-            ['geo', 'table', 'sentinel'].includes(f.customType || '')
+            customTypes.includes(f.customType || '')
         );
     }
 
