@@ -32,8 +32,13 @@ import {
     VpDocumentDefinition,
     Wallet,
     Workers,
-    findAllEntities, PolicyCache,
+    findAllEntities,
+    PolicyCache,
     INotificationStep,
+    MigrationRun,
+    MigrationRunSummary,
+    MigrationFailedItem,
+    MigrationMessageMap,
 } from '@guardian/common';
 import {
     ContractAPI,
@@ -66,6 +71,22 @@ import {
 import { createHederaToken } from '../../api/token.service.js';
 import { createContract } from '../../api/helpers/contract-api.js';
 import { getContractVersion, setPoolContract } from '../../api/contract.service.js';
+
+export enum MigrationRunStatus {
+    RUNNING = 'running',
+    COMPLETED = 'completed',
+    FAILED = 'failed',
+    STOPPED = 'stopped',
+}
+
+export interface MigrationTypeSummary {
+    total: number;
+    processed: number;
+    success: number;
+    failed: number;
+    skipped: number;
+    cursorLastId?: string;
+}
 
 /**
  * Document error
@@ -113,6 +134,22 @@ export class PolicyDataMigrator {
      * Message server instance
      */
     private readonly _ms!: MessageServer;
+
+    /**
+     * Migration Run Stale Timeout
+     */
+    private static readonly migrationRunStaleTimeout = Number(
+        process.env.MIGRATION_RUN_STALE_TIMEOUT || 10 * 60 * 1000
+    );
+
+    /**
+     * runtime cache:
+     * scopeKey(srcPolicyId:dstPolicyId:startedBy) -> entityType -> srcMessageId -> dstMessageId
+     */
+    private static readonly migrationMessageCache = new Map<
+        string,
+        Map<string, Map<string, string>>
+    >();
 
     private constructor(
         private readonly _root: IAuthUser,
@@ -493,6 +530,412 @@ export class PolicyDataMigrator {
         }
     }
 
+    private static createSummaryItem(total: number): MigrationTypeSummary {
+        return {
+            total,
+            processed: 0,
+            success: 0,
+            failed: 0,
+            skipped: 0,
+            cursorLastId: undefined
+        };
+    }
+
+    private static buildInitialSummaryFromLoadedData(params: {
+        srcVCs: VcDocument[];
+        srcVPs: VpDocument[];
+        srcRoleVcs: VcDocument[];
+        policyRoles: PolicyRoles[];
+        policyStates: BlockState[];
+        srcMintRequests: MintRequest[];
+        srcMintTransactions: MintTransaction[];
+        srcMultiDocuments: MultiDocuments[];
+        srcAggregateVCs: AggregateVC[];
+        srcSplitDocuments: SplitDocuments[];
+        srcDocumentStates: DocumentState[];
+        srcTokens: Token[];
+        srcRetirePools: RetirePool[];
+        migrateState: boolean;
+        migrateRetirePools: boolean;
+    }): MigrationRunSummary {
+        const summary: MigrationRunSummary = {
+            vcDocument: PolicyDataMigrator.createSummaryItem(params.srcVCs.length),
+            vpDocument: PolicyDataMigrator.createSummaryItem(params.srcVPs.length)
+        };
+
+        if (params.migrateState) {
+            summary.roleVcDocument = PolicyDataMigrator.createSummaryItem(params.srcRoleVcs.length);
+            summary.policyRole = PolicyDataMigrator.createSummaryItem(params.policyRoles.length);
+            summary.policyState = PolicyDataMigrator.createSummaryItem(params.policyStates.length);
+            summary.mintRequest = PolicyDataMigrator.createSummaryItem(params.srcMintRequests.length);
+            summary.mintTransaction = PolicyDataMigrator.createSummaryItem(params.srcMintTransactions.length);
+            summary.multiDocument = PolicyDataMigrator.createSummaryItem(params.srcMultiDocuments.length);
+            summary.aggregateVc = PolicyDataMigrator.createSummaryItem(params.srcAggregateVCs.length);
+            summary.splitDocument = PolicyDataMigrator.createSummaryItem(params.srcSplitDocuments.length);
+            summary.documentState = PolicyDataMigrator.createSummaryItem(params.srcDocumentStates.length);
+            summary.token = PolicyDataMigrator.createSummaryItem(params.srcTokens.length);
+        }
+
+        if (params.migrateState && params.migrateRetirePools) {
+            summary.retirePool = PolicyDataMigrator.createSummaryItem(params.srcRetirePools.length);
+        }
+
+        let total = 0;
+        for (const item of Object.values(summary)) {
+            if (!item) {
+                continue;
+            }
+            total += Number(item.total || 0);
+        }
+
+        summary.total = PolicyDataMigrator.createSummaryItem(total);
+
+        return summary;
+    }
+
+    /**
+     * Migrate policy data V2
+     * @param owner Owner
+     * @param migrationConfig Migration config
+     * @param userId
+     * @param notifier Notifier
+     * @param runData
+     * @returns Migration errors
+     */
+    static async migrate_V2(
+        owner: string,
+        migrationConfig: MigrationConfig,
+        userId: string | null,
+        notifier: INotificationStep,
+        runData?: MigrationRun
+    ): Promise<DocumentError[]> {
+        try {
+            const {
+                policies,
+                vcs,
+                vps,
+                schemas,
+                groups,
+                roles,
+                tokens,
+                tokensMap,
+                blocks,
+                editedVCs,
+                migrateState,
+                migrateRetirePools,
+                retireContractId,
+            } = migrationConfig;
+            const { src, dst } = policies;
+            const users = new Users();
+            const userTopic = await DatabaseServer.getTopicByType(
+                owner,
+                TopicType.UserTopic
+            );
+            let policyUsers;
+            let policyRoles;
+            let policyStates;
+            let oldUserTopic;
+            let srcModel;
+            let srcSystemSchemas;
+            let srcVCs;
+            let srcRoleVcs;
+            let srcVPs;
+            let srcDids;
+            let srcMintRequests;
+            let srcMintTransactions;
+            let srcMultiDocuments;
+            let srcAggregateVCs;
+            let srcSplitDocuments;
+            let srcDocumentStates;
+            let srcTokens;
+            let srcRetirePools;
+
+            const userPolicy = await DatabaseServer.getPolicyCache({
+                id: src,
+                userId: owner,
+            });
+            if (userPolicy) {
+                srcModel = userPolicy.policy;
+                oldUserTopic = userPolicy.userTopic.topicId;
+                policyUsers = userPolicy.users;
+                policyRoles = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'roles',
+                    cachePolicyId: userPolicy.id,
+                } as Partial<PolicyCache>);
+                policyStates = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'states',
+                    cachePolicyId: userPolicy.id,
+                } as Partial<PolicyCache>);
+                srcSystemSchemas = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'schemas',
+                    cachePolicyId: userPolicy.id,
+                    category: SchemaCategory.SYSTEM,
+                } as Partial<PolicyCache>);
+                srcVCs = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'vcs',
+                    cachePolicyId: userPolicy.id,
+                    oldId: { $in: vcs },
+                } as Partial<PolicyCache>);
+                srcRoleVcs = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'vcs',
+                    cachePolicyId: userPolicy.id,
+                    schema: '#UserRole',
+                } as Partial<PolicyCache>);
+                srcVPs = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'vps',
+                    cachePolicyId: userPolicy.id,
+                    oldId: { $in: vps },
+                } as Partial<PolicyCache>);
+                srcDids = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'dids',
+                    cachePolicyId: userPolicy.id,
+                } as Partial<PolicyCache>);
+                srcMintRequests = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'mintRequests',
+                    cachePolicyId: userPolicy.id,
+                    vpMessageId: { $in: srcVPs.map((item) => item.messageId) },
+                } as Partial<PolicyCache>);
+                srcMintTransactions = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'mintTransactions',
+                    cachePolicyId: userPolicy.id,
+                    mintRequestId: {
+                        $in: srcMintRequests.map((item) => item.id),
+                    },
+                } as Partial<PolicyCache>);
+                srcMultiDocuments = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'multiDocuments',
+                    cachePolicyId: userPolicy.id,
+                    documentId: { $in: vcs },
+                } as Partial<PolicyCache>);
+                srcAggregateVCs = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'aggregateVCs',
+                    cachePolicyId: userPolicy.id,
+                } as Partial<PolicyCache>);
+                srcSplitDocuments = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'splitDocuments',
+                    cachePolicyId: userPolicy.id,
+                } as Partial<PolicyCache>);
+                srcDocumentStates = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'documentStates',
+                    cachePolicyId: userPolicy.id,
+                    documentId: { $in: vcs },
+                } as Partial<PolicyCache>);
+                srcTokens = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'tokens',
+                    cachePolicyId: userPolicy.id,
+                } as Partial<PolicyCache>);
+                srcRetirePools = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'retirePools',
+                    cachePolicyId: userPolicy.id,
+                } as Partial<PolicyCache>);
+            } else {
+                srcModel = await DatabaseServer.getPolicy({
+                    id: src,
+                    owner,
+                });
+                if (!srcModel) {
+                    throw new Error(`Can't find source policy`);
+                }
+                const srcModelDryRun = PolicyHelper.isDryRunMode(srcModel);
+
+                if (srcModelDryRun) {
+                    policyUsers = await DatabaseServer.getVirtualUsers(srcModel.id)
+                } else {
+                    policyUsers = await users.getUsersBySrId(owner, userId);
+                }
+
+                policyRoles = await new RolesLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get();
+
+                policyStates = await new BlockStateLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get();
+                srcSystemSchemas = await DatabaseServer.getSchemas({
+                    category: SchemaCategory.SYSTEM,
+                    topicId: srcModel.topicId,
+                });
+                srcVCs = await new VcDocumentLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get({
+                    id: { $in: vcs },
+                });
+                srcRoleVcs = await new VcDocumentLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get({
+                    schema: '#UserRole',
+                });
+                srcVPs = await await new VpDocumentLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get({
+                    id: { $in: vps },
+                });
+                srcDids = await new DidLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get();
+                srcMintRequests = await new MintRequestLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get(srcVPs.map((item) => item.messageId));
+                srcMintTransactions = await new MintTransactionLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get(srcMintRequests.map((item) => item.id));
+                srcMultiDocuments = await new MultiSignDocumentLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get(vcs);
+                srcAggregateVCs = await new AggregateVCLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get();
+                srcSplitDocuments = await new SplitDocumentLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get();
+                srcDocumentStates = await new DocumentStateLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get(vcs);
+                srcTokens = await new TokensLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get();
+                const policyTokens = findAllEntities(srcModel.config, [
+                    'tokenId',
+                ]);
+                srcRetirePools = await new RetirePoolLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get(
+                    srcTokens.map((token) => token.tokenId).concat(policyTokens)
+                );
+            }
+
+            const dstModel = await DatabaseServer.getPolicy({
+                id: dst,
+                owner,
+            });
+            if (!dstModel) {
+                throw new Error(`Can't find destination policy`);
+            }
+            const dstModelDryRun = PolicyHelper.isDryRunMode(dstModel);
+            const dstSystemSchemas = await DatabaseServer.getSchemas({
+                category: SchemaCategory.SYSTEM,
+                topicId: dstModel.topicId,
+            });
+            for (const schema of srcSystemSchemas) {
+                const dstSchema = dstSystemSchemas.find(
+                    (item) => item.entity === schema.entity
+                );
+                if (dstSchema) {
+                    schemas[schema.iri] = dstSchema.iri;
+                }
+            }
+
+            const wallet = new Wallet();
+            const root = await users.getUserById(owner, userId);
+            const rootKey = await wallet.getKey(
+                root.walletToken,
+                KeyType.KEY,
+                owner
+            );
+            const signOptions = await wallet.getUserSignOptions(root);
+
+            const instanceTopicConfig = await TopicConfig.fromObject(
+                await new DatabaseServer(dstModelDryRun ? dstModel.id : undefined)
+                    .getTopic({
+                        topicId: dstModel.instanceTopicId,
+                    }), false, userId
+            );
+
+            const policyDataMigrator = new PolicyDataMigrator(
+                root,
+                rootKey,
+                signOptions,
+                users,
+                owner,
+                dst,
+                dstModel.topicId,
+                instanceTopicConfig,
+                srcModel.owner,
+                srcModel.topicId,
+                oldUserTopic || userTopic.topicId,
+                userTopic,
+                roles,
+                groups,
+                schemas,
+                blocks || {},
+                tokens || {},
+                tokensMap || {},
+                editedVCs || {},
+                srcDids,
+                dstModelDryRun ? dstModel.id : null,
+                notifier,
+            );
+            return await policyDataMigrator._migrateDataV2(
+                srcVCs,
+                srcVPs,
+                policyUsers,
+                srcRoleVcs,
+                policyRoles,
+                policyStates,
+                srcMintRequests,
+                srcMintTransactions,
+                srcMultiDocuments,
+                srcAggregateVCs,
+                srcSplitDocuments,
+                srcDocumentStates,
+                srcTokens,
+                srcRetirePools,
+                migrateState,
+                migrateRetirePools,
+                userId,
+                srcModel.id,
+                retireContractId,
+                migrationConfig,
+                runData
+            );
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
     /**
      * Migrate policy data
      * @param vcs VCs
@@ -511,6 +954,7 @@ export class PolicyDataMigrator {
      * @param retirePools
      * @param migrateState Migrate state
      * @param migrateRetirePools
+     * @param srcPolicyId
      * @param retireContractId
      * @param userId
      * @returns Migration errors
@@ -685,6 +1129,334 @@ export class PolicyDataMigrator {
     }
 
     /**
+     * Migrate policy data V2
+     * @param vcs VCs
+     * @param vps VPs
+     * @param users Users
+     * @param roleVcs Role VCs
+     * @param roles Roles
+     * @param states States
+     * @param mintRequests Mint requests
+     * @param mintTransactions Mint transactions
+     * @param multiSignDocuments Multi sign documents
+     * @param aggregateVCs Aggregate VCs
+     * @param splitDocuments Split documents
+     * @param documentStates Document states
+     * @param dynamicTokens
+     * @param retirePools
+     * @param migrateState Migrate state
+     * @param migrateRetirePools
+     * @param srcPolicyId
+     * @param retireContractId
+     * @param userId
+     * @param migrationConfig
+     * @param existingRunData
+     * @returns Migration errors
+     */
+    private async _migrateDataV2(
+        vcs: VcDocument[],
+        vps: VpDocument[],
+        users: {
+            username: string;
+            did: string;
+            hederaAccountId: string;
+            hederaAccountKey?: string;
+        }[],
+        roleVcs: VcDocument[],
+        roles: PolicyRoles[],
+        states: BlockState[],
+        mintRequests: MintRequest[],
+        mintTransactions: MintTransaction[],
+        multiSignDocuments: MultiDocuments[],
+        aggregateVCs: AggregateVC[],
+        splitDocuments: SplitDocuments[],
+        documentStates: DocumentState[],
+        dynamicTokens: Token[],
+        retirePools: RetirePool[],
+        migrateState = false,
+        migrateRetirePools = false,
+        userId: string | null,
+        srcPolicyId: string,
+        retireContractId?: string,
+        migrationConfig?: MigrationConfig,
+        existingRunData?: MigrationRun
+    ): Promise<DocumentError[]> {
+        const db = new DatabaseServer(this._dryRunId);
+
+        const runClass: new () => BaseEntity = MigrationRun;
+        let run: MigrationRun;
+
+        if (existingRunData) {
+            run = existingRunData;
+            run.status = MigrationRunStatus.RUNNING;
+            run.stopRequested = false;
+            run.finishedAt = undefined;
+            run.heartbeatAt = new Date();
+            run = (await db.save(runClass, run)) as MigrationRun;
+        } else {
+            const initialSummary = PolicyDataMigrator.buildInitialSummaryFromLoadedData({
+                srcVCs: vcs,
+                srcVPs: vps,
+                srcRoleVcs: roleVcs,
+                policyRoles: roles,
+                policyStates: states,
+                srcMintRequests: mintRequests,
+                srcMintTransactions: mintTransactions,
+                srcMultiDocuments: multiSignDocuments,
+                srcAggregateVCs: aggregateVCs,
+                srcSplitDocuments: splitDocuments,
+                srcDocumentStates: documentStates,
+                srcTokens: dynamicTokens,
+                srcRetirePools: retirePools,
+                migrateState,
+                migrateRetirePools
+            });
+
+            const runData: Partial<MigrationRun> = {
+                srcPolicyId,
+                dstPolicyId: this._policyId,
+                status: MigrationRunStatus.RUNNING,
+                startedBy: userId || undefined,
+                stopRequested: false,
+                summary: initialSummary,
+                config: migrationConfig,
+                startedAt: new Date(),
+                heartbeatAt: new Date(),
+                finishedAt: undefined,
+                error: undefined
+            };
+
+            run = (await db.save(runClass, runData)) as MigrationRun;
+        }
+
+        await PolicyDataMigrator.loadRunMessageCacheFromDb(db, run);
+        const errors = new Array<DocumentError>();
+
+        try {
+            // <-- Steps
+            const STEP_MIGRATE_POLICY = 'Migrate policy state';
+            const STEP_MIGRATE_VC = 'Migrate VC documents';
+            const STEP_MIGRATE_VP = 'Migrate VP documents';
+            const STEP_MIGRATE_TOKENS = 'Migrate Tokens';
+            // Steps -->
+
+            this._notifier.addStep(STEP_MIGRATE_POLICY);
+            this._notifier.addStep(STEP_MIGRATE_VC);
+            this._notifier.addStep(STEP_MIGRATE_VP);
+            this._notifier.addStep(STEP_MIGRATE_TOKENS);
+            this._notifier.start();
+
+            this._notifier.startStep(STEP_MIGRATE_POLICY);
+            if (migrateState) {
+                if (this._dryRunId) {
+                    await this._createVirtualUsers(users);
+                }
+
+                await this._migratePolicyRolesV2(
+                    roles,
+                    userId,
+                    run as MigrationRun,
+                    errors
+                );
+
+                await this._migrateDocumentV2<VcDocument>(
+                    'roleVcDocument',
+                    roleVcs,
+                    (vc: VcDocument, uid: string | null) =>
+                        this._migrateRoleVcV2(vc, uid, run as MigrationRun),
+                    this._db.saveVC.bind(this._db),
+                    userId,
+                    run as MigrationRun,
+                    errors
+                );
+
+                if (states?.length > 0) {
+                    const [{config: srcBlockTree}, {config: blockTree}] = await Promise.all([
+                        DatabaseServer.getPolicyById(srcPolicyId),
+                        DatabaseServer.getPolicyById(this._policyId)
+                    ]);
+
+                    const srcStepStateMap = new Map<number, string>();
+                    const stepStateMap = new Map<string, number>();
+                    const stepBlockStates: BlockState[] = [];
+
+                    states.forEach(state => {
+                        const srcBlock = this.findBlockById(srcBlockTree, state.blockId);
+                        if (srcBlock?.blockType === BlockType.Step && srcBlock.children?.length > 0) {
+                            srcBlock.children.forEach((child, index) => {
+                                srcStepStateMap.set(index, child.tag)
+                            });
+                            stepBlockStates.push(state);
+                        }
+
+                        const block = this.findBlockByTag(blockTree, srcBlock?.tag);
+                        if (block && block.blockType === BlockType.Step && block.children?.length > 0) {
+                            block.children.forEach((child, index) => {
+                                stepStateMap.set(child.tag, index)
+                            });
+                        }
+                    });
+                    stepBlockStates.forEach(stepState => {
+                        const blockState = JSON.parse(stepState.blockState);
+                        if (blockState && blockState.state) {
+                            const currentState = blockState.state;
+                            for (const key in currentState) {
+                                if (currentState.hasOwnProperty(key)) {
+                                    // if (currentState[key]?.index && srcStepStateMap.get(currentState[key].index)) {
+                                    //     const tag = srcStepStateMap.get(currentState[key].index);
+                                    //     currentState[key].index = stepStateMap.get(tag) || currentState[key];
+                                    // }
+                                    if (
+                                        currentState[key]?.index !== undefined &&
+                                        currentState[key]?.index !== null &&
+                                        srcStepStateMap.get(currentState[key].index)
+                                    ) {
+                                        const tag = srcStepStateMap.get(currentState[key].index);
+                                        currentState[key].index = stepStateMap.get(tag) ?? currentState[key].index;
+                                    }
+                                }
+                            }
+                        }
+                        stepState.blockState = JSON.stringify(blockState);
+                    });
+                }
+
+                await this._migratePolicyStatesV2(
+                    states,
+                    run as MigrationRun,
+                    errors
+                );
+                this._notifier.completeStep(STEP_MIGRATE_POLICY);
+            } else {
+                this._notifier.skipStep(STEP_MIGRATE_POLICY);
+            }
+
+            this._notifier.startStep(STEP_MIGRATE_VC);
+            await this._migrateDocumentV2<VcDocument>(
+                'vcDocument',
+                vcs,
+                (vc: VcDocument, uid: string | null) =>
+                    this._migrateVcDocumentV2(vc, vcs, roles, dynamicTokens, uid, run as MigrationRun),
+                this._db.saveVC.bind(this._db),
+                userId,
+                run as MigrationRun,
+                errors
+            );
+            if (migrateState) {
+                await this._migrateDocumentV2<MultiDocuments>(
+                    'multiDocument',
+                    multiSignDocuments,
+                    this._migrateMultiSignDocument.bind(this),
+                    this._db.setMultiSigDocument.bind(this._db),
+                    userId,
+                    run as MigrationRun,
+                    errors
+                );
+
+                await this._migrateDocumentV2<DocumentState>(
+                    'documentState',
+                    documentStates,
+                    this._migrateDocumentState.bind(this),
+                    this._db.saveDocumentState.bind(this._db),
+                    userId,
+                    run as MigrationRun,
+                    errors
+                );
+
+                await this._migrateDocumentV2<AggregateVC>(
+                    'aggregateVc',
+                    aggregateVCs,
+                    this._migrateAggregateVC.bind(this),
+                    async (doc) => {
+                        await this._db.createAggregateDocuments(
+                            doc as any,
+                            doc.blockId
+                        );
+                    },
+                    userId,
+                    run as MigrationRun,
+                    errors
+                );
+
+                await this._migrateDocumentV2<SplitDocuments>(
+                    'splitDocument',
+                    splitDocuments,
+                    this._migrateSplitDocument.bind(this),
+                    async (doc) => {
+                        await this._db.setResidue(doc as any);
+                    },
+                    userId,
+                    run as MigrationRun,
+                    errors
+                );
+            }
+
+            this._notifier.completeStep(STEP_MIGRATE_VC);
+
+            this._notifier.startStep(STEP_MIGRATE_VP);
+            await this._migrateDocumentV2<VpDocument>(
+                'vpDocument',
+                vps,
+                (vp: VpDocument, uid: string | null) =>
+                    this._migrateVpDocumentV2(vp as VpDocument & { group: string }, uid, run as MigrationRun),
+                this._db.saveVP.bind(this._db),
+                userId,
+                run as MigrationRun,
+                errors
+            );
+
+            if (migrateState) {
+                await this._migrateMintRequestsV2(
+                    mintRequests,
+                    mintTransactions,
+                    run as MigrationRun,
+                    errors
+                );
+            }
+            this._notifier.completeStep(STEP_MIGRATE_VP);
+
+            this._notifier.startStep(STEP_MIGRATE_TOKENS);
+            if (migrateRetirePools && migrateState) {
+                await this.migrateTokenPoolsV2(
+                    retireContractId,
+                    retirePools,
+                    run as MigrationRun,
+                    userId,
+                    errors
+                );
+            }
+            this._notifier.completeStep(STEP_MIGRATE_TOKENS);
+
+            if (run.status === MigrationRunStatus.RUNNING) {
+                run.status = MigrationRunStatus.COMPLETED;
+                run.finishedAt = new Date();
+                run.heartbeatAt = new Date();
+                await this._db.save(MigrationRun, run as MigrationRun);
+            }
+
+            return errors;
+        } catch (error) {
+            if (run.status !== MigrationRunStatus.STOPPED) {
+                run.status = MigrationRunStatus.FAILED;
+                run.finishedAt = new Date();
+                run.heartbeatAt = new Date();
+                run.error = error;
+                await this._db.save(MigrationRun, run as MigrationRun);
+
+                errors.push({
+                    id: 'migration',
+                    message: error?.toString()
+                });
+            }
+            throw error;
+        } finally {
+            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+            PolicyDataMigrator.clearRunCache(scopeKey);
+        }
+    }
+
+    /**
      * Migrate token pools
      * @param contractId Contract identifier
      * @param pools Pools
@@ -717,6 +1489,188 @@ export class PolicyDataMigrator {
                     message: error?.toString(),
                 });
             }
+        }
+    }
+
+    /**
+     * Migrate token pools V2
+     * @param contractId Contract identifier
+     * @param pools
+     * @param run
+     * @param userId
+     * @param errors
+     * @param writeBatchSize
+     */
+    async migrateTokenPoolsV2(
+        contractId: string,
+        pools: RetirePool[],
+        run: MigrationRun,
+        userId: string | null,
+        errors: DocumentError[],
+        writeBatchSize = 50,
+    ) {
+        if (!contractId) {
+            return;
+        }
+
+        const summary = run.summary as MigrationRunSummary;
+        const entityType = 'retirePool';
+        const poolSummary = summary?.retirePool;
+
+        if (!poolSummary) {
+            throw new Error('Summary item not found for entityType: retirePool');
+        }
+
+        const getSourceId = (pool: RetirePool): string | undefined => {
+            if (pool?.id) {
+                return String(pool.id);
+            }
+            if ((pool as any)?._id) {
+                return String((pool as any)._id);
+            }
+            return undefined;
+        };
+
+        const saveFailedItem = async (pool: RetirePool, error: any) => {
+            const srcEntityId = getSourceId(pool);
+            if (!srcEntityId) {
+                return;
+            }
+
+            const existing = await this._db.findOne(MigrationFailedItem, {
+                runId: run.id,
+                entityType: String(entityType),
+                srcEntityId
+            } as Partial<MigrationFailedItem>);
+
+            if (existing) {
+                existing.attemptCount = Number(existing.attemptCount || 0) + 1;
+                existing.errorMessage = error?.toString();
+                existing.lastFailedAt = new Date();
+                await this._db.save(MigrationFailedItem, existing);
+                return;
+            }
+
+            const failed: Partial<MigrationFailedItem> = {
+                runId: run.id,
+                srcPolicyId: run.srcPolicyId,
+                dstPolicyId: run.dstPolicyId,
+                entityType: String(entityType),
+                srcEntityId,
+                attemptCount: 1,
+                errorMessage: error?.toString(),
+                firstFailedAt: new Date(),
+                lastFailedAt: new Date()
+            };
+
+            await this._db.save(MigrationFailedItem, failed);
+        };
+
+        const notEmptyPools = (pools as any[]).filter((item) => {
+            if (item) {
+                return true;
+            }
+            return false;
+        }) as RetirePool[];
+
+        const startIndex = PolicyDataMigrator.resolveStartIndexByCursor(
+            notEmptyPools,
+            poolSummary.cursorLastId,
+            (pool: RetirePool) => getSourceId(pool)
+        );
+
+        const pendingMappings: Partial<MigrationMessageMap>[] = [];
+
+        for (let writeOffset = startIndex; writeOffset < notEmptyPools.length; writeOffset += writeBatchSize) {
+            const latestRun = await this._db.findOne(MigrationRun, { id: run.id } as Partial<MigrationRun>);
+            if (latestRun?.stopRequested) {
+                run.stopRequested = true;
+                run.status = MigrationRunStatus.STOPPED;
+                run.finishedAt = new Date();
+                run.heartbeatAt = new Date();
+                run.summary = summary;
+
+                const flushedOnStop = await this.flushMappingsToDb(pendingMappings);
+                PolicyDataMigrator.applyFlushedMappingsToMemory(flushedOnStop);
+
+                await this._db.save(MigrationRun, run);
+                return;
+            }
+
+            const writeBatch = notEmptyPools.slice(writeOffset, writeOffset + writeBatchSize);
+
+            const tasks = writeBatch.map(async (pool) => {
+                const srcEntityId = getSourceId(pool);
+
+                try {
+                    if (!srcEntityId) {
+                        throw new Error('Source id not found for retirePool');
+                    }
+                    const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                    // mapping pre-check (source of truth)
+                    const mapped = PolicyDataMigrator.getMessageMapping(
+                        scopeKey,
+                        String(entityType),
+                        srcEntityId
+                    );
+                    if (mapped) {
+                        poolSummary.processed += 1;
+                        poolSummary.success += 1;
+                        return;
+                    }
+
+                    const mappedPoolTokens = this.replacePoolTokens(pool.tokens);
+
+                    await setPoolContract(
+                        new Workers(),
+                        contractId,
+                        this._root.hederaAccountId,
+                        this._rootKey,
+                        mappedPoolTokens,
+                        pool.immediately,
+                        userId
+                    );
+
+                    // retirePool has no stable dst id from contract call, keep src id as dst marker
+                    PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                        startedBy: run.startedBy,
+                        srcPolicyId: run.srcPolicyId,
+                        dstPolicyId: run.dstPolicyId,
+                        entityType: entityType,
+                        srcEntityId,
+                        srcMessageId: srcEntityId,
+                        dstMessageId: srcEntityId
+                    });
+
+                    poolSummary.processed += 1;
+                    poolSummary.success += 1;
+                } catch (error) {
+                    poolSummary.processed += 1;
+                    poolSummary.failed += 1;
+                    errors.push({
+                        id: srcEntityId || (pool as any)?.id || (pool as any)?._id,
+                        message: error?.toString(),
+                    });
+                    await saveFailedItem(pool, error);
+                }
+            });
+
+            await Promise.all(tasks);
+
+            const flushed = await this.flushMappingsToDb(pendingMappings);
+
+            const lastPool = writeBatch[writeBatch.length - 1];
+            const lastCursor = getSourceId(lastPool);
+
+            await this.saveRunProgressAfterWriteBatch(
+                run,
+                summary,
+                entityType,
+                lastCursor
+            );
+
+            PolicyDataMigrator.applyFlushedMappingsToMemory(flushed);
         }
     }
 
@@ -1084,6 +2038,180 @@ export class PolicyDataMigrator {
     }
 
     /**
+     * Migrate document wrapper V2
+     * @param entityType
+     * @param documents Documents
+     * @param migrateFn Migrate function
+     * @param saveFn Save function
+     * @param userId
+     * @param run
+     * @param errors
+     * @param writeBatchSize
+     */
+    private async _migrateDocumentV2<T extends BaseEntity>(
+        entityType: string,
+        documents: T[],
+        migrateFn: (document: T, userId: string | null) => Promise<T>,
+        saveFn: (document: Partial<T>) => Promise<T | void>,
+        userId: string | null,
+        run: MigrationRun,
+        errors: DocumentError[],
+        writeBatchSize = 50,
+    ) {
+        const summary = run.summary as MigrationRunSummary;
+        const entitySummary = summary?.[entityType];
+
+        if (!entitySummary) {
+            throw new Error(`Summary item not found for entityType: ${entityType}`);
+        }
+
+        const saveFailedItem = async (document: T, error: any) => {
+            const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, document);
+            const srcEntityId = sourceKeys.srcEntityId;
+            if (!srcEntityId) {
+                return;
+            }
+
+            const existing = await this._db.findOne(MigrationFailedItem, {
+                runId: run.id,
+                entityType,
+                srcEntityId
+            } as Partial<MigrationFailedItem>);
+
+            if (existing) {
+                existing.attemptCount = Number(existing.attemptCount || 0) + 1;
+                existing.errorMessage = error?.toString();
+                existing.lastFailedAt = new Date();
+                await this._db.save(MigrationFailedItem, existing);
+                return;
+            }
+
+            const failed: Partial<MigrationFailedItem> = {
+                runId: run.id,
+                srcPolicyId: run.srcPolicyId,
+                dstPolicyId: run.dstPolicyId,
+                entityType,
+                srcEntityId,
+                attemptCount: 1,
+                errorMessage: error?.toString(),
+                firstFailedAt: new Date(),
+                lastFailedAt: new Date()
+            };
+
+            await this._db.save(MigrationFailedItem, failed);
+        };
+
+        const notEmptyDocuments = (documents as any[]).filter((item) => !!item) as T[];
+
+        const startIndex = PolicyDataMigrator.resolveStartIndexByCursor(
+            notEmptyDocuments,
+            entitySummary.cursorLastId,
+            (document: T) => PolicyDataMigrator.extractSourceKeys(entityType, document).srcEntityId
+        );
+
+        const pendingMappings: Partial<MigrationMessageMap>[] = [];
+
+        for (let writeOffset = startIndex; writeOffset < notEmptyDocuments.length; writeOffset += writeBatchSize) {
+            const latestRun = await this._db.findOne(MigrationRun, { id: run.id } as Partial<MigrationRun>);
+            if (latestRun?.stopRequested) {
+                run.stopRequested = true;
+                run.status = MigrationRunStatus.STOPPED;
+                run.finishedAt = new Date();
+                run.heartbeatAt = new Date();
+                run.summary = summary;
+
+                const flushedOnStop = await this.flushMappingsToDb(pendingMappings);
+                PolicyDataMigrator.applyFlushedMappingsToMemory(flushedOnStop);
+
+                await this._db.save(MigrationRun, run);
+                return;
+            }
+
+            const writeBatch = notEmptyDocuments.slice(writeOffset, writeOffset + writeBatchSize);
+
+            const tasks = writeBatch.map(async (document) => {
+                const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, document);
+                const srcEntityId = sourceKeys.srcEntityId;
+                const srcMapKey = sourceKeys.srcMessageId || srcEntityId;
+
+                try {
+                    if (srcMapKey) {
+                        const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                        const mapped = PolicyDataMigrator.getMessageMapping(
+                            scopeKey,
+                            entityType,
+                            srcMapKey
+                        );
+                        if (mapped) {
+                            entitySummary.processed += 1;
+                            entitySummary.success += 1;
+                            return;
+                        }
+                    }
+
+                    const newDocument = await migrateFn(document, userId);
+                    if (!newDocument) {
+                        entitySummary.processed += 1;
+                        entitySummary.success += 1;
+                        return;
+                    }
+
+                    const destinationKeys = PolicyDataMigrator.extractSourceKeys(entityType, newDocument as any);
+                    const dstEntityId = destinationKeys.srcEntityId || srcEntityId;
+                    const dstMapKey = destinationKeys.srcMessageId || dstEntityId || srcMapKey;
+
+                    delete (newDocument as any).id;
+                    delete (newDocument as any)._id;
+                    delete (newDocument as any).createDate;
+                    delete (newDocument as any).updateDate;
+
+                    await saveFn(newDocument);
+
+                    if (srcEntityId && srcMapKey && dstMapKey) {
+                        PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                            startedBy: run.startedBy,
+                            srcPolicyId: run.srcPolicyId,
+                            dstPolicyId: run.dstPolicyId,
+                            entityType,
+                            srcEntityId,
+                            srcMessageId: srcMapKey,
+                            dstMessageId: dstMapKey
+                        });
+                    }
+
+                    entitySummary.processed += 1;
+                    entitySummary.success += 1;
+                } catch (error) {
+                    entitySummary.processed += 1;
+                    entitySummary.failed += 1;
+                    errors.push({
+                        id: srcEntityId || (document as any)?.id || (document as any)?._id,
+                        message: error?.toString(),
+                    });
+                    await saveFailedItem(document, error);
+                }
+            });
+
+            await Promise.all(tasks);
+
+            const lastDocument = writeBatch[writeBatch.length - 1];
+            const lastCursor = PolicyDataMigrator.extractSourceKeys(entityType, lastDocument).srcEntityId;
+
+            const flushed = await this.flushMappingsToDb(pendingMappings);
+
+            await this.saveRunProgressAfterWriteBatch(
+                run,
+                summary,
+                entityType,
+                lastCursor
+            );
+
+            PolicyDataMigrator.applyFlushedMappingsToMemory(flushed);
+        }
+    }
+
+    /**
      * Create virtual users
      * @param users Users
      */
@@ -1216,6 +2344,175 @@ export class PolicyDataMigrator {
     }
 
     /**
+     * Migrate role vc V2
+     * @param doc VC
+     * @param userId
+     * @param run
+     * @returns VC
+     */
+    private async _migrateRoleVcV2(
+        doc: VcDocument,
+        userId: string | null,
+        run: MigrationRun
+    ) {
+        if (!doc) {
+            return doc;
+        }
+
+        const sourceMessageId = doc.messageId ? String(doc.messageId) : undefined;
+        if (sourceMessageId) {
+            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+            const mappedMessageId = PolicyDataMigrator.getMessageMapping(
+                scopeKey,
+                'roleVcDocument',
+                sourceMessageId
+            );
+            if (mappedMessageId) {
+                doc.messageId = mappedMessageId;
+                return doc;
+            }
+        }
+
+        doc.owner = await this._replaceDidTopicId(doc.owner);
+
+        let role;
+        if (doc.group) {
+            const groups = await this._db.getGroupsByUser(
+                this._policyId,
+                doc.owner
+            );
+            role = groups.find((group) => group.uuid === doc.group);
+            doc.group = role?.uuid;
+        }
+
+        let vc: VcDocumentDefinition;
+        const destinationSchemaIri = this._schemas?.[doc.schema] || doc.schema;
+        const schema = await DatabaseServer.getSchema({
+            topicId: this._policyTopicId,
+            iri: destinationSchemaIri,
+        });
+        if (!schema) {
+            throw new Error(
+                `Schema not found: srcSchema=${String(doc.schema)}, dstSchema=${String(destinationSchemaIri)}, docId=${String((doc as any)?.id)}`
+            );
+        }
+
+        if (
+            doc.schema !== schema.iri ||
+            this._policyTopicId !== this._oldPolicyTopicId
+        ) {
+            const vcHelper = new VcHelper();
+            const didDocument = await vcHelper.loadDidDocument(this._owner, userId);
+            const credentialSubject = SchemaHelper.updateObjectContext(
+                new Schema(schema),
+                doc.document.credentialSubject[0]
+            );
+            const verifyResult = await vcHelper.verifySubject(credentialSubject);
+            if (!verifyResult.ok) {
+                throw new Error(verifyResult.error.type);
+            }
+            vc = await vcHelper.createVerifiableCredential(
+                credentialSubject,
+                didDocument,
+                null,
+                { uuid: role?.uuid }
+            );
+            doc.hash = vc.toCredentialHash();
+            doc.document = vc.toJsonTree();
+            doc.schema = schema.iri;
+        } else {
+            vc = VcDocumentDefinition.fromJsonTree(doc.document);
+        }
+
+        doc.policyId = this._policyId;
+
+        if (doc.messageId) {
+            const roleMessage = new RoleMessage(MessageAction.MigrateVC);
+            roleMessage.setDocument(vc);
+            if (role) {
+                roleMessage.setRole(role);
+            }
+
+            const relationships = [doc.messageId];
+            if (doc.relationships) {
+                relationships.push(...doc.relationships);
+            }
+            roleMessage.setRelationships(relationships);
+            roleMessage.setTag(doc);
+            roleMessage.setEntityType(doc);
+            roleMessage.setOption(doc);
+
+            if (role) {
+                const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                const mappedRoleMessageId = PolicyDataMigrator.getMessageMapping(
+                    scopeKey,
+                    'roleVcDocument',
+                    String(role.messageId)
+                ) || PolicyDataMigrator.getMessageMapping(
+                    scopeKey,
+                    'vcDocument',
+                    String(role.messageId)
+                );
+
+                if (mappedRoleMessageId) {
+                    roleMessage.setUser(mappedRoleMessageId);
+                } else {
+                    roleMessage.setUser(role.messageId);
+                }
+            }
+
+            const result = await this._ms
+                .setTopicObject(this._policyInstanceTopic)
+                .sendMessage(roleMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
+
+            const destinationMessageId = result.getId();
+
+            doc.messageId = destinationMessageId;
+            doc.topicId = result.getTopicId();
+            doc.messageHash = result.toHash();
+
+            if (sourceMessageId) {
+                const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                PolicyDataMigrator.setMessageMapping(
+                    scopeKey,
+                    'roleVcDocument',
+                    sourceMessageId,
+                    destinationMessageId
+                );
+            }
+
+            if (role) {
+                const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                const mappedRoleMessageId = PolicyDataMigrator.getMessageMapping(
+                    scopeKey,
+                    'roleVcDocument',
+                    String(role.messageId)
+                ) || PolicyDataMigrator.getMessageMapping(
+                    scopeKey,
+                    'vcDocument',
+                    String(role.messageId)
+                );
+
+                if (mappedRoleMessageId) {
+                    role.messageId = mappedRoleMessageId;
+                    await this._db.setUserInGroup(role);
+                }
+            }
+        }
+
+        return doc;
+    }
+
+    /**
      * Migrate policy states
      * @param states States
      */
@@ -1239,6 +2536,184 @@ export class PolicyDataMigrator {
                 null,
                 data
             );
+        }
+    }
+
+    /**
+     * Migrate policy states V2
+     * @param states States
+     * @param run
+     * @param errors
+     * @param writeBatchSize
+     */
+    private async _migratePolicyStatesV2(
+        states: BlockState[],
+        run: MigrationRun,
+        errors: DocumentError[],
+        writeBatchSize = 50,
+    ) {
+        const entityType: keyof MigrationRunSummary = 'policyState';
+        const summary = run.summary;
+        const stateSummary = summary?.policyState;
+
+        if (!stateSummary) {
+            throw new Error('Summary item not found for entityType: policyState');
+        }
+
+        const getSourceId = (state: BlockState): string | undefined => {
+            if (state?.id) {
+                return String(state.id);
+            }
+            if ((state as any)?._id) {
+                return String((state as any)._id);
+            }
+            if (state?.blockId) {
+                return String(state.blockId);
+            }
+            return undefined;
+        };
+
+        const saveFailedItem = async (state: BlockState, error: any) => {
+            const srcEntityId = getSourceId(state);
+            if (!srcEntityId) {
+                return;
+            }
+
+            const existing = await this._db.findOne(MigrationFailedItem, {
+                runId: run.id,
+                entityType: String(entityType),
+                srcEntityId
+            } as Partial<MigrationFailedItem>);
+
+            if (existing) {
+                existing.attemptCount = Number(existing.attemptCount || 0) + 1;
+                existing.errorMessage = error?.toString();
+                existing.lastFailedAt = new Date();
+                await this._db.save(MigrationFailedItem, existing);
+                return;
+            }
+
+            const failed: Partial<MigrationFailedItem> = {
+                runId: run.id,
+                srcPolicyId: run.srcPolicyId,
+                dstPolicyId: run.dstPolicyId,
+                entityType: String(entityType),
+                srcEntityId,
+                attemptCount: 1,
+                errorMessage: error?.toString(),
+                firstFailedAt: new Date(),
+                lastFailedAt: new Date()
+            };
+
+            await this._db.save(MigrationFailedItem, failed);
+        };
+
+        const notEmptyStates = (states as any[]).filter((item) => {
+            if (item) {
+                return true;
+            }
+            return false;
+        }) as BlockState[];
+
+        const startIndex = PolicyDataMigrator.resolveStartIndexByCursor(
+            notEmptyStates,
+            stateSummary.cursorLastId,
+            (state: BlockState) => getSourceId(state)
+        );
+
+        for (let writeOffset = startIndex; writeOffset < notEmptyStates.length; writeOffset += writeBatchSize) {
+            const latestRun = await this._db.findOne(MigrationRun, { id: run.id } as Partial<MigrationRun>);
+            if (latestRun?.stopRequested) {
+                run.stopRequested = true;
+                run.status = MigrationRunStatus.STOPPED;
+                run.finishedAt = new Date();
+                run.heartbeatAt = new Date();
+                run.summary = summary;
+                await this._db.save(MigrationRun, run);
+                return;
+            }
+
+            const writeBatch = notEmptyStates.slice(writeOffset, writeOffset + writeBatchSize);
+            const mappingBuffer: Partial<MigrationMessageMap>[] = [];
+
+            const tasks = writeBatch.map(async (sourceState) => {
+                const keys = PolicyDataMigrator.extractSourceKeys(entityType, sourceState);
+                const srcEntityId = keys.srcEntityId || getSourceId(sourceState);
+
+                try {
+                    if (!srcEntityId) {
+                        throw new Error('Source entity id not found for policyState');
+                    }
+
+                    const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                    const mapped = PolicyDataMigrator.getMessageMapping(scopeKey, String(entityType), srcEntityId);
+                    if (mapped) {
+                        stateSummary.processed += 1;
+                        stateSummary.success += 1;
+                        return;
+                    }
+
+                    const destinationBlockId = sourceState.blockId && this._blocks[sourceState.blockId];
+                    if (!destinationBlockId) {
+                        throw new Error('Destination block mapping not found for policy state');
+                    }
+
+                    const data = JSON.parse(sourceState.blockState);
+
+                    if (data?.state) {
+                        const dataKeys = Object.keys(data);
+                        for (const key of dataKeys) {
+                            const newKey = await this._replaceDidTopicId(key);
+                            data[newKey] = data[key];
+                            if (data[newKey] !== data[key]) {
+                                delete data[key];
+                            }
+                        }
+                    }
+
+                    await this._db.saveBlockState(
+                        this._policyId,
+                        destinationBlockId,
+                        null,
+                        data
+                    );
+
+                    PolicyDataMigrator.appendMappingToBuffer(mappingBuffer, {
+                        startedBy: run.startedBy,
+                        srcPolicyId: run.srcPolicyId,
+                        dstPolicyId: run.dstPolicyId,
+                        entityType: String(entityType),
+                        srcMessageId: srcEntityId,
+                        dstMessageId: String(destinationBlockId),
+                        srcEntityId
+                    });
+
+                    stateSummary.processed += 1;
+                    stateSummary.success += 1;
+                } catch (error) {
+                    stateSummary.processed += 1;
+                    stateSummary.failed += 1;
+                    errors.push({
+                        id: srcEntityId || (sourceState as any)?.id || (sourceState as any)?._id || (sourceState as any)?.blockId,
+                        message: error?.toString(),
+                    });
+                    await saveFailedItem(sourceState, error);
+                }
+            });
+
+            await Promise.all(tasks);
+
+            const flushedMappings = await this.flushMappingsToDb(mappingBuffer);
+
+            const lastState = writeBatch[writeBatch.length - 1];
+            const lastCursor = getSourceId(lastState);
+            if (lastCursor) {
+                stateSummary.cursorLastId = lastCursor;
+            }
+
+            await this.saveRunProgressAfterWriteBatch(run, summary, entityType);
+            PolicyDataMigrator.applyFlushedMappingsToMemory(flushedMappings);
         }
     }
 
@@ -1271,6 +2746,202 @@ export class PolicyDataMigrator {
             delete role._id;
 
             await this._db.setUserInGroup(role);
+        }
+    }
+
+    /**
+     * Migrate policy roles V2
+     * @param roles Roles
+     * @param userId
+     * @param run
+     * @param errors
+     * @param writeBatchSize
+     */
+    private async _migratePolicyRolesV2(
+        roles: PolicyRoles[],
+        userId: string | null,
+        run: MigrationRun,
+        errors: DocumentError[],
+        writeBatchSize = 50,
+    ) {
+        const entityType = 'policyRole';
+        const summary = run.summary as MigrationRunSummary;
+        const roleSummary = summary?.policyRole;
+
+        if (!roleSummary) {
+            throw new Error('Summary item not found for entityType: policyRole');
+        }
+
+        const getSourceId = (role: PolicyRoles): string | undefined => {
+            const keys = PolicyDataMigrator.extractSourceKeys(entityType, role);
+            return keys.srcEntityId;
+        };
+
+        const saveFailedItem = async (role: PolicyRoles, error: any) => {
+            const srcEntityId = getSourceId(role);
+            if (!srcEntityId) {
+                return;
+            }
+
+            const existing = await this._db.findOne(MigrationFailedItem, {
+                runId: run.id,
+                entityType,
+                srcEntityId
+            } as Partial<MigrationFailedItem>);
+
+            if (existing) {
+                existing.attemptCount = Number(existing.attemptCount || 0) + 1;
+                existing.errorMessage = error?.toString();
+                existing.lastFailedAt = new Date();
+                await this._db.save(MigrationFailedItem, existing);
+                return;
+            }
+
+            const failed: Partial<MigrationFailedItem> = {
+                runId: run.id,
+                srcPolicyId: run.srcPolicyId,
+                dstPolicyId: run.dstPolicyId,
+                entityType,
+                srcEntityId,
+                attemptCount: 1,
+                errorMessage: error?.toString(),
+                firstFailedAt: new Date(),
+                lastFailedAt: new Date()
+            };
+
+            await this._db.save(MigrationFailedItem, failed);
+        };
+
+        const pendingMappings: Partial<MigrationMessageMap>[] = [];
+
+        const notEmptyRoles = (roles as any[]).filter((item) => {
+            if (item) {
+                return true;
+            }
+            return false;
+        }) as PolicyRoles[];
+
+        const startIndex = PolicyDataMigrator.resolveStartIndexByCursor(
+            notEmptyRoles,
+            roleSummary.cursorLastId,
+            (role: PolicyRoles) => getSourceId(role)
+        );
+
+        for (let writeOffset = startIndex; writeOffset < notEmptyRoles.length; writeOffset += writeBatchSize) {
+            const latestRun = await this._db.findOne(MigrationRun, { id: run.id } as Partial<MigrationRun>);
+            if (latestRun?.stopRequested) {
+                run.stopRequested = true;
+                run.status = MigrationRunStatus.STOPPED;
+                run.finishedAt = new Date();
+                run.heartbeatAt = new Date();
+                run.summary = summary;
+
+                const flushedOnStop = await this.flushMappingsToDb(pendingMappings);
+                PolicyDataMigrator.applyFlushedMappingsToMemory(flushedOnStop);
+
+                await this._db.save(MigrationRun, run);
+                return;
+            }
+
+            const writeBatch = notEmptyRoles.slice(writeOffset, writeOffset + writeBatchSize);
+
+            const tasks = writeBatch.map(async (sourceRole) => {
+                const srcEntityId = getSourceId(sourceRole);
+
+                try {
+                    if (srcEntityId) {
+                        const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                        const mapped = PolicyDataMigrator.getMessageMapping(
+                            scopeKey,
+                            entityType,
+                            srcEntityId
+                        );
+                        if (mapped) {
+                            roleSummary.processed += 1;
+                            roleSummary.success += 1;
+                            return;
+                        }
+                    }
+
+                    const role = { ...(sourceRole as any) } as PolicyRoles;
+
+                    role.owner = await this._replaceDidTopicId(role.owner);
+                    role.did = await this._replaceDidTopicId(role.did);
+
+                    if (role.role) {
+                        role.role = this._roles[role.role];
+                    }
+                    if (role.groupName) {
+                        role.groupName = this._groups[role.groupName];
+                    }
+                    if (role.username && !this._dryRunId) {
+                        const newUser = await this._users.getUserById(role.did, userId);
+                        if (newUser) {
+                            role.username = newUser.username;
+                        }
+                    }
+                    if (role.policyId) {
+                        role.policyId = this._policyId;
+                    }
+
+                    const existingGroups = await this._db.getGroupsByUser(this._policyId, role.did);
+                    const exists = existingGroups.some((item) => {
+                        if (role.groupName && item.groupName === role.groupName) {
+                            return true;
+                        }
+                        if (role.role && item.role === role.role) {
+                            return true;
+                        }
+                        return false;
+                    });
+
+                    if (!exists) {
+                        delete (role as any).id;
+                        delete (role as any)._id;
+                        await this._db.setUserInGroup(role);
+                    }
+
+                    if (srcEntityId) {
+                        PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                            startedBy: run.startedBy,
+                            srcPolicyId: run.srcPolicyId,
+                            dstPolicyId: run.dstPolicyId,
+                            entityType,
+                            srcEntityId,
+                            srcMessageId: srcEntityId,
+                            dstMessageId: srcEntityId
+                        });
+                    }
+
+                    roleSummary.processed += 1;
+                    roleSummary.success += 1;
+                } catch (error) {
+                    roleSummary.processed += 1;
+                    roleSummary.failed += 1;
+                    errors.push({
+                        id: srcEntityId || (sourceRole as any)?.id || (sourceRole as any)?._id || (sourceRole as any)?.did,
+                        message: error?.toString(),
+                    });
+                    await saveFailedItem(sourceRole, error);
+                }
+            });
+
+            await Promise.all(tasks);
+
+            const lastRole = writeBatch[writeBatch.length - 1];
+            const cursor = getSourceId(lastRole);
+
+            const flushed = await this.flushMappingsToDb(pendingMappings);
+
+            await this.saveRunProgressAfterWriteBatch(
+                run,
+                summary,
+                entityType,
+                cursor
+            );
+
+            PolicyDataMigrator.applyFlushedMappingsToMemory(flushed);
         }
     }
 
@@ -1394,6 +3065,164 @@ export class PolicyDataMigrator {
     }
 
     /**
+     * Migrate VP document V2
+     * @param doc VP
+     * @param userId
+     * @param run
+     * @returns VP
+     */
+    private async _migrateVpDocumentV2(
+        doc: VpDocument & { group: string },
+        userId: string | null,
+        run: MigrationRun
+    ) {
+        if (!doc) {
+            return doc;
+        }
+
+        const sourceMessageId = doc.messageId ? String(doc.messageId) : undefined;
+        if (sourceMessageId) {
+            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+            const mappedMessageId = PolicyDataMigrator.getMessageMapping(
+                scopeKey,
+                'vpDocument',
+                sourceMessageId
+            );
+            if (mappedMessageId) {
+                doc.messageId = mappedMessageId;
+                return doc;
+            }
+        }
+
+        doc.owner = await this._replaceDidTopicId(doc.owner);
+
+        if (doc.group) {
+            const srcGroup = await this._db.getGroupByID(
+                this._policyId,
+                doc.group
+            );
+            const dstUserGroup = await this._db.getGroupsByUser(
+                this._policyId,
+                doc.owner
+            );
+            const userRole = dstUserGroup.find(
+                (item) =>
+                    item.groupName === this._groups[srcGroup.groupName] ||
+                    item.role === this._roles[srcGroup.role]
+            );
+            doc.group = userRole ? userRole.uuid : null;
+        }
+
+        const vcs = doc.document.verifiableCredential.map((item) =>
+            VcDocumentDefinition.fromJsonTree(item)
+        );
+
+        let vpChanged = false;
+
+        if (Array.isArray(doc.relationships)) {
+            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+            for (let i = 0; i < doc.relationships.length; i++) {
+                const relationship = String(doc.relationships[i]);
+
+                // V2: relationship remap from run mapping
+                const mappedRelationship = PolicyDataMigrator.getMessageMapping(
+                    scopeKey,
+                    'vcDocument',
+                    relationship
+                ) || PolicyDataMigrator.getMessageMapping(
+                    scopeKey,
+                    'roleVcDocument',
+                    relationship
+                );
+
+                if (mappedRelationship) {
+                    doc.relationships[i] = mappedRelationship;
+                }
+
+                // If VC was republished/resigned, VP payload may need new VC body
+                // Rebuild from already migrated VC documents (saved with new messageId)
+                if (mappedRelationship) {
+                    const migratedVc = await this._db.findOne(VcDocument, {
+                        policyId: this._policyId,
+                        messageId: mappedRelationship
+                    } as Partial<VcDocument>);
+
+                    if (migratedVc?.document) {
+                        const migratedVcDef = VcDocumentDefinition.fromJsonTree(migratedVc.document);
+                        for (let j = 0; j < vcs.length; j++) {
+                            const element = vcs[j];
+                            if (
+                                element.getId() === migratedVcDef.getId() &&
+                                element.toCredentialHash() !== migratedVcDef.toCredentialHash()
+                            ) {
+                                vpChanged = true;
+                                vcs[j] = migratedVcDef;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let vp;
+        if (vpChanged || this._oldPolicyOwner !== this._owner) {
+            const vcHelper = new VcHelper();
+            const didDocument = await vcHelper.loadDidDocument(this._owner, userId);
+            vp = await vcHelper.createVerifiablePresentation(
+                vcs,
+                didDocument,
+                null,
+                { uuid: doc.document.id }
+            );
+            doc.hash = vp.toCredentialHash();
+            doc.document = vp.toJsonTree() as any;
+        } else {
+            vp = VpDocumentDefinition.fromJsonTree(doc.document);
+        }
+
+        doc.policyId = this._policyId;
+
+        if (doc.messageId) {
+            const vpMessage = new VPMessage(MessageAction.MigrateVP);
+            vpMessage.setDocument(vp);
+            vpMessage.setUser(null);
+            vpMessage.setRelationships([...(doc.relationships || []), doc.messageId]);
+            vpMessage.setTag(doc);
+            vpMessage.setEntityType(doc);
+            vpMessage.setOption(doc);
+
+            const vpMessageResult = await this._ms
+                .setTopicObject(this._policyInstanceTopic)
+                .sendMessage(vpMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
+
+            const destinationMessageId = vpMessageResult.getId();
+
+            if (sourceMessageId) {
+                const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                PolicyDataMigrator.setMessageMapping(
+                    scopeKey,
+                    'vpDocument',
+                    sourceMessageId,
+                    destinationMessageId
+                );
+            }
+
+            doc.messageId = destinationMessageId;
+            doc.topicId = vpMessageResult.getTopicId();
+            doc.messageHash = vpMessageResult.toHash();
+        }
+
+        return doc;
+    }
+
+    /**
      * Migrate mint requests
      * @param mintRequests Mint requests
      * @param mintTransactions Mint transactions
@@ -1428,6 +3257,328 @@ export class PolicyDataMigrator {
             await this._db.saveMintTransaction(mintTransaction);
         }
     }
+
+    /**
+     * Migrate mint requests V2
+     * @param mintRequests Mint requests
+     * @param mintTransactions Mint transactions
+     * @param run
+     * @param errors
+     * @param writeBatchSize
+     */
+    private async _migrateMintRequestsV2(
+        mintRequests: MintRequest[],
+        mintTransactions: MintTransaction[],
+        run: MigrationRun,
+        errors: DocumentError[],
+        writeBatchSize = 50,
+    ) {
+        const summary = run.summary as MigrationRunSummary;
+        const requestSummary = summary?.mintRequest;
+        const transactionSummary = summary?.mintTransaction;
+
+        if (!requestSummary) {
+            throw new Error('Summary item not found for entityType: mintRequest');
+        }
+        if (!transactionSummary) {
+            throw new Error('Summary item not found for entityType: mintTransaction');
+        }
+
+        const getRequestSourceId = (request: MintRequest): string | undefined => {
+            if (request?.id) {
+                return String(request.id);
+            }
+            if ((request as any)?._id) {
+                return String((request as any)._id);
+            }
+            return undefined;
+        };
+
+        const getTransactionSourceId = (transaction: MintTransaction): string | undefined => {
+            if (transaction?.id) {
+                return String(transaction.id);
+            }
+            if ((transaction as any)?._id) {
+                return String((transaction as any)._id);
+            }
+            return undefined;
+        };
+
+        const saveFailedItem = async (
+            entityType: 'mintRequest' | 'mintTransaction',
+            srcEntityId: string | undefined,
+            error: any
+        ) => {
+            if (!srcEntityId) {
+                return;
+            }
+
+            const existing = await this._db.findOne(MigrationFailedItem, {
+                runId: run.id,
+                entityType,
+                srcEntityId
+            } as Partial<MigrationFailedItem>);
+
+            if (existing) {
+                existing.attemptCount = Number(existing.attemptCount || 0) + 1;
+                existing.errorMessage = error?.toString();
+                existing.lastFailedAt = new Date();
+                await this._db.save(MigrationFailedItem, existing);
+                return;
+            }
+
+            const failed: Partial<MigrationFailedItem> = {
+                runId: run.id,
+                srcPolicyId: run.srcPolicyId,
+                dstPolicyId: run.dstPolicyId,
+                entityType,
+                srcEntityId,
+                attemptCount: 1,
+                errorMessage: error?.toString(),
+                firstFailedAt: new Date(),
+                lastFailedAt: new Date()
+            };
+
+            await this._db.save(MigrationFailedItem, failed);
+        };
+
+        // src mintRequestId -> dst mintRequestId
+        const mintRequestsMapping = new Map<string, string>();
+
+        // ---------- MintRequest ----------
+        const notEmptyRequests = (mintRequests as any[]).filter((item) => !!item) as MintRequest[];
+
+        const requestStartIndex = PolicyDataMigrator.resolveStartIndexByCursor(
+            notEmptyRequests,
+            requestSummary.cursorLastId,
+            (request: MintRequest) => getRequestSourceId(request)
+        );
+
+        const requestMappingBuffer: Partial<MigrationMessageMap>[] = [];
+
+        for (let writeOffset = requestStartIndex; writeOffset < notEmptyRequests.length; writeOffset += writeBatchSize) {
+            const latestRun = await this._db.findOne(MigrationRun, { id: run.id } as Partial<MigrationRun>);
+            if (latestRun?.stopRequested) {
+                run.stopRequested = true;
+                run.status = MigrationRunStatus.STOPPED;
+                run.finishedAt = new Date();
+                run.heartbeatAt = new Date();
+                run.summary = summary;
+
+                const flushedOnStop = await this.flushMappingsToDb(requestMappingBuffer);
+                PolicyDataMigrator.applyFlushedMappingsToMemory(flushedOnStop);
+
+                await this._db.save(MigrationRun, run);
+                return;
+            }
+
+            const writeBatch = notEmptyRequests.slice(writeOffset, writeOffset + writeBatchSize);
+
+            const tasks = writeBatch.map(async (request) => {
+                const srcEntityId = getRequestSourceId(request);
+
+                try {
+                    if (!srcEntityId) {
+                        throw new Error('Source id not found for mintRequest');
+                    }
+                    const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                    // mapping pre-check
+                    const mappedRequestId = PolicyDataMigrator.getMessageMapping(
+                        scopeKey,
+                        'mintRequest',
+                        srcEntityId
+                    );
+                    if (mappedRequestId) {
+                        mintRequestsMapping.set(srcEntityId, mappedRequestId);
+                        requestSummary.processed += 1;
+                        requestSummary.success += 1;
+                        return;
+                    }
+
+                    const sourceVpMessageId = request.vpMessageId ? String(request.vpMessageId) : undefined;
+                    const newVpMessageId = sourceVpMessageId
+                        ? PolicyDataMigrator.getMessageMapping(scopeKey, 'vpDocument', sourceVpMessageId)
+                        : undefined;
+
+                    if (!newVpMessageId) {
+                        throw new Error('VP mapping not found for mintRequest');
+                    }
+
+                    const requestToSave = { ...(request as any) } as MintRequest;
+                    requestToSave.vpMessageId = newVpMessageId;
+
+                    delete (requestToSave as any).id;
+                    delete (requestToSave as any)._id;
+
+                    const newRequest = await this._db.saveMintRequest(requestToSave);
+                    const dstRequestId = String(newRequest.id);
+
+                    mintRequestsMapping.set(srcEntityId, dstRequestId);
+
+                    PolicyDataMigrator.appendMappingToBuffer(requestMappingBuffer, {
+                        startedBy: run.startedBy,
+                        srcPolicyId: run.srcPolicyId,
+                        dstPolicyId: run.dstPolicyId,
+                        entityType: 'mintRequest',
+                        srcEntityId,
+                        srcMessageId: srcEntityId,
+                        dstMessageId: dstRequestId
+                    });
+
+                    requestSummary.processed += 1;
+                    requestSummary.success += 1;
+                } catch (error) {
+                    requestSummary.processed += 1;
+                    requestSummary.failed += 1;
+                    errors.push({
+                        id: srcEntityId || (request as any)?.id || (request as any)?._id,
+                        message: error?.toString(),
+                    });
+                    await saveFailedItem('mintRequest', srcEntityId, error);
+                }
+            });
+
+            await Promise.all(tasks);
+
+            const flushed = await this.flushMappingsToDb(requestMappingBuffer);
+
+            const lastRequest = writeBatch[writeBatch.length - 1];
+            const lastRequestCursor = getRequestSourceId(lastRequest);
+
+            await this.saveRunProgressAfterWriteBatch(
+                run,
+                summary,
+                'mintRequest',
+                lastRequestCursor
+            );
+
+            PolicyDataMigrator.applyFlushedMappingsToMemory(flushed);
+        }
+
+        // ---------- MintTransaction ----------
+        const notEmptyTransactions = (mintTransactions as any[]).filter((item) => !!item) as MintTransaction[];
+
+        const transactionStartIndex = PolicyDataMigrator.resolveStartIndexByCursor(
+            notEmptyTransactions,
+            transactionSummary.cursorLastId,
+            (transaction: MintTransaction) => getTransactionSourceId(transaction)
+        );
+
+        const txMappingBuffer: Partial<MigrationMessageMap>[] = [];
+
+        for (let writeOffset = transactionStartIndex; writeOffset < notEmptyTransactions.length; writeOffset += writeBatchSize) {
+            const latestRun = await this._db.findOne(MigrationRun, { id: run.id } as Partial<MigrationRun>);
+            if (latestRun?.stopRequested) {
+                run.stopRequested = true;
+                run.status = MigrationRunStatus.STOPPED;
+                run.finishedAt = new Date();
+                run.heartbeatAt = new Date();
+                run.summary = summary;
+
+                const flushedOnStop = await this.flushMappingsToDb(txMappingBuffer);
+                PolicyDataMigrator.applyFlushedMappingsToMemory(flushedOnStop);
+
+                await this._db.save(MigrationRun, run);
+                return;
+            }
+
+            const writeBatch = notEmptyTransactions.slice(writeOffset, writeOffset + writeBatchSize);
+
+            const tasks = writeBatch.map(async (transaction) => {
+                const srcEntityId = getTransactionSourceId(transaction);
+
+                try {
+                    if (!srcEntityId) {
+                        throw new Error('Source id not found for mintTransaction');
+                    }
+                    const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                    // mapping pre-check
+                    const mappedTx = PolicyDataMigrator.getMessageMapping(
+                        scopeKey,
+                        'mintTransaction',
+                        srcEntityId
+                    );
+                    if (mappedTx) {
+                        transactionSummary.processed += 1;
+                        transactionSummary.success += 1;
+                        return;
+                    }
+
+                    const srcMintRequestId = transaction.mintRequestId
+                        ? String(transaction.mintRequestId)
+                        : undefined;
+
+                    if (!srcMintRequestId) {
+                        throw new Error('Source mintRequestId not found for mintTransaction');
+                    }
+
+                    // target mintRequestId from local map or global mapping cache
+                    let dstMintRequestId = mintRequestsMapping.get(srcMintRequestId);
+                    if (!dstMintRequestId) {
+                        const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                        dstMintRequestId = PolicyDataMigrator.getMessageMapping(
+                            scopeKey,
+                            'mintRequest',
+                            srcMintRequestId
+                        );
+                    }
+
+                    if (!dstMintRequestId) {
+                        throw new Error('MintRequest mapping not found for mintTransaction');
+                    }
+
+                    const txToSave = { ...(transaction as any) } as MintTransaction;
+                    txToSave.mintRequestId = dstMintRequestId;
+
+                    delete (txToSave as any).id;
+                    delete (txToSave as any)._id;
+
+                    await this._db.saveMintTransaction(txToSave);
+
+                    PolicyDataMigrator.appendMappingToBuffer(txMappingBuffer, {
+                        startedBy: run.startedBy,
+                        srcPolicyId: run.srcPolicyId,
+                        dstPolicyId: run.dstPolicyId,
+                        entityType: 'mintTransaction',
+                        srcEntityId,
+                        srcMessageId: srcEntityId,
+                        dstMessageId: srcEntityId
+                    });
+
+                    transactionSummary.processed += 1;
+                    transactionSummary.success += 1;
+                } catch (error) {
+                    transactionSummary.processed += 1;
+                    transactionSummary.failed += 1;
+                    errors.push({
+                        id: srcEntityId || (transaction as any)?.id || (transaction as any)?._id,
+                        message: error?.toString(),
+                    });
+                    await saveFailedItem('mintTransaction', srcEntityId, error);
+                }
+            });
+
+            await Promise.all(tasks);
+
+            const flushed = await this.flushMappingsToDb(txMappingBuffer);
+
+            const lastTransaction = writeBatch[writeBatch.length - 1];
+            const lastTransactionCursor = getTransactionSourceId(lastTransaction);
+
+            await this.saveRunProgressAfterWriteBatch(
+                run,
+                summary,
+                'mintTransaction',
+                lastTransactionCursor
+            );
+
+            PolicyDataMigrator.applyFlushedMappingsToMemory(flushed);
+        }
+    }
+
 
     /**
      * Migrate VC document
@@ -1596,5 +3747,1362 @@ export class PolicyDataMigrator {
         }
 
         return doc;
+    }
+
+    /**
+     * Migrate VC document V2
+     * @param doc VC
+     * @param vcs VCs
+     * @param roles Roles
+     * @param tokens
+     * @param userId
+     * @param run
+     * @returns VC
+     */
+    private async _migrateVcDocumentV2(
+        doc: VcDocument,
+        vcs: VcDocument[],
+        roles: PolicyRoles[],
+        tokens: Token[],
+        userId: string | null,
+        run: MigrationRun
+    ) {
+        if (!doc) {
+            return doc;
+        }
+
+        const sourceMessageId = doc.messageId ? String(doc.messageId) : undefined;
+
+        if (sourceMessageId) {
+            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+            const mappedMessageId = PolicyDataMigrator.getMessageMapping(
+                scopeKey,
+                'vcDocument',
+                sourceMessageId
+            );
+            if (mappedMessageId) {
+                doc.messageId = mappedMessageId;
+                return doc;
+            }
+        }
+
+        const originalMessageId = doc.messageId ? String(doc.messageId) : undefined;
+
+        doc.relationships = doc.relationships || [];
+        for (let i = 0; i < doc.relationships.length; i++) {
+            const relationship = doc.relationships[i];
+            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+            const mappedRelationship = PolicyDataMigrator.getMessageMapping(
+                scopeKey,
+                'vcDocument',
+                relationship
+            );
+            if (mappedRelationship) {
+                doc.relationships[i] = mappedRelationship;
+                continue;
+            }
+
+            const sourceRelated = vcs.find((item) => item.messageId === relationship);
+            if (!sourceRelated) {
+                doc.relationships.splice(i, 1);
+                i--;
+                continue;
+            }
+
+            try {
+                const republishedDocument = await this._migrateVcDocumentV2(
+                    sourceRelated,
+                    vcs,
+                    roles,
+                    tokens,
+                    userId,
+                    run
+                );
+
+                if (!republishedDocument?.messageId) {
+                    doc.relationships.splice(i, 1);
+                    i--;
+                    continue;
+                }
+
+                doc.relationships[i] = republishedDocument.messageId;
+
+                if (sourceRelated.messageId) {
+                    const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                    PolicyDataMigrator.setMessageMapping(
+                        scopeKey,
+                        'vcDocument',
+                        String(sourceRelated.messageId),
+                        String(republishedDocument.messageId)
+                    );
+                }
+            } catch (error) {
+                doc.relationships.splice(i, 1);
+                i--;
+            }
+        }
+
+        const oldDocOwner = doc.owner;
+        doc.owner = await this._replaceDidTopicId(doc.owner);
+        doc.assignedTo = await this._replaceDidTopicId(doc.assignedTo);
+
+        let role;
+        if (doc.group) {
+            const srcGroup = roles.find(
+                (item) => item.uuid === doc.group && item.did === oldDocOwner
+            );
+            const groups = await this._db.getGroupsByUser(
+                this._policyId,
+                doc.owner
+            );
+            role = groups.find(
+                (item) =>
+                    item.groupName === this._groups[srcGroup.groupName] ||
+                    item.role === this._roles[srcGroup.role]
+            );
+            doc.group = role?.uuid;
+        }
+
+        if (doc.assignedToGroup) {
+            const srcGroup = roles.find(
+                (item) =>
+                    item.uuid === doc.assignedToGroup &&
+                    item.did === oldDocOwner
+            );
+            const groups = await this._db.getGroupsByUser(
+                this._policyId,
+                doc.owner
+            );
+            role = groups.find(
+                (item) => item.groupName === this._groups[srcGroup.groupName]
+            );
+            doc.assignedToGroup = role?.uuid;
+        }
+
+        let vc: VcDocumentDefinition;
+        // const schema = await DatabaseServer.getSchema({
+        //     topicId: this._policyTopicId,
+        //     iri: this._schemas[doc.schema],
+        // });
+
+        const destinationSchemaIri = this._schemas?.[doc.schema] || doc.schema;
+        const schema = await DatabaseServer.getSchema({
+            topicId: this._policyTopicId,
+            iri: destinationSchemaIri,
+        });
+        if (!schema) {
+            throw new Error(
+                `Schema not found: srcSchema=${String(doc.schema)}, dstSchema=${String(destinationSchemaIri)}, docId=${String((doc as any)?.id)}`
+            );
+        }
+
+        if (
+            this._editedVCs[doc.id] ||
+            doc.schema !== schema.iri ||
+            this._policyTopicId !== this._oldPolicyTopicId
+        ) {
+            const _vcHelper = new VcHelper();
+            const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
+            const credentialSubject = SchemaHelper.updateObjectContext(
+                new Schema(schema),
+                this._editedVCs[doc.id] || doc.document.credentialSubject[0]
+            );
+            const res = await _vcHelper.verifySubject(credentialSubject);
+            if (!res.ok) {
+                throw new Error(res.error.type);
+            }
+            vc = await _vcHelper.createVerifiableCredential(
+                credentialSubject,
+                didDocument,
+                null,
+                {
+                    uuid: await this._replaceDidTopicId(doc.document.id),
+                }
+            );
+            doc.hash = vc.toCredentialHash();
+            doc.document = vc.toJsonTree();
+            doc.schema = schema.iri;
+        } else {
+            vc = VcDocumentDefinition.fromJsonTree(doc.document);
+        }
+
+        doc.policyId = this._policyId;
+
+        if (doc.messageId) {
+            const vcMessage = new VCMessage(MessageAction.MigrateVC);
+            vcMessage.setDocument(vc);
+            vcMessage.setDocumentStatus(
+                doc.option?.status || DocumentStatus.NEW
+            );
+            vcMessage.setRelationships([...doc.relationships, doc.messageId]);
+            vcMessage.setTag(doc);
+            vcMessage.setEntityType(doc);
+            vcMessage.setOption(doc);
+            if (role && schema.category === SchemaCategory.POLICY) {
+                vcMessage.setUser(role.messageId);
+            }
+
+            const vcMessageResult = await this._ms
+                .setTopicObject(this._policyInstanceTopic)
+                .sendMessage(vcMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
+
+            const destinationMessageId = vcMessageResult.getId();
+
+            doc.messageId = destinationMessageId;
+            doc.topicId = vcMessageResult.getTopicId();
+            doc.messageHash = vcMessageResult.toHash();
+
+            if (originalMessageId) {
+                const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                PolicyDataMigrator.setMessageMapping(
+                    scopeKey,
+                    'vcDocument',
+                    originalMessageId,
+                    destinationMessageId
+                );
+            }
+        }
+
+        this.vcIds.set(doc.id, doc);
+
+        if (doc.tokens) {
+            doc.tokens = await this.migrateTokenTemplates(tokens, doc.tokens, userId);
+        }
+
+        return doc;
+    }
+
+    public static mapRunToResponse(run: MigrationRun) {
+        const heartbeatAt = run.heartbeatAt ? new Date(run.heartbeatAt) : null;
+        const isRunning = run.status === MigrationRunStatus.RUNNING;
+
+        let isHeartbeatStale = false;
+        if (isRunning && heartbeatAt) {
+            isHeartbeatStale =
+                Date.now() - heartbeatAt.getTime() > PolicyDataMigrator.migrationRunStaleTimeout;
+        }
+        if (isRunning && !heartbeatAt) {
+            isHeartbeatStale = true;
+        }
+
+        const effectiveStatus =
+            isRunning && isHeartbeatStale ? MigrationRunStatus.FAILED : run.status;
+
+        return {
+            runId: run.id,
+            srcPolicyId: run.srcPolicyId,
+            dstPolicyId: run.dstPolicyId,
+            status: effectiveStatus,
+            startedAt: run.startedAt || null,
+            finishedAt: run.finishedAt || null,
+            summary: run.summary || {}
+        };
+    }
+
+    /**
+     * Request stop for migration run
+     * Current readBatch will finish, next readBatch will not start.
+     */
+    public static async requestStopMigrationByRunId(runId: string): Promise<void> {
+        if (!runId) {
+            throw new Error('runId is required');
+        }
+
+        const db = new DatabaseServer();
+        const run = await db.findOne(MigrationRun, { id: runId } as Partial<MigrationRun>);
+
+        if (!run) {
+            throw new Error('Migration run not found');
+        }
+
+        if (run.status !== MigrationRunStatus.RUNNING) {
+            return;
+        }
+
+        run.stopRequested = true;
+        run.heartbeatAt = new Date();
+        await db.save(MigrationRun, run);
+    }
+
+    private static getOrCreateRunCache(scopeKey: string): Map<string, Map<string, string>> {
+        let runCache = PolicyDataMigrator.migrationMessageCache.get(scopeKey);
+        if (!runCache) {
+            runCache = new Map<string, Map<string, string>>();
+            PolicyDataMigrator.migrationMessageCache.set(scopeKey, runCache);
+        }
+        return runCache;
+    }
+
+    private static getOrCreateEntityCache(
+        scopeKey: string,
+        entityType: string
+    ): Map<string, string> {
+        const runCache = PolicyDataMigrator.getOrCreateRunCache(scopeKey);
+        let entityCache = runCache.get(entityType);
+        if (!entityCache) {
+            entityCache = new Map<string, string>();
+            runCache.set(entityType, entityCache);
+        }
+        return entityCache;
+    }
+
+    private static clearRunCache(scopeKey: string): void {
+        PolicyDataMigrator.migrationMessageCache.delete(scopeKey);
+    }
+
+    private static async loadRunMessageCacheFromDb(
+        db: DatabaseServer,
+        run: MigrationRun
+    ): Promise<void> {
+        const scopeKey = `${String(run.srcPolicyId)}:${String(run.dstPolicyId)}:${String(run.startedBy || '')}`;
+
+        const mappings = await db.find(MigrationMessageMap, {
+            srcPolicyId: run.srcPolicyId,
+            dstPolicyId: run.dstPolicyId,
+            startedBy: run.startedBy
+        } as Partial<MigrationMessageMap>);
+
+        const runCache = new Map<string, Map<string, string>>();
+
+        for (const mapping of (mappings || [])) {
+            const entityType = mapping?.entityType;
+            const srcMessageId = mapping?.srcMessageId;
+            const dstMessageId = mapping?.dstMessageId;
+
+            if (!entityType || !srcMessageId || !dstMessageId) {
+                continue;
+            }
+
+            let entityCache = runCache.get(entityType);
+            if (!entityCache) {
+                entityCache = new Map<string, string>();
+                runCache.set(entityType, entityCache);
+            }
+
+            entityCache.set(srcMessageId, dstMessageId);
+        }
+
+        PolicyDataMigrator.migrationMessageCache.set(scopeKey, runCache);
+    }
+
+    private static setMessageMapping(
+        scopeKey: string,
+        entityType: string,
+        srcMessageId: string,
+        dstMessageId: string
+    ): void {
+        const entityCache = PolicyDataMigrator.getOrCreateEntityCache(scopeKey, entityType);
+        entityCache.set(srcMessageId, dstMessageId);
+    }
+
+    private static getMessageMapping(
+        scopeKey: string,
+        entityType: string,
+        srcMessageId: string
+    ): string | undefined {
+        const runCache = PolicyDataMigrator.migrationMessageCache.get(scopeKey);
+        if (!runCache) {
+            return undefined;
+        }
+        const entityCache = runCache.get(entityType);
+        if (!entityCache) {
+            return undefined;
+        }
+        return entityCache.get(srcMessageId);
+    }
+
+    private static extractSourceKeys(
+        entityType: string,
+        item: any
+    ): { srcEntityId?: string; srcMessageId?: string } {
+        let srcEntityId: string | undefined;
+        if (item?.id) {
+            srcEntityId = String(item.id);
+        } else if (item?._id) {
+            srcEntityId = String(item._id);
+        } else if (item?.did) {
+            srcEntityId = String(item.did);
+        } else if (item?.blockId) {
+            srcEntityId = String(item.blockId);
+        }
+
+        let srcMessageId: string | undefined;
+        if (
+            entityType === 'vcDocument' ||
+            entityType === 'roleVcDocument' ||
+            entityType === 'vpDocument'
+        ) {
+            if (item?.messageId) {
+                srcMessageId = String(item.messageId);
+            }
+        }
+
+        return { srcEntityId, srcMessageId };
+    }
+
+    private static appendMappingToBuffer(
+        buffer: Partial<MigrationMessageMap>[],
+        mapping: Partial<MigrationMessageMap>
+    ): void {
+        if (
+            !mapping?.srcPolicyId ||
+            !mapping?.dstPolicyId ||
+            !mapping?.entityType ||
+            !mapping?.srcMessageId ||
+            !mapping?.dstMessageId
+        ) {
+            return;
+        }
+
+        const mappingKey =
+            `${mapping.srcPolicyId}:${mapping.dstPolicyId}:${String(mapping.startedBy || '')}:${mapping.entityType}:${mapping.srcMessageId}`;
+
+        const existingIndex = buffer.findIndex((item) => {
+            const itemKey =
+                `${item.srcPolicyId}:${item.dstPolicyId}:${String(item.startedBy || '')}:${item.entityType}:${item.srcMessageId}`;
+            return itemKey === mappingKey;
+        });
+
+        if (existingIndex >= 0) {
+            buffer[existingIndex] = mapping;
+            return;
+        }
+
+        buffer.push(mapping);
+    }
+
+    private async flushMappingsToDb(
+        buffer: Partial<MigrationMessageMap>[]
+    ): Promise<Partial<MigrationMessageMap>[]> {
+        if (!buffer.length) {
+            return [];
+        }
+
+        const flushed: Partial<MigrationMessageMap>[] = [];
+
+        for (const item of buffer) {
+            if (
+                !item?.srcPolicyId ||
+                !item?.dstPolicyId ||
+                !item?.entityType ||
+                !item?.srcMessageId ||
+                !item?.dstMessageId
+            ) {
+                continue;
+            }
+
+            const existing = await this._db.findOne(MigrationMessageMap, {
+                srcPolicyId: item.srcPolicyId,
+                dstPolicyId: item.dstPolicyId,
+                startedBy: item.startedBy,
+                entityType: item.entityType,
+                srcMessageId: item.srcMessageId
+            } as Partial<MigrationMessageMap>);
+
+            if (existing) {
+                existing.dstMessageId = String(item.dstMessageId);
+                existing.srcEntityId = item.srcEntityId ? String(item.srcEntityId) : undefined;
+                await this._db.save(MigrationMessageMap, existing);
+            } else {
+                await this._db.save(MigrationMessageMap, item);
+            }
+
+            flushed.push(item);
+        }
+
+        buffer.length = 0;
+        return flushed;
+    }
+
+    private static applyFlushedMappingsToMemory(
+        mappings: Partial<MigrationMessageMap>[]
+    ): void {
+        for (const item of mappings) {
+            if (
+                !item?.srcPolicyId ||
+                !item?.dstPolicyId ||
+                !item?.entityType ||
+                !item?.srcMessageId ||
+                !item?.dstMessageId
+            ) {
+                continue;
+            }
+
+            const scopeKey =
+                `${String(item.srcPolicyId)}:${String(item.dstPolicyId)}:${String(item.startedBy || '')}`;
+
+            let scopeCache = PolicyDataMigrator.migrationMessageCache.get(scopeKey);
+            if (!scopeCache) {
+                scopeCache = new Map<string, Map<string, string>>();
+                PolicyDataMigrator.migrationMessageCache.set(scopeKey, scopeCache);
+            }
+
+            let entityCache = scopeCache.get(String(item.entityType));
+            if (!entityCache) {
+                entityCache = new Map<string, string>();
+                scopeCache.set(String(item.entityType), entityCache);
+            }
+
+            entityCache.set(String(item.srcMessageId), String(item.dstMessageId));
+        }
+    }
+
+    private async saveRunProgressAfterWriteBatch(
+        run: MigrationRun,
+        summary: MigrationRunSummary,
+        entityType: string,
+        cursorLastId?: string
+    ): Promise<void> {
+        if (cursorLastId) {
+            const entitySummary = summary?.[entityType];
+            if (entitySummary) {
+                entitySummary.cursorLastId = cursorLastId;
+            }
+        }
+
+        run.summary = summary;
+        run.heartbeatAt = new Date();
+        await this._db.save(MigrationRun, run);
+    }
+
+    private static resolveStartIndexByCursor<T>(
+        items: T[],
+        cursorLastId: string | undefined,
+        getId: (item: T) => string | undefined
+    ): number {
+        if (!cursorLastId) {
+            return 0;
+        }
+
+        const index = items.findIndex((item) => {
+            const id = getId(item);
+            if (!id) {
+                return false;
+            }
+            return id === cursorLastId;
+        });
+
+        if (index < 0) {
+            return 0;
+        }
+
+        return index + 1;
+    }
+
+    /**
+     * Retry failed migration items for existing run
+     * Loads only source records listed in MigrationFailedItem for this run.
+     */
+    public static async retryFailedItems(
+        owner: string,
+        run: MigrationRun,
+        userId: string | null,
+        notifier: INotificationStep,
+        writeBatchSize: number = 50
+        ): Promise<DocumentError[]> {
+
+        const migrationConfig = run.config as MigrationConfig;
+        if (!migrationConfig?.policies?.src || !migrationConfig?.policies?.dst) {
+            throw new Error('Migration run config is invalid');
+        }
+
+        const db = new DatabaseServer();
+        const failedItems = await db.find(
+            MigrationFailedItem,
+            { runId: run.id } as Partial<MigrationFailedItem>,
+            { orderBy: { createDate: 'ASC' as const } }
+        );
+
+        if (!failedItems || failedItems.length === 0) {
+            return [];
+        }
+
+        const vcIds = new Set<string>();
+        const roleVcIds = new Set<string>();
+        const vpIds = new Set<string>();
+        const roleIds = new Set<string>();
+        const stateIds = new Set<string>();
+        const mintRequestIds = new Set<string>();
+        const mintTransactionIds = new Set<string>();
+        const multiDocumentIds = new Set<string>();
+        const aggregateVcIds = new Set<string>();
+        const splitDocumentIds = new Set<string>();
+        const documentStateIds = new Set<string>();
+        const tokenIds = new Set<string>();
+        const retirePoolIds = new Set<string>();
+
+        for (const failedItem of failedItems) {
+            const entityType = String(failedItem.entityType);
+            const srcEntityId = String(failedItem.srcEntityId);
+
+            if (entityType === 'vcDocument') {
+                vcIds.add(srcEntityId);
+            } else if (entityType === 'roleVcDocument') {
+                roleVcIds.add(srcEntityId);
+            } else if (entityType === 'vpDocument') {
+                vpIds.add(srcEntityId);
+            } else if (entityType === 'policyRole') {
+                roleIds.add(srcEntityId);
+            } else if (entityType === 'policyState') {
+                stateIds.add(srcEntityId);
+            } else if (entityType === 'mintRequest') {
+                mintRequestIds.add(srcEntityId);
+            } else if (entityType === 'mintTransaction') {
+                mintTransactionIds.add(srcEntityId);
+            } else if (entityType === 'multiDocument') {
+                multiDocumentIds.add(srcEntityId);
+            } else if (entityType === 'aggregateVc') {
+                aggregateVcIds.add(srcEntityId);
+            } else if (entityType === 'splitDocument') {
+                splitDocumentIds.add(srcEntityId);
+            } else if (entityType === 'documentState') {
+                documentStateIds.add(srcEntityId);
+            } else if (entityType === 'token') {
+                tokenIds.add(srcEntityId);
+            } else if (entityType === 'retirePool') {
+                retirePoolIds.add(srcEntityId);
+            }
+        }
+
+        const { src, dst } = migrationConfig.policies;
+        const users = new Users();
+        const userTopic = await DatabaseServer.getTopicByType(
+            owner,
+            TopicType.UserTopic
+        );
+
+        const srcModel = await DatabaseServer.getPolicy({
+            id: src,
+            owner,
+        });
+        if (!srcModel) {
+            throw new Error(`Can't find source policy`);
+        }
+        const srcModelDryRun = PolicyHelper.isDryRunMode(srcModel);
+        const srcDb = new DatabaseServer(srcModelDryRun ? srcModel.id : undefined);
+
+        const dstModel = await DatabaseServer.getPolicy({
+            id: dst,
+            owner,
+        });
+        if (!dstModel) {
+            throw new Error(`Can't find destination policy`);
+        }
+        const dstModelDryRun = PolicyHelper.isDryRunMode(dstModel);
+
+        const srcSystemSchemas = await DatabaseServer.getSchemas({
+            category: SchemaCategory.SYSTEM,
+            topicId: srcModel.topicId,
+        });
+        const dstSystemSchemas = await DatabaseServer.getSchemas({
+            category: SchemaCategory.SYSTEM,
+            topicId: dstModel.topicId,
+        });
+
+        const schemas = migrationConfig.schemas || {};
+        for (const schema of srcSystemSchemas) {
+            const dstSchema = dstSystemSchemas.find(
+                (item) => item.entity === schema.entity
+            );
+            if (dstSchema) {
+                schemas[schema.iri] = dstSchema.iri;
+            }
+        }
+
+        const loadByIds = async <T extends BaseEntity>(
+            entity: new () => T,
+            ids: Set<string>
+        ): Promise<T[]> => {
+            if (!ids.size) {
+                return [];
+            }
+            const entityClass: new () => BaseEntity = entity;
+            const result = await srcDb.find(
+                entityClass,
+                { id: { $in: Array.from(ids) } } as any
+            );
+            return result as T[];
+        };
+
+        const filterBySourceIds = <T>(entityType: string, list: T[], ids: Set<string>): T[] => {
+            if (!ids.size) {
+                return [];
+            }
+            return list.filter((item) => {
+                const keys = PolicyDataMigrator.extractSourceKeys(entityType, item as any);
+                return !!keys.srcEntityId && ids.has(keys.srcEntityId);
+            });
+        };
+
+        const vcs = await loadByIds(VcDocument, vcIds);
+        const roleVcs = await loadByIds(VcDocument, roleVcIds);
+        const vps = await loadByIds(VpDocument, vpIds);
+        const mintRequests = await loadByIds(MintRequest, mintRequestIds);
+        const mintTransactions = await loadByIds(MintTransaction, mintTransactionIds);
+        const multiSignDocuments = await loadByIds(MultiDocuments, multiDocumentIds);
+        const aggregateVCs = await loadByIds(AggregateVC, aggregateVcIds);
+        const splitDocuments = await loadByIds(SplitDocuments, splitDocumentIds);
+        const documentStates = await loadByIds(DocumentState, documentStateIds);
+        const dynamicTokens = await loadByIds(Token, tokenIds);
+        const retirePools = await loadByIds(RetirePool, retirePoolIds);
+
+        const allRoles = roleIds.size
+            ? await new RolesLoader(
+                srcModel.id,
+                srcModel.topicId,
+                srcModel.instanceTopicId,
+                srcModelDryRun
+            ).get()
+            : [];
+        const roles = filterBySourceIds('policyRole', allRoles, roleIds);
+
+        const allStates = stateIds.size
+            ? await new BlockStateLoader(
+                srcModel.id,
+                srcModel.topicId,
+                srcModel.instanceTopicId,
+                srcModelDryRun
+            ).get()
+            : [];
+        const states = filterBySourceIds('policyState', allStates, stateIds);
+
+        const srcDids = await new DidLoader(
+            srcModel.id,
+            srcModel.topicId,
+            srcModel.instanceTopicId,
+            srcModelDryRun
+        ).get();
+
+        const wallet = new Wallet();
+        const root = await users.getUserById(owner, userId);
+        const rootKey = await wallet.getKey(
+            root.walletToken,
+            KeyType.KEY,
+            owner
+        );
+        const signOptions = await wallet.getUserSignOptions(root);
+
+        const instanceTopicConfig = await TopicConfig.fromObject(
+            await new DatabaseServer(dstModelDryRun ? dstModel.id : undefined)
+                .getTopic({
+                    topicId: dstModel.instanceTopicId,
+                }), false, userId
+        );
+
+        const policyDataMigrator = new PolicyDataMigrator(
+            root,
+            rootKey,
+            signOptions,
+            users,
+            owner,
+            dst,
+            dstModel.topicId,
+            instanceTopicConfig,
+            srcModel.owner,
+            srcModel.topicId,
+            userTopic.topicId,
+            userTopic,
+            migrationConfig.roles || {},
+            migrationConfig.groups || {},
+            schemas,
+            migrationConfig.blocks || {},
+            migrationConfig.tokens || {},
+            migrationConfig.tokensMap || {},
+            migrationConfig.editedVCs || {},
+            srcDids,
+            dstModelDryRun ? dstModel.id : null,
+            notifier,
+        );
+
+        return await policyDataMigrator._retryFailedItems({
+            run,
+            userId,
+            retireContractId: migrationConfig.retireContractId,
+            vcs,
+            vps,
+            roleVcs,
+            roles,
+            states,
+            mintRequests,
+            mintTransactions,
+            multiSignDocuments,
+            aggregateVCs,
+            splitDocuments,
+            documentStates,
+            dynamicTokens,
+            retirePools,
+            writeBatchSize
+        });
+    }
+
+    /**
+     * Retry only failed items for existing run
+     * Source: MigrationFailedItem by runId
+     */
+    public async _retryFailedItems(params: {
+        run: MigrationRun;
+        userId: string | null;
+        retireContractId?: string;
+        vcs: VcDocument[];
+        vps: VpDocument[];
+        roleVcs: VcDocument[];
+        roles: PolicyRoles[];
+        states: BlockState[];
+        mintRequests: MintRequest[];
+        mintTransactions: MintTransaction[];
+        multiSignDocuments: MultiDocuments[];
+        aggregateVCs: AggregateVC[];
+        splitDocuments: SplitDocuments[];
+        documentStates: DocumentState[];
+        dynamicTokens: Token[];
+        retirePools: RetirePool[];
+        writeBatchSize?: number;
+    }): Promise<DocumentError[]> {
+        const {
+            run,
+            userId,
+            retireContractId,
+            vcs,
+            vps,
+            roleVcs,
+            roles,
+            states,
+            mintRequests,
+            mintTransactions,
+            multiSignDocuments,
+            aggregateVCs,
+            splitDocuments,
+            documentStates,
+            dynamicTokens,
+            retirePools,
+        } = params;
+
+        const writeBatchSize = params.writeBatchSize || 50;
+        const summary = run.summary as MigrationRunSummary;
+        const errors: DocumentError[] = [];
+
+        const getSummaryItem = (entityType: string) => {
+            const item = summary?.[entityType];
+            if (!item) {
+                throw new Error(`Summary item not found for entityType: ${entityType}`);
+            }
+            return item;
+        };
+
+        const resolveFailedSource = <T>(entityType: string, list: T[], srcEntityId: string): T | undefined => {
+            return list.find((item) => {
+                const keys = PolicyDataMigrator.extractSourceKeys(entityType, item as any);
+                return keys.srcEntityId === srcEntityId;
+            });
+        };
+
+        const updateFailedItemError = async (failed: MigrationFailedItem, error: any) => {
+            failed.attemptCount = Number(failed.attemptCount || 0) + 1;
+            failed.errorMessage = error?.toString();
+            failed.lastFailedAt = new Date();
+            await this._db.save(MigrationFailedItem, failed);
+        };
+
+        const flushMappingsAndRun = async (buffer: Partial<MigrationMessageMap>[]) => {
+            const flushed = await this.flushMappingsToDb(buffer);
+            run.summary = summary;
+            run.heartbeatAt = new Date();
+            await this._db.save(MigrationRun, run);
+            PolicyDataMigrator.applyFlushedMappingsToMemory(flushed);
+        };
+
+        const pendingMappings: Partial<MigrationMessageMap>[] = [];
+
+        await PolicyDataMigrator.loadRunMessageCacheFromDb(this._db, run);
+
+        run.status = MigrationRunStatus.RUNNING;
+        run.stopRequested = false;
+        run.finishedAt = undefined;
+        run.error = undefined;
+        run.heartbeatAt = new Date();
+        await this._db.save(MigrationRun, run);
+
+        try {
+            const failedItems = await this._db.find(
+                MigrationFailedItem,
+                { runId: run.id } as Partial<MigrationFailedItem>,
+                { orderBy: { createDate: 'ASC' as const } }
+            );
+
+            const localMintRequestMap = new Map<string, string>();
+
+            for (let offset = 0; offset < failedItems.length; offset += writeBatchSize) {
+                const latestRun = await this._db.findOne(MigrationRun, { id: run.id } as Partial<MigrationRun>);
+                if (latestRun?.stopRequested) {
+                    run.stopRequested = true;
+                    run.status = MigrationRunStatus.STOPPED;
+                    run.finishedAt = new Date();
+                    run.heartbeatAt = new Date();
+
+                    await flushMappingsAndRun(pendingMappings);
+                    await this._db.save(MigrationRun, run);
+                    return errors;
+                }
+
+                const writeBatch = failedItems.slice(offset, offset + writeBatchSize);
+                const successItems: MigrationFailedItem[] = [];
+
+                const tasks = writeBatch.map(async (failedItem) => {
+                    const entityType = String(failedItem.entityType);
+                    const srcEntityId = String(failedItem.srcEntityId);
+                    const entitySummary = getSummaryItem(entityType);
+                    const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                    try {
+                        const preMappedByEntityId = PolicyDataMigrator.getMessageMapping(
+                            scopeKey,
+                            entityType,
+                            srcEntityId
+                        );
+
+                        if (preMappedByEntityId) {
+                            entitySummary.processed += 1;
+                            entitySummary.success += 1;
+                            successItems.push(failedItem);
+
+                            if (entityType === 'mintRequest') {
+                                localMintRequestMap.set(srcEntityId, preMappedByEntityId);
+                            }
+
+                            return;
+                        }
+
+                        if (entityType === 'vcDocument') {
+                            const src = resolveFailedSource('vcDocument', vcs, srcEntityId);
+                            if (!src) {
+                                throw new Error('Source vcDocument not found');
+                            }
+
+                            const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, src as any);
+                            const srcMapKey = sourceKeys.srcMessageId || sourceKeys.srcEntityId || srcEntityId;
+                            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+                            const mappedByMessage = srcMapKey
+                                ? PolicyDataMigrator.getMessageMapping(scopeKey, entityType, srcMapKey)
+                                : undefined;
+
+                            if (mappedByMessage) {
+                                entitySummary.processed += 1;
+                                entitySummary.success += 1;
+                                successItems.push(failedItem);
+                                return;
+                            }
+
+                            const migrated = await this._migrateVcDocumentV2(
+                                src,
+                                vcs,
+                                roles,
+                                dynamicTokens,
+                                userId,
+                                run
+                            );
+
+                            delete (migrated as any).id;
+                            delete (migrated as any)._id;
+                            delete (migrated as any).createDate;
+                            delete (migrated as any).updateDate;
+
+                            await this._db.saveVC(migrated);
+
+                            const destinationKeys = PolicyDataMigrator.extractSourceKeys(entityType, migrated as any);
+                            const dstMapKey = destinationKeys.srcMessageId || destinationKeys.srcEntityId || srcMapKey;
+
+                            if (sourceKeys.srcEntityId && srcMapKey && dstMapKey) {
+                                PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                                    startedBy: run.startedBy,
+                                    srcPolicyId: run.srcPolicyId,
+                                    dstPolicyId: run.dstPolicyId,
+                                    entityType,
+                                    srcEntityId: sourceKeys.srcEntityId,
+                                    srcMessageId: srcMapKey,
+                                    dstMessageId: dstMapKey
+                                });
+                            }
+                        } else if (entityType === 'roleVcDocument') {
+                            const src = resolveFailedSource('roleVcDocument', roleVcs, srcEntityId);
+                            if (!src) {
+                                throw new Error('Source roleVcDocument not found');
+                            }
+
+                            const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, src as any);
+                            const srcMapKey = sourceKeys.srcMessageId || sourceKeys.srcEntityId || srcEntityId;
+                            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+                            const mappedByMessage = srcMapKey
+                                ? PolicyDataMigrator.getMessageMapping(scopeKey, entityType, srcMapKey)
+                                : undefined;
+
+                            if (mappedByMessage) {
+                                entitySummary.processed += 1;
+                                entitySummary.success += 1;
+                                successItems.push(failedItem);
+                                return;
+                            }
+
+                            const migrated = await this._migrateRoleVcV2(src, userId, run);
+
+                            delete (migrated as any).id;
+                            delete (migrated as any)._id;
+                            delete (migrated as any).createDate;
+                            delete (migrated as any).updateDate;
+
+                            await this._db.saveVC(migrated);
+
+                            const destinationKeys = PolicyDataMigrator.extractSourceKeys(entityType, migrated as any);
+                            const dstMapKey = destinationKeys.srcMessageId || destinationKeys.srcEntityId || srcMapKey;
+
+                            if (sourceKeys.srcEntityId && srcMapKey && dstMapKey) {
+                                PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                                    startedBy: run.startedBy,
+                                    srcPolicyId: run.srcPolicyId,
+                                    dstPolicyId: run.dstPolicyId,
+                                    entityType,
+                                    srcEntityId: sourceKeys.srcEntityId,
+                                    srcMessageId: srcMapKey,
+                                    dstMessageId: dstMapKey
+                                });
+                            }
+                        } else if (entityType === 'vpDocument') {
+                            const src = resolveFailedSource('vpDocument', vps, srcEntityId) as (VpDocument & { group: string });
+                            if (!src) {
+                                throw new Error('Source vpDocument not found');
+                            }
+
+                            const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, src as any);
+                            const srcMapKey = sourceKeys.srcMessageId || sourceKeys.srcEntityId || srcEntityId;
+                            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+                            const mappedByMessage = srcMapKey
+                                ? PolicyDataMigrator.getMessageMapping(scopeKey, entityType, srcMapKey)
+                                : undefined;
+
+                            if (mappedByMessage) {
+                                entitySummary.processed += 1;
+                                entitySummary.success += 1;
+                                successItems.push(failedItem);
+                                return;
+                            }
+
+                            const migrated = await this._migrateVpDocumentV2(src, userId, run);
+
+                            delete (migrated as any).id;
+                            delete (migrated as any)._id;
+                            delete (migrated as any).createDate;
+                            delete (migrated as any).updateDate;
+
+                            await this._db.saveVP(migrated);
+
+                            const destinationKeys = PolicyDataMigrator.extractSourceKeys(entityType, migrated as any);
+                            const dstMapKey = destinationKeys.srcMessageId || destinationKeys.srcEntityId || srcMapKey;
+
+                            if (sourceKeys.srcEntityId && srcMapKey && dstMapKey) {
+                                PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                                    startedBy: run.startedBy,
+                                    srcPolicyId: run.srcPolicyId,
+                                    dstPolicyId: run.dstPolicyId,
+                                    entityType,
+                                    srcEntityId: sourceKeys.srcEntityId,
+                                    srcMessageId: srcMapKey,
+                                    dstMessageId: dstMapKey
+                                });
+                            }
+                        } else if (entityType === 'multiDocument') {
+                            const src = resolveFailedSource('multiDocument', multiSignDocuments, srcEntityId);
+                            if (!src) {
+                                throw new Error('Source multiDocument not found');
+                            }
+
+                            const migrated = await this._migrateMultiSignDocument(src, userId);
+                            delete (migrated as any).id;
+                            delete (migrated as any)._id;
+                            await this._db.setMultiSigDocument(
+                                String((migrated as any).uuid),
+                                this._policyId,
+                                String((migrated as any).documentId),
+                                {
+                                    id: String((migrated as any).userId),
+                                    did: String((migrated as any).did),
+                                    group: String((migrated as any).group),
+                                    username: String((migrated as any).username),
+                                },
+                                String((migrated as any).status || ''),
+                                (migrated as any).document
+                            );
+
+                            PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                                startedBy: run.startedBy,
+                                srcPolicyId: run.srcPolicyId,
+                                dstPolicyId: run.dstPolicyId,
+                                entityType,
+                                srcEntityId,
+                                srcMessageId: srcEntityId,
+                                dstMessageId: srcEntityId
+                            });
+                        } else if (entityType === 'documentState') {
+                            const src = resolveFailedSource('documentState', documentStates, srcEntityId);
+                            if (!src) {
+                                throw new Error('Source documentState not found');
+                            }
+
+                            const migrated = await this._migrateDocumentState(src);
+                            delete (migrated as any).id;
+                            delete (migrated as any)._id;
+                            await this._db.saveDocumentState(migrated as any);
+
+                            PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                                startedBy: run.startedBy,
+                                srcPolicyId: run.srcPolicyId,
+                                dstPolicyId: run.dstPolicyId,
+                                entityType,
+                                srcEntityId,
+                                srcMessageId: srcEntityId,
+                                dstMessageId: srcEntityId
+                            });
+                        } else if (entityType === 'aggregateVc') {
+                            const src = resolveFailedSource('aggregateVc', aggregateVCs, srcEntityId);
+                            if (!src) {
+                                throw new Error('Source aggregateVc not found');
+                            }
+
+                            const migrated = await this._migrateAggregateVC(src);
+                            delete (migrated as any).id;
+                            delete (migrated as any)._id;
+                            await this._db.createAggregateDocuments(migrated as any, migrated.blockId);
+
+                            PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                                startedBy: run.startedBy,
+                                srcPolicyId: run.srcPolicyId,
+                                dstPolicyId: run.dstPolicyId,
+                                entityType,
+                                srcEntityId,
+                                srcMessageId: srcEntityId,
+                                dstMessageId: srcEntityId
+                            });
+                        } else if (entityType === 'splitDocument') {
+                            const src = resolveFailedSource('splitDocument', splitDocuments, srcEntityId);
+                            if (!src) {
+                                throw new Error('Source splitDocument not found');
+                            }
+
+                            const migrated = await this._migrateSplitDocument(src, userId);
+                            delete (migrated as any).id;
+                            delete (migrated as any)._id;
+                            await this._db.setResidue(migrated as any);
+
+                            PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                                startedBy: run.startedBy,
+                                srcPolicyId: run.srcPolicyId,
+                                dstPolicyId: run.dstPolicyId,
+                                entityType,
+                                srcEntityId,
+                                srcMessageId: srcEntityId,
+                                dstMessageId: srcEntityId
+                            });
+                        } else if (entityType === 'policyState') {
+                            const src = resolveFailedSource('policyState', states, srcEntityId);
+                            if (!src) {
+                                throw new Error('Source policyState not found');
+                            }
+
+                            const data = JSON.parse(src.blockState);
+                            if (data?.state) {
+                                const keys = Object.keys(data);
+                                for (const key of keys) {
+                                    const newKey = await this._replaceDidTopicId(key);
+                                    data[newKey] = data[key];
+                                    if (data[newKey] !== data[key]) {
+                                        delete data[key];
+                                    }
+                                }
+                            }
+
+                            const destinationBlockId = this._blocks[src.blockId];
+                            if (!destinationBlockId) {
+                                throw new Error('Destination block mapping not found for policyState');
+                            }
+
+                            await this._db.saveBlockState(this._policyId, destinationBlockId, null, data);
+
+                            PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                                startedBy: run.startedBy,
+                                srcPolicyId: run.srcPolicyId,
+                                dstPolicyId: run.dstPolicyId,
+                                entityType,
+                                srcEntityId,
+                                srcMessageId: srcEntityId,
+                                dstMessageId: String(destinationBlockId)
+                            });
+                        } else if (entityType === 'mintRequest') {
+                            const src = resolveFailedSource('mintRequest', mintRequests, srcEntityId);
+                            if (!src) {
+                                throw new Error('Source mintRequest not found');
+                            }
+
+                            const sourceVpMessageId = src.vpMessageId ? String(src.vpMessageId) : undefined;
+                            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+                            const mappedVpMessageId = sourceVpMessageId
+                                ? PolicyDataMigrator.getMessageMapping(scopeKey, 'vpDocument', sourceVpMessageId)
+                                : undefined;
+
+                            if (!mappedVpMessageId) {
+                                throw new Error('VP mapping not found for mintRequest');
+                            }
+
+                            const requestToSave = { ...(src as any) } as MintRequest;
+                            requestToSave.vpMessageId = mappedVpMessageId;
+                            delete (requestToSave as any).id;
+                            delete (requestToSave as any)._id;
+
+                            const saved = await this._db.saveMintRequest(requestToSave);
+                            localMintRequestMap.set(srcEntityId, String(saved.id));
+
+                            PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                                startedBy: run.startedBy,
+                                srcPolicyId: run.srcPolicyId,
+                                dstPolicyId: run.dstPolicyId,
+                                entityType,
+                                srcEntityId,
+                                srcMessageId: srcEntityId,
+                                dstMessageId: String(saved.id)
+                            });
+                        } else if (entityType === 'mintTransaction') {
+                            const src = resolveFailedSource('mintTransaction', mintTransactions, srcEntityId);
+                            if (!src) {
+                                throw new Error('Source mintTransaction not found');
+                            }
+
+                            const srcMintRequestId = src.mintRequestId ? String(src.mintRequestId) : undefined;
+                            if (!srcMintRequestId) {
+                                throw new Error('Source mintRequestId not found for mintTransaction');
+                            }
+
+                            let dstMintRequestId = localMintRequestMap.get(srcMintRequestId);
+                            if (!dstMintRequestId) {
+                                const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                                dstMintRequestId = PolicyDataMigrator.getMessageMapping(
+                                    scopeKey,
+                                    'mintRequest',
+                                    srcMintRequestId
+                                );
+                            }
+
+                            if (!dstMintRequestId) {
+                                throw new Error('MintRequest mapping not found for mintTransaction');
+                            }
+
+                            const txToSave = { ...(src as any) } as MintTransaction;
+                            txToSave.mintRequestId = dstMintRequestId;
+                            delete (txToSave as any).id;
+                            delete (txToSave as any)._id;
+                            await this._db.saveMintTransaction(txToSave);
+
+                            PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                                startedBy: run.startedBy,
+                                srcPolicyId: run.srcPolicyId,
+                                dstPolicyId: run.dstPolicyId,
+                                entityType,
+                                srcEntityId,
+                                srcMessageId: srcEntityId,
+                                dstMessageId: srcEntityId
+                            });
+                        } else if (entityType === 'retirePool') {
+                            const src = resolveFailedSource('retirePool', retirePools, srcEntityId);
+                            if (!src) {
+                                throw new Error('Source retirePool not found');
+                            }
+                            if (!retireContractId) {
+                                throw new Error('retireContractId is required for retirePool retry');
+                            }
+
+                            await setPoolContract(
+                                new Workers(),
+                                retireContractId,
+                                this._root.hederaAccountId,
+                                this._rootKey,
+                                this.replacePoolTokens(src.tokens),
+                                src.immediately,
+                                userId
+                            );
+
+                            PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
+                                startedBy: run.startedBy,
+                                srcPolicyId: run.srcPolicyId,
+                                dstPolicyId: run.dstPolicyId,
+                                entityType,
+                                srcEntityId,
+                                srcMessageId: srcEntityId,
+                                dstMessageId: srcEntityId
+                            });
+                        } else {
+                            throw new Error(`Unsupported failed entityType: ${entityType}`);
+                        }
+
+                        entitySummary.processed += 1;
+                        entitySummary.success += 1;
+                        successItems.push(failedItem);
+                    } catch (error) {
+                        entitySummary.processed += 1;
+                        entitySummary.failed += 1;
+                        errors.push({
+                            id: srcEntityId,
+                            message: error?.toString(),
+                        });
+                        await updateFailedItemError(failedItem, error);
+                    }
+                });
+
+                await Promise.all(tasks);
+
+                await flushMappingsAndRun(pendingMappings);
+
+                for (const item of successItems) {
+                    await this._db.remove(MigrationFailedItem, item);
+                }
+            }
+
+            await flushMappingsAndRun(pendingMappings);
+
+            if (run.status === MigrationRunStatus.RUNNING) {
+                run.status = MigrationRunStatus.COMPLETED;
+                run.finishedAt = new Date();
+                run.heartbeatAt = new Date();
+                run.summary = summary;
+                await this._db.save(MigrationRun, run);
+            }
+
+            return errors;
+        } catch (error) {
+            await flushMappingsAndRun(pendingMappings);
+
+            if (run.status !== MigrationRunStatus.STOPPED) {
+                run.status = MigrationRunStatus.FAILED;
+                run.finishedAt = new Date();
+                run.heartbeatAt = new Date();
+                run.error = error?.toString();
+                run.summary = summary;
+                await this._db.save(MigrationRun, run);
+            }
+            throw error;
+        } finally {
+            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+            PolicyDataMigrator.clearRunCache(scopeKey);
+        }
+    }
+
+    private static getScopeKeyMappingCache(srcPolicyId: string, dstPolicyId: string, startedBy: string): string {
+        return `${srcPolicyId}:${dstPolicyId}:${String(startedBy || '')}`;
     }
 }

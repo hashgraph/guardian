@@ -62,7 +62,7 @@ export class PolicyEngineService {
     public allWithImportedRecords(policyId: string): Observable<any[]> {
         return this.http.get<any[]>(`${this.url}/with-imported-records/${policyId}`);
     }
-    
+
 
     public create(policy: any): Observable<void> {
         return this.http.post<any>(`${this.url}/`, policy);
@@ -439,8 +439,10 @@ export class PolicyEngineService {
     }
 
     public migrateDataAsync(migrationConfig: MigrationConfig) {
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/migrate-data`, migrationConfig);
-    }
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/migrate-data`,
+            migrationConfig,
+            { headers: headersV2 }
+    )}
 
     public getGroups(policyId: string, savepointIds: string[] | null): Observable<any[]> {
         let params = new HttpParams();

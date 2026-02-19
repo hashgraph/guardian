@@ -29,7 +29,11 @@ import {
     RunningDetailsDTO,
     ServiceUnavailableErrorDTO,
     TaskDTO,
-    ResponseDTOWithSyncEvents
+    ResponseDTOWithSyncEvents,
+    MigrationRunsResponseDTO,
+    MigrationRunStatusDTO,
+    MigrationStatusResponseDTO,
+    MigrationFailedItemDTO
 } from '#middlewares';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
@@ -398,6 +402,280 @@ export class PolicyApi {
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
         return task;
+    }
+
+    /**
+     * Migrate policy data asynchronous V2
+     */
+    @Post('/push/migrate-data')
+    @Auth(
+        Permissions.POLICIES_MIGRATION_CREATE,
+    )
+    @ApiOperation({
+        summary: 'Migrate policy data asynchronous V2.',
+        description: 'Migrate policy data asynchronous V2.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Migration configuration.',
+        type: MigrationConfigDTO
+    })
+    @ApiAcceptedResponse({
+        description: 'Created task.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(TaskDTO, MigrationConfigDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    @Version('2')
+    async migrateDataAsyncV2(
+        @AuthUser() user: IAuthUser,
+        @Body() body: MigrationConfigDTO
+    ): Promise<TaskDTO> {
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.MIGRATE_DATA, user.id);
+
+        RunFunctionAsync<ServiceError>(async () => {
+            const engineService = new PolicyEngine();
+            await engineService.migrateDataAsyncV2(
+                new EntityOwner(user),
+                body as any,
+                task
+            );
+        }, async (error) => {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        });
+
+        return task;
+    }
+
+    /**
+     * Resume migration asynchronous
+     */
+    @Post('/push/migrate-data/resume')
+    @Auth(
+        Permissions.POLICIES_MIGRATION_CREATE,
+    )
+    @ApiOperation({
+        summary: 'Resume migration asynchronous.',
+        description: 'Resume migration asynchronous.' + ONLY_SR,
+    })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            required: ['runId'],
+            properties: {
+                runId: {
+                    type: 'string',
+                    example: Examples.DB_ID
+                }
+            }
+        }
+    })
+    @ApiAcceptedResponse({
+        description: 'Created task.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async resumeMigrateDataAsync(
+        @AuthUser() user: IAuthUser,
+        @Body('runId') runId: string
+    ): Promise<TaskDTO> {
+        if (!runId) {
+            throw new HttpException('runId is required', HttpStatus.BAD_REQUEST);
+        }
+
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.MIGRATE_DATA, user.id);
+
+        RunFunctionAsync<ServiceError>(async () => {
+            const engineService = new PolicyEngine();
+            await engineService.resumeMigrateDataAsync(
+                new EntityOwner(user),
+                runId,
+                task
+            );
+        }, async (error) => {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        });
+
+        return task;
+    }
+
+    /**
+     * Retry failed migration items asynchronous
+     */
+    @Post('/push/migrate-data/retry-failed')
+    @Auth(
+        Permissions.POLICIES_MIGRATION_CREATE,
+    )
+    @ApiOperation({
+        summary: 'Retry failed migration items asynchronous.',
+        description: 'Retry failed migration items asynchronous.' + ONLY_SR,
+    })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            required: ['runId'],
+            properties: {
+                runId: {
+                    type: 'string',
+                    example: Examples.DB_ID
+                }
+            }
+        }
+    })
+    @ApiAcceptedResponse({
+        description: 'Created task.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async retryFailedMigrateDataAsync(
+        @AuthUser() user: IAuthUser,
+        @Body('runId') runId: string
+    ): Promise<TaskDTO> {
+        if (!runId) {
+            throw new HttpException('runId is required', HttpStatus.BAD_REQUEST);
+        }
+
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.MIGRATE_DATA, user.id);
+
+        RunFunctionAsync<ServiceError>(async () => {
+            const engineService = new PolicyEngine();
+            await engineService.retryFailedMigrateDataAsync(
+                new EntityOwner(user),
+                runId,
+                task
+            );
+        }, async (error) => {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        });
+
+        return task;
+    }
+
+    /**
+     * Get migration status by policy pair
+     */
+    @Get('/migrate-data/status')
+    @Auth(
+        Permissions.POLICIES_MIGRATION_CREATE,
+    )
+    @ApiOperation({
+        summary: 'Get migration status by policy pair.',
+        description: 'Returns latest migration run status for source/destination pair.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'srcPolicyId',
+        type: String,
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'dstPolicyId',
+        type: String,
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Migration run status.',
+        type: MigrationStatusResponseDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(MigrationStatusResponseDTO, MigrationRunStatusDTO, MigrationFailedItemDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getMigrationStatus(
+        @AuthUser() user: IAuthUser,
+        @Query('srcPolicyId') srcPolicyId: string,
+        @Query('dstPolicyId') dstPolicyId: string
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getMigrationStatus(
+                new EntityOwner(user),
+                srcPolicyId,
+                dstPolicyId
+            );
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get migration runs list
+     */
+    @Get('/migrate-data/runs')
+    @Auth(
+        Permissions.POLICIES_MIGRATION_CREATE,
+    )
+    @ApiOperation({
+        summary: 'Get migration runs list.',
+        description: 'Returns migration runs.',
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        required: false,
+        example: 10
+    })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        required: false,
+        example: 'running'
+    })
+    @ApiOkResponse({
+        description: 'Migration runs.',
+        type: MigrationRunsResponseDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(MigrationRunsResponseDTO, MigrationRunStatusDTO, MigrationFailedItemDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getMigrationRuns(
+        @AuthUser() user: IAuthUser,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('status') status?: string[]
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getMigrationRuns(
+                new EntityOwner(user),
+                pageIndex,
+                pageSize,
+                status
+            );
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
     }
 
     /**

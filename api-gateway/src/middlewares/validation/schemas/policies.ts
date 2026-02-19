@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export enum MigrationModeDTO {
+    START_NEW = 'start_new',
+    RESUME = 'resume',
+    RETRY_FAILED = 'retry_failed',
+}
+
 /**
  * Migration config policies DTO
  */
@@ -82,4 +88,102 @@ export class MigrationConfigDTO {
         type: 'string',
     })
     retireContractId: string;
+
+    /**
+     * Migration launch mode.
+     * Backward compatible: if omitted, start_new is used.
+     */
+    @ApiProperty({
+        enum: MigrationModeDTO,
+        required: false,
+        default: MigrationModeDTO.START_NEW,
+    })
+    mode?: MigrationModeDTO;
+
+    /**
+     * Existing run identifier.
+     * Required for resume/retry_failed modes.
+     */
+    @ApiProperty({
+        type: 'string',
+        required: false,
+    })
+    runId?: string;
+}
+
+export class MigrationFailedItemDTO {
+    @ApiProperty({ type: 'string' })
+    srcPolicyId: string;
+
+    @ApiProperty({ type: 'string' })
+    dstPolicyId: string;
+
+    @ApiProperty({ type: 'string' })
+    entityType: string;
+
+    @ApiProperty({ type: 'string' })
+    srcEntityId: string;
+
+    @ApiProperty({ type: 'string' })
+    runId: string;
+
+    @ApiProperty({ type: 'number' })
+    attemptCount: number;
+
+    @ApiProperty({ type: 'string', nullable: true })
+    errorCode?: string;
+
+    @ApiProperty({ type: 'string', nullable: true })
+    errorMessage?: string;
+
+    @ApiProperty({ type: 'string', format: 'date-time' })
+    firstFailedAt: string;
+
+    @ApiProperty({ type: 'string', format: 'date-time' })
+    lastFailedAt: string;
+}
+
+export class MigrationRunStatusDTO {
+    @ApiProperty({ type: 'string' })
+    runId: string;
+
+    @ApiProperty({ type: 'string' })
+    srcPolicyId: string;
+
+    @ApiProperty({ type: 'string' })
+    dstPolicyId: string;
+
+    @ApiProperty({ type: 'string' })
+    status: string;
+
+    @ApiProperty({ type: 'string', format: 'date-time', nullable: true })
+    startedAt?: string;
+
+    @ApiProperty({ type: 'string', format: 'date-time', nullable: true })
+    finishedAt?: string;
+
+    @ApiProperty({ type: 'object', additionalProperties: true })
+    summary: any;
+
+    @ApiProperty({ type: () => MigrationFailedItemDTO, isArray: true, required: false })
+    failedItems?: MigrationFailedItemDTO[];
+}
+
+export class MigrationRunsResponseDTO {
+    @ApiProperty({ type: () => MigrationRunStatusDTO, isArray: true })
+    items: MigrationRunStatusDTO[];
+
+    @ApiProperty({ type: 'number' })
+    count: number;
+
+    @ApiProperty({ type: 'number' })
+    pageIndex: number;
+
+    @ApiProperty({ type: 'number' })
+    pageSize: number;
+}
+
+export class MigrationStatusResponseDTO {
+    @ApiProperty({ type: () => MigrationRunStatusDTO, isArray: true })
+    items: MigrationRunStatusDTO[];
 }
