@@ -2,32 +2,18 @@
     display: flex;
     gap: 16px;
     width: 100%;
-    position: relative;
 }
 
 .schema-form-view-nav {
     width: 25%;
     min-width: 25%;
-    position: sticky;
-    align-self: flex-start;
-    max-height: calc(100vh - 40px);
     overflow-y: auto;
-}
-
-.schema-form-view-nav.hidden {
-    width: 0;
-    min-width: 0;
-    opacity: 0;
-    pointer-events: none;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
 }
 
 .schema-form-content {
     flex: 1;
     min-width: 0;
-    overflow: visible;
+    overflow: auto;
 }
 
 .schema-form-content.full-width {

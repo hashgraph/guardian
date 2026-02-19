@@ -1,5 +1,5 @@
 <div class="schema-form-root">
-    <div class="schema-form-view-nav" *ngIf="model && hasNavigation" [class.hidden]="!model || !hasNavigation">
+    <div class="schema-form-view-nav" *ngIf="model && hasNavigation">
         <app-schema-form-navigation 
             #schemaNav 
             [schemaFields]="model.controls" 

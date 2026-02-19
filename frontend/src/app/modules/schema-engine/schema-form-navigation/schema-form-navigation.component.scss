@@ -4,9 +4,9 @@
     padding: 8px;
     background: #fff;
     position: fixed;
-    width: calc(25% - 32px);
-    min-width: calc(25% - 32px);
-    max-width: calc(25% - 32px);
+    width: calc(25% - 16px);
+    min-width: calc(25% - 16px);
+    max-width: calc(25% - 16px);
     max-height: calc(100% - 255px);
     overflow-y: auto;
     box-sizing: border-box;
@@ -38,7 +38,6 @@
     cursor: pointer;
     margin-right: 4px;
     border-radius: 4px;
-    transition: background-color 0.2s ease;
     flex-shrink: 0;
 }
 
@@ -46,7 +45,6 @@
     opacity: 0.7;
     display: inline-block;
     transform: rotate(0deg);
-    transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .chev.open {
@@ -64,7 +62,6 @@
     text-align: left;
     padding: 4px 8px;
     border-radius: 6px;
-    transition: background-color 0.2s ease;
     min-width: 0; 
 }
 
