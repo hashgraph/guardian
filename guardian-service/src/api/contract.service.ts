@@ -60,7 +60,9 @@ const versionEventsAbi = new ethers.Interface([
 ]);
 
 const accessEventsAbi = new ethers.Interface([
-    'event OwnerAdded(address)',
+    'event OwnerAdded(address indexed account)',
+    'event OwnerRemoved(address indexed account)',
+    'event OwnerProposed(address indexed pendingOwner)',
 ]);
 
 // tslint:disable-next-line:variable-name
@@ -538,7 +540,7 @@ export async function syncWipeContract(
 
         for (const log of result) {
             const eventName = eventAbi.getEventName(log.topics[0]);
-            const data = eventAbi.decodeEventLog(eventName, log.data);
+            const data = eventAbi.decodeEventLog(eventName, log.data, log.topics);
             // tslint:disable-next-line:no-shadowed-variable
             const contracts = await dataBaseServer.find(
                 Contract,
@@ -815,7 +817,7 @@ export async function syncRetireContract(
 
         for (const log of result) {
             const eventName = retireEventsAbi.getEventName(log.topics[0]);
-            const data = retireEventsAbi.decodeEventLog(eventName, log.data);
+            const data = retireEventsAbi.decodeEventLog(eventName, log.data, log.topics);
 
             // tslint:disable-next-line:no-shadowed-variable
             const contracts = await dataBaseServer.find(
@@ -1111,7 +1113,7 @@ async function isContractWiper(
 
         for (const log of result) {
             const eventName = eventAbi.getEventName(log.topics[0]);
-            const data = eventAbi.decodeEventLog(eventName, log.data);
+            const data = eventAbi.decodeEventLog(eventName, log.data, log.topics);
 
             switch (eventName) {
                 case 'WiperAdded': {
