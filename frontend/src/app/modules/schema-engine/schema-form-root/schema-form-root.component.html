@@ -1,6 +1,12 @@
 <div class="schema-form-root">
-    <div class="schema-form-view-nav">
-        <app-schema-form-navigation #schemaNav *ngIf="model" [schemaFields]="model.controls" (select)="onNavSelect($event)"></app-schema-form-navigation>
+    <div class="schema-form-view-nav" *ngIf="model && hasNavigation">
+        <app-schema-form-navigation 
+            #schemaNav 
+            [schemaFields]="model.controls" 
+            (selectEvent)="onNavSelectEvent($event)"
+            (hasItemsChangeEvent)="onNavHasItemsEvent($event)"
+        >    
+        </app-schema-form-navigation>
     </div>
     <app-schema-form
         #childForm

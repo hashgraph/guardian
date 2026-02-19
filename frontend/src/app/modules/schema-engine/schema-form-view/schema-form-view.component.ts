@@ -494,17 +494,23 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     public canDrawTable(item: IFieldControl): boolean {
-        return item.isArray && 
-            item.isRef && 
-            item.customType !== 'geo' &&
-            item.customType !== 'table' &&
-            item.customType !== 'sentinel' &&
-            !item.hidden &&
-            !(item.fields?.find(f => (f.isArray || 
-                f.isRef ||
-                f.customType === 'geo' ||
-                f.customType === 'table' ||
-                f.customType === 'sentinel') && !f.hidden) ?? true);
+        if (!item.isArray || !item.isRef || item.hidden) {
+            return false;
+        }
+
+        if (['geo', 'table', 'sentinel'].includes(item.customType || '')) {
+            return false;
+        }
+        
+        const visibleFields = item.fields?.filter(f => !f.hidden) || [];
+        if (visibleFields.length === 0) {
+            return false;
+        }
+        
+        return !visibleFields.some(f => 
+            f.isArray || f.isRef || 
+            ['geo', 'table', 'sentinel'].includes(f.customType || '')
+        );
     }
     
     public getTableHeaderFields(item: IFieldControl): any[] | undefined {

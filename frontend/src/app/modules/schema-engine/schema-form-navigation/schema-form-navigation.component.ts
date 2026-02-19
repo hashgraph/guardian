@@ -14,7 +14,8 @@ export interface NavItem {
 })
 export class SchemaFormNavigationComponent {
     @Input() schemaFields: IFieldControl<any>[] | null;
-    @Output() select = new EventEmitter<string>();
+    @Output() selectEvent = new EventEmitter<string>();
+    @Output() hasItemsChangeEvent = new EventEmitter<boolean>(); 
 
     public expanded = new Set<string>();
 
@@ -24,6 +25,7 @@ export class SchemaFormNavigationComponent {
 
     ngOnInit(): void {
         this.openFirstNavItem();
+        this.hasItemsChangeEvent.emit(this.navTree.length > 0);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -31,6 +33,8 @@ export class SchemaFormNavigationComponent {
             this.expanded.clear();
             this.openFirstNavItem();
         }
+
+        this.hasItemsChangeEvent.emit(this.navTree.length > 0);
     }
 
     private openFirstNavItem() {
@@ -110,7 +114,7 @@ export class SchemaFormNavigationComponent {
         if (!node || !node.accordionId) 
             return;
         this.expandAncestors(node.accordionId);
-        this.select.emit(node.accordionId);
+        this.selectEvent.emit(node.accordionId);
     }
 
     private expandAncestors(accordionId: string) {

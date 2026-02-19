@@ -17,6 +17,8 @@ export class SchemaFormRootComponent implements OnInit {
     public group: UntypedFormGroup;
     public model: FieldForm | null;
     public loading: boolean = true;
+    public hasNavigation = true;
+
     @ViewChild('childForm') private childForm?: SchemaFormComponent;
     @ViewChild('schemaNav') private schemaNav?: SchemaFormNavigationComponent;
 
@@ -57,7 +59,7 @@ export class SchemaFormRootComponent implements OnInit {
     @Output() submitBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() saveBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() updatableBtnEvent = new EventEmitter();
-
+    
     constructor(
         private fb: UntypedFormBuilder,
         protected changeDetectorRef: ChangeDetectorRef
@@ -120,18 +122,6 @@ export class SchemaFormRootComponent implements OnInit {
         this.change.emit($event);
     }
 
-    public onNavSelect(link: string) {
-        if (this.childForm && typeof this.childForm.openField === 'function') {
-            this.childForm.openField(link);
-        }
-    }
-
-    public onAccordionSelect(accordionInfo: {path: string, isOpen: boolean}) {
-        if (this.schemaNav && typeof this.schemaNav.expandedByAccordionId === 'function') {
-            this.schemaNav.expandedByAccordionId(accordionInfo);
-        }
-    }
-
     public onSaveBtnEvent($event: boolean | IFieldControl<any>[] | undefined | null) {
         this.saveBtnEvent.emit($event);
     }
@@ -156,5 +146,22 @@ export class SchemaFormRootComponent implements OnInit {
         this.presetDocument = data;
         this.buildFields();
         this.changeDetectorRef.detectChanges();
+    }
+
+    public onNavSelectEvent(link: string) {
+        if (this.childForm && typeof this.childForm.openField === 'function') {
+            this.childForm.openField(link);
+        }
+    }
+
+    public onNavHasItemsEvent(hasItems: boolean): void {
+        this.hasNavigation = hasItems;
+        this.changeDetectorRef.detectChanges();
+    }
+
+    public onAccordionSelect(accordionInfo: {path: string, isOpen: boolean}) {
+        if (this.schemaNav && typeof this.schemaNav.expandedByAccordionId === 'function') {
+            this.schemaNav.expandedByAccordionId(accordionInfo);
+        }
     }
 }
