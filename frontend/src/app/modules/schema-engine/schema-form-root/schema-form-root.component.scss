@@ -1,16 +1,35 @@
 .schema-form-root {
     display: flex;
     gap: 16px;
+    width: 100%;
+    position: relative;
+}
 
-    .schema-form-view-nav {
-        min-width: 25%;
-        max-width: 25%;
-        width: 25%;
-        overflow: auto;
-    }
+.schema-form-view-nav {
+    width: 25%;
+    min-width: 25%;
+    position: sticky;
+    align-self: flex-start;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
 
-    app-schema-form {
-        width: 100%;
-        overflow: auto;
-    }
+.schema-form-view-nav.hidden {
+    width: 0;
+    min-width: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+.schema-form-content {
+    flex: 1;
+    min-width: 0;
+    overflow: visible;
+}
+
+.schema-form-content.full-width {
+    flex: 0 0 100%;
 }

@@ -7,11 +7,21 @@
 
     <ng-template #nodeTpl let-node let-level="level">
         <div class="nav-node" [style.paddingLeft.px]="level * 30">
-            <button class="nav-toggle" *ngIf="node.children?.length" (click)="toggle(node.accordionId); $event.stopPropagation();" type="button">
+            <button 
+                class="nav-toggle" 
+                *ngIf="node.children?.length" 
+                (click)="toggle(node.accordionId); $event.stopPropagation();"
+                type="button"
+                [pTooltip]="isExpanded(node.accordionId) ? 'Collapse Section' : 'Open Section'"
+            >
                 <span class="chev" [class.open]="isExpanded(node.accordionId)">▾</span>
             </button>
 
-            <button class="nav-label" (click)="onSelect(node)">
+            <button 
+                class="nav-label" 
+                (click)="onSelect(node)"
+                [pTooltip]="node.title"
+            >
                 <span class="nav-title">{{ node.title }}</span>
                 <span *ngIf="node.count" class="nav-count">{{ node.count }}</span>
             </button>

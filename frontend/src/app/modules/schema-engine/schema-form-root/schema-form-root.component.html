@@ -1,5 +1,5 @@
 <div class="schema-form-root">
-    <div class="schema-form-view-nav" *ngIf="model && hasNavigation">
+    <div class="schema-form-view-nav" *ngIf="model && hasNavigation" [class.hidden]="!model || !hasNavigation">
         <app-schema-form-navigation 
             #schemaNav 
             [schemaFields]="model.controls" 
@@ -8,42 +8,44 @@
         >    
         </app-schema-form-navigation>
     </div>
-    <app-schema-form
-        #childForm
-        *ngIf="model"
-        [form-model]="model"
-        [private-fields]="hide"
-        [readonly-fields]="readonly"
-        [delimiter-hide]="delimiterHide"
-        [example]="example"
-        [cancelText]="cancelText"
-        [saveText]="saveText"
-        [submitText]="submitText"
-        [cancelHidden]="cancelHidden"
-        [submitHidden]="submitHidden"
-        [saveShown]="saveShown"
-        [showButtons]="showButtons"
-        [isChildSchema]="isChildSchema"
-        [comesFromDialog]="comesFromDialog"
-        [dryRun]="dryRun"
-        [policyId]="policyId"
-        [blockId]="blockId"
-        [rules]="rules"
-        [paginationHidden]="paginationHidden"
-        [isFormForFinishSetup]="isFormForFinishSetup"
-        [isFormForRequestBlock]="isFormForRequestBlock"
-        [lastSavedAt]="lastSavedAt"
-        [isEditMode]="isEditMode"
-        (change)="onChange($event)"
-        (destroy)="onDestroy($event)"
-        (buttons)="onButtons($event)"
-        (cancelBtnEvent)="onCancelBtnEvent($event)"
-        (submitBtnEvent)="onSubmitBtnEvent($event)"
-        (saveBtnEvent)="onSaveBtnEvent($event)"
-        (updatableBtnEvent)="onUpdatableBtnEvent()"
-        (onAccordionSelect)="onAccordionSelect($event)"
-    >
-    </app-schema-form>
+    <div class="schema-form-content" [class.full-width]="!model || !hasNavigation">
+        <app-schema-form
+            #childForm
+            *ngIf="model"
+            [form-model]="model"
+            [private-fields]="hide"
+            [readonly-fields]="readonly"
+            [delimiter-hide]="delimiterHide"
+            [example]="example"
+            [cancelText]="cancelText"
+            [saveText]="saveText"
+            [submitText]="submitText"
+            [cancelHidden]="cancelHidden"
+            [submitHidden]="submitHidden"
+            [saveShown]="saveShown"
+            [showButtons]="showButtons"
+            [isChildSchema]="isChildSchema"
+            [comesFromDialog]="comesFromDialog"
+            [dryRun]="dryRun"
+            [policyId]="policyId"
+            [blockId]="blockId"
+            [rules]="rules"
+            [paginationHidden]="paginationHidden"
+            [isFormForFinishSetup]="isFormForFinishSetup"
+            [isFormForRequestBlock]="isFormForRequestBlock"
+            [lastSavedAt]="lastSavedAt"
+            [isEditMode]="isEditMode"
+            (change)="onChange($event)"
+            (destroy)="onDestroy($event)"
+            (buttons)="onButtons($event)"
+            (cancelBtnEvent)="onCancelBtnEvent($event)"
+            (submitBtnEvent)="onSubmitBtnEvent($event)"
+            (saveBtnEvent)="onSaveBtnEvent($event)"
+            (updatableBtnEvent)="onUpdatableBtnEvent()"
+            (onAccordionSelect)="onAccordionSelect($event)"
+        >
+        </app-schema-form>
+    </div>
 </div>
 <div *ngIf="loading" class="guardian-loading">
     <div class="guardian-loading-image"></div>
