@@ -12,7 +12,6 @@
                 *ngIf="node.children?.length" 
                 (click)="toggle(node.accordionId); $event.stopPropagation();"
                 type="button"
-                [pTooltip]="isExpanded(node.accordionId) ? 'Collapse Section' : 'Open Section'"
             >
                 <span class="chev" [class.open]="isExpanded(node.accordionId)">▾</span>
             </button>
