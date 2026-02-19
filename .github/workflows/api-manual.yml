@@ -205,4 +205,4 @@ jobs:
             e2e-tests/cypress/videos/
             e2e-tests/cypress/downloads/
           include-hidden-files: true
-          retention-days: 30
+          retention-days: 7
