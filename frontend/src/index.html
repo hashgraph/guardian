@@ -18,6 +18,19 @@
 
 <body class="mat-typography">
     <app-root></app-root>
+    <script src="https://guardian.hedera.com/~gitbook/embed/script.js"></script>
+    <script>
+        try {
+            window.GitBook('unload');
+        } catch (e) {
+            console.error(e);
+        }
+        window.GitBook('init', { siteURL: 'https://guardian.hedera.com' });
+        window.GitBook('configure', {
+            button: { label: 'Read Doc', icon: 'assistant' }
+        });
+        window.GitBook('show');
+    </script>
 </body>
 
 </html>

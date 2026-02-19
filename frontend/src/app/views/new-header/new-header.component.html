@@ -71,7 +71,26 @@
 
 <ng-template #footerBar>
     <div id="footerBar">
-
+        <div class="item doc-widget-toggle" (click)="toggleDocWidget()">
+            <svg-icon
+                class="svg-icon-16 open-book-icon"
+                src="/assets/images/icons/book-open.svg"
+                svgClass="icon-color-menu">
+            </svg-icon>
+            <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
+                <span>Documentation</span>
+                <div class="doc-toggle" [class.doc-toggle--active]="showDocWidget">
+                    <div class="doc-toggle__thumb">
+                        <svg-icon
+                            *ngIf="showDocWidget"
+                            src="/assets/images/icons/check-fill.svg"
+                            class="check-fill-icon-wrapper"
+                            svgClass="icon-color-secondary check-fill-icon">
+                        </svg-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div
             [class.current]="activeLink.startsWith('/worker-tasks')"
             [routerLink]="'/worker-tasks'"
