@@ -156,7 +156,7 @@ jobs:
           INITIAL_STANDARD_REGISTRY_BALANCE: 140
 
       - name: Build Cypress Docker image
-        run: docker build -f e2e-tests/Dockerfile.chrome -t cypress-runner ./e2e-tests
+        run: docker build -t cypress-runner ./e2e-tests
 
       - name: Run Cypress API Tests in Docker
         run: |

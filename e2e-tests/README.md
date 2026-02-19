@@ -7,6 +7,10 @@ This folder contains Cypress API and UI tests runnable via Docker.
 - Docker Desktop (or Docker Engine + Compose)
 - Guardian backend reachable from Docker (default: API gateway at `host.docker.internal:3002`)
 
+## Quick Start (Most Common Commands)
+
+Use the sections below for API/UI Docker and local runs.
+
 ## Run API tests (Docker)
 
 All API tests:
@@ -53,6 +57,13 @@ After any Docker run:
 ```bash
 cd e2e-tests
 open cypress/reports/html/index.html
+```
+
+Linux/WSL alternative:
+
+```bash
+cd e2e-tests
+xdg-open cypress/reports/html/index.html
 ```
 
 ## Useful overrides
@@ -227,29 +238,18 @@ npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSp
 
 ### Overview
 
-The e2e-tests directory includes Docker setup for containerized test execution. Two Dockerfile variants are available:
+The e2e-tests directory includes Docker setup for containerized test execution with a single Docker image definition:
 
-1. **Dockerfile** - Uses Electron browser (default in container). No extra browser install; use for fast, minimal runs.
-2. **Dockerfile.chrome** - Installs Chromium and defaults to `CYPRESS_BROWSER=chromium`; use for CI/Docker runs.
-
-Tests run in Docker only if the chosen browser exists in the image: use **Dockerfile** for Electron, **Dockerfile.chrome** for Chrome.
+1. **Dockerfile** - Installs Chromium and defaults to `CYPRESS_BROWSER=chromium` for CI and local Docker runs.
 
 ### Building the Docker Image
 
-#### Using Electron (default Dockerfile):
 ```bash
 cd e2e-tests
-docker build -t cypress-runner .
-docker run --network host -e CYPRESS_grepTags="all" -e CYPRESS_grepFilterSpecs=true cypress-runner
+docker compose build
 ```
 
-#### Using Chrome (docker-compose or Dockerfile.chrome):
-```bash
-cd e2e-tests
-docker-compose build
-```
-
-The `docker-compose.yml` uses `Dockerfile.chrome` and sets `CYPRESS_BROWSER=chromium`.
+The `docker-compose.yml` uses `Dockerfile` and sets `CYPRESS_BROWSER=chromium`.
 
 ### Running Tests in Docker
 
@@ -343,7 +343,7 @@ CYPRESS_grepTags="ui smoke" CYPRESS_grepFilterSpecs=true docker compose run --rm
 
 #### Using raw Docker (from repo root)
 ```bash
-docker build -f e2e-tests/Dockerfile.chrome -t cypress-runner ./e2e-tests
+docker build -t cypress-runner ./e2e-tests
 # Sanity:
 docker run --rm --network host -e CYPRESS_portApi=3002 -e CYPRESS_grepTags="preparing policies" -e CYPRESS_grepFilterSpecs=true cypress-runner
 # Smoke:
@@ -368,12 +368,12 @@ docker run --network host --name cypress-test-run \
   -e CYPRESS_apiServer=http://host.docker.internal:3002/ \
   -e CYPRESS_grepTags="all" \
   -e CYPRESS_grepFilterSpecs=true \
-  cypress-build:chrome
+  cypress-runner
 ```
 
 ### Docker Environment Variables
 
-When running Docker tests, all environment variables must be prefixed with `CYPRESS_`:
+When running Docker tests, most variables are prefixed with `CYPRESS_` (the report title override uses `ReportName`):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -383,42 +383,118 @@ When running Docker tests, all environment variables must be prefixed with `CYPR
 | CYPRESS_grepFilterSpecs | true | Enable tag filtering |
 | CYPRESS_operatorId | - | Hedera operator ID (optional) |
 | CYPRESS_operatorKey | - | Hedera operator key (optional) |
-| CYPRESS_BROWSER | electron in default image, chromium in docker-compose | Browser: `electron`, `chromium`, or `firefox` (must exist in the image) |
+| CYPRESS_BROWSER | chromium | Browser: `chromium`, `electron`, or `firefox` (must exist in the image) |
 | CYPRESS_apiServer | - | Optional full API origin override (useful on Docker Desktop). Examples: `http://host.docker.internal:3002/` (direct API gateway) or `http://host.docker.internal:4200/api/v1/` (if using Angular proxy) |
 | CYPRESS_SPEC | `cypress/e2e/api-tests/**/*.cy.js` in `cypress-api` | Optional default spec pattern used by the Docker entrypoint when `--spec` is not provided |
 | CYPRESS_API_WAIT_TIMEOUT | 60 | API readiness wait timeout (seconds) |
 | CYPRESS_API_WAIT_INTERVAL | 2 | API readiness wait interval (seconds) |
 | CYPRESS_UI_WAIT_TIMEOUT | 90 | UI readiness wait timeout (seconds), used when `CYPRESS_baseUrl` is set |
 | CYPRESS_UI_WAIT_INTERVAL | 2 | UI readiness wait interval (seconds), used when `CYPRESS_baseUrl` is set |
+| ReportName | Guardian's Cypress Report | Optional Mochawesome report title (used by `reporter-config.js`) |
 
 ### Configuration File
 
 Create `.env` file in the e2e-tests directory for persistent environment variables:
 
 ```bash
-CYPRESS_operatorId=
-CYPRESS_operatorKey=
+# Required for most auth-dependent tests (choose one style):
+OPERATOR_ID=
+OPERATOR_KEY=
+
+# Optional: only for MGS/remote-policy scenarios
 CYPRESS_MGSAdmin=
 CYPRESS_MGSIndexerAPIToken=
+
+# Optional: report title override
+ReportName="Guardian's Cypress Report"
+
+# Optional: override API/UI targets (defaults usually work)
+# CYPRESS_apiServer=http://host.docker.internal:3002/
+# CYPRESS_baseUrl=http://host.docker.internal:4200
+
+# Optional: test selection
+# CYPRESS_grepTags=smoke
+# CYPRESS_grepFilterSpecs=true
+# CYPRESS_SPEC=cypress/e2e/api-tests/**/*.cy.js
 ```
 
-The `.env` file is automatically loaded by docker-compose and will override defaults.
+The `.env` file is automatically loaded by docker compose.
+Keeping `.env` mostly empty is fine; only set values you need for your run.
 
-When running `docker compose` from `e2e-tests/`, we also load `../guardian-service/configs/.env.guardian` so `OPERATOR_ID` / `OPERATOR_KEY` can be picked up automatically (they’re mapped to `operatorId` / `operatorKey` inside `entrypoint.sh`).
+Variable precedence for `docker compose run`:
+- Inline values in command (`VAR=value docker compose run ...`) win over everything.
+- Then `.env` values are used.
+- Then defaults from `docker-compose.yml` apply.
+
+Important caveat for `CYPRESS_baseUrl`:
+- In `cypress-ui`, `CYPRESS_baseUrl` is set to `http://ui` in `docker-compose.yml`.
+- In `cypress-api`, `CYPRESS_baseUrl` is set to empty in `docker-compose.yml`.
+- Because these are explicitly set by service config, a `.env` value for `CYPRESS_baseUrl` may not be applied for those services.
+- If you need a different base URL for UI tests, pass it inline for the command or run local (non-Docker) Cypress with `CYPRESS_baseUrl=...`.
+
+When running `docker compose` from `e2e-tests/`, we also load `../guardian-service/configs/.env.guardian`, so `OPERATOR_ID` / `OPERATOR_KEY` can be picked up automatically (they’re mapped to `operatorId` / `operatorKey` inside `entrypoint.sh`).
+
+Parameter summary:
+- **Mandatory (typical runs):** `OPERATOR_ID` + `OPERATOR_KEY` (or `CYPRESS_operatorId` + `CYPRESS_operatorKey`).
+- **Mandatory only for MGS/remote-policy tests:** `CYPRESS_MGSAdmin` + `CYPRESS_MGSIndexerAPIToken`.
+- **Optional:** `ReportName`, `CYPRESS_apiServer`, `CYPRESS_baseUrl`, `CYPRESS_grepTags`, `CYPRESS_grepFilterSpecs`, `CYPRESS_SPEC`.
+
+### Windows (Docker) quick run
+
+Use PowerShell syntax for env vars:
+
+API smoke run:
+
+```powershell
+cd e2e-tests
+$env:CYPRESS_grepTags="smoke"
+$env:CYPRESS_grepFilterSpecs="true"
+docker compose run --rm --build cypress-api
+```
+
+UI smoke run:
+
+```powershell
+cd e2e-tests
+$env:CYPRESS_grepTags="ui smoke"
+$env:CYPRESS_grepFilterSpecs="true"
+docker compose run --rm --build cypress-ui
+```
+
+Run only 2-3 API specs:
+
+```powershell
+cd e2e-tests
+docker compose run --rm --build cypress-api --spec "cypress/e2e/api-tests/000_accounts_tests/postLogin.cy.js,cypress/e2e/api-tests/000_accounts_tests/getSession.cy.js,cypress/e2e/api-tests/000_accounts_tests/getBalance.cy.js"
+```
+
+Run only 2-3 UI specs:
+
+```powershell
+cd e2e-tests
+docker compose run --rm --build cypress-ui --spec "cypress/e2e/ui-tests/specs/01_administration/status.cy.js,cypress/e2e/ui-tests/specs/01_administration/logs.cy.js,cypress/e2e/ui-tests/specs/01_administration/settings.cy.js"
+```
+
+If needed, clear temporary env vars in the same shell:
+
+```powershell
+Remove-Item Env:CYPRESS_grepTags
+Remove-Item Env:CYPRESS_grepFilterSpecs
+```
 
 ### Available Browsers in Docker
 
-- **Electron** (default in original Dockerfile) - Lightweight, fast, minimal overhead
-- **Chrome** (in Dockerfile.chrome) - Full browser, more realistic web testing
+- **Chromium** (default via `CYPRESS_BROWSER=chromium`) - Full browser, typical CI path
+- **Electron** - Lightweight, fast fallback
 - **Firefox** - Alternative browser option (use: --browser firefox)
 
 ### Switching Browsers
 
-Set `CYPRESS_BROWSER`; the browser must be installed in the image (Electron in default Dockerfile, Chrome in Dockerfile.chrome):
+Set `CYPRESS_BROWSER`; the browser must be installed in the image:
 
 ```bash
 CYPRESS_BROWSER=chromium docker-compose up
-CYPRESS_BROWSER=electron docker run ...  # only if using default Dockerfile
+CYPRESS_BROWSER=electron docker run ... 
 ```
 
 ### Extracting Test Results from Docker
