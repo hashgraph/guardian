@@ -833,9 +833,9 @@ function main() {
                     { operatorId: account, operatorKey: key },
                     options.network
                 );
-                console.log(`Owner proposed for ${contractId}. Status: ${receipt.status.toString()}`);
+                console.log(`Owner ${newOwnerAddress} proposed for ${contractId}. Status: ${receipt.status.toString()}`);
             } catch (error) {
-                console.error(error);
+                console.error(`Failed to propose owner ${newOwnerAddress} for ${contractId}:`, error.message || error);
                 process.exit(1);
             }
         });
@@ -856,9 +856,9 @@ function main() {
                     { operatorId: account, operatorKey: key },
                     options.network
                 );
-                console.log(`Ownership claimed for ${contractId}. Status: ${receipt.status.toString()}`);
+                console.log(`Ownership claimed by ${account} for ${contractId}. Status: ${receipt.status.toString()}`);
             } catch (error) {
-                console.error(error);
+                console.error(`Failed to claim ownership for ${contractId} by ${account}:`, error.message || error);
                 process.exit(1);
             }
         });
@@ -881,9 +881,9 @@ function main() {
                     { operatorId: account, operatorKey: key },
                     options.network
                 );
-                console.log(`Owner removed from ${contractId}. Status: ${receipt.status.toString()}`);
+                console.log(`Owner ${ownerAddress} removed from ${contractId}. Status: ${receipt.status.toString()}`);
             } catch (error) {
-                console.error(error);
+                console.error(`Failed to remove owner ${ownerAddress} from ${contractId}:`, error.message || error);
                 process.exit(1);
             }
         });

@@ -11,17 +11,9 @@ abstract contract Access {
     mapping(bytes32 => mapping(address => bool)) roles;
     address public pendingOwner;
 
-    error NoPermissions();
-
     modifier role(bytes32 r) {
-        _role(r);
+        require(roles[r][msg.sender], "Access: caller lacks required role");
         _;
-    }
-
-    function _role(bytes32 r) internal view {
-        if (!roles[r][msg.sender]) {
-            revert NoPermissions();
-        }
     }
 
     constructor() {
@@ -38,18 +30,14 @@ abstract contract Access {
     }
 
     function claimOwner() external {
-        if (msg.sender != pendingOwner) {
-            revert NoPermissions();
-        }
+        require(msg.sender == pendingOwner, "Access: caller is not the pending owner");
         _setRole(msg.sender, OWNER);
         emit OwnerAdded(msg.sender);
         pendingOwner = address(0);
     }
 
     function removeOwner(address account) external role(OWNER) {
-        if (account == msg.sender || account == address(this)) {
-            revert NoPermissions();
-        }
+        require(account != msg.sender && account != address(this), "Access: cannot remove self or contract");
         _unsetRole(account, OWNER);
         emit OwnerRemoved(account);
     }
@@ -59,9 +47,7 @@ abstract contract Access {
     }
 
     function _unsetRole(address usr, bytes32 r) internal {
-        if (usr == address(this)) {
-            revert NoPermissions();
-        }
+        require(usr != address(this), "Access: cannot unset role for contract");
         roles[r][usr] = false;
     }
 
