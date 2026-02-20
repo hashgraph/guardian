@@ -266,7 +266,6 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    @UseCache()
     @HttpCode(HttpStatus.OK)
     async contractPermissions(
         @AuthUser() user: IAuthUser,
