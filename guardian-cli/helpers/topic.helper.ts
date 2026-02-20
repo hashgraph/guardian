@@ -8,7 +8,7 @@ import {
     TopicId,
     TopicMessageSubmitTransaction,
     AccountId,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 import { Network } from './contract-publisher.helper.js';
 
