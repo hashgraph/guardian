@@ -5510,8 +5510,11 @@ paths:
           required: false
           in: query
           schema:
-            example: running
-            type: string
+            example:
+              - running
+            type: array
+            items:
+              type: string
       responses:
         '200':
           description: Migration runs.
