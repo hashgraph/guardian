@@ -53,6 +53,7 @@ import {TableViewerComponent} from "./table-viewer/table-viewer.component";
 import { SchemaDeleteWarningDialogComponent } from './schema-delete-warning-dialog/schema-delete-warning-dialog.component';
 import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delete-dialog.component';
 import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-form-navigation.component';
+import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation/schema-form-view-navigation.component';
 
 @NgModule({
     declarations: [
@@ -84,7 +85,8 @@ import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-f
         SchemaFormRootComponent,
         TableFieldComponent,
         TableViewerComponent,
-        SchemaFormNavigationComponent
+        SchemaFormNavigationComponent,
+        SchemaFormViewNavigationComponent
     ],
     imports: [
         CommonModule,
@@ -124,7 +126,8 @@ import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-f
         SchemaFieldConfigurationComponent,
         SchemaFormDialog,
         SchemaFormRootComponent,
-        SchemaFormNavigationComponent
+        SchemaFormNavigationComponent,
+        SchemaFormViewNavigationComponent
     ],
     providers: [
         DialogService
