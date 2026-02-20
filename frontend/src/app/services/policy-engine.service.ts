@@ -5,6 +5,41 @@ import { Observable, firstValueFrom, map } from 'rxjs';
 import { headersV2 } from '../constants';
 import { API_BASE_URL } from './api';
 
+export interface MigrationFailedItem {
+    srcPolicyId: string;
+    dstPolicyId: string;
+    entityType: string;
+    srcEntityId: string;
+    runId: string;
+    attemptCount: number;
+    errorCode?: string;
+    errorMessage?: string;
+    firstFailedAt: string;
+    lastFailedAt: string;
+}
+
+export interface MigrationRunStatusItem {
+    runId: string;
+    srcPolicyId: string;
+    dstPolicyId: string;
+    status: string;
+    startedAt?: string;
+    finishedAt?: string;
+    summary: any;
+    failedItems?: MigrationFailedItem[];
+}
+
+export interface MigrationStatusResponse {
+    items: MigrationRunStatusItem[];
+}
+
+export interface MigrationRunsResponse {
+    items: MigrationRunStatusItem[];
+    count: number;
+    pageIndex: number;
+    pageSize: number;
+}
+
 /**
  * Services for working from policy and separate blocks.
  */
@@ -439,10 +474,62 @@ export class PolicyEngineService {
     }
 
     public migrateDataAsync(migrationConfig: MigrationConfig) {
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/migrate-data`,
+        return this.http.post<{ taskId: string, expectation: number }>(
+            `${this.url}/push/migrate-data`,
+            migrationConfig,
+        );
+    }
+
+    public migrateDataAsyncV2(migrationConfig: MigrationConfig): Observable<{ taskId: string; expectation: number }> {
+        return this.http.post<{ taskId: string; expectation: number }>(
+            `${this.url}/push/migrate-data`,
             migrationConfig,
             { headers: headersV2 }
-    )}
+        );
+    }
+
+    public resumeMigrateDataAsync(runId: string): Observable<{ taskId: string; expectation: number }> {
+        return this.http.post<{ taskId: string; expectation: number }>(
+            `${this.url}/push/migrate-data/resume`,
+            { runId }
+        );
+    }
+
+    public retryFailedMigrateDataAsync(runId: string): Observable<{ taskId: string; expectation: number }> {
+        return this.http.post<{ taskId: string; expectation: number }>(
+            `${this.url}/push/migrate-data/retry-failed`,
+            { runId }
+        );
+    }
+
+    public getMigrationStatus(
+        srcPolicyId: string,
+        dstPolicyId: string
+    ): Observable<MigrationStatusResponse> {
+        const params = new HttpParams()
+            .set('srcPolicyId', srcPolicyId)
+            .set('dstPolicyId', dstPolicyId);
+
+        return this.http.get<MigrationStatusResponse>(`${this.url}/migrate-data/status`, { params });
+    }
+
+    public getMigrationRuns(
+        pageIndex: number = 0,
+        pageSize: number = 10,
+        status?: string[]
+    ): Observable<MigrationRunsResponse> {
+        let params = new HttpParams()
+            .set('pageIndex', String(pageIndex))
+            .set('pageSize', String(pageSize));
+
+        if (status?.length) {
+            status.forEach((value) => {
+                params = params.append('status', value);
+            });
+        }
+
+        return this.http.get<MigrationRunsResponse>(`${this.url}/migrate-data/runs`, { params });
+    }
 
     public getGroups(policyId: string, savepointIds: string[] | null): Observable<any[]> {
         let params = new HttpParams();

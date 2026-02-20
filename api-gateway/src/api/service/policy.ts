@@ -3,7 +3,27 @@ import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson, FilenameSanitizer } from '#helpers';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version, Patch, DefaultValuePipe, ParseBoolPipe } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Post,
+    Put,
+    Query,
+    Req,
+    Response,
+    UseInterceptors,
+    Version,
+    Patch,
+    DefaultValuePipe,
+    ParseBoolPipe,
+    ParseArrayPipe
+} from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 import {
     BlockDTO,
@@ -647,7 +667,8 @@ export class PolicyApi {
         name: 'status',
         type: String,
         required: false,
-        example: 'running'
+        isArray: true,
+        example: ['running']
     })
     @ApiOkResponse({
         description: 'Migration runs.',
@@ -663,7 +684,15 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
-        @Query('status') status?: string[]
+        @Query(
+            'status',
+            new ParseArrayPipe({
+                items: String,
+                optional: true,
+                separator: ',',
+            }),
+        )
+        status?: string[]
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();

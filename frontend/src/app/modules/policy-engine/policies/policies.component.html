@@ -113,6 +113,15 @@
                         <svg-icon src="/assets/images/icons/move-down.svg" svgClass="primary-color"></svg-icon>
                     </p-button>
                     <p-button
+                        *ngIf="user.POLICIES_MIGRATION_CREATE"
+                        (click)="migrateDataV2()"
+                        [pTooltip]="'Migrate data v2'"
+                        class="toolbar-btn-secondary"
+                        [outlined]=true
+                        tooltipPosition="bottom">
+                        <svg-icon src="/assets/images/icons/restart_alt.svg" svgClass="primary-color"></svg-icon>
+                    </p-button>
+                    <p-button
                         *ngIf="user.SUGGESTIONS_SUGGESTIONS_READ"
                         (click)="openSuggestionsDialog()"
                         [pTooltip]="'Suggestions'"
