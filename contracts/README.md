@@ -255,5 +255,7 @@ guardian-cli remove-owner 0.0.12345 0.0.99999 0.0.11111 302e020100300506032b6570
    guardian-cli remove-owner 0.0.12345 0.0.11111 0.0.67890 <new-owner-key>
    ```
 
+> **Note:** The contract will automatically appear in the new owner's Guardian dashboard after the next sync cycle, provided the new owner's Hedera account is registered in Guardian. If the account is not registered, the on-chain ownership transfer will still succeed, but the contract will not be visible in the UI until the owner registers in Guardian and imports the contract manually.
+
 ---
 ([back to top](#guardian-smart-contracts))

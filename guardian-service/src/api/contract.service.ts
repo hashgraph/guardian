@@ -711,6 +711,91 @@ export async function syncWipeContract(
                     }
                     break;
                 }
+                case 'OwnerAdded': {
+                    const newOwnerAccount = AccountId.fromEvmAddress(
+                        0, 0, data[0]
+                    ).toString();
+                    const newOwnerUser = await users.getUserByAccount(newOwnerAccount, userId);
+                    if (newOwnerUser?.did) {
+                        const ownerDid = newOwnerUser.role === UserRole.STANDARD_REGISTRY
+                            ? newOwnerUser.did
+                            : newOwnerUser.parent;
+                        const existingRecord = contracts.find(
+                            (c) => c.owner === ownerDid
+                        );
+                        if (!existingRecord) {
+                            const sourceContract = contracts[0];
+                            if (sourceContract) {
+                                const fullSource = await dataBaseServer.findOne(Contract, {
+                                    contractId,
+                                });
+                                if (fullSource) {
+                                    await dataBaseServer.save(Contract, {
+                                        contractId,
+                                        owner: ownerDid,
+                                        description: fullSource.description || '',
+                                        permissions: fullSource.permissions,
+                                        topicId: fullSource.topicId,
+                                        type: fullSource.type,
+                                        wipeContractIds: [],
+                                        wipeTokenIds: [],
+                                        lastSyncEventTimeStamp: fullSource.lastSyncEventTimeStamp,
+                                        syncPoolsDate: fullSource.syncPoolsDate,
+                                        syncRequestsDate: fullSource.syncRequestsDate,
+                                        syncDisabled: false,
+                                        version: (fullSource as any).version,
+                                    });
+                                }
+                            }
+                        }
+                        if (sendNotifications && newOwnerUser.id) {
+                            NotificationHelper.info(
+                                `Owner added in contract: ${contractId}`,
+                                `Account ${newOwnerAccount} has been added as owner`,
+                                newOwnerUser.id
+                            );
+                        }
+                    }
+                    break;
+                }
+                case 'OwnerRemoved': {
+                    const removedOwnerAccount = AccountId.fromEvmAddress(
+                        0, 0, data[0]
+                    ).toString();
+                    const removedOwnerUser = await users.getUserByAccount(removedOwnerAccount, userId);
+                    if (removedOwnerUser?.did) {
+                        const removedOwnerDid = removedOwnerUser.role === UserRole.STANDARD_REGISTRY
+                            ? removedOwnerUser.did
+                            : removedOwnerUser.parent;
+                        await dataBaseServer.update(
+                            Contract,
+                            { contractId, owner: removedOwnerDid },
+                            { permissions: 0 }
+                        );
+                    }
+                    if (removedOwnerUser?.id && sendNotifications) {
+                        NotificationHelper.info(
+                            `Owner removed from contract: ${contractId}`,
+                            `Account ${removedOwnerAccount} has been removed as owner`,
+                            removedOwnerUser.id
+                        );
+                    }
+                    break;
+                }
+                case 'OwnerProposed': {
+                    const proposedOwnerAccount = AccountId.fromEvmAddress(
+                        0, 0, data[0]
+                    ).toString();
+                    const proposedOwnerUser = await users.getUserByAccount(proposedOwnerAccount, userId);
+                    if (proposedOwnerUser?.id && sendNotifications) {
+                        NotificationHelper.info(
+                            `Owner proposed for contract: ${contractId}`,
+                            `Account ${proposedOwnerAccount} has been proposed as new owner`,
+                            proposedOwnerUser.id
+                        );
+                    }
+                    break;
+                }
                 default:
                     break;
             }
@@ -1049,6 +1134,91 @@ export async function syncRetireContract(
                             )
                         )
                     );
+                    break;
+                }
+                case 'OwnerAdded': {
+                    const newOwnerAccount = AccountId.fromEvmAddress(
+                        0, 0, data[0]
+                    ).toString();
+                    const newOwnerUser = await users.getUserByAccount(newOwnerAccount, userId);
+                    if (newOwnerUser?.did) {
+                        const ownerDid = newOwnerUser.role === UserRole.STANDARD_REGISTRY
+                            ? newOwnerUser.did
+                            : newOwnerUser.parent;
+                        const existingRecord = contracts.find(
+                            (c) => c.owner === ownerDid
+                        );
+                        if (!existingRecord) {
+                            const sourceContract = contracts[0];
+                            if (sourceContract) {
+                                const fullSource = await dataBaseServer.findOne(Contract, {
+                                    contractId,
+                                });
+                                if (fullSource) {
+                                    await dataBaseServer.save(Contract, {
+                                        contractId,
+                                        owner: ownerDid,
+                                        description: fullSource.description || '',
+                                        permissions: fullSource.permissions,
+                                        topicId: fullSource.topicId,
+                                        type: fullSource.type,
+                                        wipeContractIds: [],
+                                        wipeTokenIds: [],
+                                        lastSyncEventTimeStamp: fullSource.lastSyncEventTimeStamp,
+                                        syncPoolsDate: fullSource.syncPoolsDate,
+                                        syncRequestsDate: fullSource.syncRequestsDate,
+                                        syncDisabled: false,
+                                        version: (fullSource as any).version,
+                                    });
+                                }
+                            }
+                        }
+                        if (sendNotifications && newOwnerUser.id) {
+                            NotificationHelper.info(
+                                `Owner added in contract: ${contractId}`,
+                                `Account ${newOwnerAccount} has been added as owner`,
+                                newOwnerUser.id
+                            );
+                        }
+                    }
+                    break;
+                }
+                case 'OwnerRemoved': {
+                    const removedOwnerAccount = AccountId.fromEvmAddress(
+                        0, 0, data[0]
+                    ).toString();
+                    const removedOwnerUser = await users.getUserByAccount(removedOwnerAccount, userId);
+                    if (removedOwnerUser?.did) {
+                        const removedOwnerDid = removedOwnerUser.role === UserRole.STANDARD_REGISTRY
+                            ? removedOwnerUser.did
+                            : removedOwnerUser.parent;
+                        await dataBaseServer.update(
+                            Contract,
+                            { contractId, owner: removedOwnerDid },
+                            { permissions: 0 }
+                        );
+                    }
+                    if (removedOwnerUser?.id && sendNotifications) {
+                        NotificationHelper.info(
+                            `Owner removed from contract: ${contractId}`,
+                            `Account ${removedOwnerAccount} has been removed as owner`,
+                            removedOwnerUser.id
+                        );
+                    }
+                    break;
+                }
+                case 'OwnerProposed': {
+                    const proposedOwnerAccount = AccountId.fromEvmAddress(
+                        0, 0, data[0]
+                    ).toString();
+                    const proposedOwnerUser = await users.getUserByAccount(proposedOwnerAccount, userId);
+                    if (proposedOwnerUser?.id && sendNotifications) {
+                        NotificationHelper.info(
+                            `Owner proposed for contract: ${contractId}`,
+                            `Account ${proposedOwnerAccount} has been proposed as new owner`,
+                            proposedOwnerUser.id
+                        );
+                    }
                     break;
                 }
                 default:
