@@ -809,4 +809,8 @@ svg-icon.svg-icon-32 {
 #gitbook-widget-button {
     background: var(--header-color-primary) !important;
     color: white !important;
+
+    span {
+        white-space: nowrap;
+    }
 }

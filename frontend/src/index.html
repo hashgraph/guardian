@@ -27,9 +27,275 @@
         }
         window.GitBook('init', { siteURL: 'https://guardian.hedera.com' });
         window.GitBook('configure', {
-            button: { label: 'Read Doc', icon: 'assistant' }
+            button: { label: 'See Docs', icon: 'assistant' }
         });
         window.GitBook('show');
+    </script>
+    <script>
+        const STORAGE_KEY = 'gitbook-widget-pos';
+        const BUTTON_ID = 'gitbook-widget-button';
+        const WINDOW_ID = 'gitbook-widget-window';
+
+        const GAP = 12;
+        const DRAG_SIZE = 3;
+
+        const getMin = (value, min, max) => Math.min(max, Math.max(min, value));
+
+        const setStyles = (el, styles) => {
+            for (const [prop, val] of Object.entries(styles)) {
+                el.style.setProperty(prop, String(val), 'important');
+            }
+        };
+
+        const getWindowEl = () => document.getElementById(WINDOW_ID);
+        const getButtonEl = () => document.getElementById(BUTTON_ID);
+
+        const readSavedPosition = () => {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                const x = Number(parsed?.x);
+                const y = Number(parsed?.y);
+                return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+            } catch {
+                return null;
+            }
+        };
+
+        const savePosition = (x, y) => {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ x, y }));
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        const applyButtonPosition = (btn, x, y) => {
+            btn.style.position = 'fixed';
+            btn.style.right = 'auto';
+            btn.style.bottom = 'auto';
+            btn.style.left = `${x}px`;
+            btn.style.top = `${y}px`;
+        };
+
+        const getViewport = () => ({ w: window.innerWidth, h: window.innerHeight });
+
+        const getWidgetSize = (windowElement) => ({
+            w: windowElement.offsetWidth || 400,
+            h: windowElement.offsetHeight || 600,
+        });
+
+        const placeWidgetNearButton = (btn) => {
+            requestAnimationFrame(() => {
+                const windowElement = getWindowEl();
+                if (!windowElement) return;
+
+                setStyles(windowElement, {
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 'auto',
+                    bottom: 'auto',
+                    margin: 0,
+                });
+
+                const { w: vw, h: vh } = getViewport();
+                const { w: ww, h: wh } = getWidgetSize(windowElement);
+                const r = btn.getBoundingClientRect();
+
+                const cx = r.left + r.width / 2;
+                const cy = r.top + r.height / 2;
+
+                const belowTop = r.bottom + GAP;
+                const aboveTop = r.top - GAP - wh;
+                const rightLeft = r.right + GAP;
+                const leftLeft = r.left - GAP - ww;
+
+                const fitsBelow = belowTop + wh <= vh;
+                const fitsAbove = aboveTop >= 0;
+                const fitsRight = rightLeft + ww <= vw;
+                const fitsLeft = leftLeft >= 0;
+
+                const alignedLeft = getMin(r.left, 0, vw - ww);
+                const alignedTop = getMin(r.top, 0, vh - wh);
+
+                const preferRight = cx < vw / 2;
+                const sideFits = preferRight ? fitsRight : fitsLeft;
+                const sideLeft = preferRight ? rightLeft : leftLeft;
+
+                const candidates = [];
+
+                const push = (isPossible, left, top) => {
+                    if (!isPossible) {
+                        return;
+                    }
+
+                    candidates.push({
+                        left: getMin(left, 0, vw - ww),
+                        top: getMin(top, 0, vh - wh),
+                    });
+                };
+
+                if (cy < vh / 2) {
+                    push(fitsBelow, alignedLeft, belowTop);
+                    push(fitsAbove, alignedLeft, aboveTop);
+                    push(sideFits, sideLeft, alignedTop);
+                } else {
+                    push(fitsAbove, alignedLeft, aboveTop);
+                    push(fitsBelow, alignedLeft, belowTop);
+                    push(sideFits, sideLeft, alignedTop);
+                }
+
+                if (candidates.length === 0) {
+                    const fallbackLeft = getMin(preferRight ? leftLeft : rightLeft, 0, vw - ww);
+                    candidates.push({ left: fallbackLeft, top: alignedTop });
+                }
+
+                const { left, top } = candidates[0];
+                setStyles(windowElement, { left: `${left}px`, top: `${top}px` });
+            });
+        };
+
+        const observeWidgetVisibility = (btn, windowElement) => {
+            const observer = new MutationObserver(() => {
+                const styles = getComputedStyle(windowElement);
+
+                if (styles.display !== 'none' && styles.visibility !== 'hidden') {
+                    placeWidgetNearButton(btn);
+                }
+            });
+
+            observer.observe(windowElement, { attributes: true, attributeFilter: ['style', 'class'] });
+        };
+
+        const waitForElementById = (id, onFound) => {
+            const existing = document.getElementById(id);
+
+            if (existing) {
+                onFound(existing);
+                return;
+            }
+
+            const observer = new MutationObserver(() => {
+                const element = document.getElementById(id);
+                if (!element) {
+                    return;
+                }
+                observer.disconnect();
+                onFound(element);
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
+        };
+
+        const setupDrag = (btn) => {
+            const saved = readSavedPosition();
+            if (saved) {
+                applyButtonPosition(btn, saved.x, saved.y);
+            }
+
+            let dragActive = false;
+            let moved = false;
+            let clickBlockOnce = false;
+
+            let startX = 0;
+            let startY = 0;
+            let originLeft = 0;
+            let originTop = 0;
+
+            document.addEventListener(
+                'click',
+                (e) => {
+                    if (!clickBlockOnce) {
+                        return;
+                    }
+                    if (e.target === btn || btn.contains(e.target)) {
+                        clickBlockOnce = false;
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }
+                },
+                true
+            );
+
+            btn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+
+                const r = btn.getBoundingClientRect();
+                startX = e.clientX;
+                startY = e.clientY;
+                originLeft = r.left;
+                originTop = r.top;
+
+                dragActive = true;
+                moved = false;
+
+                btn.style.transition = 'none';
+                btn.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!dragActive) {
+                    return;
+                }
+
+                const dragX = e.clientX - startX;
+                const dragY = e.clientY - startY;
+
+                if (Math.abs(dragX) <= DRAG_SIZE && Math.abs(dragY) <= DRAG_SIZE) {
+                    return;
+                }
+
+                moved = true;
+
+                const maxLeft = window.innerWidth - btn.offsetWidth;
+                const maxTop = window.innerHeight - btn.offsetHeight;
+
+                const x = getMin(originLeft + dragX, 0, maxLeft);
+                const y = getMin(originTop + dragY, 0, maxTop);
+
+                applyButtonPosition(btn, x, y);
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (!dragActive) {
+                    return;
+                }
+
+                dragActive = false;
+                btn.style.userSelect = '';
+
+                if (!moved) {
+                    return;
+                }
+
+                clickBlockOnce = true;
+
+                const r = btn.getBoundingClientRect();
+                savePosition(r.left, r.top);
+            });
+        };
+
+        const boot = (btn) => {
+            setupDrag(btn);
+
+            const windowElement = getWindowEl();
+            if (windowElement) {
+                observeWidgetVisibility(btn, windowElement);
+                return;
+            }
+
+            waitForElementById(WINDOW_ID, (wEl) => observeWidgetVisibility(btn, wEl));
+        };
+
+        const start = () => waitForElementById(BUTTON_ID, boot);
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', start, { once: true });
+        } else {
+            start();
+        }
     </script>
 </body>
 
