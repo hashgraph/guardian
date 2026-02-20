@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
-
+// Exclude "all" tag, if needs to stop using MGS in CI tests run
 context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
     const MainSRUsername = Cypress.env('MainSRUser');
