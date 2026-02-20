@@ -734,7 +734,7 @@ export async function syncWipeContract(
                                         contractId,
                                         owner: ownerDid,
                                         description: fullSource.description || '',
-                                        permissions: fullSource.permissions,
+                                        permissions: 1,
                                         topicId: fullSource.topicId,
                                         type: fullSource.type,
                                         wipeContractIds: [],
@@ -767,11 +767,10 @@ export async function syncWipeContract(
                         const removedOwnerDid = removedOwnerUser.role === UserRole.STANDARD_REGISTRY
                             ? removedOwnerUser.did
                             : removedOwnerUser.parent;
-                        await dataBaseServer.update(
-                            Contract,
-                            { contractId, owner: removedOwnerDid },
-                            { permissions: 0 }
-                        );
+                        await dataBaseServer.deleteEntity(Contract, {
+                            contractId,
+                            owner: removedOwnerDid,
+                        });
                     }
                     if (removedOwnerUser?.id && sendNotifications) {
                         NotificationHelper.info(
@@ -1159,7 +1158,7 @@ export async function syncRetireContract(
                                         contractId,
                                         owner: ownerDid,
                                         description: fullSource.description || '',
-                                        permissions: fullSource.permissions,
+                                        permissions: 1,
                                         topicId: fullSource.topicId,
                                         type: fullSource.type,
                                         wipeContractIds: [],
@@ -1192,11 +1191,10 @@ export async function syncRetireContract(
                         const removedOwnerDid = removedOwnerUser.role === UserRole.STANDARD_REGISTRY
                             ? removedOwnerUser.did
                             : removedOwnerUser.parent;
-                        await dataBaseServer.update(
-                            Contract,
-                            { contractId, owner: removedOwnerDid },
-                            { permissions: 0 }
-                        );
+                        await dataBaseServer.deleteEntity(Contract, {
+                            contractId,
+                            owner: removedOwnerDid,
+                        });
                     }
                     if (removedOwnerUser?.id && sendNotifications) {
                         NotificationHelper.info(
