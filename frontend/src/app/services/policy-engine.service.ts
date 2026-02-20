@@ -1,44 +1,15 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { MigrationConfig, PolicyAvailability, PolicyToolMetadata } from '@guardian/interfaces';
+import {
+    MigrationConfig,
+    MigrationRunsResponse,
+    MigrationStatusResponse,
+    PolicyAvailability,
+    PolicyToolMetadata
+} from '@guardian/interfaces';
 import { Observable, firstValueFrom, map } from 'rxjs';
 import { headersV2 } from '../constants';
 import { API_BASE_URL } from './api';
-
-export interface MigrationFailedItem {
-    srcPolicyId: string;
-    dstPolicyId: string;
-    entityType: string;
-    srcEntityId: string;
-    runId: string;
-    attemptCount: number;
-    errorCode?: string;
-    errorMessage?: string;
-    firstFailedAt: string;
-    lastFailedAt: string;
-}
-
-export interface MigrationRunStatusItem {
-    runId: string;
-    srcPolicyId: string;
-    dstPolicyId: string;
-    status: string;
-    startedAt?: string;
-    finishedAt?: string;
-    summary: any;
-    failedItems?: MigrationFailedItem[];
-}
-
-export interface MigrationStatusResponse {
-    items: MigrationRunStatusItem[];
-}
-
-export interface MigrationRunsResponse {
-    items: MigrationRunStatusItem[];
-    count: number;
-    pageIndex: number;
-    pageSize: number;
-}
 
 /**
  * Services for working from policy and separate blocks.

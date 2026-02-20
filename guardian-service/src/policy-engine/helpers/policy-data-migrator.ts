@@ -36,7 +36,6 @@ import {
     PolicyCache,
     INotificationStep,
     MigrationRun,
-    MigrationRunSummary,
     MigrationFailedItem,
     MigrationMessageMap,
 } from '@guardian/common';
@@ -52,6 +51,9 @@ import {
     ISignOptions,
     PolicyHelper,
     BlockType,
+    MigrationRunStatus,
+    MigrationRunSummary,
+    MigrationSummaryItem,
 } from '@guardian/interfaces';
 import {
     BlockStateLoader,
@@ -71,22 +73,6 @@ import {
 import { createHederaToken } from '../../api/token.service.js';
 import { createContract } from '../../api/helpers/contract-api.js';
 import { getContractVersion, setPoolContract } from '../../api/contract.service.js';
-
-export enum MigrationRunStatus {
-    RUNNING = 'running',
-    COMPLETED = 'completed',
-    FAILED = 'failed',
-    STOPPED = 'stopped',
-}
-
-export interface MigrationTypeSummary {
-    total: number;
-    processed: number;
-    success: number;
-    failed: number;
-    skipped: number;
-    cursorLastId?: string;
-}
 
 /**
  * Document error
@@ -530,13 +516,11 @@ export class PolicyDataMigrator {
         }
     }
 
-    private static createSummaryItem(total: number): MigrationTypeSummary {
+    private static createSummaryItem(total: number): MigrationSummaryItem {
         return {
             total,
-            processed: 0,
             success: 0,
             failed: 0,
-            skipped: 0,
             cursorLastId: undefined
         };
     }
@@ -1523,10 +1507,10 @@ export class PolicyDataMigrator {
 
         const getSourceId = (pool: RetirePool): string | undefined => {
             if (pool?.id) {
-                return String(pool.id);
+                return pool.id;
             }
             if ((pool as any)?._id) {
-                return String((pool as any)._id);
+                return (pool as any)._id;
             }
             return undefined;
         };
@@ -1539,7 +1523,7 @@ export class PolicyDataMigrator {
 
             const existing = await this._db.findOne(MigrationFailedItem, {
                 runId: run.id,
-                entityType: String(entityType),
+                entityType,
                 srcEntityId
             } as Partial<MigrationFailedItem>);
 
@@ -1555,7 +1539,7 @@ export class PolicyDataMigrator {
                 runId: run.id,
                 srcPolicyId: run.srcPolicyId,
                 dstPolicyId: run.dstPolicyId,
-                entityType: String(entityType),
+                entityType,
                 srcEntityId,
                 attemptCount: 1,
                 errorMessage: error?.toString(),
@@ -1566,12 +1550,7 @@ export class PolicyDataMigrator {
             await this._db.save(MigrationFailedItem, failed);
         };
 
-        const notEmptyPools = (pools as any[]).filter((item) => {
-            if (item) {
-                return true;
-            }
-            return false;
-        }) as RetirePool[];
+        const notEmptyPools = pools.filter((item) => !!item);
 
         const startIndex = PolicyDataMigrator.resolveStartIndexByCursor(
             notEmptyPools,
@@ -1611,11 +1590,10 @@ export class PolicyDataMigrator {
                     // mapping pre-check (source of truth)
                     const mapped = PolicyDataMigrator.getMessageMapping(
                         scopeKey,
-                        String(entityType),
+                        entityType,
                         srcEntityId
                     );
                     if (mapped) {
-                        poolSummary.processed += 1;
                         poolSummary.success += 1;
                         return;
                     }
@@ -1643,10 +1621,8 @@ export class PolicyDataMigrator {
                         dstMessageId: srcEntityId
                     });
 
-                    poolSummary.processed += 1;
                     poolSummary.success += 1;
                 } catch (error) {
-                    poolSummary.processed += 1;
                     poolSummary.failed += 1;
                     errors.push({
                         id: srcEntityId || (pool as any)?.id || (pool as any)?._id,
@@ -2101,7 +2077,7 @@ export class PolicyDataMigrator {
             await this._db.save(MigrationFailedItem, failed);
         };
 
-        const notEmptyDocuments = (documents as any[]).filter((item) => !!item) as T[];
+        const notEmptyDocuments = documents.filter((item) => !!item);
 
         const startIndex = PolicyDataMigrator.resolveStartIndexByCursor(
             notEmptyDocuments,
@@ -2144,7 +2120,6 @@ export class PolicyDataMigrator {
                             srcMapKey
                         );
                         if (mapped) {
-                            entitySummary.processed += 1;
                             entitySummary.success += 1;
                             return;
                         }
@@ -2152,19 +2127,15 @@ export class PolicyDataMigrator {
 
                     const newDocument = await migrateFn(document, userId);
                     if (!newDocument) {
-                        entitySummary.processed += 1;
                         entitySummary.success += 1;
                         return;
                     }
 
-                    const destinationKeys = PolicyDataMigrator.extractSourceKeys(entityType, newDocument as any);
+                    const destinationKeys = PolicyDataMigrator.extractSourceKeys(entityType, newDocument);
                     const dstEntityId = destinationKeys.srcEntityId || srcEntityId;
                     const dstMapKey = destinationKeys.srcMessageId || dstEntityId || srcMapKey;
 
-                    delete (newDocument as any).id;
-                    delete (newDocument as any)._id;
-                    delete (newDocument as any).createDate;
-                    delete (newDocument as any).updateDate;
+                    PolicyDataMigrator.clearEntityMeta(newDocument);
 
                     await saveFn(newDocument);
 
@@ -2180,10 +2151,8 @@ export class PolicyDataMigrator {
                         });
                     }
 
-                    entitySummary.processed += 1;
                     entitySummary.success += 1;
                 } catch (error) {
-                    entitySummary.processed += 1;
                     entitySummary.failed += 1;
                     errors.push({
                         id: srcEntityId || (document as any)?.id || (document as any)?._id,
@@ -2562,13 +2531,13 @@ export class PolicyDataMigrator {
 
         const getSourceId = (state: BlockState): string | undefined => {
             if (state?.id) {
-                return String(state.id);
+                return state.id;
             }
             if ((state as any)?._id) {
-                return String((state as any)._id);
+                return (state as any)._id;
             }
             if (state?.blockId) {
-                return String(state.blockId);
+                return state.blockId;
             }
             return undefined;
         };
@@ -2581,7 +2550,7 @@ export class PolicyDataMigrator {
 
             const existing = await this._db.findOne(MigrationFailedItem, {
                 runId: run.id,
-                entityType: String(entityType),
+                entityType,
                 srcEntityId
             } as Partial<MigrationFailedItem>);
 
@@ -2597,7 +2566,7 @@ export class PolicyDataMigrator {
                 runId: run.id,
                 srcPolicyId: run.srcPolicyId,
                 dstPolicyId: run.dstPolicyId,
-                entityType: String(entityType),
+                entityType,
                 srcEntityId,
                 attemptCount: 1,
                 errorMessage: error?.toString(),
@@ -2608,12 +2577,7 @@ export class PolicyDataMigrator {
             await this._db.save(MigrationFailedItem, failed);
         };
 
-        const notEmptyStates = (states as any[]).filter((item) => {
-            if (item) {
-                return true;
-            }
-            return false;
-        }) as BlockState[];
+        const notEmptyStates = states.filter((item) => !!item);
 
         const startIndex = PolicyDataMigrator.resolveStartIndexByCursor(
             notEmptyStates,
@@ -2647,9 +2611,8 @@ export class PolicyDataMigrator {
 
                     const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
-                    const mapped = PolicyDataMigrator.getMessageMapping(scopeKey, String(entityType), srcEntityId);
+                    const mapped = PolicyDataMigrator.getMessageMapping(scopeKey, entityType, srcEntityId);
                     if (mapped) {
-                        stateSummary.processed += 1;
                         stateSummary.success += 1;
                         return;
                     }
@@ -2683,16 +2646,14 @@ export class PolicyDataMigrator {
                         startedBy: run.startedBy,
                         srcPolicyId: run.srcPolicyId,
                         dstPolicyId: run.dstPolicyId,
-                        entityType: String(entityType),
+                        entityType,
                         srcMessageId: srcEntityId,
-                        dstMessageId: String(destinationBlockId),
+                        dstMessageId: destinationBlockId,
                         srcEntityId
                     });
 
-                    stateSummary.processed += 1;
                     stateSummary.success += 1;
                 } catch (error) {
-                    stateSummary.processed += 1;
                     stateSummary.failed += 1;
                     errors.push({
                         id: srcEntityId || (sourceState as any)?.id || (sourceState as any)?._id || (sourceState as any)?.blockId,
@@ -2814,12 +2775,7 @@ export class PolicyDataMigrator {
 
         const pendingMappings: Partial<MigrationMessageMap>[] = [];
 
-        const notEmptyRoles = (roles as any[]).filter((item) => {
-            if (item) {
-                return true;
-            }
-            return false;
-        }) as PolicyRoles[];
+        const notEmptyRoles = roles.filter((item) => !!item);
 
         const startIndex = PolicyDataMigrator.resolveStartIndexByCursor(
             notEmptyRoles,
@@ -2858,7 +2814,6 @@ export class PolicyDataMigrator {
                             srcEntityId
                         );
                         if (mapped) {
-                            roleSummary.processed += 1;
                             roleSummary.success += 1;
                             return;
                         }
@@ -2897,8 +2852,7 @@ export class PolicyDataMigrator {
                     });
 
                     if (!exists) {
-                        delete (role as any).id;
-                        delete (role as any)._id;
+                        PolicyDataMigrator.clearEntityIdentity(role);
                         await this._db.setUserInGroup(role);
                     }
 
@@ -2914,10 +2868,8 @@ export class PolicyDataMigrator {
                         });
                     }
 
-                    roleSummary.processed += 1;
                     roleSummary.success += 1;
                 } catch (error) {
-                    roleSummary.processed += 1;
                     roleSummary.failed += 1;
                     errors.push({
                         id: srcEntityId || (sourceRole as any)?.id || (sourceRole as any)?._id || (sourceRole as any)?.did,
@@ -3346,7 +3298,7 @@ export class PolicyDataMigrator {
         const mintRequestsMapping = new Map<string, string>();
 
         // ---------- MintRequest ----------
-        const notEmptyRequests = (mintRequests as any[]).filter((item) => !!item) as MintRequest[];
+        const notEmptyRequests = mintRequests.filter((item) => !!item);
 
         const requestStartIndex = PolicyDataMigrator.resolveStartIndexByCursor(
             notEmptyRequests,
@@ -3391,12 +3343,11 @@ export class PolicyDataMigrator {
                     );
                     if (mappedRequestId) {
                         mintRequestsMapping.set(srcEntityId, mappedRequestId);
-                        requestSummary.processed += 1;
                         requestSummary.success += 1;
                         return;
                     }
 
-                    const sourceVpMessageId = request.vpMessageId ? String(request.vpMessageId) : undefined;
+                    const sourceVpMessageId = request.vpMessageId || undefined;
                     const newVpMessageId = sourceVpMessageId
                         ? PolicyDataMigrator.getMessageMapping(scopeKey, 'vpDocument', sourceVpMessageId)
                         : undefined;
@@ -3407,12 +3358,10 @@ export class PolicyDataMigrator {
 
                     const requestToSave = { ...(request as any) } as MintRequest;
                     requestToSave.vpMessageId = newVpMessageId;
-
-                    delete (requestToSave as any).id;
-                    delete (requestToSave as any)._id;
+                    PolicyDataMigrator.clearEntityIdentity(requestToSave);
 
                     const newRequest = await this._db.saveMintRequest(requestToSave);
-                    const dstRequestId = String(newRequest.id);
+                    const dstRequestId = newRequest.id;
 
                     mintRequestsMapping.set(srcEntityId, dstRequestId);
 
@@ -3426,10 +3375,8 @@ export class PolicyDataMigrator {
                         dstMessageId: dstRequestId
                     });
 
-                    requestSummary.processed += 1;
                     requestSummary.success += 1;
                 } catch (error) {
-                    requestSummary.processed += 1;
                     requestSummary.failed += 1;
                     errors.push({
                         id: srcEntityId || (request as any)?.id || (request as any)?._id,
@@ -3457,7 +3404,7 @@ export class PolicyDataMigrator {
         }
 
         // ---------- MintTransaction ----------
-        const notEmptyTransactions = (mintTransactions as any[]).filter((item) => !!item) as MintTransaction[];
+        const notEmptyTransactions = mintTransactions.filter((item) => !!item);
 
         const transactionStartIndex = PolicyDataMigrator.resolveStartIndexByCursor(
             notEmptyTransactions,
@@ -3501,14 +3448,11 @@ export class PolicyDataMigrator {
                         srcEntityId
                     );
                     if (mappedTx) {
-                        transactionSummary.processed += 1;
                         transactionSummary.success += 1;
                         return;
                     }
 
-                    const srcMintRequestId = transaction.mintRequestId
-                        ? String(transaction.mintRequestId)
-                        : undefined;
+                    const srcMintRequestId = transaction.mintRequestId || undefined;
 
                     if (!srcMintRequestId) {
                         throw new Error('Source mintRequestId not found for mintTransaction');
@@ -3532,9 +3476,7 @@ export class PolicyDataMigrator {
 
                     const txToSave = { ...(transaction as any) } as MintTransaction;
                     txToSave.mintRequestId = dstMintRequestId;
-
-                    delete (txToSave as any).id;
-                    delete (txToSave as any)._id;
+                    PolicyDataMigrator.clearEntityIdentity(txToSave);
 
                     await this._db.saveMintTransaction(txToSave);
 
@@ -3548,10 +3490,8 @@ export class PolicyDataMigrator {
                         dstMessageId: srcEntityId
                     });
 
-                    transactionSummary.processed += 1;
                     transactionSummary.success += 1;
                 } catch (error) {
-                    transactionSummary.processed += 1;
                     transactionSummary.failed += 1;
                     errors.push({
                         id: srcEntityId || (transaction as any)?.id || (transaction as any)?._id,
@@ -4063,7 +4003,7 @@ export class PolicyDataMigrator {
         db: DatabaseServer,
         run: MigrationRun
     ): Promise<void> {
-        const scopeKey = `${String(run.srcPolicyId)}:${String(run.dstPolicyId)}:${String(run.startedBy || '')}`;
+        const scopeKey = `${run.srcPolicyId}:${run.dstPolicyId}:${run.startedBy || ''}`;
 
         const mappings = await db.find(MigrationMessageMap, {
             srcPolicyId: run.srcPolicyId,
@@ -4126,13 +4066,13 @@ export class PolicyDataMigrator {
     ): { srcEntityId?: string; srcMessageId?: string } {
         let srcEntityId: string | undefined;
         if (item?.id) {
-            srcEntityId = String(item.id);
+            srcEntityId = item.id;
         } else if (item?._id) {
-            srcEntityId = String(item._id);
+            srcEntityId = item._id;
         } else if (item?.did) {
-            srcEntityId = String(item.did);
+            srcEntityId = item.did;
         } else if (item?.blockId) {
-            srcEntityId = String(item.blockId);
+            srcEntityId = item.blockId;
         }
 
         let srcMessageId: string | undefined;
@@ -4142,11 +4082,22 @@ export class PolicyDataMigrator {
             entityType === 'vpDocument'
         ) {
             if (item?.messageId) {
-                srcMessageId = String(item.messageId);
+                srcMessageId = item.messageId;
             }
         }
 
         return { srcEntityId, srcMessageId };
+    }
+
+    private static clearEntityIdentity(entity: any): void {
+        delete entity.id;
+        delete entity._id;
+    }
+
+    private static clearEntityMeta(entity: any): void {
+        PolicyDataMigrator.clearEntityIdentity(entity);
+        delete entity.createDate;
+        delete entity.updateDate;
     }
 
     private static appendMappingToBuffer(
@@ -4164,11 +4115,11 @@ export class PolicyDataMigrator {
         }
 
         const mappingKey =
-            `${mapping.srcPolicyId}:${mapping.dstPolicyId}:${String(mapping.startedBy || '')}:${mapping.entityType}:${mapping.srcMessageId}`;
+            `${mapping.srcPolicyId}:${mapping.dstPolicyId}:${mapping.startedBy || ''}:${mapping.entityType}:${mapping.srcMessageId}`;
 
         const existingIndex = buffer.findIndex((item) => {
             const itemKey =
-                `${item.srcPolicyId}:${item.dstPolicyId}:${String(item.startedBy || '')}:${item.entityType}:${item.srcMessageId}`;
+                `${item.srcPolicyId}:${item.dstPolicyId}:${item.startedBy || ''}:${item.entityType}:${item.srcMessageId}`;
             return itemKey === mappingKey;
         });
 
@@ -4209,8 +4160,8 @@ export class PolicyDataMigrator {
             } as Partial<MigrationMessageMap>);
 
             if (existing) {
-                existing.dstMessageId = String(item.dstMessageId);
-                existing.srcEntityId = item.srcEntityId ? String(item.srcEntityId) : undefined;
+                existing.dstMessageId = item.dstMessageId;
+                existing.srcEntityId = item.srcEntityId;
                 await this._db.save(MigrationMessageMap, existing);
             } else {
                 await this._db.save(MigrationMessageMap, item);
@@ -4238,7 +4189,7 @@ export class PolicyDataMigrator {
             }
 
             const scopeKey =
-                `${String(item.srcPolicyId)}:${String(item.dstPolicyId)}:${String(item.startedBy || '')}`;
+                `${item.srcPolicyId}:${item.dstPolicyId}:${item.startedBy || ''}`;
 
             let scopeCache = PolicyDataMigrator.migrationMessageCache.get(scopeKey);
             if (!scopeCache) {
@@ -4246,13 +4197,13 @@ export class PolicyDataMigrator {
                 PolicyDataMigrator.migrationMessageCache.set(scopeKey, scopeCache);
             }
 
-            let entityCache = scopeCache.get(String(item.entityType));
+            let entityCache = scopeCache.get(item.entityType);
             if (!entityCache) {
                 entityCache = new Map<string, string>();
-                scopeCache.set(String(item.entityType), entityCache);
+                scopeCache.set(item.entityType, entityCache);
             }
 
-            entityCache.set(String(item.srcMessageId), String(item.dstMessageId));
+            entityCache.set(item.srcMessageId, item.dstMessageId);
         }
     }
 
@@ -4341,8 +4292,8 @@ export class PolicyDataMigrator {
         const retirePoolIds = new Set<string>();
 
         for (const failedItem of failedItems) {
-            const entityType = String(failedItem.entityType);
-            const srcEntityId = String(failedItem.srcEntityId);
+            const entityType = failedItem.entityType;
+            const srcEntityId = failedItem.srcEntityId;
 
             if (entityType === 'vcDocument') {
                 vcIds.add(srcEntityId);
@@ -4657,8 +4608,8 @@ export class PolicyDataMigrator {
                 const successItems: MigrationFailedItem[] = [];
 
                 const tasks = writeBatch.map(async (failedItem) => {
-                    const entityType = String(failedItem.entityType);
-                    const srcEntityId = String(failedItem.srcEntityId);
+                    const entityType = failedItem.entityType;
+                    const srcEntityId = failedItem.srcEntityId;
                     const entitySummary = getSummaryItem(entityType);
                     const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
@@ -4670,7 +4621,6 @@ export class PolicyDataMigrator {
                         );
 
                         if (preMappedByEntityId) {
-                            entitySummary.processed += 1;
                             entitySummary.success += 1;
                             successItems.push(failedItem);
 
@@ -4687,7 +4637,7 @@ export class PolicyDataMigrator {
                                 throw new Error('Source vcDocument not found');
                             }
 
-                            const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, src as any);
+                            const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, src);
                             const srcMapKey = sourceKeys.srcMessageId || sourceKeys.srcEntityId || srcEntityId;
                             const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
                             const mappedByMessage = srcMapKey
@@ -4695,7 +4645,6 @@ export class PolicyDataMigrator {
                                 : undefined;
 
                             if (mappedByMessage) {
-                                entitySummary.processed += 1;
                                 entitySummary.success += 1;
                                 successItems.push(failedItem);
                                 return;
@@ -4710,14 +4659,11 @@ export class PolicyDataMigrator {
                                 run
                             );
 
-                            delete (migrated as any).id;
-                            delete (migrated as any)._id;
-                            delete (migrated as any).createDate;
-                            delete (migrated as any).updateDate;
+                            PolicyDataMigrator.clearEntityMeta(migrated);
 
                             await this._db.saveVC(migrated);
 
-                            const destinationKeys = PolicyDataMigrator.extractSourceKeys(entityType, migrated as any);
+                            const destinationKeys = PolicyDataMigrator.extractSourceKeys(entityType, migrated);
                             const dstMapKey = destinationKeys.srcMessageId || destinationKeys.srcEntityId || srcMapKey;
 
                             if (sourceKeys.srcEntityId && srcMapKey && dstMapKey) {
@@ -4737,7 +4683,7 @@ export class PolicyDataMigrator {
                                 throw new Error('Source roleVcDocument not found');
                             }
 
-                            const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, src as any);
+                            const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, src);
                             const srcMapKey = sourceKeys.srcMessageId || sourceKeys.srcEntityId || srcEntityId;
                             const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
                             const mappedByMessage = srcMapKey
@@ -4745,7 +4691,6 @@ export class PolicyDataMigrator {
                                 : undefined;
 
                             if (mappedByMessage) {
-                                entitySummary.processed += 1;
                                 entitySummary.success += 1;
                                 successItems.push(failedItem);
                                 return;
@@ -4753,14 +4698,11 @@ export class PolicyDataMigrator {
 
                             const migrated = await this._migrateRoleVcV2(src, userId, run);
 
-                            delete (migrated as any).id;
-                            delete (migrated as any)._id;
-                            delete (migrated as any).createDate;
-                            delete (migrated as any).updateDate;
+                            PolicyDataMigrator.clearEntityMeta(migrated);
 
                             await this._db.saveVC(migrated);
 
-                            const destinationKeys = PolicyDataMigrator.extractSourceKeys(entityType, migrated as any);
+                            const destinationKeys = PolicyDataMigrator.extractSourceKeys(entityType, migrated);
                             const dstMapKey = destinationKeys.srcMessageId || destinationKeys.srcEntityId || srcMapKey;
 
                             if (sourceKeys.srcEntityId && srcMapKey && dstMapKey) {
@@ -4780,7 +4722,7 @@ export class PolicyDataMigrator {
                                 throw new Error('Source vpDocument not found');
                             }
 
-                            const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, src as any);
+                            const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, src);
                             const srcMapKey = sourceKeys.srcMessageId || sourceKeys.srcEntityId || srcEntityId;
                             const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
                             const mappedByMessage = srcMapKey
@@ -4788,7 +4730,6 @@ export class PolicyDataMigrator {
                                 : undefined;
 
                             if (mappedByMessage) {
-                                entitySummary.processed += 1;
                                 entitySummary.success += 1;
                                 successItems.push(failedItem);
                                 return;
@@ -4796,14 +4737,11 @@ export class PolicyDataMigrator {
 
                             const migrated = await this._migrateVpDocumentV2(src, userId, run);
 
-                            delete (migrated as any).id;
-                            delete (migrated as any)._id;
-                            delete (migrated as any).createDate;
-                            delete (migrated as any).updateDate;
+                            PolicyDataMigrator.clearEntityMeta(migrated);
 
                             await this._db.saveVP(migrated);
 
-                            const destinationKeys = PolicyDataMigrator.extractSourceKeys(entityType, migrated as any);
+                            const destinationKeys = PolicyDataMigrator.extractSourceKeys(entityType, migrated);
                             const dstMapKey = destinationKeys.srcMessageId || destinationKeys.srcEntityId || srcMapKey;
 
                             if (sourceKeys.srcEntityId && srcMapKey && dstMapKey) {
@@ -4824,19 +4762,18 @@ export class PolicyDataMigrator {
                             }
 
                             const migrated = await this._migrateMultiSignDocument(src, userId);
-                            delete (migrated as any).id;
-                            delete (migrated as any)._id;
+                            PolicyDataMigrator.clearEntityIdentity(migrated);
                             await this._db.setMultiSigDocument(
-                                String((migrated as any).uuid),
+                                (migrated as any).uuid,
                                 this._policyId,
-                                String((migrated as any).documentId),
+                                (migrated as any).documentId,
                                 {
-                                    id: String((migrated as any).userId),
-                                    did: String((migrated as any).did),
-                                    group: String((migrated as any).group),
-                                    username: String((migrated as any).username),
+                                    id: (migrated as any).userId,
+                                    did: (migrated as any).did,
+                                    group: (migrated as any).group,
+                                    username: (migrated as any).username,
                                 },
-                                String((migrated as any).status || ''),
+                                (migrated as any).status || '',
                                 (migrated as any).document
                             );
 
@@ -4856,8 +4793,7 @@ export class PolicyDataMigrator {
                             }
 
                             const migrated = await this._migrateDocumentState(src);
-                            delete (migrated as any).id;
-                            delete (migrated as any)._id;
+                            PolicyDataMigrator.clearEntityIdentity(migrated);
                             await this._db.saveDocumentState(migrated as any);
 
                             PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
@@ -4876,8 +4812,7 @@ export class PolicyDataMigrator {
                             }
 
                             const migrated = await this._migrateAggregateVC(src);
-                            delete (migrated as any).id;
-                            delete (migrated as any)._id;
+                            PolicyDataMigrator.clearEntityIdentity(migrated);
                             await this._db.createAggregateDocuments(migrated as any, migrated.blockId);
 
                             PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
@@ -4896,8 +4831,7 @@ export class PolicyDataMigrator {
                             }
 
                             const migrated = await this._migrateSplitDocument(src, userId);
-                            delete (migrated as any).id;
-                            delete (migrated as any)._id;
+                            PolicyDataMigrator.clearEntityIdentity(migrated);
                             await this._db.setResidue(migrated as any);
 
                             PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
@@ -4941,7 +4875,7 @@ export class PolicyDataMigrator {
                                 entityType,
                                 srcEntityId,
                                 srcMessageId: srcEntityId,
-                                dstMessageId: String(destinationBlockId)
+                                dstMessageId: destinationBlockId
                             });
                         } else if (entityType === 'mintRequest') {
                             const src = resolveFailedSource('mintRequest', mintRequests, srcEntityId);
@@ -4949,7 +4883,7 @@ export class PolicyDataMigrator {
                                 throw new Error('Source mintRequest not found');
                             }
 
-                            const sourceVpMessageId = src.vpMessageId ? String(src.vpMessageId) : undefined;
+                            const sourceVpMessageId = src.vpMessageId || undefined;
                             const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
                             const mappedVpMessageId = sourceVpMessageId
                                 ? PolicyDataMigrator.getMessageMapping(scopeKey, 'vpDocument', sourceVpMessageId)
@@ -4961,11 +4895,10 @@ export class PolicyDataMigrator {
 
                             const requestToSave = { ...(src as any) } as MintRequest;
                             requestToSave.vpMessageId = mappedVpMessageId;
-                            delete (requestToSave as any).id;
-                            delete (requestToSave as any)._id;
+                            PolicyDataMigrator.clearEntityIdentity(requestToSave);
 
                             const saved = await this._db.saveMintRequest(requestToSave);
-                            localMintRequestMap.set(srcEntityId, String(saved.id));
+                            localMintRequestMap.set(srcEntityId, saved.id);
 
                             PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
                                 startedBy: run.startedBy,
@@ -4974,7 +4907,7 @@ export class PolicyDataMigrator {
                                 entityType,
                                 srcEntityId,
                                 srcMessageId: srcEntityId,
-                                dstMessageId: String(saved.id)
+                                dstMessageId: saved.id
                             });
                         } else if (entityType === 'mintTransaction') {
                             const src = resolveFailedSource('mintTransaction', mintTransactions, srcEntityId);
@@ -4982,7 +4915,7 @@ export class PolicyDataMigrator {
                                 throw new Error('Source mintTransaction not found');
                             }
 
-                            const srcMintRequestId = src.mintRequestId ? String(src.mintRequestId) : undefined;
+                            const srcMintRequestId = src.mintRequestId || undefined;
                             if (!srcMintRequestId) {
                                 throw new Error('Source mintRequestId not found for mintTransaction');
                             }
@@ -5004,8 +4937,7 @@ export class PolicyDataMigrator {
 
                             const txToSave = { ...(src as any) } as MintTransaction;
                             txToSave.mintRequestId = dstMintRequestId;
-                            delete (txToSave as any).id;
-                            delete (txToSave as any)._id;
+                            PolicyDataMigrator.clearEntityIdentity(txToSave);
                             await this._db.saveMintTransaction(txToSave);
 
                             PolicyDataMigrator.appendMappingToBuffer(pendingMappings, {
@@ -5049,11 +4981,9 @@ export class PolicyDataMigrator {
                             throw new Error(`Unsupported failed entityType: ${entityType}`);
                         }
 
-                        entitySummary.processed += 1;
                         entitySummary.success += 1;
                         successItems.push(failedItem);
                     } catch (error) {
-                        entitySummary.processed += 1;
                         entitySummary.failed += 1;
                         errors.push({
                             id: srcEntityId,
@@ -5103,6 +5033,6 @@ export class PolicyDataMigrator {
     }
 
     private static getScopeKeyMappingCache(srcPolicyId: string, dstPolicyId: string, startedBy: string): string {
-        return `${srcPolicyId}:${dstPolicyId}:${String(startedBy || '')}`;
+        return `${srcPolicyId}:${dstPolicyId}:${startedBy || ''}`;
     }
 }

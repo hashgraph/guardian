@@ -441,7 +441,7 @@
                             </span>
                         </td>
                         <td>{{ getRunTotal(run) }}</td>
-                        <td>{{ run?.failedItems?.length || 0 }} ({{ getFailedPercent(run) }})</td>
+                        <td>{{ getFailedCount(run) }} ({{ getFailedPercent(run) }})</td>
                         <td>{{ getSucceededPercent(run) }}</td>
                         <td>
                             <div class="history-actions">

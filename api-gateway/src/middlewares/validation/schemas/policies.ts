@@ -1,15 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-
-export enum MigrationModeDTO {
-    START_NEW = 'start_new',
-    RESUME = 'resume',
-    RETRY_FAILED = 'retry_failed',
-}
+import {
+    MigrationConfig,
+    MigrationConfigPolicies,
+    MigrationFailedItem,
+    MigrationMode,
+    MigrationRunStatus,
+    MigrationRunStatusItem,
+    MigrationRunSummary,
+    MigrationRunsResponse,
+    MigrationStatusResponse
+} from '@guardian/interfaces';
 
 /**
  * Migration config policies DTO
  */
-export class MigrationConfigPoliciesDTO {
+export class MigrationConfigPoliciesDTO implements MigrationConfigPolicies {
     /**
      * Source policy
      */
@@ -25,7 +30,7 @@ export class MigrationConfigPoliciesDTO {
 /**
  * Migration config DTO
  */
-export class MigrationConfigDTO {
+export class MigrationConfigDTO implements MigrationConfig {
     /**
      * Policies
      */
@@ -67,6 +72,11 @@ export class MigrationConfigDTO {
     @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } })
     tokens: { [key: string]: string };
     /**
+     * Tokens map
+     */
+    @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } })
+    tokensMap: { [key: string]: string };
+    /**
      * Migrate state
      */
     @ApiProperty({ type: 'boolean' })
@@ -94,11 +104,11 @@ export class MigrationConfigDTO {
      * Backward compatible: if omitted, start_new is used.
      */
     @ApiProperty({
-        enum: MigrationModeDTO,
+        enum: MigrationMode,
         required: false,
-        default: MigrationModeDTO.START_NEW,
+        default: MigrationMode.START_NEW,
     })
-    mode?: MigrationModeDTO;
+    mode?: MigrationMode;
 
     /**
      * Existing run identifier.
@@ -111,7 +121,7 @@ export class MigrationConfigDTO {
     runId?: string;
 }
 
-export class MigrationFailedItemDTO {
+export class MigrationFailedItemDTO implements MigrationFailedItem {
     @ApiProperty({ type: 'string' })
     srcPolicyId: string;
 
@@ -143,7 +153,7 @@ export class MigrationFailedItemDTO {
     lastFailedAt: string;
 }
 
-export class MigrationRunStatusDTO {
+export class MigrationRunStatusDTO implements MigrationRunStatusItem {
     @ApiProperty({ type: 'string' })
     runId: string;
 
@@ -153,23 +163,23 @@ export class MigrationRunStatusDTO {
     @ApiProperty({ type: 'string' })
     dstPolicyId: string;
 
-    @ApiProperty({ type: 'string' })
-    status: string;
+    @ApiProperty({ enum: MigrationRunStatus })
+    status: MigrationRunStatus | string;
 
     @ApiProperty({ type: 'string', format: 'date-time', nullable: true })
-    startedAt?: string;
+    startedAt?: string | null;
 
     @ApiProperty({ type: 'string', format: 'date-time', nullable: true })
-    finishedAt?: string;
+    finishedAt?: string | null;
 
     @ApiProperty({ type: 'object', additionalProperties: true })
-    summary: any;
+    summary: MigrationRunSummary;
 
     @ApiProperty({ type: () => MigrationFailedItemDTO, isArray: true, required: false })
     failedItems?: MigrationFailedItemDTO[];
 }
 
-export class MigrationRunsResponseDTO {
+export class MigrationRunsResponseDTO implements MigrationRunsResponse {
     @ApiProperty({ type: () => MigrationRunStatusDTO, isArray: true })
     items: MigrationRunStatusDTO[];
 
@@ -183,7 +193,7 @@ export class MigrationRunsResponseDTO {
     pageSize: number;
 }
 
-export class MigrationStatusResponseDTO {
+export class MigrationStatusResponseDTO implements MigrationStatusResponse {
     @ApiProperty({ type: () => MigrationRunStatusDTO, isArray: true })
     items: MigrationRunStatusDTO[];
 }

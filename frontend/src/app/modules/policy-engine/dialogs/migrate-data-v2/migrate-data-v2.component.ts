@@ -8,11 +8,13 @@ import {
 import { forkJoin } from 'rxjs';
 import {
     MigrationRunStatusItem,
-    PolicyEngineService
-} from 'src/app/services/policy-engine.service';
+    MigrationRunSummary,
+    MigrationSummaryItem,
+    PolicyStatus
+} from '@guardian/interfaces';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { JsonEditorDialogComponent } from '../json-editor-dialog/json-editor-dialog.component';
-import { PolicyStatus } from '@guardian/interfaces';
 
 export interface MigrationActionResult {
     action: 'start' | 'resume' | 'retryFailed';
@@ -1011,7 +1013,7 @@ export class MigrateDataV2 {
     }
 
     getFailedPercent(item: MigrationRunStatusItem): string {
-        const failed = Number(item?.failedItems?.length || 0);
+        const failed = this.getFailedCount(item);
         const total = this.getRunTotal(item);
         if (!total) {
             return '0%';
@@ -1032,18 +1034,31 @@ export class MigrateDataV2 {
         return this.getSummaryMetric(item?.summary, 'total');
     }
 
-    private getSummaryMetric(summary: any, metric: string): number {
+    getFailedCount(item: MigrationRunStatusItem): number {
+        return this.getSummaryMetric(item?.summary, 'failed');
+    }
+
+    private getSummaryMetric(
+        summary: MigrationRunSummary | undefined,
+        metric: keyof Pick<MigrationSummaryItem, 'total' | 'success' | 'failed'>
+    ): number {
         if (!summary || typeof summary !== 'object') {
             return 0;
         }
 
-        const directMetric = summary?.[metric];
-        if (typeof directMetric === 'number') {
-            return Number(directMetric);
+        const totalSummary = summary.total;
+        if (metric === 'total') {
+            const directTotal = totalSummary?.total;
+            if (typeof directTotal === 'number') {
+                return Number(directTotal);
+            }
         }
 
         let total = 0;
         for (const key of Object.keys(summary)) {
+            if (key === 'total') {
+                continue;
+            }
             const value = summary[key];
             if (!value || typeof value !== 'object') {
                 continue;
@@ -1053,6 +1068,14 @@ export class MigrateDataV2 {
                 total += Number(nestedMetric);
             }
         }
+
+        if (metric !== 'total') {
+            const totalMetric = totalSummary?.[metric];
+            if (!total && typeof totalMetric === 'number') {
+                return Number(totalMetric);
+            }
+        }
+
         return total;
     }
 }

@@ -1,28 +1,8 @@
 import { AfterDelete, Entity, Property, Unique } from '@mikro-orm/core';
+import { MigrationRunSummary } from '@guardian/interfaces';
 import { BaseEntity } from '../models/base-entity.js';
 import { MigrationFailedItem } from './migration-failed-item.js';
-import { MigrationMessageMap } from './migration-message-map.js';
-import { DataBaseHelper } from "../helpers/index.js";
-
-// export enum MigrationRunStatus {
-//     RUNNING = 'running',
-//     COMPLETED = 'completed',
-//     FAILED = 'failed',
-//     STOPPED = 'stopped',
-// }
-
-export interface MigrationTypeSummary {
-    total: number;
-    processed: number;
-    success: number;
-    failed: number;
-    skipped: number;
-    cursorLastId?: string;
-}
-
-export interface MigrationRunSummary {
-    [entityType: string]: MigrationTypeSummary;
-}
+import { DataBaseHelper } from '../helpers/index.js';
 
 /**
  * Migration run collection
