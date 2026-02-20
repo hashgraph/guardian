@@ -20703,6 +20703,10 @@ components:
           type: object
           additionalProperties:
             type: string
+        tokensMap:
+          type: object
+          additionalProperties:
+            type: string
         migrateState:
           type: boolean
         migrateRetirePools:
@@ -20731,6 +20735,7 @@ components:
         - roles
         - blocks
         - tokens
+        - tokensMap
         - migrateState
         - migrateRetirePools
         - editedVCs
@@ -20784,6 +20789,11 @@ components:
           type: string
         status:
           type: string
+          enum:
+            - running
+            - completed
+            - failed
+            - stopped
         startedAt:
           type: string
           format: date-time
