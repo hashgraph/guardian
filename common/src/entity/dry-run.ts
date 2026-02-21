@@ -805,6 +805,24 @@ export class DryRun extends BaseEntity {
     _oldTableFileIds?: ObjectId[];
 
     /**
+     * Migration run summary.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    summary?: any;
+
+    /**
+     * Migration source policy identifier.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    srcPolicyId?: any;
+
+    /**
+     * Migration destination policy identifier.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    dstPolicyId?: any;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

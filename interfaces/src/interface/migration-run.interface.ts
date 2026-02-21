@@ -60,6 +60,7 @@ export interface MigrationRunStatusItem {
     srcPolicyId: string;
     dstPolicyId: string;
     status: MigrationRunStatus | string;
+    isDryRun?: boolean;
     startedAt?: string | Date | null;
     finishedAt?: string | Date | null;
     summary: MigrationRunSummary;

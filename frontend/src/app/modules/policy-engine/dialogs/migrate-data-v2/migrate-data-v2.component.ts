@@ -939,7 +939,7 @@ export class MigrateDataV2 {
     }
 
     onResume(run: MigrationRunStatusItem) {
-        if (!run?.runId) {
+        if (!run?.runId || this.isResumeDisabled(run)) {
             return;
         }
         const result: MigrationActionResult = {
@@ -950,7 +950,7 @@ export class MigrateDataV2 {
     }
 
     onRetryFailed(run: MigrationRunStatusItem) {
-        if (!run?.runId) {
+        if (!run?.runId || this.isRetryFailedDisabled(run)) {
             return;
         }
         const result: MigrationActionResult = {
@@ -1021,6 +1021,46 @@ export class MigrateDataV2 {
         return `${Math.round((failed * 100) / total)}%`;
     }
 
+    isResumeDisabled(run: MigrationRunStatusItem): boolean {
+        if (run?.isDryRun) {
+            return true;
+        }
+
+        return this.isPublishRunCompletedSuccessfully(run);
+    }
+
+    isRetryFailedDisabled(run: MigrationRunStatusItem): boolean {
+        if (run?.isDryRun) {
+            return true;
+        }
+
+        return this.isPublishRunCompletedSuccessfully(run);
+    }
+
+    getResumeDisabledTooltip(run: MigrationRunStatusItem): string | undefined {
+        if (!this.isResumeDisabled(run)) {
+            return undefined;
+        }
+
+        if (run?.isDryRun) {
+            return 'Resume is unavailable for dry-run migration';
+        }
+
+        return 'Migration is already completed successfully';
+    }
+
+    getRetryFailedDisabledTooltip(run: MigrationRunStatusItem): string | undefined {
+        if (!this.isRetryFailedDisabled(run)) {
+            return undefined;
+        }
+
+        if (run?.isDryRun) {
+            return 'Retry failed is unavailable for dry-run migration';
+        }
+
+        return 'All items were migrated successfully. No failed items to retry';
+    }
+
     getSucceededPercent(item: MigrationRunStatusItem): string {
         const success = this.getSummaryMetric(item?.summary, 'success');
         const total = this.getRunTotal(item);
@@ -1036,6 +1076,18 @@ export class MigrateDataV2 {
 
     getFailedCount(item: MigrationRunStatusItem): number {
         return this.getSummaryMetric(item?.summary, 'failed');
+    }
+
+    private isPublishRunCompletedSuccessfully(run: MigrationRunStatusItem): boolean {
+        const total = this.getRunTotal(run);
+        const failed = this.getFailedCount(run);
+        const success = this.getSummaryMetric(run?.summary, 'success');
+
+        if (!total) {
+            return false;
+        }
+
+        return failed === 0 && success >= total;
     }
 
     private getSummaryMetric(

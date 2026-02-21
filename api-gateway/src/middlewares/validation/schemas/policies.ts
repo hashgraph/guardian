@@ -166,6 +166,9 @@ export class MigrationRunStatusDTO implements MigrationRunStatusItem {
     @ApiProperty({ enum: MigrationRunStatus })
     status: MigrationRunStatus | string;
 
+    @ApiProperty({ type: 'boolean', required: false })
+    isDryRun?: boolean;
+
     @ApiProperty({ type: 'string', format: 'date-time', nullable: true })
     startedAt?: string | null;
 

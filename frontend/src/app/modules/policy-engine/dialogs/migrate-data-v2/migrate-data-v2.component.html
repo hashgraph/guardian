@@ -445,18 +445,30 @@
                         <td>{{ getSucceededPercent(run) }}</td>
                         <td>
                             <div class="history-actions">
-                                <p-button
-                                    label="Resume"
-                                    [outlined]="true"
-                                    styleClass="history-action-btn"
-                                    (onClick)="onResume(run)"
-                                ></p-button>
-                                <p-button
-                                    label="Retry Failed Data"
-                                    [outlined]="true"
-                                    styleClass="history-action-btn"
-                                    (onClick)="onRetryFailed(run)"
-                                ></p-button>
+                                <span
+                                    [pTooltip]="getResumeDisabledTooltip(run)"
+                                    tooltipPosition="top"
+                                >
+                                    <p-button
+                                        label="Resume"
+                                        [outlined]="true"
+                                        styleClass="history-action-btn"
+                                        [disabled]="isResumeDisabled(run)"
+                                        (onClick)="onResume(run)"
+                                    ></p-button>
+                                </span>
+                                <span
+                                    [pTooltip]="getRetryFailedDisabledTooltip(run)"
+                                    tooltipPosition="top"
+                                >
+                                    <p-button
+                                        label="Retry Failed Data"
+                                        [outlined]="true"
+                                        styleClass="history-action-btn"
+                                        [disabled]="isRetryFailedDisabled(run)"
+                                        (onClick)="onRetryFailed(run)"
+                                    ></p-button>
+                                </span>
                             </div>
                         </td>
                     </tr>

@@ -1424,7 +1424,7 @@ export class PolicyDataMigrator {
                 run.status = MigrationRunStatus.FAILED;
                 run.finishedAt = new Date();
                 run.heartbeatAt = new Date();
-                run.error = error;
+                run.error = error?.toString();
                 await this._db.save(MigrationRun, run as MigrationRun);
 
                 errors.push({
@@ -1434,9 +1434,15 @@ export class PolicyDataMigrator {
             }
             throw error;
         } finally {
-            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(
+                run.srcPolicyId,
+                run.dstPolicyId,
+                run.startedBy
+            );
 
-            PolicyDataMigrator.clearRunCache(scopeKey);
+            if (!this._dryRunId) {
+                PolicyDataMigrator.clearRunCache(scopeKey);
+            }
         }
     }
 
@@ -4001,9 +4007,20 @@ export class PolicyDataMigrator {
 
     private static async loadRunMessageCacheFromDb(
         db: DatabaseServer,
-        run: MigrationRun
+        run: MigrationRun,
     ): Promise<void> {
         const scopeKey = `${run.srcPolicyId}:${run.dstPolicyId}:${run.startedBy || ''}`;
+
+        if ((db as any).dryRun) {
+            const existingCache = PolicyDataMigrator.migrationMessageCache.get(scopeKey);
+            if (!existingCache) {
+                PolicyDataMigrator.migrationMessageCache.set(
+                    scopeKey,
+                    new Map<string, Map<string, string>>()
+                );
+            }
+            return;
+        }
 
         const mappings = await db.find(MigrationMessageMap, {
             srcPolicyId: run.srcPolicyId,
@@ -4137,6 +4154,13 @@ export class PolicyDataMigrator {
         if (!buffer.length) {
             return [];
         }
+
+        if (this._dryRunId) {
+            const flushed = [...buffer];
+            buffer.length = 0;
+            return flushed;
+        }
+
 
         const flushed: Partial<MigrationMessageMap>[] = [];
 
@@ -5028,11 +5052,22 @@ export class PolicyDataMigrator {
         } finally {
             const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
-            PolicyDataMigrator.clearRunCache(scopeKey);
+            if (!this._dryRunId) {
+                PolicyDataMigrator.clearRunCache(scopeKey);
+            }
         }
     }
 
     private static getScopeKeyMappingCache(srcPolicyId: string, dstPolicyId: string, startedBy: string): string {
         return `${srcPolicyId}:${dstPolicyId}:${startedBy || ''}`;
+    }
+
+    public static clearRunCacheByPolicyId(policyId: string): void {
+        for (const scopeKey of PolicyDataMigrator.migrationMessageCache.keys()) {
+            const [srcPolicyId, dstPolicyId] = scopeKey.split(':');
+            if (srcPolicyId === policyId || dstPolicyId === policyId) {
+                PolicyDataMigrator.migrationMessageCache.delete(scopeKey);
+            }
+        }
     }
 }
