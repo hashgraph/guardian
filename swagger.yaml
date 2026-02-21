@@ -20794,6 +20794,8 @@ components:
             - completed
             - failed
             - stopped
+        isDryRun:
+          type: boolean
         startedAt:
           type: string
           format: date-time
