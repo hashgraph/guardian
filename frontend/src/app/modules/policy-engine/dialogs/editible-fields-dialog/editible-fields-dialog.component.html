@@ -2,62 +2,59 @@
     <div class="dialog-body">
         <form [formGroup]="form" (ngSubmit)="submit()" class="formgrid grid p-fluid">
             <div formArrayName="fields">
-                <div *ngFor="let fg of fieldGroups; let i = index" [formGroupName]="i">
+                <div *ngFor="let fg of fieldGroups; let i = index; trackBy: trackByIndex" [formGroupName]="i">
                     <div class="fields-grid group-container">
                         <div class="field">
                             <label for="visible">Blocks</label>
                             <select-block
-                                [style]="{ width: '210px' }"
-                                [blocks]="(fg.get('blocks')?.value ?? [])"
+                                [blocks]="this.policyTemplate.allBlocks"
                                 [value]="fg.controls.blockTag.value"
-                                type="object"
                                 (valueChange)="onBlockChange($event, i)"
-
                             ></select-block>
                         </div>
                         <div class="field">
                             <label for="visible">Property</label>
                             <p-dropdown
-                                [style]="{ width: '210px' }"
                                 formControlName="property"
-                                [options]="fg.controls.properties.value"
+                                [options]="propertiesOptions(i)"
                                 optionLabel="label"
                                 optionValue="name"
-                                placeholder="Выберите свойство"
-                                [showClear]="false">
+                                [showClear]="false"
+                                aria-required="true"
+                                >
                             </p-dropdown>
                         </div>
                         <div class="field">
                             <label for="visible">Visible</label>
                             <p-multiSelect
-                                [style]="{ width: '210px' }"
                                 formControlName="visible"
-                                [options]="fg.controls.roles.value"
+                                [options]="this.policyTemplate.policyRoles"
                                 class="guardian-multiselect full-size"
                                 appendTo="body"
                                 placeholder="Visibility"
                                 optionLabel="_name" 
-                                optionValue="id"
+                                optionValue="_name"
                                 filterBy="_name">
                             </p-multiSelect>
                         </div>
                         <div class="field">
                             <label for="appliesTo">Applies To</label>
                             <p-multiSelect
-                                [style]="{ width: '210px' }"
                                 formControlName="appliesTo"
-                                [options]="fg.controls.roles.value"
+                                [options]="appliesToOptions"
                                 class="guardian-multiselect full-size"
                                 appendTo="body"
                                 placeholder="Applies To"
                                 optionLabel="_name" 
-                                optionValue="id"
-                                filterBy="_name">
+                                optionValue="_name"
+                                filterBy="_name"
+                                >
                             </p-multiSelect>
                         </div>
                         <div class="delete-field">
                             <button
                                 class="guardian-icon-button big"
+                                (click)="$event.preventDefault(); removeField(i)"
                                 >
                                 <svg-icon
                                     class="icon-btn svg-icon"

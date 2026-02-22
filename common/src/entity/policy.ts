@@ -1,5 +1,5 @@
 import { BaseEntity } from '../models/index.js';
-import { GenerateUUIDv4, LocationType, PolicyAvailability, PolicyCategoryExport, PolicyStatus } from '@guardian/interfaces';
+import { GenerateUUIDv4, LocationType, PolicyAvailability, PolicyCategoryExport, PolicyEditableFieldDto, PolicyStatus } from '@guardian/interfaces';
 import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
@@ -298,7 +298,7 @@ export class Policy extends BaseEntity {
     originalMessageId?: string;
 
     @Property({ nullable: true })
-    editableParametersSettings?: string;
+    editableParametersSettings?: any[];
 
     /**
      * File id of the original policy zip (publish flow).

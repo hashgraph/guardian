@@ -1,4 +1,4 @@
-import { BlockType, GenerateUUIDv4, GroupRelationshipType, PolicyStatus, Schema, Token, } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, GroupRelationshipType, PolicyEditableFieldDto, PolicyStatus, Schema, Token, } from '@guardian/interfaces';
 import { PolicyRole } from './policy-role.model';
 import { PolicyGroup } from './policy-group.model';
 import { PolicyToken } from './policy-token.model';
@@ -37,8 +37,8 @@ export class PolicyTemplate {
     public readonly version!: string;
     public readonly previousVersion!: string;
     public readonly tests!: any;
-    public readonly editableParametersSettings: string;
 
+    private _editableParametersSettings?: PolicyEditableFieldDto[];
     private _policyTag!: string;
     private _name!: string;
     private _description!: string;
@@ -121,6 +121,15 @@ export class PolicyTemplate {
         this.isRun = this.isDryRun || this.isPublished || this.isDemo;
         this.isTest = this.isDraft || this.isDryRun;
     }
+
+    public get editableParametersSettings(): PolicyEditableFieldDto[] | undefined {
+        return this._editableParametersSettings;
+    }
+
+    public set editableParametersSettings(value: PolicyEditableFieldDto[] | undefined) { 
+        this._editableParametersSettings = value;
+    }
+
 
     public get policyTag(): string {
         return this._policyTag;

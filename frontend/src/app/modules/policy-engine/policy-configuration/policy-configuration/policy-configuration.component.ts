@@ -1722,8 +1722,10 @@ export class PolicyConfigurationComponent implements OnInit {
             }
         });
 
-        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
-            console.log(options);
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (policy) => {
+            if(this.policyTemplate && policy) {
+                this.policyTemplate.editableParametersSettings = policy?.editableParametersSettings;
+            }
         });
     }
 
