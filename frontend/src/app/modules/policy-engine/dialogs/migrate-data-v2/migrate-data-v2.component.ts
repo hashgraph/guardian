@@ -380,9 +380,21 @@ export class MigrateDataV2 {
 
     srcSchemas: any[] = [];
     dstSchemas: any[] = [];
+    schemaIds: string[] = [];
+    pagedSchemaIds: string[] = [];
+    pageIndexSchemas: number = 0;
+    pageSizeSchemas: number = 5;
+    totalSchemas: number = 0;
 
     srcBlocks: any[] = [];
     dstBlocks: any[] = [];
+    private srcBlockNameById: { [id: string]: string } = {};
+    private dstBlockNameById: { [id: string]: string } = {};
+    blockIds: string[] = [];
+    pagedBlockIds: string[] = [];
+    pageIndexBlocks: number = 0;
+    pageSizeBlocks: number = 5;
+    totalBlocks: number = 0;
 
     srcGroups: string[] = [];
     dstGroups: string[] = [];
@@ -499,6 +511,9 @@ export class MigrateDataV2 {
 
     loadSchemas() {
         if (!this.migrationConfig.policiesValidity) {
+            this.schemaIds = [];
+            this.pagedSchemaIds = [];
+            this.totalSchemas = 0;
             return;
         }
         forkJoin([
@@ -507,11 +522,15 @@ export class MigrateDataV2 {
         ]).subscribe((schemas) => {
             this.srcSchemas = schemas[0];
             this.dstSchemas = schemas[1];
+            this.refreshSchemasPagination();
         });
     }
 
     loadBlocks() {
         if (!this.migrationConfig.policiesValidity) {
+            this.blockIds = [];
+            this.pagedBlockIds = [];
+            this.totalBlocks = 0;
             return;
         }
         forkJoin([
@@ -520,10 +539,16 @@ export class MigrateDataV2 {
         ]).subscribe((blocks) => {
             const srcBlocks = blocks[0];
             const dstBlocks = blocks[1];
+            this.srcBlockNameById = {};
+            this.dstBlockNameById = {};
             this.migrationConfig.clearBlocks();
             for (const srcBlockTag of Object.keys(srcBlocks)) {
                 this.migrationConfig.blocks[srcBlocks[srcBlockTag]] =
                     dstBlocks[srcBlockTag];
+                this.srcBlockNameById[srcBlocks[srcBlockTag]] = srcBlockTag;
+            }
+            for (const dstBlockTag of Object.keys(dstBlocks)) {
+                this.dstBlockNameById[dstBlocks[dstBlockTag]] = dstBlockTag;
             }
             this.srcBlocks = Object.entries(srcBlocks).map((item) => ({
                 tag: item[0],
@@ -533,10 +558,24 @@ export class MigrateDataV2 {
                 tag: item[0],
                 id: item[1],
             }));
+            this.blockIds = Object.keys(this.migrationConfig.blocks);
+            this.totalBlocks = this.blockIds.length;
+            if (this.pageIndexBlocks * this.pageSizeBlocks >= this.totalBlocks) {
+                this.pageIndexBlocks = 0;
+            }
+            this.updatePagedBlocks();
         });
     }
 
     async onChange() {
+        this.pageIndexSchemas = 0;
+        this.schemaIds = [];
+        this.pagedSchemaIds = [];
+        this.totalSchemas = 0;
+        this.pageIndexBlocks = 0;
+        this.blockIds = [];
+        this.pagedBlockIds = [];
+        this.totalBlocks = 0;
         this.migrationConfig.clearTokensMap();
         this.migrationConfig.clearTokens();
         this.migrationConfig.clearGroups();
@@ -650,18 +689,12 @@ export class MigrateDataV2 {
         }
     }
 
-    goToStep(index: number) {
-        if (index < 0 || index > this.items.length - 1) {
-            return;
-        }
-        this.activeIndex = index;
-    }
-
     nextStep() {
         if (this.activeIndex + 1 > this.items.length - 1) {
             return;
         }
         this.activeIndex++;
+        this.refreshOverflowAfterRender();
     }
 
     prevStep() {
@@ -669,6 +702,7 @@ export class MigrateDataV2 {
             return;
         }
         this.activeIndex--;
+        this.refreshOverflowAfterRender();
     }
 
     viewDocument(document: any) {
@@ -695,6 +729,7 @@ export class MigrateDataV2 {
                 item.selected = false;
                 return item;
             });
+            this.refreshSchemasPagination();
             return;
         }
         this.loadings.vcs = true;
@@ -709,6 +744,7 @@ export class MigrateDataV2 {
                     vc.selected = true;
                     return vc;
                 });
+                this.refreshSchemasPagination();
                 this.loadings.vcs = false;
             });
     }
@@ -744,6 +780,7 @@ export class MigrateDataV2 {
         } else {
             this.migrationConfig.removeVC(vc);
         }
+        this.refreshSchemasPagination();
         this.allVCsSelected = this.migrationConfig.vcs.length === this.totalVCs;
         setTimeout(() => this._changeDetector.detectChanges());
     }
@@ -768,6 +805,18 @@ export class MigrateDataV2 {
         this.pageIndexVP = Number(event?.page || 0);
         this.pageSizeVP = Number(event?.rows || this.pageSizeVP);
         this.loadVPs();
+    }
+
+    onPageBlocks(event: any) {
+        this.pageIndexBlocks = Number(event?.page || 0);
+        this.pageSizeBlocks = Number(event?.rows || this.pageSizeBlocks);
+        this.updatePagedBlocks();
+    }
+
+    onPageSchemas(event: any) {
+        this.pageIndexSchemas = Number(event?.page || 0);
+        this.pageSizeSchemas = Number(event?.rows || this.pageSizeSchemas);
+        this.updatePagedSchemas();
     }
 
     getObjectKeys(obj: any): string[] {
@@ -818,15 +867,113 @@ export class MigrateDataV2 {
         return schemas.find((item) => item.iri === iri)?.name || iri;
     }
 
+    private getSchemaByIri(iri?: string): any | null {
+        if (!iri) {
+            return null;
+        }
+        return this.dstSchemas.find((item) => item.iri === iri) || null;
+    }
+
+    getDestinationSchemaName(srcSchemaIri: string): string {
+        const dstSchemaIri = this.migrationConfig.schemas[srcSchemaIri];
+        const dstSchema = this.getSchemaByIri(dstSchemaIri);
+        if (dstSchema?.name) {
+            return String(dstSchema.name);
+        }
+        return '';
+    }
+
+    getDestinationSchemaVersion(srcSchemaIri: string): string {
+        const dstSchemaIri = this.migrationConfig.schemas[srcSchemaIri];
+        const dstSchema = this.getSchemaByIri(dstSchemaIri);
+        const version = dstSchema?.version ?? dstSchema?.sourceVersion;
+
+        if (version === 0 || version) {
+            return String(version);
+        }
+        return '-';
+    }
+
+    getDestinationSchemaStatus(srcSchemaIri: string): string {
+        const dstSchemaIri = this.migrationConfig.schemas[srcSchemaIri];
+        const dstSchema = this.getSchemaByIri(dstSchemaIri);
+        if (dstSchema?.status) {
+            return String(dstSchema.status);
+        }
+        return '-';
+    }
+
+    getDestinationBlockName(srcBlockId: string): string {
+        const dstBlockId = this.migrationConfig.blocks[srcBlockId];
+        if (!dstBlockId) {
+            return '';
+        }
+        return this.dstBlockNameById[dstBlockId] || dstBlockId;
+    }
+
+    getSourceBlockName(srcBlockId: string): string {
+        return this.srcBlockNameById[srcBlockId] || srcBlockId;
+    }
+
+    isTextOverflow(element?: HTMLElement | null): boolean {
+        if (!element) {
+            return false;
+        }
+
+        if (element.clientWidth <= 0) {
+            return false;
+        }
+        return element.scrollWidth > element.clientWidth;
+    }
+
+    isDropdownLabelOverflow(container?: HTMLElement | null): boolean {
+        if (!container) {
+            return false;
+        }
+        const label = container.querySelector('.p-dropdown-label') as HTMLElement | null;
+        if (!label) {
+            return false;
+        }
+        if (label.clientWidth <= 0) {
+            return false;
+        }
+        return label.scrollWidth > label.clientWidth;
+    }
+
+    private updatePagedBlocks(): void {
+        const startIndex = this.pageIndexBlocks * this.pageSizeBlocks;
+        const endIndex = startIndex + this.pageSizeBlocks;
+        this.pagedBlockIds = this.blockIds.slice(startIndex, endIndex);
+        this.refreshOverflowAfterRender();
+    }
+
+    private refreshSchemasPagination(): void {
+        this.schemaIds = Object.keys(this.migrationConfig.schemas);
+        this.totalSchemas = this.schemaIds.length;
+        if (this.pageIndexSchemas * this.pageSizeSchemas >= this.totalSchemas) {
+            this.pageIndexSchemas = 0;
+        }
+        this.updatePagedSchemas();
+    }
+
+    private updatePagedSchemas(): void {
+        const startIndex = this.pageIndexSchemas * this.pageSizeSchemas;
+        const endIndex = startIndex + this.pageSizeSchemas;
+        this.pagedSchemaIds = this.schemaIds.slice(startIndex, endIndex);
+        this.refreshOverflowAfterRender();
+    }
+
+    private refreshOverflowAfterRender(): void {
+        setTimeout(() => {
+            this._changeDetector.detectChanges();
+        });
+    }
+
     getDocumentSchemaName(document: any): string {
         if (!document?.schema) {
             return '-';
         }
         return this.getSchemaName(this.srcSchemas, document.schema);
-    }
-
-    getBlockName(blocks: { tag: string; id: string }[], id: string) {
-        return blocks.find((item) => item.id === id)?.tag || id;
     }
 
     editDocument(doc: any) {

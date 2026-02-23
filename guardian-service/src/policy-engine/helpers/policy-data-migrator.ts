@@ -122,17 +122,17 @@ export class PolicyDataMigrator {
     private readonly _ms!: MessageServer;
 
     /**
-     * Migration Run Stale Timeout
+     * Migration Run Heartbeat Stale Timeout
      */
-    private static readonly migrationRunStaleTimeout = Number(
-        process.env.MIGRATION_RUN_STALE_TIMEOUT || 10 * 60 * 1000
+    private static readonly migrationHeartbeatRunStaleTimeout = Number(
+        process.env.MIGRATION_RUN_HEARDBEAT_STALE_TIMEOUT || 10 * 60 * 1000
     );
 
     /**
      * Migration write batch size
      */
     private static readonly migrationWriteBatchSize = Number(
-        process.env.MIGRATION_WRITE_BATCH_SIZE || 1
+        process.env.MIGRATION_WRITE_BATCH_SIZE || 50
     );
 
     /**
@@ -4064,7 +4064,7 @@ export class PolicyDataMigrator {
         let isHeartbeatStale = false;
         if (isRunning && heartbeatAt) {
             isHeartbeatStale =
-                Date.now() - heartbeatAt.getTime() > PolicyDataMigrator.migrationRunStaleTimeout;
+                Date.now() - heartbeatAt.getTime() > PolicyDataMigrator.migrationHeartbeatRunStaleTimeout;
         }
         if (isRunning && !heartbeatAt) {
             isHeartbeatStale = true;
