@@ -16208,6 +16208,13 @@ paths:
           schema:
             example: '0000000000.000000001'
             type: string
+        - name: full
+          required: false
+          in: query
+          description: ''
+          schema:
+            example: 0
+            type: boolean
       responses:
         '200':
           description: Successful operation.
