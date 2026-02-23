@@ -5,7 +5,7 @@ import {
     DynamicDialogConfig,
     DynamicDialogRef,
 } from 'primeng/dynamicdialog';
-import { forkJoin } from 'rxjs';
+import { firstValueFrom, forkJoin } from 'rxjs';
 import {
     MigrationRunStatusItem,
     MigrationRunSummary,
@@ -20,6 +20,24 @@ export interface MigrationActionResult {
     action: 'start' | 'resume' | 'retryFailed';
     migrationConfig?: any;
     runId?: string;
+}
+
+type DocumentType = 'VC' | 'VP';
+type SummaryMetric = keyof Pick<MigrationSummaryItem, 'total' | 'success' | 'failed'>;
+
+interface MigrationDocumentItem {
+    id: string;
+    owner?: string;
+    schema?: string;
+    selected?: boolean;
+    document?: {
+        credentialSubject?: any[];
+    };
+}
+
+interface PageEvent {
+    page?: number;
+    rows?: number;
 }
 
 function findAllEntities(
@@ -72,7 +90,7 @@ class MigrationConfig {
         '#UserRole',
     ];
 
-    private _vcs: { id: string; schema: string }[] = [];
+    private _vcs: { id: string; schema?: string }[] = [];
     private _vps: string[] = [];
     private _schemas: { [key: string]: string | undefined } = {};
     private _groups: { [key: string]: string | undefined } = {};
@@ -270,13 +288,14 @@ class MigrationConfig {
         return false;
     }
 
-    addVC(vc: { id: string; schema: string }) {
+    addVC(vc: { id: string; schema?: string }) {
         this._vcs.push({
             id: vc.id,
             schema: vc.schema,
         });
         this.updateVcValidity();
         if (
+            !!vc.schema &&
             !this.ifSystem(vc.schema) &&
             !this._schemas.hasOwnProperty(vc.schema)
         ) {
@@ -363,13 +382,13 @@ export class MigrateDataV2 {
         },
     ];
 
-    vps: any[] = [];
+    vps: MigrationDocumentItem[] = [];
     allVPsSelected: boolean = false;
     pageIndexVP: number = 0;
     pageSizeVP: number = 5;
     totalVPs!: number;
 
-    vcs: any[] = [];
+    vcs: MigrationDocumentItem[] = [];
     allVCsSelected: boolean = false;
     pageIndexVC: number = 0;
     pageSizeVC: number = 5;
@@ -413,6 +432,10 @@ export class MigrateDataV2 {
     historyTotal = 0;
     pairProgressWarning = '';
     runningMigrationWarning = '';
+    readonly rowsPerPageOptions = [5, 10, 25, 50, 100];
+    private readonly runningStatus = 'running';
+    private readonly historyRunningLimit = 100;
+    private readonly zeroPercent = '0%';
 
     constructor(
         public ref: DynamicDialogRef,
@@ -438,62 +461,70 @@ export class MigrateDataV2 {
     }
 
     loadVCs() {
-        if (!this.migrationConfig.src) {
-            return;
-        }
-        this.loadings.vcs = true;
-        this._policyEngineService
-            .documents(
-                this.migrationConfig.src,
-                true,
-                'VC',
-                this.pageIndexVC,
-                this.pageSizeVC
-            )
-            .subscribe((response) => {
-                this.vcs =
-                    response.body?.map((vc) => {
-                        vc.selected =
-                            this.migrationConfig.vcs.findIndex(
-                                (item) => item.id === vc.id
-                            ) >= 0;
-                        return vc;
-                    }) || [];
-                const totalCountStr = response.headers.get('X-Total-Count');
-                this.totalVCs = totalCountStr
-                    ? +totalCountStr
-                    : this.vcs.length;
-                this.loadings.vcs = false;
-            });
+        this.loadDocuments('VC');
     }
 
     loadVPs() {
+        this.loadDocuments('VP');
+    }
+
+    private loadDocuments(documentType: DocumentType): void {
         if (!this.migrationConfig.src) {
             return;
         }
-        this.loadings.vps = true;
+
+        const isVc = documentType === 'VC';
+        const pageIndex = isVc ? this.pageIndexVC : this.pageIndexVP;
+        const pageSize = isVc ? this.pageSizeVC : this.pageSizeVP;
+        const selectedIds = isVc
+            ? this.migrationConfig.vcs.map((item) => item.id)
+            : this.migrationConfig.vps;
+
+        this.setDocumentLoading(documentType, true);
         this._policyEngineService
             .documents(
                 this.migrationConfig.src,
                 true,
-                'VP',
-                this.pageIndexVP,
-                this.pageSizeVP
+                documentType,
+                pageIndex,
+                pageSize
             )
-            .subscribe((response) => {
-                this.vps =
-                    response.body?.map((vp) => {
-                        vp.selected =
-                            this.migrationConfig.vps.findIndex(
-                                (item) => item === vp.id
-                            ) >= 0;
-                        return vp;
-                    }) || [];
-                const totalCountStr = response.headers.get('X-Total-Count');
-                this.totalVPs = totalCountStr
-                    ? +totalCountStr
-                    : this.vps.length;
-                this.loadings.vps = false;
+            .subscribe({
+                next: (response) => {
+                    const documents = (response.body || []).map((item: MigrationDocumentItem) => {
+                        return {
+                            ...item,
+                            selected: selectedIds.includes(item.id),
+                        };
+                    });
+                    const total = this.getTotalCount(
+                        response?.headers?.get('X-Total-Count'),
+                        documents.length
+                    );
+
+                    if (isVc) {
+                        this.vcs = documents;
+                        this.totalVCs = total;
+                    } else {
+                        this.vps = documents;
+                        this.totalVPs = total;
+                    }
+
+                    this.updateAllDocumentsSelected(documentType);
+                    this.setDocumentLoading(documentType, false);
+                },
+                error: () => {
+                    if (isVc) {
+                        this.vcs = [];
+                        this.totalVCs = 0;
+                    } else {
+                        this.vps = [];
+                        this.totalVPs = 0;
+                    }
+
+                    this.updateAllDocumentsSelected(documentType);
+                    this.setDocumentLoading(documentType, false);
+                },
             });
     }
 
@@ -568,102 +599,28 @@ export class MigrateDataV2 {
     }
 
     async onChange() {
-        this.pageIndexSchemas = 0;
-        this.schemaIds = [];
-        this.pagedSchemaIds = [];
-        this.totalSchemas = 0;
-        this.pageIndexBlocks = 0;
-        this.blockIds = [];
-        this.pagedBlockIds = [];
-        this.totalBlocks = 0;
-        this.migrationConfig.clearTokensMap();
-        this.migrationConfig.clearTokens();
-        this.migrationConfig.clearGroups();
-        this.migrationConfig.clearRoles();
+        this.resetSchemaAndBlocksState();
+        this.resetMigrationMappings();
+        this.resetPolicyMappingState();
+        this.updateSourcePolicyOptions();
+        this.updateDestinationPolicyOptions();
 
         let srcPolicy: any;
-        let dstPolicy: any;
 
         if (this.migrationConfig.dst) {
-            this.pList1 = this.policies.filter(
-                (s) => s.id !== this.migrationConfig.dst
-            );
-            dstPolicy = await this._policyEngineService
-                .policy(this.migrationConfig.dst)
-                .toPromise();
-            this.dstRoles = dstPolicy.policyRoles || [];
-            this.dstGroups =
-                dstPolicy.policyGroups?.map(
-                    (group: { name: string }) => group.name
-                ) || [];
-            this.dstTokens = this.dstGroups =
-                dstPolicy.policyTokens?.map(
-                    (token: { templateTokenTag: string }) =>
-                        token.templateTokenTag
-                ) || [];
-            this.dstTokenMap = findAllEntities(dstPolicy.config, ['tokenId']);
-        } else {
-            this.pList1 = this.policies;
-        }
-
-        if (this.uploadedPolicy) {
-            this.pList1 = [this.uploadedPolicy, ...this.pList1];
+            const dstPolicy = await this.loadPolicy(this.migrationConfig.dst);
+            this.applyDestinationPolicyData(dstPolicy);
         }
 
         if (this.migrationConfig.src) {
-            this.pList2 = this.policies.filter(
-                (s) => s.id !== this.migrationConfig.src
-            );
             this.loadVCs();
             this.loadVPs();
 
-            srcPolicy =
-                this.migrationConfig.src === this.uploadedPolicy?.id
-                    ? this.uploadedPolicy
-                    : await this._policyEngineService
-                        .policy(this.migrationConfig.src)
-                        .toPromise();
-
-            this.srcRoles = srcPolicy.policyRoles || [];
-            if (this.dstRoles.length > 0) {
-                this.srcRoles?.forEach((role) => {
-                    this.migrationConfig.setRole(role);
-                });
-            }
-
-            this.srcGroups =
-                srcPolicy.policyGroups?.map(
-                    (group: { name: string }) => group.name
-                ) || [];
-            if (this.dstGroups.length > 0) {
-                this.srcGroups?.forEach((group) => {
-                    this.migrationConfig.setGroup(group);
-                });
-            }
-
-            this.srcTokens =
-                srcPolicy.policyTokens?.map(
-                    (token: { templateTokenTag: string }) =>
-                        token.templateTokenTag
-                ) || [];
-            if (this.dstTokens.length > 0) {
-                this.srcTokens?.forEach((token) => {
-                    this.migrationConfig.setToken(token);
-                });
-            }
-
-            const srcTokensMap = findAllEntities(srcPolicy.config, ['tokenId']);
-            if (srcTokensMap.length > 0) {
-                srcTokensMap?.forEach((token) => {
-                    this.migrationConfig.setTokenMap(token);
-                });
-            }
-        } else {
-            this.pList2 = this.policies;
+            srcPolicy = await this.loadSourcePolicy();
+            this.applySourcePolicyData(srcPolicy);
         }
 
-        this.showMigrateRetirePools = (srcPolicy?.status !== PolicyStatus.DRY_RUN);
-
+        this.showMigrateRetirePools = srcPolicy?.status !== PolicyStatus.DRY_RUN;
         if (!this.showMigrateRetirePools) {
             this.migrationConfig.migrateRetirePools = false;
         }
@@ -672,10 +629,117 @@ export class MigrateDataV2 {
         this.loadBlocks();
         this.loadPairStatus();
         this.loadRunningMigrationWarning();
+        this.refreshOverflowAfterRender();
+    }
 
-        setTimeout(() => {
-            this._changeDetector.detectChanges();
-        });
+    private resetSchemaAndBlocksState(): void {
+        this.pageIndexSchemas = 0;
+        this.schemaIds = [];
+        this.pagedSchemaIds = [];
+        this.totalSchemas = 0;
+
+        this.pageIndexBlocks = 0;
+        this.blockIds = [];
+        this.pagedBlockIds = [];
+        this.totalBlocks = 0;
+    }
+
+    private resetMigrationMappings(): void {
+        this.migrationConfig.clearTokensMap();
+        this.migrationConfig.clearTokens();
+        this.migrationConfig.clearGroups();
+        this.migrationConfig.clearRoles();
+    }
+
+    private resetPolicyMappingState(): void {
+        this.srcRoles = [];
+        this.dstRoles = [];
+        this.srcGroups = [];
+        this.dstGroups = [];
+        this.srcTokens = [];
+        this.dstTokens = [];
+        this.dstTokenMap = [];
+    }
+
+    private updateSourcePolicyOptions(): void {
+        if (this.migrationConfig.dst) {
+            this.pList1 = this.policies.filter(
+                (policy) => policy.id !== this.migrationConfig.dst
+            );
+        } else {
+            this.pList1 = this.policies;
+        }
+
+        if (this.uploadedPolicy) {
+            this.pList1 = [this.uploadedPolicy, ...this.pList1];
+        }
+    }
+
+    private updateDestinationPolicyOptions(): void {
+        if (this.migrationConfig.src) {
+            this.pList2 = this.policies.filter(
+                (policy) => policy.id !== this.migrationConfig.src
+            );
+        } else {
+            this.pList2 = this.policies;
+        }
+    }
+
+    private async loadPolicy(policyId: string): Promise<any> {
+        return firstValueFrom(this._policyEngineService.policy(policyId));
+    }
+
+    private async loadSourcePolicy(): Promise<any> {
+        if (this.migrationConfig.src === this.uploadedPolicy?.id) {
+            return this.uploadedPolicy;
+        }
+
+        return this.loadPolicy(this.migrationConfig.src!);
+    }
+
+    private applyDestinationPolicyData(policy: any): void {
+        this.dstRoles = policy?.policyRoles || [];
+        this.dstGroups = policy?.policyGroups?.map(
+            (group: { name: string }) => group.name
+        ) || [];
+        this.dstTokens = policy?.policyTokens?.map(
+            (token: { templateTokenTag: string }) => token.templateTokenTag
+        ) || [];
+        this.dstTokenMap = findAllEntities(policy?.config || {}, ['tokenId']);
+    }
+
+    private applySourcePolicyData(policy: any): void {
+        this.srcRoles = policy?.policyRoles || [];
+        if (this.dstRoles.length > 0) {
+            this.srcRoles.forEach((role) => {
+                this.migrationConfig.setRole(role);
+            });
+        }
+
+        this.srcGroups = policy?.policyGroups?.map(
+            (group: { name: string }) => group.name
+        ) || [];
+        if (this.dstGroups.length > 0) {
+            this.srcGroups.forEach((group) => {
+                this.migrationConfig.setGroup(group);
+            });
+        }
+
+        this.srcTokens = policy?.policyTokens?.map(
+            (token: { templateTokenTag: string }) => token.templateTokenTag
+        ) || [];
+        if (this.dstTokens.length > 0) {
+            this.srcTokens.forEach((token) => {
+                this.migrationConfig.setToken(token);
+            });
+        }
+
+        const srcTokensMap = findAllEntities(policy?.config || {}, ['tokenId']);
+        if (srcTokensMap.length > 0) {
+            srcTokensMap.forEach((token) => {
+                this.migrationConfig.setTokenMap(token);
+            });
+        }
     }
 
     onActiveIndexChange(event: number) {
@@ -723,100 +787,198 @@ export class MigrateDataV2 {
     }
 
     selectAllVCs() {
-        if (!this.allVCsSelected) {
-            this.migrationConfig.clearVCs();
-            this.vcs = this.vcs.map((item) => {
-                item.selected = false;
-                return item;
-            });
-            this.refreshSchemasPagination();
-            return;
-        }
-        this.loadings.vcs = true;
-        this._policyEngineService
-            .documents(this.migrationConfig.src!, false, 'VC')
-            .subscribe((response) => {
-                this.migrationConfig.clearVCs();
-                response.body?.forEach(
-                    this.migrationConfig.addVC.bind(this.migrationConfig)
-                );
-                this.vcs = this.vcs.map((vc) => {
-                    vc.selected = true;
-                    return vc;
-                });
-                this.refreshSchemasPagination();
-                this.loadings.vcs = false;
-            });
+        this.toggleSelectAllDocuments('VC');
     }
 
     selectAllVPs() {
-        if (!this.allVPsSelected) {
-            this.migrationConfig.clearVPs();
-            this.vps = this.vps.map((item) => {
-                item.selected = false;
-                return item;
-            });
+        this.toggleSelectAllDocuments('VP');
+    }
+
+    private toggleSelectAllDocuments(documentType: DocumentType): void {
+        const allSelected = documentType === 'VC'
+            ? this.allVCsSelected
+            : this.allVPsSelected;
+
+        if (!allSelected) {
+            this.clearSelectedDocuments(documentType);
+            this.setCurrentPageSelection(documentType, false);
+            if (documentType === 'VC') {
+                this.refreshSchemasPagination();
+            }
+            this.updateAllDocumentsSelected(documentType);
             return;
         }
-        this.loadings.vps = true;
+
+        if (!this.migrationConfig.src) {
+            this.updateAllDocumentsSelected(documentType);
+            return;
+        }
+
+        this.setDocumentLoading(documentType, true);
         this._policyEngineService
-            .documents(this.migrationConfig.src!, false, 'VP')
-            .subscribe((response) => {
-                this.migrationConfig.clearVPs();
-                response.body?.forEach(
-                    this.migrationConfig.addVP.bind(this.migrationConfig)
-                );
-                this.vps = this.vps.map((vp) => {
-                    vp.selected = true;
-                    return vp;
-                });
-                this.loadings.vps = false;
+            .documents(this.migrationConfig.src, false, documentType)
+            .subscribe({
+                next: (response) => {
+                    const documents = response.body || [];
+                    this.clearSelectedDocuments(documentType);
+                    documents.forEach((document: MigrationDocumentItem) => {
+                        this.addDocumentSelection(documentType, document);
+                    });
+                    this.setCurrentPageSelection(documentType, true);
+                    if (documentType === 'VC') {
+                        this.refreshSchemasPagination();
+                    }
+                    this.updateAllDocumentsSelected(documentType);
+                    this.setDocumentLoading(documentType, false);
+                },
+                error: () => {
+                    this.updateAllDocumentsSelected(documentType);
+                    this.setDocumentLoading(documentType, false);
+                },
             });
     }
 
-    selectVC(vc: any) {
-        if (vc.selected) {
-            this.migrationConfig.addVC(vc);
-        } else {
-            this.migrationConfig.removeVC(vc);
-        }
-        this.refreshSchemasPagination();
-        this.allVCsSelected = this.migrationConfig.vcs.length === this.totalVCs;
-        setTimeout(() => this._changeDetector.detectChanges());
+    selectVC(vc: MigrationDocumentItem) {
+        this.toggleDocumentSelection(vc, 'VC');
     }
 
-    selectVP(vp: any) {
-        if (vp.selected) {
-            this.migrationConfig.addVP(vp);
-        } else {
-            this.migrationConfig.removeVP(vp);
-        }
-        this.allVPsSelected = this.migrationConfig.vps.length === this.totalVPs;
-        setTimeout(() => this._changeDetector.detectChanges());
+    selectVP(vp: MigrationDocumentItem) {
+        this.toggleDocumentSelection(vp, 'VP');
     }
 
-    onPageVC(event: any) {
-        this.pageIndexVC = Number(event?.page || 0);
-        this.pageSizeVC = Number(event?.rows || this.pageSizeVC);
+    private toggleDocumentSelection(document: MigrationDocumentItem, documentType: DocumentType): void {
+        if (document.selected) {
+            this.addDocumentSelection(documentType, document);
+        } else {
+            this.removeDocumentSelection(documentType, document);
+        }
+
+        if (documentType === 'VC') {
+            this.refreshSchemasPagination();
+        }
+
+        this.updateAllDocumentsSelected(documentType);
+        this.refreshOverflowAfterRender();
+    }
+
+    onPageVC(event: PageEvent) {
+        const state = this.resolvePageState(event, this.pageSizeVC);
+        this.pageIndexVC = state.pageIndex;
+        this.pageSizeVC = state.pageSize;
         this.loadVCs();
     }
 
-    onPageVP(event: any) {
-        this.pageIndexVP = Number(event?.page || 0);
-        this.pageSizeVP = Number(event?.rows || this.pageSizeVP);
+    onPageVP(event: PageEvent) {
+        const state = this.resolvePageState(event, this.pageSizeVP);
+        this.pageIndexVP = state.pageIndex;
+        this.pageSizeVP = state.pageSize;
         this.loadVPs();
     }
 
-    onPageBlocks(event: any) {
-        this.pageIndexBlocks = Number(event?.page || 0);
-        this.pageSizeBlocks = Number(event?.rows || this.pageSizeBlocks);
+    onPageBlocks(event: PageEvent) {
+        const state = this.resolvePageState(event, this.pageSizeBlocks);
+        this.pageIndexBlocks = state.pageIndex;
+        this.pageSizeBlocks = state.pageSize;
         this.updatePagedBlocks();
     }
 
-    onPageSchemas(event: any) {
-        this.pageIndexSchemas = Number(event?.page || 0);
-        this.pageSizeSchemas = Number(event?.rows || this.pageSizeSchemas);
+    onPageSchemas(event: PageEvent) {
+        const state = this.resolvePageState(event, this.pageSizeSchemas);
+        this.pageIndexSchemas = state.pageIndex;
+        this.pageSizeSchemas = state.pageSize;
         this.updatePagedSchemas();
+    }
+
+    private resolvePageState(
+        event: PageEvent,
+        currentPageSize: number
+    ): { pageIndex: number; pageSize: number } {
+        return {
+            pageIndex: Number(event?.page || 0),
+            pageSize: Number(event?.rows || currentPageSize),
+        };
+    }
+
+    private setDocumentLoading(documentType: DocumentType, loading: boolean): void {
+        if (documentType === 'VC') {
+            this.loadings.vcs = loading;
+        } else {
+            this.loadings.vps = loading;
+        }
+    }
+
+    private clearSelectedDocuments(documentType: DocumentType): void {
+        if (documentType === 'VC') {
+            this.migrationConfig.clearVCs();
+        } else {
+            this.migrationConfig.clearVPs();
+        }
+    }
+
+    private addDocumentSelection(documentType: DocumentType, document: MigrationDocumentItem): void {
+        if (documentType === 'VC') {
+            this.migrationConfig.addVC({
+                id: document.id,
+                schema: document.schema,
+            });
+        } else {
+            this.migrationConfig.addVP({
+                id: document.id,
+            });
+        }
+    }
+
+    private removeDocumentSelection(documentType: DocumentType, document: MigrationDocumentItem): void {
+        if (documentType === 'VC') {
+            this.migrationConfig.removeVC({
+                id: document.id,
+            });
+        } else {
+            this.migrationConfig.removeVP({
+                id: document.id,
+            });
+        }
+    }
+
+    private setCurrentPageSelection(documentType: DocumentType, selected: boolean): void {
+        if (documentType === 'VC') {
+            this.vcs = this.vcs.map((item) => {
+                return {
+                    ...item,
+                    selected,
+                };
+            });
+        } else {
+            this.vps = this.vps.map((item) => {
+                return {
+                    ...item,
+                    selected,
+                };
+            });
+        }
+    }
+
+    private updateAllDocumentsSelected(documentType: DocumentType): void {
+        if (documentType === 'VC') {
+            this.allVCsSelected = this.totalVCs > 0 &&
+                this.migrationConfig.vcs.length === this.totalVCs;
+        } else {
+            this.allVPsSelected = this.totalVPs > 0 &&
+                this.migrationConfig.vps.length === this.totalVPs;
+        }
+    }
+
+    private getTotalCount(totalCountValue: string | null, fallback: number): number {
+        if (!totalCountValue) {
+            return fallback;
+        }
+
+        const parsedCount = Number(totalCountValue);
+        if (Number.isNaN(parsedCount)) {
+            return fallback;
+        }
+
+        return parsedCount;
     }
 
     getObjectKeys(obj: any): string[] {
@@ -1079,9 +1241,10 @@ export class MigrateDataV2 {
             });
     }
 
-    onHistoryPage(event: any) {
-        this.historyPageIndex = Number(event?.page || 0);
-        this.historyPageSize = Number(event?.rows || this.historyPageSize);
+    onHistoryPage(event: PageEvent) {
+        const state = this.resolvePageState(event, this.historyPageSize);
+        this.historyPageIndex = state.pageIndex;
+        this.historyPageSize = state.pageSize;
         this.loadMigrationRuns();
     }
 
@@ -1089,20 +1252,23 @@ export class MigrateDataV2 {
         if (!run?.runId || this.isResumeDisabled(run)) {
             return;
         }
-        const result: MigrationActionResult = {
-            action: 'resume',
-            runId: run.runId
-        };
-        this.ref.close(result);
+        this.closeWithRunAction('resume', run.runId);
     }
 
     onRetryFailed(run: MigrationRunStatusItem) {
         if (!run?.runId || this.isRetryFailedDisabled(run)) {
             return;
         }
+        this.closeWithRunAction('retryFailed', run.runId);
+    }
+
+    private closeWithRunAction(
+        action: MigrationActionResult['action'],
+        runId: string
+    ): void {
         const result: MigrationActionResult = {
-            action: 'retryFailed',
-            runId: run.runId
+            action,
+            runId
         };
         this.ref.close(result);
     }
@@ -1117,7 +1283,7 @@ export class MigrateDataV2 {
             .subscribe({
                 next: (response) => {
                     const latestRun = response?.items?.[0];
-                    if (latestRun?.status?.toLowerCase() === 'running') {
+                    if (latestRun?.status?.toLowerCase() === this.runningStatus) {
                         this.pairProgressWarning = 'This source - destination pair is already in migration progress. Please select another one';
                     } else {
                         this.pairProgressWarning = '';
@@ -1135,7 +1301,7 @@ export class MigrateDataV2 {
             return;
         }
         this._policyEngineService
-            .getMigrationRuns(0, 100, ['running'])
+            .getMigrationRuns(0, this.historyRunningLimit, [this.runningStatus])
             .subscribe({
                 next: (response) => {
                     const activeRuns = response?.items || [];
@@ -1163,56 +1329,32 @@ export class MigrateDataV2 {
         const failed = this.getFailedCount(item);
         const total = this.getRunTotal(item);
         if (!total) {
-            return '0%';
+            return this.zeroPercent;
         }
         return `${Math.round((failed * 100) / total)}%`;
     }
 
     isResumeDisabled(run: MigrationRunStatusItem): boolean {
-        if (run?.isDryRun) {
-            return true;
-        }
-
-        return this.isPublishRunCompletedSuccessfully(run);
+        return this.isRunActionDisabled(run);
     }
 
     isRetryFailedDisabled(run: MigrationRunStatusItem): boolean {
-        if (run?.isDryRun) {
-            return true;
-        }
-
-        return this.isPublishRunCompletedSuccessfully(run);
+        return this.isRunActionDisabled(run);
     }
 
     getResumeDisabledTooltip(run: MigrationRunStatusItem): string | undefined {
-        if (!this.isResumeDisabled(run)) {
-            return undefined;
-        }
-
-        if (run?.isDryRun) {
-            return 'Resume is unavailable for dry-run migration';
-        }
-
-        return 'Migration is already completed successfully';
+        return this.getRunActionTooltip(run, 'resume');
     }
 
     getRetryFailedDisabledTooltip(run: MigrationRunStatusItem): string | undefined {
-        if (!this.isRetryFailedDisabled(run)) {
-            return undefined;
-        }
-
-        if (run?.isDryRun) {
-            return 'Retry failed is unavailable for dry-run migration';
-        }
-
-        return 'All items were migrated successfully. No failed items to retry';
+        return this.getRunActionTooltip(run, 'retryFailed');
     }
 
     getSucceededPercent(item: MigrationRunStatusItem): string {
         const success = this.getSummaryMetric(item?.summary, 'success');
         const total = this.getRunTotal(item);
         if (!total) {
-            return '0%';
+            return this.zeroPercent;
         }
         return `${Math.round((success * 100) / total)}%`;
     }
@@ -1223,6 +1365,36 @@ export class MigrateDataV2 {
 
     getFailedCount(item: MigrationRunStatusItem): number {
         return this.getSummaryMetric(item?.summary, 'failed');
+    }
+
+    private isRunActionDisabled(run: MigrationRunStatusItem): boolean {
+        if (run?.isDryRun) {
+            return true;
+        }
+
+        return this.isPublishRunCompletedSuccessfully(run);
+    }
+
+    private getRunActionTooltip(
+        run: MigrationRunStatusItem,
+        action: 'resume' | 'retryFailed'
+    ): string | undefined {
+        if (!this.isRunActionDisabled(run)) {
+            return undefined;
+        }
+
+        if (run?.isDryRun) {
+            if (action === 'resume') {
+                return 'Resume is unavailable for dry-run migration';
+            }
+            return 'Retry failed is unavailable for dry-run migration';
+        }
+
+        if (action === 'resume') {
+            return 'Migration is already completed successfully';
+        }
+
+        return 'All items were migrated successfully. No failed items to retry';
     }
 
     private isPublishRunCompletedSuccessfully(run: MigrationRunStatusItem): boolean {
@@ -1239,7 +1411,7 @@ export class MigrateDataV2 {
 
     private getSummaryMetric(
         summary: MigrationRunSummary | undefined,
-        metric: keyof Pick<MigrationSummaryItem, 'total' | 'success' | 'failed'>
+        metric: SummaryMetric
     ): number {
         if (!summary || typeof summary !== 'object') {
             return 0;
