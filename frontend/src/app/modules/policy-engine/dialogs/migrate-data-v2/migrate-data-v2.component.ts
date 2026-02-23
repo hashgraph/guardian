@@ -417,9 +417,19 @@ export class MigrateDataV2 {
 
     srcGroups: string[] = [];
     dstGroups: string[] = [];
+    groupKeys: string[] = [];
+    pagedGroupKeys: string[] = [];
+    pageIndexGroups: number = 0;
+    pageSizeGroups: number = 5;
+    totalGroups: number = 0;
 
     srcTokens: string[] = [];
     dstTokens: string[] = [];
+    tokenKeys: string[] = [];
+    pagedTokenKeys: string[] = [];
+    pageIndexTokens: number = 0;
+    pageSizeTokens: number = 5;
+    totalTokens: number = 0;
 
     dstTokenMap: string[] = [];
 
@@ -436,6 +446,14 @@ export class MigrateDataV2 {
     private readonly runningStatus = 'running';
     private readonly historyRunningLimit = 100;
     private readonly zeroPercent = '0%';
+    private readonly stepsWithBottomLayout = new Set([
+        'vps',
+        'vcs',
+        'schemas',
+        'groups',
+        'tokens',
+        'blocks',
+    ]);
 
     constructor(
         public ref: DynamicDialogRef,
@@ -620,6 +638,9 @@ export class MigrateDataV2 {
             this.applySourcePolicyData(srcPolicy);
         }
 
+        this.refreshGroupsPagination();
+        this.refreshTokensPagination();
+
         this.showMigrateRetirePools = srcPolicy?.status !== PolicyStatus.DRY_RUN;
         if (!this.showMigrateRetirePools) {
             this.migrationConfig.migrateRetirePools = false;
@@ -642,6 +663,16 @@ export class MigrateDataV2 {
         this.blockIds = [];
         this.pagedBlockIds = [];
         this.totalBlocks = 0;
+
+        this.pageIndexGroups = 0;
+        this.groupKeys = [];
+        this.pagedGroupKeys = [];
+        this.totalGroups = 0;
+
+        this.pageIndexTokens = 0;
+        this.tokenKeys = [];
+        this.pagedTokenKeys = [];
+        this.totalTokens = 0;
     }
 
     private resetMigrationMappings(): void {
@@ -744,6 +775,10 @@ export class MigrateDataV2 {
 
     onActiveIndexChange(event: number) {
         this.activeIndex = event;
+    }
+
+    isStepWithBottomLayout(stepId: string): boolean {
+        return this.stepsWithBottomLayout.has(stepId);
     }
 
     onTabChange(event: any) {
@@ -887,6 +922,20 @@ export class MigrateDataV2 {
         this.pageIndexSchemas = state.pageIndex;
         this.pageSizeSchemas = state.pageSize;
         this.updatePagedSchemas();
+    }
+
+    onPageGroups(event: PageEvent) {
+        const state = this.resolvePageState(event, this.pageSizeGroups);
+        this.pageIndexGroups = state.pageIndex;
+        this.pageSizeGroups = state.pageSize;
+        this.updatePagedGroups();
+    }
+
+    onPageTokens(event: PageEvent) {
+        const state = this.resolvePageState(event, this.pageSizeTokens);
+        this.pageIndexTokens = state.pageIndex;
+        this.pageSizeTokens = state.pageSize;
+        this.updatePagedTokens();
     }
 
     private resolvePageState(
@@ -1122,6 +1171,38 @@ export class MigrateDataV2 {
         const startIndex = this.pageIndexSchemas * this.pageSizeSchemas;
         const endIndex = startIndex + this.pageSizeSchemas;
         this.pagedSchemaIds = this.schemaIds.slice(startIndex, endIndex);
+        this.refreshOverflowAfterRender();
+    }
+
+    private refreshGroupsPagination(): void {
+        this.groupKeys = Object.keys(this.migrationConfig.groups);
+        this.totalGroups = this.groupKeys.length;
+        if (this.pageIndexGroups * this.pageSizeGroups >= this.totalGroups) {
+            this.pageIndexGroups = 0;
+        }
+        this.updatePagedGroups();
+    }
+
+    private updatePagedGroups(): void {
+        const startIndex = this.pageIndexGroups * this.pageSizeGroups;
+        const endIndex = startIndex + this.pageSizeGroups;
+        this.pagedGroupKeys = this.groupKeys.slice(startIndex, endIndex);
+        this.refreshOverflowAfterRender();
+    }
+
+    private refreshTokensPagination(): void {
+        this.tokenKeys = Object.keys(this.migrationConfig.tokens);
+        this.totalTokens = this.tokenKeys.length;
+        if (this.pageIndexTokens * this.pageSizeTokens >= this.totalTokens) {
+            this.pageIndexTokens = 0;
+        }
+        this.updatePagedTokens();
+    }
+
+    private updatePagedTokens(): void {
+        const startIndex = this.pageIndexTokens * this.pageSizeTokens;
+        const endIndex = startIndex + this.pageSizeTokens;
+        this.pagedTokenKeys = this.tokenKeys.slice(startIndex, endIndex);
         this.refreshOverflowAfterRender();
     }
 
@@ -1380,7 +1461,7 @@ export class MigrateDataV2 {
         action: 'resume' | 'retryFailed'
     ): string | undefined {
         if (!this.isRunActionDisabled(run)) {
-            return undefined;
+            return;
         }
 
         if (run?.isDryRun) {

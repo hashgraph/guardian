@@ -301,6 +301,16 @@
     width: 100%;
 }
 
+.groups-bottom {
+    display: grid;
+    width: 100%;
+}
+
+.tokens-bottom {
+    display: grid;
+    width: 100%;
+}
+
 .schemas-bottom {
     display: grid;
     width: 100%;
@@ -566,6 +576,112 @@
     min-width: 0;
 }
 
+.groups-mapping-panel {
+    display: grid;
+    row-gap: 14px;
+    padding: 20px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 10px;
+    background: var(--guardian-secondary-background, #FFFFFF);
+}
+
+.groups-mapping-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 12px;
+}
+
+.groups-source-cell {
+    height: 44px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 10px;
+    background: var(--guardian-grey-color-1, #F5F7FB);
+    display: grid;
+    align-items: center;
+    padding: 0 16px;
+    min-width: 0;
+}
+
+.groups-source-text {
+    display: block;
+    width: 100%;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--guardian-font-color, #23252E);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.groups-link-cell {
+    height: 44px;
+    display: grid;
+    place-items: center;
+}
+
+.groups-target-cell {
+    min-width: 0;
+}
+
+.groups-target-dropdown {
+    width: 100%;
+    min-width: 0;
+}
+
+.tokens-mapping-panel {
+    display: grid;
+    row-gap: 14px;
+    padding: 20px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 10px;
+    background: var(--guardian-secondary-background, #FFFFFF);
+}
+
+.tokens-mapping-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 12px;
+}
+
+.tokens-source-cell {
+    height: 44px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 10px;
+    background: var(--guardian-grey-color-1, #F5F7FB);
+    display: grid;
+    align-items: center;
+    padding: 0 16px;
+    min-width: 0;
+}
+
+.tokens-source-text {
+    display: block;
+    width: 100%;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--guardian-font-color, #23252E);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tokens-link-cell {
+    height: 44px;
+    display: grid;
+    place-items: center;
+}
+
+.tokens-target-cell {
+    min-width: 0;
+}
+
+.tokens-target-dropdown {
+    width: 100%;
+    min-width: 0;
+}
+
 .empty-step-panel {
     min-height: 430px;
     height: 100%;
@@ -689,7 +805,39 @@
         white-space: nowrap;
     }
 
+    .migrate-data-root .groups-target-dropdown .p-dropdown {
+        border-color: var(--guardian-border-color, #E1E7EF);
+        min-width: 0;
+    }
+
+    .migrate-data-root .groups-target-dropdown .p-dropdown-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .migrate-data-root .tokens-target-dropdown .p-dropdown {
+        border-color: var(--guardian-border-color, #E1E7EF);
+        min-width: 0;
+    }
+
+    .migrate-data-root .tokens-target-dropdown .p-dropdown-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .migrate-data-root .blocks-link-icon {
+        font-size: 16px;
+        color: var(--guardian-grey-color-3, #AAB7C4);
+    }
+
+    .migrate-data-root .groups-link-icon {
+        font-size: 16px;
+        color: var(--guardian-grey-color-3, #AAB7C4);
+    }
+
+    .migrate-data-root .tokens-link-icon {
         font-size: 16px;
         color: var(--guardian-grey-color-3, #AAB7C4);
     }
@@ -944,6 +1092,18 @@
     }
 
     .migrate-data-root .schemas-paginator {
+        width: 100%;
+        justify-content: space-between;
+        min-width: 0;
+    }
+
+    .migrate-data-root .groups-paginator {
+        width: 100%;
+        justify-content: space-between;
+        min-width: 0;
+    }
+
+    .migrate-data-root .tokens-paginator {
         width: 100%;
         justify-content: space-between;
         min-width: 0;

@@ -36,7 +36,7 @@
                     *ngIf="!loading"
                     [ngSwitch]="items[activeIndex].id"
                     class="step-content-card"
-                    [class.docs-content-card]="items[activeIndex].id === 'vps' || items[activeIndex].id === 'vcs' || items[activeIndex].id === 'schemas' || items[activeIndex].id === 'blocks'"
+                    [class.docs-content-card]="isStepWithBottomLayout(items[activeIndex].id || '')"
                     [class.policy-step-content-card]="items[activeIndex].id === 'policies'"
                 >
             <div *ngSwitchCase="'policies'" class="step-container">
@@ -440,21 +440,57 @@
                     </div>
                 </ng-template>
             </div>
-            <div *ngSwitchCase="'groups'" class="step-container">
-                <div class="mapping-content"
-                    *ngIf="getObjectKeys(this.migrationConfig.groups).length > 0; else noGroups">
-                    <div *ngFor="let group of getObjectKeys(this.migrationConfig.groups)" class="mapping">
-                        <div class="map-left">
-                            <span [title]="group">{{group}}</span>
-                        </div>
-                        <span>:</span>
-                        <div class="map-right">
-                            <div>
-                                <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.groups[group]"
-                                    [options]="dstGroups" [showClear]="true" placeholder="Select group"></p-dropdown>
+            <div *ngSwitchCase="'groups'" class="step-container docs-step-container">
+                <ng-container *ngIf="totalGroups > 0; else noGroups">
+                    <div class="documents-table-container">
+                        <div class="groups-mapping-panel">
+                            <div *ngFor="let group of pagedGroupKeys" class="groups-mapping-row">
+                                <div class="groups-source-cell">
+                                    <span
+                                        #groupSourceText
+                                        class="groups-source-text"
+                                        [pTooltip]="group"
+                                        [tooltipDisabled]="!isTextOverflow(groupSourceText)"
+                                        tooltipPosition="top"
+                                    >
+                                        {{ group }}
+                                    </span>
+                                </div>
+                                <div class="groups-link-cell">
+                                    <i class="pi pi-link groups-link-icon"></i>
+                                </div>
+                                <div class="groups-target-cell">
+                                    <div
+                                        #groupTargetDropdown
+                                        class="groups-target-dropdown"
+                                        [pTooltip]="migrationConfig.groups[group]"
+                                        [tooltipDisabled]="!isDropdownLabelOverflow(groupTargetDropdown)"
+                                        tooltipPosition="top"
+                                    >
+                                        <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.groups[group]"
+                                            [options]="dstGroups"
+                                            [showClear]="true"
+                                            placeholder="Select group"></p-dropdown>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </ng-container>
+                <div class="groups-bottom" *ngIf="totalGroups > 0">
+                    <p-paginator
+                        styleClass="history-paginator docs-paginator groups-paginator"
+                        (onPageChange)="onPageGroups($event)"
+                        [first]="pageIndexGroups * pageSizeGroups"
+                        [rows]="pageSizeGroups"
+                        [totalRecords]="totalGroups"
+                        dropdownAppendTo="body"
+                        [rowsPerPageOptions]="rowsPerPageOptions"
+                        [showCurrentPageReport]="true"
+                        currentPageReportTemplate="{first} - {last} of {totalRecords}"
+                        [showPageLinks]="false"
+                        [showFirstLastIcon]="false"
+                    ></p-paginator>
                 </div>
                 <ng-template #noGroups>
                     <div class="empty-step-panel">
@@ -463,21 +499,57 @@
                     </div>
                 </ng-template>
             </div>
-            <div *ngSwitchCase="'tokens'" class="step-container">
-                <div class="mapping-content"
-                    *ngIf="getObjectKeys(this.migrationConfig.tokens).length > 0; else noTokens">
-                    <div *ngFor="let token of getObjectKeys(this.migrationConfig.tokens)" class="mapping">
-                        <div class="map-left">
-                            <span [title]="token">{{token}}</span>
-                        </div>
-                        <span>:</span>
-                        <div class="map-right">
-                            <div>
-                                <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.tokens[token]"
-                                    [options]="dstTokens" [showClear]="true" placeholder="Select token"></p-dropdown>
+            <div *ngSwitchCase="'tokens'" class="step-container docs-step-container">
+                <ng-container *ngIf="getObjectKeys(this.migrationConfig.tokens).length > 0; else noTokens">
+                    <div class="documents-table-container">
+                        <div class="tokens-mapping-panel">
+                            <div *ngFor="let token of pagedTokenKeys" class="tokens-mapping-row">
+                                <div class="tokens-source-cell">
+                                    <span
+                                        #tokenSourceText
+                                        class="tokens-source-text"
+                                        [pTooltip]="token"
+                                        [tooltipDisabled]="!isTextOverflow(tokenSourceText)"
+                                        tooltipPosition="top"
+                                    >
+                                        {{ token }}
+                                    </span>
+                                </div>
+                                <div class="tokens-link-cell">
+                                    <i class="pi pi-link tokens-link-icon"></i>
+                                </div>
+                                <div class="tokens-target-cell">
+                                    <div
+                                        #tokenTargetDropdown
+                                        class="tokens-target-dropdown"
+                                        [pTooltip]="migrationConfig.tokens[token]"
+                                        [tooltipDisabled]="!isDropdownLabelOverflow(tokenTargetDropdown)"
+                                        tooltipPosition="top"
+                                    >
+                                        <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.tokens[token]"
+                                            [options]="dstTokens"
+                                            [showClear]="true"
+                                            placeholder="Select token"></p-dropdown>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </ng-container>
+                <div class="tokens-bottom" *ngIf="totalTokens > 0">
+                    <p-paginator
+                        styleClass="history-paginator docs-paginator tokens-paginator"
+                        (onPageChange)="onPageTokens($event)"
+                        [first]="pageIndexTokens * pageSizeTokens"
+                        [rows]="pageSizeTokens"
+                        [totalRecords]="totalTokens"
+                        dropdownAppendTo="body"
+                        [rowsPerPageOptions]="rowsPerPageOptions"
+                        [showCurrentPageReport]="true"
+                        currentPageReportTemplate="{first} - {last} of {totalRecords}"
+                        [showPageLinks]="false"
+                        [showFirstLastIcon]="false"
+                    ></p-paginator>
                 </div>
                 <ng-template #noTokens>
                     <div class="empty-step-panel">
