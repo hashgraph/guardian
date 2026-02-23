@@ -370,6 +370,13 @@ export class ExternalPoliciesApi {
         required: true,
         example: Examples.MESSAGE_ID
     })
+    @ApiQuery({
+        name: 'full',
+        type: Boolean,
+        description: '',
+        required: false,
+        example: 0
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -383,11 +390,13 @@ export class ExternalPoliciesApi {
     @HttpCode(HttpStatus.OK)
     async disconnectPolicy(
         @AuthUser() user: IAuthUser,
-        @Param('messageId') messageId: string
+        @Param('messageId') messageId: string,
+        @Query('full') full?: string | boolean,
     ): Promise<boolean> {
         try {
             const guardians = new Guardians();
-            return await guardians.disconnectPolicy(messageId, new EntityOwner(user));
+            const _full = full === 'true' || full === true;
+            return await guardians.disconnectPolicy(messageId, _full, new EntityOwner(user));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

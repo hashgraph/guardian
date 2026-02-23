@@ -2085,9 +2085,10 @@ export class PoliciesComponent implements OnInit {
             });
             dialogRef.onClose.subscribe((result: string) => {
                 if (result === 'Disconnect') {
+                    const full = false;
                     this.loading = true;
                     this.externalPoliciesService
-                        .disconnect(policy.messageId)
+                        .disconnect(policy.messageId, full)
                         .pipe(takeUntil(this._destroy$))
                         .subscribe((result) => {
                             this.loadAllPolicy();

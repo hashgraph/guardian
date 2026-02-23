@@ -3937,8 +3937,8 @@ export class Guardians extends NatsService {
      * @param messageId
      * @param owner
      */
-    public async disconnectPolicy(messageId: string, owner: IOwner): Promise<boolean> {
-        return await this.sendMessage(MessageAPI.DISCONNECT_EXTERNAL_POLICY, { messageId, owner });
+    public async disconnectPolicy(messageId: string, full: boolean, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DISCONNECT_EXTERNAL_POLICY, { messageId, full, owner });
     }
 
     /**

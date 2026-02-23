@@ -45,6 +45,7 @@ export enum PolicyEvents {
     REFRESH_MODEL = 'policy-event-refresh-model',
     DISCONNECT_POLICY = 'policy-event-disconnect-policy',
     RECONNECT_POLICY = 'policy-engine-reconnect-policy',
+    DISCONNECT_REMOTE_POLICY = 'policy-event-disconnect-remote-policy',
     GET_TAG_BLOCK_MAP = 'policy-event-get-tag-block-map',
     APPROVE_REMOTE_REQUEST = 'approve-remote-request',
     REJECT_REMOTE_REQUEST = 'reject-remote-request',

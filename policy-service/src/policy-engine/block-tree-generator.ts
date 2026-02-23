@@ -485,6 +485,16 @@ export class BlockTreeGenerator extends NatsService {
                 return new MessageError(error, 500);
             }
         });
+
+        this.getPolicyMessages(PolicyEvents.DISCONNECT_REMOTE_POLICY, policyId, async (msg: any) => {
+            try {
+                const { user } = msg;
+                const row = await PolicyComponentsUtils.DisconnectRemotePolicy(policyInstance, policyId, user);
+                return new MessageResponse(row);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
     }
 
     /**

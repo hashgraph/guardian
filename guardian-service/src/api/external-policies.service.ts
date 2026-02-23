@@ -13,9 +13,10 @@ import {
     INotificationStep,
     NewNotifier
 } from '@guardian/common';
-import { AssignedEntityType, ExternalPolicyStatus, ExternalPolicyType, IOwner, MessageAPI, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';
+import { AssignedEntityType, ExternalPolicyStatus, ExternalPolicyType, IOwner, MessageAPI, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { ImportMode, ImportPolicyOptions, PolicyImportExportHelper } from '../helpers/import-helpers/index.js'
+import { GuardiansService } from '../helpers/guardians.js';
 
 async function assignPolicy(policyId: string, user: string, assign: boolean): Promise<void> {
     if (!policyId) {
@@ -472,13 +473,13 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
      * @param {any} msg - messageId
      */
     ApiResponse(MessageAPI.DISCONNECT_EXTERNAL_POLICY,
-        async (msg: { messageId: string, owner: IOwner }) => {
+        async (msg: { messageId: string, full: boolean, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
 
-                const { messageId, owner } = msg;
+                const { messageId, full, owner } = msg;
 
                 const policy = await DatabaseServer.getPolicy({ messageId });
 
@@ -492,6 +493,14 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 if (item) {
                     item.type = ExternalPolicyType.DISCONNECT;
                     await DatabaseServer.updateExternalPolicy(item);
+                }
+
+                if (full) {
+                    await new GuardiansService()
+                        .sendPolicyMessage<boolean>(PolicyEvents.DISCONNECT_POLICY, policy.id, {
+                            user: owner,
+                            policyId: policy.id,
+                        }) as any
                 }
 
                 return new MessageResponse(true);

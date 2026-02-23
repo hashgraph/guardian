@@ -1877,6 +1877,21 @@ export class PolicyComponentsUtils {
         return true;
     }
 
+    public static async DisconnectRemotePolicy(
+        policy: IPolicyInstance | AnyBlockType,
+        policyId: string,
+        user: IAuthUser
+    ): Promise<boolean> {
+        if (policy.locationType === LocationType.REMOTE) {
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
+            const userId = policyUser.userId;
+            await PolicyActionsUtils.disconnectPolicy({ policyId, user: policyUser, userId });
+            return true;
+        } else {
+            return true;
+        }
+    }
+
     public static async ReconnectPolicy(policyId: string, user: IAuthUser): Promise<boolean> {
         const db = new DatabaseServer();
         await DatabaseServer.reconnectPolicy(policyId, user.did);
