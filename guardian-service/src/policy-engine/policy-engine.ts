@@ -72,6 +72,7 @@ import { GuardiansService } from '../helpers/guardians.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 import { publishFormula } from '../api/helpers/formulas-helpers.js';
 import { FilterObject } from '@mikro-orm/core';
+import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 
 /**
  * Result of publishing
@@ -1710,6 +1711,7 @@ export class PolicyEngine extends NatsService {
             if (policy.status === PolicyStatus.DRY_RUN) {
                 await this.destroyModel(policyId, owner.id);
                 await DatabaseServer.clearDryRun(policy.id.toString(), true);
+                PolicyDataMigrator.clearRunCacheByPolicyId(policy.id.toString());
             }
             const newPolicy = await this.publishPolicy(
                 policy,

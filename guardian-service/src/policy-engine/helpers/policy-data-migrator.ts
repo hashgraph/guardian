@@ -129,6 +129,13 @@ export class PolicyDataMigrator {
     );
 
     /**
+     * Migration write batch size
+     */
+    private static readonly migrationWriteBatchSize = Number(
+        process.env.MIGRATION_WRITE_BATCH_SIZE || 1
+    );
+
+    /**
      * runtime cache:
      * scopeKey(srcPolicyId:dstPolicyId:startedBy) -> entityType -> srcMessageId -> dstMessageId
      */
@@ -1219,15 +1226,11 @@ export class PolicyDataMigrator {
         try {
             // <-- Steps
             const STEP_MIGRATE_POLICY = 'Migrate policy state';
-            const STEP_MIGRATE_VC = 'Migrate VC documents';
-            const STEP_MIGRATE_VP = 'Migrate VP documents';
-            const STEP_MIGRATE_TOKENS = 'Migrate Tokens';
+            const STEP_MIGRATE_DOCUMENTS_TOKEN = 'Migrate documents and tokens';
             // Steps -->
 
             this._notifier.addStep(STEP_MIGRATE_POLICY);
-            this._notifier.addStep(STEP_MIGRATE_VC);
-            this._notifier.addStep(STEP_MIGRATE_VP);
-            this._notifier.addStep(STEP_MIGRATE_TOKENS);
+            this._notifier.addStep(STEP_MIGRATE_DOCUMENTS_TOKEN);
             this._notifier.start();
 
             this._notifier.startStep(STEP_MIGRATE_POLICY);
@@ -1315,7 +1318,68 @@ export class PolicyDataMigrator {
                 this._notifier.skipStep(STEP_MIGRATE_POLICY);
             }
 
-            this._notifier.startStep(STEP_MIGRATE_VC);
+            const migrationSummary = run.summary as MigrationRunSummary;
+            const documentsStep = this._notifier.getStep(STEP_MIGRATE_DOCUMENTS_TOKEN);
+
+            const vcTotal = Number(migrationSummary?.vcDocument?.total || 0);
+            const vpTotal = Number(migrationSummary?.vpDocument?.total || 0);
+            const mintRequestTotal = Number(migrationSummary?.mintRequest?.total || 0);
+            const mintTransactionTotal = Number(migrationSummary?.mintTransaction?.total || 0);
+            const retirePoolTotal = Number(migrationSummary?.retirePool?.total || 0);
+
+            const vcProgressStep = documentsStep
+                ? documentsStep.addStep('VC documents', vcTotal > 0 ? vcTotal : 1, true)
+                : null;
+            const vpProgressStep = documentsStep
+                ? documentsStep.addStep('VP documents', vpTotal > 0 ? vpTotal : 1, true)
+                : null;
+
+            const mintRequestProgressStep = documentsStep && migrateState
+                ? documentsStep.addStep('Mint requests', mintRequestTotal > 0 ? mintRequestTotal : 1, true)
+                : null;
+            const mintTransactionProgressStep = documentsStep && migrateState
+                ? documentsStep.addStep('Mint transactions', mintTransactionTotal > 0 ? mintTransactionTotal : 1, true)
+                : null;
+            const retirePoolProgressStep = documentsStep && migrateState && migrateRetirePools
+                ? documentsStep.addStep('Retire pools', retirePoolTotal > 0 ? retirePoolTotal : 1, true)
+                : null;
+
+            if (vcProgressStep) {
+                vcProgressStep.start();
+                if (vcTotal === 0) {
+                    vcProgressStep.complete();
+                }
+            }
+
+            if (vpProgressStep) {
+                vpProgressStep.start();
+                if (vpTotal === 0) {
+                    vpProgressStep.complete();
+                }
+            }
+
+            if (mintRequestProgressStep) {
+                mintRequestProgressStep.start();
+                if (mintRequestTotal === 0) {
+                    mintRequestProgressStep.complete();
+                }
+            }
+
+            if (mintTransactionProgressStep) {
+                mintTransactionProgressStep.start();
+                if (mintTransactionTotal === 0) {
+                    mintTransactionProgressStep.complete();
+                }
+            }
+
+            if (retirePoolProgressStep) {
+                retirePoolProgressStep.start();
+                if (retirePoolTotal === 0) {
+                    retirePoolProgressStep.complete();
+                }
+            }
+
+            this._notifier.startStep(STEP_MIGRATE_DOCUMENTS_TOKEN);
             await this._migrateDocumentV2<VcDocument>(
                 'vcDocument',
                 vcs,
@@ -1324,8 +1388,15 @@ export class PolicyDataMigrator {
                 this._db.saveVC.bind(this._db),
                 userId,
                 run as MigrationRun,
-                errors
+                errors,
+                vcProgressStep,
+                'VC Documents'
             );
+
+            if (vcProgressStep && vcTotal > 0) {
+                vcProgressStep.complete();
+            }
+
             if (migrateState) {
                 await this._migrateDocumentV2<MultiDocuments>(
                     'multiDocument',
@@ -1375,9 +1446,6 @@ export class PolicyDataMigrator {
                 );
             }
 
-            this._notifier.completeStep(STEP_MIGRATE_VC);
-
-            this._notifier.startStep(STEP_MIGRATE_VP);
             await this._migrateDocumentV2<VpDocument>(
                 'vpDocument',
                 vps,
@@ -1386,30 +1454,49 @@ export class PolicyDataMigrator {
                 this._db.saveVP.bind(this._db),
                 userId,
                 run as MigrationRun,
-                errors
+                errors,
+                vpProgressStep,
+                'VP Documents'
             );
+
+            if (vpProgressStep && vpTotal > 0) {
+                vpProgressStep.complete();
+            }
 
             if (migrateState) {
                 await this._migrateMintRequestsV2(
                     mintRequests,
                     mintTransactions,
                     run as MigrationRun,
-                    errors
+                    errors,
+                    mintRequestProgressStep,
+                    mintTransactionProgressStep
                 );
-            }
-            this._notifier.completeStep(STEP_MIGRATE_VP);
 
-            this._notifier.startStep(STEP_MIGRATE_TOKENS);
+                if (mintRequestProgressStep && mintRequestTotal > 0) {
+                    mintRequestProgressStep.complete();
+                }
+                if (mintTransactionProgressStep && mintTransactionTotal > 0) {
+                    mintTransactionProgressStep.complete();
+                }
+            }
+
             if (migrateRetirePools && migrateState) {
                 await this.migrateTokenPoolsV2(
                     retireContractId,
                     retirePools,
                     run as MigrationRun,
                     userId,
-                    errors
+                    errors,
+                    retirePoolProgressStep,
+                    'Retire pools'
                 );
+
+                if (retirePoolProgressStep && retirePoolTotal > 0) {
+                    retirePoolProgressStep.complete();
+                }
             }
-            this._notifier.completeStep(STEP_MIGRATE_TOKENS);
+            this._notifier.completeStep(STEP_MIGRATE_DOCUMENTS_TOKEN);
 
             if (run.status === MigrationRunStatus.RUNNING) {
                 run.status = MigrationRunStatus.COMPLETED;
@@ -1489,6 +1576,8 @@ export class PolicyDataMigrator {
      * @param run
      * @param userId
      * @param errors
+     * @param progressStep
+     * @param progressLabel
      * @param writeBatchSize
      */
     async migrateTokenPoolsV2(
@@ -1497,7 +1586,9 @@ export class PolicyDataMigrator {
         run: MigrationRun,
         userId: string | null,
         errors: DocumentError[],
-        writeBatchSize = 50,
+        progressStep: INotificationStep | null = null,
+        progressLabel: string = 'Retire pools',
+        writeBatchSize = PolicyDataMigrator.migrationWriteBatchSize,
     ) {
         if (!contractId) {
             return;
@@ -1510,6 +1601,12 @@ export class PolicyDataMigrator {
         if (!poolSummary) {
             throw new Error('Summary item not found for entityType: retirePool');
         }
+
+        const reportRetirePoolProgress = this.createBatchStepProgressReporter(
+            progressStep,
+            progressLabel || 'Retire pools',
+            poolSummary
+        );
 
         const getSourceId = (pool: RetirePool): string | undefined => {
             if (pool?.id) {
@@ -1651,6 +1748,8 @@ export class PolicyDataMigrator {
                 entityType,
                 lastCursor
             );
+
+            reportRetirePoolProgress();
 
             PolicyDataMigrator.applyFlushedMappingsToMemory(flushed);
         }
@@ -2028,6 +2127,8 @@ export class PolicyDataMigrator {
      * @param userId
      * @param run
      * @param errors
+     * @param progressStep
+     * @param progressLabel
      * @param writeBatchSize
      */
     private async _migrateDocumentV2<T extends BaseEntity>(
@@ -2038,7 +2139,9 @@ export class PolicyDataMigrator {
         userId: string | null,
         run: MigrationRun,
         errors: DocumentError[],
-        writeBatchSize = 50,
+        progressStep: INotificationStep | null = null,
+        progressLabel: string = '',
+        writeBatchSize = PolicyDataMigrator.migrationWriteBatchSize,
     ) {
         const summary = run.summary as MigrationRunSummary;
         const entitySummary = summary?.[entityType];
@@ -2047,6 +2150,11 @@ export class PolicyDataMigrator {
             throw new Error(`Summary item not found for entityType: ${entityType}`);
         }
 
+        const reportBatchProgress = this.createBatchStepProgressReporter(
+            progressStep,
+            progressLabel || entityType,
+            entitySummary
+        );
         const saveFailedItem = async (document: T, error: any) => {
             const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, document);
             const srcEntityId = sourceKeys.srcEntityId;
@@ -2181,6 +2289,8 @@ export class PolicyDataMigrator {
                 entityType,
                 lastCursor
             );
+
+            reportBatchProgress()
 
             PolicyDataMigrator.applyFlushedMappingsToMemory(flushed);
         }
@@ -2525,7 +2635,7 @@ export class PolicyDataMigrator {
         states: BlockState[],
         run: MigrationRun,
         errors: DocumentError[],
-        writeBatchSize = 50,
+        writeBatchSize = PolicyDataMigrator.migrationWriteBatchSize,
     ) {
         const entityType: keyof MigrationRunSummary = 'policyState';
         const summary = run.summary;
@@ -2729,7 +2839,7 @@ export class PolicyDataMigrator {
         userId: string | null,
         run: MigrationRun,
         errors: DocumentError[],
-        writeBatchSize = 50,
+        writeBatchSize = PolicyDataMigrator.migrationWriteBatchSize,
     ) {
         const entityType = 'policyRole';
         const summary = run.summary as MigrationRunSummary;
@@ -3222,6 +3332,8 @@ export class PolicyDataMigrator {
      * @param mintTransactions Mint transactions
      * @param run
      * @param errors
+     * @param requestProgressStep
+     * @param transactionProgressStep
      * @param writeBatchSize
      */
     private async _migrateMintRequestsV2(
@@ -3229,7 +3341,9 @@ export class PolicyDataMigrator {
         mintTransactions: MintTransaction[],
         run: MigrationRun,
         errors: DocumentError[],
-        writeBatchSize = 50,
+        requestProgressStep: INotificationStep | null = null,
+        transactionProgressStep: INotificationStep | null = null,
+        writeBatchSize = PolicyDataMigrator.migrationWriteBatchSize,
     ) {
         const summary = run.summary as MigrationRunSummary;
         const requestSummary = summary?.mintRequest;
@@ -3241,6 +3355,18 @@ export class PolicyDataMigrator {
         if (!transactionSummary) {
             throw new Error('Summary item not found for entityType: mintTransaction');
         }
+
+        const reportMintRequestProgress = this.createBatchStepProgressReporter(
+            requestProgressStep,
+            'Mint requests',
+            requestSummary
+        );
+
+        const reportMintTransactionProgress = this.createBatchStepProgressReporter(
+            transactionProgressStep,
+            'Mint transactions',
+            transactionSummary
+        );
 
         const getRequestSourceId = (request: MintRequest): string | undefined => {
             if (request?.id) {
@@ -3406,6 +3532,8 @@ export class PolicyDataMigrator {
                 lastRequestCursor
             );
 
+            reportMintRequestProgress();
+
             PolicyDataMigrator.applyFlushedMappingsToMemory(flushed);
         }
 
@@ -3520,6 +3648,8 @@ export class PolicyDataMigrator {
                 'mintTransaction',
                 lastTransactionCursor
             );
+
+            reportMintTransactionProgress();
 
             PolicyDataMigrator.applyFlushedMappingsToMemory(flushed);
         }
@@ -5069,5 +5199,50 @@ export class PolicyDataMigrator {
                 PolicyDataMigrator.migrationMessageCache.delete(scopeKey);
             }
         }
+    }
+
+    private createBatchStepProgressReporter(
+        step: INotificationStep | null,
+        label: string,
+        summaryItem?: { total: number; success: number; failed: number }
+    ): () => void {
+        let lastReportedPercent = 0;
+        let progressNode: INotificationStep | null = null;
+
+        return () => {
+            if (!step || !summaryItem) {
+                return;
+            }
+
+            const total = summaryItem.total ?? 0;
+            if (total <= 0) {
+                return;
+            }
+
+            if (!progressNode) {
+                progressNode = step.addStep(`${label}`, 1, true);
+                progressNode.setEstimate(100);
+                progressNode.start();
+            }
+
+            const processed = (summaryItem.success ?? 0) + (summaryItem.failed ?? 0);
+            const percent = Math.floor((processed * 100) / total);
+
+            if (percent <= lastReportedPercent) {
+                return;
+            }
+
+            for (let p = lastReportedPercent + 1; p <= percent; p++) {
+                const tick = progressNode.addStep(`${label} ${p}%`, 1, true);
+                tick.start();
+                tick.complete();
+            }
+
+            lastReportedPercent = percent;
+
+            if (percent >= 100) {
+                progressNode.complete();
+            }
+        };
     }
 }
