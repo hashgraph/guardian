@@ -18,7 +18,7 @@
     },
     "description": "",
     "devDependencies": {
-        "@types/glob": "^8.1.0",
+        "@types/glob": "^9.0.0",
         "@types/gulp": "^4",
         "@types/gulp-rename": "^2",
         "@types/node": "^22.15.19",
