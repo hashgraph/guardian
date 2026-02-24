@@ -586,6 +586,6 @@ export class PolicyActionsUtils {
         const { policyId, user } = options;
         const data = await PolicyDisconnectAction.request(options);
         const controller = PolicyComponentsUtils.getActionsController(policyId);
-        return await controller.sendRemoteAction(user, data, true);
+        return await controller.sendRemoteAction(user, data, false);
     }
 }
