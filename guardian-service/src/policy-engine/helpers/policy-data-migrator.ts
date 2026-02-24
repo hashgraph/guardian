@@ -37,7 +37,7 @@ import {
     INotificationStep,
     MigrationRun,
     MigrationFailedItem,
-    MigrationMessageMap,
+    MigrationMessageMap, DataBaseHelper, DryRun,
 } from '@guardian/common';
 import {
     ContractAPI,
@@ -53,7 +53,7 @@ import {
     BlockType,
     MigrationRunStatus,
     MigrationRunSummary,
-    MigrationSummaryItem,
+    MigrationSummaryItem, IOwner,
 } from '@guardian/interfaces';
 import {
     BlockStateLoader,
@@ -5237,5 +5237,37 @@ export class PolicyDataMigrator {
                 progressNode.complete();
             }
         };
+    }
+
+    public static isRunActive(run: Partial<MigrationRun>): boolean {
+        const normalized = PolicyDataMigrator.mapRunToResponse(run as MigrationRun);
+        return normalized.status === MigrationRunStatus.RUNNING;
+    }
+
+    public static async assertNoActiveMigrationForUser(owner: IOwner): Promise<void> {
+        const startedBy = owner?.id;
+
+        const regularRuns = await new DatabaseServer().find(MigrationRun, {
+            startedBy,
+            status: MigrationRunStatus.RUNNING
+        } as Partial<MigrationRun>);
+
+        const dryRunRaw = await new DataBaseHelper(DryRun).find({
+            dryRunClass: 'MigrationRun',
+            startedBy,
+            status: MigrationRunStatus.RUNNING
+        } as any);
+
+        const allRuns = [
+            ...(regularRuns || []),
+            ...((dryRunRaw as unknown as Partial<MigrationRun>[]) || [])
+        ];
+
+        const hasActive = allRuns.some((run) => PolicyDataMigrator.isRunActive(run));
+        if (hasActive) {
+            throw new Error(
+                'Another migration is already running. Please wait until it is finished.'
+            );
+        }
     }
 }

@@ -442,6 +442,7 @@ export class MigrateDataV2 {
     historyTotal = 0;
     pairProgressWarning = '';
     runningMigrationWarning = '';
+    private hasRunningMigration = false;
     readonly rowsPerPageOptions = [5, 10, 25, 50, 100];
     private readonly runningStatus = 'running';
     private readonly historyRunningLimit = 100;
@@ -551,6 +552,9 @@ export class MigrateDataV2 {
     }
 
     onSubmit() {
+        if (this.hasPolicySelectionError) {
+            return;
+        }
         const result: MigrationActionResult = {
             action: 'start',
             migrationConfig: this.migrationConfig.value
@@ -1340,6 +1344,7 @@ export class MigrateDataV2 {
 
     loadMigrationRuns() {
         this.historyLoading = true;
+        this.loadRunningMigrationWarning();
         this._policyEngineService
             .getMigrationRuns(this.historyPageIndex, this.historyPageSize)
             .subscribe({
@@ -1399,7 +1404,7 @@ export class MigrateDataV2 {
                 next: (response) => {
                     const latestRun = response?.items?.[0];
                     if (latestRun?.status?.toLowerCase() === this.runningStatus) {
-                        this.pairProgressWarning = 'This source - destination pair is already in migration progress. Please select another one';
+                        this.pairProgressWarning = 'Migration for this source and destination policy pair is already running. Please select another pair.';
                     } else {
                         this.pairProgressWarning = '';
                     }
@@ -1411,26 +1416,22 @@ export class MigrateDataV2 {
     }
 
     loadRunningMigrationWarning() {
+        this.hasRunningMigration = false;
         this.runningMigrationWarning = '';
-        if (!this.migrationConfig.src || !this.migrationConfig.dst) {
-            return;
-        }
         this._policyEngineService
             .getMigrationRuns(0, this.historyRunningLimit, [this.runningStatus])
             .subscribe({
                 next: (response) => {
                     const activeRuns = response?.items || [];
-                    const hasAnotherRun = activeRuns.some((run) => {
-                        return run.srcPolicyId !== this.migrationConfig.src ||
-                            run.dstPolicyId !== this.migrationConfig.dst;
-                    });
-                    if (hasAnotherRun) {
-                        this.runningMigrationWarning = 'A new migration cannot be started because another migration is currently in progress.';
+                    this.hasRunningMigration = activeRuns.length > 0;
+                    if (this.hasRunningMigration) {
+                        this.runningMigrationWarning = 'Another migration is already running. Starting a new migration is available only after the current one is finished.';
                     } else {
                         this.runningMigrationWarning = '';
                     }
                 },
                 error: () => {
+                    this.hasRunningMigration = false;
                     this.runningMigrationWarning = '';
                 }
             });
@@ -1483,6 +1484,9 @@ export class MigrateDataV2 {
     }
 
     private isRunActionDisabled(run: MigrationRunStatusItem): boolean {
+        if (this.hasRunningMigration) {
+            return true;
+        }
         return this.isPublishRunCompletedSuccessfully(run);
     }
 
@@ -1492,6 +1496,10 @@ export class MigrateDataV2 {
     ): string | undefined {
         if (!this.isRunActionDisabled(run)) {
             return;
+        }
+
+        if (this.hasRunningMigration) {
+            return 'Another migration is already running. Wait until it is finished.';
         }
 
         if (action === 'resume') {

@@ -78,16 +78,16 @@
                             optionValue="id"
                             [styleClass]="hasPolicySelectionError ? 'migration-policy-dropdown migration-policy-dropdown-error' : 'migration-policy-dropdown'"
                             placeholder="Select Policy"></p-dropdown>
+                        <div class="policy-meta">
+                            <span>Version: {{ getPolicyVersion(migrationConfig.dst) }}</span>
+                            <span>Status: {{ getPolicyStatus(migrationConfig.dst) }}</span>
+                            <span>Topic: {{ getPolicyTopic(migrationConfig.dst) }}</span>
+                        </div>
                         <div *ngIf="pairProgressWarning" class="policy-warning">
                             {{ pairProgressWarning }}
                         </div>
                         <div *ngIf="!pairProgressWarning && runningMigrationWarning" class="policy-warning">
                             {{ runningMigrationWarning }}
-                        </div>
-                        <div class="policy-meta">
-                            <span>Version: {{ getPolicyVersion(migrationConfig.dst) }}</span>
-                            <span>Status: {{ getPolicyStatus(migrationConfig.dst) }}</span>
-                            <span>Topic: {{ getPolicyTopic(migrationConfig.dst) }}</span>
                         </div>
                     </div>
                     <div class="policy-migration-options">

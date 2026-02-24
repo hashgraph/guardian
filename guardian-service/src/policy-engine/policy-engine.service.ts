@@ -2556,6 +2556,8 @@ export class PolicyEngineService {
                     const notifier = await NewNotifier.create(task);
                     RunFunctionAsync(
                         async () => {
+                            await PolicyDataMigrator.assertNoActiveMigrationForUser(owner);
+
                             const { src, dst } = migrationConfig.policies;
 
                             const srcPolicy = await DatabaseServer.getPolicyById(src);
@@ -2645,6 +2647,8 @@ export class PolicyEngineService {
 
                     RunFunctionAsync(
                         async () => {
+                            await PolicyDataMigrator.assertNoActiveMigrationForUser(owner);
+
                             const db = new DatabaseServer();
                             let run = await db.findOne(MigrationRun, {
                                 id: runId,
@@ -2737,6 +2741,8 @@ export class PolicyEngineService {
 
                     RunFunctionAsync(
                         async () => {
+                            await PolicyDataMigrator.assertNoActiveMigrationForUser(owner);
+
                             const db = new DatabaseServer();
                             let run = await db.findOne(MigrationRun, {
                                 id: runId,
