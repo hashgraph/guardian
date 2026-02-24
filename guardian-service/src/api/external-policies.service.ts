@@ -497,7 +497,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
 
                 if (full) {
                     await new GuardiansService()
-                        .sendPolicyMessage<boolean>(PolicyEvents.DISCONNECT_POLICY, policy.id, {
+                        .sendPolicyMessage<boolean>(PolicyEvents.DISCONNECT_REMOTE_POLICY, policy.id, {
                             user: owner,
                             policyId: policy.id,
                         }) as any
