@@ -149,15 +149,6 @@ export class PolicyEngine extends NatsService {
     private readonly policyInitializationErrors: Map<string, string> = new Map();
 
     private static readonly policyRestartQueue = new Map<string, Promise<void>>();
-    private static readonly policyRestartStopTimeoutMs = Number(
-        process.env.POLICY_RESTART_STOP_TIMEOUT_MS || 60 * 1000
-    );
-    private static readonly policyRestartStartTimeoutMs = Number(
-        process.env.POLICY_RESTART_START_TIMEOUT_MS || 60 * 1000
-    );
-    private static readonly policyRestartPollIntervalMs = Number(
-        process.env.POLICY_RESTART_POLL_INTERVAL_MS || 300
-    );
 
     /**
      * Initialization
@@ -1939,14 +1930,13 @@ export class PolicyEngine extends NatsService {
             await this.waitForPolicyAliveState(
                 policyId,
                 true,
-                PolicyEngine.policyRestartStartTimeoutMs
+                60 * 1000
             );
         });
     }
 
     /**
      * Destroy model and wait until policy process is fully stopped.
-     * Used only in migration flows.
      * @param policyId
      * @param policyOwnerId
      */
@@ -1970,7 +1960,7 @@ export class PolicyEngine extends NatsService {
         await this.waitForPolicyAliveState(
             policyId,
             false,
-            PolicyEngine.policyRestartStopTimeoutMs
+            60 * 1000
         );
     }
 
@@ -1990,9 +1980,7 @@ export class PolicyEngine extends NatsService {
         try {
             return await callback();
         } finally {
-            if (release) {
-                release();
-            }
+            release();
             const tail = PolicyEngine.policyRestartQueue.get(policyId);
             if (tail === current) {
                 PolicyEngine.policyRestartQueue.delete(policyId);
@@ -2022,13 +2010,13 @@ export class PolicyEngine extends NatsService {
                 );
             }
 
-            await this.sleep(PolicyEngine.policyRestartPollIntervalMs);
+            await this.sleep(300);
         }
     }
 
-    private async sleep(ms: number): Promise<void> {
+    private async sleep(policyRestartPollIntervalMs: number): Promise<void> {
         await new Promise<void>((resolve) => {
-            setTimeout(resolve, ms);
+            setTimeout(resolve, policyRestartPollIntervalMs);
         });
     }
 
@@ -2053,7 +2041,7 @@ export class PolicyEngine extends NatsService {
             }
             policyId = policy.id.toString();
         }
-        const result = await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
+        return  await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
             policy,
             isDruRun,
             ignoreRules,

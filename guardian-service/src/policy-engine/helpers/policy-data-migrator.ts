@@ -1527,9 +1527,7 @@ export class PolicyDataMigrator {
                 run.startedBy
             );
 
-            if (!this._dryRunId) {
-                PolicyDataMigrator.clearRunCache(scopeKey);
-            }
+            PolicyDataMigrator.clearRunCache(scopeKey);
         }
     }
 
@@ -4141,16 +4139,16 @@ export class PolicyDataMigrator {
     ): Promise<void> {
         const scopeKey = `${run.srcPolicyId}:${run.dstPolicyId}:${run.startedBy || ''}`;
 
-        if ((db as any).dryRun) {
-            const existingCache = PolicyDataMigrator.migrationMessageCache.get(scopeKey);
-            if (!existingCache) {
-                PolicyDataMigrator.migrationMessageCache.set(
-                    scopeKey,
-                    new Map<string, Map<string, string>>()
-                );
-            }
-            return;
-        }
+        // if ((db as any).dryRun) {
+        //     const existingCache = PolicyDataMigrator.migrationMessageCache.get(scopeKey);
+        //     if (!existingCache) {
+        //         PolicyDataMigrator.migrationMessageCache.set(
+        //             scopeKey,
+        //             new Map<string, Map<string, string>>()
+        //         );
+        //     }
+        //     return;
+        // }
 
         const mappings = await db.find(MigrationMessageMap, {
             srcPolicyId: run.srcPolicyId,
@@ -4285,12 +4283,11 @@ export class PolicyDataMigrator {
             return [];
         }
 
-        if (this._dryRunId) {
-            const flushed = [...buffer];
-            buffer.length = 0;
-            return flushed;
-        }
-
+        // if (this._dryRunId) {
+        //     const flushed = [...buffer];
+        //     buffer.length = 0;
+        //     return flushed;
+        // }
 
         const flushed: Partial<MigrationMessageMap>[] = [];
 
@@ -5182,9 +5179,7 @@ export class PolicyDataMigrator {
         } finally {
             const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
-            if (!this._dryRunId) {
-                PolicyDataMigrator.clearRunCache(scopeKey);
-            }
+            PolicyDataMigrator.clearRunCache(scopeKey);
         }
     }
 

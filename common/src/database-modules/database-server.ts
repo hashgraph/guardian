@@ -57,7 +57,9 @@ import {
     PolicyComment,
     PolicyDiscussion,
     GlobalEventsReaderStream,
-    GlobalEventsWriterStream
+    GlobalEventsWriterStream,
+    MigrationMessageMap,
+    MigrationFailedItem
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -1447,6 +1449,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
         this.classMap.set(MintRequest, 'MintRequest');
         this.classMap.set(MintTransaction, 'MintTransaction');
         this.classMap.set(MigrationRun, 'MigrationRun');
+        this.classMap.set(MigrationMessageMap, 'MigrationMessageMap');
+        this.classMap.set(MigrationFailedItem, 'MigrationFailedItem');
     }
 
     /**
