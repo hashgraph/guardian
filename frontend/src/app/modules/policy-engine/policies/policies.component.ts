@@ -2080,12 +2080,15 @@ export class PoliciesComponent implements OnInit {
                     }, {
                         name: 'Disconnect',
                         class: 'delete'
+                    }, {
+                        name: 'Disconnect (Full)',
+                        class: 'delete'
                     }]
                 },
             });
             dialogRef.onClose.subscribe((result: string) => {
-                if (result === 'Disconnect') {
-                    const full = false;
+                if (result === 'Disconnect' || result === 'Disconnect (Full)') {
+                    const full = result === 'Disconnect (Full)';
                     this.loading = true;
                     this.externalPoliciesService
                         .disconnect(policy.messageId, full)
@@ -2106,7 +2109,7 @@ export class PoliciesComponent implements OnInit {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Disconnect',
+                header: 'Reconnect',
                 text: 'Are you sure want to reconnect this policy?',
                 buttons: [{
                     name: 'Close',
