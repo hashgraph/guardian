@@ -7,6 +7,7 @@ import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { FormulasTree } from '../../formulas/models/formula-tree';
 import { SchemaFormViewComponent } from '../schema-form-view/schema-form-view.component';
+import { SchemaFormViewNavigationComponent } from '../schema-form-view-navigation/schema-form-view-navigation.component';
 
 /**
  * View document
@@ -37,6 +38,7 @@ export class DocumentViewComponent implements OnInit {
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
 
     @ViewChild(SchemaFormViewComponent) private schemaView?: SchemaFormViewComponent;
+    @ViewChild(SchemaFormViewNavigationComponent) public schemaNav?: SchemaFormViewNavigationComponent;
 
     public loading: boolean = false;
     public isIssuerObject: boolean = false;
@@ -51,6 +53,7 @@ export class DocumentViewComponent implements OnInit {
     public rulesResults: SchemaRuleValidateResult;
     public formulasResults: any | null;
     public link: string | undefined;
+    public accordionLink: string | undefined;
 
     private destroy$: Subject<boolean> = new Subject<boolean>();
 

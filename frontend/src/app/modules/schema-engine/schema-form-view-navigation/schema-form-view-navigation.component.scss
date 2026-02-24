@@ -3,13 +3,10 @@
     border-radius: 6px;
     padding: 8px;
     background: #fff;
-    position: fixed;
-    width: calc(25% - 16px);
-    min-width: calc(25% - 16px);
-    max-width: calc(25% - 16px);
+    position: relative;
+    width: 100%;
     max-height: calc(100% - 255px);
     overflow-y: auto;
-    box-sizing: border-box;
 }
 
 .schema-nav-tree {

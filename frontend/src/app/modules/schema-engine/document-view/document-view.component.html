@@ -1,5 +1,5 @@
 <div class="content">
-    <div class="schema-form-view-nav">
+    <div class="schema-form-view-nav" *ngIf="type !== 'VP'">
         <app-schema-form-view-navigation #schemaNav
             [subjects]="subjects"
             [schemaMap]="schemaMap"
@@ -138,7 +138,7 @@
                                     [discussion-view]="discussionView"
                                     [discussion-action]="discussionAction"
                                     (discussion-action)="onDiscussionAction($event)"
-                                    (onAccordionSelect)="schemaNav.expandedByAccordionId({ path: item.type + ';' + $event.path, isOpen: $event.isOpen })">
+                                    (onAccordionSelect)="schemaNav?.expandedByAccordionId({ path: item.type + ';' + $event.path, isOpen: $event.isOpen })">
                                 </app-schema-form-view>
                             </p-accordionTab>
                         </p-accordion>

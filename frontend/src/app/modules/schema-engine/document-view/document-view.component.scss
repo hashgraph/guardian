@@ -191,19 +191,16 @@ form {
     display: flex;
     gap: 16px;
     width: 100%;
+    position: relative;
 }
 .schema-form-view-nav {
     width: 25%;
     min-width: 25%;
     overflow-y: auto;
+    position: relative;
 }
 
 .schema-form-content {
     flex: 1;
     min-width: 0;
-    overflow: auto;
-}
-
-.schema-form-content.full-width {
-    flex: 0 0 100%;
 }
