@@ -132,7 +132,7 @@ export class PolicyDataMigrator {
      * Migration write batch size
      */
     private static readonly migrationWriteBatchSize = Number(
-        process.env.MIGRATION_WRITE_BATCH_SIZE || 50
+        process.env.MIGRATION_WRITE_BATCH_SIZE || 1
     );
 
     /**

@@ -148,6 +148,17 @@ export class PolicyEngine extends NatsService {
      */
     private readonly policyInitializationErrors: Map<string, string> = new Map();
 
+    private static readonly policyRestartQueue = new Map<string, Promise<void>>();
+    private static readonly policyRestartStopTimeoutMs = Number(
+        process.env.POLICY_RESTART_STOP_TIMEOUT_MS || 60 * 1000
+    );
+    private static readonly policyRestartStartTimeoutMs = Number(
+        process.env.POLICY_RESTART_START_TIMEOUT_MS || 60 * 1000
+    );
+    private static readonly policyRestartPollIntervalMs = Number(
+        process.env.POLICY_RESTART_POLL_INTERVAL_MS || 300
+    );
+
     /**
      * Initialization
      */
@@ -1909,9 +1920,116 @@ export class PolicyEngine extends NatsService {
      * @param policyId Policy identifier
      * @param userId
      */
-    public async regenerateModel(policyId: string, userId: string | null): Promise<any> {
-        await this.destroyModel(policyId, userId);
-        return await this.generateModel(policyId);
+    // public async regenerateModel(policyId: string, userId: string | null): Promise<any> {
+    //     await this.destroyModel(policyId, userId);
+    //     return await this.generateModel(policyId);
+    // }
+
+    /**
+     * Strict regenerate for migrations:
+     * stop -> wait stop -> start -> wait start.
+     * Serialized per policy id.
+     * @param policyId
+     * @param userId
+     */
+    public async regenerateModel(policyId: string, userId: string | null): Promise<void> {
+        await this.withPolicyRestartLock(policyId, async () => {
+            await this.destroyModelForMigration(policyId, userId);
+            await this.generateModel(policyId);
+            await this.waitForPolicyAliveState(
+                policyId,
+                true,
+                PolicyEngine.policyRestartStartTimeoutMs
+            );
+        });
+    }
+
+    /**
+     * Destroy model and wait until policy process is fully stopped.
+     * Used only in migration flows.
+     * @param policyId
+     * @param policyOwnerId
+     */
+    public async destroyModelForMigration(policyId: string, policyOwnerId: string | null): Promise<void> {
+        PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
+
+        const guardians = new GuardiansService();
+        const isAlive = await guardians.checkIfPolicyAlive(policyId);
+
+        if (isAlive) {
+            void guardians.sendPolicyMessage(
+                PolicyEvents.DELETE_POLICY,
+                policyId,
+                { policyOwnerId },
+                1000
+            ).catch(() => {
+                //
+            });
+        }
+
+        await this.waitForPolicyAliveState(
+            policyId,
+            false,
+            PolicyEngine.policyRestartStopTimeoutMs
+        );
+    }
+
+    private async withPolicyRestartLock<T>(policyId: string, callback: () => Promise<T>): Promise<T> {
+        const previous = PolicyEngine.policyRestartQueue.get(policyId) || Promise.resolve();
+        let release: (() => void) | undefined;
+
+        const current = new Promise<void>((resolve) => {
+            release = () => {
+                resolve();
+            };
+        });
+
+        PolicyEngine.policyRestartQueue.set(policyId, current);
+        await previous;
+
+        try {
+            return await callback();
+        } finally {
+            if (release) {
+                release();
+            }
+            const tail = PolicyEngine.policyRestartQueue.get(policyId);
+            if (tail === current) {
+                PolicyEngine.policyRestartQueue.delete(policyId);
+            }
+        }
+    }
+
+    private async waitForPolicyAliveState(
+        policyId: string,
+        expectedAlive: boolean,
+        timeoutMs: number
+    ): Promise<void> {
+        const guardians = new GuardiansService();
+        const startedAt = Date.now();
+
+        while (true) {
+            const isAlive = await guardians.checkIfPolicyAlive(policyId);
+            if (isAlive === expectedAlive) {
+                return;
+            }
+
+            const elapsedMs = Date.now() - startedAt;
+            if (elapsedMs >= timeoutMs) {
+                const expectedState = expectedAlive ? 'running' : 'stopped';
+                throw new Error(
+                    `Policy ${policyId} did not reach "${expectedState}" state in ${timeoutMs} ms`
+                );
+            }
+
+            await this.sleep(PolicyEngine.policyRestartPollIntervalMs);
+        }
+    }
+
+    private async sleep(ms: number): Promise<void> {
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, ms);
+        });
     }
 
     /**
