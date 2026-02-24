@@ -2558,9 +2558,21 @@ export class PolicyEngineService {
                         async () => {
                             const { src, dst } = migrationConfig.policies;
 
+                            const srcPolicy = await DatabaseServer.getPolicyById(src);
                             const dstPolicy = await DatabaseServer.getPolicyById(dst);
+
+                            if (!srcPolicy) {
+                                throw new Error('Source policy not found');
+                            }
                             if (!dstPolicy) {
                                 throw new Error('Destination policy not found');
+                            }
+
+                            const srcIsDryRun = PolicyHelper.isDryRunMode(srcPolicy);
+                            const dstIsDryRun = PolicyHelper.isDryRunMode(dstPolicy);
+
+                            if (srcIsDryRun !== dstIsDryRun) {
+                                throw new Error('Source and destination policies must be in the same mode');
                             }
 
                             const isDstDryRun = PolicyHelper.isDryRunMode(dstPolicy);
@@ -2580,7 +2592,7 @@ export class PolicyEngineService {
                             const existingRun = await db.findOne(MigrationRun, existingRunFilters);
 
                             if (existingRun) {
-                                const staleTimeoutMs = Number(process.env.MIGRATION_RUN_STALE_TIMEOUT_MS || 10 * 60 * 1000);
+                                const staleTimeoutMs = 10 * 60 * 1000;
                                 const heartbeatAt = existingRun.heartbeatAt ? new Date(existingRun.heartbeatAt) : null;
                                 const isHeartbeatStale = !heartbeatAt || (Date.now() - heartbeatAt.getTime() > staleTimeoutMs);
 
@@ -2634,10 +2646,27 @@ export class PolicyEngineService {
                     RunFunctionAsync(
                         async () => {
                             const db = new DatabaseServer();
-                            const run = await db.findOne(MigrationRun, {
+                            let run = await db.findOne(MigrationRun, {
                                 id: runId,
                                 startedBy: owner?.id
                             } as Partial<MigrationRun>);
+
+                            if (!run) {
+                                const dryRunRaw = await new DataBaseHelper(DryRun).findOne({
+                                    dryRunClass: 'MigrationRun',
+                                    id: runId,
+                                    startedBy: owner?.id
+                                } as any);
+
+                                if (!dryRunRaw?.dryRunId) {
+                                    throw new Error('Migration run not found');
+                                }
+
+                                const dryRunDb = new DatabaseServer(dryRunRaw.dryRunId);
+                                run = await dryRunDb.findOne(MigrationRun, {
+                                    id: runId
+                                } as Partial<MigrationRun>);
+                            }
 
                             if (!run) {
                                 throw new Error('Migration run not found');
@@ -2648,9 +2677,21 @@ export class PolicyEngineService {
                                 throw new Error('Migration run config is invalid');
                             }
 
+                            const srcPolicy = await DatabaseServer.getPolicyById(runConfig.policies.src);
                             const dstPolicy = await DatabaseServer.getPolicyById(runConfig.policies.dst);
-                            if (dstPolicy && PolicyHelper.isDryRunMode(dstPolicy)) {
-                                throw new Error('Resume is not supported for dry-run migration');
+
+                            if (!srcPolicy) {
+                                throw new Error('Source policy not found');
+                            }
+                            if (!dstPolicy) {
+                                throw new Error('Destination policy not found');
+                            }
+
+                            const srcIsDryRun = PolicyHelper.isDryRunMode(srcPolicy);
+                            const dstIsDryRun = PolicyHelper.isDryRunMode(dstPolicy);
+
+                            if (srcIsDryRun !== dstIsDryRun) {
+                                throw new Error('Source and destination policies must be in the same mode');
                             }
 
                             const migrationErrors = await PolicyDataMigrator.migrate_V2(
@@ -2697,10 +2738,27 @@ export class PolicyEngineService {
                     RunFunctionAsync(
                         async () => {
                             const db = new DatabaseServer();
-                            const run = await db.findOne(MigrationRun, {
+                            let run = await db.findOne(MigrationRun, {
                                 id: runId,
                                 startedBy: owner?.id
                             } as Partial<MigrationRun>);
+
+                            if (!run) {
+                                const dryRunRaw = await new DataBaseHelper(DryRun).findOne({
+                                    dryRunClass: 'MigrationRun',
+                                    id: runId,
+                                    startedBy: owner?.id
+                                } as any);
+
+                                if (!dryRunRaw?.dryRunId) {
+                                    throw new Error('Migration run not found');
+                                }
+
+                                const dryRunDb = new DatabaseServer(dryRunRaw.dryRunId);
+                                run = await dryRunDb.findOne(MigrationRun, {
+                                    id: runId
+                                } as Partial<MigrationRun>);
+                            }
 
                             if (!run) {
                                 throw new Error('Migration run not found');
@@ -2711,9 +2769,21 @@ export class PolicyEngineService {
                                 throw new Error('Migration run config is invalid');
                             }
 
+                            const srcPolicy = await DatabaseServer.getPolicyById(runConfig.policies.src);
                             const dstPolicy = await DatabaseServer.getPolicyById(runConfig.policies.dst);
-                            if (dstPolicy && PolicyHelper.isDryRunMode(dstPolicy)) {
-                                throw new Error('Retry failed is not supported for dry-run migration');
+
+                            if (!srcPolicy) {
+                                throw new Error('Source policy not found');
+                            }
+                            if (!dstPolicy) {
+                                throw new Error('Destination policy not found');
+                            }
+
+                            const srcIsDryRun = PolicyHelper.isDryRunMode(srcPolicy);
+                            const dstIsDryRun = PolicyHelper.isDryRunMode(dstPolicy);
+
+                            if (srcIsDryRun !== dstIsDryRun) {
+                                throw new Error('Source and destination policies must be in the same mode');
                             }
 
                             const migrationErrors = await PolicyDataMigrator.retryFailedItems(

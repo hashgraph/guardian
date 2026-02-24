@@ -693,6 +693,9 @@ export class MigrateDataV2 {
     }
 
     private updateSourcePolicyOptions(): void {
+        const destinationPolicy = this.getPolicyData(this.migrationConfig.dst);
+        const destinationMode = this.getPolicyMigrationMode(destinationPolicy);
+
         if (this.migrationConfig.dst) {
             this.pList1 = this.policies.filter(
                 (policy) => policy.id !== this.migrationConfig.dst
@@ -701,18 +704,36 @@ export class MigrateDataV2 {
             this.pList1 = this.policies;
         }
 
+        if (destinationMode) {
+            this.pList1 = this.pList1.filter((policy) => {
+                return this.getPolicyMigrationMode(policy) === destinationMode;
+            });
+        }
+
         if (this.uploadedPolicy) {
-            this.pList1 = [this.uploadedPolicy, ...this.pList1];
+            const uploadedMode = this.getPolicyMigrationMode(this.uploadedPolicy);
+            if (!destinationMode || uploadedMode === destinationMode) {
+                this.pList1 = [this.uploadedPolicy, ...this.pList1];
+            }
         }
     }
 
     private updateDestinationPolicyOptions(): void {
+        const sourcePolicy = this.getPolicyData(this.migrationConfig.src);
+        const sourceMode = this.getPolicyMigrationMode(sourcePolicy);
+
         if (this.migrationConfig.src) {
             this.pList2 = this.policies.filter(
                 (policy) => policy.id !== this.migrationConfig.src
             );
         } else {
             this.pList2 = this.policies;
+        }
+
+        if (sourceMode) {
+            this.pList2 = this.pList2.filter((policy) => {
+                return this.getPolicyMigrationMode(policy) === sourceMode;
+            });
         }
     }
 
@@ -1042,6 +1063,19 @@ export class MigrateDataV2 {
             return this.uploadedPolicy;
         }
         return this.policies?.find((policy) => policy.id === policyId) || null;
+    }
+
+    private getPolicyMigrationMode(
+        policy: { status?: PolicyStatus } | null | undefined
+    ): 'dry-run' | 'publish' | null {
+        const status = policy?.status;
+        if (status === PolicyStatus.DRY_RUN || status === PolicyStatus.DEMO) {
+            return 'dry-run';
+        }
+        if (status === PolicyStatus.PUBLISH || status === PolicyStatus.DISCONTINUED) {
+            return 'publish';
+        }
+        return null;
     }
 
     getPolicyName(policyId?: string): string {
@@ -1449,10 +1483,6 @@ export class MigrateDataV2 {
     }
 
     private isRunActionDisabled(run: MigrationRunStatusItem): boolean {
-        if (run?.isDryRun) {
-            return true;
-        }
-
         return this.isPublishRunCompletedSuccessfully(run);
     }
 
@@ -1462,13 +1492,6 @@ export class MigrateDataV2 {
     ): string | undefined {
         if (!this.isRunActionDisabled(run)) {
             return;
-        }
-
-        if (run?.isDryRun) {
-            if (action === 'resume') {
-                return 'Resume is unavailable for dry-run migration';
-            }
-            return 'Retry failed is unavailable for dry-run migration';
         }
 
         if (action === 'resume') {

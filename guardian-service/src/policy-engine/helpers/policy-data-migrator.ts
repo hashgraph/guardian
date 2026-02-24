@@ -124,9 +124,7 @@ export class PolicyDataMigrator {
     /**
      * Migration Run Heartbeat Stale Timeout
      */
-    private static readonly migrationHeartbeatRunStaleTimeout = Number(
-        process.env.MIGRATION_RUN_HEARDBEAT_STALE_TIMEOUT || 10 * 60 * 1000
-    );
+    private static readonly migrationHeartbeatRunStaleTimeout = 10 * 60 * 1000;
 
     /**
      * Migration write batch size

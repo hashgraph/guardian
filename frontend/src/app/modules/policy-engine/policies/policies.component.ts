@@ -589,6 +589,14 @@ export class PoliciesComponent implements OnInit {
                         click: () => this.migrateData(policy)
                     }),
                     new MenuButton({
+                        visible: this.user.POLICIES_MIGRATION_CREATE,
+                        disabled: !this.checkMigrationStatus(policy.status),
+                        tooltip: 'Migrate data v2',
+                        icon: 'import-data',
+                        color: 'primary-color',
+                        click: () => this.migrateDataV2(policy)
+                    }),
+                    new MenuButton({
                         visible: PolicyHelper.isDryRunMode(policy) && this.user.POLICIES_MIGRATION_CREATE,
                         disabled: !this.checkMigrationStatus(policy.status),
                         tooltip: 'Export virtual keys',

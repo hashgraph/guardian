@@ -1911,18 +1911,6 @@ export class PolicyEngine extends NatsService {
      * @param policyId Policy identifier
      * @param userId
      */
-    // public async regenerateModel(policyId: string, userId: string | null): Promise<any> {
-    //     await this.destroyModel(policyId, userId);
-    //     return await this.generateModel(policyId);
-    // }
-
-    /**
-     * Strict regenerate for migrations:
-     * stop -> wait stop -> start -> wait start.
-     * Serialized per policy id.
-     * @param policyId
-     * @param userId
-     */
     public async regenerateModel(policyId: string, userId: string | null): Promise<void> {
         await this.withPolicyRestartLock(policyId, async () => {
             await this.destroyModelForMigration(policyId, userId);
