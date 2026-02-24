@@ -51,6 +51,7 @@ export class SchemaFormViewComponent implements OnInit {
     @Input() link?: string | undefined;
 
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
+    @Output('onAccordionSelect') onAccordionSelect = new EventEmitter<{path: string, isOpen: boolean}>();
 
     public fields: IFieldControl[] | undefined = [];
     private pageSize: number = 25;
@@ -492,6 +493,95 @@ export class SchemaFormViewComponent implements OnInit {
             }
         }
     }
+    
+    public navigateToField(link?: string): void {
+        if (!this.fields || !link) return;
+
+        const segments = link.split(';');
+
+        if (segments.length < 2) {
+            this.changeDetector.detectChanges();
+            this.scrollToAccordionAttr(link);
+            return;
+        }
+
+        let segment = '';
+        let currentList: any[] = this.fields;
+        let lastFound: any = null;
+
+        for (let i = 1; i < segments.length; i++) {
+            segment = segments[i];
+            let field = currentList?.find((field: any) => field.fullPath === segment);
+
+            if (!field) {
+                field = this.findFieldRecursive(this.fields || [], segment);
+            }
+
+            if (!field) {
+                break;
+            }
+
+            field.open = true;
+            const remaining = segments.slice(i + 1).join(';') || null;
+            field.link = remaining;
+
+            lastFound = field;
+            currentList = field.fields || [];
+        }
+
+        this.changeDetector.detectChanges();
+        if (lastFound || segments.length > 0) {
+            this.scrollToAccordionAttr(lastFound?.fullPath || segments[segments.length - 1]);
+        }
+    }
+
+    private findFieldRecursive(list: any[], targetFullPath: string): any | null {
+        if (!list || !list.length) 
+            return null;
+        
+        for (const f of list) {
+            if (f.fullPath === targetFullPath)
+                return f;
+            if (f.fields && f.fields.length) {
+                const found = this.findFieldRecursive(f.fields, targetFullPath);
+                if (found)
+                    return found;
+            }
+        }
+        return null;
+    }
+
+    private scrollToAccordionAttr(value: string) {
+        setTimeout(() => {
+            try {
+                this.changeDetector.detectChanges();
+            } catch (e) { }
+
+            const attrSelector = `[accordiontabid="${value}"]`;
+
+            try {
+                const node = document.querySelector(attrSelector) as Element | null;
+                if (node) {
+                    (node as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    return;
+                }
+            } catch (e) { }
+        }, 1000);
+    }
+
+    public emitAccordionSelect(isOpen: any, item: any, index?: any, childrenAccordionId?: string) {
+        if (!item) return;
+
+        let accordionId = item.fullPath || item.id || '';
+        if (index !== undefined && index !== null && index !== '') {
+            accordionId = `${accordionId}-${index}`;
+        }
+        if (childrenAccordionId) {
+            accordionId = `${accordionId};${childrenAccordionId}`;
+        }
+
+        this.onAccordionSelect.emit({ path: accordionId, isOpen: !!isOpen });
+    }
 
     public canDrawTable(item: IFieldControl): boolean {
         const customTypes = ['geo', 'table', 'sentinel'];
@@ -568,5 +658,17 @@ export class SchemaFormViewComponent implements OnInit {
         }
 
         return resultRows;
+    }
+
+     public onAccordionSelectEvent(isOpen: any, item: any, childrenAccordionId?: string) {
+        let accordionId = item.fullPath;
+    
+        if (childrenAccordionId) {
+            accordionId = `${accordionId};${childrenAccordionId}`;
+        }
+        this.onAccordionSelect.emit({
+            path: accordionId,
+            isOpen: isOpen
+        });
     }
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, } from '@angular/core';
 import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -6,6 +6,7 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { FormulasTree } from '../../formulas/models/formula-tree';
+import { SchemaFormViewComponent } from '../schema-form-view/schema-form-view.component';
 
 /**
  * View document
@@ -34,6 +35,8 @@ export class DocumentViewComponent implements OnInit {
     @Input('relayer-account') relayerAccount?: string;
 
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
+
+    @ViewChild(SchemaFormViewComponent) private schemaView?: SchemaFormViewComponent;
 
     public loading: boolean = false;
     public isIssuerObject: boolean = false;
@@ -244,11 +247,20 @@ export class DocumentViewComponent implements OnInit {
     public onDiscussionAction($event: any) {
         this.discussionActionEvent.emit($event);
     }
-
+    
     public openField(id?: string): void {
         const path = id?.split('/');
         this.link = path && path.length > 1 ? path[path.length - 1] : undefined;
         this.ref.detectChanges();
+    }
+
+    public navigateToField(id?: string): void {
+        if (!id) {
+            return;
+        }
+        if (this.schemaView) {
+            this.schemaView.navigateToField(id);
+        }
     }
 
     public getTagJson(tag: any): string {

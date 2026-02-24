@@ -900,7 +900,7 @@ export class SchemaFormComponent implements OnInit {
             try {
                 const node = document.querySelector(attrSelector) as Element | null;
                 if (node) {
-                    (node as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    (node as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
                     return;
                 }
             } catch (e) { }
