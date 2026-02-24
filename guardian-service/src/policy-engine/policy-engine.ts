@@ -2029,7 +2029,7 @@ export class PolicyEngine extends NatsService {
             }
             policyId = policy.id.toString();
         }
-        return  await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
+        const result = await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
             policy,
             isDruRun,
             ignoreRules,

@@ -1611,7 +1611,7 @@ export class PolicyDataMigrator {
             if ((pool as any)?._id) {
                 return (pool as any)._id;
             }
-            return undefined;
+            return;
         };
 
         const saveFailedItem = async (pool: RetirePool, error: any) => {
@@ -2440,14 +2440,14 @@ export class PolicyDataMigrator {
             return doc;
         }
 
-        const sourceMessageId = doc.messageId ? String(doc.messageId) : undefined;
-        if (sourceMessageId) {
+        const srcMapKey = PolicyDataMigrator.getSourceMapKey('roleVcDocument', doc);
+        if (srcMapKey) {
             const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
             const mappedMessageId = PolicyDataMigrator.getMessageMapping(
                 scopeKey,
                 'roleVcDocument',
-                sourceMessageId
+                srcMapKey
             );
             if (mappedMessageId) {
                 doc.messageId = mappedMessageId;
@@ -2559,13 +2559,13 @@ export class PolicyDataMigrator {
             doc.topicId = result.getTopicId();
             doc.messageHash = result.toHash();
 
-            if (sourceMessageId) {
+            if (srcMapKey) {
                 const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
                 PolicyDataMigrator.setMessageMapping(
                     scopeKey,
                     'roleVcDocument',
-                    sourceMessageId,
+                    srcMapKey,
                     destinationMessageId
                 );
             }
@@ -2651,7 +2651,7 @@ export class PolicyDataMigrator {
             if (state?.blockId) {
                 return state.blockId;
             }
-            return undefined;
+            return;
         };
 
         const saveFailedItem = async (state: BlockState, error: any) => {
@@ -3144,14 +3144,14 @@ export class PolicyDataMigrator {
             return doc;
         }
 
-        const sourceMessageId = doc.messageId ? String(doc.messageId) : undefined;
-        if (sourceMessageId) {
+        const srcMapKey = PolicyDataMigrator.getSourceMapKey('vpDocument', doc);
+        if (srcMapKey) {
             const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
             const mappedMessageId = PolicyDataMigrator.getMessageMapping(
                 scopeKey,
                 'vpDocument',
-                sourceMessageId
+                srcMapKey
             );
             if (mappedMessageId) {
                 doc.messageId = mappedMessageId;
@@ -3267,13 +3267,13 @@ export class PolicyDataMigrator {
 
             const destinationMessageId = vpMessageResult.getId();
 
-            if (sourceMessageId) {
+            if (srcMapKey) {
                 const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
                 PolicyDataMigrator.setMessageMapping(
                     scopeKey,
                     'vpDocument',
-                    sourceMessageId,
+                    srcMapKey,
                     destinationMessageId
                 );
             }
@@ -3371,7 +3371,7 @@ export class PolicyDataMigrator {
             if ((request as any)?._id) {
                 return String((request as any)._id);
             }
-            return undefined;
+            return;
         };
 
         const getTransactionSourceId = (transaction: MintTransaction): string | undefined => {
@@ -3381,7 +3381,7 @@ export class PolicyDataMigrator {
             if ((transaction as any)?._id) {
                 return String((transaction as any)._id);
             }
-            return undefined;
+            return;
         };
 
         const saveFailedItem = async (
@@ -3843,23 +3843,21 @@ export class PolicyDataMigrator {
             return doc;
         }
 
-        const sourceMessageId = doc.messageId ? String(doc.messageId) : undefined;
+        const srcMapKey = PolicyDataMigrator.getSourceMapKey('vcDocument', doc);
 
-        if (sourceMessageId) {
+        if (srcMapKey) {
             const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
             const mappedMessageId = PolicyDataMigrator.getMessageMapping(
                 scopeKey,
                 'vcDocument',
-                sourceMessageId
+                srcMapKey
             );
             if (mappedMessageId) {
                 doc.messageId = mappedMessageId;
                 return doc;
             }
         }
-
-        const originalMessageId = doc.messageId ? String(doc.messageId) : undefined;
 
         doc.relationships = doc.relationships || [];
         for (let i = 0; i < doc.relationships.length; i++) {
@@ -3901,13 +3899,14 @@ export class PolicyDataMigrator {
 
                 doc.relationships[i] = republishedDocument.messageId;
 
-                if (sourceRelated.messageId) {
+                const relatedSrcMapKey = PolicyDataMigrator.getSourceMapKey('vcDocument', sourceRelated);
+                if (relatedSrcMapKey) {
                     const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
                     PolicyDataMigrator.setMessageMapping(
                         scopeKey,
                         'vcDocument',
-                        String(sourceRelated.messageId),
+                        relatedSrcMapKey,
                         String(republishedDocument.messageId)
                     );
                 }
@@ -4032,13 +4031,13 @@ export class PolicyDataMigrator {
             doc.topicId = vcMessageResult.getTopicId();
             doc.messageHash = vcMessageResult.toHash();
 
-            if (originalMessageId) {
+            if (srcMapKey) {
                 const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
                 PolicyDataMigrator.setMessageMapping(
                     scopeKey,
                     'vcDocument',
-                    originalMessageId,
+                    srcMapKey,
                     destinationMessageId
                 );
             }
@@ -4194,11 +4193,11 @@ export class PolicyDataMigrator {
     ): string | undefined {
         const runCache = PolicyDataMigrator.migrationMessageCache.get(scopeKey);
         if (!runCache) {
-            return undefined;
+            return;
         }
         const entityCache = runCache.get(entityType);
         if (!entityCache) {
-            return undefined;
+            return;
         }
         return entityCache.get(srcMessageId);
     }
@@ -4230,6 +4229,22 @@ export class PolicyDataMigrator {
         }
 
         return { srcEntityId, srcMessageId };
+    }
+
+    private static getSourceMapKey(entityType: string, item: any): string | undefined {
+        const keys = PolicyDataMigrator.extractSourceKeys(entityType, item);
+        const srcMessageId = keys?.srcMessageId ? String(keys.srcMessageId) : undefined;
+        const srcEntityId = keys?.srcEntityId ? String(keys.srcEntityId) : undefined;
+
+        if (srcMessageId) {
+            return srcMessageId;
+        }
+
+        if (srcEntityId) {
+            return srcEntityId;
+        }
+
+        return;
     }
 
     private static clearEntityIdentity(entity: any): void {

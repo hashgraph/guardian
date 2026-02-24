@@ -823,6 +823,84 @@ export class DryRun extends BaseEntity {
     dstPolicyId?: any;
 
     /**
+     * Migration started by user identifier.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    startedBy?: any;
+
+    /**
+     * Migration stop flag.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    stopRequested?: any;
+
+    /**
+     * Migration run start timestamp.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    startedAt?: any;
+
+    /**
+     * Migration run finish timestamp.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    finishedAt?: any;
+
+    /**
+     * Migration run heartbeat timestamp.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    heartbeatAt?: any;
+
+    /**
+     * Migration failed item run identifier.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    runId?: any;
+
+    /**
+     * Migration entity type.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    entityType?: any;
+
+    /**
+     * Migration source entity identifier.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    srcEntityId?: any;
+
+    /**
+     * Migration source message identifier.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    srcMessageId?: any;
+
+    /**
+     * Migration destination message identifier.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    dstMessageId?: any;
+
+    /**
+     * Migration failed attempts count.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    attemptCount?: any;
+
+    /**
+     * First migration failure timestamp.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    firstFailedAt?: any;
+
+    /**
+     * Last migration failure timestamp.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    lastFailedAt?: any;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()
