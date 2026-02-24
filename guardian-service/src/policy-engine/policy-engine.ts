@@ -246,7 +246,7 @@ export class PolicyEngine extends NatsService {
 
     /**
      * Check access
-     * 
+     *
      * @param policy
      * @param user
      * @param action
@@ -286,11 +286,11 @@ export class PolicyEngine extends NatsService {
                 break;
             }
             case AccessType.ASSIGNED_OR_PUBLISHED: {
-                const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
-                const assignedMap = assigned.map((e) => e.entityId);
+                const assigned1 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
+                const assignedMap1 = assigned1.map((e) => e.entityId);
                 localFilters.$or = [
                     { status: { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] } },
-                    { id: { $in: assignedMap } }
+                    { id: { $in: assignedMap1 } }
                 ];
                 break;
             }
@@ -299,15 +299,15 @@ export class PolicyEngine extends NatsService {
                 break;
             }
             case AccessType.ASSIGNED: {
-                const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
-                const assignedMap = assigned.map((e) => e.entityId);
-                localFilters.id = { $in: assignedMap };
+                const assigned2 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
+                const assignedMap2 = assigned2.map((e) => e.entityId);
+                localFilters.id = { $in: assignedMap2 };
                 break;
             }
             case AccessType.ASSIGNED_AND_PUBLISHED: {
-                const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
-                const assignedMap = assigned.map((e) => e.entityId);
-                localFilters.id = { $in: assignedMap };
+                const assigned3 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
+                const assignedMap3 = assigned3.map((e) => e.entityId);
+                localFilters.id = { $in: assignedMap3 };
                 localFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
                 break;
             }
@@ -320,6 +320,7 @@ export class PolicyEngine extends NatsService {
                 break;
             }
         }
+
         //Remote
         const remoteFilters: any = {
             locationType: { $eq: LocationType.REMOTE },
@@ -768,9 +769,9 @@ export class PolicyEngine extends NatsService {
         return true;
     }
 
-
     /**
      * Delete policy
+     *
      * @param policyId Policy ID
      * @param owner User
      * @param notifier Notifier

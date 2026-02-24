@@ -157,7 +157,6 @@ async function addPolicy(
     return result;
 }
 
-
 async function deletePolicy(
     messageId: string,
     owner: IOwner,
@@ -500,7 +499,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                         .sendPolicyMessage<boolean>(PolicyEvents.DISCONNECT_REMOTE_POLICY, policy.id, {
                             user: owner,
                             policyId: policy.id,
-                        }) as any
+                        });
                 }
 
                 return new MessageResponse(true);

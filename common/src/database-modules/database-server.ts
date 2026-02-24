@@ -1,4 +1,4 @@
-import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus, ExternalPolicyType } from '@guardian/interfaces';
+import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus } from '@guardian/interfaces';
 import { TopicId } from '@hiero-ledger/sdk';
 import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
@@ -5550,7 +5550,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * 
+     * Delete policy documents
      *
      * @param policyId
      */
@@ -5596,7 +5596,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * 
+     * Disconnect policy documents
      *
      * @param policyId
      * @param user
@@ -5682,9 +5682,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
         }, { policyId, owner: user.did });
     }
 
-
     /**
-     * 
+     * Reconnect policy documents
      *
      * @param policyId
      * @param user

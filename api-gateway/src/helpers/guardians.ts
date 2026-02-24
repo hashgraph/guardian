@@ -3933,7 +3933,7 @@ export class Guardians extends NatsService {
 
     /**
      * Disconnect policy
-     * 
+     *
      * @param messageId
      * @param owner
      */
@@ -3943,7 +3943,7 @@ export class Guardians extends NatsService {
 
     /**
      * Delete policy
-     * 
+     *
      * @param messageId
      * @param owner
      */
