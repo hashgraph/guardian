@@ -49,6 +49,7 @@
                                 [(ngModel)]="migrationConfig.src"
                                 [options]="pList1"
                                 [showClear]="true"
+                                [disabled]="!!runningMigrationWarning"
                                 appendTo="body"
                                 id="firstPolicy"
                                 optionLabel="name"
@@ -56,6 +57,7 @@
                                 [styleClass]="hasPolicySelectionError ? 'migration-policy-dropdown migration-policy-dropdown-error' : 'migration-policy-dropdown'"
                                 placeholder="Select Policy" class="source-policy-selector__dropdown"></p-dropdown>
                             <button pButton pRipple (click)="onUploadData()" icon="pi pi-download"
+                                [disabled]="!!runningMigrationWarning"
                                 class="p-button-rounded source-policy-selector__upload-button"></button>
                         </div>
                         <div class="policy-meta">
@@ -72,6 +74,7 @@
                             [(ngModel)]="migrationConfig.dst"
                             [options]="pList2"
                             [showClear]="true"
+                            [disabled]="!!runningMigrationWarning"
                             appendTo="body"
                             id="firstPolicy"
                             optionLabel="name"
@@ -88,6 +91,9 @@
                         </div>
                         <div *ngIf="!pairProgressWarning && runningMigrationWarning" class="policy-warning">
                             {{ runningMigrationWarning }}
+                        </div>
+                        <div *ngIf="!pairProgressWarning && !runningMigrationWarning && pairHistoryWarning" class="policy-warning">
+                            {{ pairHistoryWarning }}
                         </div>
                     </div>
                     <div class="policy-migration-options">

@@ -441,6 +441,7 @@ export class MigrateDataV2 {
     historyPageSize = 10;
     historyTotal = 0;
     pairProgressWarning = '';
+    pairHistoryWarning = '';
     runningMigrationWarning = '';
     private hasRunningMigration = false;
     readonly rowsPerPageOptions = [5, 10, 25, 50, 100];
@@ -464,9 +465,7 @@ export class MigrateDataV2 {
         private _schemaService: SchemaService,
         private _dialogService: DialogService
     ) {
-        this.migrationConfig = new MigrationConfig(
-            this.config.data?.policy?.id
-        );
+        this.migrationConfig = new MigrationConfig();
         this.contracts = this.config.data.contracts || [];
         this.policies = this.config.data.policies || [];
         this.policies = JSON.parse(JSON.stringify(this.policies));
@@ -1395,6 +1394,7 @@ export class MigrateDataV2 {
 
     loadPairStatus() {
         this.pairProgressWarning = '';
+        this.pairHistoryWarning = '';
         if (!this.migrationConfig.src || !this.migrationConfig.dst) {
             return;
         }
@@ -1405,12 +1405,18 @@ export class MigrateDataV2 {
                     const latestRun = response?.items?.[0];
                     if (latestRun?.status?.toLowerCase() === this.runningStatus) {
                         this.pairProgressWarning = 'Migration for this source and destination policy pair is already running. Please select another pair.';
+                        this.pairHistoryWarning = '';
+                    } else if (latestRun) {
+                        this.pairProgressWarning = '';
+                        this.pairHistoryWarning = 'This policy pair has already been migrated. Starting a new migration will replace the previous run history for this pair. Previously migrated data will remain intact, and duplicate records will not be created.';
                     } else {
                         this.pairProgressWarning = '';
+                        this.pairHistoryWarning = '';
                     }
                 },
                 error: () => {
                     this.pairProgressWarning = '';
+                    this.pairHistoryWarning = '';
                 }
             });
     }
@@ -1422,7 +1428,10 @@ export class MigrateDataV2 {
             .getMigrationRuns(0, this.historyRunningLimit, [this.runningStatus])
             .subscribe({
                 next: (response) => {
-                    const activeRuns = response?.items || [];
+                    const runs = response?.items || [];
+                    const activeRuns = runs.filter((run) => {
+                        return run?.status?.toLowerCase() === this.runningStatus;
+                    });
                     this.hasRunningMigration = activeRuns.length > 0;
                     if (this.hasRunningMigration) {
                         this.runningMigrationWarning = 'Another migration is already running. Starting a new migration is available only after the current one is finished.';
@@ -1451,11 +1460,17 @@ export class MigrateDataV2 {
     }
 
     isResumeDisabled(run: MigrationRunStatusItem): boolean {
-        return this.isRunActionDisabled(run);
+        if (this.isRunActionDisabled(run)) {
+            return true;
+        }
+        return this.isRunProcessedToEnd(run);
     }
 
     isRetryFailedDisabled(run: MigrationRunStatusItem): boolean {
-        return this.isRunActionDisabled(run);
+        if (this.isRunActionDisabled(run)) {
+            return true;
+        }
+        return this.getFailedCount(run) <= 0;
     }
 
     getResumeDisabledTooltip(run: MigrationRunStatusItem): string | undefined {
@@ -1494,7 +1509,11 @@ export class MigrateDataV2 {
         run: MigrationRunStatusItem,
         action: 'resume' | 'retryFailed'
     ): string | undefined {
-        if (!this.isRunActionDisabled(run)) {
+        const isDisabled = action === 'retryFailed'
+            ? this.isRetryFailedDisabled(run)
+            : this.isResumeDisabled(run);
+
+        if (!isDisabled) {
             return;
         }
 
@@ -1502,8 +1521,12 @@ export class MigrateDataV2 {
             return 'Another migration is already running. Wait until it is finished.';
         }
 
-        if (action === 'resume') {
-            return 'Migration is already completed successfully';
+        if (action === 'resume' && this.isRunProcessedToEnd(run)) {
+            return 'Resume is not available because all source items are already processed.';
+        }
+
+        if (this.getFailedCount(run) <= 0) {
+            return 'No failed items to retry';
         }
 
         return 'All items were migrated successfully. No failed items to retry';
@@ -1519,6 +1542,43 @@ export class MigrateDataV2 {
         }
 
         return failed === 0 && success >= total;
+    }
+
+    private isRunProcessedToEnd(run: MigrationRunStatusItem): boolean {
+        const summary = run?.summary;
+        if (!summary || typeof summary !== 'object') {
+            return false;
+        }
+
+        let hasProcessableEntity = false;
+
+        for (const key of Object.keys(summary)) {
+            if (key === 'total') {
+                continue;
+            }
+
+            const value = summary[key];
+            if (!value || typeof value !== 'object') {
+                continue;
+            }
+
+            const total = typeof value?.total === 'number' ? Number(value.total) : 0;
+            if (total <= 0) {
+                continue;
+            }
+
+            hasProcessableEntity = true;
+
+            const success = typeof value?.success === 'number' ? Number(value.success) : 0;
+            const failed = typeof value?.failed === 'number' ? Number(value.failed) : 0;
+            const processed = success + failed;
+
+            if (processed < total) {
+                return false;
+            }
+        }
+
+        return hasProcessableEntity;
     }
 
     private getSummaryMetric(

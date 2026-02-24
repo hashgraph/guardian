@@ -1578,54 +1578,75 @@ export class PoliciesComponent implements OnInit {
     }
 
     public migrateDataV2(policy?: any) {
-        const item = this.policies?.find((e) => e.id === policy?.id);
         this.loading = true;
-        this.contractSerivce.getContracts({ type: ContractType.RETIRE }).pipe(takeUntil(this._destroy$)).subscribe({
-            next: (res) => {
+        forkJoin([
+            this.contractSerivce.getContracts({ type: ContractType.RETIRE }),
+            this.policyEngineService.all()
+        ]).pipe(takeUntil(this._destroy$)).subscribe({
+            next: ([contractsResponse, allPolicies]) => {
+                const runnablePolicies = (allPolicies || []).filter((policyItem) => PolicyHelper.isRun(policyItem));
+                const item = runnablePolicies.find((policyItem) => policyItem.id === policy?.id)
+                    || this.policies?.find((policyItem) => policyItem.id === policy?.id);
+
                 const dialogRef = this.dialogService.open(MigrateDataV2, {
                     header: 'Migrate Data',
                     width: '1000px',
                     styleClass: 'custom-dialog migrate-data-dialog',
                     data: {
                         policy: item,
-                        policies: this.policies?.filter((policyItem) => PolicyHelper.isRun(policyItem)),
-                        contracts: res.body
+                        policies: runnablePolicies,
+                        contracts: contractsResponse.body
                     },
                 });
+
                 dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result?: MigrationActionResult) => {
                     if (!result?.action) {
                         return;
                     }
+
                     this.loading = true;
+
                     if (result.action === 'start' && result.migrationConfig) {
-                        this.policyEngineService.migrateDataAsyncV2(result.migrationConfig).pipe(takeUntil(this._destroy$)).subscribe(
-                            (response) => this.navigateToTask(response.taskId),
-                            () => {
-                                this.loading = false;
-                            }
-                        );
+                        this.policyEngineService.migrateDataAsyncV2(result.migrationConfig)
+                            .pipe(takeUntil(this._destroy$))
+                            .subscribe(
+                                (response) => this.navigateToTask(response.taskId),
+                                () => {
+                                    this.loading = false;
+                                }
+                            );
                         return;
                     }
+
                     if (result.action === 'resume' && result.runId) {
-                        this.policyEngineService.resumeMigrateDataAsync(result.runId).pipe(takeUntil(this._destroy$)).subscribe(
-                            (response) => this.navigateToTask(response.taskId),
-                            () => {
-                                this.loading = false;
-                            }
-                        );
+                        this.policyEngineService.resumeMigrateDataAsync(result.runId)
+                            .pipe(takeUntil(this._destroy$))
+                            .subscribe(
+                                (response) => this.navigateToTask(response.taskId),
+                                () => {
+                                    this.loading = false;
+                                }
+                            );
                         return;
                     }
+
                     if (result.action === 'retryFailed' && result.runId) {
-                        this.policyEngineService.retryFailedMigrateDataAsync(result.runId).pipe(takeUntil(this._destroy$)).subscribe(
-                            (response) => this.navigateToTask(response.taskId),
-                            () => {
-                                this.loading = false;
-                            }
-                        );
+                        this.policyEngineService.retryFailedMigrateDataAsync(result.runId)
+                            .pipe(takeUntil(this._destroy$))
+                            .subscribe(
+                                (response) => this.navigateToTask(response.taskId),
+                                () => {
+                                    this.loading = false;
+                                }
+                            );
                         return;
                     }
+
                     this.loading = false;
                 });
+            },
+            error: () => {
+                this.loading = false;
             },
             complete: () => {
                 this.loading = false;

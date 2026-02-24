@@ -1171,6 +1171,7 @@ export class PolicyDataMigrator {
         existingRunData?: MigrationRun
     ): Promise<DocumentError[]> {
         const db = new DatabaseServer(this._dryRunId);
+        const isResumeRun = !!existingRunData;
 
         const runClass: new () => BaseEntity = MigrationRun;
         let run: MigrationRun;
@@ -1241,7 +1242,9 @@ export class PolicyDataMigrator {
                     roles,
                     userId,
                     run as MigrationRun,
-                    errors
+                    errors,
+                    PolicyDataMigrator.migrationWriteBatchSize,
+                    isResumeRun
                 );
 
                 await this._migrateDocumentV2<VcDocument>(
@@ -1252,7 +1255,11 @@ export class PolicyDataMigrator {
                     this._db.saveVC.bind(this._db),
                     userId,
                     run as MigrationRun,
-                    errors
+                    errors,
+                    null,
+                    '',
+                    PolicyDataMigrator.migrationWriteBatchSize,
+                    isResumeRun
                 );
 
                 if (states?.length > 0) {
@@ -1309,7 +1316,9 @@ export class PolicyDataMigrator {
                 await this._migratePolicyStatesV2(
                     states,
                     run as MigrationRun,
-                    errors
+                    errors,
+                    PolicyDataMigrator.migrationWriteBatchSize,
+                    isResumeRun
                 );
                 this._notifier.completeStep(STEP_MIGRATE_POLICY);
             } else {
@@ -1388,7 +1397,9 @@ export class PolicyDataMigrator {
                 run as MigrationRun,
                 errors,
                 vcProgressStep,
-                'VC Documents'
+                'VC Documents',
+                PolicyDataMigrator.migrationWriteBatchSize,
+                isResumeRun
             );
 
             if (vcProgressStep && vcTotal > 0) {
@@ -1403,7 +1414,11 @@ export class PolicyDataMigrator {
                     this._db.setMultiSigDocument.bind(this._db),
                     userId,
                     run as MigrationRun,
-                    errors
+                    errors,
+                    null,
+                    '',
+                    PolicyDataMigrator.migrationWriteBatchSize,
+                    isResumeRun
                 );
 
                 await this._migrateDocumentV2<DocumentState>(
@@ -1413,7 +1428,11 @@ export class PolicyDataMigrator {
                     this._db.saveDocumentState.bind(this._db),
                     userId,
                     run as MigrationRun,
-                    errors
+                    errors,
+                    null,
+                    '',
+                    PolicyDataMigrator.migrationWriteBatchSize,
+                    isResumeRun
                 );
 
                 await this._migrateDocumentV2<AggregateVC>(
@@ -1428,7 +1447,11 @@ export class PolicyDataMigrator {
                     },
                     userId,
                     run as MigrationRun,
-                    errors
+                    errors,
+                    null,
+                    '',
+                    PolicyDataMigrator.migrationWriteBatchSize,
+                    isResumeRun
                 );
 
                 await this._migrateDocumentV2<SplitDocuments>(
@@ -1440,7 +1463,11 @@ export class PolicyDataMigrator {
                     },
                     userId,
                     run as MigrationRun,
-                    errors
+                    errors,
+                    null,
+                    '',
+                    PolicyDataMigrator.migrationWriteBatchSize,
+                    isResumeRun
                 );
             }
 
@@ -1454,7 +1481,9 @@ export class PolicyDataMigrator {
                 run as MigrationRun,
                 errors,
                 vpProgressStep,
-                'VP Documents'
+                'VP Documents',
+                PolicyDataMigrator.migrationWriteBatchSize,
+                isResumeRun
             );
 
             if (vpProgressStep && vpTotal > 0) {
@@ -1468,7 +1497,9 @@ export class PolicyDataMigrator {
                     run as MigrationRun,
                     errors,
                     mintRequestProgressStep,
-                    mintTransactionProgressStep
+                    mintTransactionProgressStep,
+                    PolicyDataMigrator.migrationWriteBatchSize,
+                    isResumeRun
                 );
 
                 if (mintRequestProgressStep && mintRequestTotal > 0) {
@@ -1487,7 +1518,9 @@ export class PolicyDataMigrator {
                     userId,
                     errors,
                     retirePoolProgressStep,
-                    'Retire pools'
+                    'Retire pools',
+                    PolicyDataMigrator.migrationWriteBatchSize,
+                    isResumeRun
                 );
 
                 if (retirePoolProgressStep && retirePoolTotal > 0) {
@@ -1585,6 +1618,7 @@ export class PolicyDataMigrator {
         progressStep: INotificationStep | null = null,
         progressLabel: string = 'Retire pools',
         writeBatchSize = PolicyDataMigrator.migrationWriteBatchSize,
+        isResumeRun = false,
     ) {
         if (!contractId) {
             return;
@@ -1693,7 +1727,9 @@ export class PolicyDataMigrator {
                         srcEntityId
                     );
                     if (mapped) {
-                        poolSummary.success += 1;
+                        if (!isResumeRun) {
+                            poolSummary.success += 1;
+                        }
                         return;
                     }
 
@@ -2126,6 +2162,7 @@ export class PolicyDataMigrator {
      * @param progressStep
      * @param progressLabel
      * @param writeBatchSize
+     * @param isResumeRun
      */
     private async _migrateDocumentV2<T extends BaseEntity>(
         entityType: string,
@@ -2138,6 +2175,7 @@ export class PolicyDataMigrator {
         progressStep: INotificationStep | null = null,
         progressLabel: string = '',
         writeBatchSize = PolicyDataMigrator.migrationWriteBatchSize,
+        isResumeRun = false,
     ) {
         const summary = run.summary as MigrationRunSummary;
         const entitySummary = summary?.[entityType];
@@ -2230,7 +2268,9 @@ export class PolicyDataMigrator {
                             srcMapKey
                         );
                         if (mapped) {
-                            entitySummary.success += 1;
+                            if (!isResumeRun) {
+                                entitySummary.success += 1;
+                            }
                             return;
                         }
                     }
@@ -2632,6 +2672,7 @@ export class PolicyDataMigrator {
         run: MigrationRun,
         errors: DocumentError[],
         writeBatchSize = PolicyDataMigrator.migrationWriteBatchSize,
+        isResumeRun = false,
     ) {
         const entityType: keyof MigrationRunSummary = 'policyState';
         const summary = run.summary;
@@ -2725,7 +2766,9 @@ export class PolicyDataMigrator {
 
                     const mapped = PolicyDataMigrator.getMessageMapping(scopeKey, entityType, srcEntityId);
                     if (mapped) {
-                        stateSummary.success += 1;
+                        if (!isResumeRun) {
+                            stateSummary.success += 1;
+                        }
                         return;
                     }
 
@@ -2836,6 +2879,7 @@ export class PolicyDataMigrator {
         run: MigrationRun,
         errors: DocumentError[],
         writeBatchSize = PolicyDataMigrator.migrationWriteBatchSize,
+        isResumeRun = false,
     ) {
         const entityType = 'policyRole';
         const summary = run.summary as MigrationRunSummary;
@@ -2926,7 +2970,9 @@ export class PolicyDataMigrator {
                             srcEntityId
                         );
                         if (mapped) {
-                            roleSummary.success += 1;
+                            if (!isResumeRun) {
+                                roleSummary.success += 1;
+                            }
                             return;
                         }
                     }
@@ -3050,8 +3096,8 @@ export class PolicyDataMigrator {
             );
             const userRole = dstUserGroup.find(
                 (item) =>
-                    item.groupName === this._groups[srcGroup.groupName] ||
-                    item.role === this._roles[srcGroup.role]
+                    item?.groupName === this._groups[srcGroup?.groupName] ||
+                    item.role === this._roles[srcGroup?.role]
             );
             doc.group = userRole ? userRole.uuid : null;
         }
@@ -3172,8 +3218,8 @@ export class PolicyDataMigrator {
             );
             const userRole = dstUserGroup.find(
                 (item) =>
-                    item.groupName === this._groups[srcGroup.groupName] ||
-                    item.role === this._roles[srcGroup.role]
+                    item?.groupName === this._groups[srcGroup?.groupName] ||
+                    item.role === this._roles[srcGroup?.role]
             );
             doc.group = userRole ? userRole.uuid : null;
         }
@@ -3331,6 +3377,7 @@ export class PolicyDataMigrator {
      * @param requestProgressStep
      * @param transactionProgressStep
      * @param writeBatchSize
+     * @param isResumeRun
      */
     private async _migrateMintRequestsV2(
         mintRequests: MintRequest[],
@@ -3340,6 +3387,7 @@ export class PolicyDataMigrator {
         requestProgressStep: INotificationStep | null = null,
         transactionProgressStep: INotificationStep | null = null,
         writeBatchSize = PolicyDataMigrator.migrationWriteBatchSize,
+        isResumeRun = false,
     ) {
         const summary = run.summary as MigrationRunSummary;
         const requestSummary = summary?.mintRequest;
@@ -3471,7 +3519,9 @@ export class PolicyDataMigrator {
                     );
                     if (mappedRequestId) {
                         mintRequestsMapping.set(srcEntityId, mappedRequestId);
-                        requestSummary.success += 1;
+                        if (!isResumeRun) {
+                            requestSummary.success += 1;
+                        }
                         return;
                     }
 
@@ -3578,7 +3628,9 @@ export class PolicyDataMigrator {
                         srcEntityId
                     );
                     if (mappedTx) {
-                        transactionSummary.success += 1;
+                        if (!isResumeRun) {
+                            transactionSummary.success += 1;
+                        }
                         return;
                     }
 
@@ -3722,8 +3774,8 @@ export class PolicyDataMigrator {
             );
             role = groups.find(
                 (item) =>
-                    item.groupName === this._groups[srcGroup.groupName] ||
-                    item.role === this._roles[srcGroup.role]
+                    item?.groupName === this._groups[srcGroup?.groupName] ||
+                    item.role === this._roles[srcGroup?.role]
             );
             doc.group = role?.uuid;
         }
@@ -3739,7 +3791,7 @@ export class PolicyDataMigrator {
                 doc.owner
             );
             role = groups.find(
-                (item) => item.groupName === this._groups[srcGroup.groupName]
+                (item) => item?.groupName === this._groups[srcGroup?.groupName]
             );
             doc.assignedToGroup = role?.uuid;
         }
@@ -3931,8 +3983,8 @@ export class PolicyDataMigrator {
             );
             role = groups.find(
                 (item) =>
-                    item.groupName === this._groups[srcGroup.groupName] ||
-                    item.role === this._roles[srcGroup.role]
+                    item?.groupName === this._groups[srcGroup?.groupName] ||
+                    item.role === this._roles[srcGroup?.role]
             );
             doc.group = role?.uuid;
         }
@@ -3948,7 +4000,7 @@ export class PolicyDataMigrator {
                 doc.owner
             );
             role = groups.find(
-                (item) => item.groupName === this._groups[srcGroup.groupName]
+                (item) => item?.groupName === this._groups[srcGroup?.groupName]
             );
             doc.assignedToGroup = role?.uuid;
         }
@@ -4052,21 +4104,33 @@ export class PolicyDataMigrator {
         return doc;
     }
 
-    public static mapRunToResponse(run: MigrationRun) {
-        const heartbeatAt = run.heartbeatAt ? new Date(run.heartbeatAt) : null;
-        const isRunning = run.status === MigrationRunStatus.RUNNING;
+    private static isHeartbeatStaleForRun(run: Partial<MigrationRun>): boolean {
+        if (run.status !== MigrationRunStatus.RUNNING) {
+            return false;
+        }
 
-        let isHeartbeatStale = false;
-        if (isRunning && heartbeatAt) {
-            isHeartbeatStale =
-                Date.now() - heartbeatAt.getTime() > PolicyDataMigrator.migrationHeartbeatRunStaleTimeout;
+        if (!run.heartbeatAt) {
+            return true;
         }
-        if (isRunning && !heartbeatAt) {
-            isHeartbeatStale = true;
+
+        const heartbeatAtTime = new Date(run.heartbeatAt).getTime();
+        if (!Number.isFinite(heartbeatAtTime)) {
+            return true;
         }
+
+        return (
+            Date.now() - heartbeatAtTime >
+            PolicyDataMigrator.migrationHeartbeatRunStaleTimeout
+        );
+    }
+
+    public static mapRunToResponse(run: MigrationRun) {
+        const isHeartbeatStale = PolicyDataMigrator.isHeartbeatStaleForRun(run);
 
         const effectiveStatus =
-            isRunning && isHeartbeatStale ? MigrationRunStatus.FAILED : run.status;
+            run.status === MigrationRunStatus.RUNNING && isHeartbeatStale
+                ? MigrationRunStatus.STOPPED
+                : run.status;
 
         return {
             runId: run.id,
@@ -4430,17 +4494,6 @@ export class PolicyDataMigrator {
             throw new Error('Migration run config is invalid');
         }
 
-        const db = new DatabaseServer();
-        const failedItems = await db.find(
-            MigrationFailedItem,
-            { runId: run.id } as Partial<MigrationFailedItem>,
-            { orderBy: { createDate: 'ASC' as const } }
-        );
-
-        if (!failedItems || failedItems.length === 0) {
-            return [];
-        }
-
         const vcIds = new Set<string>();
         const roleVcIds = new Set<string>();
         const vpIds = new Set<string>();
@@ -4454,6 +4507,43 @@ export class PolicyDataMigrator {
         const documentStateIds = new Set<string>();
         const tokenIds = new Set<string>();
         const retirePoolIds = new Set<string>();
+
+        const { src, dst } = migrationConfig.policies;
+        const users = new Users();
+        const userTopic = await DatabaseServer.getTopicByType(
+            owner,
+            TopicType.UserTopic
+        );
+
+        const srcModel = await DatabaseServer.getPolicy({
+            id: src,
+            owner,
+        });
+        if (!srcModel) {
+            throw new Error(`Can't find source policy`);
+        }
+        const srcModelDryRun = PolicyHelper.isDryRunMode(srcModel);
+        const srcDb = new DatabaseServer(srcModelDryRun ? srcModel.id : undefined);
+
+        const dstModel = await DatabaseServer.getPolicy({
+            id: dst,
+            owner,
+        });
+        if (!dstModel) {
+            throw new Error(`Can't find destination policy`);
+        }
+        const dstModelDryRun = PolicyHelper.isDryRunMode(dstModel);
+
+        const retryDb = new DatabaseServer(dstModelDryRun ? dstModel.id : undefined);
+        const failedItems = await retryDb.find(
+            MigrationFailedItem,
+            { runId: run.id } as Partial<MigrationFailedItem>,
+            { orderBy: { createDate: 'ASC' as const } }
+        );
+
+        if (!failedItems || failedItems.length === 0) {
+            return [];
+        }
 
         for (const failedItem of failedItems) {
             const entityType = failedItem.entityType;
@@ -4487,32 +4577,6 @@ export class PolicyDataMigrator {
                 retirePoolIds.add(srcEntityId);
             }
         }
-
-        const { src, dst } = migrationConfig.policies;
-        const users = new Users();
-        const userTopic = await DatabaseServer.getTopicByType(
-            owner,
-            TopicType.UserTopic
-        );
-
-        const srcModel = await DatabaseServer.getPolicy({
-            id: src,
-            owner,
-        });
-        if (!srcModel) {
-            throw new Error(`Can't find source policy`);
-        }
-        const srcModelDryRun = PolicyHelper.isDryRunMode(srcModel);
-        const srcDb = new DatabaseServer(srcModelDryRun ? srcModel.id : undefined);
-
-        const dstModel = await DatabaseServer.getPolicy({
-            id: dst,
-            owner,
-        });
-        if (!dstModel) {
-            throw new Error(`Can't find destination policy`);
-        }
-        const dstModelDryRun = PolicyHelper.isDryRunMode(dstModel);
 
         const srcSystemSchemas = await DatabaseServer.getSchemas({
             category: SchemaCategory.SYSTEM,
@@ -5145,10 +5209,12 @@ export class PolicyDataMigrator {
                             throw new Error(`Unsupported failed entityType: ${entityType}`);
                         }
 
+                        if (entitySummary.failed > 0) {
+                            entitySummary.failed -= 1;
+                        }
                         entitySummary.success += 1;
                         successItems.push(failedItem);
                     } catch (error) {
-                        entitySummary.failed += 1;
                         errors.push({
                             id: srcEntityId,
                             message: error?.toString(),

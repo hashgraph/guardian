@@ -59,7 +59,7 @@ import {
     PolicyActionStatus,
     IgnoreRule,
     SchemaStatus,
-    MigrationConfig
+    MigrationConfig, MigrationRunStatus
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
@@ -2594,11 +2594,9 @@ export class PolicyEngineService {
                             const existingRun = await db.findOne(MigrationRun, existingRunFilters);
 
                             if (existingRun) {
-                                const staleTimeoutMs = 10 * 60 * 1000;
-                                const heartbeatAt = existingRun.heartbeatAt ? new Date(existingRun.heartbeatAt) : null;
-                                const isHeartbeatStale = !heartbeatAt || (Date.now() - heartbeatAt.getTime() > staleTimeoutMs);
+                                const normalizedRun = PolicyDataMigrator.mapRunToResponse(existingRun);
 
-                                if (existingRun.status === 'running' && !isHeartbeatStale) {
+                                if (normalizedRun.status === MigrationRunStatus.RUNNING) {
                                     throw new Error('Migration for this policy pair is already running');
                                 }
 
@@ -2674,6 +2672,11 @@ export class PolicyEngineService {
 
                             if (!run) {
                                 throw new Error('Migration run not found');
+                            }
+
+                            const normalizedRun = PolicyDataMigrator.mapRunToResponse(run as MigrationRun);
+                            if (normalizedRun.status === MigrationRunStatus.RUNNING) {
+                                throw new Error('Migration run is already running');
                             }
 
                             const runConfig = run.config as MigrationConfig;
@@ -2770,6 +2773,11 @@ export class PolicyEngineService {
                                 throw new Error('Migration run not found');
                             }
 
+                            const normalizedRun = PolicyDataMigrator.mapRunToResponse(run as MigrationRun);
+                            if (normalizedRun.status === MigrationRunStatus.RUNNING) {
+                                throw new Error('Migration run is already running');
+                            }
+
                             const runConfig = run.config as MigrationConfig;
                             if (!runConfig?.policies?.dst) {
                                 throw new Error('Migration run config is invalid');
@@ -2840,14 +2848,7 @@ export class PolicyEngineService {
                         throw new Error('Source or destination policy not found');
                     }
 
-                    // const srcIsDryRun = PolicyHelper.isDryRunMode(srcPolicy);
-                    const dstIsDryRun = PolicyHelper.isDryRunMode(dstPolicy);
-
-                    // if (srcIsDryRun !== dstIsDryRun) {
-                    //     throw new Error('Source and destination policies must be in the same mode');
-                    // }
-
-                    const isDryRun = dstIsDryRun;
+                    const isDryRun = PolicyHelper.isDryRunMode(dstPolicy);;
                     const db = new DatabaseServer(isDryRun ? dstPolicyId : null);
 
                     const filters: Partial<MigrationRun> = isDryRun
