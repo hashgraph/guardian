@@ -40,6 +40,21 @@
         const GAP = 12;
         const DRAG_SIZE = 3;
 
+        const isButtonVisible = (btn) => {
+            if (!btn || !btn.isConnected) {
+                return false;
+            }
+
+            const cs = getComputedStyle(btn);
+
+            if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) {
+                return false;
+            }
+
+            const r = btn.getBoundingClientRect();
+            return r.width > 0 && r.height > 0;
+        };
+
         const getMin = (value, min, max) => Math.min(max, Math.max(min, value));
 
         const setStyles = (el, styles) => {
@@ -90,7 +105,13 @@
         const placeWidgetNearButton = (btn) => {
             requestAnimationFrame(() => {
                 const windowElement = getWindowEl();
-                if (!windowElement) return;
+                if (!windowElement) {
+                    return;
+                }
+
+                if (!isButtonVisible(btn)) {
+                    return;
+                }
 
                 setStyles(windowElement, {
                     position: 'fixed',

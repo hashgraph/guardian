@@ -270,6 +270,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             if (this.showDocWidget) {
                 gitBook('show');
             } else {
+                gitBook('close');
                 gitBook('hide');
             }
         }
