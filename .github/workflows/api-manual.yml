@@ -162,26 +162,26 @@ jobs:
         run: |
           docker run --network host --name cypress-test-run \
             -e CYPRESS_portApi=3002 \
+            -e CYPRESS_BROWSER=chromium \
             -e CYPRESS_operatorId=${{ secrets.CI_HEDERA_ACCOUNT }} \
             -e CYPRESS_operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }} \
             -e CYPRESS_MGSAdmin=${{ secrets.MGS_TENANT_NAME }} \
             -e CYPRESS_MGSIndexerAPIToken=${{ secrets.MGSIndexerAPIToken }} \
-            -e CYPRESS_grepTags="preparing ${{ inputs.tags }}" \
+            -e "CYPRESS_grepTags=${{ inputs.tags }}" \
             -e CYPRESS_grepFilterSpecs=true \
             -e ReportName="${{ inputs.report_name }}" \
-            cypress-runner \
-            --browser chrome
+            cypress-runner
 
       - name: Copy test results from Docker container
         if: always()
         run: |
-          docker cp cypress-test-run:/e2e/cypress/test_results ./e2e-tests/cypress/test_results || true
-
-      - name: Copy cypress reports from Docker container
-        if: always()
-        run: |
-          docker cp cypress-test-run:/e2e/cypress/reports ./e2e-tests/cypress/reports || true
-          find e2e-tests/cypress/reports -type f || true
+          mkdir -p e2e-tests/cypress/test_results e2e-tests/cypress/reports e2e-tests/cypress/screenshots e2e-tests/cypress/videos e2e-tests/cypress/downloads
+          docker cp cypress-test-run:/e2e/cypress/test_results/. e2e-tests/cypress/test_results/ || true
+          docker cp cypress-test-run:/e2e/cypress/reports/. e2e-tests/cypress/reports/ || true
+          docker cp cypress-test-run:/e2e/cypress/screenshots/. e2e-tests/cypress/screenshots/ || true
+          docker cp cypress-test-run:/e2e/cypress/videos/. e2e-tests/cypress/videos/ || true
+          docker cp cypress-test-run:/e2e/cypress/downloads/. e2e-tests/cypress/downloads/ || true
+          find e2e-tests/cypress/reports -type f 2>/dev/null || true
 
       - name: Cleanup Docker resources
         if: always()
@@ -195,9 +195,14 @@ jobs:
           files: e2e-tests/cypress/test_results/**/*.xml
 
       - name: Upload tests results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
-          path: e2e-tests/cypress/reports/html/.jsons/**
+          name: cypress-reports
+          path: |
+            e2e-tests/cypress/reports/
+            e2e-tests/cypress/screenshots/
+            e2e-tests/cypress/videos/
+            e2e-tests/cypress/downloads/
           include-hidden-files: true
-          retention-days: 1
+          retention-days: 7

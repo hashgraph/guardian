@@ -19,9 +19,9 @@ Where to add the blocks
 * Open Policy Configurator
 * Add Global Events Writer and Global Events Reader to the policy flow
 
-<figure><img src="../../../.gitbook/assets/unknown (23).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (23).png" alt=""><figcaption></figcaption></figure>
 
-Get complete information about the blocks: [Global Events Writer Block](policy-creation/introduction/global-events-writer-block.md) and [Global Events Reader Block](policy-creation/introduction/global-events-reader-block.md)
+Get complete information about the blocks: [Global Events Writer Block](../policy-creation/introduction/global-events-writer-block.md) and [Global Events Reader Block](../policy-creation/introduction/global-events-reader-block.md)
 
 ### 3. Publish policy
 
@@ -45,7 +45,7 @@ Get complete information about the blocks: [Global Events Writer Block](policy-c
 
 * Document type by topic
 
-<figure><img src="../../../.gitbook/assets/unknown (24).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (24).png" alt=""><figcaption></figcaption></figure>
 
 #### **Streams management (Reader)**
 
@@ -54,7 +54,7 @@ Get complete information about the blocks: [Global Events Writer Block](policy-c
   * document type is VC
   * Admin configured a schema for the target branch
 
-<figure><img src="../../../.gitbook/assets/unknown (25).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (25).png" alt=""><figcaption></figcaption></figure>
 
 #### **Branch execution rule (Reader)**
 
@@ -63,4 +63,4 @@ Get complete information about the blocks: [Global Events Writer Block](policy-c
   * schema validation passes (if configured)
   * field filters match (only if enabled and applicable)
 
-<figure><img src="../../../.gitbook/assets/unknown (27).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
