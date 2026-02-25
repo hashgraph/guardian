@@ -1,7 +1,7 @@
 <form>
     <ng-container *ngFor="let item of fields">
 
-        <div *ngIf="ifFieldVisible(item)" class="form-field-container" [attr.field-id]="item.fullPath">
+        <div *ngIf="ifFieldVisible(item) && this.values && this.values[item.name]" class="form-field-container" [attr.field-id]="item.fullPath">
 
             <!-- simple field -->
             <div *ngIf="ifSimpleField(item)" class="form-field">

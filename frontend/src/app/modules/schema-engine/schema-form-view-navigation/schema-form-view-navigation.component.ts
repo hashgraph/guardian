@@ -23,7 +23,6 @@ export class SchemaFormViewNavigationComponent implements OnInit, OnChanges {
     @Output() hasItemsChangeEvent = new EventEmitter<boolean>();
 
     public expanded = new Set<string>();
-    private values: any;
 
     public get navTree(): NavItem[] {
         const controls = this.getSourceControls();
@@ -34,7 +33,6 @@ export class SchemaFormViewNavigationComponent implements OnInit, OnChanges {
         if (!Array.isArray(this.subjects) || !this.schemaMap) 
             return [];
 
-        this.values = this.subjects;
         const result: any[] = [];
         for (let i = 0; i < this.subjects.length; i++) {
             const subject = this.subjects[i];
@@ -79,9 +77,9 @@ export class SchemaFormViewNavigationComponent implements OnInit, OnChanges {
 
     private filterFieldsByValues(fields: any[]): any[] {
         return fields.filter(control => {
-            const fieldExistsInAnySubject = this.values.some((value: any) => {
-                if (!value) return false;
-                return !!value[control.name];
+            const fieldExistsInAnySubject = this.subjects?.some((subject: any) => {
+                if (!subject) return false;
+                return !!subject[control.name];
             });
             return fieldExistsInAnySubject;
         });
