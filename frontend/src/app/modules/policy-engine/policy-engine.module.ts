@@ -178,6 +178,8 @@ import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialo
 import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
 import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-dialog.component';
 import { EditibleFieldsDialog } from './dialogs/editible-fields-dialog/editible-fields-dialog.component';
+import { PolicyParametersDialog } from './dialogs/policy-parameters-dialog/policy-parameters-dialog.component';
+import { PolicyParameterPropertyComponent } from 'src/app/components/policy-parameter-property/policy-parameter-property.component';
 
 @NgModule({
     declarations: [
@@ -313,6 +315,8 @@ import { EditibleFieldsDialog } from './dialogs/editible-fields-dialog/editible-
         ChangeBlockSettingsDialog,
         ApproveUpdateVcDocumentDialogComponent,
         EditibleFieldsDialog,
+        PolicyParametersDialog,
+        PolicyParameterPropertyComponent
     ],
     imports: [
         CommonModule,

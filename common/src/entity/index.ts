@@ -61,5 +61,6 @@ export * from './policy-keys.js';
 export * from './document-draft.js';
 export * from './policy-comment.js';
 export * from './policy-discussion.js';
+export * from './policy-parameters.js';
 export { GlobalEventsReaderStream } from './global-events-reader-stream.js';
 export { GlobalEventsWriterStream} from './global-events-writer-stream.js';

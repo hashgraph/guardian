@@ -1,0 +1,109 @@
+<ng-container *ngIf="property.type === 'Input' && visible(property.visible)">
+    <div class="element-container">
+        <label class="form-label property-label" htmlFor="atValidation">{{ config.label }}</label>
+        <span class="property-description">{{ config.shortDescription }}</span>
+        
+        <input 
+            pInputText 
+            class="prop-input" 
+            [(ngModel)]="value" 
+            [readonly]="readonly" 
+            (blur)="onSave()" 
+            type="text"/>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Code' && visible(property.visible)">
+    <!-- <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [title]="property.title">
+            <span *ngIf="property.required" class="required-fields">*</span> {{ property.label }}
+        </td>
+        <td class="propRowCell">
+            <input 
+                class="prop-input" 
+                [(ngModel)]="value" 
+                [readonly]="true"
+                (click)="editCode($event)"
+                (blur)="onSave()"
+            >
+        </td>
+    </tr> -->
+    <div class="guardian-input-container">
+        <label class="form-label" htmlFor="atValidation">{{ property.label }}</label>
+        <span class="property-description">{{ config.shortDescription }}</span>
+
+        <input 
+            pInputText 
+            class="prop-input" 
+            [(ngModel)]="value" 
+            [readonly]="true"
+            (click)="editCode($event)"
+            (blur)="onSave()"/>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Checkbox' && visible(property.visible)">
+    <div class="element-container">
+    <label class="form-label property-label" htmlFor="atValidation">{{ config.label }}</label>
+    <span class="property-description">{{ config.shortDescription }}</span>
+    <div class="">
+        <p-checkbox class="prop-input prop-checkbox" 
+                    type="checkbox" 
+                    [(ngModel)]="value" 
+                    [readonly]="readonly"
+                    [binary]="true"
+                    (change)="onSave()">
+        </p-checkbox>
+    </div>
+    </div>
+
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Select' && visible(property.visible)">
+    <div class="element-container">
+        <label class="form-label property-label" htmlFor="sectoralScope">{{ property.label }}</label>
+        <span class="property-description">{{ config.shortDescription }}</span>
+
+        <p-dropdown
+            [(ngModel)]="value"
+            [options]="property.items"
+            optionLabel="label"
+            optionValue="value"
+            [disabled]="readonly"
+            placeholder="Select an option"
+            (onChange)="onSave()"
+            [appendTo]="'body'"
+        >
+        </p-dropdown>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Path' && visible(property.visible)">
+    <div class="element-container">
+        <label class="form-label property-label" htmlFor="sectoralScope">{{ property.label }}</label>
+        <span class="property-description">{{ config.shortDescription }}</span>
+
+        <div class="element-path">
+            <p-dropdown
+                class="select"
+                [options]="pathOptions"
+                [(ngModel)]="rootPath"
+                optionLabel="label"
+                optionValue="value"
+                (onChange)="onPathPropertyChanged()"
+                appendTo="body">
+            </p-dropdown>
+
+            <input 
+                pInputText 
+                class="prop-input" 
+                [(ngModel)]="pathValue" 
+                [readonly]="readonly" 
+                (blur)="onPathPropertyChanged()"
+                (change)="onPathPropertyChanged()"
+                type="text"
+            />
+        </div>
+    </div>
+</ng-container>

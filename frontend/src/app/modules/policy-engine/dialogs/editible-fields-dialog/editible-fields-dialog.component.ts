@@ -5,13 +5,13 @@ import { PolicyTemplate } from '../../structures';
 import { RegisteredService } from '../../services/registered.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { Subject, takeUntil } from 'rxjs';
-import { PolicyEditableField, PolicyEditableFieldDto } from '@guardian/interfaces';
+import { PolicyEditableField, PolicyEditableFieldDTO } from '@guardian/interfaces';
 
 type PolicyEditableFieldForm = {
   blockTag: FormControl<string>;
   property: FormControl<string>;
   visible: FormControl<string[]>;
-  appliesTo: FormControl<string[]>;
+  applyTo: FormControl<string[]>;
   defaultLabel: FormControl<string>;
   required: FormControl<boolean>;
   label: FormControl<string>;
@@ -33,7 +33,7 @@ export class EditibleFieldsDialog implements OnInit {
     form: FormGroup<PolicyForm>;
     policyTemplate: PolicyTemplate;
     policyEditibleFields: PolicyEditableField[] = [];
-    additionalOptionsAppliesTo = [
+    additionalOptionsApplyTo = [
         { _name: 'All' },
         { _name: 'Self' }
     ];
@@ -58,7 +58,7 @@ export class EditibleFieldsDialog implements OnInit {
         this.loading = false;
 
         if(this.policyTemplate.editableParametersSettings) {
-            this.policyEditibleFields = this.policyTemplate.editableParametersSettings?.map(ep => PolicyEditableFieldDto.fromDTO(ep));
+            this.policyEditibleFields = this.policyTemplate.editableParametersSettings?.map(ep => PolicyEditableFieldDTO.fromDTO(ep));
         }
 
         this.policyEngineService.getBlockInformation()
@@ -68,14 +68,14 @@ export class EditibleFieldsDialog implements OnInit {
                 this.loadData();
             });
     }
-
+ 
     loadData() {
         const fields = this.policyTemplate.editableParametersSettings;
         if(!fields?.length) {
             return;
         }
 
-        fields.forEach((field: PolicyEditableFieldDto) => {
+        fields.forEach((field: PolicyEditableFieldDTO) => {
             const block = this.policyTemplate.allBlocks.find(b => b.tag === field.blockTag);
             if(!block) {
                 return;
@@ -93,8 +93,8 @@ export class EditibleFieldsDialog implements OnInit {
         return this.form.get('fields') as FormArray<FormGroup>;
     }
 
-    get appliesToOptions(): any[] {
-        return [...this.additionalOptionsAppliesTo, ...this.policyTemplate.policyRoles];
+    get applyToOptions(): any[] {
+        return [...this.additionalOptionsApplyTo, ...this.policyTemplate.policyRoles];
     }
 
     get fieldGroups(): FormGroup<PolicyEditableFieldForm>[] {
@@ -105,6 +105,21 @@ export class EditibleFieldsDialog implements OnInit {
         return this.policyEditibleFields[index]?.properties ?? [];
     }
 
+    private setPath(properties:any[], result:any[], parent?:string) {
+        if(!properties) return;
+
+        for(const prop of properties) {
+            prop.path = parent ? parent + '.' + prop.name : prop.name;
+            if(prop.properties) {
+                this.setPath(prop.properties, result, prop.path);
+            }
+            else {
+                result.push(prop);
+            }
+        }
+        return result;
+    }
+
     onBlockChange(selected: any, index: number): void {
         const fg = this.fields.at(index) as FormGroup<PolicyEditableFieldForm>;
         fg.controls.blockTag.setValue(selected?.tag ?? selected);
@@ -112,8 +127,9 @@ export class EditibleFieldsDialog implements OnInit {
         this.policyTemplate.allBlocks.forEach(block => {
             if (block.tag === selected) {
                 const props = this.registeredService.getCustomProperties(block.blockType);
-                if(props && props.length > 0) {
-                    this.policyEditibleFields[index].properties = props;
+                const propsWithPath = this.setPath(props, []);
+                if(propsWithPath && propsWithPath.length > 0) {
+                    this.policyEditibleFields[index].properties = propsWithPath;
                 }
             }
         });
@@ -122,9 +138,9 @@ export class EditibleFieldsDialog implements OnInit {
     createFieldGroup(m?: Partial<PolicyEditableField>): FormGroup<PolicyEditableFieldForm> {
         return this.fb.group<PolicyEditableFieldForm>({
             blockTag: this.fb.control(m?.blockTag ?? '', { nonNullable: true, validators: [Validators.required] }),
-            property: this.fb.control(m?.property ?? '', { nonNullable: true, validators: [Validators.required] }),
+            property: this.fb.control(m?.propertyPath ?? '', { nonNullable: true, validators: [Validators.required] }),
             visible: this.fb.control(m?.visible ?? [], { nonNullable: true, validators: [Validators.required] }),
-            appliesTo: this.fb.control(m?.appliesTo ?? [], { nonNullable: true, validators: [Validators.required] }),
+            applyTo: this.fb.control(m?.applyTo ?? [], { nonNullable: true, validators: [Validators.required] }),
             label: this.fb.control(m?.label ?? '', { nonNullable: true, validators: [Validators.required] }),
             defaultLabel: this.fb.control(m?.defaultLabel ?? null),
             required: this.fb.control(m?.required ?? false, { nonNullable: true }),
@@ -148,14 +164,19 @@ export class EditibleFieldsDialog implements OnInit {
         this.ref.close();
     }
 
-    buildFields(): PolicyEditableFieldDto[]  {
+    buildFields(): PolicyEditableFieldDTO[]  {
+        const blocksByTag = new Map(
+            this.policyTemplate.allBlocks.map(b => [b.tag, b.blockType] as const)
+        );
+
         return  this.form.getRawValue().fields ? 
                 this.form.getRawValue().fields.map(val => {
-                    const field = new PolicyEditableFieldDto();
+                    const field = new PolicyEditableFieldDTO();
+                    field.blockType = blocksByTag.get(val.blockTag) ?? '';
                     field.blockTag = val.blockTag;
-                    field.property = val.property;
+                    field.propertyPath = val.property;
                     field.visible = val.visible;
-                    field.appliesTo = val.appliesTo;
+                    field.applyTo = val.applyTo;
                     field.label = val.label;
                     field.defaultLabel = val.defaultLabel;
                     field.required = val.required;

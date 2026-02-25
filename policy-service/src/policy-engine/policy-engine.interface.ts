@@ -475,6 +475,8 @@ export interface IPolicyBlock {
         value: T,
         user?: PolicyUser | string
     ): Promise<void>;
+
+    getOption(user: PolicyUser | null): any;
 }
 
 /**

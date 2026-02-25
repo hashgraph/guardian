@@ -1,0 +1,36 @@
+
+.property-label {
+    display: block;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.element-container {
+    margin-bottom: 24px;
+    border: 1px solid #E1E7EF;
+    background-color: #F9FAFC;
+    padding: 16px;
+    border-radius: 8px;
+}
+.element-path {
+   display: flex;
+   gap: 16px;
+
+   & > * {
+    flex: 1;
+   }
+}
+
+.p-inputtext,
+.p-dropdown {
+    width:100%;
+    border-radius: 8px;
+}
+
+.property-description {
+    color: #848FA9;
+    display: block;
+    font-weight: 500;
+    font-size: 12px;
+    margin-bottom: 5px;
+}

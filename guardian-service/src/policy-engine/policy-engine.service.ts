@@ -27,6 +27,7 @@ import {
     PolicyDiscussion,
     PolicyImportExport,
     PolicyMessage,
+    PolicyParameters,
     RecordImportExport,
     RunFunctionAsync,
     Schema as SchemaCollection,
@@ -55,7 +56,8 @@ import {
     PolicyActionType,
     PolicyActionStatus,
     IgnoreRule,
-    SchemaStatus
+    SchemaStatus,
+    PolicyEditableFieldDTO
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
@@ -4533,6 +4535,51 @@ export class PolicyEngineService {
                     return new MessageResponse(docs);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            })
+
+        this.channel.getMessages(PolicyEngineEvents.SAVE_POLICY_PARAMETERS_VALUES,
+            async (msg: { owner: IOwner, userDID: string, policyId: string, config: PolicyEditableFieldDTO[] }) => {
+                try {
+                    let result;
+                    const { userDID, policyId, config } = msg;
+
+                    const found = await DatabaseServer.getPolicyParameters(userDID, policyId);
+
+                    if(found) {
+                        found.config = config;
+                        result = await DatabaseServer.updatePolicyParameters(found);
+                    } else {
+                        const parameters = new PolicyParameters();
+                        parameters.userDID = userDID;
+                        parameters.policyId = policyId;
+                        parameters.config = config;
+                        parameters.properties = {};
+                        parameters.updated = false;
+
+                        result = await DatabaseServer.createPolicyParameters(parameters);
+                    }
+
+                    //flag update
+
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner.id);
+                    return new MessageError(error);
+                }
+            })
+
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_PARAMETERS_VALUES,
+            async (msg: { owner: IOwner, userDID: string, policyId: string }) => {
+                try {
+                    const { userDID, policyId } = msg;
+                    
+                    const result = await DatabaseServer.getPolicyParameters(userDID, policyId);
+
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner.id);
                     return new MessageError(error);
                 }
             })

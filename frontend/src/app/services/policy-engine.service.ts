@@ -622,4 +622,12 @@ export class PolicyEngineService {
     public getAllVersionVcDocuments(policyId?: string, documentId?: string): Observable<any> {
         return this.http.get<void>(`${this.url}/${policyId}/get-all-version-vc-documents/${documentId}`);
     }
+
+    public saveParameters(policyId: string, data: any): Observable<any> {
+        return this.http.post<void>(`${this.url}/${policyId}/parameters/`, data);
+    }
+
+    public getParametersConfig(policyId: string): Observable<any> {
+        return this.http.get<void>(`${this.url}/${policyId}/parameters/config`);
+    }
 }

@@ -57,7 +57,8 @@ import {
     PolicyComment,
     PolicyDiscussion,
     GlobalEventsReaderStream,
-    GlobalEventsWriterStream
+    GlobalEventsWriterStream,
+    PolicyParameters
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -953,6 +954,55 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async removeSchemaRule(rule: SchemaRule): Promise<void> {
         return await new DataBaseHelper(SchemaRule).remove(rule);
+    }
+
+    /**
+     * Create Policy Parameters
+     * @param parameters
+     */
+    public static async createPolicyParameters(
+        parameters: PolicyParameters
+    ): Promise<PolicyParameters> {
+        const item = new DataBaseHelper(PolicyParameters).create(parameters);
+        return await new DataBaseHelper(PolicyParameters).save(item);
+    }
+
+    /**
+     * Update Policy Parameters
+     * @param label
+     */
+    public static async updatePolicyParameters(
+        parameters: PolicyParameters
+    ): Promise<PolicyParameters> {
+        return await new DataBaseHelper(PolicyParameters).update(parameters);
+    }
+
+    /**
+     * Get Policy Parameters
+     * @param filters
+     */
+    public static async getPolicyParameters(
+        userDID: string,
+        policyId: string
+    ): Promise<PolicyParameters> {
+        return await new DataBaseHelper(PolicyParameters).findOne({
+            userDID,
+            policyId
+        });
+    }
+
+    /**
+     * Get Policy Parameters by Policy Id
+     * @param filters
+     */
+    public static async getPolicyParametersByPolicyId(
+        policyId: string
+    ): Promise<PolicyParameters[]> {
+        return await new DataBaseHelper(PolicyParameters).findAll({
+            where: {
+                policyId
+            }
+        });
     }
 
     /**

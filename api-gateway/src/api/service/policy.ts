@@ -2,7 +2,7 @@ import { Auth, AuthUser } from '#auth';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson, FilenameSanitizer } from '#helpers';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
+import { DocumentType, Permissions, PolicyEditableFieldDTO, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version, Patch, DefaultValuePipe, ParseBoolPipe } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -29,7 +29,8 @@ import {
     RunningDetailsDTO,
     ServiceUnavailableErrorDTO,
     TaskDTO,
-    ResponseDTOWithSyncEvents
+    ResponseDTOWithSyncEvents,
+    PolicyParametersDTO
 } from '#middlewares';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
@@ -4790,6 +4791,97 @@ export class PolicyApi {
             return await engineService.getAllVersionVcDocuments(user, policyId, documentId);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Save Parameters Values
+     */
+    @Post('/:policyId/parameters')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Save policy config with values',
+        description: 'Save policy config with values to the PolicyParameters tale',
+    })
+    @ApiBody({
+        description: 'Policy parameters.',
+        isArray: true,
+        type: PolicyEditableFieldDTO,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyParametersDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async savePolicyParametersValues(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: PolicyEditableFieldDTO[],
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.savePolicyParameters(new EntityOwner(user), user.did, policyId, body );
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get Parameters
+     */
+    @Get('/:policyId/parameters/config')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+    )
+    @ApiOperation({
+        summary: 'Get policy parameters.',
+        description: 'Get policy parameters.',
+    })
+    @ApiBody({
+        description: 'Policy parameters.',
+        isArray: true,
+        type: PolicyEditableFieldDTO,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyParametersDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPolicyParametersConfig(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<any> {
+        try {
+            let config;
+            const engineService = new PolicyEngine();
+            const parameters: PolicyParametersDTO = await engineService.getPolicyParametersConfig(new EntityOwner(user), user.did, policyId );
+
+            if(parameters) {
+                config = parameters.config;
+            } else {
+                const policy = await engineService.getPolicy({
+                    filters: policyId,
+                    userDid: user.did,
+                }, new EntityOwner(user));
+
+                config = policy.editableParametersSettings;
+            }
+            
+            return config;
+        } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
     }

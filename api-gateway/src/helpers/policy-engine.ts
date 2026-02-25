@@ -1,8 +1,9 @@
 import { BasePolicyDTO, ExportMessageDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
 import { IAuthUser, NatsService } from '@guardian/common';
-import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
+import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEditableFieldDTO, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
 import { NewTask } from './task-manager.js';
+import { PolicyParametersDTO } from 'middlewares/validation/schemas/policy-parameters.dto.js';
 
 /**
  * Policy engine service
@@ -1614,5 +1615,33 @@ export class PolicyEngine extends NatsService {
         documentId: string,
     ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.GET_All_NEW_VERSION_VC_DOCUMENTS, { user, policyId, documentId });
+    }
+
+    /**
+     * Update policy parameters
+     * @param user
+     * @param policyId
+     * @param data
+     */
+    public async savePolicyParameters(
+        owner: IOwner,
+        userDID: string,
+        policyId: string,
+        config: PolicyEditableFieldDTO[],
+    ): Promise<PolicyParametersDTO> {
+        return await this.sendMessage(PolicyEngineEvents.SAVE_POLICY_PARAMETERS_VALUES, { owner, userDID, policyId, config });
+    }
+
+    /**
+     * Get policy parameters
+     * @param user
+     * @param policyId
+     */
+    public async getPolicyParametersConfig(
+        owner: IOwner,
+        userDID: string,
+        policyId: string,
+    ): Promise<PolicyParametersDTO> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_PARAMETERS_VALUES, { owner, userDID, policyId });
     }
 }

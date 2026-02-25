@@ -6,7 +6,7 @@ import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../../interfaces/policy-event-type.js';
-import { DatabaseServer, Policy } from '@guardian/common';
+import { DatabaseServer, Policy, PolicyParameters } from '@guardian/common';
 import deepEqual from 'deep-equal';
 import { PolicyUser } from '../../policy-user.js';
 import { ComponentsService } from '../components-service.js';
@@ -929,6 +929,61 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 await this.databaseServer.saveBlockCache(
                     this.policyId, this.uuid, did, name, value, true
                 );
+            }
+
+            
+            setPropValue(properties:any, path:string, value:any) {
+                const keys = path.split('.');
+                const last = keys.pop();
+                for (const key of keys) {
+                    if(!(properties[key] && typeof properties[key] === 'object')) {
+                        properties[key] = {};
+                    }
+                }
+                properties[last] = value;
+            }
+
+            public async getOption(user:any) {
+                const row = await DatabaseServer.getPolicyParameters(this.policyId , user.did );
+
+                let properties;
+                if(!row || row.updated || !row.properties) {
+                    properties = {};
+                    const policyRows = await this.databaseServer.find(PolicyParameters, { policyId: this.policyId });
+
+                    for (const item of policyRows) {
+                        for (const config of item.config) {
+                            if(
+                                config.applyTo.includes('All') ||
+                                config.applyTo.includes(user.role) ||
+                                (config.applyTo.includes('Self') && item.userDID === user.did)
+                            ) {
+                                if(!properties[config.blockTag]) {
+                                    properties[config.blockTag] = {};
+                                }
+                                this.setPropValue(properties[config.blockTag], config.propertyPath, config.value);
+                            }
+                        }
+                    }
+                    if(row) {
+                        row.properties = properties;
+                        this.databaseServer.update(PolicyParameters, {
+                            policyId: row.policyId,
+                            userDID: row.userDID
+                        }, row);
+                    } else {
+                        this.databaseServer.save(PolicyParameters, {
+                            policyId: this.policyId,
+                            userDID: user.did,
+                            config: null,
+                            properties
+                        })
+                    }
+                } else {
+                    properties = row.properties;
+                }
+
+                return Object.assign({}, this.options, properties[this.tag]);
             }
         };
     };

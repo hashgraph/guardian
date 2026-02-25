@@ -18,7 +18,7 @@
                                 formControlName="property"
                                 [options]="propertiesOptions(i)"
                                 optionLabel="label"
-                                optionValue="name"
+                                optionValue="path"
                                 [showClear]="false"
                                 aria-required="true"
                                 >
@@ -31,20 +31,18 @@
                                 [options]="this.policyTemplate.policyRoles"
                                 class="guardian-multiselect full-size"
                                 appendTo="body"
-                                placeholder="Visibility"
                                 optionLabel="_name" 
                                 optionValue="_name"
                                 filterBy="_name">
                             </p-multiSelect>
                         </div>
                         <div class="field">
-                            <label for="appliesTo">Applies To</label>
+                            <label for="applyTo">Apply For</label>
                             <p-multiSelect
-                                formControlName="appliesTo"
-                                [options]="appliesToOptions"
+                                formControlName="applyTo"
+                                [options]="applyToOptions"
                                 class="guardian-multiselect full-size"
                                 appendTo="body"
-                                placeholder="Applies To"
                                 optionLabel="_name" 
                                 optionValue="_name"
                                 filterBy="_name"

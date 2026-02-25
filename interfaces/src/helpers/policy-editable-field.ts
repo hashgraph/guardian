@@ -1,26 +1,30 @@
-export class PolicyEditableFieldDto {
+export class PolicyEditableFieldDTO {
 	constructor() {
 	}
 
+	public blockType: string;
 	public blockTag: string;
-	public property: string;
+	public propertyPath: string;
 	public visible: string[];
-	public appliesTo: string[];
+	public applyTo: string[];
 	public label: string;
 	public defaultLabel: any;
 	public required: boolean;
 	public shortDescription: string;
 
-	public static fromDTO(dto: PolicyEditableFieldDto): PolicyEditableField {
+	public value?: any;
+
+	public static fromDTO(dto: PolicyEditableFieldDTO): PolicyEditableField {
 		return Object.assign(new PolicyEditableField(), dto);
 	}
 }
 
 export class PolicyEditableField {
+	public blockType: string = '';
 	public blockTag: string = '';
-    public property: string = '';
+    public propertyPath: string = '';
     public visible: string[] = [];
-    public appliesTo: string[] = [];
+    public applyTo: string[] = [];
     public defaultLabel: any = null;
     public required: boolean = false;
     public blocks: any[] = [];
@@ -33,12 +37,13 @@ export class PolicyEditableField {
 	constructor() {
 	}
 
-	toDTO(): PolicyEditableFieldDto {
-		const dto = new PolicyEditableFieldDto();
+	toDTO(): PolicyEditableFieldDTO {
+		const dto = new PolicyEditableFieldDTO();
+		dto.blockType = this.blockType;
 		dto.blockTag = this.blockTag;
-		dto.property = this.property;
+		dto.propertyPath = this.propertyPath;
 		dto.visible = this.visible;
-		dto.appliesTo = this.appliesTo;
+		dto.applyTo = this.applyTo;
 		dto.label = this.label;
 		dto.defaultLabel = this.defaultLabel;
 		dto.required = this.required;
