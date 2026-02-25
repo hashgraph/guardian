@@ -2073,22 +2073,32 @@ export class PoliciesComponent implements OnInit {
                 styleClass: 'guardian-dialog',
                 data: {
                     header: 'Disconnect',
-                    text: 'Are you sure want to disconnect this policy?',
+                    texts: ['You are about to disconnect your user from this decentralized policy', 'This action will not affect other users connected to the policy or your participation in other policies on this Guardian instance.'],
+                    options: [{
+                        title: 'Disconnect from this policy on this Guardian instance only.',
+                        sub: 'Your user will be disconnected locally. The policy will remain active on the originating (Main) Guardian instance.',
+                        value: false
+                    }, {
+                        title: 'Disconnect from this policy on both instances.',
+                        sub: 'Your user will be removed from this policy on both this Guardian instance and the originating (Main) Guardian instance.',
+                        value: true
+                    }],
+                    optionValue: false,
                     buttons: [{
                         name: 'Close',
                         class: 'secondary'
                     }, {
                         name: 'Disconnect',
                         class: 'delete'
-                    }, {
-                        name: 'Disconnect (Full)',
-                        class: 'delete'
                     }]
                 },
             });
-            dialogRef.onClose.subscribe((result: string) => {
-                if (result === 'Disconnect' || result === 'Disconnect (Full)') {
-                    const full = result === 'Disconnect (Full)';
+            dialogRef.onClose.subscribe((result?: {
+                button: string,
+                option: boolean
+            }) => {
+                if (result?.button === 'Disconnect') {
+                    const full = !!result.option;
                     this.loading = true;
                     this.externalPoliciesService
                         .disconnect(policy.messageId, full)
