@@ -6,6 +6,43 @@ export interface ContractCredentials {
     operatorKey: string;
 }
 
+function getMirrorNodeUrl(network?: Network): string {
+    switch (network) {
+        case Network.MAINNET:
+            return 'https://mainnet.mirrornode.hedera.com';
+        case Network.PREVIEWNET:
+            return 'https://previewnet.mirrornode.hedera.com';
+        default:
+            return 'https://testnet.mirrornode.hedera.com';
+    }
+}
+
+function parsePrivateKey(key: string): PrivateKey {
+    if (key.startsWith('302e')) {
+        return PrivateKey.fromStringED25519(key);
+    }
+    if (key.startsWith('3030')) {
+        return PrivateKey.fromStringECDSA(key);
+    }
+    if (key.startsWith('0x')) {
+        return PrivateKey.fromStringECDSA(key);
+    }
+    return PrivateKey.fromStringDer(key);
+}
+
+async function resolveEvmAddress(accountId: string, network?: Network): Promise<string> {
+    const url = `${getMirrorNodeUrl(network)}/api/v1/accounts/${accountId}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(`Failed to resolve EVM address for ${accountId}: mirror node returned ${res.status}`);
+    }
+    const data = await res.json() as { evm_address?: string };
+    if (!data.evm_address) {
+        throw new Error(`Failed to resolve EVM address for ${accountId}: no evm_address in response`);
+    }
+    return data.evm_address;
+}
+
 /**
  * Contract helper
  */
@@ -39,7 +76,7 @@ export class ContractHelper {
             default:
                 client = Client.forTestnet();
         }
-        const operatorKey = PrivateKey.fromStringDer(credentials.operatorKey);
+        const operatorKey = parsePrivateKey(credentials.operatorKey);
         client = client.setOperator(credentials.operatorId, operatorKey);
         try {
             const contractExecuteTx = new ContractExecuteTransaction()
@@ -77,7 +114,7 @@ export class ContractHelper {
     ) {
         const evmAddress = newOwnerAddress.startsWith('0x')
             ? newOwnerAddress
-            : AccountId.fromString(newOwnerAddress).toEvmAddress();
+            : await resolveEvmAddress(newOwnerAddress, network);
         const params = new ContractFunctionParameters().addAddress(evmAddress);
         return ContractHelper.executeContractFunction(contractId, 'proposeOwner', params, gas, credentials, network);
     }
@@ -118,7 +155,7 @@ export class ContractHelper {
     ) {
         const evmAddress = ownerAddress.startsWith('0x')
             ? ownerAddress
-            : AccountId.fromString(ownerAddress).toEvmAddress();
+            : await resolveEvmAddress(ownerAddress, network);
         const params = new ContractFunctionParameters().addAddress(evmAddress);
         return ContractHelper.executeContractFunction(contractId, 'removeOwner', params, gas, credentials, network);
     }
