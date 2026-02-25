@@ -5,8 +5,9 @@
     background: #fff;
     position: relative;
     width: 100%;
-    max-height: calc(100% - 255px);
     overflow-y: auto;
+    max-height: 100%;
+    box-sizing: border-box;
 }
 
 .schema-nav-tree {

@@ -72,7 +72,7 @@ export class SchemaFormViewNavigationComponent implements OnInit, OnChanges {
     public buildNavTree(controls: any[], parentPath?: string): NavItem[] {
         const items: NavItem[] = [];
         for (const control of controls || []) {
-            if (control?.visibility === false) continue;
+            if (control?.visibility === false || control?.hide === true || control?.hidden === true) continue;
 
             if (!(control?.isRef || (control?.isArray && control?.isRef) || Array.isArray(control?.fields))) {
                 continue;

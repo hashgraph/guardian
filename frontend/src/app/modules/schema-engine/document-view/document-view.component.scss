@@ -191,13 +191,17 @@ form {
     display: flex;
     gap: 16px;
     width: 100%;
-    position: relative;
 }
+
 .schema-form-view-nav {
     width: 25%;
     min-width: 25%;
+    align-self: flex-start;
+    position: sticky;
+    top: 0;
+    max-height: calc(100vh - 230px);
     overflow-y: auto;
-    position: relative;
+    box-sizing: border-box;
 }
 
 .schema-form-content {
