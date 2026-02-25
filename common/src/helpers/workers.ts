@@ -158,6 +158,9 @@ export class Workers extends NatsService {
         if (!task.data.mirrorNodes) {
             task.data.mirrorNodes = Environment.mirrorNodes;
         }
+        if (!task.data.mirrorNodesBaseApi) {
+            task.data.mirrorNodesBaseApi = Environment.mirrorNodesBaseApi;
+        }
         if (!task.data.localNodeAddress) {
             task.data.localNodeAddress = Environment.localNodeAddress;
         }
@@ -193,6 +196,9 @@ export class Workers extends NatsService {
         }
         if (!task.data.mirrorNodes) {
             task.data.mirrorNodes = Environment.mirrorNodes;
+        }
+        if (!task.data.mirrorNodesBaseApi) {
+            task.data.mirrorNodesBaseApi = Environment.mirrorNodesBaseApi;
         }
         if (!task.data.localNodeAddress) {
             task.data.localNodeAddress = Environment.localNodeAddress;
@@ -475,6 +481,9 @@ export class Workers extends NatsService {
         }
         if (!task.data.mirrorNodes) {
             task.data.mirrorNodes = Environment.mirrorNodes;
+        }
+        if (!task.data.mirrorNodesBaseApi) {
+            task.data.mirrorNodesBaseApi = Environment.mirrorNodesBaseApi;
         }
         if (!task.data.localNodeAddress) {
             task.data.localNodeAddress = Environment.localNodeAddress;

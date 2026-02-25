@@ -8,35 +8,35 @@ export class Environment {
     /**
      * Mainnet API
      */
-    public static readonly HEDERA_MAINNET_API: string = 'https://mainnet.mirrornode.hedera.com/api/v1';
+    public static HEDERA_MAINNET_API: string = 'https://mainnet.mirrornode.hedera.com/api/v1';
     /**
      * Mainnet message API
      */
-    public static readonly HEDERA_MAINNET_MESSAGE_API: string = Environment.HEDERA_MAINNET_API + '/topics/messages';
+    public static HEDERA_MAINNET_MESSAGE_API: string = Environment.HEDERA_MAINNET_API + '/topics/messages';
     /**
      * Mainnet topic API
      */
-    public static readonly HEDERA_MAINNET_TOPIC_API: string = Environment.HEDERA_MAINNET_API + '/topics/';
+    public static HEDERA_MAINNET_TOPIC_API: string = Environment.HEDERA_MAINNET_API + '/topics';
     /**
      * Mainnet account API
      */
-    public static readonly HEDERA_MAINNET_ACCOUNT_API: string = Environment.HEDERA_MAINNET_API + '/accounts/';
+    public static HEDERA_MAINNET_ACCOUNT_API: string = Environment.HEDERA_MAINNET_API + '/accounts';
     /**
      * Mainnet balances API
      */
-    public static readonly HEDERA_MAINNET_BALANCES_API: string = Environment.HEDERA_MAINNET_API + '/balances';
+    public static HEDERA_MAINNET_BALANCES_API: string = Environment.HEDERA_MAINNET_API + '/balances';
     /**
      * Mainnet contract API
      */
-    public static readonly HEDERA_MAINNET_CONTRACT_API: string = Environment.HEDERA_MAINNET_API + '/contracts/';
+    public static HEDERA_MAINNET_CONTRACT_API: string = Environment.HEDERA_MAINNET_API + '/contracts';
     /**
      * Mainnet tokens API
      */
-    public static readonly HEDERA_MAINNET_TOKENS_API: string = Environment.HEDERA_MAINNET_API + '/tokens';
+    public static HEDERA_MAINNET_TOKENS_API: string = Environment.HEDERA_MAINNET_API + '/tokens';
     /**
      * Mainnet tokens API
      */
-    public static readonly HEDERA_MAINNET_TRANSACTIONS_API: string = Environment.HEDERA_MAINNET_API + '/transactions';
+    public static HEDERA_MAINNET_TRANSACTIONS_API: string = Environment.HEDERA_MAINNET_API + '/transactions';
 
     /**
      * Testnet API
@@ -49,11 +49,11 @@ export class Environment {
     /**
      * Testnet topic API
      */
-    public static readonly HEDERA_TESTNET_TOPIC_API: string = Environment.HEDERA_TESTNET_API + '/topics/';
+    public static readonly HEDERA_TESTNET_TOPIC_API: string = Environment.HEDERA_TESTNET_API + '/topics';
     /**
      * Testnet account API
      */
-    public static readonly HEDERA_TESTNET_ACCOUNT_API: string = Environment.HEDERA_TESTNET_API + '/accounts/';
+    public static readonly HEDERA_TESTNET_ACCOUNT_API: string = Environment.HEDERA_TESTNET_API + '/accounts';
     /**
      * Testnet balances API
      */
@@ -61,7 +61,7 @@ export class Environment {
     /**
      * Testnet contract API
      */
-    public static readonly HEDERA_TESTNET_CONTRACT_API: string = Environment.HEDERA_TESTNET_API + '/contracts/';
+    public static readonly HEDERA_TESTNET_CONTRACT_API: string = Environment.HEDERA_TESTNET_API + '/contracts';
     /**
      * Testnet tokens API
      */
@@ -82,11 +82,11 @@ export class Environment {
     /**
      * Preview topic API
      */
-    public static readonly HEDERA_PREVIEW_TOPIC_API: string = Environment.HEDERA_PREVIEW_API + '/topics/';
+    public static readonly HEDERA_PREVIEW_TOPIC_API: string = Environment.HEDERA_PREVIEW_API + '/topics';
     /**
      * Preview account API
      */
-    public static readonly HEDERA_PREVIEW_ACCOUNT_API: string = Environment.HEDERA_PREVIEW_API + '/accounts/';
+    public static readonly HEDERA_PREVIEW_ACCOUNT_API: string = Environment.HEDERA_PREVIEW_API + '/accounts';
     /**
      * Preview balances API
      */
@@ -94,7 +94,7 @@ export class Environment {
     /**
      * Preview contract API
      */
-    public static readonly HEDERA_PREVIEW_CONTRACT_API: string = Environment.HEDERA_PREVIEW_API + '/contracts/';
+    public static readonly HEDERA_PREVIEW_CONTRACT_API: string = Environment.HEDERA_PREVIEW_API + '/contracts';
     /**
      * Preview tokens API
      */
@@ -115,11 +115,11 @@ export class Environment {
     /**
      * Localnode topic API
      */
-    public static HEDERA_LOCALNODE_TOPIC_API: string = Environment.HEDERA_LOCALNODE_API + `/topics/`;
+    public static HEDERA_LOCALNODE_TOPIC_API: string = Environment.HEDERA_LOCALNODE_API + `/topics`;
     /**
      * Localnode account API
      */
-    public static HEDERA_LOCALNODE_ACCOUNT_API: string = Environment.HEDERA_LOCALNODE_API + `/accounts/`;
+    public static HEDERA_LOCALNODE_ACCOUNT_API: string = Environment.HEDERA_LOCALNODE_API + `/accounts`;
     /**
      * Localnode balances API
      */
@@ -127,11 +127,11 @@ export class Environment {
     /**
      * Localnode contract API
      */
-    public static HEDERA_LOCALNODE_CONTRACT_API: string = Environment.HEDERA_LOCALNODE_API + `/contracts/`;
+    public static HEDERA_LOCALNODE_CONTRACT_API: string = Environment.HEDERA_LOCALNODE_API + `/contracts`;
     /**
      * Localnode tokens API
      */
-    public static HEDERA_LOCALNODE_TOKENS_API: string = Environment.HEDERA_LOCALNODE_API + `/tokens/`;
+    public static HEDERA_LOCALNODE_TOKENS_API: string = Environment.HEDERA_LOCALNODE_API + `/tokens`;
     /**
      * Localnode tokens API
      */
@@ -198,6 +198,11 @@ export class Environment {
      * @private
      */
     private static _mirrorNodes: string[] = [];
+    /**
+     * Hedera mirror nodes
+     * @private
+     */
+    private static _mirrorNodesBaseApi: string = '/api/v1';
 
     /**
      * Set network
@@ -255,13 +260,27 @@ export class Environment {
 
         if (Environment._mirrorNodes && Environment._mirrorNodes.length > 0) {
             const mirrornodeUrl = ensurePrefix(Environment._mirrorNodes[0], ['http://', 'https://'], 'https://');
-            Environment._messagesApi = `${mirrornodeUrl}/api/v1/topics/messages`;
-            Environment._topicsApi = `${mirrornodeUrl}/api/v1/topics/`;
-            Environment._accountsApi = `${mirrornodeUrl}/api/v1/accounts/`;
-            Environment._balancesApi = `${mirrornodeUrl}/api/v1/balances/`;
-            Environment._contractsApi = `${mirrornodeUrl}/api/v1/contracts/`;
-            Environment._tokensApi = `${mirrornodeUrl}/api/v1/tokens/`;
+            Environment._messagesApi = `${mirrornodeUrl}${Environment._mirrorNodesBaseApi}/topics/messages`;
+            Environment._topicsApi = `${mirrornodeUrl}${Environment._mirrorNodesBaseApi}/topics`;
+            Environment._accountsApi = `${mirrornodeUrl}${Environment._mirrorNodesBaseApi}/accounts`;
+            Environment._balancesApi = `${mirrornodeUrl}${Environment._mirrorNodesBaseApi}/balances`;
+            Environment._contractsApi = `${mirrornodeUrl}${Environment._mirrorNodesBaseApi}/contracts`;
+            Environment._tokensApi = `${mirrornodeUrl}${Environment._mirrorNodesBaseApi}/tokens`;
         }
+    }
+
+    /**
+     * Set mainnet address
+     */
+    public static setMainnetApiUrl(apiUrl) {
+        Environment.HEDERA_MAINNET_API = apiUrl;
+        Environment.HEDERA_MAINNET_MESSAGE_API = Environment.HEDERA_MAINNET_API + '/topics/messages';
+        Environment.HEDERA_MAINNET_TOPIC_API = Environment.HEDERA_MAINNET_API + '/topics';
+        Environment.HEDERA_MAINNET_ACCOUNT_API = Environment.HEDERA_MAINNET_API + '/accounts';
+        Environment.HEDERA_MAINNET_BALANCES_API = Environment.HEDERA_MAINNET_API + '/balances';
+        Environment.HEDERA_MAINNET_CONTRACT_API = Environment.HEDERA_MAINNET_API + '/contracts';
+        Environment.HEDERA_MAINNET_TOKENS_API = Environment.HEDERA_MAINNET_API + '/tokens';
+        Environment.HEDERA_MAINNET_TRANSACTIONS_API = Environment.HEDERA_MAINNET_API + '/transactions';
     }
 
     /**
@@ -271,11 +290,11 @@ export class Environment {
         Environment._localnodeaddress = address || 'localhost';
         Environment.HEDERA_LOCALNODE_API = `${Environment._localnodeprotocol}://${Environment._localnodeaddress}:5551/api/v1`;
         Environment.HEDERA_LOCALNODE_MESSAGE_API = Environment.HEDERA_LOCALNODE_API + `/topics/messages`;
-        Environment.HEDERA_LOCALNODE_TOPIC_API = Environment.HEDERA_LOCALNODE_API + `/topics/`;
-        Environment.HEDERA_LOCALNODE_ACCOUNT_API = Environment.HEDERA_LOCALNODE_API + `/accounts/`;
+        Environment.HEDERA_LOCALNODE_TOPIC_API = Environment.HEDERA_LOCALNODE_API + `/topics`;
+        Environment.HEDERA_LOCALNODE_ACCOUNT_API = Environment.HEDERA_LOCALNODE_API + `/accounts`;
         Environment.HEDERA_LOCALNODE_BALANCES_API = Environment.HEDERA_LOCALNODE_API + `/balances`;
-        Environment.HEDERA_LOCALNODE_CONTRACT_API = Environment.HEDERA_LOCALNODE_API + `/contracts/`;
-        Environment.HEDERA_LOCALNODE_TOKENS_API = Environment.HEDERA_LOCALNODE_API + `/tokens/`;
+        Environment.HEDERA_LOCALNODE_CONTRACT_API = Environment.HEDERA_LOCALNODE_API + `/contracts`;
+        Environment.HEDERA_LOCALNODE_TOKENS_API = Environment.HEDERA_LOCALNODE_API + `/tokens`;
     }
 
     /**
@@ -299,6 +318,24 @@ export class Environment {
      */
     public static setMirrorNodes(mirrorNodes: string[]) {
         Environment._mirrorNodes = mirrorNodes;
+    }
+
+    /**
+     * Set hedera mirror nodes base api
+     * @param baseApi Base api
+     */
+    public static setMirrorNodesBaseApi(baseApi: string = '') {
+        let api = baseApi;
+
+        if (api.length > 0 && !api.startsWith('/')) {
+            api = '/' + api;
+        }
+
+        if (api.endsWith('/') && api.length > 1) {
+            api = api.slice(0, -1);
+        }
+
+        Environment._mirrorNodesBaseApi = api;
     }
 
     /**
@@ -426,5 +463,12 @@ export class Environment {
      */
     public static get mirrorNodes(): string[] {
         return Environment._mirrorNodes;
+    }
+
+    /**
+     * Mirror nodes
+     */
+    public static get mirrorNodesBaseApi(): string {
+        return Environment._mirrorNodesBaseApi;
     }
 }
