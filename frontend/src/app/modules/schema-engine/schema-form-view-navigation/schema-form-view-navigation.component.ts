@@ -23,6 +23,7 @@ export class SchemaFormViewNavigationComponent implements OnInit, OnChanges {
     @Output() hasItemsChangeEvent = new EventEmitter<boolean>();
 
     public expanded = new Set<string>();
+    private values: any;
 
     public get navTree(): NavItem[] {
         const controls = this.getSourceControls();
@@ -30,13 +31,18 @@ export class SchemaFormViewNavigationComponent implements OnInit, OnChanges {
     }
 
     public getSourceControls(): any[] {
-        if (!Array.isArray(this.subjects) || !this.schemaMap) return [];
+        if (!Array.isArray(this.subjects) || !this.schemaMap) 
+            return [];
+
+        this.values = this.subjects;
         const result: any[] = [];
         for (let i = 0; i < this.subjects.length; i++) {
-            const s = this.subjects[i];
-            const type = s?.type || `subject-${i}`;
+            const subject = this.subjects[i];
+            const type = subject?.type || `subject-${i}`;
             const schema = this.schemaMap[type];
-            const fields = schema?.fields ?? schema?.schemaFields ?? [];
+            let fields = schema?.fields ?? schema?.schemaFields ?? [];
+            fields = this.filterFieldsByValues(fields);
+
             const title = this.groupBaseTitle
                 ? (this.subjects.length > 1 ? `${this.groupBaseTitle} #${i + 1}` : this.groupBaseTitle)
                 : (type ?? `Subject ${i + 1}`);
@@ -44,6 +50,7 @@ export class SchemaFormViewNavigationComponent implements OnInit, OnChanges {
         }
         return result;
     }
+    
 
     ngOnInit(): void {
         this.openFirstNavItem();
@@ -70,10 +77,26 @@ export class SchemaFormViewNavigationComponent implements OnInit, OnChanges {
         }, 50);
     }
 
+    private filterFieldsByValues(fields: any[]): any[] {
+        return fields.filter(control => {
+            const fieldExistsInAnySubject = this.values.some((value: any) => {
+                if (!value) return false;
+                return !!value[control.name];
+            });
+            return fieldExistsInAnySubject;
+        });
+    }
+
     public buildNavTree(controls: any[], parentPath?: string): NavItem[] {
         const items: NavItem[] = [];
         for (const control of controls || []) {
-            if (control?.visibility === false || control?.hide === true || control?.hidden === true) continue;
+            if (this.privateFields && this.privateFields[control.name]) {
+                continue;
+            }
+        
+            if (control?.visibility === false || control?.hide === true || control?.hidden === true) {
+                continue;
+            }
 
             if (!(control?.isRef || (control?.isArray && control?.isRef) || Array.isArray(control?.fields))) {
                 continue;
