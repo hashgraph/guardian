@@ -2073,7 +2073,7 @@ export class PoliciesComponent implements OnInit {
                 styleClass: 'guardian-dialog',
                 data: {
                     header: 'Disconnect',
-                    texts: ['You are about to disconnect your user from this decentralized policy', 'This action will not affect other users connected to the policy or your participation in other policies on this Guardian instance.'],
+                    texts: ['You are about to disconnect your user from this decentralized policy.', 'This action will not affect other users connected to the policy or your participation in other policies on this Guardian instance.'],
                     options: [{
                         title: 'Disconnect from this policy on this Guardian instance only.',
                         sub: 'Your user will be disconnected locally. The policy will remain active on the originating (Main) Guardian instance.',
