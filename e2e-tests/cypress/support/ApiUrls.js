@@ -1,8 +1,18 @@
+const BASE = `http://localhost:${Cypress.env("portApi")}/`;
+
 const API = {
     ApiServer: `http://localhost:${Cypress.env("portApi")}/`,
     ApiIndexer: `http://localhost:${Cypress.env("portIndexer")}/`,
     ApiMGS: `https://dev.guardianservice.app/api/v1/`,
 
+
+
+    //Discussions:    
+    Discussions: (policyId, documentId) => `${BASE}policy-comments/${policyId}/${documentId}/discussions`,
+    DiscussionsComments: (policyId, documentId, discussionId) => `${BASE}policy-comments/${policyId}/${documentId}/discussions/${discussionId}/comments`,
+    DiscussionsCommentsSearch: (policyId, documentId, discussionId) => `${BASE}policy-comments/${policyId}/${documentId}/discussions/${discussionId}/comments/search`,
+    AllowedUsers: (policyId, documentId) => `${BASE}policy-comments/${policyId}/${documentId}/users`,
+    PutFileIntoComment: (policyId, documentId, discussionId) => `${BASE}policy-comments/${policyId}/${documentId}/discussions/${discussionId}/comments/file`,
 
     //Accounts
     Accounts: "accounts/",
@@ -11,8 +21,8 @@ const API = {
     AccessToken: "accounts/access-token/",
     RootAuthorities: "accounts/root-authorities",
     Installer: "accounts/installer",
-    StandartRegistries:"accounts/standard-registries",
-    StandardRegistriesAggregated:"accounts/standard-registries/aggregated",
+    StandartRegistries: "accounts/standard-registries",
+    StandardRegistriesAggregated: "accounts/standard-registries/aggregated",
     Balance: "accounts/balance",
     AccountRegister: "accounts/register",
     AccountSession: "accounts/session",
@@ -156,7 +166,8 @@ const API = {
     RegWorkflowSteps: "tag/registrants_workflow_steps/blocks",
     Savepoint: "savepoints/",
     SavepointDelete: "savepoints/delete",
-
+    BlockByTag: (policyId, tag) => `${BASE}policies/${policyId}/tag/${tag}/blocks`,
+ 
     //Records
     Record: "record/",
     RecordStatus: "status/",
@@ -224,7 +235,7 @@ const API = {
     IndexerVPs: "entities/vp-documents/",
     IndexerStatisticVCs: "entities/statistic-documents/",
     IndexerLabelVPs: "entities/label-documents/",
-    
+
     IndexerPolicies: "entities/policies/",
     IndexerTools: "entities/tools/",
     IndexerModules: "entities/modules/",
@@ -234,7 +245,7 @@ const API = {
     IndexerStatistics: "entities/statistics/",
     IndexerLabels: "entities/labels/",
     IndexerFormulas: "entities/formulas/",
-    
+
     IndexerNFTs: "entities/nfts/",
     IndexerTopics: "entities/topics/",
     IndexerContracts: "entities/contracts/",
@@ -283,6 +294,5 @@ const API = {
     TenantsDelete: "tenants/delete",
     TenantsInvite: "tenants/invite",
     TermsAgree: "accounts/terms/agree"
-    
 };
 export default API;
