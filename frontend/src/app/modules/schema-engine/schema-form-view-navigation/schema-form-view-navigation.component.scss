@@ -8,6 +8,10 @@
     overflow-y: auto;
     max-height: 100%;
     box-sizing: border-box;
+
+    &.viewer-context {
+        max-height: calc(100vh - 450px) !important;
+    }
 }
 
 .schema-nav-tree {

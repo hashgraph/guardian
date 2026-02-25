@@ -17,6 +17,7 @@ export class SchemaFormViewNavigationComponent implements OnInit, OnChanges {
     @Input() schemaMap: { [x: string]: any } | null = null;
     @Input() groupBaseTitle: string | null = null;
     @Input('private-fields') privateFields: { [x: string]: boolean } | null = null;
+    @Input() dialogContext?: 'fullscreen' | 'viewer' = 'fullscreen';
 
     @Output() selectEvent = new EventEmitter<string>();
     @Output() hasItemsChangeEvent = new EventEmitter<boolean>();

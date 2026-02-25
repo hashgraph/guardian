@@ -19,6 +19,7 @@ import { SchemaFormViewNavigationComponent } from '../schema-form-view-navigatio
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DocumentViewComponent implements OnInit {
+    @Input() dialogContext?: 'fullscreen' | 'viewer';
     @Input('getByUser') getByUser: boolean = false;
     @Input('document') document: any;
     @Input('formulas') formulas: FormulasTree | null;

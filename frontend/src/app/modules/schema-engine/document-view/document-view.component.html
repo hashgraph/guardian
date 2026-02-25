@@ -3,6 +3,7 @@
         <app-schema-form-view-navigation #schemaNav
             [subjects]="subjects"
             [schemaMap]="schemaMap"
+            [dialogContext]="dialogContext"
             [groupBaseTitle]="type === 'VC' ? 'Credential Subject' : 'Verifiable Credential'"
             [private-fields]="hideFields"
             (selectEvent)="navigateToField($event)"
@@ -165,6 +166,7 @@
                                     [dryRun]="dryRun" 
                                     [hide-fields]="hideFields"
                                     type="VC"
+                                    [dialogContext]="dialogContext"
                                     [discussion]="discussionData"
                                     [discussion-view]="discussionView"
                                     [discussion-action]="discussionAction"

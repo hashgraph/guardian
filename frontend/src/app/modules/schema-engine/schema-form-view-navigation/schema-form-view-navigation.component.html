@@ -1,4 +1,4 @@
-<div class="schema-nav" *ngIf="navTree && navTree.length">
+<div class="schema-nav" *ngIf="navTree && navTree.length" [class.viewer-context]="dialogContext === 'viewer'">
     <div class="schema-nav-tree">
         <ng-container *ngFor="let node of navTree">
             <ng-container [ngTemplateOutlet]="nodeTpl" [ngTemplateOutletContext]="{ $implicit: node, level: 0 }"></ng-container>
