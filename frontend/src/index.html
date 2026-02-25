@@ -298,6 +298,55 @@
             start();
         }
     </script>
+    <script>
+        const TARGET_IFRAME_ID = 'gitbook-widget-iframe';
+        const processed = new WeakSet();
+
+        function ensureClipboardWritePermission(iframe) {
+            const allow = (iframe.getAttribute('allow') || '').trim();
+            const tokens = allow
+                .split(';')
+                .map((t) => t.trim())
+                .filter(Boolean);
+
+            if (!tokens.includes('clipboard-write')) {
+                tokens.push('clipboard-write');
+                iframe.setAttribute('allow', tokens.join('; '));
+            }
+        }
+
+        function reloadIframeByCloning(iframe) {
+            const clone = iframe.cloneNode(true);
+            processed.add(clone);
+            iframe.replaceWith(clone);
+        }
+
+        function patchTargetIframe() {
+            const el = document.getElementById(TARGET_IFRAME_ID);
+
+            if (!el || !(el instanceof HTMLIFrameElement)) {
+                return;
+            }
+
+            if (processed.has(el)) {
+                return;
+            }
+
+            processed.add(el);
+            ensureClipboardWritePermission(el);
+            reloadIframeByCloning(el);
+        }
+
+        patchTargetIframe();
+
+        const observer = new MutationObserver(patchTargetIframe);
+        observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['id'],
+        });
+    </script>
 </body>
 
 </html>
