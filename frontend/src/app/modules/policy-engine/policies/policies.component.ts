@@ -2069,18 +2069,21 @@ export class PoliciesComponent implements OnInit {
         } else {
             const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
                 showHeader: false,
-                width: '640px',
+                width: '750px',
                 styleClass: 'guardian-dialog',
                 data: {
                     header: 'Disconnect',
-                    texts: ['You are about to disconnect your user from this decentralized policy.', 'This action will not affect other users connected to the policy or your participation in other policies on this Guardian instance.'],
+                    texts: [
+                        'You are about to disconnect from the decentralized policy.',
+                        'This will not affect other users or your participation in other policies on this instance.'
+                    ],
                     options: [{
                         title: 'Disconnect from this policy on this Guardian instance only.',
-                        sub: 'Your user will be disconnected locally. The policy will remain active on the originating (Main) Guardian instance.',
+                        sub: 'The user will be disconnected locally. The policy will remain active on the (Main) Guardian instance.',
                         value: false
                     }, {
                         title: 'Disconnect from this policy on both instances.',
-                        sub: 'Your user will be removed from this policy on both this Guardian instance and the originating (Main) Guardian instance.',
+                        sub: 'The user will be removed from this policy on both this instance and the originating (Main) Guardian instance.',
                         value: true
                     }],
                     optionValue: false,
