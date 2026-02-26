@@ -22,7 +22,7 @@ Current Guardian library covers:
 5. Complete testnet deployment with evidence
 
 ### Verra Alignment
-- VM0040: Methodology for Improved Hydrological Systems
+- Verra ACM0002 v22.0: Grid-connected electricity generation from renewable sources
 - I-REC Standard compliance
 - Gold Standard renewable energy requirements
 
