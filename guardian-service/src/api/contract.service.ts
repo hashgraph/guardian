@@ -24,7 +24,8 @@ import {
     VCMessage,
     Wallet,
     WiperRequest,
-    Workers
+    Workers,
+    Environment,
 } from '@guardian/common';
 import {
     ContractAPI,
@@ -111,6 +112,19 @@ const retireEventsAbi = new ethers.Interface([
     ...versionEventsAbi.fragments,
     ...accessEventsAbi.fragments
 ]);
+
+async function resolveAccountFromEvmAddress(evmAddress: string): Promise<string> {
+    const url = `${Environment.HEDERA_ACCOUNT_API}${evmAddress}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(`Failed to resolve account for EVM address ${evmAddress}: mirror node returned ${res.status}`);
+    }
+    const data = await res.json() as { account?: string };
+    if (!data.account) {
+        throw new Error(`Failed to resolve account for EVM address ${evmAddress}: no account in response`);
+    }
+    return data.account;
+}
 
 async function getContractMessage(
     workers: Workers,
@@ -712,9 +726,7 @@ export async function syncWipeContract(
                     break;
                 }
                 case 'OwnerAdded': {
-                    const newOwnerAccount = AccountId.fromEvmAddress(
-                        0, 0, data[0]
-                    ).toString();
+                    const newOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
                     const newOwnerUser = await users.getUserByAccount(newOwnerAccount, userId);
                     if (newOwnerUser?.did) {
                         const ownerDid = newOwnerUser.role === UserRole.STANDARD_REGISTRY
@@ -759,9 +771,7 @@ export async function syncWipeContract(
                     break;
                 }
                 case 'OwnerRemoved': {
-                    const removedOwnerAccount = AccountId.fromEvmAddress(
-                        0, 0, data[0]
-                    ).toString();
+                    const removedOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
                     const removedOwnerUser = await users.getUserByAccount(removedOwnerAccount, userId);
                     if (removedOwnerUser?.did) {
                         const removedOwnerDid = removedOwnerUser.role === UserRole.STANDARD_REGISTRY
@@ -782,9 +792,7 @@ export async function syncWipeContract(
                     break;
                 }
                 case 'OwnerProposed': {
-                    const proposedOwnerAccount = AccountId.fromEvmAddress(
-                        0, 0, data[0]
-                    ).toString();
+                    const proposedOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
                     const proposedOwnerUser = await users.getUserByAccount(proposedOwnerAccount, userId);
                     if (proposedOwnerUser?.id && sendNotifications) {
                         NotificationHelper.info(
@@ -1136,9 +1144,7 @@ export async function syncRetireContract(
                     break;
                 }
                 case 'OwnerAdded': {
-                    const newOwnerAccount = AccountId.fromEvmAddress(
-                        0, 0, data[0]
-                    ).toString();
+                    const newOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
                     const newOwnerUser = await users.getUserByAccount(newOwnerAccount, userId);
                     if (newOwnerUser?.did) {
                         const ownerDid = newOwnerUser.role === UserRole.STANDARD_REGISTRY
@@ -1183,9 +1189,7 @@ export async function syncRetireContract(
                     break;
                 }
                 case 'OwnerRemoved': {
-                    const removedOwnerAccount = AccountId.fromEvmAddress(
-                        0, 0, data[0]
-                    ).toString();
+                    const removedOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
                     const removedOwnerUser = await users.getUserByAccount(removedOwnerAccount, userId);
                     if (removedOwnerUser?.did) {
                         const removedOwnerDid = removedOwnerUser.role === UserRole.STANDARD_REGISTRY
@@ -1206,9 +1210,7 @@ export async function syncRetireContract(
                     break;
                 }
                 case 'OwnerProposed': {
-                    const proposedOwnerAccount = AccountId.fromEvmAddress(
-                        0, 0, data[0]
-                    ).toString();
+                    const proposedOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
                     const proposedOwnerUser = await users.getUserByAccount(proposedOwnerAccount, userId);
                     if (proposedOwnerUser?.id && sendNotifications) {
                         NotificationHelper.info(
