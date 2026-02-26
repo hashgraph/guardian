@@ -39,7 +39,7 @@ Where Project EF = 0 (renewable source)
 - Monthly aggregation for certificate issuance
 ## References
 - I-REC Standard: https://www.irecstandard.org/
-- Verra VM0040 (Hydro methodology)
+- Verra ACM0002 v22.0: Grid-connected electricity generation from renewable sources
 - Gold Standard Renewable Energy Requirements
 ## Technical Implementation
 Full implementation details: https://github.com/BikramBiswas786/hedera-hydropower-mrv
