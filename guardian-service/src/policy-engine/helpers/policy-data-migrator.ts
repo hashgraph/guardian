@@ -2584,7 +2584,7 @@ export class PolicyDataMigrator {
 
             if (role) {
                 const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
-                let resolvedRoleMessageId = sourceRoleMessageId || (role?.messageId ? String(role.messageId) : undefined);
+                let resolvedRoleMessageId = role?.messageId ? String(role.messageId) : undefined;
 
                 let mappedRoleMessageId: string | undefined;
                 if (sourceRoleMessageId) {
@@ -3257,44 +3257,21 @@ export class PolicyDataMigrator {
         let vpChanged = false;
 
         if (Array.isArray(doc.relationships)) {
-            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
             for (let i = 0; i < doc.relationships.length; i++) {
                 const relationship = String(doc.relationships[i]);
-
-                // V2: relationship remap from run mapping
-                const mappedRelationship = PolicyDataMigrator.getMessageMapping(
-                    scopeKey,
-                    'vcDocument',
-                    relationship
-                ) || PolicyDataMigrator.getMessageMapping(
-                    scopeKey,
-                    'roleVcDocument',
-                    relationship
-                );
-
-                if (mappedRelationship) {
-                    doc.relationships[i] = mappedRelationship;
-                }
-
-                // If VC was republished/resigned, VP payload may need new VC body
-                // Rebuild from already migrated VC documents (saved with new messageId)
-                if (mappedRelationship) {
-                    const migratedVc = await this._db.findOne(VcDocument, {
-                        policyId: this._policyId,
-                        messageId: mappedRelationship
-                    } as Partial<VcDocument>);
-
-                    if (migratedVc?.document) {
-                        const migratedVcDef = VcDocumentDefinition.fromJsonTree(migratedVc.document);
-                        for (let j = 0; j < vcs.length; j++) {
-                            const element = vcs[j];
-                            if (
-                                element.getId() === migratedVcDef.getId() &&
-                                element.toCredentialHash() !== migratedVcDef.toCredentialHash()
-                            ) {
-                                vpChanged = true;
-                                vcs[j] = migratedVcDef;
-                            }
+                const migratedVc = this.vcMessageIds.get(relationship);
+                if (migratedVc?.document) {
+                    const migratedVcDef = VcDocumentDefinition.fromJsonTree(
+                        migratedVc.document
+                    );
+                    for (let j = 0; j < vcs.length; j++) {
+                        const element = vcs[j];
+                        if (
+                            element.getId() === migratedVcDef.getId() &&
+                            element.toCredentialHash() !== migratedVcDef.toCredentialHash()
+                        ) {
+                            vpChanged = true;
+                            vcs[j] = migratedVcDef;
                         }
                     }
                 }
@@ -3971,8 +3948,17 @@ export class PolicyDataMigrator {
                 }
             }
 
+            if (doc.messageId && this.vcMessageIds.has(doc.messageId)) {
+                return doc;
+            }
+
+            if (doc.messageId) {
+                this.vcMessageIds.set(doc.messageId, doc);
+            }
+
             doc.relationships = doc.relationships || [];
             const sourceOwnerDid = doc.owner;
+            const destinationOwnerDidForRelationships = await this._replaceDidTopicId(sourceOwnerDid);
             const sourceGroupRoleForRelationships = doc.group
                 ? roles.find((item) => item.uuid === doc.group && item.did === sourceOwnerDid)
                 : undefined;
@@ -3980,11 +3966,40 @@ export class PolicyDataMigrator {
                 ? roles.find((item) => item.uuid === doc.assignedToGroup && item.did === sourceOwnerDid)
                 : undefined;
             const sourceRoleRelationshipIds = new Set<string>();
+            const sourceRoleRelationshipFallback = new Map<string, string>();
+            const destinationGroupsForRelationships = await this._db.getGroupsByUser(
+                this._policyId,
+                destinationOwnerDidForRelationships
+            );
             if (sourceGroupRoleForRelationships?.messageId) {
-                sourceRoleRelationshipIds.add(String(sourceGroupRoleForRelationships.messageId));
+                const sourceRoleMessageId = String(sourceGroupRoleForRelationships.messageId);
+                sourceRoleRelationshipIds.add(sourceRoleMessageId);
+                const destinationGroupRole = destinationGroupsForRelationships.find(
+                    (item) =>
+                        item?.groupName === this._groups[sourceGroupRoleForRelationships?.groupName] ||
+                        item.role === this._roles[sourceGroupRoleForRelationships?.role]
+                );
+                if (destinationGroupRole?.messageId) {
+                    sourceRoleRelationshipFallback.set(
+                        sourceRoleMessageId,
+                        String(destinationGroupRole.messageId)
+                    );
+                }
             }
             if (sourceAssignedRoleForRelationships?.messageId) {
-                sourceRoleRelationshipIds.add(String(sourceAssignedRoleForRelationships.messageId));
+                const sourceRoleMessageId = String(sourceAssignedRoleForRelationships.messageId);
+                sourceRoleRelationshipIds.add(sourceRoleMessageId);
+                const destinationGroupRole = destinationGroupsForRelationships.find(
+                    (item) =>
+                        item?.groupName === this._groups[sourceAssignedRoleForRelationships?.groupName] ||
+                        item.role === this._roles[sourceAssignedRoleForRelationships?.role]
+                );
+                if (destinationGroupRole?.messageId) {
+                    sourceRoleRelationshipFallback.set(
+                        sourceRoleMessageId,
+                        String(destinationGroupRole.messageId)
+                    );
+                }
             }
             for (let i = 0; i < doc.relationships.length; i++) {
                 const relationship = doc.relationships[i];
@@ -4026,9 +4041,19 @@ export class PolicyDataMigrator {
                                 `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipKeepRoleMessageMapped rel=${String(relationship)} mapped=${String(mappedRoleRelationship)}`
                             );
                         } else {
-                            console.log(
-                                `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipKeepRoleMessageNoMap rel=${String(relationship)}`
-                            );
+                            const fallbackRoleRelationship = sourceRoleRelationshipFallback.get(relationshipAsString);
+                            if (fallbackRoleRelationship) {
+                                doc.relationships[i] = fallbackRoleRelationship;
+                                console.log(
+                                    `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipFallbackRoleMessage rel=${String(relationship)} mapped=${String(fallbackRoleRelationship)}`
+                                );
+                            } else {
+                                console.log(
+                                    `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipDropRoleMessageNoMap rel=${String(relationship)}`
+                                );
+                                doc.relationships.splice(i, 1);
+                                i--;
+                            }
                         }
                         continue;
                     }
@@ -4084,7 +4109,7 @@ export class PolicyDataMigrator {
             }
 
             const oldDocOwner = doc.owner;
-            doc.owner = await this._replaceDidTopicId(doc.owner);
+            doc.owner = destinationOwnerDidForRelationships;
             doc.assignedTo = await this._replaceDidTopicId(doc.assignedTo);
 
             let role: any;
@@ -4187,7 +4212,9 @@ export class PolicyDataMigrator {
                         ? String(sourceGroupRole.messageId)
                         : undefined;
                     const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
-                    let resolvedRoleMessageId = sourceRoleMessageId || String(roleForMessageUser.messageId || '');
+                    let resolvedRoleMessageId = roleForMessageUser?.messageId
+                        ? String(roleForMessageUser.messageId)
+                        : undefined;
                     let mappedRoleMessageId: string | undefined;
                     if (sourceRoleMessageId) {
                         mappedRoleMessageId = PolicyDataMigrator.getMessageMapping(
@@ -4228,6 +4255,7 @@ export class PolicyDataMigrator {
                 doc.messageId = destinationMessageId;
                 doc.topicId = vcMessageResult.getTopicId();
                 doc.messageHash = vcMessageResult.toHash();
+                this.vcMessageIds.set(destinationMessageId, doc);
 
                 if (srcMapKey) {
                     const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
