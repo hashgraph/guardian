@@ -396,6 +396,11 @@ export class MigrateDataV2 {
 
     srcRoles: string[] = [];
     dstRoles: string[] = [];
+    roleKeys: string[] = [];
+    pagedRoleKeys: string[] = [];
+    pageIndexRoles: number = 0;
+    pageSizeRoles: number = 5;
+    totalRoles: number = 0;
 
     srcSchemas: any[] = [];
     dstSchemas: any[] = [];
@@ -452,6 +457,7 @@ export class MigrateDataV2 {
         'vps',
         'vcs',
         'schemas',
+        'roles',
         'groups',
         'tokens',
         'blocks',
@@ -642,6 +648,7 @@ export class MigrateDataV2 {
         }
 
         this.refreshGroupsPagination();
+        this.refreshRolesPagination();
         this.refreshTokensPagination();
 
         this.showMigrateRetirePools = srcPolicy?.status !== PolicyStatus.DRY_RUN;
@@ -671,6 +678,11 @@ export class MigrateDataV2 {
         this.groupKeys = [];
         this.pagedGroupKeys = [];
         this.totalGroups = 0;
+
+        this.pageIndexRoles = 0;
+        this.roleKeys = [];
+        this.pagedRoleKeys = [];
+        this.totalRoles = 0;
 
         this.pageIndexTokens = 0;
         this.tokenKeys = [];
@@ -955,6 +967,13 @@ export class MigrateDataV2 {
         this.updatePagedGroups();
     }
 
+    onPageRoles(event: PageEvent) {
+        const state = this.resolvePageState(event, this.pageSizeRoles);
+        this.pageIndexRoles = state.pageIndex;
+        this.pageSizeRoles = state.pageSize;
+        this.updatePagedRoles();
+    }
+
     onPageTokens(event: PageEvent) {
         const state = this.resolvePageState(event, this.pageSizeTokens);
         this.pageIndexTokens = state.pageIndex;
@@ -1218,6 +1237,22 @@ export class MigrateDataV2 {
             this.pageIndexGroups = 0;
         }
         this.updatePagedGroups();
+    }
+
+    private refreshRolesPagination(): void {
+        this.roleKeys = Object.keys(this.migrationConfig.roles);
+        this.totalRoles = this.roleKeys.length;
+        if (this.pageIndexRoles * this.pageSizeRoles >= this.totalRoles) {
+            this.pageIndexRoles = 0;
+        }
+        this.updatePagedRoles();
+    }
+
+    private updatePagedRoles(): void {
+        const startIndex = this.pageIndexRoles * this.pageSizeRoles;
+        const endIndex = startIndex + this.pageSizeRoles;
+        this.pagedRoleKeys = this.roleKeys.slice(startIndex, endIndex);
+        this.refreshOverflowAfterRender();
     }
 
     private updatePagedGroups(): void {

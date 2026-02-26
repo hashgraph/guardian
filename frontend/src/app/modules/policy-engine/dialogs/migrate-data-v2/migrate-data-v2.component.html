@@ -410,34 +410,53 @@
                     </div>
                 </ng-template>
             </div>
-            <div *ngSwitchCase="'roles'" class="step-container">
-                <div class="roles-mapping-panel" *ngIf="getObjectKeys(this.migrationConfig.roles).length > 0; else noRoles">
-                    <div *ngFor="let role of getObjectKeys(this.migrationConfig.roles)" class="roles-mapping-row">
-                        <div class="roles-source-cell">
-                            <span
-                                #roleSourceText
-                                class="roles-source-text"
-                                [pTooltip]="role"
-                                [tooltipDisabled]="!isTextOverflow(roleSourceText)"
-                                tooltipPosition="top"
-                            >{{ role }}</span>
-                        </div>
-                        <div class="roles-arrow-cell">
-                            <i class="pi pi-arrow-right"></i>
-                        </div>
-                        <div class="roles-target-cell">
-                            <div class="roles-target-dropdown">
-                                <p-dropdown
-                                    appendTo="body"
-                                    [(ngModel)]="migrationConfig.roles[role]"
-                                    [options]="dstRoles"
-                                    [showClear]="true"
-                                    placeholder="Select role"
-                                    [appendTo]="'body'"
-                                ></p-dropdown>
+            <div *ngSwitchCase="'roles'" class="step-container docs-step-container">
+                <ng-container *ngIf="totalRoles > 0; else noRoles">
+                    <div class="documents-table-container">
+                        <div class="roles-mapping-panel">
+                            <div *ngFor="let role of pagedRoleKeys" class="roles-mapping-row">
+                                <div class="roles-source-cell">
+                                    <span
+                                        #roleSourceText
+                                        class="roles-source-text"
+                                        [pTooltip]="role"
+                                        [tooltipDisabled]="!isTextOverflow(roleSourceText)"
+                                        tooltipPosition="top"
+                                    >{{ role }}</span>
+                                </div>
+                                <div class="roles-arrow-cell">
+                                    <i class="pi pi-arrow-right"></i>
+                                </div>
+                                <div class="roles-target-cell">
+                                    <div class="roles-target-dropdown">
+                                        <p-dropdown
+                                            appendTo="body"
+                                            [(ngModel)]="migrationConfig.roles[role]"
+                                            [options]="dstRoles"
+                                            [showClear]="true"
+                                            placeholder="Select role"
+                                            [appendTo]="'body'"
+                                        ></p-dropdown>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </ng-container>
+                <div class="roles-bottom" *ngIf="totalRoles > 0">
+                    <p-paginator
+                        styleClass="history-paginator docs-paginator roles-paginator"
+                        (onPageChange)="onPageRoles($event)"
+                        [first]="pageIndexRoles * pageSizeRoles"
+                        [rows]="pageSizeRoles"
+                        [totalRecords]="totalRoles"
+                        dropdownAppendTo="body"
+                        [rowsPerPageOptions]="rowsPerPageOptions"
+                        [showCurrentPageReport]="true"
+                        currentPageReportTemplate="{first} - {last} of {totalRecords}"
+                        [showPageLinks]="false"
+                        [showFirstLastIcon]="false"
+                    ></p-paginator>
                 </div>
                 <ng-template #noRoles>
                     <div class="empty-step-panel">

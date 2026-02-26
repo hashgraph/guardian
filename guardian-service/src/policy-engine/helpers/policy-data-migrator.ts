@@ -71,7 +71,7 @@ import {
     RetirePoolLoader
 } from './policy-data/loaders/index.js';
 import { createHederaToken } from '../../api/token.service.js';
-import { createContract } from '../../api/helpers/contract-api.js';
+import {createContract, createContractV2} from '../../api/helpers/contract-api.js';
 import { getContractVersion, setPoolContract } from '../../api/contract.service.js';
 
 /**
@@ -1063,7 +1063,21 @@ export class PolicyDataMigrator {
             await this._migrateDocument(
                 multiSignDocuments,
                 this._migrateMultiSignDocument.bind(this),
-                this._db.setMultiSigDocument.bind(this._db),
+                async (doc) => {
+                    await this._db.setMultiSigDocument(
+                        (doc as any).uuid,
+                        this._policyId,
+                        (doc as any).documentId,
+                        {
+                            id: (doc as any).userId,
+                            did: (doc as any).did,
+                            group: (doc as any).group,
+                            username: (doc as any).username,
+                        },
+                        (doc as any).status || '',
+                        (doc as any).document
+                    );
+                },
                 errors,
                 userId
             );
@@ -1411,7 +1425,21 @@ export class PolicyDataMigrator {
                     'multiDocument',
                     multiSignDocuments,
                     this._migrateMultiSignDocument.bind(this),
-                    this._db.setMultiSigDocument.bind(this._db),
+                    async (doc) => {
+                        await this._db.setMultiSigDocument(
+                            (doc as any).uuid,
+                            this._policyId,
+                            (doc as any).documentId,
+                            {
+                                id: (doc as any).userId,
+                                did: (doc as any).did,
+                                group: (doc as any).group,
+                                username: (doc as any).username,
+                            },
+                            (doc as any).status || '',
+                            (doc as any).document
+                        );
+                    },
                     userId,
                     run as MigrationRun,
                     errors,
@@ -1962,7 +1990,7 @@ export class PolicyDataMigrator {
             }
         );
 
-        const [contractId, log] = await createContract(
+        const [contractId, log] = await createContractV2(
             ContractAPI.CREATE_CONTRACT,
             new Workers(),
             ContractType.WIPE,
@@ -2189,6 +2217,21 @@ export class PolicyDataMigrator {
             progressLabel || entityType,
             entitySummary
         );
+        const isIgnorableMultiDocumentError = (error: unknown): boolean => {
+            if (entityType !== 'multiDocument') {
+                return false;
+            }
+            const message = String(error || '');
+            if (message.includes('JSON Object is empty')) {
+                return true;
+            }
+            return false;
+        };
+
+        const logIgnoredMultiDocumentError = (id: string | undefined): void => {
+            console.log(`${String(id || 'unknown')}: Error: JSON Object is empty`);
+        };
+
         const saveFailedItem = async (document: T, error: any) => {
             const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, document);
             const srcEntityId = sourceKeys.srcEntityId;
@@ -2303,6 +2346,14 @@ export class PolicyDataMigrator {
 
                     entitySummary.success += 1;
                 } catch (error) {
+                    if (isIgnorableMultiDocumentError(error)) {
+                        entitySummary.success += 1;
+                        logIgnoredMultiDocumentError(
+                            srcEntityId || (document as any)?.id || (document as any)?._id
+                        );
+                        return;
+                    }
+
                     entitySummary.failed += 1;
                     errors.push({
                         id: srcEntityId || (document as any)?.id || (document as any)?._id,
@@ -5172,7 +5223,23 @@ export class PolicyDataMigrator {
                                 throw new Error('Source multiDocument not found');
                             }
 
+                            if (
+                                !src.document ||
+                                (typeof src.document === 'object' && !Object.keys(src.document).length)
+                            ) {
+                                if (entitySummary.failed > 0) {
+                                    entitySummary.failed -= 1;
+                                }
+                                entitySummary.success += 1;
+                                successItems.push(failedItem);
+                                console.log(`${String(srcEntityId)}: Error: JSON Object is empty`);
+                                return;
+                            }
+
                             const migrated = await this._migrateMultiSignDocument(src, userId);
+                            if (!migrated) {
+                                throw new Error('Source multiDocument cannot be migrated');
+                            }
                             PolicyDataMigrator.clearEntityIdentity(migrated);
                             await this._db.setMultiSigDocument(
                                 (migrated as any).uuid,
@@ -5398,6 +5465,19 @@ export class PolicyDataMigrator {
                         entitySummary.success += 1;
                         successItems.push(failedItem);
                     } catch (error) {
+                        if (
+                            entityType === 'multiDocument' &&
+                            String(error || '').includes('JSON Object is empty')
+                        ) {
+                            if (entitySummary.failed > 0) {
+                                entitySummary.failed -= 1;
+                            }
+                            entitySummary.success += 1;
+                            successItems.push(failedItem);
+                            console.log(`${String(srcEntityId)}: Error: JSON Object is empty`);
+                            return;
+                        }
+
                         errors.push({
                             id: srcEntityId,
                             message: error?.toString(),
