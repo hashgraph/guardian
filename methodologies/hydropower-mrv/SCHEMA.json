@@ -1,81 +1,201 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Hydropower MRV Policy Schema",
-  "description": "Guardian-compatible policy schema for small-scale hydropower MRV based on Verra VM0040",
-  "version": "1.0.0",
+  "description": "Guardian-compatible schema definition for hydropower MRV under CDM ACM0002 — Consolidated Baseline Methodology for Grid-Connected Electricity Generation from Renewable Sources",
+  "version": "2.0.0",
+  "methodology": "CDM ACM0002",
+  "registry": "UNFCCC Clean Development Mechanism",
+  "policyId": "69a07fb82a75f6d261a5f595",
+  "policyUUID": "33e9e9d8-0995-484f-98df-6f96f6311415",
+  "hederaOperator": "0.0.6255927",
   "type": "object",
-  "properties": {
-    "policyInfo": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "const": "Hydropower MRV Policy (VM0040)"
-        },
-        "description": {
-          "type": "string",
-          "const": "Guardian implementation of Verra VM0040 for small-scale hydropower with DID-based verification"
-        },
-        "topicDescription": {
-          "type": "string",
-          "const": "Hydropower energy generation tracking"
-        },
-        "version": {
-          "type": "string",
-          "const": "1.0.0"
-        }
-      }
-    },
-    "policyRoles": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": ["Owner", "Gateway", "Verifier", "Auditor", "Registry"]
-      }
-    },
-    "schemas": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "entity": {
-            "type": "string",
-            "enum": ["VC", "MRV", "POLICY"]
-          },
-          "fields": {
-            "type": "object"
-          }
-        }
-      },
-      "minItems": 1
-    }
+
+  "policyInfo": {
+    "name": "Hydropower MRV Policy (ACM0002)",
+    "description": "Guardian implementation of CDM ACM0002 for grid-connected hydroelectric power generation with Hedera HCS telemetry anchoring and CER token minting",
+    "topicDescription": "Hydropower carbon emission reduction monitoring and verification",
+    "version": "2.0.0",
+    "policyTag": "Hydropower_MRV_ACM0002"
   },
-  "definitions": {
-    "HydropowerTelemetrySchema": {
-      "type": "object",
-      "required": ["flowRate", "headHeight", "energyOutput", "timestamp", "gatewayDID", "signature", "nonce"],
-      "properties": {
-        "flowRate": {
+
+  "policyRoles": [
+    "Standard Registry",
+    "Project Participant",
+    "VVB"
+  ],
+
+  "schemas": [
+    {
+      "name": "Project Description",
+      "uuid": "project-description-hydro-acm0002",
+      "entity": "VC",
+      "description": "Project registration document submitted by Project Participant. Captures plant specifications, location, baseline emission factor, and additionality demonstration.",
+      "required": ["projectName", "plantLocation", "installedCapacityMW", "turbineType", "gridConnectionPoint", "baselineEmissionFactor", "commercialOperationDate"],
+      "fields": {
+        "projectName": {
+          "type": "string",
+          "description": "Official name of the hydropower project"
+        },
+        "plantLocation": {
+          "type": "object",
+          "description": "GPS coordinates of the power plant",
+          "properties": {
+            "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+            "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
+            "country": { "type": "string" },
+            "state": { "type": "string" }
+          }
+        },
+        "installedCapacityMW": {
           "type": "number",
-          "description": "Water flow rate in cubic meters per second (m³/s)",
+          "description": "Total installed generation capacity in megawatts (MW)",
           "minimum": 0
         },
-        "headHeight": {
+        "turbineType": {
+          "type": "string",
+          "description": "Type of hydraulic turbine installed",
+          "enum": ["Pelton", "Francis", "Kaplan", "Crossflow", "Bulb", "Other"]
+        },
+        "reservoirType": {
+          "type": "string",
+          "description": "Type of water intake / reservoir",
+          "enum": ["Run-of-River", "Reservoir", "Pumped-Storage", "Diversion"]
+        },
+        "gridConnectionPoint": {
+          "type": "string",
+          "description": "Name or ID of the grid substation where the plant connects"
+        },
+        "baselineEmissionFactor": {
           "type": "number",
-          "description": "Water head height in meters (m)",
+          "description": "Combined margin grid emission factor in tCO2e/MWh",
           "minimum": 0
         },
-        "energyOutput": {
+        "commercialOperationDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Date the plant commenced commercial operation (ISO 8601)"
+        },
+        "projectParticipantDID": {
+          "type": "string",
+          "pattern": "^did:hedera:(testnet|mainnet):[a-zA-Z0-9._-]+$",
+          "description": "Hedera DID of the Project Participant"
+        },
+        "additionalityJustification": {
+          "type": "string",
+          "description": "Narrative justification of project additionality per CDM Tool 01/02"
+        }
+      }
+    },
+    {
+      "name": "Monitoring Report",
+      "uuid": "monitoring-report-hydro-acm0002",
+      "entity": "MRV",
+      "description": "Periodic monitoring data submitted by Project Participant. Contains generation telemetry, hydro-specific parameters, and calculated emission reductions for the monitoring period.",
+      "required": ["monitoringPeriodStart", "monitoringPeriodEnd", "grossGenerationMWh", "netGenerationMWh", "baselineEmissions", "projectEmissions", "emissionReductions"],
+      "fields": {
+        "monitoringPeriodStart": {
+          "type": "string",
+          "format": "date",
+          "description": "Start date of the monitoring period (ISO 8601)"
+        },
+        "monitoringPeriodEnd": {
+          "type": "string",
+          "format": "date",
+          "description": "End date of the monitoring period (ISO 8601)"
+        },
+        "grossGenerationMWh": {
           "type": "number",
-          "description": "Energy generated in megawatt-hours (MWh)",
+          "description": "Total gross electricity generated during the period (MWh)",
+          "minimum": 0
+        },
+        "netGenerationMWh": {
+          "type": "number",
+          "description": "Net electricity supplied to grid (gross minus auxiliary consumption) (MWh)",
+          "minimum": 0
+        },
+        "auxiliaryConsumptionMWh": {
+          "type": "number",
+          "description": "Auxiliary electricity consumption by plant equipment (MWh)",
+          "minimum": 0
+        },
+        "averageFlowRate": {
+          "type": "number",
+          "description": "Average water flow rate through turbines during period (m³/s)",
+          "minimum": 0
+        },
+        "averageHeadHeight": {
+          "type": "number",
+          "description": "Average effective hydraulic head height during period (m)",
           "minimum": 0
         },
         "capacityFactor": {
           "type": "number",
-          "description": "Capacity factor as percentage",
+          "description": "Capacity factor for the period (actual output / rated capacity × 100)",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "averageTurbidity": {
+          "type": "number",
+          "description": "Average water turbidity during period (NTU)",
+          "minimum": 0
+        },
+        "averagePH": {
+          "type": "number",
+          "description": "Average water pH during period",
+          "minimum": 0,
+          "maximum": 14
+        },
+        "baselineEmissions": {
+          "type": "number",
+          "description": "Calculated baseline emissions: netGenerationMWh × baselineEmissionFactor (tCO2e)",
+          "minimum": 0
+        },
+        "projectEmissions": {
+          "type": "number",
+          "description": "Project emissions from auxiliary consumption (tCO2e)",
+          "minimum": 0
+        },
+        "emissionReductions": {
+          "type": "number",
+          "description": "Net emission reductions: baselineEmissions − projectEmissions (tCO2e)",
+          "minimum": 0
+        },
+        "hcsTopicId": {
+          "type": "string",
+          "description": "Hedera Consensus Service topic ID where telemetry was anchored",
+          "examples": ["0.0.7462600", "0.0.7462776"]
+        },
+        "merkleRootHash": {
+          "type": "string",
+          "description": "Merkle root hash of the batched telemetry messages for this period"
+        }
+      }
+    },
+    {
+      "name": "Hydropower Telemetry",
+      "uuid": "59ad4c29-043a-4d63-ad0a-7d2dfa5d32ca",
+      "entity": "MRV",
+      "description": "Device-level real-time telemetry submitted per measurement interval. Anchored to Hedera HCS. Schema UUID matches on-chain registration (HCS message #12 during policy publication).",
+      "required": ["flowRate", "headHeight", "energyOutput", "timestamp", "gatewayDID", "signature", "nonce"],
+      "fields": {
+        "flowRate": {
+          "type": "number",
+          "description": "Water flow rate through turbines (m³/s)",
+          "minimum": 0
+        },
+        "headHeight": {
+          "type": "number",
+          "description": "Effective hydraulic head height (m)",
+          "minimum": 0
+        },
+        "energyOutput": {
+          "type": "number",
+          "description": "Energy generated in this interval (MWh)",
+          "minimum": 0
+        },
+        "capacityFactor": {
+          "type": "number",
+          "description": "Instantaneous capacity factor (%)",
           "minimum": 0,
           "maximum": 100
         },
@@ -87,7 +207,7 @@
         },
         "turbidity": {
           "type": "number",
-          "description": "Water turbidity in NTU",
+          "description": "Water turbidity (NTU)",
           "minimum": 0
         },
         "timestamp": {
@@ -97,18 +217,90 @@
         },
         "gatewayDID": {
           "type": "string",
-          "pattern": "^did:hedera:testnet:[a-zA-Z0-9._-]+$",
-          "description": "Hedera DID of the gateway device"
+          "pattern": "^did:hedera:(testnet|mainnet):[a-zA-Z0-9._-]+$",
+          "description": "Hedera DID of the gateway/turbine controller device"
         },
         "signature": {
           "type": "string",
-          "description": "Ed25519 signature (base64 encoded)"
+          "description": "Ed25519 digital signature over payload (base64 encoded)"
         },
         "nonce": {
           "type": "string",
-          "description": "Unique nonce for replay protection"
+          "description": "Unique nonce for replay attack protection"
+        },
+        "hcsMessageId": {
+          "type": "string",
+          "description": "Hedera HCS message sequence number for this telemetry record"
+        },
+        "merkleProof": {
+          "type": "string",
+          "description": "Merkle proof path for batch-anchored telemetry (optional for Merkle mode)"
+        }
+      }
+    },
+    {
+      "name": "VVB Attestation",
+      "uuid": "vvb-attestation-hydro-acm0002",
+      "entity": "VC",
+      "description": "Formal verification statement issued by the VVB after reviewing a Monitoring Report. Records findings, compliance status, and approve/reject decision.",
+      "required": ["monitoringReportRef", "vvbName", "vvbDID", "verificationDate", "decision"],
+      "fields": {
+        "monitoringReportRef": {
+          "type": "string",
+          "description": "Reference ID or hash of the Monitoring Report being attested"
+        },
+        "vvbName": {
+          "type": "string",
+          "description": "Name of the Verification and Validation Body"
+        },
+        "vvbDID": {
+          "type": "string",
+          "pattern": "^did:hedera:(testnet|mainnet):[a-zA-Z0-9._-]+$",
+          "description": "Hedera DID of the VVB"
+        },
+        "verificationDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of VVB verification (ISO 8601)"
+        },
+        "decision": {
+          "type": "string",
+          "description": "VVB verification outcome",
+          "enum": ["Approved", "Rejected", "Approved with Conditions"]
+        },
+        "findings": {
+          "type": "string",
+          "description": "Narrative summary of VVB findings and any discrepancies identified"
+        },
+        "verifiedEmissionReductions": {
+          "type": "number",
+          "description": "VVB-verified net emission reductions (tCO2e) — may differ from PP submission",
+          "minimum": 0
+        },
+        "conditions": {
+          "type": "string",
+          "description": "Conditions attached to approval (if decision is Approved with Conditions)"
         }
       }
     }
+  ],
+
+  "token": {
+    "name": "Carbon Emission Reduction (CER)",
+    "symbol": "CER",
+    "standard": "CDM ACM0002",
+    "equivalence": "1 CER = 1 tonne CO2e avoided",
+    "hederaTokenId_testnet": "0.0.7462931",
+    "mintingTrigger": "SR approval of VVB-verified Monitoring Report",
+    "mintingFormula": "CER_y = (netGenerationMWh × baselineEmissionFactor) - projectEmissions"
+  },
+
+  "hederaAnchoring": {
+    "operator": "0.0.6255927",
+    "telemetryTopic_direct": "0.0.7462600",
+    "telemetryTopic_merkle": "0.0.7462776",
+    "network": "testnet",
+    "schemaAnchorMessage": 12,
+    "schemaIPFS": "See IPFS CID in HCS message #12 on topic anchored during policy publication"
   }
 }
