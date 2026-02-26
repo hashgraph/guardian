@@ -136,7 +136,7 @@ export class PolicyDataMigrator {
      * Migration write batch size
      */
     private static readonly migrationWriteBatchSize = Number(
-        process.env.MIGRATION_WRITE_BATCH_SIZE || 1
+        process.env.MIGRATION_WRITE_BATCH_SIZE || 50
     );
 
     /**
@@ -522,7 +522,7 @@ export class PolicyDataMigrator {
 
             return migrationErrors;
         } catch (error) {
-            await new PinoLogger().error(error, ['GUARDIAN_SERVICE'], userId);
+            await new PinoLogger().error(error.message, ['GUARDIAN_SERVICE'], userId);
             throw error;
         }
     }
@@ -926,7 +926,7 @@ export class PolicyDataMigrator {
                 runData
             );
         } catch (error) {
-            await new PinoLogger().error(error, ['GUARDIAN_SERVICE'], userId);
+            await new PinoLogger().error(error.message, ['GUARDIAN_SERVICE'], userId);
             throw error;
         }
     }
@@ -1071,17 +1071,17 @@ export class PolicyDataMigrator {
                 this._migrateMultiSignDocument.bind(this),
                 async (doc) => {
                     await this._db.setMultiSigDocument(
-                        (doc as any).uuid,
+                        doc.uuid,
                         this._policyId,
-                        (doc as any).documentId,
+                        doc.documentId,
                         {
-                            id: (doc as any).userId,
-                            did: (doc as any).did,
-                            group: (doc as any).group,
-                            username: (doc as any).username,
+                            id: doc.userId,
+                            did: doc.did,
+                            group: doc.group,
+                            username: doc.username,
                         },
-                        (doc as any).status || '',
-                        (doc as any).document
+                        doc.status || '',
+                        doc.document
                     );
                 },
                 errors,
@@ -1314,10 +1314,6 @@ export class PolicyDataMigrator {
                             const currentState = blockState.state;
                             for (const key in currentState) {
                                 if (currentState.hasOwnProperty(key)) {
-                                    // if (currentState[key]?.index && srcStepStateMap.get(currentState[key].index)) {
-                                    //     const tag = srcStepStateMap.get(currentState[key].index);
-                                    //     currentState[key].index = stepStateMap.get(tag) || currentState[key];
-                                    // }
                                     if (
                                         currentState[key]?.index !== undefined &&
                                         currentState[key]?.index !== null &&
@@ -1433,21 +1429,21 @@ export class PolicyDataMigrator {
                     this._migrateMultiSignDocument.bind(this),
                     async (doc) => {
                         await this._db.setMultiSigDocument(
-                            (doc as any).uuid,
+                            doc.uuid,
                             this._policyId,
-                            (doc as any).documentId,
+                            doc.documentId,
                             {
-                                id: (doc as any).userId,
-                                did: (doc as any).did,
-                                group: (doc as any).group,
-                                username: (doc as any).username,
+                                id: doc.userId,
+                                did: doc.did,
+                                group: doc.group,
+                                username: doc.username,
                             },
-                            (doc as any).status || '',
-                            (doc as any).document
+                            doc.status || '',
+                            doc .document
                         );
                     },
                     userId,
-                    run as MigrationRun,
+                    run,
                     errors,
                     null,
                     '',
@@ -1661,6 +1657,7 @@ export class PolicyDataMigrator {
      * @param progressStep
      * @param progressLabel
      * @param writeBatchSize
+     * @param isResumeRun
      */
     async migrateTokenPoolsV2(
         contractId: string,
@@ -1768,9 +1765,6 @@ export class PolicyDataMigrator {
                 const srcEntityId = getSourceId(pool);
 
                 try {
-                    if (!srcEntityId) {
-                        throw new Error('Source id not found for retirePool');
-                    }
                     const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
                     // mapping pre-check (source of truth)
@@ -2196,7 +2190,7 @@ export class PolicyDataMigrator {
                 delete newDocument.updateDate;
                 await saveFn(newDocument);
             } catch (error) {
-                await new PinoLogger().error(error, ['GUARDIAN_SERVICE'], userId);
+                await new PinoLogger().error(error.message, ['GUARDIAN_SERVICE'], userId);
                 errors.push({
                     id: document?.id,
                     message: error?.toString(),
@@ -2244,16 +2238,6 @@ export class PolicyDataMigrator {
             progressLabel || entityType,
             entitySummary
         );
-        const isIgnorableMultiDocumentError = (error: unknown): boolean => {
-            if (entityType !== 'multiDocument') {
-                return false;
-            }
-            const message = String(error || '');
-            if (message.includes('JSON Object is empty')) {
-                return true;
-            }
-            return false;
-        };
 
         const saveFailedItem = async (document: T, error: any) => {
             const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, document);
@@ -2369,11 +2353,9 @@ export class PolicyDataMigrator {
 
                     entitySummary.success += 1;
                 } catch (error) {
-                    if (isIgnorableMultiDocumentError(error)) {
+                    if (String(error).includes('JSON Object is empty')) {
                         entitySummary.success += 1;
-                        logIgnoredMultiDocumentError(
-                            srcEntityId || (document as any)?.id || (document as any)?._id
-                        );
+                        await new PinoLogger().warn(error.message, ['GUARDIAN_SERVICE'], userId);
                         return;
                     }
 
@@ -2513,10 +2495,10 @@ export class PolicyDataMigrator {
             if (role) {
                 vcMessage.setUser(role.messageId);
             }
-            const message = vcMessage;
+
             const vcMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(message, {
+                .sendMessage(vcMessage, {
                     sendToIPFS: true,
                     memo: null,
                     userId,
@@ -2542,6 +2524,7 @@ export class PolicyDataMigrator {
      * @param doc VC
      * @param userId
      * @param run
+     * @param sourceRoles
      * @returns VC
      */
     private async _migrateRoleVcV2(
@@ -2757,6 +2740,7 @@ export class PolicyDataMigrator {
      * @param run
      * @param errors
      * @param writeBatchSize
+     * @param isResumeRun
      */
     private async _migratePolicyStatesV2(
         states: BlockState[],
@@ -2768,10 +2752,6 @@ export class PolicyDataMigrator {
         const entityType: keyof MigrationRunSummary = 'policyState';
         const summary = run.summary;
         const stateSummary = summary?.policyState;
-
-        if (!stateSummary) {
-            throw new Error('Summary item not found for entityType: policyState');
-        }
 
         const getSourceId = (state: BlockState): string | undefined => {
             if (state?.id) {
@@ -2963,6 +2943,7 @@ export class PolicyDataMigrator {
      * @param run
      * @param errors
      * @param writeBatchSize
+     * @param isResumeRun
      */
     private async _migratePolicyRolesV2(
         roles: PolicyRoles[],
@@ -2975,10 +2956,6 @@ export class PolicyDataMigrator {
         const entityType = 'policyRole';
         const summary = run.summary as MigrationRunSummary;
         const roleSummary = summary?.policyRole;
-
-        if (!roleSummary) {
-            throw new Error('Summary item not found for entityType: policyRole');
-        }
 
         const getSourceId = (role: PolicyRoles): string | undefined => {
             const keys = PolicyDataMigrator.extractSourceKeys(entityType, role);
@@ -3121,7 +3098,7 @@ export class PolicyDataMigrator {
                 } catch (error) {
                     roleSummary.failed += 1;
                     errors.push({
-                        id: srcEntityId || (sourceRole as any)?.id || (sourceRole as any)?._id || (sourceRole as any)?.did,
+                        id: srcEntityId || sourceRole?.id || (sourceRole as any)?._id || sourceRole?.did,
                         message: error?.toString(),
                     });
                     await saveFailedItem(sourceRole, error);
@@ -3461,13 +3438,6 @@ export class PolicyDataMigrator {
         const requestSummary = summary?.mintRequest;
         const transactionSummary = summary?.mintTransaction;
 
-        if (!requestSummary) {
-            throw new Error('Summary item not found for entityType: mintRequest');
-        }
-        if (!transactionSummary) {
-            throw new Error('Summary item not found for entityType: mintTransaction');
-        }
-
         const reportMintRequestProgress = this.createBatchStepProgressReporter(
             requestProgressStep,
             'Mint requests',
@@ -3495,7 +3465,7 @@ export class PolicyDataMigrator {
                 return String(transaction.id);
             }
             if ((transaction as any)?._id) {
-                return String((transaction as any)._id);
+                return String(transaction._id);
             }
             return;
         };
@@ -3574,9 +3544,6 @@ export class PolicyDataMigrator {
                 const srcEntityId = getRequestSourceId(request);
 
                 try {
-                    if (!srcEntityId) {
-                        throw new Error('Source id not found for mintRequest');
-                    }
                     const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
                     // mapping pre-check
@@ -3625,7 +3592,7 @@ export class PolicyDataMigrator {
                 } catch (error) {
                     requestSummary.failed += 1;
                     errors.push({
-                        id: srcEntityId || (request as any)?.id || (request as any)?._id,
+                        id: srcEntityId || request?.id || (request as any)?._id,
                         message: error?.toString(),
                     });
                     await saveFailedItem('mintRequest', srcEntityId, error);
@@ -3744,7 +3711,7 @@ export class PolicyDataMigrator {
                 } catch (error) {
                     transactionSummary.failed += 1;
                     errors.push({
-                        id: srcEntityId || (transaction as any)?.id || (transaction as any)?._id,
+                        id: srcEntityId || transaction?.id || (transaction as any)?._id,
                         message: error?.toString(),
                     });
                     await saveFailedItem('mintTransaction', srcEntityId, error);
@@ -3949,6 +3916,7 @@ export class PolicyDataMigrator {
      * @param tokens
      * @param userId
      * @param run
+     * @param recursionState
      * @returns VC
      */
     private async _migrateVcDocumentV2(
@@ -4187,10 +4155,6 @@ export class PolicyDataMigrator {
             }
 
             let vc: VcDocumentDefinition;
-            // const schema = await DatabaseServer.getSchema({
-            //     topicId: this._policyTopicId,
-            //     iri: this._schemas[doc.schema],
-            // });
 
             const destinationSchemaIri = this._schemas?.[doc.schema] || doc.schema;
             const schema = await DatabaseServer.getSchema({
@@ -4199,7 +4163,7 @@ export class PolicyDataMigrator {
             });
             if (!schema) {
                 throw new Error(
-                    `Schema not found: srcSchema=${String(doc.schema)}, dstSchema=${String(destinationSchemaIri)}, docId=${String((doc as any)?.id)}`
+                    `Schema not found: srcSchema=${doc.schema}, dstSchema=${destinationSchemaIri}, docId=${doc?.id}`
                 );
             }
 
@@ -4420,17 +4384,6 @@ export class PolicyDataMigrator {
     ): Promise<void> {
         const scopeKey = `${run.srcPolicyId}:${run.dstPolicyId}:${run.startedBy || ''}`;
 
-        // if ((db as any).dryRun) {
-        //     const existingCache = PolicyDataMigrator.migrationMessageCache.get(scopeKey);
-        //     if (!existingCache) {
-        //         PolicyDataMigrator.migrationMessageCache.set(
-        //             scopeKey,
-        //             new Map<string, Map<string, string>>()
-        //         );
-        //     }
-        //     return;
-        // }
-
         const mappings = await db.find(MigrationMessageMap, {
             srcPolicyId: run.srcPolicyId,
             dstPolicyId: run.dstPolicyId,
@@ -4580,12 +4533,6 @@ export class PolicyDataMigrator {
             return [];
         }
 
-        // if (this._dryRunId) {
-        //     const flushed = [...buffer];
-        //     buffer.length = 0;
-        //     return flushed;
-        // }
-
         const flushed: Partial<MigrationMessageMap>[] = [];
 
         for (const item of buffer) {
@@ -4706,7 +4653,7 @@ export class PolicyDataMigrator {
         run: MigrationRun,
         userId: string | null,
         notifier: INotificationStep,
-        writeBatchSize: number = 50
+        writeBatchSize: number = PolicyDataMigrator.migrationWriteBatchSize,
         ): Promise<DocumentError[]> {
 
         const migrationConfig = run.config as MigrationConfig;
@@ -4945,7 +4892,6 @@ export class PolicyDataMigrator {
 
     /**
      * Retry only failed items for existing run
-     * Source: MigrationFailedItem by runId
      */
     public async _retryFailedItems(params: {
         run: MigrationRun;
@@ -4985,7 +4931,7 @@ export class PolicyDataMigrator {
             retirePools,
         } = params;
 
-        const writeBatchSize = params.writeBatchSize || 50;
+        const writeBatchSize = params.writeBatchSize || PolicyDataMigrator.migrationWriteBatchSize;
         const summary = run.summary as MigrationRunSummary;
         const errors: DocumentError[] = [];
 
@@ -5453,7 +5399,7 @@ export class PolicyDataMigrator {
                     } catch (error) {
                         if (
                             entityType === 'multiDocument' &&
-                            String(error || '').includes('JSON Object is empty')
+                            String(error).includes('JSON Object is empty')
                         ) {
                             if (entitySummary.failed > 0) {
                                 entitySummary.failed -= 1;
