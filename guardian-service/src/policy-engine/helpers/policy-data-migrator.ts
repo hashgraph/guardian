@@ -1251,7 +1251,7 @@ export class PolicyDataMigrator {
                     'roleVcDocument',
                     roleVcs,
                     (vc: VcDocument, uid: string | null) =>
-                        this._migrateRoleVcV2(vc, uid, run as MigrationRun),
+                        this._migrateRoleVcV2(vc, uid, run as MigrationRun, roles),
                     this._db.saveVC.bind(this._db),
                     userId,
                     run as MigrationRun,
@@ -2386,7 +2386,6 @@ export class PolicyDataMigrator {
             role = groups.find((group) => group.uuid === doc.group);
             doc.group = role?.uuid;
         }
-
         let vc: VcDocumentDefinition;
         const schema = await DatabaseServer.getSchema({
             topicId: this._policyTopicId,
@@ -2474,7 +2473,8 @@ export class PolicyDataMigrator {
     private async _migrateRoleVcV2(
         doc: VcDocument,
         userId: string | null,
-        run: MigrationRun
+        run: MigrationRun,
+        sourceRoles: PolicyRoles[]
     ) {
         if (!doc) {
             return doc;
@@ -2495,17 +2495,35 @@ export class PolicyDataMigrator {
             }
         }
 
+        const oldDocOwner = doc.owner;
         doc.owner = await this._replaceDidTopicId(doc.owner);
 
         let role;
+        let sourceRole;
         if (doc.group) {
+            sourceRole = sourceRoles?.find(
+                (item) => item.uuid === doc.group && item.did === oldDocOwner
+            ) || sourceRoles?.find(
+                (item) => item.uuid === doc.group
+            );
             const groups = await this._db.getGroupsByUser(
                 this._policyId,
                 doc.owner
             );
-            role = groups.find((group) => group.uuid === doc.group);
+            role = groups.find(
+                (group) =>
+                    group?.groupName === this._groups[sourceRole?.groupName] ||
+                    group.role === this._roles[sourceRole?.role] ||
+                    group.uuid === doc.group
+            );
             doc.group = role?.uuid;
+            console.log(
+                `[MIGRATION_V2_ROLEVC] runId=${String(run?.id)} stage=groupResolve srcGroup=${String((doc as any)?.group)} srcRoleMsg=${String(sourceRole?.messageId)} dstRoleMsg=${String(role?.messageId)} oldOwner=${String(oldDocOwner)} newOwner=${String(doc.owner)}`
+            );
         }
+        const sourceRoleMessageId = sourceRole?.messageId
+            ? String(sourceRole.messageId)
+            : undefined;
 
         let vc: VcDocumentDefinition;
         const destinationSchemaIri = this._schemas?.[doc.schema] || doc.schema;
@@ -2566,22 +2584,31 @@ export class PolicyDataMigrator {
 
             if (role) {
                 const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+                let resolvedRoleMessageId = sourceRoleMessageId || (role?.messageId ? String(role.messageId) : undefined);
 
-                const mappedRoleMessageId = PolicyDataMigrator.getMessageMapping(
-                    scopeKey,
-                    'roleVcDocument',
-                    String(role.messageId)
-                ) || PolicyDataMigrator.getMessageMapping(
-                    scopeKey,
-                    'vcDocument',
-                    String(role.messageId)
-                );
+                let mappedRoleMessageId: string | undefined;
+                if (sourceRoleMessageId) {
+                    mappedRoleMessageId = PolicyDataMigrator.getMessageMapping(
+                        scopeKey,
+                        'roleVcDocument',
+                        sourceRoleMessageId
+                    ) || PolicyDataMigrator.getMessageMapping(
+                        scopeKey,
+                        'vcDocument',
+                        sourceRoleMessageId
+                    );
+                }
 
                 if (mappedRoleMessageId) {
-                    roleMessage.setUser(mappedRoleMessageId);
-                } else {
-                    roleMessage.setUser(role.messageId);
+                    resolvedRoleMessageId = mappedRoleMessageId;
                 }
+
+                if (resolvedRoleMessageId) {
+                    roleMessage.setUser(resolvedRoleMessageId);
+                }
+                console.log(
+                    `[MIGRATION_V2_ROLEVC] runId=${String(run?.id)} stage=setUser srcRoleMsg=${String(sourceRoleMessageId)} mappedRoleMsg=${String(mappedRoleMessageId)} resolvedRoleMsg=${String(resolvedRoleMessageId)}`
+                );
             }
 
             const result = await this._ms
@@ -2612,21 +2639,20 @@ export class PolicyDataMigrator {
 
             if (role) {
                 const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
-
-                const mappedRoleMessageId = PolicyDataMigrator.getMessageMapping(
-                    scopeKey,
-                    'roleVcDocument',
-                    String(role.messageId)
-                ) || PolicyDataMigrator.getMessageMapping(
-                    scopeKey,
-                    'vcDocument',
-                    String(role.messageId)
-                );
-
-                if (mappedRoleMessageId) {
-                    role.messageId = mappedRoleMessageId;
-                    await this._db.setUserInGroup(role);
+                if (sourceRoleMessageId) {
+                    PolicyDataMigrator.setMessageMapping(
+                        scopeKey,
+                        'roleVcDocument',
+                        sourceRoleMessageId,
+                        destinationMessageId
+                    );
                 }
+
+                role.messageId = destinationMessageId;
+                await this._db.setUserInGroup(role);
+                console.log(
+                    `[MIGRATION_V2_ROLEVC] runId=${String(run?.id)} stage=afterPublish srcRoleMsg=${String(sourceRoleMessageId)} dstRoleMsg=${String(destinationMessageId)}`
+                );
             }
         }
 
@@ -3889,219 +3915,348 @@ export class PolicyDataMigrator {
         roles: PolicyRoles[],
         tokens: Token[],
         userId: string | null,
-        run: MigrationRun
+        run: MigrationRun,
+        recursionState?: {
+            inProgress: Set<string>;
+            done: Map<string, string>;
+        }
     ) {
         if (!doc) {
             return doc;
         }
 
+        const state = recursionState || {
+            inProgress: new Set<string>(),
+            done: new Map<string, string>(),
+        };
+
         const srcMapKey = PolicyDataMigrator.getSourceMapKey('vcDocument', doc);
+        const recursionKey = String(srcMapKey || doc?.messageId || (doc as any)?.id || '');
+        console.log(
+            `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=enter docId=${String((doc as any)?.id)} srcMsg=${String(doc?.messageId)} srcMapKey=${String(srcMapKey)} group=${String((doc as any)?.group)} assignedToGroup=${String((doc as any)?.assignedToGroup)} relCount=${String((doc?.relationships || []).length)}`
+        );
 
-        if (srcMapKey) {
-            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
-
-            const mappedMessageId = PolicyDataMigrator.getMessageMapping(
-                scopeKey,
-                'vcDocument',
-                srcMapKey
-            );
-            if (mappedMessageId) {
-                doc.messageId = mappedMessageId;
-                return doc;
+        if (recursionKey && state.done.has(recursionKey)) {
+            const doneMessageId = state.done.get(recursionKey);
+            if (doneMessageId) {
+                doc.messageId = doneMessageId;
             }
+            return doc;
         }
 
-        doc.relationships = doc.relationships || [];
-        for (let i = 0; i < doc.relationships.length; i++) {
-            const relationship = doc.relationships[i];
-            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+        if (recursionKey && state.inProgress.has(recursionKey)) {
+            return null;
+        }
 
-            const mappedRelationship = PolicyDataMigrator.getMessageMapping(
-                scopeKey,
-                'vcDocument',
-                relationship
-            );
-            if (mappedRelationship) {
-                doc.relationships[i] = mappedRelationship;
-                continue;
-            }
+        if (recursionKey) {
+            state.inProgress.add(recursionKey);
+        }
 
-            const sourceRelated = vcs.find((item) => item.messageId === relationship);
-            if (!sourceRelated) {
-                doc.relationships.splice(i, 1);
-                i--;
-                continue;
-            }
+        try {
 
-            try {
-                const republishedDocument = await this._migrateVcDocumentV2(
-                    sourceRelated,
-                    vcs,
-                    roles,
-                    tokens,
-                    userId,
-                    run
+            if (srcMapKey) {
+                const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                const mappedMessageId = PolicyDataMigrator.getMessageMapping(
+                    scopeKey,
+                    'vcDocument',
+                    srcMapKey
                 );
+                if (mappedMessageId) {
+                    doc.messageId = mappedMessageId;
+                    if (recursionKey) {
+                        state.done.set(recursionKey, mappedMessageId);
+                    }
+                    return doc;
+                }
+            }
 
-                if (!republishedDocument?.messageId) {
+            doc.relationships = doc.relationships || [];
+            const sourceOwnerDid = doc.owner;
+            const sourceGroupRoleForRelationships = doc.group
+                ? roles.find((item) => item.uuid === doc.group && item.did === sourceOwnerDid)
+                : undefined;
+            const sourceAssignedRoleForRelationships = doc.assignedToGroup
+                ? roles.find((item) => item.uuid === doc.assignedToGroup && item.did === sourceOwnerDid)
+                : undefined;
+            const sourceRoleRelationshipIds = new Set<string>();
+            if (sourceGroupRoleForRelationships?.messageId) {
+                sourceRoleRelationshipIds.add(String(sourceGroupRoleForRelationships.messageId));
+            }
+            if (sourceAssignedRoleForRelationships?.messageId) {
+                sourceRoleRelationshipIds.add(String(sourceAssignedRoleForRelationships.messageId));
+            }
+            for (let i = 0; i < doc.relationships.length; i++) {
+                const relationship = doc.relationships[i];
+                const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+
+                const mappedRelationship = PolicyDataMigrator.getMessageMapping(
+                    scopeKey,
+                    'vcDocument',
+                    relationship
+                ) || PolicyDataMigrator.getMessageMapping(
+                    scopeKey,
+                    'roleVcDocument',
+                    relationship
+                );
+                if (mappedRelationship) {
+                    doc.relationships[i] = mappedRelationship;
+                    console.log(
+                        `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipMapHit rel=${String(relationship)} mapped=${String(mappedRelationship)}`
+                    );
+                    continue;
+                }
+
+                const sourceRelated = vcs.find((item) => item.messageId === relationship);
+                if (!sourceRelated) {
+                    const relationshipAsString = String(relationship);
+                    if (sourceRoleRelationshipIds.has(relationshipAsString)) {
+                        const mappedRoleRelationship = PolicyDataMigrator.getMessageMapping(
+                            scopeKey,
+                            'roleVcDocument',
+                            relationshipAsString
+                        ) || PolicyDataMigrator.getMessageMapping(
+                            scopeKey,
+                            'vcDocument',
+                            relationshipAsString
+                        );
+                        if (mappedRoleRelationship) {
+                            doc.relationships[i] = mappedRoleRelationship;
+                            console.log(
+                                `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipKeepRoleMessageMapped rel=${String(relationship)} mapped=${String(mappedRoleRelationship)}`
+                            );
+                        } else {
+                            console.log(
+                                `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipKeepRoleMessageNoMap rel=${String(relationship)}`
+                            );
+                        }
+                        continue;
+                    }
+                    console.log(
+                        `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipDropNoSource rel=${String(relationship)}`
+                    );
                     doc.relationships.splice(i, 1);
                     i--;
                     continue;
                 }
 
-                doc.relationships[i] = republishedDocument.messageId;
+                try {
+                    const republishedDocument = await this._migrateVcDocumentV2(
+                        sourceRelated,
+                        vcs,
+                        roles,
+                        tokens,
+                        userId,
+                        run,
+                        state
+                    );
 
-                const relatedSrcMapKey = PolicyDataMigrator.getSourceMapKey('vcDocument', sourceRelated);
-                if (relatedSrcMapKey) {
+                    if (!republishedDocument?.messageId) {
+                        console.log(
+                            `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipDropNoRepublish rel=${String(relationship)}`
+                        );
+                        doc.relationships.splice(i, 1);
+                        i--;
+                        continue;
+                    }
+
+                    doc.relationships[i] = republishedDocument.messageId;
+                    console.log(
+                        `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipRepublished rel=${String(relationship)} mapped=${String(republishedDocument.messageId)}`
+                    );
+
+                    const relatedSrcMapKey = PolicyDataMigrator.getSourceMapKey('vcDocument', sourceRelated);
+                    if (relatedSrcMapKey) {
+                        PolicyDataMigrator.setMessageMapping(
+                            scopeKey,
+                            'vcDocument',
+                            relatedSrcMapKey,
+                            String(republishedDocument.messageId)
+                        );
+                    }
+                } catch (error) {
+                    console.log(
+                        `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipDropByError rel=${String(relationship)} error=${String(error)}`
+                    );
+                    doc.relationships.splice(i, 1);
+                    i--;
+                }
+            }
+
+            const oldDocOwner = doc.owner;
+            doc.owner = await this._replaceDidTopicId(doc.owner);
+            doc.assignedTo = await this._replaceDidTopicId(doc.assignedTo);
+
+            let role: any;
+            let sourceGroupRole: PolicyRoles | undefined;
+            let roleForMessageUser: any;
+            if (doc.group) {
+                sourceGroupRole = roles.find(
+                    (item) => item.uuid === doc.group && item.did === oldDocOwner
+                );
+                const groups = await this._db.getGroupsByUser(
+                    this._policyId,
+                    doc.owner
+                );
+                role = groups.find(
+                    (item) =>
+                        item?.groupName === this._groups[sourceGroupRole?.groupName] ||
+                        item.role === this._roles[sourceGroupRole?.role]
+                );
+                roleForMessageUser = role;
+                doc.group = role?.uuid;
+            }
+
+            if (doc.assignedToGroup) {
+                const srcGroup = roles.find(
+                    (item) =>
+                        item.uuid === doc.assignedToGroup &&
+                        item.did === oldDocOwner
+                );
+                const groups = await this._db.getGroupsByUser(
+                    this._policyId,
+                    doc.owner
+                );
+                role = groups.find(
+                    (item) => item?.groupName === this._groups[srcGroup?.groupName]
+                );
+                doc.assignedToGroup = role?.uuid;
+            }
+
+            let vc: VcDocumentDefinition;
+            // const schema = await DatabaseServer.getSchema({
+            //     topicId: this._policyTopicId,
+            //     iri: this._schemas[doc.schema],
+            // });
+
+            const destinationSchemaIri = this._schemas?.[doc.schema] || doc.schema;
+            const schema = await DatabaseServer.getSchema({
+                topicId: this._policyTopicId,
+                iri: destinationSchemaIri,
+            });
+            if (!schema) {
+                throw new Error(
+                    `Schema not found: srcSchema=${String(doc.schema)}, dstSchema=${String(destinationSchemaIri)}, docId=${String((doc as any)?.id)}`
+                );
+            }
+
+            if (
+                this._editedVCs[doc.id] ||
+                doc.schema !== schema.iri ||
+                this._policyTopicId !== this._oldPolicyTopicId
+            ) {
+                const _vcHelper = new VcHelper();
+                const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
+                const credentialSubject = SchemaHelper.updateObjectContext(
+                    new Schema(schema),
+                    this._editedVCs[doc.id] || doc.document.credentialSubject[0]
+                );
+                const res = await _vcHelper.verifySubject(credentialSubject);
+                if (!res.ok) {
+                    throw new Error(res.error.type);
+                }
+                vc = await _vcHelper.createVerifiableCredential(
+                    credentialSubject,
+                    didDocument,
+                    null,
+                    {
+                        uuid: await this._replaceDidTopicId(doc.document.id),
+                    }
+                );
+                doc.hash = vc.toCredentialHash();
+                doc.document = vc.toJsonTree();
+                doc.schema = schema.iri;
+            } else {
+                vc = VcDocumentDefinition.fromJsonTree(doc.document);
+            }
+
+            doc.policyId = this._policyId;
+
+            if (doc.messageId) {
+                const vcMessage = new VCMessage(MessageAction.MigrateVC);
+                vcMessage.setDocument(vc);
+                vcMessage.setDocumentStatus(
+                    doc.option?.status || DocumentStatus.NEW
+                );
+                vcMessage.setRelationships([...doc.relationships, doc.messageId]);
+                vcMessage.setTag(doc);
+                vcMessage.setEntityType(doc);
+                vcMessage.setOption(doc);
+                if (roleForMessageUser && schema.category === SchemaCategory.POLICY) {
+                    const sourceRoleMessageId = sourceGroupRole?.messageId
+                        ? String(sourceGroupRole.messageId)
+                        : undefined;
+                    const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+                    let resolvedRoleMessageId = sourceRoleMessageId || String(roleForMessageUser.messageId || '');
+                    let mappedRoleMessageId: string | undefined;
+                    if (sourceRoleMessageId) {
+                        mappedRoleMessageId = PolicyDataMigrator.getMessageMapping(
+                            scopeKey,
+                            'roleVcDocument',
+                            sourceRoleMessageId
+                        ) || PolicyDataMigrator.getMessageMapping(
+                            scopeKey,
+                            'vcDocument',
+                            sourceRoleMessageId
+                        );
+                    }
+                    if (mappedRoleMessageId) {
+                        resolvedRoleMessageId = mappedRoleMessageId;
+                    }
+                    if (resolvedRoleMessageId) {
+                        vcMessage.setUser(resolvedRoleMessageId);
+                    }
+                    console.log(
+                        `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=userResolve docId=${String((doc as any)?.id)} srcRoleMsg=${String(sourceRoleMessageId)} mappedRoleMsg=${String(mappedRoleMessageId)} fallbackDstRoleMsg=${String(roleForMessageUser?.messageId)} resolvedRoleMsg=${String(resolvedRoleMessageId)}`
+                    );
+                }
+
+                const vcMessageResult = await this._ms
+                    .setTopicObject(this._policyInstanceTopic)
+                    .sendMessage(vcMessage, {
+                        sendToIPFS: true,
+                        memo: null,
+                        userId,
+                        interception: null
+                    });
+
+                const destinationMessageId = vcMessageResult.getId();
+                console.log(
+                    `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=afterPublish docId=${String((doc as any)?.id)} srcMsg=${String(srcMapKey || doc?.messageId)} dstMsg=${String(destinationMessageId)} relCount=${String((doc?.relationships || []).length)}`
+                );
+
+                doc.messageId = destinationMessageId;
+                doc.topicId = vcMessageResult.getTopicId();
+                doc.messageHash = vcMessageResult.toHash();
+
+                if (srcMapKey) {
                     const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
                     PolicyDataMigrator.setMessageMapping(
                         scopeKey,
                         'vcDocument',
-                        relatedSrcMapKey,
-                        String(republishedDocument.messageId)
+                        srcMapKey,
+                        destinationMessageId
                     );
                 }
-            } catch (error) {
-                doc.relationships.splice(i, 1);
-                i--;
-            }
-        }
-
-        const oldDocOwner = doc.owner;
-        doc.owner = await this._replaceDidTopicId(doc.owner);
-        doc.assignedTo = await this._replaceDidTopicId(doc.assignedTo);
-
-        let role;
-        if (doc.group) {
-            const srcGroup = roles.find(
-                (item) => item.uuid === doc.group && item.did === oldDocOwner
-            );
-            const groups = await this._db.getGroupsByUser(
-                this._policyId,
-                doc.owner
-            );
-            role = groups.find(
-                (item) =>
-                    item?.groupName === this._groups[srcGroup?.groupName] ||
-                    item.role === this._roles[srcGroup?.role]
-            );
-            doc.group = role?.uuid;
-        }
-
-        if (doc.assignedToGroup) {
-            const srcGroup = roles.find(
-                (item) =>
-                    item.uuid === doc.assignedToGroup &&
-                    item.did === oldDocOwner
-            );
-            const groups = await this._db.getGroupsByUser(
-                this._policyId,
-                doc.owner
-            );
-            role = groups.find(
-                (item) => item?.groupName === this._groups[srcGroup?.groupName]
-            );
-            doc.assignedToGroup = role?.uuid;
-        }
-
-        let vc: VcDocumentDefinition;
-        // const schema = await DatabaseServer.getSchema({
-        //     topicId: this._policyTopicId,
-        //     iri: this._schemas[doc.schema],
-        // });
-
-        const destinationSchemaIri = this._schemas?.[doc.schema] || doc.schema;
-        const schema = await DatabaseServer.getSchema({
-            topicId: this._policyTopicId,
-            iri: destinationSchemaIri,
-        });
-        if (!schema) {
-            throw new Error(
-                `Schema not found: srcSchema=${String(doc.schema)}, dstSchema=${String(destinationSchemaIri)}, docId=${String((doc as any)?.id)}`
-            );
-        }
-
-        if (
-            this._editedVCs[doc.id] ||
-            doc.schema !== schema.iri ||
-            this._policyTopicId !== this._oldPolicyTopicId
-        ) {
-            const _vcHelper = new VcHelper();
-            const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
-            const credentialSubject = SchemaHelper.updateObjectContext(
-                new Schema(schema),
-                this._editedVCs[doc.id] || doc.document.credentialSubject[0]
-            );
-            const res = await _vcHelper.verifySubject(credentialSubject);
-            if (!res.ok) {
-                throw new Error(res.error.type);
-            }
-            vc = await _vcHelper.createVerifiableCredential(
-                credentialSubject,
-                didDocument,
-                null,
-                {
-                    uuid: await this._replaceDidTopicId(doc.document.id),
-                }
-            );
-            doc.hash = vc.toCredentialHash();
-            doc.document = vc.toJsonTree();
-            doc.schema = schema.iri;
-        } else {
-            vc = VcDocumentDefinition.fromJsonTree(doc.document);
-        }
-
-        doc.policyId = this._policyId;
-
-        if (doc.messageId) {
-            const vcMessage = new VCMessage(MessageAction.MigrateVC);
-            vcMessage.setDocument(vc);
-            vcMessage.setDocumentStatus(
-                doc.option?.status || DocumentStatus.NEW
-            );
-            vcMessage.setRelationships([...doc.relationships, doc.messageId]);
-            vcMessage.setTag(doc);
-            vcMessage.setEntityType(doc);
-            vcMessage.setOption(doc);
-            if (role && schema.category === SchemaCategory.POLICY) {
-                vcMessage.setUser(role.messageId);
             }
 
-            const vcMessageResult = await this._ms
-                .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(vcMessage, {
-                    sendToIPFS: true,
-                    memo: null,
-                    userId,
-                    interception: null
-                });
+            this.vcIds.set(doc.id, doc);
 
-            const destinationMessageId = vcMessageResult.getId();
+            if (doc.tokens) {
+                doc.tokens = await this.migrateTokenTemplates(tokens, doc.tokens, userId);
+            }
 
-            doc.messageId = destinationMessageId;
-            doc.topicId = vcMessageResult.getTopicId();
-            doc.messageHash = vcMessageResult.toHash();
+            if (recursionKey && doc?.messageId) {
+                state.done.set(recursionKey, String(doc.messageId));
+            }
 
-            if (srcMapKey) {
-                const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
-
-                PolicyDataMigrator.setMessageMapping(
-                    scopeKey,
-                    'vcDocument',
-                    srcMapKey,
-                    destinationMessageId
-                );
+            return doc;
+        } finally {
+            if (recursionKey) {
+                state.inProgress.delete(recursionKey);
             }
         }
-
-        this.vcIds.set(doc.id, doc);
-
-        if (doc.tokens) {
-            doc.tokens = await this.migrateTokenTemplates(tokens, doc.tokens, userId);
-        }
-
-        return doc;
     }
 
     private static isHeartbeatStaleForRun(run: Partial<MigrationRun>): boolean {
@@ -4924,7 +5079,7 @@ export class PolicyDataMigrator {
                                 return;
                             }
 
-                            const migrated = await this._migrateRoleVcV2(src, userId, run);
+                            const migrated = await this._migrateRoleVcV2(src, userId, run, roles);
 
                             PolicyDataMigrator.clearEntityMeta(migrated);
 
