@@ -182,37 +182,35 @@ Where `PE_y` is project emissions from auxiliary consumption in year y.
 ## Policy Workflow
 
 The policy implements the following 5-stage workflow:
+
+```
 [Standard Registry]
-│
-▼
-
-REGISTRATION
-Project Participant submits Project Description
-→ SR validates → Approved/Rejected
-│
-▼
-
-VVB ASSIGNMENT
-SR or PP assigns accredited VVB to project
-│
-▼
-
-MONITORING REPORT SUBMISSION
-PP submits Monitoring Report with telemetry data
-→ PP assigns VVB for verification
-│
-▼
-
-VVB VERIFICATION
-VVB reviews Monitoring Report
-→ Approves or Rejects
-│
-▼
-
-SR APPROVAL & TOKEN MINTING
-SR reviews VVB-verified report
-→ Approves → CER tokens minted to Project Participant
-→ Rejects → Report returned for revision
+      |
+      v
+1. REGISTRATION
+   Project Participant submits Project Description
+   -> SR validates -> Approved/Rejected
+      |
+      v
+2. VVB ASSIGNMENT
+   SR or PP assigns accredited VVB to project
+      |
+      v
+3. MONITORING REPORT SUBMISSION
+   PP submits Monitoring Report with telemetry data
+   -> PP assigns VVB for verification
+      |
+      v
+4. VVB VERIFICATION
+   VVB reviews Monitoring Report
+   -> Approves or Rejects
+      |
+      v
+5. SR APPROVAL & TOKEN MINTING
+   SR reviews VVB-verified report
+   -> Approves -> CER tokens minted to Project Participant
+   -> Rejects  -> Report returned for revision
+```
 
 ---
 
@@ -221,7 +219,8 @@ SR reviews VVB-verified report
 `[To be added after policy publication on Hedera mainnet]`
 
 Testnet Policy ID: `69a07fb82a75f6d261a5f595`  
-Testnet Operator: `0.0.6255927`
+Testnet Operator: `0.0.6255927`  
+Guardian Policy Topic (HCS): [0.0.8041423](https://hashscan.io/testnet/topic/0.0.8041423)
 
 ---
 
@@ -305,20 +304,17 @@ CER tokens transferred to Project Participant's Hedera account.
 
 This policy was developed and tested on Hedera testnet under operator `0.0.6255927`.
 
-| Resource | Link |
-|----------|------|
-| Operator Account | [0.0.6255927](https://hashscan.io/testnet/account/0.0.6255927) |
-| Telemetry Topic (Direct HCS) | [0.0.7462600](https://hashscan.io/testnet/topic/0.0.7462600) |
-| Telemetry Topic (Merkle Batch) | [0.0.7462776](https://hashscan.io/testnet/topic/0.0.7462776) |
-| CER Token | [0.0.7462931](https://hashscan.io/testnet/token/0.0.7462931) |
-| Full MRV Implementation | [BikramBiswas786/hedera-hydropower-mrv](https://github.com/BikramBiswas786/hedera-hydropower-mrv) |
+| Resource | Description | Link |
+|----------|-------------|------|
+| Operator Account | Standard Registry account | [0.0.6255927](https://hashscan.io/testnet/account/0.0.6255927) |
+| Guardian Policy Topic | HCS topic created by Guardian on policy publish | [0.0.8041423](https://hashscan.io/testnet/topic/0.0.8041423) |
+| Telemetry Topic (Direct HCS) | Device telemetry anchoring | [0.0.7462600](https://hashscan.io/testnet/topic/0.0.7462600) |
+| Telemetry Topic (Merkle Batch) | Batched Merkle-tree telemetry | [0.0.7462776](https://hashscan.io/testnet/topic/0.0.7462776) |
+| CER Token | Carbon Emission Reduction token | [0.0.7462931](https://hashscan.io/testnet/token/0.0.7462931) |
+| Full MRV Implementation | Complete Node.js MRV engine | [BikramBiswas786/hedera-hydropower-mrv](https://github.com/BikramBiswas786/hedera-hydropower-mrv) |
+
+> **Note:** Topic `0.0.8041423` is the Guardian-generated policy topic on Hedera testnet. 
+> All Guardian workflow messages (schema publications, policy state changes, VC/VP documents) 
+> are anchored to this topic. This is the canonical on-chain reference for this policy instance.
 
 **Signed-off-by:** Bikram Biswas \<bikrambiswas786@gmail.com\>
-
-
-## Contact
-**Bikram Biswas**  
-Independent Developer  
-Kolkata, India  
-GitHub: @BikramBiswas786
-Signed-off-by: Bikram Biswas <bikrambiswas786@gmail.com>
