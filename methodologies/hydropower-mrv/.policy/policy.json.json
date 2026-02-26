@@ -1,0 +1,60 @@
+{
+  "name": "Hydropower MRV",
+  "version": "1.0.0",
+  "description": "Hydropower MRV methodology aligned with ACM0002 for grid-connected electricity generation from renewable sources.",
+  "topicDescription": "Hydropower Monitoring, Reporting, and Verification",
+  "policyTag": "hydropower-mrv",
+  "owner": "Standard Registry",
+  "policyRoles": [
+    "Standard Registry",
+    "Hydropower Facility Operator",
+    "Verifier",
+    "REC Purchaser"
+  ],
+  "policyNavigation": [
+    {
+      "role": "Hydropower Facility Operator",
+      "steps": [
+        { "name": "Facility Registration", "block": "registration", "level": 1 },
+        { "name": "Energy Generation Monitoring", "block": "monitoring", "level": 1 }
+      ]
+    },
+    {
+      "role": "Verifier",
+      "steps": [
+        { "name": "Third-Party Verification", "block": "verification", "level": 1 }
+      ]
+    }
+  ],
+  "config": {
+    "blocks": {
+      "id": "root",
+      "blockType": "container",
+      "children": [
+        {
+          "id": "registration",
+          "blockType": "request",
+          "schema": "hydropower-facility-schema",
+          "uiMetaData": { "title": "Facility Registration" }
+        },
+        {
+          "id": "monitoring",
+          "blockType": "request",
+          "schema": "hydropower-telemetry-schema",
+          "uiMetaData": { "title": "Energy Generation Monitoring" }
+        },
+        {
+          "id": "verification",
+          "blockType": "verifier",
+          "uiMetaData": { "title": "Third-Party Verification" }
+        },
+        {
+          "id": "rec_issuance",
+          "blockType": "mint",
+          "tokenId": "REC_TOKEN",
+          "uiMetaData": { "title": "REC Token Issuance" }
+        }
+      ]
+    }
+  }
+}
