@@ -29,7 +29,7 @@ Guardian currently supports general renewable energy and carbon methodologies, b
 4. **Verifier/orchestrator flow:** resolve DID → verify signature → audit → mint
 5. **Resale/royalty demo + retirement** (token burn)
 ## Methodology Compliance
-- ✅ **Verra VM0040** alignment (Improved Hydrological Systems)
+- ✅ **Verra ACM0002** alignment (Improved Hydrological Systems)
 - ✅ **I-REC Standard** compliance (Device Registry + Energy Tracking)
 - ✅ **Gold Standard** renewable energy requirements
 - ✅ **Formal methodology document** (see METHODOLOGY.md)
