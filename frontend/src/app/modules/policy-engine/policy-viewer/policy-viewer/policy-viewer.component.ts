@@ -861,7 +861,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Disconnect',
+                header: 'Reconnect',
                 text: 'Are you sure want to reconnect this policy?',
                 buttons: [{
                     name: 'Close',
