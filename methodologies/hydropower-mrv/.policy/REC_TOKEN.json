@@ -1,0 +1,14 @@
+{
+  "tokenName": "Hydropower REC",
+  "tokenSymbol": "HREC",
+  "tokenType": "non-fungible",
+  "decimals": 0,
+  "initialSupply": 0,
+  "changeSupply": true,
+  "enableAdmin": true,
+  "enableKYC": true,
+  "enableFreeze": true,
+  "enableWipe": true,
+  "policyId": null,
+  "draftToken": false
+}

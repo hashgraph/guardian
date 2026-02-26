@@ -1,0 +1,45 @@
+{
+  "name": "Hydropower Telemetry",
+  "description": "Hydropower energy generation tracking schema aligned with ACM0002.",
+  "entity": "MRV",
+  "document": {
+    "$id": "#hydropower-telemetry-schema",
+    "title": "Hydropower Telemetry",
+    "type": "object",
+    "properties": {
+      "flowRate": {
+        "type": "number",
+        "description": "Water flow rate in cubic meters per second (m³/s)",
+        "minimum": 0
+      },
+      "headHeight": {
+        "type": "number",
+        "description": "Water head height in meters (m)",
+        "minimum": 0
+      },
+      "energyOutput": {
+        "type": "number",
+        "description": "Net electricity supplied to the grid (MWh)",
+        "minimum": 0
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "description": "ISO 8601 timestamp of the measurement"
+      },
+      "gatewayDID": {
+        "type": "string",
+        "description": "DID of the gateway device signing the telemetry"
+      },
+      "signature": {
+        "type": "string",
+        "description": "Digital signature of the telemetry data"
+      },
+      "nonce": {
+        "type": "string",
+        "description": "Unique nonce to prevent replay attacks"
+      }
+    },
+    "required": ["flowRate", "headHeight", "energyOutput", "timestamp", "gatewayDID", "signature", "nonce"]
+  }
+}
