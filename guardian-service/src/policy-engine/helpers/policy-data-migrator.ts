@@ -11,6 +11,7 @@ import {
     KeyType,
     MessageAction,
     MessageServer,
+    PinoLogger,
     MintRequest,
     MintTransaction,
     MultiDocuments,
@@ -105,6 +106,11 @@ export class PolicyDataMigrator {
      * Created tokens
      */
     private readonly _createdTokens = new Map<string, any>();
+
+    /**
+     * Processed source token ids
+     */
+    private readonly _processedTokenIds = new Set<string>();
 
     /**
      * Created wipe contract identifier
@@ -516,7 +522,7 @@ export class PolicyDataMigrator {
 
             return migrationErrors;
         } catch (error) {
-            console.log(error);
+            await new PinoLogger().error(error, ['GUARDIAN_SERVICE'], userId);
             throw error;
         }
     }
@@ -920,7 +926,7 @@ export class PolicyDataMigrator {
                 runData
             );
         } catch (error) {
-            console.log(error);
+            await new PinoLogger().error(error, ['GUARDIAN_SERVICE'], userId);
             throw error;
         }
     }
@@ -1558,6 +1564,15 @@ export class PolicyDataMigrator {
             this._notifier.completeStep(STEP_MIGRATE_DOCUMENTS_TOKEN);
 
             if (run.status === MigrationRunStatus.RUNNING) {
+                const tokenSummary = (run.summary as MigrationRunSummary)?.token;
+                if (tokenSummary) {
+                    const total = Number(tokenSummary.total || 0);
+                    const failed = Number(tokenSummary.failed || 0);
+                    if (total > 0 && this._processedTokenIds.size > 0) {
+                        tokenSummary.success = Math.min(total, this._processedTokenIds.size);
+                        tokenSummary.failed = Math.min(total - tokenSummary.success, failed);
+                    }
+                }
                 run.status = MigrationRunStatus.COMPLETED;
                 run.finishedAt = new Date();
                 run.heartbeatAt = new Date();
@@ -1567,6 +1582,15 @@ export class PolicyDataMigrator {
             return errors;
         } catch (error) {
             if (run.status !== MigrationRunStatus.STOPPED) {
+                const tokenSummary = (run.summary as MigrationRunSummary)?.token;
+                if (tokenSummary) {
+                    const total = Number(tokenSummary.total || 0);
+                    const failed = Number(tokenSummary.failed || 0);
+                    if (total > 0 && this._processedTokenIds.size > 0) {
+                        tokenSummary.success = Math.min(total, this._processedTokenIds.size);
+                        tokenSummary.failed = Math.min(total - tokenSummary.success, failed);
+                    }
+                }
                 run.status = MigrationRunStatus.FAILED;
                 run.finishedAt = new Date();
                 run.heartbeatAt = new Date();
@@ -1587,6 +1611,7 @@ export class PolicyDataMigrator {
             );
 
             PolicyDataMigrator.clearRunCache(scopeKey);
+            this._processedTokenIds.clear();
         }
     }
 
@@ -1910,6 +1935,7 @@ export class PolicyDataMigrator {
                 existingToken.policyId = this._policyId;
 
                 tokenObjects.push(existingToken);
+                this._processedTokenIds.add(String(tokenId));
                 continue;
             }
             const tokenConfig = dynamicTokens.find(
@@ -1936,6 +1962,7 @@ export class PolicyDataMigrator {
             tokenObjects.push(tokenObject);
             result[newTokenTemplate] = tokenObject.tokenId;
             this._createdTokens.set(tokenId, tokenObject.tokenId);
+            this._processedTokenIds.add(String(tokenId));
         }
 
         await dataBaseServer.saveMany(Token, tokenObjects);
@@ -2169,7 +2196,7 @@ export class PolicyDataMigrator {
                 delete newDocument.updateDate;
                 await saveFn(newDocument);
             } catch (error) {
-                console.log(error);
+                await new PinoLogger().error(error, ['GUARDIAN_SERVICE'], userId);
                 errors.push({
                     id: document?.id,
                     message: error?.toString(),
@@ -2226,10 +2253,6 @@ export class PolicyDataMigrator {
                 return true;
             }
             return false;
-        };
-
-        const logIgnoredMultiDocumentError = (id: string | undefined): void => {
-            console.log(`${String(id || 'unknown')}: Error: JSON Object is empty`);
         };
 
         const saveFailedItem = async (document: T, error: any) => {
@@ -2568,9 +2591,6 @@ export class PolicyDataMigrator {
                     group.uuid === doc.group
             );
             doc.group = role?.uuid;
-            console.log(
-                `[MIGRATION_V2_ROLEVC] runId=${String(run?.id)} stage=groupResolve srcGroup=${String((doc as any)?.group)} srcRoleMsg=${String(sourceRole?.messageId)} dstRoleMsg=${String(role?.messageId)} oldOwner=${String(oldDocOwner)} newOwner=${String(doc.owner)}`
-            );
         }
         const sourceRoleMessageId = sourceRole?.messageId
             ? String(sourceRole.messageId)
@@ -2657,9 +2677,6 @@ export class PolicyDataMigrator {
                 if (resolvedRoleMessageId) {
                     roleMessage.setUser(resolvedRoleMessageId);
                 }
-                console.log(
-                    `[MIGRATION_V2_ROLEVC] runId=${String(run?.id)} stage=setUser srcRoleMsg=${String(sourceRoleMessageId)} mappedRoleMsg=${String(mappedRoleMessageId)} resolvedRoleMsg=${String(resolvedRoleMessageId)}`
-                );
             }
 
             const result = await this._ms
@@ -2701,9 +2718,6 @@ export class PolicyDataMigrator {
 
                 role.messageId = destinationMessageId;
                 await this._db.setUserInGroup(role);
-                console.log(
-                    `[MIGRATION_V2_ROLEVC] runId=${String(run?.id)} stage=afterPublish srcRoleMsg=${String(sourceRoleMessageId)} dstRoleMsg=${String(destinationMessageId)}`
-                );
             }
         }
 
@@ -3960,9 +3974,6 @@ export class PolicyDataMigrator {
 
         const srcMapKey = PolicyDataMigrator.getSourceMapKey('vcDocument', doc);
         const recursionKey = String(srcMapKey || doc?.messageId || (doc as any)?.id || '');
-        console.log(
-            `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=enter docId=${String((doc as any)?.id)} srcMsg=${String(doc?.messageId)} srcMapKey=${String(srcMapKey)} group=${String((doc as any)?.group)} assignedToGroup=${String((doc as any)?.assignedToGroup)} relCount=${String((doc?.relationships || []).length)}`
-        );
 
         if (recursionKey && state.done.has(recursionKey)) {
             const doneMessageId = state.done.get(recursionKey);
@@ -4067,9 +4078,6 @@ export class PolicyDataMigrator {
                 );
                 if (mappedRelationship) {
                     doc.relationships[i] = mappedRelationship;
-                    console.log(
-                        `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipMapHit rel=${String(relationship)} mapped=${String(mappedRelationship)}`
-                    );
                     continue;
                 }
 
@@ -4088,29 +4096,17 @@ export class PolicyDataMigrator {
                         );
                         if (mappedRoleRelationship) {
                             doc.relationships[i] = mappedRoleRelationship;
-                            console.log(
-                                `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipKeepRoleMessageMapped rel=${String(relationship)} mapped=${String(mappedRoleRelationship)}`
-                            );
                         } else {
                             const fallbackRoleRelationship = sourceRoleRelationshipFallback.get(relationshipAsString);
                             if (fallbackRoleRelationship) {
                                 doc.relationships[i] = fallbackRoleRelationship;
-                                console.log(
-                                    `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipFallbackRoleMessage rel=${String(relationship)} mapped=${String(fallbackRoleRelationship)}`
-                                );
                             } else {
-                                console.log(
-                                    `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipDropRoleMessageNoMap rel=${String(relationship)}`
-                                );
                                 doc.relationships.splice(i, 1);
                                 i--;
                             }
                         }
                         continue;
                     }
-                    console.log(
-                        `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipDropNoSource rel=${String(relationship)}`
-                    );
                     doc.relationships.splice(i, 1);
                     i--;
                     continue;
@@ -4128,18 +4124,12 @@ export class PolicyDataMigrator {
                     );
 
                     if (!republishedDocument?.messageId) {
-                        console.log(
-                            `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipDropNoRepublish rel=${String(relationship)}`
-                        );
                         doc.relationships.splice(i, 1);
                         i--;
                         continue;
                     }
 
                     doc.relationships[i] = republishedDocument.messageId;
-                    console.log(
-                        `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipRepublished rel=${String(relationship)} mapped=${String(republishedDocument.messageId)}`
-                    );
 
                     const relatedSrcMapKey = PolicyDataMigrator.getSourceMapKey('vcDocument', sourceRelated);
                     if (relatedSrcMapKey) {
@@ -4151,9 +4141,6 @@ export class PolicyDataMigrator {
                         );
                     }
                 } catch (error) {
-                    console.log(
-                        `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=relationshipDropByError rel=${String(relationship)} error=${String(error)}`
-                    );
                     doc.relationships.splice(i, 1);
                     i--;
                 }
@@ -4284,9 +4271,6 @@ export class PolicyDataMigrator {
                     if (resolvedRoleMessageId) {
                         vcMessage.setUser(resolvedRoleMessageId);
                     }
-                    console.log(
-                        `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=userResolve docId=${String((doc as any)?.id)} srcRoleMsg=${String(sourceRoleMessageId)} mappedRoleMsg=${String(mappedRoleMessageId)} fallbackDstRoleMsg=${String(roleForMessageUser?.messageId)} resolvedRoleMsg=${String(resolvedRoleMessageId)}`
-                    );
                 }
 
                 const vcMessageResult = await this._ms
@@ -4299,10 +4283,6 @@ export class PolicyDataMigrator {
                     });
 
                 const destinationMessageId = vcMessageResult.getId();
-                console.log(
-                    `[MIGRATION_V2_VC] runId=${String(run?.id)} stage=afterPublish docId=${String((doc as any)?.id)} srcMsg=${String(srcMapKey || doc?.messageId)} dstMsg=${String(destinationMessageId)} relCount=${String((doc?.relationships || []).length)}`
-                );
-
                 doc.messageId = destinationMessageId;
                 doc.topicId = vcMessageResult.getTopicId();
                 doc.messageHash = vcMessageResult.toHash();
@@ -4360,6 +4340,12 @@ export class PolicyDataMigrator {
 
     public static mapRunToResponse(run: MigrationRun) {
         const isHeartbeatStale = PolicyDataMigrator.isHeartbeatStaleForRun(run);
+        const summary = run?.summary
+            ? JSON.parse(JSON.stringify(run.summary))
+            : {};
+        if (summary && typeof summary === 'object' && (summary as any).total) {
+            delete (summary as any).total;
+        }
 
         const effectiveStatus =
             run.status === MigrationRunStatus.RUNNING && isHeartbeatStale
@@ -4373,7 +4359,7 @@ export class PolicyDataMigrator {
             status: effectiveStatus,
             startedAt: run.startedAt || null,
             finishedAt: run.finishedAt || null,
-            summary: run.summary || {}
+            summary
         };
     }
 
@@ -5232,7 +5218,7 @@ export class PolicyDataMigrator {
                                 }
                                 entitySummary.success += 1;
                                 successItems.push(failedItem);
-                                console.log(`${String(srcEntityId)}: Error: JSON Object is empty`);
+                                await new PinoLogger().warn(`${srcEntityId}: Error: JSON Object is empty`, ['GUARDIAN_SERVICE'], userId);
                                 return;
                             }
 
@@ -5474,7 +5460,7 @@ export class PolicyDataMigrator {
                             }
                             entitySummary.success += 1;
                             successItems.push(failedItem);
-                            console.log(`${String(srcEntityId)}: Error: JSON Object is empty`);
+                            await new PinoLogger().warn(`${srcEntityId}: Error: JSON Object is empty`, ['GUARDIAN_SERVICE'], userId);
                             return;
                         }
 
@@ -5498,6 +5484,15 @@ export class PolicyDataMigrator {
             await flushMappingsAndRun(pendingMappings);
 
             if (run.status === MigrationRunStatus.RUNNING) {
+                const tokenSummary = summary?.token;
+                if (tokenSummary) {
+                    const total = Number(tokenSummary.total || 0);
+                    const failed = Number(tokenSummary.failed || 0);
+                    if (total > 0 && this._processedTokenIds.size > 0) {
+                        tokenSummary.success = Math.min(total, this._processedTokenIds.size);
+                        tokenSummary.failed = Math.min(total - tokenSummary.success, failed);
+                    }
+                }
                 run.status = MigrationRunStatus.COMPLETED;
                 run.finishedAt = new Date();
                 run.heartbeatAt = new Date();
@@ -5510,6 +5505,15 @@ export class PolicyDataMigrator {
             await flushMappingsAndRun(pendingMappings);
 
             if (run.status !== MigrationRunStatus.STOPPED) {
+                const tokenSummary = summary?.token;
+                if (tokenSummary) {
+                    const total = Number(tokenSummary.total || 0);
+                    const failed = Number(tokenSummary.failed || 0);
+                    if (total > 0 && this._processedTokenIds.size > 0) {
+                        tokenSummary.success = Math.min(total, this._processedTokenIds.size);
+                        tokenSummary.failed = Math.min(total - tokenSummary.success, failed);
+                    }
+                }
                 run.status = MigrationRunStatus.FAILED;
                 run.finishedAt = new Date();
                 run.heartbeatAt = new Date();
@@ -5522,6 +5526,7 @@ export class PolicyDataMigrator {
             const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
             PolicyDataMigrator.clearRunCache(scopeKey);
+            this._processedTokenIds.clear();
         }
     }
 

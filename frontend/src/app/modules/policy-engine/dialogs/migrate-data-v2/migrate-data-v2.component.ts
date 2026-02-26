@@ -1591,21 +1591,20 @@ export class MigrateDataV2 {
             if (key === 'total') {
                 continue;
             }
-
-            const value = summary[key];
-            if (!value || typeof value !== 'object') {
+            const metrics = this.normalizeSummaryItem(summary[key]);
+            if (!metrics) {
                 continue;
             }
 
-            const total = typeof value?.total === 'number' ? Number(value.total) : 0;
+            const total = metrics.total;
             if (total <= 0) {
                 continue;
             }
 
             hasProcessableEntity = true;
 
-            const success = typeof value?.success === 'number' ? Number(value.success) : 0;
-            const failed = typeof value?.failed === 'number' ? Number(value.failed) : 0;
+            const success = metrics.success;
+            const failed = metrics.failed;
             const processed = success + failed;
 
             if (processed < total) {
@@ -1624,36 +1623,40 @@ export class MigrateDataV2 {
             return 0;
         }
 
-        const totalSummary = summary.total;
-        if (metric === 'total') {
-            const directTotal = totalSummary?.total;
-            if (typeof directTotal === 'number') {
-                return Number(directTotal);
-            }
-        }
-
         let total = 0;
         for (const key of Object.keys(summary)) {
             if (key === 'total') {
                 continue;
             }
-            const value = summary[key];
-            if (!value || typeof value !== 'object') {
+            const metrics = this.normalizeSummaryItem(summary[key]);
+            if (!metrics) {
                 continue;
             }
-            const nestedMetric = value?.[metric];
-            if (typeof nestedMetric === 'number') {
-                total += Number(nestedMetric);
-            }
-        }
-
-        if (metric !== 'total') {
-            const totalMetric = totalSummary?.[metric];
-            if (!total && typeof totalMetric === 'number') {
-                return Number(totalMetric);
-            }
+            total += Number(metrics[metric] || 0);
         }
 
         return total;
+    }
+
+    private normalizeSummaryItem(
+        value: MigrationSummaryItem | undefined
+    ): { total: number; success: number; failed: number } | null {
+        if (!value || typeof value !== 'object') {
+            return null;
+        }
+
+        const total = Number((value as any).total);
+        const success = Number((value as any).success);
+        const failed = Number((value as any).failed);
+
+        if (!Number.isFinite(total) || !Number.isFinite(success) || !Number.isFinite(failed)) {
+            return null;
+        }
+
+        return {
+            total,
+            success,
+            failed
+        };
     }
 }

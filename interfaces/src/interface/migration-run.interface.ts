@@ -29,10 +29,8 @@ export interface MigrationSummaryItem {
 
 /**
  * Migration summary grouped by entity type.
- * Includes aggregated "total" bucket.
  */
 export interface MigrationRunSummary {
-    total?: MigrationSummaryItem;
     [entityType: string]: MigrationSummaryItem | undefined;
 }
 
