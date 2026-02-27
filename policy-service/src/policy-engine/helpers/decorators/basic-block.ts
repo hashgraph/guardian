@@ -944,10 +944,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             public async getOption(user:any) {
-                const row = await DatabaseServer.getPolicyParameters(this.policyId , user.did );
-
+                const row = await DatabaseServer.getPolicyParameters(user.did, this.policyId);
                 let properties;
-                if(!row || row.updated || !row.properties) {
+                if(!row || row.updated || !row.properties || Object.keys(row.properties).length === 0) {
                     properties = {};
                     const policyRows = await this.databaseServer.find(PolicyParameters, { policyId: this.policyId });
 
@@ -969,13 +968,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                         row.properties = properties;
                         this.databaseServer.update(PolicyParameters, {
                             policyId: row.policyId,
-                            userDID: row.userDID
+                            userDID: row.userDID,
                         }, row);
                     } else {
                         this.databaseServer.save(PolicyParameters, {
                             policyId: this.policyId,
                             userDID: user.did,
                             config: null,
+                            updated: false,
                             properties
                         })
                     }
